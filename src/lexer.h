@@ -4,6 +4,11 @@
 #include <vector>
 #include <string>
 
+#include "logger.h"
+
+using std::string;
+using std::vector;
+
 struct Token
 {
     string type; // "identifier", "keyword", "seperator", "operator", "literal", "comment"
@@ -16,8 +21,9 @@ public:
     string input;
     int index;
     vector<Token> tokens;
+    Logger *logger;
 
-    Lexer(string input);
+    Lexer(string input, Logger *logger);
 
     vector<Token> lex();
 };

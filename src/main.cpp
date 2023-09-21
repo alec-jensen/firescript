@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 
+#include "logger.h"
 #include "lexer.h"
 
 using std::cout;
@@ -23,6 +24,7 @@ Arguments getArguments(int argc, char **argv);
 
 int main(int argc, char **argv)
 {
+    Logger *logger = new Logger("info");
     Arguments args = getArguments(argc, argv);
     if (args.argError)
     {
@@ -31,7 +33,8 @@ int main(int argc, char **argv)
 
     if (args.debug)
     {
-        cout << "Debug mode enabled" << endl;
+        logger->level = 0;
+        logger->debug("Debug mode enabled");
     }
 
     if (args.help)
@@ -50,21 +53,28 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    logger->debug("Opening file '" + args.file + "'");
+
     std::ifstream file(args.file);
 
     std::string content((std::istreambuf_iterator<char>(file)),
                         (std::istreambuf_iterator<char>()));
 
-    lexer* lex = new lexer();
+    logger->debug("Lexing file '" + args.file + "'");
 
-    vector<string> tokens = lex->lex(content);
+    Lexer *lex = new Lexer(content, logger);
+
+    vector<Token> tokens = lex->lex();
 
     free(lex);
 
     for (int i = 0; i < tokens.size(); i++)
     {
-        cout << tokens[i] << endl;
+        Token token = tokens[i];
+        cout << token.type << ": " << token.value << endl;
     }
+
+    free(logger);
 
     return 0;
 }

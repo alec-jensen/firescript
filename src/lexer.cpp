@@ -2,6 +2,7 @@
 #include <vector>
 #include <regex>
 
+#include "logger.h"
 #include "lexer.h"
 
 using std::string;
@@ -85,15 +86,17 @@ vector<string> comments = {
     "\\*\\/"    // */
 };
 
-Lexer::Lexer(string input)
+Lexer::Lexer(string input, Logger *logger)
 {
     this->input = input;
     this->index = 0;
     this->tokens = {};
+    this->logger = logger;
 }
 
 vector<Token> Lexer::lex()
 {
+    this->logger->debug("Lexing file");
     while (this->index < this->input.length())
     {
         // Precedence: comments, keywords, seperators, operators, literals, identifiers
@@ -103,18 +106,17 @@ vector<Token> Lexer::lex()
         {
             std::regex regex(comment);
             std::smatch match;
-
             if (std::regex_search(this->input, match, regex))
             {
-                Token token;
-                token.type = "comment";
-                token.value = match.str(0);
-                this->tokens.push_back(token);
-
-                this->input = match.suffix().str();
+                this->logger->debug("Found comment: " + match.str());
+                this->tokens.push_back(Token{"comment", match.str()});
+                this->input = match.suffix();
                 this->index = 0;
+                break;
             }
         }
+
+        this->index++;
     }
 
     return this->tokens;
