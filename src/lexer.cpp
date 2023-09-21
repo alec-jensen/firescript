@@ -81,9 +81,8 @@ vector<string> literals = {
 
 // Regex for comments
 vector<string> comments = {
-    "\\/\\/.*", // //
-    "\\/\\*",   // /*
-    "\\*\\/"    // */
+    "\\/\\/.*", // single-line comments
+    "\\/*(\n|.*)*\\/" // multi-line comments
 };
 
 Lexer::Lexer(string input, Logger *logger)

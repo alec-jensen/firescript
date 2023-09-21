@@ -63,7 +63,7 @@ float b = 10.5;
 double c = 10.5;
 bool d = true; // or false
 string e = "Hello";
-tuple f = (10, 10.5, true, "Hello"); // tuples can contain any type, and are immutable
+tuple<int, double, bool, string> f = (10, 10.5, true, "Hello"); // tuples can contain any type, and are immutable
 
 // Variables can be nullable or non-nullable by adding the "nullable" keyword
 
@@ -171,7 +171,8 @@ class Person
     string name;
     nullable int age;
 
-    // `this` is the class instance. It is passed as the first argument to all constructors and methods
+    // `this` is the class instance. It is passed as the first argument to all constructors and non-static methods
+    // it can be called whatever you want
     Person(this, string name, int age)
     {
         this.name = name;
