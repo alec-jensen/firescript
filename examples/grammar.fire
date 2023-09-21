@@ -1,0 +1,239 @@
+// Single line comment
+
+/*
+Multi
+line
+comment
+*/
+
+/*
+    Philosophy of FireScript
+
+    Static typing is better than dynamic
+    Explicit is better than implicit
+    Code should be self explanatory
+    Code should be easy to read
+    Code should be easy to write
+    Performance is important and should be easy to achieve
+*/
+
+/*
+    Operators
+
+    Arithmetic
+
+        +   Addition
+        +=  Addition assignment
+        ++  Increment
+        -   Subtraction
+        -=  Subtraction assignment
+        --  Decrement
+        *   Multiplication
+        *=  Multiplication assignment
+        /   Division
+        /=  Division assignment
+        %   Modulus
+        %=  Modulus assignment
+        **  Exponentiation
+        **= Exponentiation assignment
+
+    Assignment
+
+        =   Assignment
+
+    Logic
+
+        ==  Equality
+        !=  Inequality
+        >   Greater than
+        >=  Greater than or equal to
+        <   Less than
+        <=  Less than or equal to
+        &&  Logical and
+        ||  Logical or
+        !   Logical not
+*/
+
+// Variables
+
+// Types are: [int, float, double, bool, string, tuple]
+
+int a = 10;
+float b = 10.5;
+double c = 10.5;
+bool d = true; // or false
+string e = "Hello";
+tuple f = (10, 10.5, true, "Hello"); // tuples can contain any type, and are immutable
+
+// Variables can be nullable or non-nullable by adding the "nullable" keyword
+
+nullable int f = null; // nullable
+int g = 10; // non-nullable
+
+// To make a variable constant, add the "const" keyword
+
+const int h = 10;
+
+// Strings
+
+// Formatted strings
+
+string someString = f"1+1={1+1}"; // By putting `f` in front of a string, you can insert expressions into the string using {expression}
+
+// Logic structures
+
+// If statements
+
+if (true)
+{
+    // do something
+}
+else if (true)
+{
+    // do something else
+}
+else
+{
+    // do something else
+}
+
+// Loops
+
+// For loops
+
+for (int i = 0; i < 10; i++)
+{
+    if (i == 5)
+    {
+        continue; // skip to next iteration
+    }
+
+    if (i == 8)
+    {
+        break; // break out of loop
+    }
+}
+
+for (int i : 0..10) // 0-10 exclusive
+{
+    // do something
+}
+
+for (int i : 0...10) // 1-10 inclusive
+{
+    // do something
+}
+
+int[] arr = [1, 2, 3, 4, 5];
+
+for (int i : arr) // iterate over array
+{
+    // do something
+}
+
+// While loops
+
+while (true)
+{
+    // do something
+}
+
+// Methods
+
+int add(int a, int b)
+{
+    return a + b;
+}
+
+// Nullable methods and parameters
+// Nullable parameters must be the last parameters in the method. Required parameters cannot follow nullable parameters
+
+nullable int add(int a, nullable int b, nullable int c) // b & c are optional. If not provided, they will be null
+{
+    if (b == null)
+    {
+        return null; // since the method is nullable, it can return null
+    }
+
+    return a + b;
+}
+
+// Calling a method with optional parameters
+
+add(10, 10); // The parameters will be assigned in order
+
+add(10, c=10); // The parameters can be assigned by name
+
+// Classes
+
+class Person
+{
+    string name;
+    nullable int age;
+
+    // `this` is the class instance. It is passed as the first argument to all constructors and methods
+    Person(this, string name, int age)
+    {
+        this.name = name;
+        this.age = age;
+    }
+
+    // Constructors can be overloaded
+
+    Person(this, string name)
+    {
+        this.name = name;
+    }
+
+    // Methods can also be overloaded
+
+    string set(this, string name)
+    {
+        this.name = name;
+    }
+
+    string set(this, int age)
+    {
+        this.age = age;
+    }
+
+    string getName(this)
+    {
+        return this.name;
+    }
+
+    int getAge(this)
+    {
+        return this.age;
+    }Functions
+
+    // Static methods
+
+    static string getHello()
+    {
+        return "Hello";
+    }
+
+    // Static variables
+
+    static string hello = "Hello";
+}
+
+// Inheritance
+
+class Student from Person
+{
+    string school;
+
+    Student(this, string name, int age, string school)
+    {
+        this.__parent__(name, age); // call parent constructor *not required*
+
+        this.school = school;
+    }
+
+    string getSchool(this)
+    {
+        return this.school;
+    }
+}
