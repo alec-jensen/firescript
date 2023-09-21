@@ -25,8 +25,7 @@ vector<string> keywords = {
     "continue",
     "return",
     "nullable",
-    "const"
-};
+    "const"};
 
 vector<string> seperators = {
     "(",
@@ -72,11 +71,11 @@ vector<string> literals = {
     "true",
     "false",
     "null",
-    "(-?)[0-9]+", //        Integer
+    "(-?)[0-9]+",        //        Integer
     "(-?)[0-9]+.[0-9]+", // Double
-    "f\".*\"", //           Formatted String
-    "\".*\"", //            String
-    "\\((.*?,.*?)\\)", //     Tuple
+    "f\".*\"",           //           Formatted String
+    "\".*\"",            //            String
+    "\\((.*?,.*?)\\)",   //     Tuple
 };
 
 // Regex for comments
@@ -86,51 +85,37 @@ vector<string> comments = {
     "\\*\\/"    // */
 };
 
-struct Token
+Lexer::Lexer(string input)
 {
-    string type; // "identifier", "keyword", "seperator", "operator", "literal", "comment"
-    string value;
-};
+    this->input = input;
+    this->index = 0;
+    this->tokens = {};
+}
 
-class Lexer
+vector<Token> Lexer::lex()
 {
-public:
-    string input;
-    int index;
-    vector<Token> tokens;
-
-    Lexer(string input)
+    while (this->index < this->input.length())
     {
-        this->input = input;
-        this->index = 0;
-        this->tokens = {};
-    }
+        // Precedence: comments, keywords, seperators, operators, literals, identifiers
 
-    vector<Token> lex()
-    {
-        while (this->index < this->input.length())
+        // Comments
+        for (string comment : comments)
         {
-            // Precedence: comments, keywords, seperators, operators, literals, identifiers
+            std::regex regex(comment);
+            std::smatch match;
 
-            // Comments
-            for (string comment : comments)
+            if (std::regex_search(this->input, match, regex))
             {
-                std::regex regex(comment);
-                std::smatch match;
+                Token token;
+                token.type = "comment";
+                token.value = match.str(0);
+                this->tokens.push_back(token);
 
-                if (std::regex_search(this->input, match, regex))
-                {
-                    Token token;
-                    token.type = "comment";
-                    token.value = match.str(0);
-                    this->tokens.push_back(token);
-
-                    this->input = match.suffix().str();
-                    this->index = 0;
-                }
+                this->input = match.suffix().str();
+                this->index = 0;
             }
         }
-
-        return this->tokens;
     }
-};
+
+    return this->tokens;
+}

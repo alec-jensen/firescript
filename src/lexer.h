@@ -4,11 +4,22 @@
 #include <vector>
 #include <string>
 
-class lexer
+struct Token
+{
+    string type; // "identifier", "keyword", "seperator", "operator", "literal", "comment"
+    string value;
+};
+
+class Lexer
 {
 public:
-    lexer();
-    std::vector<std::string> lex(std::string source);
+    string input;
+    int index;
+    vector<Token> tokens;
+
+    Lexer(string input);
+
+    vector<Token> lex();
 };
 
 #endif
