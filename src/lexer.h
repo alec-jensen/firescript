@@ -19,6 +19,7 @@ class Lexer
 {
 public:
     string input;
+    string working_input;
     int index;
     vector<Token> tokens;
     Logger *logger;
