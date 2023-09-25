@@ -65,12 +65,17 @@ bool d = true; // or false
 string e = "Hello";
 tuple<int, double, bool, string> f = (10, 10.5, true, "Hello"); // tuples can contain any type, and are immutable
 
+// Arrays
+
+int[] arr = {1, 2, 3, 4, 5}; // arrays can contain any type, and are mutable. fixed length
+int[] arr2 = new int[10]; // create an array of length 10
+
 // Variables can be nullable or non-nullable by adding the "nullable" keyword
 
 nullable int f = null; // nullable
 int g = 10; // non-nullable
 
-// To make a variable constant, add the "const" keyword
+// To make a variable constant, add the "const" keyword. Constants must be initialized when declared and cannot are immutable
 
 const int h = 10;
 
@@ -124,7 +129,7 @@ for (int i : 0...10) // 1-10 inclusive
     // do something
 }
 
-int[] arr = [1, 2, 3, 4, 5];
+int[] arr = {1, 2, 3, 4, 5};
 
 for (int i : arr) // iterate over array
 {
@@ -237,4 +242,12 @@ class Student from Person
     {
         return this.school;
     }
+}
+
+//        COMPILER WARNINGS
+
+bool a = true;
+if (a = true)
+{
+    // This gives a warning "Assignment in if statement" because it is likely a mistake
 }
