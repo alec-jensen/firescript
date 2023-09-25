@@ -46,6 +46,7 @@ class Lexer:
         "COMMA": r",",
         "SEMICOLON": r";",
         "COLON": r":",
+        "DOT": r"\.",
     }
 
     operators: dict[str, str] = {
@@ -92,9 +93,7 @@ class Lexer:
     }
 
     def __init__(self) -> None:
-        # Precedence: comments, keywords, separators, operators, literals, identifiers
         self.all_token_types = self.comments | self.keywords | self.seperators | self.operators | self.literals
-        logging.debug(f"all_token_types: {self.all_token_types}")
 
     def tokenize(self, file: str):
         tokens: list[Token] = []
@@ -121,8 +120,26 @@ class Lexer:
                     token.value = match.group()
                     index += len(token.value)
                     tokens.append(token)
+                elif file[index] == " " or file[index] == "\n":
+                    index += 1
                 else:
                     logging.error(f"Invalid token: {file[index]}")
                     index += 1
+
+        # Post-process tokens
+
+        # Remove single-line comments
+        tokens = [token for token in tokens if token.type != "SINGLE_LINE_COMMENT"]
+
+        # Remove multi-line comments
+        in_comment = False
+        for token in tokens:
+            if token.type == "MULTI_LINE_COMMENT_START":
+                in_comment = True
+            elif token.type == "MULTI_LINE_COMMENT_END":
+                in_comment = False
+            elif in_comment:
+                token.type = "MULTI_LINE_COMMENT"
+        tokens = [token for token in tokens if token.type not in ["MULTI_LINE_COMMENT_START", "MULTI_LINE_COMMENT_END", "MULTI_LINE_COMMENT"]]
 
         return tokens
