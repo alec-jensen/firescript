@@ -44,7 +44,7 @@ class LogFormatter(logging.Formatter):
     suffix = f"{Colors.DARK_GRAY}(%(name)s - %(filename)s:%(lineno)s)"
 
     FORMATS = {
-        logging.DEBUG: prefix + Colors.LIGHT_GREEN + msg + suffix + Colors.END,
+        logging.DEBUG: prefix + Colors.DARK_GRAY + msg + suffix + Colors.END,
         logging.INFO: prefix + Colors.LIGHT_GRAY + msg + suffix + Colors.END,
         logging.WARNING: prefix + Colors.YELLOW + msg + suffix + Colors.END,
         logging.ERROR: prefix + Colors.LIGHT_RED + msg + suffix + Colors.END,

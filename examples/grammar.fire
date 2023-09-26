@@ -173,6 +173,7 @@ add(10, c=10); // The parameters can be assigned by name
 
 class Person
 {
+    // Define class variables
     string name;
     nullable int age;
 
@@ -214,10 +215,14 @@ class Person
     }Functions
 
     // Static methods
+    // Static methods can be called without an instance of the class
 
     static string getHello()
     {
         return "Hello";
+
+        // Example of calling a static method
+        string hello = Person.getHello();
     }
 
     // Static variables

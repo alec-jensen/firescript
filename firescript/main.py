@@ -2,6 +2,7 @@ import argparse
 import logging
 
 from lexer import Lexer
+from parser import Parser
 from log_formatter import LogFormatter
 
 logFormatter = LogFormatter()
@@ -32,4 +33,10 @@ if args.file:
     lexer = Lexer()
     tokens = lexer.tokenize(file)
 
-    logging.debug(f"tokens: {', '.join([str(token) for token in tokens])}")
+    # some python bs
+    newline = "\n"
+    logging.debug(f"tokens:\n{newline.join([str(token) for token in tokens])}")
+
+    parser = Parser(tokens)
+    ast = parser.parse()
+    logging.debug(f"ast:\n{ast}")

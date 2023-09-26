@@ -9,3 +9,5 @@ comment
 // test
 
 int a = 10;
+
+nullable int b = null;

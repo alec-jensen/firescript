@@ -96,6 +96,8 @@ class Lexer:
         self.all_token_types = self.comments | self.keywords | self.seperators | self.operators | self.literals
 
     def tokenize(self, file: str):
+        logging.debug(f"tokenizing file")
+
         tokens: list[Token] = []
         index = 0
 
