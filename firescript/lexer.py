@@ -33,6 +33,7 @@ class Lexer:
         "CONTINUE": r"continue",
         "RETURN": r"return",
         "NULLABLE": r"nullable",
+        "GENERATOR": r"generator",
         "CONST": r"const",
     }
 
@@ -64,8 +65,8 @@ class Lexer:
         "MODULO_ASSIGN": r"\%=",
         "POWER": r"\*\*",
         "POWER_ASSIGN": r"\*\*=",
-        "ASSIGN": r"\=",
         "EQUALS": r"\=\=",
+        "ASSIGN": r"\=",
         "NOT_EQUALS": r"\!\=",
         "GREATER_THAN": r"\>",
         "GREATER_THAN_OR_EQUAL": r"\>\=",
@@ -83,7 +84,7 @@ class Lexer:
         "DOUBLE": r"(-?)[0-9]+.[0-9]+",
         "FORMATTED_STRING": r"f\".*\"",
         "STRING": r"\".*\"",
-        "TUPLE": r"\((.*?,.*?)\)",
+        # "TUPLE": r"\((.*?,.*?)\)",
     }
 
     comments: dict[str, str] = {
@@ -92,21 +93,22 @@ class Lexer:
         "MULTI_LINE_COMMENT_END": r"\*\/",
     }
 
-    def __init__(self) -> None:
+    def __init__(self, file: str) -> None:
+        self.file: str = file
         self.all_token_types = self.comments | self.keywords | self.seperators | self.operators | self.literals
 
-    def tokenize(self, file: str):
+    def tokenize(self):
         logging.debug(f"tokenizing file")
 
         tokens: list[Token] = []
         index = 0
 
-        while index < len(file):
+        while index < len(self.file):
             token = Token()
             token.index = index
 
             for token_type, regex in self.all_token_types.items():
-                match = re.match(regex, file[index:])
+                match = re.match(regex, self.file[index:])
                 if match:
                     token.type = token_type
                     token.value = match.group()
@@ -116,16 +118,16 @@ class Lexer:
             if token.type:
                 tokens.append(token)
             else:
-                match = re.match(self.identifier, file[index:])
+                match = re.match(self.identifier, self.file[index:])
                 if match:
                     token.type = "IDENTIFIER"
                     token.value = match.group()
                     index += len(token.value)
                     tokens.append(token)
-                elif file[index] == " " or file[index] == "\n":
+                elif self.file[index] == " " or self.file[index] == "\n":
                     index += 1
                 else:
-                    logging.error(f"Invalid token: {file[index]}")
+                    logging.error(f"Invalid token: {self.file[index]}")
                     index += 1
 
         # Post-process tokens

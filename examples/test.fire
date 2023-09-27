@@ -11,3 +11,15 @@ comment
 int a = 10;
 
 nullable int b = null;
+
+int add(int a, int b) {
+    return a + b;
+}
+
+nullable int add(int a, int b, nullable int c) {
+    if (c == null) {
+        return a + b;
+    }
+
+    return a + b + c;
+}

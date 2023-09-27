@@ -30,8 +30,8 @@ if args.file:
     with open(args.file, 'r') as f:
         file = f.read()
 
-    lexer = Lexer()
-    tokens = lexer.tokenize(file)
+    lexer = Lexer(file)
+    tokens = lexer.tokenize()
 
     # some python bs
     newline = "\n"

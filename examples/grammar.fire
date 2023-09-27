@@ -119,15 +119,31 @@ for (int i = 0; i < 10; i++)
     }
 }
 
-for (int i : 0..10) // 0-10 exclusive
+for (int i : ["cat", "dog"]) // iterate over array
 {
     // do something
 }
 
-for (int i : 0...10) // 1-10 inclusive
+// Range loops
+
+// Range in firescript is most similar to python's range function
+// Range is a generator, so it does not create an array in memory
+
+for (int i : range(10)) // iterate over range 0-10, exclusive
 {
     // do something
 }
+
+// range(int end)
+// start defaults to 0, step defaults to 1, inclusive defaults to false
+
+// range(int start, int end)
+// step defaults to 1, inclusive defaults to false
+
+// range(int start, int end, int step)
+// inclusive defaults to false
+
+// range(int start, int end, int step, bool inclusive)
 
 int[] arr = {1, 2, 3, 4, 5};
 
@@ -246,6 +262,21 @@ class Student from Person
     string getSchool(this)
     {
         return this.school;
+    }
+}
+
+// Generators
+
+// Generators are methods that can be iterated over
+
+generator int range(int end)
+{
+    for (int i = 0; i < end; i++)
+    {
+        yield i;
+        
+        // yield is like return, but it does not end the method.
+        // execution will pause at yield and resume when the value is used
     }
 }
 

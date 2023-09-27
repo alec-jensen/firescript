@@ -13,6 +13,9 @@ class ASTNode:
         self.children = []
         self.parent = parent
 
+        if parent:
+            parent.add_child(self)
+
     # voodoo magic
     def __str__(self, last: bool = False, header: str = ''):
         elbow = "└──"
@@ -33,11 +36,21 @@ class ASTNode:
     def add_token(self, token: Token) -> Token:
         self.tokens.append(ASTNode(token))
         return token
+    
+    def add_tokens(self, tokens: list[Token]) -> list[Token]:
+        self.tokens += tokens
+        return tokens
 
     def add_child(self, node: "ASTNode") -> "ASTNode":
         node.parent = self
         self.children.append(node)
         return node
+    
+    def find_root(self) -> "ASTNode":
+        if self.parent:
+            return self.parent.find_root()
+        else:
+            return self
 
 
 class Parser:
@@ -54,39 +67,125 @@ class Parser:
     def parse(self):
         logging.debug("Parsing tokens...")
 
-        index = 0
+        self.index = 0
 
-        while index < len(self.tokens):
+        self.method_start = None
+        self.in_method = False
+        self.method_body: ASTNode = None
+
+        self.working_node: ASTNode = self.ast
+
+        while self.index < len(self.tokens):
+            logging.debug(f"Token: {self.tokens[self.index]}")
+            logging.debug(f"Index: {self.index}")
+            logging.debug(f"In method: {self.in_method}")
+            logging.debug(f"Method start: {self.method_start}")
+
             # Variable declaration
 
-            logging.debug(f"Current token: {self.tokens[index]} ({index})")
-
-            if self.tokens[index].type in Lexer.keywords.keys() and self.tokens[index].type != 'NULLABLE':
-                logging.debug(f"Found keyword: {self.tokens[index]}")
-                if self.tokens[index + 1].type == 'IDENTIFIER':
-                    logging.debug(f"Found identifier: {self.tokens[index + 1]}")
-                    if self.tokens[index + 2].type == 'ASSIGN':
-                        logging.debug(f"Found assignment: {self.tokens[index + 2]}")
-                        if self.tokens[index+4].type == 'SEMICOLON':
-                            logging.debug(f"Found semicolon: {self.tokens[index + 4]}")
-                            self.ast.add_child(ASTNode(self.tokens[index:index+5]))
-                            index += 5
+            if self.tokens[self.index].type in Lexer.keywords.keys() and self.tokens[self.index].type != 'NULLABLE':
+                if self.tokens[self.index + 1].type == 'IDENTIFIER':
+                    if self.tokens[self.index + 2].type == 'ASSIGN':
+                        if self.tokens[self.index+4].type == 'SEMICOLON':
+                            self.ast.add_child(ASTNode(self.tokens[self.index:self.index+5]))
+                            self.index += 5
                             continue
 
-            elif self.tokens[index].type == 'NULLABLE':
-                logging.debug(f"Found nullable: {self.tokens[index]}")
-                if self.tokens[index + 1].type in Lexer.keywords.keys():
-                    logging.debug(f"Found keyword: {self.tokens[index + 1]}")
-                    if self.tokens[index + 2].type == 'IDENTIFIER':
-                        logging.debug(f"Found identifier: {self.tokens[index + 2]}")
-                        if self.tokens[index + 3].type == 'ASSIGN':
-                            logging.debug(f"Found assignment: {self.tokens[index + 3]}")
-                            if self.tokens[index+5].type == 'SEMICOLON':
-                                logging.debug(f"Found semicolon: {self.tokens[index + 5]}")
-                                self.ast.add_child(ASTNode(self.tokens[index:index+6]))
-                                index += 6
+            elif self.tokens[self.index].type == 'NULLABLE':
+                if self.tokens[self.index + 1].type in Lexer.keywords.keys():
+                    if self.tokens[self.index + 2].type == 'IDENTIFIER':
+                        if self.tokens[self.index + 3].type == 'ASSIGN':
+                            if self.tokens[self.index+5].type == 'SEMICOLON':
+                                self.ast.add_child(ASTNode(self.tokens[self.index:self.index+6]))
+                                self.index += 6
                                 continue
 
-            index += 1
+            # Method declaration
+
+            if self.tokens[self.index].type in Lexer.keywords.keys() and self.tokens[self.index].type != 'NULLABLE':
+                if self.tokens[self.index + 1].type == 'IDENTIFIER':
+                    if self.tokens[self.index + 2].type == 'OPEN_PAREN':
+                        if self.in_method:
+                            raise Exception("Cannot declare method inside method")
+                        
+                        self.working_node = ASTNode(tokens=[], parent=self.working_node)
+                        self.method_body = ASTNode(tokens=[], parent=self.working_node)
+
+                        for i in range(self.index, len(self.tokens)):
+                            if self.tokens[i].type == 'CLOSE_PAREN':
+                                if self.tokens[i+1].type == 'OPEN_BRACE':
+                                    self.working_node.add_tokens(self.tokens[self.index:i+1])
+                                    
+                                    self.in_method = True
+                                    self.method_start = i + 2
+
+                                    self.index = i + 2
+                                    break
+                        
+                        continue
+
+            # Nullable method declaration
+
+            if self.tokens[self.index].type == 'NULLABLE':
+                if self.tokens[self.index + 1].type in Lexer.keywords.keys():
+                    if self.tokens[self.index + 2].type == 'IDENTIFIER':
+                        if self.tokens[self.index + 3].type == 'OPEN_PAREN':
+                            if self.in_method:
+                                raise Exception("Cannot declare method inside method")
+                            
+                            self.working_node = ASTNode(tokens=[], parent=self.working_node)
+                            self.method_body = ASTNode(tokens=[], parent=self.working_node)
+
+                            for i in range(self.index, len(self.tokens)):
+                                if self.tokens[i].type == 'CLOSE_PAREN':
+                                    if self.tokens[i+1].type == 'OPEN_BRACE':
+                                        self.working_node.add_tokens(self.tokens[self.index:i+1])
+
+                                        self.in_method = True
+                                        self.method_start = i + 2
+
+                                        self.index = i + 2
+                                        break
+
+                            continue
+
+            # If statement
+
+            if self.tokens[self.index].type == 'IF':
+                if self.tokens[self.index + 1].type == 'OPEN_PAREN':
+                    self.working_node = ASTNode(tokens=[], parent=self.working_node)
+                    if_body = ASTNode(tokens=[], parent=self.working_node)
+
+                    for i in range(self.index, len(self.tokens)):
+                        if self.tokens[i].type == 'CLOSE_PAREN':
+                            if self.tokens[i+1].type == 'OPEN_BRACE':
+                                self.working_node.add_tokens(self.tokens[self.index:i+1])
+                                
+                                # Parse if body
+
+                                for j in range(i+1, len(self.tokens)):
+                                    if self.tokens[j].type == 'CLOSE_BRACE':
+                                        if_body.add_tokens(self.tokens[i+2:j])
+                                        self.index = j + 1
+                                        break
+
+                                break
+
+                    continue
+                                    
+            # Method body
+            if self.in_method:
+                if self.tokens[self.index].type == 'CLOSE_BRACE':
+                    if self.method_body is None:
+                        raise Exception("Method body is None")
+                    
+                    self.method_body.add_tokens(self.tokens[self.method_start:self.index])
+                    self.index += 1
+                    self.in_method = False
+                    self.method_body = None
+                    self.working_node = self.working_node.parent
+                    continue
+
+            self.index += 1
 
         return self.ast
