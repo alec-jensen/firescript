@@ -1,14 +1,13 @@
-# firescript
+firescript 🔥
 
-Firescript is a staticly & strongly typed language that can compile natively, or to JavaScript. It is designed to be a simple, yet powerful language that is easy to learn and use. It is also designed to be a language that is easy to implement, and can be used in a wide variety of applications.
+Firescript is a statically & strongly typed language that can compile natively or to JavaScript. It's crafted to be both simple and powerful, offering ease of learning and usage. The language is designed to be straightforward to implement and adaptable for a wide range of applications.
+Features 🚀
 
-## Features
+    Static & Strong Typing: Enhances code readability, making it less esoteric.
+    Simple Syntax: Easy to learn and use, while supporting complex and powerful features.
+    Compilation Options: Compiles to JavaScript for frontend applications or natively for backend applications.
+    Cohesive Design: Everything works together seamlessly, allowing you to focus on writing code, not grappling with the language.
 
-- Static & strong typing help to make code more readable, and less esoteric.
-- Simple syntax makes it easy to learn and use, but able to support more complex and powerful features.
-- Compiles to JavaScript for use in frontend applications, or natively for use in backend applications.
-- Everything is designed to be cohesive and work together, so you can focus on writing code, not fighting with the language.
+Syntax 📝
 
-## Syntax
-
-Firescript can best be described as Java, mixed with some JavaScript and Python. It inherits the robustness of Java, with syntax reminiscent of JavaScript, and quality of life features from Python.
+Firescript can be best described as a fusion of Java, JavaScript, and Python. It inherits the robustness of Java, features syntax reminiscent of JavaScript, and incorporates quality-of-life elements from Python.
