@@ -7,6 +7,6 @@ Simple Syntax: Easy to learn and use, while supporting complex and powerful feat
 Compilation Options: Compiles to JavaScript for frontend applications or natively for backend applications.
 Cohesive Design: Everything works together seamlessly, allowing you to focus on writing code, not grappling with the language.
 
-Syntax 📝
+## Syntax 📝
 
 Firescript can be best described as a fusion of Java, JavaScript, and Python. It inherits the robustness of Java, features syntax reminiscent of JavaScript, and incorporates quality-of-life elements from Python.
