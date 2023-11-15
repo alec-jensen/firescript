@@ -1,4 +1,4 @@
-firescript 🔥
+## firescript 🔥
 
 Firescript is a statically & strongly typed language that can compile natively or to JavaScript. It's crafted to be both simple and powerful, offering ease of learning and usage. The language is designed to be straightforward to implement and adaptable for a wide range of applications.
 ## Features 🚀
