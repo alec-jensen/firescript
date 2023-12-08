@@ -145,7 +145,7 @@ for (int i : range(10)) // iterate over range 0-10, exclusive
 
 // range(int start, int end, int step, bool inclusive)
 
-int[] arr = {1, 2, 3, 4, 5};
+int[] arr = [1, 2, 3, 4, 5];
 
 for (int i : arr) // iterate over array
 {
@@ -177,6 +177,18 @@ nullable int add(int a, nullable int b, nullable int c) // b & c are optional. I
     }
 
     return a + b;
+}
+
+// Nested methods
+
+int add(int a, int b)
+{
+    int add(int c, int d)
+    {
+        return c + d;
+    }
+
+    return add(a, b);
 }
 
 // Calling a method with optional parameters

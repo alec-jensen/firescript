@@ -6,13 +6,13 @@ class Token:
     value: str
     index: int
 
-    def __init__(self, type: str = None, value: str = None, index: str = None):
+    def __init__(self, type: str = None, value: str = None, index: int = None):
         self.type = type
         self.value = value
         self.index = index
 
     def __str__(self):
-        return f"Token('{self.type}', '{self.value}', '{self.index}')"
+        return f"Token('{self.type}', '{self.value}', {self.index})"
 
 class Lexer:
     identifier: str = r"[a-zA-Z_][a-zA-Z0-9_]*"

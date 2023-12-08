@@ -1,6 +1,7 @@
 import logging
 
 from lexer import Token, Lexer
+from utils.file_utils import get_line_and_coumn_from_index, get_line
 
 
 class ASTNode:
@@ -24,28 +25,28 @@ class ASTNode:
         blank = "   "
         tree_str = f"{header}ASTNode\n"
 
-        for j, token in enumerate(self.tokens):
-            tree_str += f"{header}{elbow if (j == len(self.tokens) - 1) else tee}{token}\n"
-
         for i, node in enumerate(self.children):
-            tree_str += node.__str__(header=header + (blank if last else pipe),
-                                     last=i == len(self.children) - 1)
+            if type(node) == Token:
+                tree_str += f"{header}{elbow if (i ==
+                                                 len(self.children) - 1) else tee}{node}\n"
+            else:
+                tree_str += node.__str__(header=header + (blank if last else pipe),
+                                         last=i == len(self.children) - 1)
 
         return tree_str
 
-    def add_token(self, token: Token) -> Token:
-        self.tokens.append(ASTNode(token))
-        return token
-    
-    def add_tokens(self, tokens: list[Token]) -> list[Token]:
-        self.tokens += tokens
-        return tokens
+    def add_child(self, node: "ASTNode" or Token) -> "ASTNode" or Token:
+        """
+        :param node: The node to add as a child
+        :return: The node that was added"""
 
-    def add_child(self, node: "ASTNode") -> "ASTNode":
+        if node in self.children:
+            return node
+
         node.parent = self
         self.children.append(node)
         return node
-    
+
     def find_root(self) -> "ASTNode":
         if self.parent:
             return self.parent.find_root()
@@ -59,133 +60,52 @@ class Parser:
         "input",
     ]
 
-    def __init__(self, tokens: list[Token]):
+    def __init__(self, tokens: list[Token], file: str = None, filename: str = None):
         self.tokens: list[Token] = tokens
 
         self.ast = ASTNode([Token("ROOT", "ROOT", 0)])
 
+        self.file: str = file
+        self.filename: str = filename
+
+    def error(self, text: str, token: Token = None):
+        if self.file is None or token is None:
+            logging.error(text)
+            return
+
+        line_num, column_num = get_line_and_coumn_from_index(
+            self.file, token.index)
+        line_text = get_line(self.file, line_num)
+        logging.error(text + f"\n> {line_text.strip()}\n" + " " * (
+            column_num + 2) + "^" + f"\n({self.filename}:{line_num}:{column_num})")
+
     def parse(self):
         logging.debug("Parsing tokens...")
 
-        self.index = 0
-
-        self.method_start = None
-        self.in_method = False
-        self.method_body: ASTNode = None
+        index = 0
 
         self.working_node: ASTNode = self.ast
+        current_scope = self.ast
+        scope_stack: list[ASTNode] = []  # Stack to keep track of scopes
 
-        while self.index < len(self.tokens):
-            logging.debug(f"Token: {self.tokens[self.index]}")
-            logging.debug(f"Index: {self.index}")
-            logging.debug(f"In method: {self.in_method}")
-            logging.debug(f"Method start: {self.method_start}")
+        while index < len(self.tokens):
+            token = self.tokens[index]
 
-            # Variable declaration
-
-            if self.tokens[self.index].type in Lexer.keywords.keys() and self.tokens[self.index].type != 'NULLABLE':
-                if self.tokens[self.index + 1].type == 'IDENTIFIER':
-                    if self.tokens[self.index + 2].type == 'ASSIGN':
-                        if self.tokens[self.index+4].type == 'SEMICOLON':
-                            self.ast.add_child(ASTNode(self.tokens[self.index:self.index+5]))
-                            self.index += 5
-                            continue
-
-            elif self.tokens[self.index].type == 'NULLABLE':
-                if self.tokens[self.index + 1].type in Lexer.keywords.keys():
-                    if self.tokens[self.index + 2].type == 'IDENTIFIER':
-                        if self.tokens[self.index + 3].type == 'ASSIGN':
-                            if self.tokens[self.index+5].type == 'SEMICOLON':
-                                self.ast.add_child(ASTNode(self.tokens[self.index:self.index+6]))
-                                self.index += 6
-                                continue
-
-            # Method declaration
-
-            if self.tokens[self.index].type in Lexer.keywords.keys() and self.tokens[self.index].type != 'NULLABLE':
-                if self.tokens[self.index + 1].type == 'IDENTIFIER':
-                    if self.tokens[self.index + 2].type == 'OPEN_PAREN':
-                        if self.in_method:
-                            raise Exception("Cannot declare method inside method")
-                        
-                        self.working_node = ASTNode(tokens=[], parent=self.working_node)
-                        self.method_body = ASTNode(tokens=[], parent=self.working_node)
-
-                        for i in range(self.index, len(self.tokens)):
-                            if self.tokens[i].type == 'CLOSE_PAREN':
-                                if self.tokens[i+1].type == 'OPEN_BRACE':
-                                    self.working_node.add_tokens(self.tokens[self.index:i+1])
-                                    
-                                    self.in_method = True
-                                    self.method_start = i + 2
-
-                                    self.index = i + 2
-                                    break
-                        
-                        continue
-
-            # Nullable method declaration
-
-            if self.tokens[self.index].type == 'NULLABLE':
-                if self.tokens[self.index + 1].type in Lexer.keywords.keys():
-                    if self.tokens[self.index + 2].type == 'IDENTIFIER':
-                        if self.tokens[self.index + 3].type == 'OPEN_PAREN':
-                            if self.in_method:
-                                raise Exception("Cannot declare method inside method")
-                            
-                            self.working_node = ASTNode(tokens=[], parent=self.working_node)
-                            self.method_body = ASTNode(tokens=[], parent=self.working_node)
-
-                            for i in range(self.index, len(self.tokens)):
-                                if self.tokens[i].type == 'CLOSE_PAREN':
-                                    if self.tokens[i+1].type == 'OPEN_BRACE':
-                                        self.working_node.add_tokens(self.tokens[self.index:i+1])
-
-                                        self.in_method = True
-                                        self.method_start = i + 2
-
-                                        self.index = i + 2
-                                        break
-
-                            continue
-
-            # If statement
-
-            if self.tokens[self.index].type == 'IF':
-                if self.tokens[self.index + 1].type == 'OPEN_PAREN':
-                    self.working_node = ASTNode(tokens=[], parent=self.working_node)
-                    if_body = ASTNode(tokens=[], parent=self.working_node)
-
-                    for i in range(self.index, len(self.tokens)):
-                        if self.tokens[i].type == 'CLOSE_PAREN':
-                            if self.tokens[i+1].type == 'OPEN_BRACE':
-                                self.working_node.add_tokens(self.tokens[self.index:i+1])
-                                
-                                # Parse if body
-
-                                for j in range(i+1, len(self.tokens)):
-                                    if self.tokens[j].type == 'CLOSE_BRACE':
-                                        if_body.add_tokens(self.tokens[i+2:j])
-                                        self.index = j + 1
-                                        break
-
-                                break
-
-                    continue
-                                    
-            # Method body
-            if self.in_method:
-                if self.tokens[self.index].type == 'CLOSE_BRACE':
-                    if self.method_body is None:
-                        raise Exception("Method body is None")
-                    
-                    self.method_body.add_tokens(self.tokens[self.method_start:self.index])
-                    self.index += 1
-                    self.in_method = False
-                    self.method_body = None
-                    self.working_node = self.working_node.parent
-                    continue
-
-            self.index += 1
+            if token.type == "OPEN_BRACE":
+                # Create a new scope
+                new_scope = ASTNode([], parent=current_scope)
+                current_scope = current_scope.add_child(new_scope)
+                # Push the new scope to the stack
+                scope_stack.append(current_scope)
+                index += 1
+            elif token.type == "CLOSE_BRACE":
+                # Close the current scope
+                # Pop the previous scope from the stack
+                current_scope = scope_stack.pop().parent
+                index += 1
+            else:
+                # Add token to the current scope
+                current_scope.add_child(token)
+                index += 1
 
         return self.ast

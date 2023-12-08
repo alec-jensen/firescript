@@ -1,17 +1,10 @@
 import argparse
 import logging
+import os
 
 from lexer import Lexer
 from parser import Parser
 from log_formatter import LogFormatter
-
-logFormatter = LogFormatter()
-rootLogger = logging.getLogger()
-rootLogger.setLevel(logging.DEBUG)
-
-consoleHandler = logging.StreamHandler()
-consoleHandler.setFormatter(logFormatter)
-rootLogger.addHandler(consoleHandler)
 
 parser = argparse.ArgumentParser(description='Firescript compiler')
 
@@ -21,8 +14,19 @@ parser.add_argument('file', help='Input file')
 
 args = parser.parse_args()
 
+rootLogger = logging.getLogger()
+rootLogger.setLevel(logging.INFO)
+
 if args.debug:
-    print(args)
+    rootLogger.setLevel(logging.DEBUG)
+
+consoleHandler = logging.StreamHandler()
+logFormatter = LogFormatter()
+consoleHandler.setFormatter(logFormatter)
+rootLogger.addHandler(consoleHandler)
+
+if args.debug:
+    logging.debug(args)
 
 if args.file:
     logging.info(f"Starting compilation of {args.file}...")
@@ -37,6 +41,6 @@ if args.file:
     newline = "\n"
     logging.debug(f"tokens:\n{newline.join([str(token) for token in tokens])}")
 
-    parser = Parser(tokens)
+    parser = Parser(tokens, file, os.path.basename(args.file))
     ast = parser.parse()
     logging.debug(f"ast:\n{ast}")
