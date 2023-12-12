@@ -3,35 +3,36 @@ import logging
 from lexer import Token, Lexer
 from utils.file_utils import get_line_and_coumn_from_index, get_line
 
+from typing import Union
+
 
 class ASTNode:
-    tokens: list[Token]
-    children: list["ASTNode" or Token]
+    children: list[Union["ASTNode", Token]]
     parent: "ASTNode"
 
     def __init__(self, parent: "ASTNode" = None):
         self.children = []
         self.parent = parent
 
-    # voodoo magic
+    # voodoo magic to get tree visualization
     def __str__(self, last: bool = False, header: str = ''):
         elbow = "└──"
         pipe = "│  "
         tee = "├──"
         blank = "   "
-        tree_str = f"{header}ASTNode\n"
+        tree_str = f"{header}" + type(self).__name__ + "\n"
 
         for i, node in enumerate(self.children):
             if type(node) == Token:
                 tree_str += f"{header}{elbow if (i ==
                                                  len(self.children) - 1) else tee}{node}\n"
             else:
-                tree_str += node.__str__(header=header + (blank if last else pipe),
+                tree_str += node.__str__(header=header + pipe,
                                          last=i == len(self.children) - 1)
 
         return tree_str
 
-    def add_child(self, node: "ASTNode" or Token) -> "ASTNode" or Token:
+    def add_child(self, node: Union["ASTNode", Token]) -> Union["ASTNode", Token]:
         """
         :param node: The node to add as a child
         :return: The node that was added"""
@@ -53,6 +54,36 @@ class ASTNode:
         self.parent.children.remove(self)
         self.parent = None
         self.children = None
+
+class MethodNode(ASTNode):
+    def __init__(self, parent: ASTNode, name: str, args: list[tuple[str, str, str]], return_type: str, nullable: bool = False, children: list[Union["ASTNode", Token]] = []):
+        super().__init__(parent)
+        self.name = name
+        self.args = args
+        self.return_type = return_type
+        self.nullable = nullable
+        self.children = children
+
+    def __str__(self, last: bool = False, header: str = ''):
+        elbow = "└──"
+        pipe = "│  "
+        tee = "├──"
+        blank = "   "
+        tree_str = f"{header}" + type(self).__name__ + "\n"
+        tree_str += f"{header}{pipe}name: {self.name}\n"
+        tree_str += f"{header}{pipe}nullable: {self.nullable}\n"
+        tree_str += f"{header}{pipe}return_type: {self.return_type}\n"
+        tree_str += f"{header}{pipe}args: {self.args}\n"
+
+        for i, node in enumerate(self.children):
+            if type(node) == Token:
+                tree_str += f"{header}{elbow if (i ==
+                                                 len(self.children) - 1) else tee}{node}\n"
+            else:
+                tree_str += node.__str__(header=header + pipe,
+                                         last=i == len(self.children) - 1)
+
+        return tree_str
 
 
 class Parser:
@@ -159,6 +190,80 @@ class Parser:
                         child.self_destruct()
 
         remove_empty_scopes(self.ast)
+
+        # Parse method declarations
+
+        def parse_method_declaration(scope: ASTNode):
+            method_start = -1
+
+            for i, child in enumerate(scope.children):
+                if isinstance(child, ASTNode):
+                    parse_method_declaration(child)
+                elif isinstance(child, Token):
+                    if len(scope.children) > 3:
+                        if scope.children[i].type in list(Lexer.types.keys()):
+                            if scope.children[i+1].type == "IDENTIFIER":
+                                if scope.children[i+2].type == "OPEN_PAREN":
+                                    if i > 0:
+                                        if scope.children[i-1].type == "NULLABLE":
+                                            method_start = i-1
+                                        else:
+                                            method_start = i
+                                    else:
+                                        method_start = i
+
+                                    logging.debug(f"Found method start at index {method_start}")
+
+                    # Parse method end
+                    if scope.children[i].type == "CLOSE_PAREN":
+                        if method_start != -1:
+                            method_end = i
+                            
+                            nullable = False
+                            return_type = ""
+                            method_name = ""
+                            
+                            if scope.children[method_start].type == "NULLABLE":
+                                nullable = True
+                                method_start += 1
+
+                            return_type = scope.children[method_start].type
+
+                            method_name = scope.children[method_start+1].value
+
+                            # Parse arguments
+
+                            # type, name
+                            args: list[tuple[str, str]] = []
+
+                            arg_start = method_start + 3
+
+                            while arg_start < method_end:
+                                arg_nullable = False
+                                if scope.children[arg_start].type == "NULLABLE":
+                                    arg_nullable = True
+                                    arg_start += 1
+
+                                arg_type = scope.children[arg_start].type
+                                arg_name = scope.children[arg_start+1].value
+
+                                args.append((arg_nullable, arg_type, arg_name))
+
+                                arg_start += 3
+
+                            logging.debug(nullable)
+                            method_signature = f"{"NULLABLE" if nullable else ""} {return_type} {method_name}"
+                            method_signature += f"({', '.join([f'{"NULLABLE" if arg_nullable else ""} {arg_type} {arg_name}' for arg_nullable, arg_type, arg_name in args])})"
+
+                            logging.debug(f"Found method declaration: {method_signature}")
+
+                            method_node = MethodNode(scope, method_name, args, return_type, nullable, scope.children[method_end + 1].children)
+
+                            scope.children[method_end + 1] = method_node
+
+                            method_start = -1
+
+        parse_method_declaration(self.ast)
 
         if self.error_count > 0:
             logging.error(f"Found {self.error_count} errors while parsing {self.filename}")

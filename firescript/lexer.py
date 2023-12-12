@@ -18,12 +18,6 @@ class Lexer:
     identifier: str = r"[a-zA-Z_][a-zA-Z0-9_]*"
 
     keywords: dict[str, str] = {
-        "INT": r"int",
-        "FLOAT": r"float",
-        "DOUBLE": r"double",
-        "BOOL": r"bool",
-        "STRING": r"string",
-        "TUPLE": r"tuple",
         "IF": r"if",
         "ELSE": r"else",
         "ELIF": r"elif",
@@ -36,6 +30,17 @@ class Lexer:
         "GENERATOR": r"generator",
         "CONST": r"const",
     }
+
+    types: dict[str, str] = {
+        "INT": r"int",
+        "FLOAT": r"float",
+        "DOUBLE": r"double",
+        "BOOL": r"bool",
+        "STRING": r"string",
+        "TUPLE": r"tuple",
+    }
+
+    keywords = keywords | types
 
     seperators: dict[str, str] = {
         "OPEN_PAREN": r"\(",
