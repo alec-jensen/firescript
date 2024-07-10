@@ -63,7 +63,9 @@ float b = 10.5;
 double c = 10.5;
 bool d = true; // or false
 string e = "Hello";
-tuple<int, double, bool, string> f = (10, 10.5, true, "Hello"); // tuples can contain any type, and are immutable
+
+int g; // variables can be declared without being initialized, but must be initialized before use.
+g = 10; // now g is initialized and can be used
 
 // Arrays
 
@@ -71,11 +73,12 @@ int[] arr = {1, 2, 3, 4, 5}; // arrays can contain any type, and are mutable. fi
 int[] arr2 = new int[10]; // create an array of length 10
 
 // Variables can be nullable or non-nullable by adding the "nullable" keyword
+// This works for all types, including arrays
 
 nullable int f = null; // nullable
 int g = 10; // non-nullable
 
-// To make a variable constant, add the "const" keyword. Constants must be initialized when declared and cannot are immutable
+// To make a variable constant, add the "const" keyword. Constants must be initialized when declared.
 
 const int h = 10;
 
@@ -83,7 +86,8 @@ const int h = 10;
 
 // Formatted strings
 
-string someString = f"1+1={1+1}"; // By putting `f` in front of a string, you can insert expressions into the string using {expression}
+string name = "John";
+string someString = f"Hello, {name}"; // By putting `f` in front of a string, you can insert expressions into the string using {expression}
 
 // Logic structures
 
@@ -119,7 +123,7 @@ for (int i = 0; i < 10; i++)
     }
 }
 
-for (int i : ["cat", "dog"]) // iterate over array
+for (int i : {"cat", "dog"}) // iterate over each element in the array
 {
     // do something
 }
@@ -144,13 +148,6 @@ for (int i : range(10)) // iterate over range 0-10, exclusive
 // inclusive defaults to false
 
 // range(int start, int end, int step, bool inclusive)
-
-int[] arr = [1, 2, 3, 4, 5];
-
-for (int i : arr) // iterate over array
-{
-    // do something
-}
 
 // While loops
 
@@ -206,7 +203,7 @@ class Person
     nullable int age;
 
     // `this` is the class instance. It is passed as the first argument to all constructors and non-static methods
-    // it can be called whatever you want
+    // it can be called whatever you want, but `this` is the convention
     Person(this, string name, int age)
     {
         this.name = name;
@@ -266,7 +263,7 @@ class Student from Person
 
     Student(this, string name, int age, string school)
     {
-        this.__parent__(name, age); // call parent constructor *not required*
+        super.Student(name, age); // Call the parent constructor. super is the parent instance
 
         this.school = school;
     }
@@ -277,20 +274,12 @@ class Student from Person
     }
 }
 
+Person john = new Person("John", 20);
+Student jane = new Student("Jane", 18, "School");
+
 // Generators
 
-// Generators are methods that can be iterated over
-
-generator int range(int end)
-{
-    for (int i = 0; i < end; i++)
-    {
-        yield i;
-        
-        // yield is like return, but it does not end the method.
-        // execution will pause at yield and resume when the value is used
-    }
-}
+// TODO: Create generator syntax
 
 //        COMPILER WARNINGS
 

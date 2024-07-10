@@ -76,9 +76,16 @@ class MethodNode(ASTNode):
         tree_str += f"{header}{pipe}args: {self.args}\n"
 
         for i, node in enumerate(self.children):
+            next = tee
+
             if type(node) == Token:
-                tree_str += f"{header}{elbow if (i ==
-                                                 len(self.children) - 1) else tee}{node}\n"
+                if i == len(self.children) - 1:
+                    for i in range(0, len(header), 3):
+                        header = header[0:i] + elbow + header[i+3:]
+
+                    next = elbow
+
+                tree_str += f"{header}{next}{node}\n"
             else:
                 tree_str += node.__str__(header=header + pipe,
                                          last=i == len(self.children) - 1)
@@ -119,11 +126,12 @@ class Parser:
 
         index = 0
 
-        # Make sure all braces, brackets and parentheses are closed
+        # Make sure all braces, brackets, parentheses and comments are closed
 
-        open_braces = []
-        open_brackets = []
-        open_parentheses = []
+        open_braces: list[Token] = []
+        open_brackets: list[Token] = []
+        open_parentheses: list[Token] = []
+        open_comments: list[Token] = []
 
         for token in self.tokens:
             if token.type == "OPEN_BRACE":
@@ -147,13 +155,22 @@ class Parser:
                     self.error("Unexpected closing parenthesis", token)
                 else:
                     open_parentheses.pop()
+            elif token.type == "MULTI_LINE_COMMENT_START":
+                open_comments.append(token)
+            elif token.type == "MULTI_LINE_COMMENT_END":
+                if len(open_comments) == 0:
+                    self.error("Unexpected multiline comment terminator", token)
+                else:
+                    open_comments.pop()
 
         if len(open_braces) > 0:
-            self.error("Unclosed braces", open_braces[0])
+            self.error("Unclosed brace", open_braces[0])
         if len(open_brackets) > 0:
-            self.error("Unclosed brackets", open_brackets[0])
+            self.error("Unclosed bracket", open_brackets[0])
         if len(open_parentheses) > 0:
-            self.error("Unclosed parentheses", open_parentheses[0])
+            self.error("Unclosed parenthesis", open_parentheses[0])
+        if len(open_comments) > 0:
+            self.error("Unclosed multiline comment", open_comments[0])
 
         self.working_node: ASTNode = self.ast
         current_scope = self.ast
@@ -204,7 +221,7 @@ class Parser:
                         if scope.children[i].type in list(Lexer.types.keys()):
                             if scope.children[i+1].type == "IDENTIFIER":
                                 if scope.children[i+2].type == "OPEN_PAREN":
-                                    if i > 0:
+                                    if i > 0 and type(scope.children[i-1]) == ASTNode:
                                         if scope.children[i-1].type == "NULLABLE":
                                             method_start = i-1
                                         else:

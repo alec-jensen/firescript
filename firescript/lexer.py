@@ -135,20 +135,4 @@ class Lexer:
                     logging.error(f"Invalid token: {self.file[index]}")
                     index += 1
 
-        # Post-process tokens
-
-        # Remove single-line comments
-        tokens = [token for token in tokens if token.type != "SINGLE_LINE_COMMENT"]
-
-        # Remove multi-line comments
-        in_comment = False
-        for token in tokens:
-            if token.type == "MULTI_LINE_COMMENT_START":
-                in_comment = True
-            elif token.type == "MULTI_LINE_COMMENT_END":
-                in_comment = False
-            elif in_comment:
-                token.type = "MULTI_LINE_COMMENT"
-        tokens = [token for token in tokens if token.type not in ["MULTI_LINE_COMMENT_START", "MULTI_LINE_COMMENT_END", "MULTI_LINE_COMMENT"]]
-
         return tokens
