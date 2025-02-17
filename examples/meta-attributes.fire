@@ -1,0 +1,70 @@
+// Meta attribute on type
+// Anything in this variable will contain the meta attributes of the type
+Object[attr="val"] o = new Object();
+
+// Meta attribute on object
+// Only the specific object will contain the meta attributes
+Object o = new Object[attr="val"]();
+
+// Defining and accessing meta attributes
+class Object {
+    // Define meta attributes
+    // Meta attributes are defined just like any other variable, but with the "meta" keyword
+    // Meta attributes can also be nullable, making them optional
+    // If a meta attribute is non-nullable, it must be provided when creating the object
+    meta string attr;
+    meta nullable int optional_attr;
+
+    Object(this) {
+        // Access meta attributes
+        print(this.meta.attr);
+    }
+}
+
+// You can have multiple meta attributes on a type or object, as long as they are defined by the class
+class Object {
+    meta string attr1;
+    meta string attr2;
+
+    Object(this) {
+        print(this.meta.attr1);
+        print(this.meta.attr2);
+    }
+}
+
+Object[attr1="val1", attr2="val2"] o = new Object();
+
+// Attributes can also be of any type, even other objects
+class Object {
+    meta Object attr = new Object();
+
+    Object(this) {
+        print(this.meta.attr);
+    }
+}
+
+Object[attr=new Object()] o = new Object();
+
+// Children of a class will inherit the meta attributes of the parent, but can override them
+class Object {
+    meta string attr;
+
+    Object(this) {
+        print(this.meta.attr);
+    }
+}
+
+class Child from Object {
+    meta string attr;
+    meta double attr2;
+
+    Child(this) {
+        print(this.meta.attr);
+    }
+}
+
+// If you try assigning an object with a different meta attribute than the variable, you will get a compile-time error
+Object[attr="val"] o = new Child[attr="val2"](); // MetaError: Cannot assign an object with a different meta attribute
+
+// However, if they have the same attribute values, it will work
+Object[attr="val"] o = new Child[attr="val"](); // No error

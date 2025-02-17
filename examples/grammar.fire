@@ -73,14 +73,23 @@ int[] arr = {1, 2, 3, 4, 5}; // arrays can contain any type, and are mutable. fi
 int[] arr2 = new int[10]; // create an array of length 10
 
 // Variables can be nullable or non-nullable by adding the "nullable" keyword
+// By default, variables are non-nullable unless otherwise specified
 // This works for all types, including arrays
 
 nullable int f = null; // nullable
 int g = 10; // non-nullable
 
-// To make a variable constant, add the "const" keyword. Constants must be initialized when declared.
+// To make a variable constant, add the "const" keyword. Constants must be initialized when declared and cannot be changed.
 
 const int h = 10;
+
+// If a constant is an object, the object itself is constant, but the object's properties can be changed (unless they are also constant)
+
+const Object obj = new Object();
+
+obj.property = 10; // This is allowed
+
+obj = new Object(); // ConstantAssignmentError: Cannot assign to a constant
 
 // Strings
 
