@@ -29,6 +29,7 @@ class Lexer:
         "NULLABLE": r"nullable",
         "GENERATOR": r"generator",
         "CONST": r"const",
+        "TERNARY": r"ternary",
     }
 
     types: dict[str, str] = {

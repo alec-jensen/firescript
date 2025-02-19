@@ -303,6 +303,29 @@ class Student from Person
 Person john = new Person("John", 20);
 Student jane = new Student("Jane", 18, "School");
 
+// Conditional property access
+
+// You can use the `?` operator to access properties of nullable objects
+// If the object is null, the property will be null
+// This is a safer and easier way to access properties of nullable objects
+
+nullable Person person = null;
+
+string name = person?.name; // If person is null, name will be null
+string age = person.age; // This will throw an error
+
+// Ternary operator
+
+// The ternary operator is a shorthand for an if-else statement
+// Ternary operators in FireScript are different from other languages
+// The syntax is `ternary condition then value1 else value2`
+// This syntax is more readable and easier to understand than the traditional ternary operator
+
+int a = 10;
+int b = 20;
+
+int c = ternary a > b then a else b; // c will be 20
+
 // Generators
 
 // TODO: Create generator syntax

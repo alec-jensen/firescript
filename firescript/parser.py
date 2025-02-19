@@ -204,8 +204,11 @@ class Parser:
         ):
             self.advance()
             return ASTNode(NodeTypes.LITERAL, token, token.value, [], token.index)
+        elif token.type == "IDENTIFIER":
+            self.advance()
+            return ASTNode(NodeTypes.IDENTIFIER, token, token.value, [], token.index)
         else:
-            self.error(f"Unexpected token {token.type}", token)
+            self.error(f"Unexpected token {token.value}", token)
             self.advance()
             return None
 
@@ -214,7 +217,6 @@ class Parser:
         is_nullable = False
         is_const = False
 
-        # Process optional modifiers in any order.
         while self.current_token and self.current_token.type in ("NULLABLE", "CONST"):
             if self.current_token.type == "NULLABLE":
                 self.advance()
@@ -223,40 +225,36 @@ class Parser:
                 self.advance()
                 is_const = True
 
-        # Consume type keyword (e.g., int or double)
         if self.current_token and self.current_token.type in ("INT", "FLOAT", "DOUBLE", "BOOL", "STRING", "TUPLE"):
             type_token = self.consume(self.current_token.type)
         else:
             self.error("Expected type declaration", self.current_token)
+            self._sync_to_semicolon()
             return None
 
-        # Consume identifier (variable name)
         identifier = self.consume("IDENTIFIER")
         if identifier is None:
             self.error("Expected identifier", self.current_token)
+            self._sync_to_semicolon()
             return None
 
-        # Consume assignment operator (ASSIGN)
         assign_token = self.consume("ASSIGN")
         if assign_token is None:
             self.error("Expected assignment operator", self.current_token)
+            self._sync_to_semicolon()
             return None
 
-        # Parse expression for the variable initialization
         value = self.parse_expression()
         if value is None:
-            self.error(
-                "Expected expression after assignment operator", self.current_token
-            )
+            self.error("Expected expression after assignment operator", self.current_token)
+            self._sync_to_semicolon()
             return None
 
-        # Consume semicolon to complete the declaration
         semicolon_token = self.consume("SEMICOLON")
         if semicolon_token is None:
             self.error("Expected semicolon", self.current_token)
             return None
 
-        # Create the AST node and attach modifier flags.
         node = ASTNode(
             NodeTypes.VARIABLE_DECLARATION,
             identifier,
@@ -268,6 +266,82 @@ class Parser:
             is_const,
         )
         return node
+    
+    def parse_variable_assignment(self):
+        logging.debug("Parsing variable assignment...")
+        identifier = self.consume("IDENTIFIER")
+        if identifier is None:
+            self.error("Expected identifier", self.current_token)
+            self._sync_to_semicolon()
+            return None
+
+        assign_token = self.consume("ASSIGN")
+        if assign_token is None:
+            self.error("Expected assignment operator", self.current_token)
+            self._sync_to_semicolon()
+            return None
+
+        value = self.parse_expression()
+        if value is None:
+            self.error("Expected expression after assignment operator", self.current_token)
+            self._sync_to_semicolon()
+            return None
+
+        semicolon_token = self.consume("SEMICOLON")
+        if semicolon_token is None:
+            self.error("Expected semicolon", self.current_token)
+            return None
+
+        node = ASTNode(
+            NodeTypes.VARIABLE_ASSIGNMENT,
+            identifier,
+            identifier.value,
+            [value],
+            identifier.index,
+        )
+        return node
+    
+    def parse_function_call(self):
+        """Parse a function call: functionName(argument, ...)."""
+        function_name_token = self.consume("IDENTIFIER")
+        if function_name_token is None:
+            self.error("Expected function name for function call", self.current_token)
+            return None
+        
+        open_paren = self.consume("OPEN_PAREN")
+        if open_paren is None:
+            self.error("Expected '(' after function name", self.current_token)
+            return None
+
+        arguments = []
+        if self.current_token and self.current_token.type != "CLOSE_PAREN":
+            while True:
+                arg = self.parse_expression()
+                if arg is not None:
+                    arguments.append(arg)
+                if self.current_token and self.current_token.type == "COMMA":
+                    self.consume("COMMA")
+                    continue
+                break
+
+        close_paren = self.consume("CLOSE_PAREN")
+        if close_paren is None:
+            self.error("Expected ')' after function arguments", self.current_token)
+            return None
+
+        return ASTNode(
+            NodeTypes.FUNCTION_CALL,  # Ensure NodeTypes.FUNCTION_CALL exists in your enums.
+            function_name_token,
+            function_name_token.value,
+            arguments,
+            function_name_token.index,
+        )
+    
+    def _sync_to_semicolon(self):
+        """Advance tokens until we reach a semicolon or run out of tokens."""
+        while self.current_token and self.current_token.type != "SEMICOLON":
+            self.advance()
+        self.consume("SEMICOLON")
 
     def parse(self):
         logging.debug("Parsing tokens...")
@@ -285,9 +359,23 @@ class Parser:
                 node = self.parse_typed_variable_declaration()
                 if node is not None:
                     self.ast.children.append(node)
+            elif self.current_token.type == "IDENTIFIER":
+                if self.peek().type == "ASSIGN":
+                    node = self.parse_variable_assignment()
+                    if node is not None:
+                        self.ast.children.append(node)
+                elif self.peek().type == "OPEN_PAREN":
+                    node = self.parse_function_call()
+                    if node is not None:
+                        self.ast.children.append(node)
+                else:
+                    self.error(
+                        f"Unexpected token '{self.current_token.value}'", self.current_token
+                    )
+                    self.advance()
             else:
                 self.error(
-                    f"Unexpected token {self.current_token.type}", self.current_token
+                    f"Unexpected token '{self.current_token.value}'", self.current_token
                 )
                 self.advance()
         return self.ast
