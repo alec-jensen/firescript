@@ -1,0 +1,17 @@
+// firescript has a number of built-in functions that can be used in your scripts.
+
+// print(string value)
+// print(string value, char end)
+
+// input
+
+// range(int end)
+// start defaults to 0, step defaults to 1, inclusive defaults to false
+
+// range(int start, int end)
+// step defaults to 1, inclusive defaults to false
+
+// range(int start, int end, int step)
+// inclusive defaults to false
+
+// range(int start, int end, int step, bool inclusive)

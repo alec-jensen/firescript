@@ -11,4 +11,6 @@ Firescript is a staticly & strongly typed language that can compile natively, or
 
 ## Syntax
 
-Firescript can best be described as Java, mixed with some JavaScript and Python. It inherits the robustness of Java, with syntax reminiscent of JavaScript, and quality of life features from Python.
+Firescript can best be described as a mix between C, Java, JavaScript, and Python. It has a simple, yet powerful syntax that is easy to learn and use. Here is an example of a simple "Hello, World!" program in Firescript:
+
+```

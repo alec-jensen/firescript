@@ -56,13 +56,14 @@ comment
 
 // Variables
 
-// Types are: [int, float, double, bool, string, tuple]
+// Types are: [int, float, double, bool, string, char, tuple]
 
 int a = 10;
 float b = 10.5;
 double c = 10.5;
 bool d = true; // or false
 string e = "Hello";
+tuple<int, string> t = (10, "Hello");
 
 int g; // variables can be declared without being initialized, but must be initialized before use.
 g = 10; // now g is initialized and can be used
@@ -93,10 +94,26 @@ obj = new Object(); // ConstantAssignmentError: Cannot assign to a constant
 
 // Strings
 
+// This system takes heavily after Python's string system
+
 // Formatted strings
 
 string name = "John";
 string someString = f"Hello, {name}"; // By putting `f` in front of a string, you can insert expressions into the string using {expression}
+
+// Raw strings
+
+string rawString = r"Hello, \n World"; // By putting `r` in front of a string, you can create a raw string that does not interpret escape characters
+
+// Byte strings
+
+byte[] byteString = b"Hello, World"; // Byte strings are arrays of bytes. They are immutable
+
+// Combining string prefixes
+
+string formattedRawString = rf"Hello, {name} \n World"; // You can combine string prefixes
+string rawByteString = rb"Hello, \n World"; // You can combine string prefixes
+string formattedRawByteString = rfb"Hello, {name} \n World"; // You can combine string prefixes
 
 // Logic structures
 
@@ -246,7 +263,7 @@ class Person
     int getAge(this)
     {
         return this.age;
-    }Functions
+    }
 
     // Static methods
     // Static methods can be called without an instance of the class

@@ -1,96 +1,72 @@
 import logging
+from typing import Union, Optional
 
-from lexer import Token, Lexer
+from lexer import Token
 from utils.file_utils import get_line_and_coumn_from_index, get_line
-
-from typing import Union
+from enums import NodeTypes
 
 
 class ASTNode:
-    children: list[Union["ASTNode", Token]]
-    parent: "ASTNode"
-
-    def __init__(self, parent: "ASTNode" = None):
-        self.children = []
-        self.parent = parent
-
-    # voodoo magic to get tree visualization
-    def __str__(self, last: bool = False, header: str = ''):
-        elbow = "└──"
-        pipe = "│  "
-        tee = "├──"
-        blank = "   "
-        tree_str = f"{header}" + type(self).__name__ + "\n"
-
-        for i, node in enumerate(self.children):
-            if type(node) == Token:
-                tree_str += f"{header}{elbow if (i ==
-                                                 len(self.children) - 1) else tee}{node}\n"
-            else:
-                tree_str += node.__str__(header=header + pipe,
-                                         last=i == len(self.children) - 1)
-
-        return tree_str
-
-    def add_child(self, node: Union["ASTNode", Token]) -> Union["ASTNode", Token]:
-        """
-        :param node: The node to add as a child
-        :return: The node that was added"""
-
-        if node in self.children:
-            return node
-
-        node.parent = self
-        self.children.append(node)
-        return node
-
-    def find_root(self) -> "ASTNode":
-        if self.parent:
-            return self.parent.find_root()
-        else:
-            return self
-        
-    def self_destruct(self):
-        self.parent.children.remove(self)
-        self.parent = None
-        self.children = None
-
-class MethodNode(ASTNode):
-    def __init__(self, parent: ASTNode, name: str, args: list[tuple[str, str, str]], return_type: str, nullable: bool = False, children: list[Union["ASTNode", Token]] = []):
-        super().__init__(parent)
+    def __init__(
+        self,
+        node_type: NodeTypes,
+        token: Optional[Token],
+        name,
+        children,
+        position,
+        var_type: Optional[str] = None,
+        is_nullable: bool = False,
+        is_const: bool = False,
+    ):
+        self.node_type: NodeTypes = node_type
+        self.token = token
         self.name = name
-        self.args = args
-        self.return_type = return_type
-        self.nullable = nullable
-        self.children = children
+        self.children = children or []
+        self.position = position
+        self.is_nullable = is_nullable
+        self.is_const = is_const
+        self.var_type = var_type
 
-    def __str__(self, last: bool = False, header: str = ''):
-        elbow = "└──"
-        pipe = "│  "
-        tee = "├──"
-        blank = "   "
-        tree_str = f"{header}" + type(self).__name__ + "\n"
-        tree_str += f"{header}{pipe}name: {self.name}\n"
-        tree_str += f"{header}{pipe}nullable: {self.nullable}\n"
-        tree_str += f"{header}{pipe}return_type: {self.return_type}\n"
-        tree_str += f"{header}{pipe}args: {self.args}\n"
+    def tree(self, prefix: str = "", is_last: bool = True) -> str:
+        # Build the display line differently for variable declarations.
+        if self.node_type == NodeTypes.VARIABLE_DECLARATION:
+            pre = []
+            if self.is_nullable:
+                pre.append("nullable")
+            if self.is_const:
+                pre.append("const")
+            if self.var_type:
+                pre.append(self.var_type)
+            
+            post = []
+            # TODO: add post modifiers
 
-        for i, node in enumerate(self.children):
-            next = tee
+            line_content = f"{self.node_type}"
+            if pre:
+                line_content += f" {' '.join(pre)} {self.name}"
+            if post:
+                line_content += f" {' '.join(post)}"
+        else:
+            line_content = f"{self.node_type} {self.name}"
 
-            if type(node) == Token:
-                if i == len(self.children) - 1:
-                    for i in range(0, len(header), 3):
-                        header = header[0:i] + elbow + header[i+3:]
+        lines = []
+        if prefix == "":
+            lines.append(line_content)
+        else:
+            connector = "└── " if is_last else "├── "
+            lines.append(prefix + connector + line_content)
+        new_prefix = prefix + ("    " if is_last else "│   ")
+        childs = [child for child in self.children if child is not None]
+        for i, child in enumerate(childs):
+            is_last_child = i == (len(childs) - 1)
+            lines.append(child.tree(new_prefix, is_last_child))
+        return "\n".join(lines)
 
-                    next = elbow
+    def __str__(self, level: int = 0) -> str:
+        return self.tree()
 
-                tree_str += f"{header}{next}{node}\n"
-            else:
-                tree_str += node.__str__(header=header + pipe,
-                                         last=i == len(self.children) - 1)
-
-        return tree_str
+    def __repr__(self):
+        return self.__str__()
 
 
 class Parser:
@@ -99,191 +75,219 @@ class Parser:
         "input",
     ]
 
-    def __init__(self, tokens: list[Token], file: str = None, filename: str = None):
+    def __init__(self, tokens: list[Token], file: str, filename: str):
         self.tokens: list[Token] = tokens
 
-        self.ast = ASTNode([Token("ROOT", "ROOT", 0)])
+        self.current_token: Optional[Token] = self.tokens[0]
+
+        self.ast = ASTNode(NodeTypes.ROOT, None, "program", [], 0)
 
         self.file: str = file
         self.filename: str = filename
 
-        self.error_count = 0
+        self.errors: list[tuple[str, int, int]] = []
 
-    def error(self, text: str, token: Token = None):
+    def advance(self):
+        """Advance the current token to the next non-whitespace token."""
+        current_index = self.tokens.index(self.current_token)
+        new_index = current_index + 1
+        while new_index < len(self.tokens) and self.tokens[new_index].type == "IDENTIFIER" and self.tokens[new_index].value.strip() == "":
+            new_index += 1
+        self.current_token = self.tokens[new_index] if new_index < len(self.tokens) else None
+
+    def peek(self, offset: int = 1) -> Optional[Token]:
+        """Peek at the non-whitespace token at the given offset."""
+        count = 0
+        start_index = self.tokens.index(self.current_token) + 1
+        for token in self.tokens[start_index:]:
+            if token.type == "IDENTIFIER" and token.value.strip() == "":
+                continue
+            count += 1
+            if count == offset:
+                return token
+        return None
+
+    def consume(self, token_type: str) -> Optional[Token]:
+        """Consume the current token if it is of the given type."""
+        if self.current_token.type == token_type:
+            token = self.current_token
+            self.advance()
+            return token
+        return None
+
+    def expect(self, token_type: str) -> Optional[Token]:
+        """Expect the current token to be of the given type."""
+        if self.current_token.type == token_type:
+            token = self.current_token
+            self.advance()
+            return token
+        self.error(
+            f"Expected {token_type} but got {self.current_token.type}",
+            self.current_token,
+        )
+        return None
+
+    def error(self, text: str, token: Optional[Token] = None):
         if self.file is None or token is None:
             logging.error(text)
             return
 
-        line_num, column_num = get_line_and_coumn_from_index(
-            self.file, token.index)
+        line_num, column_num = get_line_and_coumn_from_index(self.file, token.index)
         line_text = get_line(self.file, line_num)
-        logging.error(text + f"\n> {line_text.strip()}\n" + " " * (
-            column_num + 2) + "^" + f"\n({self.filename}:{line_num}:{column_num})")
-        self.error_count += 1
+        logging.error(
+            text
+            + f"\n> {line_text.strip()}\n"
+            + " " * (column_num + 2)
+            + "^"
+            + f"\n({self.filename}:{line_num}:{column_num})"
+        )
+        self.errors.append((text, line_num, column_num))
+
+    def parse_expression(self):
+        """Parse an expression using additive operators."""
+        return self.parse_additive()
+
+    def parse_additive(self):
+        """Parse additive expressions (handles + and -)."""
+        node = self.parse_multiplicative()
+        while self.current_token and self.current_token.type in ("ADD", "SUBTRACT"):
+            op_token = self.current_token
+            self.advance()
+            right = self.parse_multiplicative()
+            node = ASTNode(
+                NodeTypes.BINARY_EXPRESSION,
+                op_token,
+                op_token.value,
+                [node, right],
+                op_token.index,
+            )
+        return node
+
+    def parse_multiplicative(self):
+        """Parse multiplicative expressions (handles *, /, and %)."""
+        node = self.parse_primary()
+        while self.current_token and self.current_token.type in (
+            "MULTIPLY",
+            "DIVIDE",
+            "MODULO",
+        ):
+            op_token = self.current_token
+            self.advance()
+            right = self.parse_primary()
+            node = ASTNode(
+                NodeTypes.BINARY_EXPRESSION,
+                op_token,
+                op_token.value,
+                [node, right],
+                op_token.index,
+            )
+        return node
+
+    def parse_primary(self):
+        """Parse primary expressions such as literals, identifiers, or a parenthesized expression."""
+        token = self.current_token
+        if token.type == "OPEN_PAREN":
+            # Grouping: ( expression )
+            self.advance()  # skip '('
+            expr = self.parse_expression()
+            if self.current_token.type != "CLOSE_PAREN":
+                self.error("Expected closing parenthesis", self.current_token)
+                return expr
+            self.advance()  # skip ')'
+            return expr
+        elif token.type in (
+            "BOOLEAN_LITERAL",
+            "INTEGER_LITERAL",
+            "DOUBLE_LITERAL",
+            "FLOAT_LITERAL",
+            "STRING_LITERAL",
+        ):
+            self.advance()
+            return ASTNode(NodeTypes.LITERAL, token, token.value, [], token.index)
+        else:
+            self.error(f"Unexpected token {token.type}", token)
+            self.advance()
+            return None
+
+    def parse_typed_variable_declaration(self):
+        logging.debug("Parsing typed variable declaration...")
+        is_nullable = False
+        is_const = False
+
+        # Process optional modifiers in any order.
+        while self.current_token and self.current_token.type in ("NULLABLE", "CONST"):
+            if self.current_token.type == "NULLABLE":
+                self.advance()
+                is_nullable = True
+            elif self.current_token.type == "CONST":
+                self.advance()
+                is_const = True
+
+        # Consume type keyword (e.g., int or double)
+        if self.current_token and self.current_token.type in ("INT", "FLOAT", "DOUBLE", "BOOL", "STRING", "TUPLE"):
+            type_token = self.consume(self.current_token.type)
+        else:
+            self.error("Expected type declaration", self.current_token)
+            return None
+
+        # Consume identifier (variable name)
+        identifier = self.consume("IDENTIFIER")
+        if identifier is None:
+            self.error("Expected identifier", self.current_token)
+            return None
+
+        # Consume assignment operator (ASSIGN)
+        assign_token = self.consume("ASSIGN")
+        if assign_token is None:
+            self.error("Expected assignment operator", self.current_token)
+            return None
+
+        # Parse expression for the variable initialization
+        value = self.parse_expression()
+        if value is None:
+            self.error(
+                "Expected expression after assignment operator", self.current_token
+            )
+            return None
+
+        # Consume semicolon to complete the declaration
+        semicolon_token = self.consume("SEMICOLON")
+        if semicolon_token is None:
+            self.error("Expected semicolon", self.current_token)
+            return None
+
+        # Create the AST node and attach modifier flags.
+        node = ASTNode(
+            NodeTypes.VARIABLE_DECLARATION,
+            identifier,
+            identifier.value,
+            [value],
+            identifier.index,
+            type_token.value,
+            is_nullable,
+            is_const,
+        )
+        return node
 
     def parse(self):
         logging.debug("Parsing tokens...")
-
-        index = 0
-
-        # Make sure all braces, brackets, parentheses and comments are closed
-
-        open_braces: list[Token] = []
-        open_brackets: list[Token] = []
-        open_parentheses: list[Token] = []
-        open_comments: list[Token] = []
-
-        for token in self.tokens:
-            if token.type == "OPEN_BRACE":
-                open_braces.append(token)
-            elif token.type == "CLOSE_BRACE":
-                if len(open_braces) == 0:
-                    self.error("Unexpected closing brace", token)
-                else:
-                    open_braces.pop()
-            elif token.type == "OPEN_BRACKET":
-                open_brackets.append(token)
-            elif token.type == "CLOSE_BRACKET":
-                if len(open_brackets) == 0:
-                    self.error("Unexpected closing bracket", token)
-                else:
-                    open_brackets.pop()
-            elif token.type == "OPEN_PAREN":
-                open_parentheses.append(token)
-            elif token.type == "CLOSE_PAREN":
-                if len(open_parentheses) == 0:
-                    self.error("Unexpected closing parenthesis", token)
-                else:
-                    open_parentheses.pop()
-            elif token.type == "MULTI_LINE_COMMENT_START":
-                open_comments.append(token)
-            elif token.type == "MULTI_LINE_COMMENT_END":
-                if len(open_comments) == 0:
-                    self.error("Unexpected multiline comment terminator", token)
-                else:
-                    open_comments.pop()
-
-        if len(open_braces) > 0:
-            self.error("Unclosed brace", open_braces[0])
-        if len(open_brackets) > 0:
-            self.error("Unclosed bracket", open_brackets[0])
-        if len(open_parentheses) > 0:
-            self.error("Unclosed parenthesis", open_parentheses[0])
-        if len(open_comments) > 0:
-            self.error("Unclosed multiline comment", open_comments[0])
-
-        self.working_node: ASTNode = self.ast
-        current_scope = self.ast
-        scope_stack: list[ASTNode] = []  # Stack to keep track of scopes
-
-        while index < len(self.tokens):
-            token = self.tokens[index]
-
-            if token.type == "OPEN_BRACE":
-                # Create a new scope
-                new_scope = ASTNode(parent=current_scope)
-                new_scope.add_child(token)
-                current_scope = current_scope.add_child(new_scope)
-                # Push the new scope to the stack
-                scope_stack.append(current_scope)
-                index += 1
-            elif token.type == "CLOSE_BRACE":
-                # Close the current scope
-                # Pop the previous scope from the stack
-                scope_stack[-1].children.pop(0)
-                current_scope = scope_stack.pop().parent
-                index += 1
+        while self.current_token:
+            if self.current_token.type in (
+                "INT",
+                "FLOAT",
+                "DOUBLE",
+                "BOOL",
+                "STRING",
+                "TUPLE",
+                "NULLABLE",
+                "CONST",
+            ):
+                node = self.parse_typed_variable_declaration()
+                if node is not None:
+                    self.ast.children.append(node)
             else:
-                # Add token to the current scope
-                current_scope.add_child(token)
-                index += 1
-
-        # Remove empty scopes
-        def remove_empty_scopes(scope: ASTNode):
-            for child in list(scope.children):  # Create a copy of children list for iteration
-                if isinstance(child, ASTNode):
-                    remove_empty_scopes(child)
-                    if len(child.children) == 0:
-                        child.self_destruct()
-
-        remove_empty_scopes(self.ast)
-
-        # Parse method declarations
-
-        def parse_method_declaration(scope: ASTNode):
-            method_start = -1
-
-            for i, child in enumerate(scope.children):
-                if isinstance(child, ASTNode):
-                    parse_method_declaration(child)
-                elif isinstance(child, Token):
-                    if len(scope.children) > 3:
-                        if scope.children[i].type in list(Lexer.types.keys()):
-                            if scope.children[i+1].type == "IDENTIFIER":
-                                if scope.children[i+2].type == "OPEN_PAREN":
-                                    if i > 0 and type(scope.children[i-1]) == ASTNode:
-                                        if scope.children[i-1].type == "NULLABLE":
-                                            method_start = i-1
-                                        else:
-                                            method_start = i
-                                    else:
-                                        method_start = i
-
-                                    logging.debug(f"Found method start at index {method_start}")
-
-                    # Parse method end
-                    if scope.children[i].type == "CLOSE_PAREN":
-                        if method_start != -1:
-                            method_end = i
-                            
-                            nullable = False
-                            return_type = ""
-                            method_name = ""
-                            
-                            if scope.children[method_start].type == "NULLABLE":
-                                nullable = True
-                                method_start += 1
-
-                            return_type = scope.children[method_start].type
-
-                            method_name = scope.children[method_start+1].value
-
-                            # Parse arguments
-
-                            # type, name
-                            args: list[tuple[str, str]] = []
-
-                            arg_start = method_start + 3
-
-                            while arg_start < method_end:
-                                arg_nullable = False
-                                if scope.children[arg_start].type == "NULLABLE":
-                                    arg_nullable = True
-                                    arg_start += 1
-
-                                arg_type = scope.children[arg_start].type
-                                arg_name = scope.children[arg_start+1].value
-
-                                args.append((arg_nullable, arg_type, arg_name))
-
-                                arg_start += 3
-
-                            logging.debug(nullable)
-                            method_signature = f"{"NULLABLE" if nullable else ""} {return_type} {method_name}"
-                            method_signature += f"({', '.join([f'{"NULLABLE" if arg_nullable else ""} {arg_type} {arg_name}' for arg_nullable, arg_type, arg_name in args])})"
-
-                            logging.debug(f"Found method declaration: {method_signature}")
-
-                            method_node = MethodNode(scope, method_name, args, return_type, nullable, scope.children[method_end + 1].children)
-
-                            scope.children[method_end + 1] = method_node
-
-                            method_start = -1
-
-        parse_method_declaration(self.ast)
-
-        if self.error_count > 0:
-            logging.error(f"Found {self.error_count} errors while parsing {self.filename}")
-            return None
-
+                self.error(
+                    f"Unexpected token {self.current_token.type}", self.current_token
+                )
+                self.advance()
         return self.ast

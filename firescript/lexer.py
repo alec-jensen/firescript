@@ -6,7 +6,7 @@ class Token:
     value: str
     index: int
 
-    def __init__(self, type: str = None, value: str = None, index: int = None):
+    def __init__(self, type: str, value: str, index: int) -> None:
         self.type = type
         self.value = value
         self.index = index
@@ -83,13 +83,12 @@ class Lexer:
     }
 
     literals: dict[str, str] = {
-        "BOOLEAN": r"true|false",
-        "NULL": r"null",
-        "INTEGER": r"(-?)[0-9]+",
-        "DOUBLE": r"(-?)[0-9]+.[0-9]+",
-        "FORMATTED_STRING": r"f\".*\"",
-        "STRING": r"\".*\"",
-        # "TUPLE": r"\((.*?,.*?)\)",
+        "BOOLEAN_LITERAL": r"true|false",
+        "NULL_LITERAL": r"null",
+        "FLOAT_LITERAL": r"(-?)[0-9]+\.[0-9]+f",
+        "DOUBLE_LITERAL": r"(-?)[0-9]+\.[0-9]+",
+        "INTEGER_LITERAL": r"(-?)[0-9]+",
+        "STRING_LITERAL": r"(?:[rfb](?!.*[rfb])){0,3}\".*\"",
     }
 
     comments: dict[str, str] = {
@@ -109,9 +108,8 @@ class Lexer:
         index = 0
 
         while index < len(self.file):
-            token = Token()
-            token.index = index
-
+            token = Token("", "", index)
+            # First, attempt matching any of the specific tokens.
             for token_type, regex in self.all_token_types.items():
                 match = re.match(regex, self.file[index:])
                 if match:
@@ -120,19 +118,17 @@ class Lexer:
                     index += len(token.value)
                     break
 
-            if token.type:
-                tokens.append(token)
-            else:
+            # If no specific token matched, fallback to identifier matching or single-character token.
+            if not token.type:
                 match = re.match(self.identifier, self.file[index:])
                 if match:
                     token.type = "IDENTIFIER"
                     token.value = match.group()
                     index += len(token.value)
-                    tokens.append(token)
-                elif self.file[index] == " " or self.file[index] == "\n":
-                    index += 1
                 else:
-                    logging.error(f"Invalid token: {self.file[index]}")
                     index += 1
+                    continue
+
+            tokens.append(token)
 
         return tokens
