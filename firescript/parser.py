@@ -17,15 +17,18 @@ class ASTNode:
         var_type: Optional[str] = None,
         is_nullable: bool = False,
         is_const: bool = False,
+        return_type: Optional[str] = None,
     ):
         self.node_type: NodeTypes = node_type
         self.token = token
         self.name = name
-        self.children = children or []
+        self.children: list[ASTNode] = children or []
         self.position = position
         self.is_nullable = is_nullable
         self.is_const = is_const
+        self.return_type: Optional[str] = return_type
         self.var_type = var_type
+        self.parent: Optional[ASTNode] = None
 
     def tree(self, prefix: str = "", is_last: bool = True) -> str:
         # Build the display line differently for variable declarations.
@@ -37,7 +40,7 @@ class ASTNode:
                 pre.append("const")
             if self.var_type:
                 pre.append(self.var_type)
-            
+
             post = []
             # TODO: add post modifiers
 
@@ -70,10 +73,10 @@ class ASTNode:
 
 
 class Parser:
-    builtin_functions: list[str] = [
-        "print",
-        "input",
-    ]
+    builtin_functions: dict[str, str] = {
+        "print": "void",
+        "input": "string",
+    }
 
     def __init__(self, tokens: list[Token], file: str, filename: str):
         self.tokens: list[Token] = tokens
@@ -89,14 +92,26 @@ class Parser:
 
     def advance(self):
         """Advance the current token to the next non-whitespace token."""
+        if self.current_token is None:
+            return
+
         current_index = self.tokens.index(self.current_token)
         new_index = current_index + 1
-        while new_index < len(self.tokens) and self.tokens[new_index].type == "IDENTIFIER" and self.tokens[new_index].value.strip() == "":
+        while (
+            new_index < len(self.tokens)
+            and self.tokens[new_index].type == "IDENTIFIER"
+            and self.tokens[new_index].value.strip() == ""
+        ):
             new_index += 1
-        self.current_token = self.tokens[new_index] if new_index < len(self.tokens) else None
+        self.current_token = (
+            self.tokens[new_index] if new_index < len(self.tokens) else None
+        )
 
     def peek(self, offset: int = 1) -> Optional[Token]:
         """Peek at the non-whitespace token at the given offset."""
+        if self.current_token is None:
+            return None
+
         count = 0
         start_index = self.tokens.index(self.current_token) + 1
         for token in self.tokens[start_index:]:
@@ -109,6 +124,9 @@ class Parser:
 
     def consume(self, token_type: str) -> Optional[Token]:
         """Consume the current token if it is of the given type."""
+        if self.current_token is None:
+            return None
+
         if self.current_token.type == token_type:
             token = self.current_token
             self.advance()
@@ -117,6 +135,9 @@ class Parser:
 
     def expect(self, token_type: str) -> Optional[Token]:
         """Expect the current token to be of the given type."""
+        if self.current_token is None:
+            return None
+
         if self.current_token.type == token_type:
             token = self.current_token
             self.advance()
@@ -137,7 +158,7 @@ class Parser:
         logging.error(
             text
             + f"\n> {line_text.strip()}\n"
-            + " " * (column_num + 2)
+            + " " * (column_num + 1)
             + "^"
             + f"\n({self.filename}:{line_num}:{column_num})"
         )
@@ -184,13 +205,13 @@ class Parser:
         return node
 
     def parse_primary(self):
-        """Parse primary expressions such as literals, identifiers, or a parenthesized expression."""
         token = self.current_token
+        if token is None:
+            return None
         if token.type == "OPEN_PAREN":
-            # Grouping: ( expression )
             self.advance()  # skip '('
             expr = self.parse_expression()
-            if self.current_token.type != "CLOSE_PAREN":
+            if not self.current_token or self.current_token.type != "CLOSE_PAREN":
                 self.error("Expected closing parenthesis", self.current_token)
                 return expr
             self.advance()  # skip ')'
@@ -201,19 +222,40 @@ class Parser:
             "DOUBLE_LITERAL",
             "FLOAT_LITERAL",
             "STRING_LITERAL",
+            "NULL_LITERAL",
         ):
             self.advance()
             return ASTNode(NodeTypes.LITERAL, token, token.value, [], token.index)
         elif token.type == "IDENTIFIER":
             self.advance()
-            return ASTNode(NodeTypes.IDENTIFIER, token, token.value, [], token.index)
+            node = ASTNode(NodeTypes.IDENTIFIER, token, token.value, [], token.index)
+            if self.current_token and self.current_token.type == "OPEN_PAREN":
+                # Process function call arguments
+                open_paren = self.consume("OPEN_PAREN")
+                arguments = []
+                if self.current_token and self.current_token.type != "CLOSE_PAREN":
+                    while True:
+                        arg = self.parse_expression()
+                        if arg:
+                            arguments.append(arg)
+                        if self.current_token and self.current_token.type == "COMMA":
+                            self.consume("COMMA")
+                            continue
+                        break
+                close_paren = self.consume("CLOSE_PAREN")
+                if not close_paren:
+                    self.error("Expected ')' after function arguments", token)
+                node = ASTNode(NodeTypes.FUNCTION_CALL, token, token.value, arguments, token.index)
+                if token.value in self.builtin_functions:
+                    node.return_type = self.builtin_functions[token.value]
+            return node
         else:
             self.error(f"Unexpected token {token.value}", token)
             self.advance()
             return None
 
-    def parse_typed_variable_declaration(self):
-        logging.debug("Parsing typed variable declaration...")
+    def parse_variable_declaration(self):
+        logging.debug("Parsing variable declaration...")
         is_nullable = False
         is_const = False
 
@@ -225,7 +267,14 @@ class Parser:
                 self.advance()
                 is_const = True
 
-        if self.current_token and self.current_token.type in ("INT", "FLOAT", "DOUBLE", "BOOL", "STRING", "TUPLE"):
+        if self.current_token and self.current_token.type in (
+            "INT",
+            "FLOAT",
+            "DOUBLE",
+            "BOOL",
+            "STRING",
+            "TUPLE",
+        ):
             type_token = self.consume(self.current_token.type)
         else:
             self.error("Expected type declaration", self.current_token)
@@ -246,14 +295,22 @@ class Parser:
 
         value = self.parse_expression()
         if value is None:
-            self.error("Expected expression after assignment operator", self.current_token)
+            self.error(
+                "Expected expression after assignment operator", self.current_token
+            )
             self._sync_to_semicolon()
             return None
 
-        semicolon_token = self.consume("SEMICOLON")
-        if semicolon_token is None:
-            self.error("Expected semicolon", self.current_token)
+        if type_token is None:
+            self.error("Expected type declaration", self.current_token)
+            self._sync_to_semicolon()
             return None
+
+        if type_token.type == "NULL_LITERAL" and not is_nullable:
+            self.error(f"Variable '{identifier.value}' is not nullable", identifier)
+            return None
+
+        # TODO: Check if var is already declared in the current scope or parent scopes
 
         node = ASTNode(
             NodeTypes.VARIABLE_DECLARATION,
@@ -266,7 +323,7 @@ class Parser:
             is_const,
         )
         return node
-    
+
     def parse_variable_assignment(self):
         logging.debug("Parsing variable assignment...")
         identifier = self.consume("IDENTIFIER")
@@ -283,13 +340,10 @@ class Parser:
 
         value = self.parse_expression()
         if value is None:
-            self.error("Expected expression after assignment operator", self.current_token)
+            self.error(
+                "Expected expression after assignment operator", self.current_token
+            )
             self._sync_to_semicolon()
-            return None
-
-        semicolon_token = self.consume("SEMICOLON")
-        if semicolon_token is None:
-            self.error("Expected semicolon", self.current_token)
             return None
 
         node = ASTNode(
@@ -300,17 +354,19 @@ class Parser:
             identifier.index,
         )
         return node
-    
+
     def parse_function_call(self):
         """Parse a function call: functionName(argument, ...)."""
         function_name_token = self.consume("IDENTIFIER")
         if function_name_token is None:
             self.error("Expected function name for function call", self.current_token)
+            self._sync_to_semicolon()
             return None
-        
+
         open_paren = self.consume("OPEN_PAREN")
         if open_paren is None:
             self.error("Expected '(' after function name", self.current_token)
+            self._sync_to_semicolon()
             return None
 
         arguments = []
@@ -327,55 +383,138 @@ class Parser:
         close_paren = self.consume("CLOSE_PAREN")
         if close_paren is None:
             self.error("Expected ')' after function arguments", self.current_token)
+            self._sync_to_semicolon()
             return None
 
-        return ASTNode(
-            NodeTypes.FUNCTION_CALL,  # Ensure NodeTypes.FUNCTION_CALL exists in your enums.
+        if function_name_token.value not in self.builtin_functions:
+            self.error(
+                f"Function '{function_name_token.value}' is not defined",
+                function_name_token,
+            )
+            return None
+
+        node = ASTNode(
+            NodeTypes.FUNCTION_CALL,
             function_name_token,
             function_name_token.value,
             arguments,
             function_name_token.index,
         )
-    
+
+        node.return_type = self.builtin_functions[function_name_token.value]
+
+        return node
+
     def _sync_to_semicolon(self):
         """Advance tokens until we reach a semicolon or run out of tokens."""
         while self.current_token and self.current_token.type != "SEMICOLON":
             self.advance()
         self.consume("SEMICOLON")
 
-    def parse(self):
-        logging.debug("Parsing tokens...")
-        while self.current_token:
-            if self.current_token.type in (
-                "INT",
-                "FLOAT",
-                "DOUBLE",
-                "BOOL",
-                "STRING",
-                "TUPLE",
-                "NULLABLE",
-                "CONST",
-            ):
-                node = self.parse_typed_variable_declaration()
-                if node is not None:
-                    self.ast.children.append(node)
-            elif self.current_token.type == "IDENTIFIER":
-                if self.peek().type == "ASSIGN":
-                    node = self.parse_variable_assignment()
-                    if node is not None:
-                        self.ast.children.append(node)
-                elif self.peek().type == "OPEN_PAREN":
-                    node = self.parse_function_call()
-                    if node is not None:
-                        self.ast.children.append(node)
-                else:
-                    self.error(
-                        f"Unexpected token '{self.current_token.value}'", self.current_token
-                    )
-                    self.advance()
+    def resolve_variable_types(self, node: ASTNode, current_scope=None):
+        """
+        Recursively traverse the AST to annotate Identifier nodes with the variable type.
+        """
+        if current_scope is None:
+            current_scope = {}
+
+        # When encountering a variable declaration, add the variable's type to the scope.
+        if node.node_type == NodeTypes.VARIABLE_DECLARATION:
+            current_scope[node.name] = node.var_type
+
+        # If this node is an Identifier, attempt to resolve its type from the current scope.
+        if node.node_type == NodeTypes.IDENTIFIER:
+            if node.name in current_scope:
+                node.var_type = current_scope[node.name]
+
+        # Traverse the children.
+        for child in node.children:
+            # For new scopes (like a block enclosed in braces), copy the current scope to avoid leaking variables.
+            if child.node_type == NodeTypes.SCOPE:
+                new_scope = current_scope.copy()
+                self.resolve_variable_types(child, new_scope)
+            else:
+                self.resolve_variable_types(child, current_scope)
+
+    def parse_statement(self):
+        """Parse a single statement."""
+        if self.current_token is None:
+            return None
+
+        if self.current_token.type == "OPEN_BRACE":
+            return self.parse_scope()
+        elif self.current_token.type in (
+            "INT",
+            "FLOAT",
+            "DOUBLE",
+            "BOOL",
+            "STRING",
+            "TUPLE",
+            "NULLABLE",
+            "CONST",
+        ):
+            return self.parse_variable_declaration()
+        elif self.current_token.type == "IDENTIFIER":
+            next_tok = self.peek()
+            if next_tok and next_tok.type == "ASSIGN":
+                return self.parse_variable_assignment()
+            elif next_tok and next_tok.type == "OPEN_PAREN":
+                return self.parse_function_call()
             else:
                 self.error(
-                    f"Unexpected token '{self.current_token.value}'", self.current_token
+                    f"Unexpected token '{self.current_token.value}' in statement",
+                    self.current_token,
                 )
                 self.advance()
+                return None
+        elif self.current_token.type == "SEMICOLON":
+            self.advance()
+            return None
+        else:
+            self.error(
+                f"Unrecognized statement starting with '{self.current_token.value}'",
+                self.current_token,
+            )
+            self.advance()
+            return None
+
+    def parse_scope(self):
+        logging.debug("Parsing scope...")
+
+        # Expect an opening brace for a new scope
+        open_brace = self.expect("OPEN_BRACE")
+        if open_brace is None:
+            self.error("Expected opening brace for scope", self.current_token)
+            self._sync_to_semicolon()
+            return None
+
+        # Use the open_brace token for the scope's position
+        scope_node = ASTNode(NodeTypes.SCOPE, open_brace, "scope", [], open_brace.index)
+
+        # Keep parsing statements until we reach the corresponding closing brace
+        while self.current_token and self.current_token.type != "CLOSE_BRACE":
+            statement = self.parse_statement()
+            if statement is not None:
+                statement.parent = scope_node
+                scope_node.children.append(statement)
+        # Consume the closing brace
+        end_brace = self.expect("CLOSE_BRACE")
+        if end_brace is None:
+            self.error("Expected closing brace for scope", self.current_token)
+            self._sync_to_semicolon()
+            return None
+
+        return scope_node
+
+    def parse(self):
+        logging.debug("Parsing tokens...")
+        # Top-level: parse until all tokens are consumed.
+        while self.current_token:
+            stmt = self.parse_statement()
+            if stmt is not None:
+                stmt.parent = self.ast
+                self.ast.children.append(stmt)
+
+        self.resolve_variable_types(self.ast)
+        
         return self.ast

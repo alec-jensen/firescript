@@ -73,6 +73,12 @@ g = 10; // now g is initialized and can be used
 int[] arr = {1, 2, 3, 4, 5}; // arrays can contain any type, and are mutable. fixed length
 int[] arr2 = new int[10]; // create an array of length 10
 
+// null, void, and other runtime constants
+
+// null is the default value for nullable variables
+// void is the return type of methods that do not return anything
+// true and false are the boolean constants
+
 // Variables can be nullable or non-nullable by adding the "nullable" keyword
 // By default, variables are non-nullable unless otherwise specified
 // This works for all types, including arrays
@@ -116,6 +122,27 @@ string rawByteString = rb"Hello, \n World"; // You can combine string prefixes
 string formattedRawByteString = rfb"Hello, {name} \n World"; // You can combine string prefixes
 
 // Logic structures
+
+// Scopes
+
+// Scopes are defined by curly braces
+
+{
+    // do something
+}
+
+// Variables declared inside a scope are only accessible inside that scope and any nested scopes
+
+{
+    int a = 10;
+
+    {
+        print(a); // This will print 10
+        int b = 20;
+    }
+
+    print(b); // This will throw an error
+}
 
 // If statements
 
@@ -183,6 +210,11 @@ while (true)
 }
 
 // Methods
+
+void printHello()
+{
+    print("Hello");
+}
 
 int add(int a, int b)
 {

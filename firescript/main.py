@@ -47,9 +47,13 @@ tokens = lexer.tokenize()
 newline = "\n"
 logging.debug(f"tokens:\n{newline.join([str(token) for token in tokens])}")
 
-parser = Parser(tokens, file, os.path.basename(args.file))
+parser = Parser(tokens, file, os.path.relpath(args.file))
 ast = parser.parse()
 logging.debug(f"ast:\n{ast}")
+
+if parser.errors != []:
+    logging.error("Compilation failed due to syntax errors")
+    sys.exit()
 
 compiled_location = None
 
@@ -70,14 +74,14 @@ if args.target == 'c':
     logging.info(f"Transpiled code written to {temp_file}")
     logging.info("Starting compilation of transpiled code...")
 
-    compile_command = f"gcc {temp_file} -o {temp_file[:-2]}"
+    compile_command = f"gcc -I . {temp_file} firescript/runtime/runtime.c -o {temp_file[:-2]}"
 
     process = subprocess.Popen(compile_command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     output, error = process.communicate()
 
     if error:
-        logging.error(f"Compilation failed:\n{error}")
+        logging.error(f"GCC failed with error:\n{error.decode()}")
         sys.exit()
 
     logging.debug(f"Compilation output:\n{output.decode()}")
@@ -88,9 +92,12 @@ if args.target == 'c':
         compiled_location = args.output
         logging.info(f"Binary written to {args.output}")
     else:
-        compiled_location = "".join(os.path.basename(args.file).split('.')[:-1])
-        os.rename(temp_file[:-2], compiled_location)
-        logging.info(f"Binary written to {compiled_location}")
+        compiled_location = os.path.splitext(os.path.basename(args.file))[0]
+        if not os.path.exists('output'):
+            os.mkdir('output')
+        output_path = os.path.join('output', compiled_location)
+        os.rename(temp_file[:-2], output_path)
+        logging.info(f"Binary written to {output_path}")
 else:
     logging.error(f"Unsupported target language: {args.target}")
     sys.exit()

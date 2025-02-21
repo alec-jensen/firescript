@@ -9,3 +9,4 @@ class NodeTypes(Enum):
     LITERAL = "Literal"
     IDENTIFIER = "Identifier"
     FUNCTION_CALL = "FunctionCall"
+    SCOPE = "Scope"

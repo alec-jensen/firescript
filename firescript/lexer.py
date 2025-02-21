@@ -86,6 +86,7 @@ class Lexer:
     literals: dict[str, str] = {
         "BOOLEAN_LITERAL": r"true|false",
         "NULL_LITERAL": r"null",
+        "VOID_LITERAL": r"void",
         "FLOAT_LITERAL": r"(-?)[0-9]+\.[0-9]+f",
         "DOUBLE_LITERAL": r"(-?)[0-9]+\.[0-9]+",
         "INTEGER_LITERAL": r"(-?)[0-9]+",
@@ -109,7 +110,7 @@ class Lexer:
         index = 0
 
         while index < len(self.file):
-            token = Token("", "", index)
+            token = Token("", "", index + 1)
             # First, attempt matching any of the specific tokens.
             for token_type, regex in self.all_token_types.items():
                 match = re.match(regex, self.file[index:])
