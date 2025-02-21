@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(description='Firescript compiler')
 
 parser.add_argument('-d', '--debug', action='store_true', help='Debug mode')
 parser.add_argument('-o', '--output', help='Output file')
-parser.add_argument('-t', '--target', choices=['c', 'web'], help='Target language for compilation. Default is C', default='c')
+parser.add_argument('-t', '--target', choices=['native', 'web'], help='Target language for compilation. Default is native', default='native')
 parser.add_argument('file', help='Input file')
 
 args = parser.parse_args()
@@ -57,7 +57,7 @@ if parser.errors != []:
 
 compiled_location = None
 
-if args.target == 'c':
+if args.target == 'native':
     from c_code_generator import CCodeGenerator
 
     generator = CCodeGenerator(ast)
@@ -99,5 +99,5 @@ if args.target == 'c':
         os.rename(temp_file[:-2], output_path)
         logging.info(f"Binary written to {output_path}")
 else:
-    logging.error(f"Unsupported target language: {args.target}")
+    logging.error(f"Unsupported target: {args.target}")
     sys.exit()
