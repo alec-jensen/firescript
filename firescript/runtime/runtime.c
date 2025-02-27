@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define MAX_INPUTS 1024
 
@@ -55,6 +56,10 @@ char *firescript_strcat(const char *s1, const char *s2) {
     return result;
 }
 
+bool firescript_strcmp(const char *s1, const char *s2) {
+    return strcmp(s1, s2) == 0;
+}
+
 void free_all_inputs(void) {
     for (int i = 0; i < input_count; i++) {
         free(input_registry[i]);
@@ -67,4 +72,9 @@ void free_all_strcat_results(void) {
         free(strcat_registry[i]);
     }
     strcat_count = 0;
+}
+
+void firescript_cleanup(void) {
+    free_all_inputs();
+    free_all_strcat_results();
 }

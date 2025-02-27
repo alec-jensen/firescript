@@ -165,8 +165,24 @@ class Parser:
         self.errors.append((text, line_num, column_num))
 
     def parse_expression(self):
-        """Parse an expression using additive operators."""
-        return self.parse_additive()
+        """Parse an expression using equality and additive operators."""
+        return self.parse_equality()
+
+    def parse_equality(self):
+        """Parse equality expressions (handles '==')."""
+        node = self.parse_additive()
+        while self.current_token and self.current_token.type == "EQUALS":
+            op_token = self.current_token
+            self.advance()
+            right = self.parse_additive()
+            node = ASTNode(
+                NodeTypes.EQUALITY_EXPRESSION,
+                op_token,
+                op_token.value,
+                [node, right],
+                op_token.index,
+            )
+        return node
 
     def parse_additive(self):
         """Parse additive expressions (handles + and -)."""
@@ -245,7 +261,9 @@ class Parser:
                 close_paren = self.consume("CLOSE_PAREN")
                 if not close_paren:
                     self.error("Expected ')' after function arguments", token)
-                node = ASTNode(NodeTypes.FUNCTION_CALL, token, token.value, arguments, token.index)
+                node = ASTNode(
+                    NodeTypes.FUNCTION_CALL, token, token.value, arguments, token.index
+                )
                 if token.value in self.builtin_functions:
                     node.return_type = self.builtin_functions[token.value]
             return node
@@ -467,9 +485,34 @@ class Parser:
                 )
                 self.advance()
                 return None
+        elif self.current_token.type == "IF":
+            return self.parse_if_chain()
+        elif self.current_token.type in ("ELIF", "ELSE"):
+            self.error(
+                f"Unexpected token '{self.current_token.value}' without preceding 'if'",
+                self.current_token,
+            )
+            self.advance()
+            return None
         elif self.current_token.type == "SEMICOLON":
             self.advance()
             return None
+        elif self.current_token.type == "WHILE":
+            return self.parse_while_statement()
+        elif self.current_token.type == "BREAK":
+            break_token = self.consume("BREAK")
+            if break_token is None:
+                self.error("Expected 'break' keyword", self.current_token)
+                return None
+            return ASTNode(NodeTypes.BREAK_STATEMENT, break_token, "break", [], 0)
+        elif self.current_token.type == "CONTINUE":
+            continue_token = self.consume("CONTINUE")
+            if continue_token is None:
+                self.error("Expected 'continue' keyword", self.current_token)
+                return None
+            return ASTNode(
+                NodeTypes.CONTINUE_STATEMENT, continue_token, "continue", [], 0
+            )
         else:
             self.error(
                 f"Unrecognized statement starting with '{self.current_token.value}'",
@@ -477,6 +520,110 @@ class Parser:
             )
             self.advance()
             return None
+
+    def parse_if_statement(self):
+        # Old implementation removed
+        return self.parse_if_chain()
+
+    def parse_if_chain(self):
+        if_node = self.parse_if_statement_no_chain()
+        if if_node is None:
+            return None
+        current = if_node
+        while self.current_token and self.current_token.type in ("ELIF", "ELSE"):
+            if self.current_token.type == "ELIF":
+                elif_node = self.parse_elif_statement_no_chain()
+                if elif_node is None:
+                    break
+                current.children.append(elif_node)
+                current = elif_node
+            elif self.current_token.type == "ELSE":
+                else_branch = self.parse_else_statement()
+                if else_branch is not None:
+                    current.children.append(else_branch)
+                break
+        return if_node
+
+    def parse_if_statement_no_chain(self):
+        if_token = self.consume("IF")
+        if if_token is None:
+            self.error("Expected 'if' keyword", self.current_token)
+            return None
+        open_paren = self.expect("OPEN_PAREN")
+        if open_paren is None:
+            return None
+        condition = self.parse_expression()
+        close_paren = self.expect("CLOSE_PAREN")
+        if close_paren is None:
+            return None
+        then_branch = self.parse_scope()
+        if then_branch is None:
+            return None
+        # Build if node without attaching else branch.
+        return ASTNode(
+            NodeTypes.IF_STATEMENT,
+            if_token,
+            "if",
+            [condition, then_branch],
+            if_token.index,
+        )
+
+    def parse_elif_statement_no_chain(self):
+        elif_token = self.consume("ELIF")
+        if elif_token is None:
+            self.error("Expected 'elif' keyword", self.current_token)
+            return None
+        open_paren = self.expect("OPEN_PAREN")
+        if open_paren is None:
+            return None
+        condition = self.parse_expression()
+        close_paren = self.expect("CLOSE_PAREN")
+        if close_paren is None:
+            return None
+        then_branch = self.parse_scope()
+        if then_branch is None:
+            return None
+        # Build elif node without handling following else.
+        return ASTNode(
+            NodeTypes.IF_STATEMENT,
+            elif_token,
+            "elif",
+            [condition, then_branch],
+            elif_token.index,
+        )
+
+    def parse_else_statement(self):
+        else_token = self.consume("ELSE")
+        if else_token is None:
+            self.error("Expected 'else' keyword", self.current_token)
+            return None
+        branch = self.parse_scope()
+        if branch is None:
+            return None
+        return branch
+
+    def parse_while_statement(self):
+        while_token = self.consume("WHILE")
+        if while_token is None:
+            self.error("Expected 'while' keyword", self.current_token)
+            return None
+        open_paren = self.expect("OPEN_PAREN")
+        if open_paren is None:
+            return None
+        condition = self.parse_expression()
+        close_paren = self.expect("CLOSE_PAREN")
+        if close_paren is None:
+            return None
+        body = self.parse_scope()
+        if body is None:
+            return None
+        return ASTNode(
+            NodeTypes.WHILE_STATEMENT,
+            while_token,
+            "while",
+            [condition, body],
+            while_token.index,
+        )
 
     def parse_scope(self):
         logging.debug("Parsing scope...")
@@ -494,7 +641,7 @@ class Parser:
         # Keep parsing statements until we reach the corresponding closing brace
         while self.current_token and self.current_token.type != "CLOSE_BRACE":
             statement = self.parse_statement()
-            if statement is not None:
+            if statement is not None and isinstance(statement, ASTNode):
                 statement.parent = scope_node
                 scope_node.children.append(statement)
         # Consume the closing brace
@@ -511,10 +658,17 @@ class Parser:
         # Top-level: parse until all tokens are consumed.
         while self.current_token:
             stmt = self.parse_statement()
-            if stmt is not None:
+            if stmt is None:
+                continue
+            # Flatten if a list of statements is returned.
+            if isinstance(stmt, list):
+                for s in stmt:
+                    s.parent = self.ast
+                    self.ast.children.append(s)
+            else:
                 stmt.parent = self.ast
                 self.ast.children.append(stmt)
 
         self.resolve_variable_types(self.ast)
-        
+
         return self.ast

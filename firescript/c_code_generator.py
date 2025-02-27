@@ -24,6 +24,7 @@ class CCodeGenerator:
         if body:
             indented_body = "\n".join("    " + line for line in body.split("\n"))
             main_code += f"{indented_body}\n"
+        main_code += "    firescript_cleanup();\n"
         main_code += "    return 0;\n"
         main_code += "}\n"
         return header + main_code
@@ -35,7 +36,7 @@ class CCodeGenerator:
         """
         code = self._visit(node)
         # Only add semicolon if the code doesn't already end with one
-        if code and not code.strip().endswith(";"):
+        if code and not code.strip().endswith(";") and not code.strip().endswith("}"):
             code += ";"
         return code
 
@@ -147,5 +148,46 @@ class CCodeGenerator:
             else:
                 args = ", ".join(self._visit(arg) for arg in node.children)
                 return f"{node.name}({args})"
+        elif node.node_type == NodeTypes.IF_STATEMENT:
+            # The first child is the condition, the second is the then-branch,
+            # and the optional third child is the else-branch.
+            condition_code = self._visit(node.children[0])
+            then_code = self._visit(node.children[1])
+            code = f"if ({condition_code}) {then_code}"
+            if len(node.children) > 2 and node.children[2]:
+                else_code = self._visit(node.children[2])
+                code += f" else {else_code}"
+            return code
+        elif node.node_type == NodeTypes.ELIF_STATEMENT:
+            # The first child is the condition, the second is the then-branch.
+            condition_code = self._visit(node.children[0])
+            then_code = self._visit(node.children[1])
+            code = f"else if ({condition_code}) {then_code}"
+            return code
+        elif node.node_type == NodeTypes.ELSE_STATEMENT:
+            # The only child is the else-branch.
+            return f"else {self._visit(node.children[0])}"
+        elif node.node_type == NodeTypes.EQUALITY_EXPRESSION:
+            leftNode = node.children[0]
+            rightNode = node.children[1]
+            left = self._visit(leftNode)
+            right = self._visit(rightNode)
+
+            if leftNode.token.type == "STRING_LITERAL" or leftNode.return_type == "string" or leftNode.var_type == "string":
+                if rightNode.token.type == "STRING_LITERAL" or rightNode.return_type == "string" or rightNode.var_type == "string":
+                    node.return_type = "bool"
+                    return f"firescript_strcmp({left}, {right})"
+                else:
+                    raise ValueError("temp: Cannot compare string with non-string type")
+            op = node.name
+            return f"({left} {op} {right})"
+        elif node.node_type == NodeTypes.WHILE_STATEMENT:
+            condition_code = self._visit(node.children[0])
+            body_code = self._visit(node.children[1])
+            return f"while ({condition_code}) {body_code}"
+        elif node.node_type == NodeTypes.BREAK_STATEMENT:
+            return "break"
+        elif node.node_type == NodeTypes.CONTINUE_STATEMENT:
+            return "continue"
         else:
             return ""

@@ -209,6 +209,11 @@ while (true)
     // do something
 }
 
+// Loop control statements
+
+// break - break out of the loop
+// continue - skip to the next iteration of the loop
+
 // Methods
 
 void printHello()

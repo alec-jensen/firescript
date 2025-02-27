@@ -1,3 +1,17 @@
-string inp = input("Enter a phrase: ");
+while (true) {
+    string inp = input("Run code? (y/n): ");
 
-print("You said: " + inp);
+    if (inp == "y")
+    {
+        print("Hello, World");
+    } elif (inp == "n")
+    {
+        print("Goodbye, World");
+        break;
+    } else
+    {
+        print("Invalid input");
+    }
+
+    print("end_of_loop");
+}
