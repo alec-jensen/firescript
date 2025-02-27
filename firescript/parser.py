@@ -76,6 +76,13 @@ class Parser:
     builtin_functions: dict[str, str] = {
         "print": "void",
         "input": "string",
+        "int": "T",
+        "float": "T",
+        "double": "T",
+        "bool": "T",
+        "string": "T",
+        "char": "T",
+        "typeof": "T"
     }
 
     def __init__(self, tokens: list[Token], file: str, filename: str):
@@ -169,19 +176,26 @@ class Parser:
         return self.parse_equality()
 
     def parse_equality(self):
-        """Parse equality expressions (handles '==')."""
+        """Parse equality and relational expressions (handles '==', '>', '<', etc)."""
         node = self.parse_additive()
-        while self.current_token and self.current_token.type == "EQUALS":
+        while self.current_token and self.current_token.type in (
+            "EQUALS",
+            "GREATER_THAN",
+            "LESS_THAN",
+            "GREATER_EQUALS",
+            "LESS_EQUALS",
+        ):
             op_token = self.current_token
             self.advance()
             right = self.parse_additive()
-            node = ASTNode(
-                NodeTypes.EQUALITY_EXPRESSION,
-                op_token,
-                op_token.value,
-                [node, right],
-                op_token.index,
-            )
+            if op_token.type == "EQUALS":
+                node = ASTNode(
+                    NodeTypes.EQUALITY_EXPRESSION, op_token, op_token.value, [node, right], op_token.index
+                )
+            else:
+                node = ASTNode(
+                    NodeTypes.RELATIONAL_EXPRESSION, op_token, op_token.value, [node, right], op_token.index
+                )
         return node
 
     def parse_additive(self):
@@ -459,7 +473,15 @@ class Parser:
         if self.current_token is None:
             return None
 
-        if self.current_token.type == "OPEN_BRACE":
+        if self.current_token.type == "SINGLE_LINE_COMMENT":
+            self.advance()
+            return None
+        elif self.current_token.type == "MULTI_LINE_COMMENT_START":
+            while self.current_token and self.current_token.type != "MULTI_LINE_COMMENT_END":
+                self.advance()
+            self.advance()
+            return None
+        elif self.current_token.type == "OPEN_BRACE":
             return self.parse_scope()
         elif self.current_token.type in (
             "INT",

@@ -60,21 +60,15 @@ bool firescript_strcmp(const char *s1, const char *s2) {
     return strcmp(s1, s2) == 0;
 }
 
-void free_all_inputs(void) {
+void free_all_registries(void) {
     for (int i = 0; i < input_count; i++) {
         free(input_registry[i]);
     }
-    input_count = 0;
-}
-
-void free_all_strcat_results(void) {
     for (int i = 0; i < strcat_count; i++) {
         free(strcat_registry[i]);
     }
-    strcat_count = 0;
 }
 
 void firescript_cleanup(void) {
-    free_all_inputs();
-    free_all_strcat_results();
+    free_all_registries();
 }

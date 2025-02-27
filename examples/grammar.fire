@@ -56,7 +56,7 @@ comment
 
 // Variables
 
-// Types are: [int, float, double, bool, string, char, tuple]
+// Types are: int, float, double, bool, string, char, tuple, T
 
 int a = 10;
 float b = 10.5;
@@ -64,6 +64,7 @@ double c = 10.5;
 bool d = true; // or false
 string e = "Hello";
 tuple<int, string> t = (10, "Hello");
+T f = 10; // T is a generic type
 
 int g; // variables can be declared without being initialized, but must be initialized before use.
 g = 10; // now g is initialized and can be used
@@ -120,6 +121,27 @@ byte[] byteString = b"Hello, World"; // Byte strings are arrays of bytes. They a
 string formattedRawString = rf"Hello, {name} \n World"; // You can combine string prefixes
 string rawByteString = rb"Hello, \n World"; // You can combine string prefixes
 string formattedRawByteString = rfb"Hello, {name} \n World"; // You can combine string prefixes
+
+// Type conversion
+// firescript provides some functions to convert between types
+// toInt(), toFloat(), toDouble(), toBool(), toString(), toChar()
+
+int a = toInt(10.5); // a will be 10
+float b = toFloat(10); // b will be 10.0
+double c = toDouble(10); // c will be 10.0
+bool d = toBool(0); // d will be false
+string e = toString(10); // e will be "10"
+char f = toChar("A"); // f will be 'A'
+
+int g = toInt("10"); // g will be 10
+float h = toFloat("10.5"); // h will be 10.5
+double i = toDouble("10.5"); // i will be 10.5
+bool j = toBool("true"); // j will be true
+char k = toChar("A"); // k will be 'A'
+
+// Type checking
+// firescript provides the typeof() function to check the type of a variable
+// This is useful for generic types
 
 // Logic structures
 

@@ -12,6 +12,7 @@ class NodeTypes(Enum):
     VARIABLE_ASSIGNMENT = "VariableAssignment"
     BINARY_EXPRESSION = "BinaryExpression"
     EQUALITY_EXPRESSION = "EqualityExpression"
+    RELATIONAL_EXPRESSION = "RelationalExpression"
     LITERAL = "Literal"
     IDENTIFIER = "Identifier"
     FUNCTION_CALL = "FunctionCall"

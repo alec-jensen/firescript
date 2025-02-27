@@ -18,7 +18,7 @@ class CCodeGenerator:
         self.symbol_table: dict[str, str] = {}
 
     def generate(self) -> str:
-        header = '#include <stdio.h>\n#include <stdbool.h>\n#include <string.h>\n#include "firescript/runtime/runtime.h"\n'
+        header = '#include <stdio.h>\n#include <stdbool.h>\n#include <string.h>\n#include "firescript/runtime/runtime.h"\n#include "firescript/runtime/conversions.h"\n'
         body = self._visit(self.ast)
         main_code = "int main(void) {\n"
         if body:
@@ -129,6 +129,8 @@ class CCodeGenerator:
                         statement = f'printf("%s\\n", {arg_code})'
                     elif arg.return_type == "bool":
                         statement = f'printf("%d\\n", {arg_code})'
+                    else:
+                        statement = f'printf("%d\\n", {arg_code})'
                 elif arg.node_type == NodeTypes.BINARY_EXPRESSION:
                     if arg.return_type == "int":
                         statement = f'printf("%d\\n", {arg_code})'
@@ -140,11 +142,25 @@ class CCodeGenerator:
                         statement = f'printf("%s\\n", {arg_code})'
                     elif arg.return_type == "bool":
                         statement = f'printf("%d\\n", {arg_code})'
+                    else:
+                        statement = f'printf("%d\\n", {arg_code})'
                 else:
                     statement = f'printf("%d\\n", {arg_code})'
                 return statement
             elif node.name == "input":
                 return f"firescript_input({self._visit(node.children[0])})"
+            elif node.name == "toInt":
+                return f"firescript_toInt({self._visit(node.children[0])})"
+            elif node.name == "toFloat":
+                return f"firescript_toFloat({self._visit(node.children[0])})"
+            elif node.name == "toDouble":
+                return f"firescript_toDouble({self._visit(node.children[0])})"
+            elif node.name == "toString":
+                return f"firescript_toString({self._visit(node.children[0])})"
+            elif node.name == "toChar":
+                return f"firescript_toChar({self._visit(node.children[0])})"
+            elif node.name == "toBool":
+                return f"firescript_toBool({self._visit(node.children[0])})"
             else:
                 args = ", ".join(self._visit(arg) for arg in node.children)
                 return f"{node.name}({args})"
@@ -189,5 +205,10 @@ class CCodeGenerator:
             return "break"
         elif node.node_type == NodeTypes.CONTINUE_STATEMENT:
             return "continue"
+        elif node.node_type == NodeTypes.RELATIONAL_EXPRESSION:
+            left = self._visit(node.children[0])
+            right = self._visit(node.children[1])
+            op = node.name
+            return f"({left} {op} {right})"
         else:
             return ""
