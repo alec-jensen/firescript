@@ -14,7 +14,7 @@ Firescript is a statically and strongly typed programming language that compiles
 
 ## Example
 
-```
+```firescript
 // Define a function that returns the nth Fibonacci number
 int fibonacci(int n) {
     if n <= 1 {
@@ -32,6 +32,7 @@ for (int i : range(9)) {
 ## Getting Started
 
 ### Prerequisites
+
 - GCC (or a compatible C compiler)
 - Python 3
 
@@ -61,6 +62,10 @@ python3 firescript/firescript.py program.fire
 # Execute the compiled program
 ./output/program
 ```
+
+## Documentation
+
+For detailed language feature guides, see the [documentation index](docs/README.md).
 
 ## Contributing
 

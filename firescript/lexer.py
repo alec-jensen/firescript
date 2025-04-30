@@ -90,7 +90,7 @@ class Lexer:
         "FLOAT_LITERAL": r"(-?)[0-9]+\.[0-9]+f",
         "DOUBLE_LITERAL": r"(-?)[0-9]+\.[0-9]+",
         "INTEGER_LITERAL": r"(-?)[0-9]+",
-        "STRING_LITERAL": r"(?:[rfb](?!.*[rfb])){0,3}\".*\"",
+        "STRING_LITERAL": r"(?:[rfb](?!.*[rfb])){0,3}\"(?:\\.|[^\\\"])*\"",
     }
 
     comments: dict[str, str] = {

@@ -1,14 +1,19 @@
-// Fibonacci to n numbers
+// arrays
 
-int n = toInt(input("Enter the number of Fibonacci numbers to generate: ")) + 1;
-int a = 0;
-int b = 1;
+string[] a = ["a", "b", "c"]
 
-while (n > 0)
-{
-    print(a);
-    int temp = a;
-    a = b;
-    b = temp + b;
-    n = n - 1;
-}
+print(a[0]) // a
+print(a[1]) // b
+print(a[2]) // c
+
+print(a.pop(0)) // a
+
+print(a)
+
+a.append("d")
+
+print(a)
+
+a.insert(0, "a")
+
+print(a)

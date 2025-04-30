@@ -74,7 +74,8 @@ if args.target == 'native':
     logging.info(f"Transpiled code written to {temp_file}")
     logging.info("Starting compilation of transpiled code...")
 
-    compile_command = f"gcc -I . {temp_file} firescript/runtime/runtime.c -o {temp_file[:-2]}"
+    # Update the compile command to include varray.c
+    compile_command = f"gcc -O -I . {temp_file} firescript/runtime/runtime.c firescript/runtime/varray.c -o {temp_file[:-2]}"
 
     process = subprocess.Popen(compile_command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 

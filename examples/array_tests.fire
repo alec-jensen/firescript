@@ -1,0 +1,86 @@
+// Array Operations Test Suite
+
+// Test 1: Array declaration and initialization
+print("Test 1: Array declaration and initialization");
+int[] numbers = [10, 20, 30, 40, 50];
+print(numbers);
+
+// Test 2: Array indexing (access)
+print("\nTest 2: Array indexing");
+print(numbers[0]);  // First element
+print(numbers[2]);  // Middle element
+print(numbers[4]);  // Last element
+
+// Test 3: Array pop() operation
+print("\nTest 3: Array pop() operation");
+print("Before pop:");
+print(numbers);
+print("Popped element:");
+print(numbers.pop(1));  // Pop element at index 1
+print("After pop:");
+print(numbers);
+print("Popped last element:");
+print(numbers.pop());   // Pop last element by default
+print("After pop last:");
+print(numbers);
+
+// Test 4: Array append() operation
+print("\nTest 4: Array append() operation");
+print("Before append:");
+print(numbers);
+numbers.append(60);
+print("After append 60:");
+print(numbers);
+numbers.append(70);
+print("After append 70:");
+print(numbers);
+
+// Test 5: Array insert() operation
+print("\nTest 5: Array insert() operation");
+print("Before insert:");
+print(numbers);
+numbers.insert(2, 35);  // Insert 35 at index 2
+print("After insert 35 at index 2:");
+print(numbers);
+numbers.insert(0, 5);   // Insert at beginning
+print("After insert 5 at beginning:");
+print(numbers);
+
+// Test 6: Array clear() operation
+print("\nTest 6: Array clear() operation");
+print("Before clear:");
+print(numbers);
+numbers.clear();
+print("After clear:");
+print(numbers);
+
+// Test 7: Empty array initialization and operations
+print("\nTest 7: Empty array operations");
+int[] empty = [];
+print("Empty array:");
+print(empty);
+empty.append(100);
+print("After append to empty array:");
+print(empty);
+
+// Test 8: Multiple operations in sequence
+print("\nTest 8: Multiple operations in sequence");
+int[] sequence = [1, 2, 3, 4, 5];
+print("Initial array:");
+print(sequence);
+sequence.pop(0);
+sequence.append(6);
+sequence.insert(1, 10);
+print("After pop(0), append(6), insert(1, 10):");
+print(sequence);
+
+// Test 9: Array size check
+print("\nTest 9: Array size");
+int[] sizeTest = [1, 2, 3, 4, 5];
+print("Array:");
+print(sizeTest);
+print("Size should be 5");
+// Size isn't fully implemented yet, so we won't test it here
+
+// End of tests
+print("\nAll array tests completed!");

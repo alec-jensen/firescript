@@ -18,6 +18,7 @@ class ASTNode:
         is_nullable: bool = False,
         is_const: bool = False,
         return_type: Optional[str] = None,
+        is_array: bool = False,  # Added is_array flag to track array types
     ):
         self.node_type: NodeTypes = node_type
         self.token = token
@@ -29,6 +30,7 @@ class ASTNode:
         self.return_type: Optional[str] = return_type
         self.var_type = var_type
         self.parent: Optional[ASTNode] = None
+        self.is_array = is_array  # True if this is an array type
 
     def tree(self, prefix: str = "", is_last: bool = True) -> str:
         # Build the display line differently for variable declarations.
@@ -246,6 +248,9 @@ class Parser:
                 return expr
             self.advance()  # skip ')'
             return expr
+        elif token.type == "OPEN_BRACKET":
+            # Parse an array literal [elem1, elem2, ...]
+            return self.parse_array_literal()
         elif token.type in (
             "BOOLEAN_LITERAL",
             "INTEGER_LITERAL",
@@ -259,7 +264,15 @@ class Parser:
         elif token.type == "IDENTIFIER":
             self.advance()
             node = ASTNode(NodeTypes.IDENTIFIER, token, token.value, [], token.index)
-            if self.current_token and self.current_token.type == "OPEN_PAREN":
+            
+            # Check if this is an array access (e.g., arr[0])
+            if self.current_token and self.current_token.type == "OPEN_BRACKET":
+                return self.parse_array_access(node)
+            # Check if this is a method call (e.g., arr.pop())
+            elif self.current_token and self.current_token.type == "DOT":
+                return self.parse_method_call(node)
+            # Check if this is a function call
+            elif self.current_token and self.current_token.type == "OPEN_PAREN":
                 # Process function call arguments
                 open_paren = self.consume("OPEN_PAREN")
                 arguments = []
@@ -285,11 +298,124 @@ class Parser:
             self.error(f"Unexpected token {token.value}", token)
             self.advance()
             return None
+            
+    def parse_array_literal(self):
+        """Parse an array literal expression like [1, 2, 3]"""
+        open_bracket = self.consume("OPEN_BRACKET")
+        if not open_bracket:
+            self.error("Expected '[' to start array literal", self.current_token)
+            return None
+        
+        elements = []
+        # Parse comma-separated expressions until closing bracket
+        if self.current_token and self.current_token.type != "CLOSE_BRACKET":
+            while True:
+                element = self.parse_expression()
+                if element:
+                    elements.append(element)
+                    
+                if self.current_token and self.current_token.type == "COMMA":
+                    self.consume("COMMA")
+                    continue
+                break
+                
+        close_bracket = self.consume("CLOSE_BRACKET")
+        if not close_bracket:
+            self.error("Expected ']' to end array literal", self.current_token)
+            return None
+            
+        return ASTNode(
+            NodeTypes.ARRAY_LITERAL,
+            open_bracket,
+            "array",
+            elements,
+            open_bracket.index
+        )
+        
+    def parse_array_access(self, array_node):
+        """Parse array access expression like arr[0]"""
+        open_bracket = self.consume("OPEN_BRACKET")
+        if not open_bracket:
+            self.error("Expected '[' for array access", self.current_token)
+            return None
+            
+        index_expr = self.parse_expression()
+        if not index_expr:
+            self.error("Expected expression for array index", self.current_token)
+            return None
+            
+        close_bracket = self.consume("CLOSE_BRACKET")
+        if not close_bracket:
+            self.error("Expected ']' to close array access", self.current_token)
+            return None
+            
+        return ASTNode(
+            NodeTypes.ARRAY_ACCESS,
+            open_bracket,
+            "arrayAccess",
+            [array_node, index_expr],
+            open_bracket.index
+        )
+        
+    def parse_method_call(self, object_node):
+        """Parse method call expression like arr.pop()"""
+        dot_token = self.consume("DOT")
+        if not dot_token:
+            self.error("Expected '.' for method call", self.current_token)
+            return None
+        
+        method_name = self.consume("IDENTIFIER")
+        if not method_name:
+            self.error("Expected method name after '.'", self.current_token)
+            return None
+        
+        open_paren = self.consume("OPEN_PAREN")
+        if not open_paren:
+            self.error("Expected '(' after method name", self.current_token)
+            return None
+        
+        arguments = []
+        if self.current_token and self.current_token.type != "CLOSE_PAREN":
+            while True:
+                arg = self.parse_expression()
+                if arg:
+                    arguments.append(arg)
+                if self.current_token and self.current_token.type == "COMMA":
+                    self.consume("COMMA")
+                    continue
+                break
+                
+        close_paren = self.consume("CLOSE_PAREN")
+        if not close_paren:
+            self.error("Expected ')' after method arguments", self.current_token)
+            return None
+        
+        # Create a node for the method call with the object as the first child
+        node = ASTNode(
+            NodeTypes.METHOD_CALL,
+            method_name,
+            method_name.value,
+            [object_node] + arguments,
+            method_name.index
+        )
+        # Set return type for array methods
+        if object_node.is_array:
+            elem_type = object_node.var_type
+            if method_name.value == "pop":
+                node.return_type = elem_type
+            elif method_name.value in ("append", "insert"):
+                node.return_type = elem_type + "[]"
+            elif method_name.value == "clear":
+                node.return_type = None
+            elif method_name.value in ("length", "size"):
+                node.return_type = "int"
+        return node
 
     def parse_variable_declaration(self):
         logging.debug("Parsing variable declaration...")
         is_nullable = False
         is_const = False
+        is_array = False
 
         while self.current_token and self.current_token.type in ("NULLABLE", "CONST"):
             if self.current_token.type == "NULLABLE":
@@ -308,6 +434,17 @@ class Parser:
             "TUPLE",
         ):
             type_token = self.consume(self.current_token.type)
+            
+            # Check for array type declaration (e.g., int[])
+            if self.current_token and self.current_token.type == "OPEN_BRACKET":
+                self.consume("OPEN_BRACKET")
+                if self.current_token and self.current_token.type == "CLOSE_BRACKET":
+                    self.consume("CLOSE_BRACKET")
+                    is_array = True
+                else:
+                    self.error("Expected ']' after '[' in array type declaration", self.current_token)
+                    self._sync_to_semicolon()
+                    return None
         else:
             self.error("Expected type declaration", self.current_token)
             self._sync_to_semicolon()
@@ -353,6 +490,8 @@ class Parser:
             type_token.value,
             is_nullable,
             is_const,
+            None,  # return_type
+            is_array,  # is_array flag
         )
         return node
 
@@ -500,6 +639,55 @@ class Parser:
                 return self.parse_variable_assignment()
             elif next_tok and next_tok.type == "OPEN_PAREN":
                 return self.parse_function_call()
+            elif next_tok and next_tok.type == "DOT":
+                # Handle method call statements like obj.method()
+                identifier_token = self.consume("IDENTIFIER")
+                dot_token = self.consume("DOT")
+                
+                # Now parse the method call
+                method_name = self.consume("IDENTIFIER")
+                if not method_name:
+                    self.error("Expected method name after '.'", self.current_token)
+                    self._sync_to_semicolon()
+                    return None
+                
+                open_paren = self.consume("OPEN_PAREN")
+                if not open_paren:
+                    self.error("Expected '(' after method name", self.current_token)
+                    self._sync_to_semicolon()
+                    return None
+                
+                arguments = []
+                if self.current_token and self.current_token.type != "CLOSE_PAREN":
+                    while True:
+                        arg = self.parse_expression()
+                        if arg:
+                            arguments.append(arg)
+                        if self.current_token and self.current_token.type == "COMMA":
+                            self.consume("COMMA")
+                            continue
+                        break
+                
+                close_paren = self.consume("CLOSE_PAREN")
+                if not close_paren:
+                    self.error("Expected ')' after method arguments", self.current_token)
+                    self._sync_to_semicolon()
+                    return None
+                
+                if identifier_token is None:
+                    self.error("Expected identifier before '.'", self.current_token)
+                    self._sync_to_semicolon()
+                    return None
+                
+                object_node = ASTNode(NodeTypes.IDENTIFIER, identifier_token, identifier_token.value, [], identifier_token.index)
+                
+                return ASTNode(
+                    NodeTypes.METHOD_CALL,
+                    method_name,
+                    method_name.value,
+                    [object_node] + arguments,
+                    method_name.index
+                )
             else:
                 self.error(
                     f"Unexpected token '{self.current_token.value}' in statement",

@@ -17,3 +17,6 @@ class NodeTypes(Enum):
     IDENTIFIER = "Identifier"
     FUNCTION_CALL = "FunctionCall"
     SCOPE = "Scope"
+    ARRAY_LITERAL = "ArrayLiteral"
+    ARRAY_ACCESS = "ArrayAccess"
+    METHOD_CALL = "MethodCall"

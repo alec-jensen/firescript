@@ -71,8 +71,60 @@ g = 10; // now g is initialized and can be used
 
 // Arrays
 
+// Arrays in firescript are different from other languages
+// They are very similar to Python's lists
+// They do not have a fixed size
+// They can not, however, contain different types than the type they are declared with
+
 int[] arr = {1, 2, 3, 4, 5}; // arrays can contain any type, and are mutable. fixed length
-int[] arr2 = new int[10]; // create an array of length 10
+int[] arr2 = new int[]; // create an array
+
+// Arrays can be accessed using the index operator
+arr[0] = 10; // set the first element to 10
+int firstElement = arr[0]; // get the first element
+
+// If the index is negative, it will start from the end of the array
+int lastElement = arr[-1]; // get the last element
+
+// Arrays can be sliced using the slice operator
+// [start:end:step]
+// start defaults to 0, end defaults to the length of the array, step defaults to 1
+// If start is negative, it will start from the end of the array
+// If end is negative, it will end from the end of the array
+int[] sliced = arr[0:2]; // get the first two elements
+int[] sliced2 = arr[2:]; // get all elements from the third element
+int[] sliced3 = arr[:2]; // get the first two elements
+int[] sliced4 = arr[0:2:2]; // get the first two elements with a step of 2
+int[] reversed = arr[::-1]; // reverse the array
+
+// Array methods
+
+// append - add an element to the end of the array
+arr.append(10);
+
+// insert - insert an element at a specific index
+arr.insert(0, 10);
+
+// remove - remove an element from the array
+arr.remove(10);
+
+// pop - remove an element at a specific index
+arr.pop(0);
+
+// clear - remove all elements from the array
+arr.clear();
+
+// length - get the length of the array
+int length = arr.length;
+
+// index - get the index of an element
+int index = arr.index(10);
+
+// count - count the number of occurrences of an element
+int count = arr.count(10);
+
+// sort - sort the array
+arr.sort();
 
 // null, void, and other runtime constants
 
