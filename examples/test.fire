@@ -9,7 +9,7 @@ if (globalVar > 5) {
     print(innerVar1); // Accessing current scope variable: OK (prints 20)
 }
 
-print(innerVar1); // ERROR: innerVar1 is not accessible here
+// print(innerVar1); // ERROR: innerVar1 is not accessible here
 
 {
     // Inner scope 2 (bare braces)
@@ -24,7 +24,7 @@ print(innerVar1); // ERROR: innerVar1 is not accessible here
         print(innerVar2); // OK (prints 30)
         print(innerVar3); // OK (prints 40)
     }
-    print(innerVar3); // ERROR: innerVar3 is not accessible here
+    // print(innerVar3); // ERROR: innerVar3 is not accessible here
 }
 
-print(innerVar2); // ERROR: innerVar2 is not accessible here
+// print(innerVar2); // ERROR: innerVar2 is not accessible here

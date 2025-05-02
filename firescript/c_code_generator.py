@@ -277,9 +277,16 @@ class CCodeGenerator:
                 # ...existing IDENTIFIER and ARRAY_ACCESS handling...
                 arg_code = self._visit(arg)
                 if arg.node_type == NodeTypes.IDENTIFIER:
-                    arg_type_info = self.symbol_table.get(arg_code, ("int", False))
-                    if arg_type_info[1]:  # is_array
-                        return f'firescript_print_array({arg_code}, "{arg_type_info[0]}")'
+                    arg_type, is_arr = self.symbol_table.get(arg_code, ("int", False))
+                    if is_arr:
+                        return f'firescript_print_array({arg_code}, "{arg_type}")'
+                    else:
+                        if arg_type in ("int", "bool"):
+                            return f'printf("%d\\n", {arg_code})'
+                        elif arg_type in ("float", "double"):
+                            return f'printf("%f\\n", {arg_code})'
+                        elif arg_type == "string":
+                            return f'printf("%s\\n", {arg_code})'
                 if arg.node_type == NodeTypes.ARRAY_ACCESS:
                     array_node = arg.children[0]
                     array_name = self._visit(array_node)

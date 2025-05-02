@@ -33,7 +33,7 @@ for (int i : range(9)) {
 
 ### Prerequisites
 
-- GCC (or a compatible C compiler)
+- C Compiler (GCC recommended, but any C compiler should work as long as it's location is in the CC environment variable)
 - Python 3
 
 ### Installation
