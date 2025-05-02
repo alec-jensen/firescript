@@ -8,7 +8,7 @@ from lexer import Lexer
 from parser import Parser
 from log_formatter import LogFormatter
 
-parser = argparse.ArgumentParser(description='Firescript compiler')
+parser = argparse.ArgumentParser(description='firescript compiler')
 
 parser.add_argument('-d', '--debug', action='store_true', help='Debug mode')
 parser.add_argument('-o', '--output', help='Output file')
@@ -52,7 +52,7 @@ ast = parser.parse()
 logging.debug(f"ast:\n{ast}")
 
 if parser.errors != []:
-    logging.error("Compilation failed due to syntax errors")
+    logging.error(f"Compilation failed with {len(parser.errors)} errors:")
     sys.exit()
 
 compiled_location = None

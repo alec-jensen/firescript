@@ -2,7 +2,7 @@
 
 **Note:** Tuple types, the generic placeholder `T`, and declarations without an initializer are not supported by the compiler. Only built-in primitive types (`int`, `float`, `double`, `bool`, `string`, `char`) are fully implemented.
 
-FireScript supports the following built-in types:
+firescript supports the following built-in types:
 
 - Numeric: `int`, `float`, `double`
 - Boolean: `bool` (`true`, `false`)

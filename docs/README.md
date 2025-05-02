@@ -1,8 +1,8 @@
-# FireScript v0.0.1 Documentation
+# firescript v0.1.1 Documentation
 
 **Note:** The current compiler does not support all language features. Unsupported features are explicitly marked in each guide with **Not yet implemented** or **Note**.
 
-This directory contains guides for FireScript language features. Each guide notes incomplete functionality with **Not yet implemented**.
+This directory contains guides for firescript language features. Each guide notes incomplete functionality with **Not yet implemented**.
 
 - [Types & Variables](variables.md)
 - [Arrays](arrays.md)

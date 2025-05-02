@@ -2,7 +2,7 @@
 
 **Note:** Only dynamic arrays with literal initialization and methods `append`, `insert`, `pop`, `clear`, and `length` are supported by the compiler. Array slicing, negative indices, and other utility methods are not implemented.
 
-FireScript supports dynamic arrays similar to Python lists.
+firescript supports dynamic arrays similar to Python lists.
 
 ## Declaration
 

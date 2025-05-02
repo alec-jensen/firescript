@@ -2,7 +2,7 @@
 
 **Note:** User-defined function definitions, methods on objects, optional or named parameters, variadic parameters, and function overloading are currently not supported by the compiler.
 
-FireScript supports both built-in and user-defined functions, as well as methods on objects and arrays.
+firescript supports both built-in and user-defined functions, as well as methods on objects and arrays.
 
 ## Built-in Functions
 

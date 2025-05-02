@@ -1,6 +1,6 @@
 [project]
 name = "firescript"
-version = "0.0.1"
+version = "0.1.1"
 description = "A strongly typed language that compiles natively or to JavaScript, allowing the language to be used almost anywhere."
 readme = "README.md"
 authors = [

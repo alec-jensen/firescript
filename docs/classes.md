@@ -2,7 +2,7 @@
 
 **Note:** Class definitions, inheritance, and methods are currently not supported by the compiler.
 
-FireScript provides class definitions, constructors, instance/static methods, and single inheritance.
+firescript provides class definitions, constructors, instance/static methods, and single inheritance.
 
 ## Defining a Class
 

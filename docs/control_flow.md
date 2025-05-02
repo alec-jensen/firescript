@@ -2,7 +2,7 @@
 
 **Note:** Only `if`/`else` chains and `while` loops are currently supported. C-style `for` loops, for-in loops, range loops, and the ternary operator are not supported by the compiler.
 
-FireScript supports structured control flow constructs.
+firescript supports structured control flow constructs.
 
 ## Conditional Statements
 

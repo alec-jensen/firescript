@@ -1,19 +1,30 @@
-// arrays
+// Global scope
 
-string[] a = ["a", "b", "c"]
+int globalVar = 10;
 
-print(a[0]) // a
-print(a[1]) // b
-print(a[2]) // c
+if (globalVar > 5) {
+    // Inner scope 1 (if body)
+    int innerVar1 = 20;
+    print(globalVar); // Accessing outer scope variable: OK (prints 10)
+    print(innerVar1); // Accessing current scope variable: OK (prints 20)
+}
 
-print(a.pop(0)) // a
+print(innerVar1); // ERROR: innerVar1 is not accessible here
 
-print(a)
+{
+    // Inner scope 2 (bare braces)
+    int innerVar2 = 30;
+    print(globalVar); // Accessing outer scope variable: OK (prints 10)
+    print(innerVar2); // Accessing current scope variable: OK (prints 30)
 
-a.append("d")
+    if (true) {
+        // Inner scope 3 (nested if body)
+        int innerVar3 = 40;
+        print(globalVar); // OK (prints 10)
+        print(innerVar2); // OK (prints 30)
+        print(innerVar3); // OK (prints 40)
+    }
+    print(innerVar3); // ERROR: innerVar3 is not accessible here
+}
 
-print(a)
-
-a.insert(0, "a")
-
-print(a)
+print(innerVar2); // ERROR: innerVar2 is not accessible here

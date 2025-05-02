@@ -1,8 +1,8 @@
 # firescript
 
-Firescript is a statically and strongly typed programming language that compiles natively or to JavaScript. It is designed to be simple, powerful, and easy to learn while remaining expressive for advanced applications.
+firescript is a statically and strongly typed programming language that compiles natively or to JavaScript. It is designed to be simple, powerful, and easy to learn while remaining expressive for advanced applications.
 
-*Disclaimer: Firescript is currently in development and is not yet feature-complete. The language and compiler are subject to change. Not everything described in this document is implemented or working.*
+*Disclaimer: firescript is currently in development and is not yet feature-complete. The language and compiler are subject to change. Not everything described in this document is implemented or working.*
 
 ## Features
 
@@ -56,7 +56,7 @@ cd firescript
 ### Compiling and Running a Program
 
 ```bash
-# Compile a Firescript program
+# Compile a firescript program
 python3 firescript/firescript.py program.fire
 
 # Execute the compiled program
@@ -73,4 +73,4 @@ Contributions are welcome! Please open an issue or submit a pull request on [Git
 
 ## License
 
-Firescript is released under the MIT License. See [LICENSE](LICENSE) for details.
+firescript is released under the MIT License. See [LICENSE](LICENSE) for details.

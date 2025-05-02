@@ -2,7 +2,7 @@
 from enums import NodeTypes  # [firescript/enums.py]
 from parser import ASTNode  # [firescript/parser.py]
 
-# A simple type mapping from Firescript types to C types.
+# A simple type mapping from firescript types to C types.
 FIRETYPE_TO_C: dict[str, str] = {
     "int": "int",
     "float": "float",
