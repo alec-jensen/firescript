@@ -1,0 +1,21 @@
+site_name: firescript
+repo_url: https://github.com/alec-jensen/firescript
+repo_name: alec-jensen/firescript
+docs_dir: docs
+site_dir: site
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+nav:
+  - Home: README.md
+  - Types & Variables: variables.md
+  - Arrays: arrays.md
+  - Control Flow: control_flow.md
+  - Functions & Methods: functions.md
+  - Classes & Inheritance: classes.md
