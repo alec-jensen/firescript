@@ -1,0 +1,1 @@
+The project name is "firescript", all lowercase. Do not capitalize it.

@@ -40,13 +40,13 @@ for (int i : range(9)) {
 
 ```bash
 # Debian/Ubuntu
-sudo apt-get install gcc python3
+sudo apt-get install gcc python3 libgmp-dev
 
 # Fedora/RHEL/CentOS
-sudo dnf install gcc python3
+sudo dnf install gcc python3 gmp-devel
 
 # Arch/Manjaro
-sudo pacman -S gcc python3
+sudo pacman -S gcc python3 gmp
 
 # Clone the repository
 git clone https://github.com/alec-jensen/firescript.git
@@ -65,7 +65,7 @@ python3 firescript/firescript.py program.fire
 
 ## Documentation
 
-For detailed language feature guides, see the [documentation index](docs/README.md).
+Full documentation is available at: [https://alec-jensen.github.io/firescript/](https://alec-jensen.github.io/firescript/)
 
 ## Contributing
 

@@ -1,0 +1,1 @@
+intx=1;x+=2;print(x);inti=0;while(i<10){x+=i;i++;print(x);}

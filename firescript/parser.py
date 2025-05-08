@@ -7,31 +7,38 @@ from enums import NodeTypes
 
 
 class ASTNode:
-    def __init__(
-        self,
-        node_type: NodeTypes,
-        token: Optional[Token],
-        name,
-        children,
-        position,
-        var_type: Optional[str] = None,
-        is_nullable: bool = False,
-        is_const: bool = False,
-        return_type: Optional[str] = None,
-        is_array: bool = False,  # Added is_array flag to track array types
-    ):
+    def __init__(self,
+                 node_type: NodeTypes,
+                 token: Optional[Token],
+                 name: str,
+                 children: list['ASTNode'],
+                 index: int,
+                 var_type: Optional[str] = None,
+                 is_nullable: bool = False,
+                 is_const: bool = False,
+                 return_type: Optional[str] = None,
+                 is_array: bool = False,
+                 is_ref_counted: bool = False):
         self.node_type: NodeTypes = node_type
-        self.token = token
-        self.name = name
-        self.children: list[ASTNode] = children or []
-        self.position = position
-        self.is_nullable = is_nullable
-        self.is_const = is_const
+        self.token: Optional[Token] = token
+        self.name: str = name
+        
+        # Strict check: ensure no None children are passed by callers.
+        if any(child is None for child in children):
+            logging.error(f"ASTNode constructor received None in children. Node: {node_type} {name}, Children: {children}")
+            raise ValueError("ASTNode constructor received None in children list. This indicates a bug in a parser rule.")
+        
+        self.children: list[ASTNode] = children
+        
+        self.index: int = index
+        self.var_type: Optional[str] = var_type
+        self.is_nullable: bool = is_nullable
+        self.is_const: bool = is_const
         self.return_type: Optional[str] = return_type
-        self.var_type = var_type
-        self.parent: Optional[ASTNode] = None
-        self.is_array = is_array  # True if this is an array type
-
+        self.is_array: bool = is_array
+        self.is_ref_counted: bool = is_ref_counted
+        self.parent: Optional[ASTNode] = None # Parent is typically set externally
+    
     def tree(self, prefix: str = "", is_last: bool = True) -> str:
         # Build the display line differently for variable declarations.
         if self.node_type == NodeTypes.VARIABLE_DECLARATION:
@@ -78,13 +85,13 @@ class Parser:
     builtin_functions: dict[str, str] = {
         "print": "void",
         "input": "string",
-        "int": "T",
-        "float": "T",
-        "double": "T",
-        "bool": "T",
-        "string": "T",
-        "char": "T",
-        "typeof": "T"
+        "int": "int",
+        "float": "float",
+        "double": "double",
+        "bool": "bool",
+        "string": "string",
+        "char": "char",
+        "typeof": "string"
     }
 
     def __init__(self, tokens: list[Token], file: str, filename: str):
@@ -180,16 +187,25 @@ class Parser:
     def parse_equality(self):
         """Parse equality and relational expressions (handles '==', '>', '<', etc)."""
         node = self.parse_additive()
+        if node is None: # If LHS is not parsable
+            return None
+
+        # Handle ==, >, <, >=, <=
         while self.current_token and self.current_token.type in (
             "EQUALS",
             "GREATER_THAN",
             "LESS_THAN",
-            "GREATER_EQUALS",
-            "LESS_EQUALS",
+            "GREATER_THAN_OR_EQUAL",
+            "LESS_THAN_OR_EQUAL",
         ):
             op_token = self.current_token
             self.advance()
             right = self.parse_additive()
+            if right is None: # If RHS is not parsable
+                # Error already logged by parse_additive or its children.
+                return None # Propagate failure.
+
+            # Both node and right are valid ASTNodes here.
             if op_token.type == "EQUALS":
                 node = ASTNode(
                     NodeTypes.EQUALITY_EXPRESSION, op_token, op_token.value, [node, right], op_token.index
@@ -203,10 +219,18 @@ class Parser:
     def parse_additive(self):
         """Parse additive expressions (handles + and -)."""
         node = self.parse_multiplicative()
+        if node is None: # If LHS is not parsable
+            return None
+
         while self.current_token and self.current_token.type in ("ADD", "SUBTRACT"):
             op_token = self.current_token
             self.advance()
             right = self.parse_multiplicative()
+            if right is None: # If RHS is not parsable
+                # Error already logged by parse_multiplicative or its children.
+                return None # Propagate failure.
+
+            # Both node and right are valid ASTNodes here.
             node = ASTNode(
                 NodeTypes.BINARY_EXPRESSION,
                 op_token,
@@ -219,6 +243,9 @@ class Parser:
     def parse_multiplicative(self):
         """Parse multiplicative expressions (handles *, /, and %)."""
         node = self.parse_primary()
+        if node is None: # If LHS is not parsable
+            return None
+
         while self.current_token and self.current_token.type in (
             "MULTIPLY",
             "DIVIDE",
@@ -227,6 +254,11 @@ class Parser:
             op_token = self.current_token
             self.advance()
             right = self.parse_primary()
+            if right is None: # If RHS is not parsable
+                # Error already logged by parse_primary.
+                return None # Propagate failure.
+            
+            # Both node and right are valid ASTNodes here.
             node = ASTNode(
                 NodeTypes.BINARY_EXPRESSION,
                 op_token,
@@ -261,7 +293,7 @@ class Parser:
         ):
             self.advance()
             return ASTNode(NodeTypes.LITERAL, token, token.value, [], token.index)
-        elif token.type == "IDENTIFIER":
+        elif token.type == "IDENTIFIER" or token.value in self.builtin_functions:
             self.advance()
             node = ASTNode(NodeTypes.IDENTIFIER, token, token.value, [], token.index)
             
@@ -411,6 +443,83 @@ class Parser:
                 node.return_type = "int"
         return node
 
+    def parse_if_statement(self):
+        """Parse an if (...) { ... } statement, including optional else or elif."""
+        if_token = self.consume("IF")
+        if not if_token:
+            return None
+
+        if not self.consume("OPEN_PAREN"):
+            self.error("Expected '(' after 'if'", self.current_token or if_token)
+            return None 
+
+        condition = self.parse_expression()
+        if condition is None:
+            # Error for invalid condition already logged by parse_expression or sub-parser.
+            if self.current_token and self.current_token.type == "CLOSE_PAREN":
+                self.consume("CLOSE_PAREN")
+            return None # IF statement parsing failed due to invalid condition.
+
+        if not self.consume("CLOSE_PAREN"):
+            self.error("Expected ')' after if condition", self.current_token or condition.token)
+            return None 
+
+        # 'condition' is a valid ASTNode here.
+        
+        then_branch_node: Optional[ASTNode] = None
+        expected_then_body_token = self.current_token or condition.token 
+
+        if self.current_token and self.current_token.type == "OPEN_BRACE":
+            then_branch_node = self.parse_scope() 
+            if then_branch_node is None:
+                self.error("Invalid 'then' block (scope) for if statement", expected_then_body_token)
+                return None 
+        else:
+            then_stmt = self._parse_statement()
+            then_children = [then_stmt] if then_stmt else []
+            
+            scope_token_for_then = then_stmt.token if then_stmt else expected_then_body_token
+            scope_index_for_then = then_stmt.index if then_stmt else (expected_then_body_token.index if expected_then_body_token else if_token.index)
+
+            then_branch_node = ASTNode(NodeTypes.SCOPE, scope_token_for_then, "scope_then", then_children, scope_index_for_then)
+            if then_stmt: then_stmt.parent = then_branch_node
+        
+        # then_branch_node is now a valid ASTNode.
+        children_for_if = [condition, then_branch_node] 
+        
+        if self.current_token and self.current_token.type == "ELSE":
+            else_keyword_token = self.consume("ELSE") 
+            
+            else_or_elif_node: Optional[ASTNode] = None
+            expected_else_body_token = self.current_token or else_keyword_token
+
+            if self.current_token and self.current_token.type == "IF": # 'elif'
+                else_or_elif_node = self.parse_if_statement() 
+                if else_or_elif_node is None:
+                    # Error logged by recursive call or if it returns None without specific error for 'elif' context
+                    self.error("Invalid 'elif' structure following 'else'", self.current_token or else_keyword_token)
+            else: # 'else' block
+                if self.current_token and self.current_token.type == "OPEN_BRACE":
+                    parsed_else_scope = self.parse_scope()
+                    if parsed_else_scope is None:
+                        self.error("Invalid 'else' block (scope)", expected_else_body_token)
+                    else:
+                        else_or_elif_node = parsed_else_scope
+                else:
+                    else_stmt = self._parse_statement()
+                    else_children = [else_stmt] if else_stmt else []
+                    
+                    scope_token_for_else = else_stmt.token if else_stmt else expected_else_body_token
+                    scope_index_for_else = else_stmt.index if else_stmt else (expected_else_body_token.index if expected_else_body_token else (else_keyword_token.index if else_keyword_token else 0) )
+
+                    else_or_elif_node = ASTNode(NodeTypes.SCOPE, scope_token_for_else, "scope_else", else_children, scope_index_for_else)
+                    if else_stmt: else_stmt.parent = else_or_elif_node
+            
+            if else_or_elif_node: 
+                children_for_if.append(else_or_elif_node)
+
+        return ASTNode(NodeTypes.IF_STATEMENT, if_token, "if", children_for_if, if_token.index)
+
     def parse_variable_declaration(self):
         is_nullable = False
         is_const = False
@@ -491,6 +600,7 @@ class Parser:
             is_const,
             None,  # return_type
             is_array,  # is_array flag
+            is_ref_counted=True if type_token.value in ("string", "array") else False,  # Mark as ref-counted
         )
         return node
 
@@ -521,6 +631,7 @@ class Parser:
             identifier.value,
             [value],
             identifier.index,
+            is_ref_counted=True,  # Mark assignments as ref-counted
         )
         return node
 
@@ -954,6 +1065,9 @@ class Parser:
 
     def _parse_statement(self):
         """Determine the kind of statement and parse it."""
+        # Handle while loops
+        if self.current_token and self.current_token.type == "WHILE":
+            return self.parse_while_statement()
         # Skip comments in statements
         if self.current_token and self.current_token.type in ("SINGLE_LINE_COMMENT", "MULTI_LINE_COMMENT_START"):
             self._skip_comment()
@@ -973,65 +1087,79 @@ class Parser:
         token_type = self.current_token.type
         next_token = self.peek()
 
+        # Special case for when 'int' is immediately followed by a variable name without whitespace
+        # This handles cases like 'intx=4' which should be parsed as 'int x = 4'
+        if token_type == "INT" and next_token and next_token.type == "IDENTIFIER":
+            # Handle as a variable declaration
+            return self.parse_variable_declaration()
+        
         # Variable Declaration (e.g., int x = ...)
         if token_type in ("INT", "FLOAT", "DOUBLE", "BOOL", "STRING", "TUPLE", "NULLABLE", "CONST"):
             return self.parse_variable_declaration()
+        
+        # Compound Assignment (e.g., x += y)
+        elif token_type == "IDENTIFIER" and next_token and next_token.type in (
+            "ADD_ASSIGN", "SUBTRACT_ASSIGN", "MULTIPLY_ASSIGN", "DIVIDE_ASSIGN", "MODULO_ASSIGN"
+        ):
+            return self.parse_compound_assignment()
+
+        # Increment/Decrement (e.g., x++, x--)
+        elif token_type == "IDENTIFIER" and next_token and next_token.type in (
+            "INCREMENT", "DECREMENT"
+        ):
+            return self.parse_increment_or_decrement()
         
         # Variable Assignment (e.g., x = ...) or Function Call (e.g., print(...))
         elif token_type == "IDENTIFIER":
             if next_token and next_token.type == "ASSIGN":
                 return self.parse_variable_assignment()
             elif next_token and next_token.type == "OPEN_PAREN":
-                 # Could be a standalone function call statement
-                 return self.parse_function_call()
+                # Could be a standalone function call statement
+                return self.parse_function_call()
             elif next_token and next_token.type == "DOT":
-                 # Could be a method call used as a statement (e.g., list.clear();)
-                 # Need to parse the primary expression which handles method calls
-                 expr = self.parse_primary()
-                 # If it parsed successfully as a method call, return it.
-                 # Otherwise, it might be just an identifier (which isn't a valid statement alone)
-                 # or an error occurred during parsing.
-                 if expr and expr.node_type == NodeTypes.METHOD_CALL:
-                     return expr
-                 else:
-                     # If it wasn't a method call, it's likely an error or just an expression
-                     # not allowed as a standalone statement here.
-                     self.error("Expected assignment, function call, or method call", self.current_token)
-                     self.advance() # Consume the identifier to avoid loops
-                     return None
+                # Could be a method call used as a statement (e.g., list.clear();)
+                # Need to parse the primary expression which handles method calls
+                expr = self.parse_primary()
+                # If it parsed successfully as a method call, return it.
+                # Otherwise, it might be just an identifier (which isn't a valid statement alone)
+                # or an error occurred during parsing.
+                if expr and expr.node_type == NodeTypes.METHOD_CALL:
+                    return expr
+                else:
+                    # If it wasn't a method call, it's likely an error or just an expression
+                    # not allowed as a standalone statement here.
+                    self.error("Expected assignment, function call, or method call", self.current_token)
+                    self.advance() # Consume the identifier to avoid loops
+                    return None
             elif next_token and next_token.type == "OPEN_BRACKET":
-                 # Could be an array access followed by assignment (arr[0] = ...)
-                 # This case needs careful handling. Let's parse it as an expression first.
-                 expr = self.parse_expression()
-                 # Check if the *next* token after the expression is ASSIGN
-                 if self.current_token and self.current_token.type == "ASSIGN":
-                     # This looks like an assignment to an array element or similar complex l-value
-                     # We need a specific parsing function for this kind of assignment.
-                     # For now, let's report an error as it's not fully handled.
-                     # TODO: Implement parse_assignment_statement that handles complex l-values
-                     self.error("Assignment to complex expression not yet fully supported", self.current_token)
-                     self._sync_to_semicolon()
-                     return None
-                 else:
-                     # If it's not followed by assignment, it might be an expression used as a statement.
-                     # Depending on the language rules, this might be allowed or an error.
-                     # For now, let's assume expressions as statements are errors unless they are function/method calls.
-                     self.error("Expression result unused; only function/method calls allowed as statements", self.current_token)
-                     # We already parsed the expression, so we might need to sync
-                     self._sync_to_semicolon()
-                     return None
+                # Could be an array access followed by assignment (arr[0] = ...)
+                # This case needs careful handling. Let's parse it as an expression first.
+                expr = self.parse_expression()
+                # Check if the *next* token after the expression is ASSIGN
+                if self.current_token and self.current_token.type == "ASSIGN":
+                    # This looks like an assignment to an array element or similar complex l-value
+                    # We need a specific parsing function for this kind of assignment.
+                    # For now, let's report an error as it's not fully handled.
+                    # TODO: Implement parse_assignment_statement that handles complex l-values
+                    self.error("Assignment to complex expression not yet fully supported", self.current_token)
+                    self._sync_to_semicolon()
+                    return None
+                else:
+                    # If it's not followed by assignment, it might be an expression used as a statement.
+                    # Depending on the language rules, this might be allowed or an error.
+                    # For now, let's assume expressions as statements are errors unless they are function/method calls.
+                    self.error("Expression result unused; only function/method calls allowed as statements", self.current_token)
+                    # We already parsed the expression, so we might need to sync
+                    self._sync_to_semicolon()
+                    return None
 
             else:
                 # Just an identifier - not a valid statement start
                 self.error("Expected assignment or function call", self.current_token)
                 self.advance() # Consume the identifier
                 return None
-        
-        # Other statement types (if, while, etc.) would go here
-        # elif token_type == "IF":
-        #     return self.parse_if_statement()
-        # elif token_type == "WHILE":
-        #     return self.parse_while_statement()
+
+        # Other statement types would go here
 
         else:
             # If it's none of the above, it's likely an expression used as a statement,
@@ -1039,22 +1167,22 @@ class Parser:
             # Try parsing as a general expression first.
             expr = self.parse_expression()
             if expr:
-                 # Check if the parsed expression is a function or method call, which are often allowed as statements.
-                 if expr.node_type in (NodeTypes.FUNCTION_CALL, NodeTypes.METHOD_CALL):
-                     return expr
-                 else:
-                     # Otherwise, it's an expression whose result is unused.
-                     self.error("Expression result unused; only function/method calls allowed as statements", expr.token or self.current_token)
-                     # We already parsed the expression, sync to next statement
-                     self._sync_to_semicolon()
-                     return None
+                # Check if the parsed expression is a function or method call, which are often allowed as statements.
+                if expr.node_type in (NodeTypes.FUNCTION_CALL, NodeTypes.METHOD_CALL):
+                    return expr
+                else:
+                    # Otherwise, it's an expression whose result is unused.
+                    self.error("Expression result unused; only function/method calls allowed as statements", expr.token or self.current_token)
+                    # We already parsed the expression, sync to next statement
+                    self._sync_to_semicolon()
+                    return None
             else:
-                 # If parse_expression returned None, an error likely already occurred.
-                 # Advance token if necessary to prevent infinite loops if no error was raised or sync happened.
-                 if self.current_token: # Check if we haven't reached the end
-                     logging.debug(f"Advancing after unknown statement start: {self.current_token}")
-                     self.advance()
-                 return None
+                # If parse_expression returned None, an error likely already occurred.
+                # Advance token if necessary to prevent infinite loops if no error was raised or sync happened.
+                if self.current_token: # Check if we haven't reached the end
+                    logging.debug(f"Advancing after unknown statement start: {self.current_token}")
+                    self.advance()
+                return None
 
     def parse_scope(self):
         """
@@ -1080,48 +1208,6 @@ class Parser:
         self.consume("CLOSE_BRACE")
         return scope_node
 
-    def parse_if_statement(self):
-        """Parse an if (...) { ... } statement, including optional else or elif."""
-        # Consume 'if' token
-        if_token = self.consume("IF")
-        if if_token is None:
-            return None
-        # Expect condition parentheses
-        if not self.consume("OPEN_PAREN"):
-            self.error("Expected '(' after 'if'", self.current_token)
-        condition = self.parse_expression()
-        if not self.consume("CLOSE_PAREN"):
-            self.error("Expected ')' after if condition", self.current_token)
-        # Parse if body (scope or single statement)
-        if self.current_token and self.current_token.type == "OPEN_BRACE":
-            then_branch = self.parse_scope()
-        else:
-            then_stmt = self._parse_statement()
-            then_branch = ASTNode(NodeTypes.SCOPE, None, "scope", [], then_stmt.index if then_stmt else None)
-            if then_stmt:
-                then_stmt.parent = then_branch
-                then_branch.children.append(then_stmt)
-        # Build IF AST node
-        if_node = ASTNode(NodeTypes.IF_STATEMENT, if_token, "if", [condition, then_branch], if_token.index)
-        # Handle optional else or elif
-        if self.current_token and self.current_token.type == "ELSE":
-            self.advance()  # consume ELSE
-            if self.current_token and self.current_token.type == "IF":
-                elif_node = self.parse_if_statement()
-                if_node.children.append(elif_node)
-            else:
-                # else branch
-                if self.current_token and self.current_token.type == "OPEN_BRACE":
-                    else_branch = self.parse_scope()
-                else:
-                    else_stmt = self._parse_statement()
-                    else_branch = ASTNode(NodeTypes.SCOPE, None, "scope", [], else_stmt.index if else_stmt else None)
-                    if else_stmt:
-                        else_stmt.parent = else_branch
-                        else_branch.children.append(else_stmt)
-                if_node.children.append(else_branch)
-        return if_node
-
     def parse(self):
         logging.debug("Parsing tokens...")
         # Top-level: parse until all tokens are consumed.
@@ -1137,7 +1223,6 @@ class Parser:
             if self.current_token.type == "IDENTIFIER" and not self.current_token.value.strip():
                  self.advance()
                  continue
-
 
             stmt = self._parse_statement() # Changed to call internal _parse_statement
             if stmt is None:
@@ -1163,14 +1248,12 @@ class Parser:
                 stmt.parent = self.ast
                 self.ast.children.append(stmt)
 
-            # Consume semicolon after statement if expected
-            if self.current_token and self.current_token.type == "SEMICOLON":
-                 self.consume("SEMICOLON")
-            # else:
-                 # Optional: Error if semicolon is missing where expected, depending on language grammar.
-                 # For now, allow semicolon omission (like JS) or handle in specific statement parsers.
-                 # pass
-
+            # Consume semicolon after simple statements (not blocks or loops)
+            if not (stmt.node_type in (NodeTypes.IF_STATEMENT, NodeTypes.WHILE_STATEMENT, NodeTypes.SCOPE)):
+                if self.current_token and self.current_token.type == "SEMICOLON":
+                    self.consume("SEMICOLON")
+                else:
+                    self.error("Expected semicolon after statement", self.current_token)
 
         logging.debug("Resolving variable types...")
         self.resolve_variable_types(self.ast)
@@ -1192,3 +1275,92 @@ class Parser:
                 self.advance()
             if self.current_token and self.current_token.type == "MULTI_LINE_COMMENT_END":
                 self.advance() # Consume the end comment token
+
+    def parse_compound_assignment(self):
+        """Parse compound assignment statements like x += y, x -= y, etc."""
+        identifier = self.consume("IDENTIFIER")
+        if identifier is None:
+            self.error("Expected identifier", self.current_token)
+            self._sync_to_semicolon()
+            return None
+        
+        # Check for compound assignment operators
+        if self.current_token and self.current_token.type in ("ADD_ASSIGN", "SUBTRACT_ASSIGN", 
+                                                            "MULTIPLY_ASSIGN", "DIVIDE_ASSIGN",
+                                                            "MODULO_ASSIGN"):
+            op_token = self.current_token
+            self.advance()
+            value = self.parse_expression()
+            if value is None:
+                self.error("Expected expression after compound assignment operator", self.current_token)
+                self._sync_to_semicolon()
+                return None
+                
+            node = ASTNode(
+                NodeTypes.COMPOUND_ASSIGNMENT,
+                identifier,
+                identifier.value,
+                [value],
+                identifier.index,
+                is_ref_counted=True,
+            )
+            node.token = op_token  # Store the operator token for code generation
+            return node
+        else:
+            self.error(f"Expected compound assignment operator, got {self.current_token.type if self.current_token else 'None'}", 
+                      self.current_token or identifier)
+            return None
+            
+    def parse_increment_or_decrement(self):
+        """Parse increment (x++) or decrement (x--) operations."""
+        identifier = self.consume("IDENTIFIER")
+        if identifier is None:
+            self.error("Expected identifier", self.current_token)
+            self._sync_to_semicolon()
+            return None
+            
+        if self.current_token and self.current_token.type in ("INCREMENT", "DECREMENT"):
+            op_token = self.current_token
+            op_value = op_token.value  # This will be "++" or "--"
+            self.advance()
+            
+            # Create a node with identifier as token and "++" as name
+            node = ASTNode(
+                NodeTypes.UNARY_EXPRESSION,
+                identifier,  # Store the identifier token here
+                op_value,    # Store the operator value (++ or --) as the name
+                [],          # No children for a simple increment/decrement
+                identifier.index
+            )
+            return node
+        else:
+            self.error(f"Expected increment or decrement operator, got {self.current_token.type if self.current_token else 'None'}", 
+                      self.current_token or identifier)
+            return None
+
+    def parse_while_statement(self):
+        """Parse a while (...) { ... } statement."""
+        while_token = self.consume("WHILE")
+        if not while_token:
+            return None
+        if not self.consume("OPEN_PAREN"):
+            self.error("Expected '(' after 'while'", self.current_token or while_token)
+            return None
+        condition = self.parse_expression()
+        if condition is None:
+            if self.current_token and self.current_token.type == "CLOSE_PAREN":
+                self.consume("CLOSE_PAREN")
+            return None
+        if not self.consume("CLOSE_PAREN"):
+            self.error("Expected ')' after while condition", self.current_token or condition.token)
+            return None
+        # Parse body
+        if self.current_token and self.current_token.type == "OPEN_BRACE":
+            body = self.parse_scope()
+            if body is None:
+                return None
+        else:
+            stmt = self._parse_statement()
+            body = ASTNode(NodeTypes.SCOPE, stmt.token if stmt else None, "scope", [stmt] if stmt else [], stmt.index if stmt else while_token.index)
+            if stmt: stmt.parent = body
+        return ASTNode(NodeTypes.WHILE_STATEMENT, while_token, "while", [condition, body], while_token.index)

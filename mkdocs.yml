@@ -14,8 +14,12 @@ theme:
     - content.action.edit
 nav:
   - Home: README.md
+  - Language Specification: language_specification.md
   - Types & Variables: variables.md
   - Arrays: arrays.md
   - Control Flow: control_flow.md
   - Functions & Methods: functions.md
   - Classes & Inheritance: classes.md
+  - Scoping Rules: scoping.md
+  - Type System: type_system.md
+  - Changelog: changelog.md

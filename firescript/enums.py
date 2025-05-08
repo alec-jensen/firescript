@@ -1,4 +1,5 @@
-from enum import Enum
+from enum import Enum, auto
+
 
 class NodeTypes(Enum):
     ROOT = "Root"
@@ -20,3 +21,5 @@ class NodeTypes(Enum):
     ARRAY_LITERAL = "ArrayLiteral"
     ARRAY_ACCESS = "ArrayAccess"
     METHOD_CALL = "MethodCall"
+    COMPOUND_ASSIGNMENT = "CompoundAssignment"
+    UNARY_EXPRESSION = "UnaryExpression"

@@ -1,0 +1,66 @@
+// Integer arithmetic
+print("Integer arithmetic");
+int i1 = 5;
+int i2 = 10;
+int sum = i1 + i2;
+int diff = i2 - i1;
+int prod = i1 * i2;
+int quot = i2 / i1;
+int rem = i2 % 3;
+print(sum);     // 15
+print(diff);    // 5
+print(prod);    // 50
+print(quot);    // 2
+print(rem);     // 1
+
+// Floating point
+print("Floating point arithmetic");
+float f1 = 2.5f;
+float f2 = 1.5f;
+float fsum = f1 + f2;
+print(fsum);    // 4.0
+
+print("Double precision arithmetic");
+double d1 = 2.0;
+double d2 = 3.0;
+double dprod = d1 * d2;
+print(dprod);   // 6.0
+
+// Booleans and comparisons
+print("Boolean and comparisons");
+bool t = true;
+bool f = false;
+print(t);       // true
+print(f);       // false
+print(i1 < i2); // true
+print(i1 == 5); // true
+print(f1 > f2); // true
+
+// Strings and concatenation
+print("String concatenation");
+string hello = "Hello, ";
+string world = "world!";
+string greeting = hello + world;
+print(greeting); // Hello, world!
+
+// Arrays of ints
+print("Array of integers");
+int[] a = [1, 2, 3];
+print(a.length());   // 3
+a.append(4);
+print(a.length());   // 4
+print(a[0]);         // 1
+a.insert(2, 99);
+print(a[2]);         // 99
+int popped = a.pop();
+print(popped);       // 4
+print(a.length());   // 3
+a.clear();
+print(a.length());   // 0
+
+// Array of strings
+print("Array of strings");
+string[] words = ["fire", "script"];
+words.append("rocks");
+print(words.length());   // 3
+print(words[1]);         // script

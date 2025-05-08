@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gmp.h>
 
 typedef struct
 {
@@ -110,4 +111,17 @@ void varray_clear(VArray *va)
 void varray_free(VArray *va)
 {
     free(va);
+}
+
+void varray_pop(mpz_t popped_value, VArray **va, size_t index)
+{
+    if (index >= (*va)->size)
+    {
+        // Invalid index; initialize popped_value to zero.
+        mpz_init(popped_value);
+        return;
+    }
+    mpz_init(popped_value);
+    memcpy(popped_value, (*va)->data + index * (*va)->elem_size, (*va)->elem_size);
+    *va = varray_remove(*va, index);
 }

@@ -2,6 +2,7 @@
 #define VARRAY_H
 
 #include <stddef.h>
+#include <gmp.h>
 
 typedef struct
 {
@@ -18,5 +19,8 @@ VArray *varray_insert(VArray *va, size_t index, const void *element);
 VArray *varray_remove(VArray *va, size_t index);
 void varray_clear(VArray *va);
 void varray_free(VArray *va);
+// Pop element at index and return it in popped_value (for mpz_t arrays)
+// Signature: popped_value receives the element, va is updated
+void varray_pop(mpz_t popped_value, VArray **va, size_t index);
 
 #endif

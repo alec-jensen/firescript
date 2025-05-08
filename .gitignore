@@ -1,7 +1,5 @@
-build
+build/
 .vscode
 *.pyc
 __pycache__
-temp/
-output/
 site/
