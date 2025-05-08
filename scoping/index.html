@@ -9,6 +9,10 @@
       
       
       
+        <link rel="prev" href="../classes/">
+      
+      
+        <link rel="next" href="../type_system/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -16,7 +20,7 @@
     
     
       
-        <title>Scoping in firescript - firescript</title>
+        <title>Scoping Rules - firescript</title>
       
     
     
@@ -92,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Scoping in firescript
+              Scoping Rules
             
           </span>
         </div>
@@ -198,6 +202,25 @@
   
   
     <li class="md-tabs__item">
+      <a href="../language_specification/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Language Specification
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
       <a href="../variables/" class="md-tabs__link">
         
   
@@ -287,6 +310,65 @@
   
 
       
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Scoping Rules
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../type_system/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Type System
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -345,6 +427,28 @@
   
   <span class="md-ellipsis">
     Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../language_specification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Language Specification
     
   </span>
   
@@ -464,6 +568,288 @@
   
 
     
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Scoping Rules
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Scoping Rules
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#scope-creation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scope Creation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope-hierarchy-and-variable-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scope Hierarchy and Variable Access
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-scoping-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Detailed Scoping Rules
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Detailed Scoping Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-variable-declaration-and-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Variable Declaration and Initialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-variable-lifetime" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Variable Lifetime
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-global-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Global Scope
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-loop-scopes" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Loop Scopes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-conditional-scopes" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Conditional Scopes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-nested-function-scopes-future-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Nested Function Scopes (Future Feature)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#variable-scope-vs-object-lifetime" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variable Scope vs. Object Lifetime
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices-for-effective-scoping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices for Effective Scoping
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Details
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-scoping-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Scoping Errors
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Scoping Errors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-accessing-variables-outside-their-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Accessing Variables Outside Their Scope
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-redeclaring-variables-in-the-same-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Redeclaring Variables in the Same Scope
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-attempting-variable-shadowing" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Attempting Variable Shadowing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-using-variables-before-declaration" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Using Variables Before Declaration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Status
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../type_system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Type System
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -508,6 +894,162 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#detailed-scoping-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Detailed Scoping Rules
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Detailed Scoping Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-variable-declaration-and-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Variable Declaration and Initialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-variable-lifetime" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Variable Lifetime
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-global-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Global Scope
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-loop-scopes" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Loop Scopes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-conditional-scopes" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Conditional Scopes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-nested-function-scopes-future-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Nested Function Scopes (Future Feature)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#variable-scope-vs-object-lifetime" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variable Scope vs. Object Lifetime
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices-for-effective-scoping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices for Effective Scoping
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Details
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-scoping-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Scoping Errors
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Scoping Errors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-accessing-variables-outside-their-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Accessing Variables Outside Their Scope
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-redeclaring-variables-in-the-same-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Redeclaring Variables in the Same Scope
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-attempting-variable-shadowing" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Attempting Variable Shadowing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-using-variables-before-declaration" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Using Variables Before Declaration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Status
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -544,34 +1086,34 @@
 </ul>
 <pre><code class="language-firescript">// Global scope
 
-int globalVar = 10;
+int globalVar = 10
 
 if (globalVar &gt; 5) {
     // Inner scope 1 (if body)
-    int innerVar1 = 20;
-    print(globalVar); // Accessing outer scope variable: OK (prints 10)
-    print(innerVar1); // Accessing current scope variable: OK (prints 20)
+    int innerVar1 = 20
+    print(globalVar)  // Accessing outer scope variable: OK (prints 10)
+    print(innerVar1)  // Accessing current scope variable: OK (prints 20)
 }
 
-// print(innerVar1); // ERROR: innerVar1 is not accessible here
+// print(innerVar1)  // ERROR: innerVar1 is not accessible here
 
 {
     // Inner scope 2 (bare braces)
-    int innerVar2 = 30;
-    print(globalVar); // Accessing outer scope variable: OK (prints 10)
-    print(innerVar2); // Accessing current scope variable: OK (prints 30)
+    int innerVar2 = 30
+    print(globalVar)  // Accessing outer scope variable: OK (prints 10)
+    print(innerVar2)  // Accessing current scope variable: OK (prints 30)
 
     if (true) {
         // Inner scope 3 (nested if body)
-        int innerVar3 = 40;
-        print(globalVar); // OK (prints 10)
-        print(innerVar2); // OK (prints 30)
-        print(innerVar3); // OK (prints 40)
+        int innerVar3 = 40
+        print(globalVar)  // OK (prints 10)
+        print(innerVar2)  // OK (prints 30)
+        print(innerVar3)  // OK (prints 40)
     }
-    // print(innerVar3); // ERROR: innerVar3 is not accessible here
+    // print(innerVar3)  // ERROR: innerVar3 is not accessible here
 }
 
-// print(innerVar2); // ERROR: innerVar2 is not accessible here
+// print(innerVar2)  // ERROR: innerVar2 is not accessible here
 </code></pre>
 <h2 id="scope-hierarchy-and-variable-access">Scope Hierarchy and Variable Access</h2>
 <ul>
@@ -579,7 +1121,185 @@ if (globalVar &gt; 5) {
 <li><strong>Inner Scope Isolation:</strong> An outer scope <em>cannot</em> access variables declared within any of its inner scopes. Once a scope block is exited, all variables declared directly within that scope are destroyed and become inaccessible.</li>
 <li><strong>Variable Shadowing:</strong> Variable shadowing is not allowed. firescript will throw an error if you try to declare a variable with the same name in an inner scope that already exists in an outer scope. This is to prevent confusion and ensure that the intended variable is always accessed.</li>
 </ul>
-<p>This strict scoping rule helps prevent errors related to variables potentially being uninitialized or accessed outside their intended lifetime. It ensures that if a variable name exists within a scope, it is guaranteed to have been properly declared either in the current scope or an outer one.</p>
+<h2 id="detailed-scoping-rules">Detailed Scoping Rules</h2>
+<h3 id="1-variable-declaration-and-initialization">1. Variable Declaration and Initialization</h3>
+<p>Variables in firescript must be declared with an explicit type and initialized in the same statement. They are only accessible within their scope:</p>
+<pre><code class="language-firescript">{
+    int x = 5  // x is declared and initialized
+
+    {
+        // New inner scope
+        print(x)  // Accessible, prints 5
+
+        // int x = 10  // ERROR: Cannot redeclare 'x' - shadowing is not allowed
+        int y = 15  // y is only accessible in this scope
+    }
+
+    // print(y)  // ERROR: y is not defined in this scope
+}
+// print(x)  // ERROR: x is not defined in this scope
+</code></pre>
+<h3 id="2-variable-lifetime">2. Variable Lifetime</h3>
+<p>Variables exist only from the point of their declaration to the end of their containing scope:</p>
+<pre><code class="language-firescript">{
+    // print(a)  // ERROR: Cannot use 'a' before declaration
+
+    int a = 1
+    print(a)  // OK: 'a' exists here
+
+    {
+        int b = 2
+        print(a)  // OK: 'a' from outer scope
+        print(b)  // OK: 'b' from current scope
+    }  // 'b' is destroyed here
+
+    // print(b)  // ERROR: 'b' no longer exists
+}  // 'a' is destroyed here
+</code></pre>
+<h3 id="3-global-scope">3. Global Scope</h3>
+<p>Variables declared outside any braces are in the global scope and are accessible throughout the entire program:</p>
+<pre><code class="language-firescript">int globalValue = 100  // Global variable
+
+{
+    print(globalValue)  // Accessible anywhere in the program
+
+    {
+        print(globalValue)  // Still accessible
+    }
+}
+
+// User-defined functions would also have access to global variables
+// when this feature is implemented
+</code></pre>
+<h3 id="4-loop-scopes">4. Loop Scopes</h3>
+<p>Each iteration of a loop has its own scope:</p>
+<pre><code class="language-firescript">int i = 0
+while (i &lt; 3) {
+    // New scope for each loop iteration
+    int temp = i * 10
+    print(temp)  // Prints 0, 10, 20
+    i = i + 1
+}  // 'temp' is destroyed at the end of each iteration
+
+// print(temp)  // ERROR: 'temp' is not accessible here
+</code></pre>
+<h3 id="5-conditional-scopes">5. Conditional Scopes</h3>
+<p>Each branch of a conditional statement creates its own scope:</p>
+<pre><code class="language-firescript">int value = 5
+
+if (value &gt; 10) {
+    // Scope A
+    int result = value * 2
+    print(result)
+} else if (value &gt; 0) {
+    // Scope B (different from Scope A)
+    int result = value + 10  // OK to reuse the name 'result' here
+    print(result)  // Prints 15
+} else {
+    // Scope C (different from Scopes A and B)
+    int result = 0
+    print(result)
+}
+
+// print(result)  // ERROR: 'result' is not accessible here
+</code></pre>
+<h3 id="6-nested-function-scopes-future-feature">6. Nested Function Scopes (Future Feature)</h3>
+<p>When user-defined functions are implemented, they will create their own scopes:</p>
+<pre><code class="language-firescript">// Global scope
+int globalVar = 10
+
+// Future syntax when functions are implemented
+void exampleFunction() {
+    // Function scope
+    int functionVar = 20
+    print(globalVar)  // OK: access to global scope
+
+    {
+        // Inner scope within the function
+        int innerVar = 30
+        print(functionVar)  // OK: access to containing function scope
+        print(globalVar)    // OK: access to global scope
+    }
+
+    // print(innerVar)  // ERROR: not accessible outside its scope
+}
+
+// print(functionVar)  // ERROR: function variables only exist in function scope
+</code></pre>
+<h2 id="variable-scope-vs-object-lifetime">Variable Scope vs. Object Lifetime</h2>
+<p>It's important to distinguish between a variable's scope (where it can be accessed) and an object's lifetime (how long it exists in memory):</p>
+<pre><code class="language-firescript">// When object-oriented features are implemented:
+{
+    // myObj variable is scoped to this block
+    Person myObj = Person(&quot;John&quot;, 30)
+
+    // myObj reference goes out of scope here
+    // The Person object may be garbage collected if no other references exist
+}
+</code></pre>
+<h2 id="best-practices-for-effective-scoping">Best Practices for Effective Scoping</h2>
+<ol>
+<li>
+<p><strong>Keep scopes as small as possible</strong>: Declare variables in the smallest scope where they are needed.</p>
+</li>
+<li>
+<p><strong>Declare variables close to their first use</strong>: This improves code readability and maintainability.</p>
+</li>
+<li>
+<p><strong>Use explicit scopes for temporary variables</strong>: Use bare braces <code>{}</code> to create explicit scopes for temporary variables.</p>
+</li>
+</ol>
+<p><code>firescript
+   {
+       // Temporary calculation scope
+       int temp = complexCalculation()
+       result = temp * 2
+   }  // 'temp' is no longer accessible, reducing scope pollution</code></p>
+<ol>
+<li>
+<p><strong>Be consistent with variable naming</strong>: Use clear, descriptive names to avoid confusion, especially with variables in different scopes.</p>
+</li>
+<li>
+<p><strong>Avoid deeply nested scopes</strong>: Excessive nesting can make code harder to read and understand.</p>
+</li>
+</ol>
+<h2 id="implementation-details">Implementation Details</h2>
+<p>firescript's scoping mechanism is implemented as a stack of symbol tables. When looking up a variable:</p>
+<ol>
+<li>The compiler first checks the innermost scope (top of the stack)</li>
+<li>If not found, it progressively checks outer scopes</li>
+<li>If the variable is not found in any scope, a compilation error occurs</li>
+</ol>
+<h2 id="common-scoping-errors">Common Scoping Errors</h2>
+<h3 id="1-accessing-variables-outside-their-scope">1. Accessing Variables Outside Their Scope</h3>
+<pre><code class="language-firescript">{
+    int value = 10
+}
+print(value)  // ERROR: 'value' is not defined in this scope
+</code></pre>
+<h3 id="2-redeclaring-variables-in-the-same-scope">2. Redeclaring Variables in the Same Scope</h3>
+<pre><code class="language-firescript">int count = 5
+int count = 10  // ERROR: 'count' is already defined
+</code></pre>
+<h3 id="3-attempting-variable-shadowing">3. Attempting Variable Shadowing</h3>
+<pre><code class="language-firescript">int value = 10
+if (true) {
+    int value = 20  // ERROR: Shadowing is not allowed in firescript
+}
+</code></pre>
+<h3 id="4-using-variables-before-declaration">4. Using Variables Before Declaration</h3>
+<pre><code class="language-firescript">print(result)  // ERROR: Cannot use 'result' before declaration
+int result = 42
+</code></pre>
+<h2 id="implementation-status">Implementation Status</h2>
+<p>Scope handling in firescript is fully implemented:</p>
+<ul>
+<li>✅ Block scopes with curly braces</li>
+<li>✅ Variable visibility rules</li>
+<li>✅ Prohibition of variable shadowing</li>
+<li>✅ Scope nesting and hierarchy</li>
+<li>✅ Variable lifetime management</li>
+</ul>
 
 
 

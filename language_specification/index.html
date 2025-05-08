@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../language_specification/">
+        <link rel="prev" href="..">
       
       
-        <link rel="next" href="../arrays/">
+        <link rel="next" href="../variables/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Types & Variables - firescript</title>
+        <title>Language Specification - firescript</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#types-variables" class="md-skip">
+        <a href="#firescript-language-specification" class="md-skip">
           Skip to content
         </a>
       
@@ -96,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Types & Variables
+              Language Specification
             
           </span>
         </div>
@@ -200,9 +200,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../language_specification/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -219,11 +221,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../variables/" class="md-tabs__link">
         
   
   
@@ -440,28 +440,6 @@
       
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../language_specification/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Language Specification
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
     
   
   
@@ -479,7 +457,7 @@
   
   
   <span class="md-ellipsis">
-    Types & Variables
+    Language Specification
     
   </span>
   
@@ -492,7 +470,7 @@
   
   
   <span class="md-ellipsis">
-    Types & Variables
+    Language Specification
     
   </span>
   
@@ -515,90 +493,67 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#1-lexical-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Lexical Structure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Lexical Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#character-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      Character Set
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comments
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tokens
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Types
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#primitive-types" class="md-nav__link">
     <span class="md-ellipsis">
       Primitive Types
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Primitive Types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#numeric-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Numeric Types
-    </span>
-  </a>
-  
 </li>
         
           <li class="md-nav__item">
-  <a href="#boolean-type" class="md-nav__link">
-    <span class="md-ellipsis">
-      Boolean Type
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#text-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Text Types
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#complex-types-not-yet-fully-implemented" class="md-nav__link">
-    <span class="md-ellipsis">
-      Complex Types (Not Yet Fully Implemented)
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#declaration-and-initialization" class="md-nav__link">
-    <span class="md-ellipsis">
-      Declaration and Initialization
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Declaration and Initialization">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#type-inference" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type Inference
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#constants" class="md-nav__link">
-    <span class="md-ellipsis">
-      Constants
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#nullability" class="md-nav__link">
     <span class="md-ellipsis">
       Nullability
@@ -606,38 +561,214 @@
   </a>
   
 </li>
+        
+          <li class="md-nav__item">
+  <a href="#arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      Arrays
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#type-conversion" class="md-nav__link">
+  <a href="#3-variable-declarations-and-assignments" class="md-nav__link">
     <span class="md-ellipsis">
-      Type Conversion
+      3. Variable Declarations and Assignments
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Variable Declarations and Assignments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#declaration-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      Declaration Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Expressions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Expressions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#primary-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Primary Expressions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operators-in-order-of-precedence" class="md-nav__link">
+    <span class="md-ellipsis">
+      Operators (in order of precedence)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-control-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Control Flow
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Control Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conditional-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conditional Statements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#while-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      While Loop
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#built-in-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-in Functions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-defined-functions-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      User-defined Functions (Syntax)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Arrays
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Operations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-scoping-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Scoping Rules
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#type-checking" class="md-nav__link">
+  <a href="#9-syntax-flexibility" class="md-nav__link">
     <span class="md-ellipsis">
-      Type Checking
+      9. Syntax Flexibility
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Syntax Flexibility">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whitespace-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Whitespace Handling
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#example-working-with-different-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example: Working with Different Types
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#implementation-status" class="md-nav__link">
+  <a href="#10-not-yet-implemented-features" class="md-nav__link">
     <span class="md-ellipsis">
-      Implementation Status
+      10. Not Yet Implemented Features
     </span>
   </a>
   
@@ -647,6 +778,28 @@
   
 </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Types & Variables
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -832,90 +985,67 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#1-lexical-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Lexical Structure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Lexical Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#character-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      Character Set
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comments
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tokens
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Types
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#primitive-types" class="md-nav__link">
     <span class="md-ellipsis">
       Primitive Types
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Primitive Types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#numeric-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Numeric Types
-    </span>
-  </a>
-  
 </li>
         
           <li class="md-nav__item">
-  <a href="#boolean-type" class="md-nav__link">
-    <span class="md-ellipsis">
-      Boolean Type
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#text-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Text Types
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#complex-types-not-yet-fully-implemented" class="md-nav__link">
-    <span class="md-ellipsis">
-      Complex Types (Not Yet Fully Implemented)
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#declaration-and-initialization" class="md-nav__link">
-    <span class="md-ellipsis">
-      Declaration and Initialization
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Declaration and Initialization">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#type-inference" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type Inference
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#constants" class="md-nav__link">
-    <span class="md-ellipsis">
-      Constants
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#nullability" class="md-nav__link">
     <span class="md-ellipsis">
       Nullability
@@ -923,38 +1053,214 @@
   </a>
   
 </li>
+        
+          <li class="md-nav__item">
+  <a href="#arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      Arrays
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#type-conversion" class="md-nav__link">
+  <a href="#3-variable-declarations-and-assignments" class="md-nav__link">
     <span class="md-ellipsis">
-      Type Conversion
+      3. Variable Declarations and Assignments
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Variable Declarations and Assignments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#declaration-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      Declaration Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Examples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Expressions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Expressions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#primary-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Primary Expressions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operators-in-order-of-precedence" class="md-nav__link">
+    <span class="md-ellipsis">
+      Operators (in order of precedence)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-control-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Control Flow
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Control Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conditional-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conditional Statements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#while-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      While Loop
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#built-in-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-in Functions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-defined-functions-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      User-defined Functions (Syntax)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Arrays
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Operations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-scoping-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Scoping Rules
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#type-checking" class="md-nav__link">
+  <a href="#9-syntax-flexibility" class="md-nav__link">
     <span class="md-ellipsis">
-      Type Checking
+      9. Syntax Flexibility
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Syntax Flexibility">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whitespace-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Whitespace Handling
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#example-working-with-different-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example: Working with Different Types
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#implementation-status" class="md-nav__link">
+  <a href="#10-not-yet-implemented-features" class="md-nav__link">
     <span class="md-ellipsis">
-      Implementation Status
+      10. Not Yet Implemented Features
     </span>
   </a>
   
@@ -976,7 +1282,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/variables.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/language_specification.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -984,149 +1290,144 @@
   
 
 
-<h1 id="types-variables">Types &amp; Variables</h1>
-<p><strong>Note:</strong> Tuple types, the generic placeholder <code>T</code>, and declarations without an initializer are not supported by the compiler. Only built-in primitive types (<code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>char</code>) are fully implemented.</p>
-<h2 id="primitive-types">Primitive Types</h2>
-<p>firescript supports the following built-in primitive types:</p>
-<h3 id="numeric-types">Numeric Types</h3>
+<h1 id="firescript-language-specification">firescript Language Specification</h1>
+<p>This document serves as the formal reference for the firescript programming language's syntax and semantics.</p>
+<h2 id="1-lexical-structure">1. Lexical Structure</h2>
+<h3 id="character-set">Character Set</h3>
+<p>firescript source files are Unicode text files. The lexical grammar is defined in terms of Unicode code points.</p>
+<h3 id="comments">Comments</h3>
+<pre><code class="language-firescript">// Single line comment
+
+/* Multi-line
+   comment */
+</code></pre>
+<h3 id="tokens">Tokens</h3>
+<ul>
+<li><strong>Keywords</strong>: <code>if</code>, <code>else</code>, <code>elif</code>, <code>while</code>, <code>for</code>, <code>break</code>, <code>continue</code>, <code>return</code>, <code>nullable</code>, <code>generator</code>, <code>const</code>, <code>ternary</code>, <code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>tuple</code></li>
+<li><strong>Operators</strong>: Assignment (<code>=</code>), Arithmetic (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code>, <code>**</code>), Comparison (<code>==</code>, <code>!=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>), Logical (<code>&amp;&amp;</code>, <code>||</code>, <code>!</code>)</li>
+<li><strong>Separators</strong>: <code>;</code>, <code>,</code>, <code>.</code>, <code>(</code>, <code>)</code>, <code>[</code>, <code>]</code>, <code>{</code>, <code>}</code></li>
+<li><strong>Literals</strong>: Integer, floating-point, double, boolean, string, null</li>
+</ul>
+<h2 id="2-types">2. Types</h2>
+<h3 id="primitive-types">Primitive Types</h3>
 <ul>
 <li><code>int</code>: Integer numbers with arbitrary precision</li>
-</ul>
-<p><code>firescript
-  int count = 42
-  int largeNumber = 9223372036854775807  // 64-bit integer</code></p>
-<ul>
-<li><code>float</code>: Single-precision floating-point numbers (32-bit)</li>
-</ul>
-<p><code>firescript
-  float price = 19.99
-  float smallValue = 0.000001</code></p>
-<ul>
-<li><code>double</code>: Double-precision floating-point numbers (64-bit)</li>
-</ul>
-<p><code>firescript
-  double pi = 3.14159265359
-  double scientificNotation = 6.022e23  // Scientific notation</code></p>
-<h3 id="boolean-type">Boolean Type</h3>
-<ul>
+<li><code>float</code>: Single-precision floating-point numbers</li>
+<li><code>double</code>: Double-precision floating-point numbers</li>
 <li><code>bool</code>: Boolean values (<code>true</code> or <code>false</code>)</li>
+<li><code>string</code>: Text strings</li>
+<li><code>char</code>: Single characters (currently handled similarly to strings)</li>
 </ul>
-<p><code>firescript
-  bool isActive = true
-  bool hasPermission = false</code></p>
-<h3 id="text-types">Text Types</h3>
+<h3 id="nullability">Nullability</h3>
+<p>By default, variables cannot hold the value <code>null</code>. The <code>nullable</code> keyword must be used to explicitly allow variables to be assigned <code>null</code>.</p>
+<pre><code class="language-firescript">nullable string name = null;  // Valid
+string title = null;          // Invalid - cannot assign null to non-nullable type
+</code></pre>
+<h3 id="arrays">Arrays</h3>
+<p>Arrays are ordered collections of elements of the same type.</p>
+<pre><code class="language-firescript">int[] numbers = [1, 2, 3];
+string[] names = [&quot;Alice&quot;, &quot;Bob&quot;];
+</code></pre>
+<h2 id="3-variable-declarations-and-assignments">3. Variable Declarations and Assignments</h2>
+<h3 id="declaration-syntax">Declaration Syntax</h3>
+<pre><code class="language-firescript">[nullability-modifier] [const-modifier] type identifier = expression;
+</code></pre>
+<h3 id="examples">Examples</h3>
+<pre><code class="language-firescript">int count = 10;
+nullable string message = null;
+const float PI = 3.14;
+bool isActive = true;
+</code></pre>
+<h2 id="4-expressions">4. Expressions</h2>
+<h3 id="primary-expressions">Primary Expressions</h3>
 <ul>
-<li><code>string</code>: Text strings, enclosed in double quotes</li>
+<li>Variables: <code>x</code></li>
+<li>Literals: <code>42</code>, <code>3.14</code>, <code>"hello"</code>, <code>true</code>, <code>null</code></li>
+<li>Parenthesized expressions: <code>(x + y)</code></li>
+<li>Function calls: <code>print("Hello")</code></li>
+<li>Method calls: <code>array.append(5)</code></li>
+<li>Array access: <code>scores[0]</code></li>
 </ul>
-<p><code>firescript
-  string greeting = "Hello, world!"
-  string emptyString = ""
-  string multiline = "This is a
-  multi-line string"</code></p>
-<ul>
-<li><code>char</code>: Single characters, represented as strings internally</li>
-</ul>
-<p><code>firescript
-  char letter = "A"
-  char symbol = "*"</code></p>
-<h3 id="complex-types-not-yet-fully-implemented">Complex Types (Not Yet Fully Implemented)</h3>
-<ul>
-<li><code>tuple&lt;T1, T2, …&gt;</code>: Heterogeneous collection of values</li>
-</ul>
-<p><code>firescript
-  tuple&lt;int, string&gt; person = (30, "John")</code></p>
-<ul>
-<li>Generic placeholder: <code>T</code></li>
-</ul>
-<p><code>firescript
-  // Example syntax when implemented
-  T getValue&lt;T&gt;(T defaultValue) {
-      return defaultValue
-  }</code></p>
-<h2 id="declaration-and-initialization">Declaration and Initialization</h2>
-<p>Variables in firescript must be declared with an explicit type and initialized in the same statement:</p>
-<pre><code class="language-firescript">int age = 30
-string name = &quot;Alice&quot;
-bool isRegistered = false
-</code></pre>
-<h3 id="type-inference">Type Inference</h3>
-<p>firescript does not currently support automatic type inference:</p>
-<pre><code class="language-firescript">var score = 95  // Not supported - must specify the type explicitly
-int score = 95  // Supported
-</code></pre>
-<h3 id="constants">Constants</h3>
-<p>Use the <code>const</code> keyword to declare immutable variables:</p>
-<pre><code class="language-firescript">const int MAX_USERS = 100
-const string APP_VERSION = &quot;1.0.0&quot;
-</code></pre>
-<p>Constants must be initialized when declared and cannot be reassigned later:</p>
-<pre><code class="language-firescript">const float PI = 3.14
-PI = 3.14159  // Error: cannot reassign a constant
-</code></pre>
-<h2 id="nullability">Nullability</h2>
-<p>By default, variables cannot be assigned <code>null</code>. The <code>nullable</code> keyword explicitly allows a variable to hold <code>null</code>:</p>
-<pre><code class="language-firescript">nullable string username = null  // Valid
-string password = null           // Invalid - non-nullable type cannot hold null
-</code></pre>
-<p>Attempting to use a nullable variable without checking for null may result in runtime errors:</p>
-<pre><code class="language-firescript">nullable string message = null
-
-// Safe access pattern
-if (message != null) {
-    print(message)
+<h3 id="operators-in-order-of-precedence">Operators (in order of precedence)</h3>
+<ol>
+<li>Method/property access: <code>.</code></li>
+<li>Array access: <code>[]</code></li>
+<li>Function call: <code>()</code></li>
+<li>Unary: <code>+</code>, <code>-</code>, <code>!</code></li>
+<li>Power: <code>**</code></li>
+<li>Multiplicative: <code>*</code>, <code>/</code>, <code>%</code></li>
+<li>Additive: <code>+</code>, <code>-</code></li>
+<li>Relational: <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></li>
+<li>Equality: <code>==</code>, <code>!=</code></li>
+<li>Logical AND: <code>&amp;&amp;</code></li>
+<li>Logical OR: <code>||</code></li>
+<li>Assignment: <code>=</code>, <code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code>, <code>%=</code>, <code>**=</code></li>
+</ol>
+<h2 id="5-control-flow">5. Control Flow</h2>
+<h3 id="conditional-statements">Conditional Statements</h3>
+<pre><code class="language-firescript">if condition {
+    // then branch
+} else if otherCondition {
+    // else-if branch
+} else {
+    // else branch
 }
 </code></pre>
-<h2 id="type-conversion">Type Conversion</h2>
-<p>firescript provides built-in functions for type conversion:</p>
-<pre><code class="language-firescript">int number = 42
-string numberAsString = toString(number)  // &quot;42&quot;
-
-string value = &quot;123&quot;
-int parsed = toInt(value)                 // 123
-float floatValue = toFloat(value)         // 123.0
-double doubleValue = toDouble(value)      // 123.0
-bool boolValue = toBool(&quot;true&quot;)           // true
+<h3 id="while-loop">While Loop</h3>
+<pre><code class="language-firescript">while condition {
+    // body
+}
 </code></pre>
-<h2 id="type-checking">Type Checking</h2>
-<p>The <code>typeof()</code> built-in function returns the type of a value as a string:</p>
-<pre><code class="language-firescript">string type = typeof(42)         // &quot;int&quot;
-print(typeof(true))              // Prints: &quot;bool&quot;
-print(typeof(&quot;hello&quot;))           // Prints: &quot;string&quot;
-</code></pre>
-<h2 id="example-working-with-different-types">Example: Working with Different Types</h2>
-<pre><code class="language-firescript">// Integer arithmetic
-int a = 10
-int b = 3
-int sum = a + b          // 13
-int difference = a - b   // 7
-int product = a * b      // 30
-int quotient = a / b     // 3 (integer division)
-int remainder = a % b    // 1
-
-// Floating point arithmetic
-float x = 10.5
-float y = 2.5
-float result = x / y     // 4.2
-
-// String operations
-string firstName = &quot;John&quot;
-string lastName = &quot;Doe&quot;
-string fullName = firstName + &quot; &quot; + lastName  // &quot;John Doe&quot;
-
-// Boolean logic
-bool hasAccount = true
-bool isAdmin = false
-bool hasAccess = hasAccount &amp;&amp; isAdmin  // false (logical AND)
-bool canLogin = hasAccount || isAdmin   // true (logical OR)
-bool isLocked = !hasAccount             // false (logical NOT)
-</code></pre>
-<h2 id="implementation-status">Implementation Status</h2>
-<p>All primitive types are fully supported in the current compiler. The following features are not yet implemented:</p>
+<h2 id="6-functions">6. Functions</h2>
+<h3 id="built-in-functions">Built-in Functions</h3>
 <ul>
-<li>Tuple operations (creation, access, manipulation)</li>
-<li>Generic type placeholders and type parameters</li>
-<li>Type inference</li>
-<li>Declaration without initialization</li>
+<li><code>print(value)</code>: Output a value</li>
+<li><code>input(prompt)</code>: Read string from console</li>
+<li><code>toInt(x)</code>, <code>toFloat(x)</code>, <code>toDouble(x)</code>, <code>toBool(x)</code>, <code>toString(x)</code>, <code>toChar(x)</code>: Type conversions</li>
+<li><code>typeof(x)</code>: Returns type name</li>
+</ul>
+<h3 id="user-defined-functions-syntax">User-defined Functions (Syntax)</h3>
+<pre><code class="language-firescript">returnType functionName(paramType1 param1, paramType2 param2) {
+    // function body
+    return expression;
+}
+</code></pre>
+<h2 id="7-arrays">7. Arrays</h2>
+<h3 id="operations">Operations</h3>
+<ul>
+<li><code>append(element)</code>: Add to end</li>
+<li><code>insert(index, element)</code>: Insert at position</li>
+<li><code>pop(index?)</code>: Remove and return element; default removes last</li>
+<li><code>clear()</code>: Remove all elements</li>
+<li><code>length</code>: Property for size</li>
+</ul>
+<h2 id="8-scoping-rules">8. Scoping Rules</h2>
+<p>A new scope is created by any set of curly braces <code>{}</code>. Variables declared in an inner scope are not accessible in outer scopes. Variables declared in an outer scope are accessible in inner scopes. Variable shadowing is not allowed.</p>
+<h2 id="9-syntax-flexibility">9. Syntax Flexibility</h2>
+<h3 id="whitespace-handling">Whitespace Handling</h3>
+<p>firescript is flexible with whitespace, which means that spaces, tabs, and line breaks are largely ignored by the compiler. While proper formatting with indentation and spacing is recommended for readability, the language allows code to be written in a more compact form.</p>
+<p>For example, the following well-formatted code:</p>
+<pre><code class="language-firescript">int x = 1;
+x += 2;
+print(x);
+int i = 0;
+while (i &lt; 10) {
+    x += i;
+    i++;
+    print(x);
+}
+</code></pre>
+<p>Could also be written as a single line with no spacing:</p>
+<pre><code class="language-firescript">intx=1;x+=2;print(x);inti=0;while(i&lt;10){x+=i;i++;print(x);}
+</code></pre>
+<p>Although the compiler accepts both forms, it is strongly recommended to use clear formatting with appropriate whitespace for better code readability and maintainability.</p>
+<h2 id="10-not-yet-implemented-features">10. Not Yet Implemented Features</h2>
+<ul>
+<li>Array slicing and negative indices</li>
+<li>User-defined function definitions</li>
+<li>Classes and inheritance</li>
+<li>For loops</li>
+<li>Ternary operator</li>
 </ul>
 
 

@@ -9,6 +9,10 @@
       
       
       
+        <link rel="prev" href="../scoping/">
+      
+      
+        <link rel="next" href="../changelog/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -16,7 +20,7 @@
     
     
       
-        <title>Type System in firescript - firescript</title>
+        <title>Type System - firescript</title>
       
     
     
@@ -92,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Type System in firescript
+              Type System
             
           </span>
         </div>
@@ -198,6 +202,25 @@
   
   
     <li class="md-tabs__item">
+      <a href="../language_specification/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Language Specification
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
       <a href="../variables/" class="md-tabs__link">
         
   
@@ -287,6 +310,65 @@
   
 
       
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../scoping/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Scoping Rules
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Type System
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -345,6 +427,28 @@
   
   <span class="md-ellipsis">
     Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../language_specification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Language Specification
     
   </span>
   
@@ -464,6 +568,375 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scoping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Scoping Rules
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Type System
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Type System
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#built-in-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-in Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Semantics
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type Semantics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integer-type-int" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integer Type (int)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#floating-point-types-float-and-double" class="md-nav__link">
+    <span class="md-ellipsis">
+      Floating Point Types (float and double)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boolean-type-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Boolean Type (bool)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#string-type-string" class="md-nav__link">
+    <span class="md-ellipsis">
+      String Type (string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#character-type-char" class="md-nav__link">
+    <span class="md-ellipsis">
+      Character Type (char)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      Arrays
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#declaration-and-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Declaration and Initialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Array Operations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nullability" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nullability
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Nullability">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#declaring-nullable-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Declaring Nullable Variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#working-with-nullable-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Working with Nullable Values
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-compatibility-and-conversions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Compatibility and Conversions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type Compatibility and Conversions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#built-in-type-conversion-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-in Type Conversion Functions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implicit-type-conversions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implicit Type Conversions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-checking-and-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Checking and Enforcement
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type Checking and Enforcement">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#static-type-checking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Static Type Checking
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#type-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Errors
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-introspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Introspection
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-type-features-planned" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Type Features (Planned)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Type Features (Planned)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tuples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tuples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-defined-types-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      User-Defined Types (Classes)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Status
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -500,11 +973,95 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#type-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Semantics
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type Semantics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integer-type-int" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integer Type (int)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#floating-point-types-float-and-double" class="md-nav__link">
+    <span class="md-ellipsis">
+      Floating Point Types (float and double)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boolean-type-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Boolean Type (bool)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#string-type-string" class="md-nav__link">
+    <span class="md-ellipsis">
+      String Type (string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#character-type-char" class="md-nav__link">
+    <span class="md-ellipsis">
+      Character Type (char)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#arrays" class="md-nav__link">
     <span class="md-ellipsis">
       Arrays
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#declaration-and-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Declaration and Initialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Array Operations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -515,12 +1072,153 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Nullability">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#declaring-nullable-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Declaring Nullable Variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#working-with-nullable-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Working with Nullable Values
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-compatibility-and-conversions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Compatibility and Conversions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type Compatibility and Conversions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#built-in-type-conversion-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-in Type Conversion Functions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implicit-type-conversions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implicit Type Conversions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
   <a href="#type-checking-and-enforcement" class="md-nav__link">
     <span class="md-ellipsis">
       Type Checking and Enforcement
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type Checking and Enforcement">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#static-type-checking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Static Type Checking
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#type-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Errors
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-introspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Introspection
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-type-features-planned" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Type Features (Planned)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Type Features (Planned)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tuples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tuples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-defined-types-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      User-Defined Types (Classes)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Status
     </span>
   </a>
   
@@ -555,59 +1253,259 @@
 <h2 id="built-in-types">Built-in Types</h2>
 <p>firescript provides several fundamental data types:</p>
 <ul>
-<li><strong><code>int</code></strong>: Represents whole numbers (integers). Example: <code>int age = 30;</code></li>
-<li><strong><code>float</code></strong>: Represents single-precision floating-point numbers. Example: <code>float price = 19.95f;</code></li>
-<li><strong><code>double</code></strong>: Represents double-precision floating-point numbers, offering higher precision than <code>float</code>. Example: <code>double pi = 3.1415926535;</code></li>
-<li><strong><code>bool</code></strong>: Represents boolean values, either <code>true</code> or <code>false</code>. Example: <code>bool isActive = true;</code></li>
-<li><strong><code>string</code></strong>: Represents sequences of characters. Example: <code>string message = "Hello, World!";</code></li>
-<li><strong><code>char</code></strong>: Represents a single character. (Note: Currently handled similarly to strings in some contexts, formal <code>char</code> type might be refined). Example: <code>char initial = 'A';</code></li>
+<li><strong><code>int</code></strong>: Represents whole numbers (integers). Example: <code>int age = 30</code></li>
+<li><strong><code>float</code></strong>: Represents single-precision floating-point numbers. Example: <code>float price = 19.95</code></li>
+<li><strong><code>double</code></strong>: Represents double-precision floating-point numbers, offering higher precision than <code>float</code>. Example: <code>double pi = 3.1415926535</code></li>
+<li><strong><code>bool</code></strong>: Represents boolean values, either <code>true</code> or <code>false</code>. Example: <code>bool isActive = true</code></li>
+<li><strong><code>string</code></strong>: Represents sequences of characters. Example: <code>string message = "Hello, World!"</code></li>
+<li><strong><code>char</code></strong>: Represents a single character. (Note: Currently handled similarly to strings in some contexts, formal <code>char</code> type might be refined). Example: <code>char initial = "A"</code></li>
 <li><strong><code>void</code></strong>: Represents the absence of a type, primarily used as the return type for functions that do not return a value.</li>
 </ul>
-<h2 id="arrays">Arrays</h2>
-<p>Arrays are ordered collections of elements of the <em>same</em> type.</p>
-<ul>
-<li>
-<p><strong>Declaration</strong>: Use square brackets <code>[]</code> after the type name.</p>
-<p><code>firescript
-int[] scores = [10, 20, 30];
-string[] names = ["Alice", "Bob"];</code></p>
-</li>
-<li>
-<p><strong>Access</strong>: Use square brackets with an integer index (0-based).</p>
-<p><code>firescript
-int firstScore = scores[0]; // firstScore is 10</code></p>
-</li>
-<li>
-<p><strong>Type Checking</strong>: The type checker ensures that you only assign arrays of the correct element type and access elements correctly. Array literals must contain elements of a consistent type.</p>
-</li>
-</ul>
+<h2 id="type-semantics">Type Semantics</h2>
+<h3 id="integer-type-int">Integer Type (<code>int</code>)</h3>
+<p>The <code>int</code> type in firescript represents integers with arbitrary precision. There is no explicit size limit as in languages like C/C++, making it similar to Python integers that can grow as needed.</p>
+<pre><code class="language-firescript">int small = 42
+int large = 9223372036854775807  // Large integers are supported
+int calculation = (small + large) * 2  // Arithmetic operations
+</code></pre>
+<p>Integers support the following operations:
+- Arithmetic: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code> (modulo), <code>**</code> (power)
+- Comparison: <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>
+- Bit manipulation (planned but not yet implemented): <code>&amp;</code>, <code>|</code>, <code>^</code>, <code>~</code>, <code>&lt;&lt;</code>, <code>&gt;&gt;</code></p>
+<h3 id="floating-point-types-float-and-double">Floating Point Types (<code>float</code> and <code>double</code>)</h3>
+<p>The <code>float</code> type represents 32-bit floating-point numbers, while <code>double</code> represents 64-bit floating-point numbers with greater precision.</p>
+<pre><code class="language-firescript">float simpleDecimal = 3.14
+double highPrecision = 3.141592653589793
+
+// Scientific notation
+double avogadro = 6.022e23
+float tiny = 1.6e-19
+</code></pre>
+<p>Floating point numbers support:
+- Arithmetic: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>**</code> (power)
+- Comparison: <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></p>
+<h3 id="boolean-type-bool">Boolean Type (<code>bool</code>)</h3>
+<p>The <code>bool</code> type has only two possible values: <code>true</code> and <code>false</code>. It's commonly used in conditional expressions.</p>
+<pre><code class="language-firescript">bool userLoggedIn = true
+bool hasPermission = false
+
+// Boolean operations
+bool canAccess = userLoggedIn &amp;&amp; hasPermission  // Logical AND
+bool needsAttention = !userLoggedIn || !hasPermission  // Logical OR and NOT
+</code></pre>
+<p>Boolean values support:
+- Logical operations: <code>&amp;&amp;</code> (AND), <code>||</code> (OR), <code>!</code> (NOT)
+- Comparison: <code>==</code>, <code>!=</code></p>
+<h3 id="string-type-string">String Type (<code>string</code>)</h3>
+<p>The <code>string</code> type represents sequences of characters. Strings in firescript are immutable (cannot be changed after creation).</p>
+<pre><code class="language-firescript">string greeting = &quot;Hello&quot;
+string name = &quot;World&quot;
+string message = greeting + &quot;, &quot; + name + &quot;!&quot;  // String concatenation with +
+
+// Multi-line strings
+string paragraph = &quot;This is a
+multi-line
+string&quot;
+</code></pre>
+<p>Strings support:
+- Concatenation: <code>+</code>
+- Comparison: <code>==</code>, <code>!=</code></p>
+<h3 id="character-type-char">Character Type (<code>char</code>)</h3>
+<p>The <code>char</code> type represents a single character and is currently implemented as a string with length 1.</p>
+<pre><code class="language-firescript">char letter = &quot;A&quot;
+char digit = &quot;7&quot;
+char newline = &quot;\n&quot;  // Special character
+</code></pre>
+<h3 id="arrays">Arrays</h3>
+<p>Arrays are ordered collections of elements of the same type.</p>
+<h4 id="declaration-and-initialization">Declaration and Initialization</h4>
+<pre><code class="language-firescript">// With initial values
+int[] numbers = [1, 2, 3, 4, 5]
+string[] fruits = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;]
+
+// Empty array
+bool[] flags = []
+</code></pre>
+<h4 id="array-operations">Array Operations</h4>
+<pre><code class="language-firescript">int[] scores = [85, 92, 78]
+
+// Accessing elements (zero-based indexing)
+int firstScore = scores[0]  // 85
+
+// Modifying elements
+scores[1] = 95  // Array becomes [85, 95, 78]
+
+// Array methods
+scores.append(88)  // Add to end: [85, 95, 78, 88]
+scores.insert(2, 82)  // Insert at index: [85, 95, 82, 78, 88]
+int removed = scores.pop()  // Remove last: removed = 88, array = [85, 95, 82, 78]
+removed = scores.pop(1)  // Remove at index: removed = 95, array = [85, 82, 78]
+
+// Array properties
+int count = scores.length  // 3
+
+// Clearing arrays
+scores.clear()  // Array becomes []
+</code></pre>
 <h2 id="nullability">Nullability</h2>
 <p>By default, variables cannot hold the value <code>null</code>. To allow a variable to be assigned <code>null</code>, you must explicitly declare it as <code>nullable</code>.</p>
-<ul>
-<li>
-<p><strong>Declaration</strong>: Use the <code>nullable</code> keyword before the type.</p>
-<p>```firescript
-nullable string username = null; // Allowed
-string title = "Default";</p>
-<p>title = null; // Error: Cannot assign null to non-nullable type 'string'</p>
-<p>username = "John"; // Can be assigned a non-null value later
-```</p>
-</li>
-<li>
-<p><strong>Type Checking</strong>: The type checker prevents assigning <code>null</code> to non-nullable variables and helps avoid null reference errors.</p>
-</li>
-</ul>
+<h3 id="declaring-nullable-variables">Declaring Nullable Variables</h3>
+<pre><code class="language-firescript">nullable string username = null  // Allowed
+string title = &quot;Default&quot;
+
+// title = null  // Error: Cannot assign null to non-nullable type 'string'
+
+username = &quot;John&quot;  // Can be assigned a non-null value later
+</code></pre>
+<h3 id="working-with-nullable-values">Working with Nullable Values</h3>
+<p>When working with nullable variables, it's important to check for null before using them:</p>
+<pre><code class="language-firescript">nullable string data = null
+
+// Safe pattern
+if (data != null) {
+    print(data)
+}
+
+// Could cause a runtime error if not checked
+print(data)  // Might try to print null
+</code></pre>
+<h2 id="type-compatibility-and-conversions">Type Compatibility and Conversions</h2>
+<p>firescript has strict typing rules but provides explicit conversion functions for common type conversions.</p>
+<h3 id="built-in-type-conversion-functions">Built-in Type Conversion Functions</h3>
+<pre><code class="language-firescript">// String to numeric conversions
+string numStr = &quot;42&quot;
+int num = toInt(numStr)         // 42
+float floatVal = toFloat(&quot;3.14&quot;)  // 3.14
+double doubleVal = toDouble(&quot;2.71828&quot;)  // 2.71828
+
+// Numeric to string conversions
+string strFromInt = toString(42)     // &quot;42&quot;
+string strFromFloat = toString(3.14)  // &quot;3.14&quot;
+
+// Boolean conversions
+bool boolValue = toBool(&quot;true&quot;)  // true
+string strFromBool = toString(false)  // &quot;false&quot;
+
+// Character conversion
+char first = toChar(&quot;Hello&quot;)  // &quot;H&quot; - first character of string
+</code></pre>
+<h3 id="implicit-type-conversions">Implicit Type Conversions</h3>
+<p>firescript generally does not perform implicit type conversions, with some exceptions:</p>
+<ol>
+<li>In binary numeric operations (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, etc.) between different numeric types:</li>
+<li>If one operand is <code>double</code>, the result is <code>double</code></li>
+<li>If one operand is <code>float</code> and the other is <code>int</code>, the result is <code>float</code></li>
+</ol>
+<pre><code class="language-firescript">int intVal = 5
+float floatVal = 2.5
+double doubleVal = 3.14
+
+float result1 = intVal + floatVal    // Result is float 7.5
+double result2 = floatVal * doubleVal  // Result is double 7.85
+</code></pre>
+<ol>
+<li>String concatenation with <code>+</code> will convert non-string values to strings:</li>
+</ol>
+<pre><code class="language-firescript">string message = &quot;Count: &quot; + 42  // &quot;Count: 42&quot;
+string status = &quot;Active: &quot; + true  // &quot;Active: true&quot;
+</code></pre>
 <h2 id="type-checking-and-enforcement">Type Checking and Enforcement</h2>
 <p>The firescript parser includes a type-checking phase that runs after the initial syntax parsing.</p>
+<h3 id="static-type-checking">Static Type Checking</h3>
 <ol>
-<li><strong>Variable Declarations</strong>: When you declare a variable (<code>int x = 5;</code>), the type checker verifies that the type of the initializer (<code>5</code>, which is <code>int</code>) matches the declared type (<code>int</code>).</li>
-<li><strong>Assignments</strong>: When assigning a value to an existing variable (<code>x = 10;</code>), the checker ensures the assigned value's type is compatible with the variable's declared type.</li>
-<li><strong>Expressions</strong>: Operators (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>==</code>, <code>&gt;</code>, etc.) are checked to ensure they are used with compatible operand types. For example, arithmetic operators generally require numeric types (<code>int</code>, <code>float</code>, <code>double</code>), while <code>+</code> can also be used for string concatenation. The result type of an expression is also determined (e.g., <code>1 + 2.0</code> results in a <code>float</code>).</li>
-<li><strong>Function Calls</strong>: Arguments passed to functions are checked against the expected parameter types. The return value type is also enforced.</li>
-<li><strong>Method Calls</strong>: Similar to functions, arguments and the object the method is called on are type-checked.</li>
-<li><strong>Array Operations</strong>: Indexing requires an integer, and assigning elements requires matching the array's element type.</li>
+<li>
+<p><strong>Variable Declarations</strong>: When you declare a variable (<code>int x = 5</code>), the type checker verifies that the type of the initializer (<code>5</code>, which is <code>int</code>) matches the declared type (<code>int</code>).</p>
+</li>
+<li>
+<p><strong>Assignments</strong>: When assigning a value to an existing variable (<code>x = 10</code>), the checker ensures the assigned value's type is compatible with the variable's declared type.</p>
+</li>
+<li>
+<p><strong>Expressions</strong>: Operators (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>==</code>, <code>&gt;</code>, etc.) are checked to ensure they are used with compatible operand types. For example, arithmetic operators generally require numeric types (<code>int</code>, <code>float</code>, <code>double</code>), while <code>+</code> can also be used for string concatenation. The result type of an expression is also determined (e.g., <code>1 + 2.0</code> results in a <code>float</code>).</p>
+</li>
+<li>
+<p><strong>Function Calls</strong>: Arguments passed to functions are checked against the expected parameter types. The return value type is also enforced.</p>
+</li>
+<li>
+<p><strong>Method Calls</strong>: Similar to functions, arguments and the object the method is called on are type-checked.</p>
+</li>
+<li>
+<p><strong>Array Operations</strong>: Indexing requires an integer, and assigning elements requires matching the array's element type.</p>
+</li>
 </ol>
-<p>Type errors found during this phase will prevent the code from compiling further, providing early feedback on potential issues.</p>
+<h3 id="type-errors">Type Errors</h3>
+<p>Type errors found during the checking phase will prevent the code from compiling further, providing early feedback on potential issues:</p>
+<pre><code class="language-firescript">string name = &quot;John&quot;
+int age = 30
+
+age = &quot;thirty&quot;  // Type error: Cannot assign string to int
+name = 25       // Type error: Cannot assign int to string
+bool result = age + name  // Type error: Cannot add int and string
+                         // Also cannot assign result to bool
+</code></pre>
+<h2 id="type-introspection">Type Introspection</h2>
+<p>The <code>typeof</code> built-in function returns a string representing the type of a value:</p>
+<pre><code class="language-firescript">string type1 = typeof(42)        // &quot;int&quot;
+string type2 = typeof(3.14)      // &quot;float&quot;
+string type3 = typeof(&quot;hello&quot;)   // &quot;string&quot;
+string type4 = typeof(true)      // &quot;bool&quot;
+string type5 = typeof([1, 2, 3]) // &quot;int[]&quot;
+</code></pre>
+<h2 id="advanced-type-features-planned">Advanced Type Features (Planned)</h2>
+<p>The following advanced type features are planned but not yet implemented:</p>
+<h3 id="tuples">Tuples</h3>
+<p>Tuples will allow grouping of values with different types:</p>
+<pre><code class="language-firescript">// Future syntax
+tuple&lt;int, string&gt; person = (30, &quot;John&quot;)
+int age = person[0]  // 30
+string name = person[1]  // &quot;John&quot;
+</code></pre>
+<h3 id="generics">Generics</h3>
+<p>Generic types will allow for more flexible and reusable code:</p>
+<pre><code class="language-firescript">// Future syntax
+T max&lt;T&gt;(T a, T b) {
+    if (a &gt; b) {
+        return a
+    } else {
+        return b
+    }
+}
+
+int largerInt = max&lt;int&gt;(5, 10)  // 10
+string largerString = max&lt;string&gt;(&quot;apple&quot;, &quot;banana&quot;)  // &quot;banana&quot;
+</code></pre>
+<h3 id="user-defined-types-classes">User-Defined Types (Classes)</h3>
+<p>Classes will enable user-defined types with methods and properties:</p>
+<pre><code class="language-firescript">// Future syntax
+class Point {
+    float x
+    float y
+
+    Point(this, float x, float y) {
+        this.x = x
+        this.y = y
+    }
+
+    float distanceTo(this, Point other) {
+        float dx = this.x - other.x
+        float dy = this.y - other.y
+        return toFloat((dx * dx + dy * dy) ** 0.5)
+    }
+}
+</code></pre>
+<h2 id="implementation-status">Implementation Status</h2>
+<p>The current firescript compiler supports:
+- ✅ All primitive types: <code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>char</code>
+- ✅ Nullable type modifiers
+- ✅ Arrays of primitive types
+- ✅ Static type checking for expressions and assignments
+- ✅ Type conversion functions
+- ✅ Type introspection with <code>typeof</code></p>
+<p>Not yet implemented:
+- ❌ Tuples
+- ❌ Generics
+- ❌ User-defined types (classes)
+- ❌ Interface types
+- ❌ Function types</p>
 
 
 

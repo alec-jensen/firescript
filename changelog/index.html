@@ -9,10 +9,8 @@
       
       
       
-        <link rel="prev" href="../language_specification/">
+        <link rel="prev" href="../type_system/">
       
-      
-        <link rel="next" href="../arrays/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +18,7 @@
     
     
       
-        <title>Types & Variables - firescript</title>
+        <title>Changelog - firescript</title>
       
     
     
@@ -62,7 +60,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#types-variables" class="md-skip">
+        <a href="#changelog" class="md-skip">
           Skip to content
         </a>
       
@@ -96,7 +94,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Types & Variables
+              Changelog
             
           </span>
         </div>
@@ -219,11 +217,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../variables/" class="md-tabs__link">
         
   
   
@@ -354,9 +350,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../changelog/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -462,32 +460,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Types & Variables
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../variables/" class="md-nav__link">
         
   
   
@@ -498,155 +474,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#primitive-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Primitive Types
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Primitive Types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#numeric-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Numeric Types
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#boolean-type" class="md-nav__link">
-    <span class="md-ellipsis">
-      Boolean Type
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#text-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Text Types
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#complex-types-not-yet-fully-implemented" class="md-nav__link">
-    <span class="md-ellipsis">
-      Complex Types (Not Yet Fully Implemented)
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#declaration-and-initialization" class="md-nav__link">
-    <span class="md-ellipsis">
-      Declaration and Initialization
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Declaration and Initialization">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#type-inference" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type Inference
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#constants" class="md-nav__link">
-    <span class="md-ellipsis">
-      Constants
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#nullability" class="md-nav__link">
-    <span class="md-ellipsis">
-      Nullability
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#type-conversion" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type Conversion
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#type-checking" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type Checking
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#example-working-with-different-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example: Working with Different Types
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      Implementation Status
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -787,10 +614,32 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../changelog/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -801,6 +650,167 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#020-current-version-may-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.0 (Current Version - May 2025)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.0 (Current Version - May 2025)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      New Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-quality-improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Quality Improvements
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#011-january-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.1 (January 2025)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.1 (January 2025)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-features_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      New Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#001-november-2024" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.1 (November 2024)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.0.1 (November 2024)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initial-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      Initial Release
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#roadmap-for-future-releases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Roadmap for Future Releases
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Roadmap for Future Releases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#planned-for-version-030" class="md-nav__link">
+    <span class="md-ellipsis">
+      Planned for Version 0.3.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#planned-for-version-040" class="md-nav__link">
+    <span class="md-ellipsis">
+      Planned for Version 0.4.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#long-term-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Long-term Goals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -832,46 +842,37 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#primitive-types" class="md-nav__link">
+  <a href="#020-current-version-may-2025" class="md-nav__link">
     <span class="md-ellipsis">
-      Primitive Types
+      0.2.0 (Current Version - May 2025)
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Primitive Types">
+    <nav class="md-nav" aria-label="0.2.0 (Current Version - May 2025)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#numeric-types" class="md-nav__link">
+  <a href="#new-features" class="md-nav__link">
     <span class="md-ellipsis">
-      Numeric Types
+      New Features
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#boolean-type" class="md-nav__link">
+  <a href="#bug-fixes" class="md-nav__link">
     <span class="md-ellipsis">
-      Boolean Type
+      Bug Fixes
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#text-types" class="md-nav__link">
+  <a href="#code-quality-improvements" class="md-nav__link">
     <span class="md-ellipsis">
-      Text Types
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#complex-types-not-yet-fully-implemented" class="md-nav__link">
-    <span class="md-ellipsis">
-      Complex Types (Not Yet Fully Implemented)
+      Code Quality Improvements
     </span>
   </a>
   
@@ -883,28 +884,28 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#declaration-and-initialization" class="md-nav__link">
+  <a href="#011-january-2025" class="md-nav__link">
     <span class="md-ellipsis">
-      Declaration and Initialization
+      0.1.1 (January 2025)
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Declaration and Initialization">
+    <nav class="md-nav" aria-label="0.1.1 (January 2025)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#type-inference" class="md-nav__link">
+  <a href="#new-features_1" class="md-nav__link">
     <span class="md-ellipsis">
-      Type Inference
+      New Features
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#constants" class="md-nav__link">
+  <a href="#bug-fixes_1" class="md-nav__link">
     <span class="md-ellipsis">
-      Constants
+      Bug Fixes
     </span>
   </a>
   
@@ -916,47 +917,68 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#nullability" class="md-nav__link">
+  <a href="#001-november-2024" class="md-nav__link">
     <span class="md-ellipsis">
-      Nullability
+      0.0.1 (November 2024)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.0.1 (November 2024)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initial-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      Initial Release
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#type-conversion" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type Conversion
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#type-checking" class="md-nav__link">
+  <a href="#roadmap-for-future-releases" class="md-nav__link">
     <span class="md-ellipsis">
-      Type Checking
+      Roadmap for Future Releases
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Roadmap for Future Releases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#planned-for-version-030" class="md-nav__link">
+    <span class="md-ellipsis">
+      Planned for Version 0.3.0
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#example-working-with-different-types" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#planned-for-version-040" class="md-nav__link">
     <span class="md-ellipsis">
-      Example: Working with Different Types
+      Planned for Version 0.4.0
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-status" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#long-term-goals" class="md-nav__link">
     <span class="md-ellipsis">
-      Implementation Status
+      Long-term Goals
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -976,7 +998,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/variables.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/changelog.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -984,149 +1006,168 @@
   
 
 
-<h1 id="types-variables">Types &amp; Variables</h1>
-<p><strong>Note:</strong> Tuple types, the generic placeholder <code>T</code>, and declarations without an initializer are not supported by the compiler. Only built-in primitive types (<code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>char</code>) are fully implemented.</p>
-<h2 id="primitive-types">Primitive Types</h2>
-<p>firescript supports the following built-in primitive types:</p>
-<h3 id="numeric-types">Numeric Types</h3>
+<h1 id="changelog">Changelog</h1>
+<p>firescript follows <a href="https://semver.org/">Semantic Versioning</a>. This makes it easier to understand the impact of changes in each release.</p>
+<h2 id="020-current-version-may-2025">0.2.0 (Current Version - May 2025)</h2>
+<h3 id="new-features">New Features</h3>
 <ul>
-<li><code>int</code>: Integer numbers with arbitrary precision</li>
+<li><strong>Improved Syntax Handling and Error Reporting:</strong></li>
+<li>Refactored the lexer and parser for enhanced syntax handling</li>
+<li>The lexer now correctly handles greater than (<code>&gt;</code>) and less than (<code>&lt;</code>) operators</li>
+<li>The parser includes stricter checks for Abstract Syntax Tree (AST) node children to prevent unexpected errors from <code>None</code> values</li>
+<li>Introduced new logic for parsing <code>if</code> and <code>while</code> statements to properly support nested structures</li>
+<li>
+<p>Improved error messages with more context for syntax errors</p>
+</li>
+<li>
+<p><strong>Enhanced Memory Management:</strong></p>
+</li>
+<li>Added a new reference counter for automated memory management</li>
+<li>Currently runs in the runtime, with plans to move to the compiler in future versions</li>
+<li>Helps prevent memory leaks and dangling pointers in the generated code</li>
+<li>
+<p>Improved garbage collection for dynamic arrays</p>
+</li>
+<li>
+<p><strong>Arbitrary Precision Integers:</strong></p>
+</li>
+<li>The <code>int</code> type is now represented using <code>mpz_t</code> in the generated code</li>
+<li>Enables arbitrary precision integers for handling large numbers</li>
+<li>Provides improved accuracy and reliability for complex calculations</li>
+<li>
+<p>No practical limit to integer size (constrained only by available memory)</p>
+</li>
+<li>
+<p><strong>Organized Build Outputs:</strong></p>
+</li>
+<li>Build outputs and temporary files are now stored in a dedicated <code>build</code> directory</li>
+<li>Temporary files are specifically located under <code>build/temp</code></li>
+<li>
+<p>Cleaner project structure with separate directories for source, documentation, and build artifacts</p>
+</li>
+<li>
+<p><strong>Expanded Array Operations:</strong></p>
+</li>
+<li>Added new array methods: <code>clear()</code> and improved <code>pop()</code> functionality</li>
+<li>Enhanced array bounds checking for safer indexing operations</li>
+<li>
+<p>Optimized memory allocation for arrays to improve performance</p>
+</li>
+<li>
+<p><strong>More Operators</strong></p>
+</li>
+<li>Added support for compound assignment operators: <code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code>, and <code>%=</code></li>
+<li>Added support for increment (<code>++</code>) and decrement (<code>--</code>) operators</li>
 </ul>
-<p><code>firescript
-  int count = 42
-  int largeNumber = 9223372036854775807  // 64-bit integer</code></p>
+<h3 id="bug-fixes">Bug Fixes</h3>
 <ul>
-<li><code>float</code>: Single-precision floating-point numbers (32-bit)</li>
+<li>Fixed parser issue causing incorrect handling of complex nested expressions</li>
+<li>Addressed memory leak in string operations when concatenating multiple strings</li>
+<li>Corrected type checking for nullable values in conditional statements</li>
+<li>Fixed compilation errors in C code generation for complex boolean expressions</li>
+<li>Resolved issue with array element access in while loop conditions</li>
 </ul>
-<p><code>firescript
-  float price = 19.99
-  float smallValue = 0.000001</code></p>
+<h3 id="code-quality-improvements">Code Quality Improvements</h3>
 <ul>
-<li><code>double</code>: Double-precision floating-point numbers (64-bit)</li>
+<li>Comprehensive refactoring of the C code generator for improved maintainability</li>
+<li>Added more detailed debug logging throughout the compilation process</li>
+<li>Improved documentation with examples for all supported language features</li>
+<li>Enhanced test coverage with new test cases for core functionality</li>
 </ul>
-<p><code>firescript
-  double pi = 3.14159265359
-  double scientificNotation = 6.022e23  // Scientific notation</code></p>
-<h3 id="boolean-type">Boolean Type</h3>
+<h2 id="011-january-2025">0.1.1 (January 2025)</h2>
+<p><em>There is not a version 0.1.0 because of a versioning mishap during initial release.</em></p>
+<h3 id="new-features_1">New Features</h3>
 <ul>
-<li><code>bool</code>: Boolean values (<code>true</code> or <code>false</code>)</li>
+<li><strong>Enhanced Variable Scoping:</strong></li>
+<li>Strict enforcement of variable scoping rules</li>
+<li>Prevention of variable shadowing to avoid common programming errors</li>
+<li>
+<p>Clear error messages for scope-related issues</p>
+</li>
+<li>
+<p><strong>Improved Type System:</strong></p>
+</li>
+<li>Comprehensive type checking for variable assignments</li>
+<li>Type compatibility verification for expressions</li>
+<li>Function and method call parameter validation</li>
+<li>
+<p>Support for nullable types with explicit declaration</p>
+</li>
+<li>
+<p><strong>Control Flow Structures:</strong></p>
+</li>
+<li>Basic implementation of <code>if</code>, <code>else if</code>, and <code>else</code> statements</li>
+<li>Support for <code>while</code> loops with condition checking</li>
+<li>
+<p><code>break</code> and <code>continue</code> statements in loops</p>
+</li>
+<li>
+<p><strong>Basic Standard Library:</strong></p>
+</li>
+<li>Implementation of essential built-in functions:<ul>
+<li><code>print()</code> for output</li>
+<li><code>input()</code> for user input</li>
+<li>Type conversion functions (<code>toInt()</code>, <code>toFloat()</code>, <code>toString()</code>, etc.)</li>
+<li><code>typeof()</code> function for runtime type introspection</li>
 </ul>
-<p><code>firescript
-  bool isActive = true
-  bool hasPermission = false</code></p>
-<h3 id="text-types">Text Types</h3>
-<ul>
-<li><code>string</code>: Text strings, enclosed in double quotes</li>
+</li>
 </ul>
-<p><code>firescript
-  string greeting = "Hello, world!"
-  string emptyString = ""
-  string multiline = "This is a
-  multi-line string"</code></p>
+<h3 id="bug-fixes_1">Bug Fixes</h3>
 <ul>
-<li><code>char</code>: Single characters, represented as strings internally</li>
+<li>Resolved parsing issues for nested expressions</li>
+<li>Fixed incorrect operator precedence in complex expressions</li>
+<li>Addressed memory management issues in the runtime library</li>
 </ul>
-<p><code>firescript
-  char letter = "A"
-  char symbol = "*"</code></p>
-<h3 id="complex-types-not-yet-fully-implemented">Complex Types (Not Yet Fully Implemented)</h3>
+<h2 id="001-november-2024">0.0.1 (November 2024)</h2>
+<h3 id="initial-release">Initial Release</h3>
 <ul>
-<li><code>tuple&lt;T1, T2, …&gt;</code>: Heterogeneous collection of values</li>
+<li><strong>First Public Alpha:</strong></li>
+<li>Basic language structure and syntax</li>
+<li>Simple variable declarations with primitive types</li>
+<li>Arithmetic and logical operations</li>
+<li>
+<p>First iteration of the compilation pipeline</p>
+</li>
+<li>
+<p><strong>Array Support:</strong></p>
+</li>
+<li>Initial implementation of arrays with literal initialization</li>
+<li>Basic array operations: indexing, assignment</li>
+<li>
+<p>Simple array methods: <code>append()</code> and <code>insert()</code></p>
+</li>
+<li>
+<p><strong>Compiler Infrastructure:</strong></p>
+</li>
+<li>Lexer for tokenizing source code</li>
+<li>Parser for building the abstract syntax tree</li>
+<li>Simple C code generator for compilation</li>
+<li>Runtime library with basic functions</li>
 </ul>
-<p><code>firescript
-  tuple&lt;int, string&gt; person = (30, "John")</code></p>
+<h2 id="roadmap-for-future-releases">Roadmap for Future Releases</h2>
+<h3 id="planned-for-version-030">Planned for Version 0.3.0</h3>
 <ul>
-<li>Generic placeholder: <code>T</code></li>
+<li>Implementation of user-defined functions</li>
+<li>Enhanced array operations including slicing and negative indices</li>
+<li>For loop implementations (C-style, for-in, range loops)</li>
+<li>Better error recovery during compilation</li>
+<li>Performance optimizations for generated code</li>
 </ul>
-<p><code>firescript
-  // Example syntax when implemented
-  T getValue&lt;T&gt;(T defaultValue) {
-      return defaultValue
-  }</code></p>
-<h2 id="declaration-and-initialization">Declaration and Initialization</h2>
-<p>Variables in firescript must be declared with an explicit type and initialized in the same statement:</p>
-<pre><code class="language-firescript">int age = 30
-string name = &quot;Alice&quot;
-bool isRegistered = false
-</code></pre>
-<h3 id="type-inference">Type Inference</h3>
-<p>firescript does not currently support automatic type inference:</p>
-<pre><code class="language-firescript">var score = 95  // Not supported - must specify the type explicitly
-int score = 95  // Supported
-</code></pre>
-<h3 id="constants">Constants</h3>
-<p>Use the <code>const</code> keyword to declare immutable variables:</p>
-<pre><code class="language-firescript">const int MAX_USERS = 100
-const string APP_VERSION = &quot;1.0.0&quot;
-</code></pre>
-<p>Constants must be initialized when declared and cannot be reassigned later:</p>
-<pre><code class="language-firescript">const float PI = 3.14
-PI = 3.14159  // Error: cannot reassign a constant
-</code></pre>
-<h2 id="nullability">Nullability</h2>
-<p>By default, variables cannot be assigned <code>null</code>. The <code>nullable</code> keyword explicitly allows a variable to hold <code>null</code>:</p>
-<pre><code class="language-firescript">nullable string username = null  // Valid
-string password = null           // Invalid - non-nullable type cannot hold null
-</code></pre>
-<p>Attempting to use a nullable variable without checking for null may result in runtime errors:</p>
-<pre><code class="language-firescript">nullable string message = null
-
-// Safe access pattern
-if (message != null) {
-    print(message)
-}
-</code></pre>
-<h2 id="type-conversion">Type Conversion</h2>
-<p>firescript provides built-in functions for type conversion:</p>
-<pre><code class="language-firescript">int number = 42
-string numberAsString = toString(number)  // &quot;42&quot;
-
-string value = &quot;123&quot;
-int parsed = toInt(value)                 // 123
-float floatValue = toFloat(value)         // 123.0
-double doubleValue = toDouble(value)      // 123.0
-bool boolValue = toBool(&quot;true&quot;)           // true
-</code></pre>
-<h2 id="type-checking">Type Checking</h2>
-<p>The <code>typeof()</code> built-in function returns the type of a value as a string:</p>
-<pre><code class="language-firescript">string type = typeof(42)         // &quot;int&quot;
-print(typeof(true))              // Prints: &quot;bool&quot;
-print(typeof(&quot;hello&quot;))           // Prints: &quot;string&quot;
-</code></pre>
-<h2 id="example-working-with-different-types">Example: Working with Different Types</h2>
-<pre><code class="language-firescript">// Integer arithmetic
-int a = 10
-int b = 3
-int sum = a + b          // 13
-int difference = a - b   // 7
-int product = a * b      // 30
-int quotient = a / b     // 3 (integer division)
-int remainder = a % b    // 1
-
-// Floating point arithmetic
-float x = 10.5
-float y = 2.5
-float result = x / y     // 4.2
-
-// String operations
-string firstName = &quot;John&quot;
-string lastName = &quot;Doe&quot;
-string fullName = firstName + &quot; &quot; + lastName  // &quot;John Doe&quot;
-
-// Boolean logic
-bool hasAccount = true
-bool isAdmin = false
-bool hasAccess = hasAccount &amp;&amp; isAdmin  // false (logical AND)
-bool canLogin = hasAccount || isAdmin   // true (logical OR)
-bool isLocked = !hasAccount             // false (logical NOT)
-</code></pre>
-<h2 id="implementation-status">Implementation Status</h2>
-<p>All primitive types are fully supported in the current compiler. The following features are not yet implemented:</p>
+<h3 id="planned-for-version-040">Planned for Version 0.4.0</h3>
 <ul>
-<li>Tuple operations (creation, access, manipulation)</li>
-<li>Generic type placeholders and type parameters</li>
-<li>Type inference</li>
-<li>Declaration without initialization</li>
+<li>Basic class system with instance fields and methods</li>
+<li>Improved standard library with more built-in functions</li>
+<li>Support for importing code from other files</li>
+<li>Optional and named function parameters</li>
+</ul>
+<h3 id="long-term-goals">Long-term Goals</h3>
+<ul>
+<li>Full object-oriented programming support with inheritance</li>
+<li>Module system for code organization</li>
+<li>Tuple types and operations</li>
+<li>Generic type parameters</li>
+<li>First-class functions and closures</li>
+<li>Additional language tooling (formatter, linter, debugger)</li>
 </ul>
 
 
