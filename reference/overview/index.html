@@ -8,26 +8,28 @@
       
       
       
-        <link rel="canonical" href="https://alec-jensen.github.io/firescript/">
+        <link rel="canonical" href="https://alec-jensen.github.io/firescript/reference/overview/">
       
       
+        <link rel="prev" href="../../language_specification/">
       
-        <link rel="next" href="language_specification/">
+      
+        <link rel="next" href="../variables/">
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
-        <title>firescript</title>
+        <title>Overview - firescript</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.2afb09e1.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.2afb09e1.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -46,7 +48,7 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -72,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#firescript-v020-documentation" class="md-skip">
+        <a href="#language-reference-overview" class="md-skip">
           Skip to content
         </a>
       
@@ -86,7 +88,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
+    <a href="../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -106,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Overview
             
           </span>
         </div>
@@ -217,11 +219,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="." class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -240,7 +240,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="language_specification/" class="md-tabs__link">
+      <a href="../../language_specification/" class="md-tabs__link">
         
   
   
@@ -257,11 +257,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="reference/overview/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   
@@ -279,7 +281,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="changelog/" class="md-tabs__link">
+      <a href="../../changelog/" class="md-tabs__link">
         
   
   
@@ -314,7 +316,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
+    <a href="../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -341,6 +343,96 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language_specification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Language Specification
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
     
   
   
@@ -358,7 +450,7 @@
   
   
   <span class="md-ellipsis">
-    Home
+    Overview
     
   </span>
   
@@ -366,12 +458,12 @@
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="." class="md-nav__link md-nav__link--active">
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
   <span class="md-ellipsis">
-    Home
+    Overview
     
   </span>
   
@@ -394,61 +486,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-language-reference-manual" class="md-nav__link">
+  <a href="#core-design-principles" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Language Reference Manual
+      Core Design Principles
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-getting-started-tutorials" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Getting Started &amp; Tutorials
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-language-features" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Language Features
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-standard-library-reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. Standard Library Reference
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Examples
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-changelog" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Changelog
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Changelog">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#implementation-status" class="md-nav__link">
     <span class="md-ellipsis">
       Implementation Status
@@ -456,9 +502,31 @@
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting Started
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      Detailed Reference
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Code
+    </span>
+  </a>
   
 </li>
       
@@ -469,91 +537,6 @@
     </li>
   
 
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="language_specification/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Language Specification
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Reference
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            Reference
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="reference/overview/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Overview
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
               
             
               
@@ -563,7 +546,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/variables/" class="md-nav__link">
+      <a href="../variables/" class="md-nav__link">
         
   
   
@@ -586,7 +569,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/arrays/" class="md-nav__link">
+      <a href="../arrays/" class="md-nav__link">
         
   
   
@@ -609,7 +592,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/control_flow/" class="md-nav__link">
+      <a href="../control_flow/" class="md-nav__link">
         
   
   
@@ -632,7 +615,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/functions/" class="md-nav__link">
+      <a href="../functions/" class="md-nav__link">
         
   
   
@@ -655,7 +638,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/classes/" class="md-nav__link">
+      <a href="../classes/" class="md-nav__link">
         
   
   
@@ -678,7 +661,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/scoping/" class="md-nav__link">
+      <a href="../scoping/" class="md-nav__link">
         
   
   
@@ -701,7 +684,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/type_system/" class="md-nav__link">
+      <a href="../type_system/" class="md-nav__link">
         
   
   
@@ -731,7 +714,7 @@
   
   
     <li class="md-nav__item">
-      <a href="changelog/" class="md-nav__link">
+      <a href="../../changelog/" class="md-nav__link">
         
   
   
@@ -773,61 +756,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-language-reference-manual" class="md-nav__link">
+  <a href="#core-design-principles" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Language Reference Manual
+      Core Design Principles
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-getting-started-tutorials" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Getting Started &amp; Tutorials
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-language-features" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Language Features
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-standard-library-reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. Standard Library Reference
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Examples
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-changelog" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Changelog
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Changelog">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#implementation-status" class="md-nav__link">
     <span class="md-ellipsis">
       Implementation Status
@@ -835,9 +772,31 @@
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting Started
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      Detailed Reference
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Code
+    </span>
+  </a>
   
 </li>
       
@@ -857,7 +816,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/README.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/reference/overview.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -865,53 +824,94 @@
   
 
 
-<h1 id="firescript-v020-documentation">firescript v0.2.0 Documentation<a class="headerlink" href="#firescript-v020-documentation" title="Permanent link">&para;</a></h1>
-<p><strong>Note:</strong> The current compiler does not support all language features. Unsupported features are explicitly marked in each guide with <strong>Not yet implemented</strong> or <strong>Note</strong>.</p>
-<p>This documentation is organized to help both newcomers and experienced developers understand and use the firescript language effectively.</p>
-<h2 id="1-language-reference-manual">1. Language Reference Manual<a class="headerlink" href="#1-language-reference-manual" title="Permanent link">&para;</a></h2>
+<h1 id="language-reference-overview">Language Reference Overview<a class="headerlink" href="#language-reference-overview" title="Permanent link">&para;</a></h1>
+<p>This section provides a comprehensive reference for the firescript programming language. firescript is a statically and strongly typed language that prioritizes readability, explicitness, and predictable behavior.</p>
+<h2 id="core-design-principles">Core Design Principles<a class="headerlink" href="#core-design-principles" title="Permanent link">&para;</a></h2>
+<p>firescript's design follows several key principles:</p>
 <ul>
-<li><a href="reference/type_system/">Type System</a> - Formal definition of types, nullability, arrays</li>
-<li><a href="reference/scoping/">Scoping Rules</a> - Variable visibility, lifetime, and scope creation</li>
-<li><a href="reference/control_flow/">Control Flow</a> - Conditional statements and loops</li>
+<li><strong>Static &amp; Strong Typing</strong>: Every variable has a defined type that is checked at compile-time</li>
+<li><strong>Explicit Behavior</strong>: No implicit type conversions or hidden behaviors</li>
+<li><strong>Simple Syntax</strong>: Draws inspiration from C, Java, JavaScript, and Python</li>
+<li><strong>Consistent Rules</strong>: Language constructs follow consistent patterns</li>
+<li><strong>Predictable Execution</strong>: Code behaves as written, minimizing surprises</li>
 </ul>
-<h2 id="2-getting-started-tutorials">2. Getting Started &amp; Tutorials<a class="headerlink" href="#2-getting-started-tutorials" title="Permanent link">&para;</a></h2>
+<h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
+<p>The firescript compiler is under active development. Current status:</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Primitive Types</td>
+<td>✅ Complete</td>
+<td><code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>char</code></td>
+</tr>
+<tr>
+<td>Arrays</td>
+<td>⚠️ Partial</td>
+<td>Basic operations work; slicing not implemented</td>
+</tr>
+<tr>
+<td>Control Flow</td>
+<td>⚠️ Partial</td>
+<td><code>if/else</code> and <code>while</code> loops work; <code>for</code> loops planned</td>
+</tr>
+<tr>
+<td>Functions</td>
+<td>⚠️ Partial</td>
+<td>Built-in functions work; user-defined functions planned</td>
+</tr>
+<tr>
+<td>Classes</td>
+<td>❌ Planned</td>
+<td>Object-oriented features planned for future versions</td>
+</tr>
+<tr>
+<td>Modules</td>
+<td>❌ Planned</td>
+<td>Code organization across files planned for future versions</td>
+</tr>
+</tbody>
+</table>
+<h2 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>
+<p>For those new to firescript, we recommend starting with the following guides:</p>
+<ol>
+<li><a href="../variables/">Types &amp; Variables</a> - Learn how to declare and use variables</li>
+<li><a href="../arrays/">Arrays</a> - Working with collections of data</li>
+<li><a href="../control_flow/">Control Flow</a> - Conditionals and loops</li>
+<li><a href="../functions/">Functions &amp; Methods</a> - Using built-in functions</li>
+</ol>
+<h2 id="detailed-reference">Detailed Reference<a class="headerlink" href="#detailed-reference" title="Permanent link">&para;</a></h2>
+<p>For more detailed information, each section of this reference covers specific aspects of the language:</p>
 <ul>
-<li><a href="reference/variables/">Types &amp; Variables</a> - Basic variable declarations and types</li>
-<li><a href="reference/arrays/">Arrays</a> - Working with array data structures</li>
-<li><a href="reference/functions/">Functions &amp; Methods</a> - Built-in functions and user-defined functions</li>
+<li><a href="../type_system/">Type System</a> - Comprehensive information about the firescript type system</li>
+<li><a href="../scoping/">Scoping Rules</a> - How variable scoping works</li>
+<li><a href="../classes/">Classes &amp; Inheritance</a> - Object-oriented programming (future)</li>
 </ul>
-<h2 id="3-language-features">3. Language Features<a class="headerlink" href="#3-language-features" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="reference/classes/">Classes &amp; Inheritance</a> - Object-oriented programming fundamentals</li>
-</ul>
-<h2 id="4-standard-library-reference">4. Standard Library Reference<a class="headerlink" href="#4-standard-library-reference" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Built-in functions: <code>print</code>, <code>input</code>, <code>toInt</code>, <code>toFloat</code>, etc.</li>
-<li>Array operations: <code>append</code>, <code>insert</code>, <code>pop</code>, <code>clear</code>, <code>length</code></li>
-</ul>
-<h2 id="5-examples">5. Examples<a class="headerlink" href="#5-examples" title="Permanent link">&para;</a></h2>
-<p>Check the <code>/examples</code> directory for complete code samples:</p>
-<ul>
-<li>Basic usage of built-in functions</li>
-<li>Fibonacci sequence implementation</li>
-<li>Array manipulation</li>
-<li>Scope and variable visibility demonstrations</li>
-</ul>
-<h2 id="6-changelog">6. Changelog<a class="headerlink" href="#6-changelog" title="Permanent link">&para;</a></h2>
-<p>For the latest updates and changes to the firescript language, see the <a href="changelog/">changelog</a>.</p>
-<hr />
-<h3 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h3>
-<p>firescript is under active development. Key limitations in the current compiler version:</p>
-<ul>
-<li>✅ Primitive types (<code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>char</code>) are fully supported.</li>
-<li>✅ Arrays support basic operations: <code>append</code>, <code>insert</code>, <code>pop</code>, <code>clear</code>, and <code>length</code>.</li>
-<li>✅ Static type checking for expressions and assignments.</li>
-<li>✅ Built-in functions: <code>print</code>, <code>input</code>, and type conversions.</li>
-<li>❌ User-defined functions are not yet implemented.</li>
-<li>❌ Classes and inheritance are planned but not implemented.</li>
-<li>❌ Advanced array features like slicing and negative indices are not supported.</li>
-<li>❌ Control flow is limited to <code>if</code>/<code>else</code> and <code>while</code> loops; <code>for</code> loops and <code>switch</code> statements are not implemented.</li>
-</ul>
+<h2 id="example-code">Example Code<a class="headerlink" href="#example-code" title="Permanent link">&para;</a></h2>
+<pre><code class="language-firescript">// Calculate fibonacci numbers
+int i = 0;
+int j = 1;
+int count = 10;
+
+print(&quot;Fibonacci Sequence:&quot;);
+print(i);
+print(j);
+
+while (count &gt; 0) {
+    int next = i + j;
+    print(next);
+    i = j;
+    j = next;
+    count = count - 1;
+}
+</code></pre>
+<p>For the complete language specification, see the <a href="../../language_specification/">Language Specification</a> document.</p>
 
 
 
@@ -940,15 +940,31 @@
       
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
+          
+          <a href="../../language_specification/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Language Specification">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Language Specification
+              </div>
+            </div>
+          </a>
+        
         
           
-          <a href="language_specification/" class="md-footer__link md-footer__link--next" aria-label="Next: Language Specification">
+          <a href="../variables/" class="md-footer__link md-footer__link--next" aria-label="Next: Types &amp; Variables">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Language Specification
+                Types & Variables
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -988,10 +1004,10 @@
     
     
       
-      <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.c8b220af.min.js"></script>
+      <script src="../../assets/javascripts/bundle.c8b220af.min.js"></script>
       
     
   </body>
