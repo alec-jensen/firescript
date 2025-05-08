@@ -12,6 +12,10 @@ theme:
     - search.highlight
     - content.code.copy
     - content.action.edit
+# GitHub Pages deployment configuration
+deploy:
+  provider: github
+  branch: gh-pages
 nav:
   - Home: README.md
   - Language Specification: language_specification.md

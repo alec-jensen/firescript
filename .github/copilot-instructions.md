@@ -1,1 +1,1 @@
-The project name is "firescript", all lowercase. Do not capitalize it.
+The project name is "firescript", all lowercase. Do not capitalize it. Make sure you are not removing random code.
