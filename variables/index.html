@@ -912,11 +912,11 @@
   
 
 
-<h1 id="types-variables">Types &amp; Variables</h1>
+<h1 id="types-variables">Types &amp; Variables<a class="headerlink" href="#types-variables" title="Permanent link">&para;</a></h1>
 <p><strong>Note:</strong> Tuple types, the generic placeholder <code>T</code>, and declarations without an initializer are not supported by the compiler. Only built-in primitive types (<code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>char</code>) are fully implemented.</p>
-<h2 id="primitive-types">Primitive Types</h2>
+<h2 id="primitive-types">Primitive Types<a class="headerlink" href="#primitive-types" title="Permanent link">&para;</a></h2>
 <p>firescript supports several built-in primitive types. For detailed information about the type system, see the <a href="../type_system/">Type System</a> documentation.</p>
-<h3 id="numeric-types">Numeric Types</h3>
+<h3 id="numeric-types">Numeric Types<a class="headerlink" href="#numeric-types" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>int</code>: Integer numbers with arbitrary precision</li>
 </ul>
@@ -935,14 +935,14 @@ float smallValue = 0.000001;
 <pre><code class="language-firescript">double pi = 3.14159265359;
 double scientificNotation = 6.022e23;  // Scientific notation
 </code></pre>
-<h3 id="boolean-type">Boolean Type</h3>
+<h3 id="boolean-type">Boolean Type<a class="headerlink" href="#boolean-type" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>bool</code>: Boolean values (<code>true</code> or <code>false</code>)</li>
 </ul>
 <pre><code class="language-firescript">bool isActive = true;
 bool hasPermission = false;
 </code></pre>
-<h3 id="text-types">Text Types</h3>
+<h3 id="text-types">Text Types<a class="headerlink" href="#text-types" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>string</code>: Text strings, enclosed in double quotes</li>
 </ul>
@@ -957,18 +957,18 @@ multi-line string&quot;;
 <pre><code class="language-firescript">char letter = &quot;A&quot;;
 char symbol = &quot;*&quot;;
 </code></pre>
-<h2 id="declaration-and-initialization">Declaration and Initialization</h2>
+<h2 id="declaration-and-initialization">Declaration and Initialization<a class="headerlink" href="#declaration-and-initialization" title="Permanent link">&para;</a></h2>
 <p>Variables in firescript must be declared with an explicit type and initialized in the same statement:</p>
 <pre><code class="language-firescript">int age = 30;
 string name = &quot;Alice&quot;;
 bool isRegistered = false;
 </code></pre>
-<h3 id="type-inference">Type Inference</h3>
+<h3 id="type-inference">Type Inference<a class="headerlink" href="#type-inference" title="Permanent link">&para;</a></h3>
 <p>firescript does not support automatic type inference:</p>
 <pre><code class="language-firescript">var score = 95;  // Not supported - must specify the type explicitly
 int score = 95;  // Supported
 </code></pre>
-<h3 id="constants">Constants</h3>
+<h3 id="constants">Constants<a class="headerlink" href="#constants" title="Permanent link">&para;</a></h3>
 <p>Use the <code>const</code> keyword to declare immutable variables:</p>
 <pre><code class="language-firescript">const int MAX_USERS = 100;
 const string APP_VERSION = &quot;1.0.0&quot;;
@@ -977,7 +977,7 @@ const string APP_VERSION = &quot;1.0.0&quot;;
 <pre><code class="language-firescript">const float PI = 3.14;
 PI = 3.14159;  // Error: cannot reassign a constant
 </code></pre>
-<h2 id="nullability">Nullability</h2>
+<h2 id="nullability">Nullability<a class="headerlink" href="#nullability" title="Permanent link">&para;</a></h2>
 <p>By default, variables cannot be assigned <code>null</code>. The <code>nullable</code> keyword explicitly allows a variable to hold <code>null</code>:</p>
 <pre><code class="language-firescript">nullable string username = null;  // Valid
 string password = null;           // Invalid - non-nullable type cannot hold null
@@ -990,7 +990,7 @@ if (message != null) {
     print(message);
 }
 </code></pre>
-<h2 id="implementation-status">Implementation Status</h2>
+<h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <p>All primitive types are fully supported in the current compiler. The following features are not yet implemented:</p>
 <ul>
 <li>Tuple operations (creation, access, manipulation)</li>

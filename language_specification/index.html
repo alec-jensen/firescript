@@ -1290,26 +1290,26 @@
   
 
 
-<h1 id="firescript-language-specification">firescript Language Specification</h1>
+<h1 id="firescript-language-specification">firescript Language Specification<a class="headerlink" href="#firescript-language-specification" title="Permanent link">&para;</a></h1>
 <p>This document serves as the formal reference for the firescript programming language's syntax and semantics.</p>
-<h2 id="1-lexical-structure">1. Lexical Structure</h2>
-<h3 id="character-set">Character Set</h3>
+<h2 id="1-lexical-structure">1. Lexical Structure<a class="headerlink" href="#1-lexical-structure" title="Permanent link">&para;</a></h2>
+<h3 id="character-set">Character Set<a class="headerlink" href="#character-set" title="Permanent link">&para;</a></h3>
 <p>firescript source files are Unicode text files. The lexical grammar is defined in terms of Unicode code points.</p>
-<h3 id="comments">Comments</h3>
+<h3 id="comments">Comments<a class="headerlink" href="#comments" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Single line comment
 
 /* Multi-line
    comment */
 </code></pre>
-<h3 id="tokens">Tokens</h3>
+<h3 id="tokens">Tokens<a class="headerlink" href="#tokens" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Keywords</strong>: <code>if</code>, <code>else</code>, <code>elif</code>, <code>while</code>, <code>for</code>, <code>break</code>, <code>continue</code>, <code>return</code>, <code>nullable</code>, <code>generator</code>, <code>const</code>, <code>ternary</code>, <code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>tuple</code></li>
 <li><strong>Operators</strong>: Assignment (<code>=</code>), Arithmetic (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code>, <code>**</code>), Comparison (<code>==</code>, <code>!=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>), Logical (<code>&amp;&amp;</code>, <code>||</code>, <code>!</code>)</li>
 <li><strong>Separators</strong>: <code>;</code>, <code>,</code>, <code>.</code>, <code>(</code>, <code>)</code>, <code>[</code>, <code>]</code>, <code>{</code>, <code>}</code></li>
 <li><strong>Literals</strong>: Integer, floating-point, double, boolean, string, null</li>
 </ul>
-<h2 id="2-types">2. Types</h2>
-<h3 id="primitive-types">Primitive Types</h3>
+<h2 id="2-types">2. Types<a class="headerlink" href="#2-types" title="Permanent link">&para;</a></h2>
+<h3 id="primitive-types">Primitive Types<a class="headerlink" href="#primitive-types" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>int</code>: Integer numbers with arbitrary precision</li>
 <li><code>float</code>: Single-precision floating-point numbers</li>
@@ -1318,28 +1318,28 @@
 <li><code>string</code>: Text strings</li>
 <li><code>char</code>: Single characters (currently handled similarly to strings)</li>
 </ul>
-<h3 id="nullability">Nullability</h3>
+<h3 id="nullability">Nullability<a class="headerlink" href="#nullability" title="Permanent link">&para;</a></h3>
 <p>By default, variables cannot hold the value <code>null</code>. The <code>nullable</code> keyword must be used to explicitly allow variables to be assigned <code>null</code>.</p>
 <pre><code class="language-firescript">nullable string name = null;  // Valid
 string title = null;          // Invalid - cannot assign null to non-nullable type
 </code></pre>
-<h3 id="arrays">Arrays</h3>
+<h3 id="arrays">Arrays<a class="headerlink" href="#arrays" title="Permanent link">&para;</a></h3>
 <p>Arrays are dynamically sized ordered collections of elements of the same type.</p>
 <pre><code class="language-firescript">int[] numbers = [1, 2, 3];
 string[] names = [&quot;Alice&quot;, &quot;Bob&quot;];
 </code></pre>
-<h2 id="3-variable-declarations-and-assignments">3. Variable Declarations and Assignments</h2>
-<h3 id="declaration-syntax">Declaration Syntax</h3>
+<h2 id="3-variable-declarations-and-assignments">3. Variable Declarations and Assignments<a class="headerlink" href="#3-variable-declarations-and-assignments" title="Permanent link">&para;</a></h2>
+<h3 id="declaration-syntax">Declaration Syntax<a class="headerlink" href="#declaration-syntax" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">[nullability-modifier] [const-modifier] type identifier = expression;
 </code></pre>
-<h3 id="examples">Examples</h3>
+<h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">int count = 10;
 nullable string message = null;
 const float PI = 3.14;
 bool isActive = true;
 </code></pre>
-<h2 id="4-expressions">4. Expressions</h2>
-<h3 id="primary-expressions">Primary Expressions</h3>
+<h2 id="4-expressions">4. Expressions<a class="headerlink" href="#4-expressions" title="Permanent link">&para;</a></h2>
+<h3 id="primary-expressions">Primary Expressions<a class="headerlink" href="#primary-expressions" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Variables: <code>x</code></li>
 <li>Literals: <code>42</code>, <code>3.14</code>, <code>"hello"</code>, <code>true</code>, <code>null</code></li>
@@ -1348,7 +1348,7 @@ bool isActive = true;
 <li>Method calls: <code>array.append(5)</code></li>
 <li>Array access: <code>scores[0]</code></li>
 </ul>
-<h3 id="operators-in-order-of-precedence">Operators (in order of precedence)</h3>
+<h3 id="operators-in-order-of-precedence">Operators (in order of precedence)<a class="headerlink" href="#operators-in-order-of-precedence" title="Permanent link">&para;</a></h3>
 <ol>
 <li>Method/property access: <code>.</code></li>
 <li>Array access: <code>[]</code></li>
@@ -1363,8 +1363,8 @@ bool isActive = true;
 <li>Logical OR: <code>||</code></li>
 <li>Assignment: <code>=</code>, <code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code>, <code>%=</code>, <code>**=</code></li>
 </ol>
-<h2 id="5-control-flow">5. Control Flow</h2>
-<h3 id="conditional-statements">Conditional Statements</h3>
+<h2 id="5-control-flow">5. Control Flow<a class="headerlink" href="#5-control-flow" title="Permanent link">&para;</a></h2>
+<h3 id="conditional-statements">Conditional Statements<a class="headerlink" href="#conditional-statements" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">if (condition) {
     // then branch
 } else if (otherCondition) {
@@ -1373,27 +1373,27 @@ bool isActive = true;
     // else branch
 }
 </code></pre>
-<h3 id="while-loop">While Loop</h3>
+<h3 id="while-loop">While Loop<a class="headerlink" href="#while-loop" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">while (condition) {
     // body
 }
 </code></pre>
-<h2 id="6-functions">6. Functions</h2>
-<h3 id="built-in-functions">Built-in Functions</h3>
+<h2 id="6-functions">6. Functions<a class="headerlink" href="#6-functions" title="Permanent link">&para;</a></h2>
+<h3 id="built-in-functions">Built-in Functions<a class="headerlink" href="#built-in-functions" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>print(value)</code>: Output a value</li>
 <li><code>input(prompt)</code>: Read string from console</li>
 <li><code>toInt(x)</code>, <code>toFloat(x)</code>, <code>toDouble(x)</code>, <code>toBool(x)</code>, <code>toString(x)</code>, <code>toChar(x)</code>: Type conversions</li>
 <li><code>typeof(x)</code>: Returns type name</li>
 </ul>
-<h3 id="user-defined-functions-syntax">User-defined Functions (Syntax)</h3>
+<h3 id="user-defined-functions-syntax">User-defined Functions (Syntax)<a class="headerlink" href="#user-defined-functions-syntax" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">returnType functionName(paramType1 param1, paramType2 param2) {
     // function body
     return expression;
 }
 </code></pre>
-<h2 id="7-arrays">7. Arrays</h2>
-<h3 id="operations">Operations</h3>
+<h2 id="7-arrays">7. Arrays<a class="headerlink" href="#7-arrays" title="Permanent link">&para;</a></h2>
+<h3 id="operations">Operations<a class="headerlink" href="#operations" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>append(element)</code>: Add to end</li>
 <li><code>insert(index, element)</code>: Insert at position</li>
@@ -1401,10 +1401,10 @@ bool isActive = true;
 <li><code>clear()</code>: Remove all elements</li>
 <li><code>length</code>: Property for size</li>
 </ul>
-<h2 id="8-scoping-rules">8. Scoping Rules</h2>
+<h2 id="8-scoping-rules">8. Scoping Rules<a class="headerlink" href="#8-scoping-rules" title="Permanent link">&para;</a></h2>
 <p>A new scope is created by any set of curly braces <code>{}</code>. Variables declared in an inner scope are not accessible in outer scopes. Variables declared in an outer scope are accessible in inner scopes. Variable shadowing is not allowed.</p>
-<h2 id="9-syntax-flexibility">9. Syntax Flexibility</h2>
-<h3 id="whitespace-handling">Whitespace Handling</h3>
+<h2 id="9-syntax-flexibility">9. Syntax Flexibility<a class="headerlink" href="#9-syntax-flexibility" title="Permanent link">&para;</a></h2>
+<h3 id="whitespace-handling">Whitespace Handling<a class="headerlink" href="#whitespace-handling" title="Permanent link">&para;</a></h3>
 <p>firescript is flexible with whitespace, which means that spaces, tabs, and line breaks are largely ignored by the compiler. While proper formatting with indentation and spacing is recommended for readability, the language allows code to be written in a more compact form.</p>
 <p>For example, the following well-formatted code:</p>
 <pre><code class="language-firescript">int x = 1;
@@ -1421,7 +1421,7 @@ while (i &lt; 10) {
 <pre><code class="language-firescript">intx=1;x+=2;print(x);inti=0;while(i&lt;10){x+=i;i++;print(x);}
 </code></pre>
 <p>Although the compiler accepts both forms, it is strongly recommended to use clear formatting with appropriate whitespace for better code readability and maintainability.</p>
-<h2 id="10-not-yet-implemented-features">10. Not Yet Implemented Features</h2>
+<h2 id="10-not-yet-implemented-features">10. Not Yet Implemented Features<a class="headerlink" href="#10-not-yet-implemented-features" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Array slicing and negative indices</li>
 <li>typeof() function</li>

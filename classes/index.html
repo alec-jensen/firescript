@@ -1050,11 +1050,11 @@
   
 
 
-<h1 id="classes-inheritance">Classes &amp; Inheritance</h1>
+<h1 id="classes-inheritance">Classes &amp; Inheritance<a class="headerlink" href="#classes-inheritance" title="Permanent link">&para;</a></h1>
 <p><strong>Note:</strong> Class definitions, inheritance, and methods are currently not supported by the compiler. This documentation describes the planned implementation.</p>
-<h2 id="object-oriented-programming-in-firescript">Object-Oriented Programming in firescript</h2>
+<h2 id="object-oriented-programming-in-firescript">Object-Oriented Programming in firescript<a class="headerlink" href="#object-oriented-programming-in-firescript" title="Permanent link">&para;</a></h2>
 <p>firescript's class system is designed to provide a clean, intuitive approach to object-oriented programming with features like single inheritance, constructors, and both instance and static methods.</p>
-<h2 id="defining-a-class">Defining a Class</h2>
+<h2 id="defining-a-class">Defining a Class<a class="headerlink" href="#defining-a-class" title="Permanent link">&para;</a></h2>
 <p>A class in firescript is defined using the <code>class</code> keyword, followed by the class name and a block containing fields and methods:</p>
 <pre><code class="language-firescript">class Person {
     // Fields (instance variables)
@@ -1093,7 +1093,7 @@
     }
 }
 </code></pre>
-<h3 id="fields">Fields</h3>
+<h3 id="fields">Fields<a class="headerlink" href="#fields" title="Permanent link">&para;</a></h3>
 <p>Fields declare the data that each instance of a class will contain. Each field must have a type:</p>
 <pre><code class="language-firescript">class Rectangle {
     float width;
@@ -1107,7 +1107,7 @@
     nullable string lastUser;    // Can be null
 }
 </code></pre>
-<h3 id="constructors">Constructors</h3>
+<h3 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h3>
 <p>Constructors are special methods that initialize a new instance of a class. They always take <code>this</code> as their first parameter, which refers to the instance being created:</p>
 <pre><code class="language-firescript">class Point {
     float x;
@@ -1126,7 +1126,7 @@
     }
 }
 </code></pre>
-<h3 id="instance-methods">Instance Methods</h3>
+<h3 id="instance-methods">Instance Methods<a class="headerlink" href="#instance-methods" title="Permanent link">&para;</a></h3>
 <p>Instance methods are functions that belong to an instance of a class. They always take <code>this</code> as their first parameter:</p>
 <pre><code class="language-firescript">class Circle {
     float radius;
@@ -1149,7 +1149,7 @@
     }
 }
 </code></pre>
-<h3 id="static-methods">Static Methods</h3>
+<h3 id="static-methods">Static Methods<a class="headerlink" href="#static-methods" title="Permanent link">&para;</a></h3>
 <p>Static methods belong to the class itself rather than any instance. They don't take a <code>this</code> parameter:</p>
 <pre><code class="language-firescript">class MathUtils {
     // Static methods
@@ -1166,7 +1166,7 @@
     }
 }
 </code></pre>
-<h2 id="creating-and-using-objects">Creating and Using Objects</h2>
+<h2 id="creating-and-using-objects">Creating and Using Objects<a class="headerlink" href="#creating-and-using-objects" title="Permanent link">&para;</a></h2>
 <p>Once a class is defined, you can create instances (objects) of that class:</p>
 <pre><code class="language-firescript">// Creating objects
 Person alice = Person(&quot;Alice&quot;, 30, true);
@@ -1179,7 +1179,7 @@ alice.celebrate();
 // Using static methods
 string speciesName = Person.species();
 </code></pre>
-<h2 id="inheritance">Inheritance</h2>
+<h2 id="inheritance">Inheritance<a class="headerlink" href="#inheritance" title="Permanent link">&para;</a></h2>
 <p>Inheritance allows a class to inherit fields and methods from another class. firescript supports single inheritance using the <code>from</code> keyword:</p>
 <pre><code class="language-firescript">class Student from Person {
     string school;
@@ -1208,7 +1208,7 @@ string speciesName = Person.species();
     }
 }
 </code></pre>
-<h3 id="method-overriding">Method Overriding</h3>
+<h3 id="method-overriding">Method Overriding<a class="headerlink" href="#method-overriding" title="Permanent link">&para;</a></h3>
 <p>Child classes can override methods from the parent class. To call the parent class's implementation, use <code>super</code>:</p>
 <pre><code class="language-firescript">class Shape {
     string color;
@@ -1236,7 +1236,7 @@ class Square from Shape {
     }
 }
 </code></pre>
-<h2 id="polymorphism">Polymorphism</h2>
+<h2 id="polymorphism">Polymorphism<a class="headerlink" href="#polymorphism" title="Permanent link">&para;</a></h2>
 <p>Polymorphism allows objects of different classes in the same inheritance hierarchy to be treated as objects of a common superclass:</p>
 <pre><code class="language-firescript">// Example of future planned polymorphism
 Person[] people = [
@@ -1250,9 +1250,9 @@ while (i &lt; people.length) {
     i = i + 1;
 }
 </code></pre>
-<h2 id="planned-class-features-not-yet-implemented">Planned Class Features (Not Yet Implemented)</h2>
+<h2 id="planned-class-features-not-yet-implemented">Planned Class Features (Not Yet Implemented)<a class="headerlink" href="#planned-class-features-not-yet-implemented" title="Permanent link">&para;</a></h2>
 <p>The following features are planned for future versions of firescript:</p>
-<h3 id="interfaces">Interfaces</h3>
+<h3 id="interfaces">Interfaces<a class="headerlink" href="#interfaces" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Future syntax
 interface Drawable {
     void draw(this)
@@ -1270,7 +1270,7 @@ class Circle implements Drawable {
     }
 }
 </code></pre>
-<h3 id="generics-on-classes">Generics on Classes</h3>
+<h3 id="generics-on-classes">Generics on Classes<a class="headerlink" href="#generics-on-classes" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Future syntax
 class Box&lt;T&gt; {
     nullable T value;
@@ -1292,7 +1292,7 @@ class Box&lt;T&gt; {
 Box&lt;int&gt; intBox = Box&lt;int&gt;();
 intBox.set(42);
 </code></pre>
-<h3 id="abstract-classes-and-methods">Abstract Classes and Methods</h3>
+<h3 id="abstract-classes-and-methods">Abstract Classes and Methods<a class="headerlink" href="#abstract-classes-and-methods" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Future syntax
 abstract class Animal {
     string species;
@@ -1317,14 +1317,14 @@ class Cat from Animal {
     }
 }
 </code></pre>
-<h2 id="best-practices-for-class-design">Best Practices for Class Design</h2>
+<h2 id="best-practices-for-class-design">Best Practices for Class Design<a class="headerlink" href="#best-practices-for-class-design" title="Permanent link">&para;</a></h2>
 <ol>
 <li><strong>Single Responsibility Principle</strong>: Each class should have only one reason to change.\</li>
 <li><strong>Favor Composition Over Inheritance</strong>: Use object composition rather than complex inheritance hierarchies.</li>
 <li><strong>Keep Inheritance Hierarchies Shallow</strong>: Deep inheritance can lead to complexity.</li>
 <li><strong>Use Descriptive Names</strong>: Class names should be nouns, method names should be verbs.</li>
 </ol>
-<h2 id="implementation-status">Implementation Status</h2>
+<h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <p>Classes in firescript are planned but not yet implemented in the current compiler:</p>
 <ul>
 <li>❌ Class definitions</li>

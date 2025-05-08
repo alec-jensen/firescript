@@ -1248,9 +1248,9 @@
   
 
 
-<h1 id="type-system-in-firescript">Type System in firescript</h1>
+<h1 id="type-system-in-firescript">Type System in firescript<a class="headerlink" href="#type-system-in-firescript" title="Permanent link">&para;</a></h1>
 <p>firescript employs a static type system to enhance code reliability and catch errors early during the compilation phase. This means that the type of every variable and expression is checked before the code is run.</p>
-<h2 id="built-in-types">Built-in Types</h2>
+<h2 id="built-in-types">Built-in Types<a class="headerlink" href="#built-in-types" title="Permanent link">&para;</a></h2>
 <p>firescript provides several fundamental data types:</p>
 <ul>
 <li><strong><code>int</code></strong>: Represents whole numbers (integers). Example: <code>int age = 30;</code></li>
@@ -1261,8 +1261,8 @@
 <li><strong><code>char</code></strong>: Represents a single character. (Note: Currently handled similarly to strings in some contexts, formal <code>char</code> type might be refined). Example: <code>char initial = "A";</code></li>
 <li><strong><code>void</code></strong>: Represents the absence of a type, primarily used as the return type for functions that do not return a value.</li>
 </ul>
-<h2 id="type-semantics">Type Semantics</h2>
-<h3 id="integer-type-int">Integer Type (<code>int</code>)</h3>
+<h2 id="type-semantics">Type Semantics<a class="headerlink" href="#type-semantics" title="Permanent link">&para;</a></h2>
+<h3 id="integer-type-int">Integer Type (<code>int</code>)<a class="headerlink" href="#integer-type-int" title="Permanent link">&para;</a></h3>
 <p>The <code>int</code> type in firescript represents integers with arbitrary precision. There is no explicit size limit as in languages like C/C++, making it similar to Python integers that can grow as needed.</p>
 <pre><code class="language-firescript">int small = 42;
 int large = 9223372036854775807;  // Large integers are supported
@@ -1274,7 +1274,7 @@ int calculation = (small + large) * 2;  // Arithmetic operations
 <li>Comparison: <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></li>
 <li>Bit manipulation (planned but not yet implemented): <code>&amp;</code>, <code>|</code>, <code>^</code>, <code>~</code>, <code>&lt;&lt;</code>, <code>&gt;&gt;</code></li>
 </ul>
-<h3 id="floating-point-types-float-and-double">Floating Point Types (<code>float</code> and <code>double</code>)</h3>
+<h3 id="floating-point-types-float-and-double">Floating Point Types (<code>float</code> and <code>double</code>)<a class="headerlink" href="#floating-point-types-float-and-double" title="Permanent link">&para;</a></h3>
 <p>The <code>float</code> type represents 32-bit floating-point numbers, while <code>double</code> represents 64-bit floating-point numbers with greater precision.</p>
 <pre><code class="language-firescript">float simpleDecimal = 3.14;
 double highPrecision = 3.141592653589793;
@@ -1288,7 +1288,7 @@ float tiny = 1.6e-19;
 <li>Arithmetic: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>**</code> (power)</li>
 <li>Comparison: <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></li>
 </ul>
-<h3 id="boolean-type-bool">Boolean Type (<code>bool</code>)</h3>
+<h3 id="boolean-type-bool">Boolean Type (<code>bool</code>)<a class="headerlink" href="#boolean-type-bool" title="Permanent link">&para;</a></h3>
 <p>The <code>bool</code> type has only two possible values: <code>true</code> and <code>false</code>. It's commonly used in conditional expressions.</p>
 <pre><code class="language-firescript">bool userLoggedIn = true;
 bool hasPermission = false;
@@ -1302,7 +1302,7 @@ bool needsAttention = !userLoggedIn || !hasPermission;  // Logical OR and NOT
 <li>Logical operations: <code>&amp;&amp;</code> (AND), <code>||</code> (OR), <code>!</code> (NOT)</li>
 <li>Comparison: <code>==</code>, <code>!=</code></li>
 </ul>
-<h3 id="string-type-string">String Type (<code>string</code>)</h3>
+<h3 id="string-type-string">String Type (<code>string</code>)<a class="headerlink" href="#string-type-string" title="Permanent link">&para;</a></h3>
 <p>The <code>string</code> type represents sequences of characters. Strings in firescript are immutable (cannot be changed after creation).</p>
 <pre><code class="language-firescript">string greeting = &quot;Hello&quot;;
 string name = &quot;World&quot;;
@@ -1318,15 +1318,15 @@ string&quot;;
 <li>Concatenation: <code>+</code></li>
 <li>Comparison: <code>==</code>, <code>!=</code></li>
 </ul>
-<h3 id="character-type-char">Character Type (<code>char</code>)</h3>
+<h3 id="character-type-char">Character Type (<code>char</code>)<a class="headerlink" href="#character-type-char" title="Permanent link">&para;</a></h3>
 <p>The <code>char</code> type represents a single character and is currently implemented as a string with length 1.</p>
 <pre><code class="language-firescript">char letter = &quot;A&quot;;
 char digit = &quot;7&quot;;
 char newline = &quot;\n&quot;;  // Special character
 </code></pre>
-<h3 id="arrays">Arrays</h3>
+<h3 id="arrays">Arrays<a class="headerlink" href="#arrays" title="Permanent link">&para;</a></h3>
 <p>Arrays are ordered collections of elements of the same type.</p>
-<h4 id="declaration-and-initialization">Declaration and Initialization</h4>
+<h4 id="declaration-and-initialization">Declaration and Initialization<a class="headerlink" href="#declaration-and-initialization" title="Permanent link">&para;</a></h4>
 <pre><code class="language-firescript">// With initial values
 int[] numbers = [1, 2, 3, 4, 5];
 string[] fruits = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;];
@@ -1334,7 +1334,7 @@ string[] fruits = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;];
 // Empty array
 bool[] flags = [];
 </code></pre>
-<h4 id="array-operations">Array Operations</h4>
+<h4 id="array-operations">Array Operations<a class="headerlink" href="#array-operations" title="Permanent link">&para;</a></h4>
 <pre><code class="language-firescript">int[] scores = [85, 92, 78];
 
 // Accessing elements (zero-based indexing)
@@ -1355,9 +1355,9 @@ int count = scores.length;  // 3
 // Clearing arrays
 scores.clear();  // Array becomes []
 </code></pre>
-<h2 id="nullability">Nullability</h2>
+<h2 id="nullability">Nullability<a class="headerlink" href="#nullability" title="Permanent link">&para;</a></h2>
 <p>By default, variables cannot hold the value <code>null</code>. To allow a variable to be assigned <code>null</code>, you must explicitly declare it as <code>nullable</code>.</p>
-<h3 id="declaring-nullable-variables">Declaring Nullable Variables</h3>
+<h3 id="declaring-nullable-variables">Declaring Nullable Variables<a class="headerlink" href="#declaring-nullable-variables" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">nullable string username = null;  // Allowed
 string title = &quot;Default&quot;;
 
@@ -1365,7 +1365,7 @@ string title = &quot;Default&quot;;
 
 username = &quot;John&quot;;  // Can be assigned a non-null value later
 </code></pre>
-<h3 id="working-with-nullable-values">Working with Nullable Values</h3>
+<h3 id="working-with-nullable-values">Working with Nullable Values<a class="headerlink" href="#working-with-nullable-values" title="Permanent link">&para;</a></h3>
 <p>When working with nullable variables, it's important to check for null before using them:</p>
 <pre><code class="language-firescript">nullable string data = null;
 
@@ -1377,9 +1377,9 @@ if (data != null) {
 // Could cause a runtime error if not checked
 print(data);  // Might try to print null
 </code></pre>
-<h2 id="type-compatibility-and-conversions">Type Compatibility and Conversions</h2>
+<h2 id="type-compatibility-and-conversions">Type Compatibility and Conversions<a class="headerlink" href="#type-compatibility-and-conversions" title="Permanent link">&para;</a></h2>
 <p>firescript has strict typing rules but provides explicit conversion functions for common type conversions.</p>
-<h3 id="built-in-type-conversion-functions">Built-in Type Conversion Functions</h3>
+<h3 id="built-in-type-conversion-functions">Built-in Type Conversion Functions<a class="headerlink" href="#built-in-type-conversion-functions" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// String to numeric conversions
 string numStr = &quot;42&quot;;
 int num = toInt(numStr);           // 42
@@ -1397,7 +1397,7 @@ string strFromBool = toString(false);  // &quot;false&quot;
 // Character conversion
 char first = toChar(&quot;Hello&quot;);  // &quot;H&quot; - first character of string
 </code></pre>
-<h3 id="implicit-type-conversions">Implicit Type Conversions</h3>
+<h3 id="implicit-type-conversions">Implicit Type Conversions<a class="headerlink" href="#implicit-type-conversions" title="Permanent link">&para;</a></h3>
 <p>firescript generally does not perform implicit type conversions, with some exceptions:</p>
 <ol>
 <li>In binary numeric operations (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, etc.) between different numeric types:</li>
@@ -1417,9 +1417,9 @@ double result2 = floatVal * doubleVal;  // Result is double 7.85
 <pre><code class="language-firescript">string message = &quot;Count: &quot; + 42;  // &quot;Count: 42&quot;
 string status = &quot;Active: &quot; + true;  // &quot;Active: true&quot;
 </code></pre>
-<h2 id="type-checking-and-enforcement">Type Checking and Enforcement</h2>
+<h2 id="type-checking-and-enforcement">Type Checking and Enforcement<a class="headerlink" href="#type-checking-and-enforcement" title="Permanent link">&para;</a></h2>
 <p>The firescript parser includes a type-checking phase that runs after the initial syntax parsing.</p>
-<h3 id="static-type-checking">Static Type Checking</h3>
+<h3 id="static-type-checking">Static Type Checking<a class="headerlink" href="#static-type-checking" title="Permanent link">&para;</a></h3>
 <ol>
 <li>
 <p><strong>Variable Declarations</strong>: When you declare a variable (<code>int x = 5;</code>), the type checker verifies that the type of the initializer (<code>5</code>, which is <code>int</code>) matches the declared type (<code>int</code>).</p>
@@ -1440,7 +1440,7 @@ string status = &quot;Active: &quot; + true;  // &quot;Active: true&quot;
 <p><strong>Array Operations</strong>: Indexing requires an integer, and assigning elements requires matching the array's element type.</p>
 </li>
 </ol>
-<h3 id="type-errors">Type Errors</h3>
+<h3 id="type-errors">Type Errors<a class="headerlink" href="#type-errors" title="Permanent link">&para;</a></h3>
 <p>Type errors found during the checking phase will prevent the code from compiling further, providing early feedback on potential issues:</p>
 <pre><code class="language-firescript">string name = &quot;John&quot;;
 int age = 30;
@@ -1450,7 +1450,7 @@ name = 25;       // Type error: Cannot assign int to string
 bool result = age + name;  // Type error: Cannot add int and string
                            // Also cannot assign result to bool
 </code></pre>
-<h2 id="type-introspection">Type Introspection</h2>
+<h2 id="type-introspection">Type Introspection<a class="headerlink" href="#type-introspection" title="Permanent link">&para;</a></h2>
 <p>The <code>typeof</code> built-in function returns a string representing the type of a value:</p>
 <pre><code class="language-firescript">// Future syntax
 string type1 = typeof(42);        // &quot;int&quot;
@@ -1459,16 +1459,16 @@ string type3 = typeof(&quot;hello&quot;);   // &quot;string&quot;
 string type4 = typeof(true);      // &quot;bool&quot;
 string type5 = typeof([1, 2, 3]); // &quot;int[]&quot;
 </code></pre>
-<h2 id="advanced-type-features-planned">Advanced Type Features (Planned)</h2>
+<h2 id="advanced-type-features-planned">Advanced Type Features (Planned)<a class="headerlink" href="#advanced-type-features-planned" title="Permanent link">&para;</a></h2>
 <p>The following advanced type features are planned but not yet implemented:</p>
-<h3 id="tuples">Tuples</h3>
+<h3 id="tuples">Tuples<a class="headerlink" href="#tuples" title="Permanent link">&para;</a></h3>
 <p>Tuples will allow grouping of values with different types. They will be immutable and can be accessed by index:</p>
 <pre><code class="language-firescript">// Future syntax
 tuple&lt;int, string&gt; person = (30, &quot;John&quot;);
 int age = person[0];  // 30
 string name = person[1];  // &quot;John&quot;
 </code></pre>
-<h3 id="generics">Generics</h3>
+<h3 id="generics">Generics<a class="headerlink" href="#generics" title="Permanent link">&para;</a></h3>
 <p>Generic types will allow for more flexible and reusable code:</p>
 <pre><code class="language-firescript">// Future syntax
 T max&lt;T&gt;(T a, T b) {
@@ -1482,7 +1482,7 @@ T max&lt;T&gt;(T a, T b) {
 int largerInt = max&lt;int&gt;(5, 10);  // 10
 string largerString = max&lt;string&gt;(&quot;apple&quot;, &quot;banana&quot;);  // &quot;banana&quot;
 </code></pre>
-<h3 id="user-defined-types-classes">User-Defined Types (Classes)</h3>
+<h3 id="user-defined-types-classes">User-Defined Types (Classes)<a class="headerlink" href="#user-defined-types-classes" title="Permanent link">&para;</a></h3>
 <p>Classes will enable user-defined types with methods and properties:</p>
 <pre><code class="language-firescript">// Future syntax
 class Point {
@@ -1501,7 +1501,7 @@ class Point {
     }
 }
 </code></pre>
-<h2 id="implementation-status">Implementation Status</h2>
+<h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <p>The current firescript compiler supports:</p>
 <ul>
 <li>✅ All primitive types: <code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>char</code></li>

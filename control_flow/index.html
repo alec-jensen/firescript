@@ -1134,13 +1134,13 @@
   
 
 
-<h1 id="control-flow">Control Flow</h1>
+<h1 id="control-flow">Control Flow<a class="headerlink" href="#control-flow" title="Permanent link">&para;</a></h1>
 <p><strong>Note:</strong> Only <code>if</code>/<code>else</code> chains and <code>while</code> loops are currently supported. C-style <code>for</code> loops, for-in loops, range loops, and the ternary operator are not supported by the compiler.</p>
-<h2 id="introduction-to-control-flow">Introduction to Control Flow</h2>
+<h2 id="introduction-to-control-flow">Introduction to Control Flow<a class="headerlink" href="#introduction-to-control-flow" title="Permanent link">&para;</a></h2>
 <p>Control flow structures determine the order in which statements are executed in a program. They allow for conditional execution (if/else) and repeated execution (loops) of code blocks. In firescript, control flow constructs use curly braces <code>{}</code> to define code blocks.</p>
-<h2 id="conditional-statements">Conditional Statements</h2>
+<h2 id="conditional-statements">Conditional Statements<a class="headerlink" href="#conditional-statements" title="Permanent link">&para;</a></h2>
 <p>Conditional statements execute different blocks of code depending on whether a specified condition evaluates to <code>true</code> or <code>false</code>. firescript supports <code>if</code>, <code>else if</code>, and <code>else</code> statements.</p>
-<h3 id="basic-if-statement">Basic If Statement</h3>
+<h3 id="basic-if-statement">Basic If Statement<a class="headerlink" href="#basic-if-statement" title="Permanent link">&para;</a></h3>
 <p>The simplest form executes a block of code only if the condition is true:</p>
 <pre><code class="language-firescript">if (condition) {
     // Code executed only if condition is true
@@ -1152,7 +1152,7 @@ if (age &gt;= 18) {
     print(&quot;You are eligible to vote&quot;);
 }
 </code></pre>
-<h3 id="if-else-statement">If-Else Statement</h3>
+<h3 id="if-else-statement">If-Else Statement<a class="headerlink" href="#if-else-statement" title="Permanent link">&para;</a></h3>
 <p>You can specify an alternative block of code to execute when the condition is false:</p>
 <pre><code class="language-firescript">if (condition) {
     // Code executed if condition is true
@@ -1168,7 +1168,7 @@ if (score &gt;= 70) {
     print(&quot;Fail&quot;);
 }
 </code></pre>
-<h3 id="if-else-if-else-chains">If-Else If-Else Chains</h3>
+<h3 id="if-else-if-else-chains">If-Else If-Else Chains<a class="headerlink" href="#if-else-if-else-chains" title="Permanent link">&para;</a></h3>
 <p>For multiple conditions, you can use <code>else if</code>:</p>
 <pre><code class="language-firescript">if (condition1) {
     // Executed if condition1 is true
@@ -1195,7 +1195,7 @@ if (grade &gt;= 90) {
     print(&quot;F&quot;);
 }
 </code></pre>
-<h3 id="nested-conditional-statements">Nested Conditional Statements</h3>
+<h3 id="nested-conditional-statements">Nested Conditional Statements<a class="headerlink" href="#nested-conditional-statements" title="Permanent link">&para;</a></h3>
 <p>Conditional statements can be nested within other conditional statements:</p>
 <pre><code class="language-firescript">bool hasDiscount = true;
 int totalAmount = 120;
@@ -1210,7 +1210,7 @@ if (totalAmount &gt; 100) {
     print(&quot;No discount available&quot;);
 }
 </code></pre>
-<h2 id="boolean-expressions-in-conditions">Boolean Expressions in Conditions</h2>
+<h2 id="boolean-expressions-in-conditions">Boolean Expressions in Conditions<a class="headerlink" href="#boolean-expressions-in-conditions" title="Permanent link">&para;</a></h2>
 <p>Conditions can use various boolean operators:</p>
 <ul>
 <li>Comparison operators: <code>==</code>, <code>!=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code></li>
@@ -1228,9 +1228,9 @@ if (!(age &lt; 18 || !hasLicense)) {
     print(&quot;Also, you can drive&quot;); // Equivalent to the above
 }
 </code></pre>
-<h2 id="loops">Loops</h2>
+<h2 id="loops">Loops<a class="headerlink" href="#loops" title="Permanent link">&para;</a></h2>
 <p>Loops allow for repeated execution of a block of code. firescript supports <code>while</code> loops and plans to support various forms of <code>for</code> loops in the future.</p>
-<h3 id="while-loops">While Loops</h3>
+<h3 id="while-loops">While Loops<a class="headerlink" href="#while-loops" title="Permanent link">&para;</a></h3>
 <p>A <code>while</code> loop repeatedly executes a block of code as long as a specified condition is <code>true</code>:</p>
 <pre><code class="language-firescript">while (condition) {
     // Loop body: code executed repeatedly as long as condition is true
@@ -1244,7 +1244,7 @@ while (count &lt; 5) {
 }
 // Outputs: 0, 1, 2, 3, 4
 </code></pre>
-<h4 id="infinite-loops">Infinite Loops</h4>
+<h4 id="infinite-loops">Infinite Loops<a class="headerlink" href="#infinite-loops" title="Permanent link">&para;</a></h4>
 <p>A <code>while</code> loop with a condition that is always <code>true</code> creates an infinite loop. These should be used with caution and should include a break statement:</p>
 <pre><code class="language-firescript">while (true) {
     // This will run forever unless broken
@@ -1253,7 +1253,7 @@ while (count &lt; 5) {
     }
 }
 </code></pre>
-<h4 id="loop-control-statements">Loop Control Statements</h4>
+<h4 id="loop-control-statements">Loop Control Statements<a class="headerlink" href="#loop-control-statements" title="Permanent link">&para;</a></h4>
 <p>The following statements can control loop execution:</p>
 <ul>
 <li><code>break</code> - Immediately exits the loop</li>
@@ -1276,7 +1276,7 @@ while (i &lt; 10) {
 }
 // Outputs: 1, 2, 4, 5, 6, 7
 </code></pre>
-<h3 id="combining-loops-and-conditionals">Combining Loops and Conditionals</h3>
+<h3 id="combining-loops-and-conditionals">Combining Loops and Conditionals<a class="headerlink" href="#combining-loops-and-conditionals" title="Permanent link">&para;</a></h3>
 <p>Loops and conditional statements can be combined to create powerful control flows:</p>
 <pre><code class="language-firescript">int[] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 int sum = 0;
@@ -1291,22 +1291,22 @@ while (i &lt; numbers.length) {
 
 print(sum); // Outputs: 30 (2 + 4 + 6 + 8 + 10)
 </code></pre>
-<h2 id="future-control-flow-features">Future Control Flow Features</h2>
+<h2 id="future-control-flow-features">Future Control Flow Features<a class="headerlink" href="#future-control-flow-features" title="Permanent link">&para;</a></h2>
 <p>The following control flow features are planned but not yet implemented in the current compiler:</p>
-<h3 id="c-style-for-loops">C-style For Loops</h3>
+<h3 id="c-style-for-loops">C-style For Loops<a class="headerlink" href="#c-style-for-loops" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Future syntax
 for (int i = 0; i &lt; 5; i++) {
     print(i);
 }
 </code></pre>
-<h3 id="for-in-loops">For-In Loops</h3>
+<h3 id="for-in-loops">For-In Loops<a class="headerlink" href="#for-in-loops" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Future syntax
 string[] fruits = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;];
 for (string fruit : fruits) {
     print(fruit);
 }
 </code></pre>
-<h3 id="range-loops">Range Loops</h3>
+<h3 id="range-loops">Range Loops<a class="headerlink" href="#range-loops" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Future syntax
 for (int i : range(5)) {
     print(i); // 0, 1, 2, 3, 4
@@ -1320,11 +1320,11 @@ for (int i : range(1, 10, 2)) {
     print(i); // 1, 3, 5, 7, 9
 }
 </code></pre>
-<h3 id="ternary-operator">Ternary Operator</h3>
+<h3 id="ternary-operator">Ternary Operator<a class="headerlink" href="#ternary-operator" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Future syntax
 int max = ternary a &gt; b then a else b;
 </code></pre>
-<h3 id="switch-statements">Switch Statements</h3>
+<h3 id="switch-statements">Switch Statements<a class="headerlink" href="#switch-statements" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Future syntax
 switch (value) {
     case 1:
@@ -1337,7 +1337,7 @@ switch (value) {
         // default code
 }
 </code></pre>
-<h2 id="best-practices">Best Practices</h2>
+<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
 <ol>
 <li>
 <p><strong>Keep conditions simple</strong>: Split complex conditions into multiple variables for better readability.</p>
@@ -1352,7 +1352,7 @@ switch (value) {
 <p><strong>Use appropriate loop types</strong>: Once implemented, choose the right loop for the task: <code>while</code> for unknown iteration counts, <code>for</code> for counting, and <code>for-in</code> for collections.</p>
 </li>
 </ol>
-<h2 id="implementation-status">Implementation Status</h2>
+<h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <p>The current firescript compiler supports:</p>
 <ul>
 <li>✅ <code>if</code>/<code>else</code>/<code>else if</code> conditional statements</li>

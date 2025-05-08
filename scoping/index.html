@@ -1074,9 +1074,9 @@
   
 
 
-<h1 id="scoping-in-firescript">Scoping in firescript</h1>
+<h1 id="scoping-in-firescript">Scoping in firescript<a class="headerlink" href="#scoping-in-firescript" title="Permanent link">&para;</a></h1>
 <p>In firescript, scopes define the visibility and lifetime of variables. Understanding how scopes work is crucial for writing correct and predictable code.</p>
-<h2 id="scope-creation">Scope Creation</h2>
+<h2 id="scope-creation">Scope Creation<a class="headerlink" href="#scope-creation" title="Permanent link">&para;</a></h2>
 <p>A new scope is created by <strong>any</strong> set of curly braces <code>{}</code>. This includes:</p>
 <ul>
 <li><strong>Control Flow Statements:</strong> The bodies of <code>if</code>, <code>else if</code>, <code>else</code>, <code>for</code>, <code>while</code>, and other control flow statements each create their own scope.</li>
@@ -1115,14 +1115,14 @@ if (globalVar &gt; 5) {
 
 // print(innerVar2)  // ERROR: innerVar2 is not accessible here
 </code></pre>
-<h2 id="scope-hierarchy-and-variable-access">Scope Hierarchy and Variable Access</h2>
+<h2 id="scope-hierarchy-and-variable-access">Scope Hierarchy and Variable Access<a class="headerlink" href="#scope-hierarchy-and-variable-access" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Outer Scope Access:</strong> An inner scope can access variables declared in any of its enclosing (outer) scopes, all the way up to the global scope.</li>
 <li><strong>Inner Scope Isolation:</strong> An outer scope <em>cannot</em> access variables declared within any of its inner scopes. Once a scope block is exited, all variables declared directly within that scope are destroyed and become inaccessible.</li>
 <li><strong>Variable Shadowing:</strong> Variable shadowing is not allowed. firescript will throw an error if you try to declare a variable with the same name in an inner scope that already exists in an outer scope. This is to prevent confusion and ensure that the intended variable is always accessed.</li>
 </ul>
-<h2 id="detailed-scoping-rules">Detailed Scoping Rules</h2>
-<h3 id="1-variable-declaration-and-initialization">1. Variable Declaration and Initialization</h3>
+<h2 id="detailed-scoping-rules">Detailed Scoping Rules<a class="headerlink" href="#detailed-scoping-rules" title="Permanent link">&para;</a></h2>
+<h3 id="1-variable-declaration-and-initialization">1. Variable Declaration and Initialization<a class="headerlink" href="#1-variable-declaration-and-initialization" title="Permanent link">&para;</a></h3>
 <p>Variables in firescript must be declared with an explicit type and initialized in the same statement. They are only accessible within their scope:</p>
 <pre><code class="language-firescript">{
     int x = 5;  // x is declared and initialized
@@ -1139,7 +1139,7 @@ if (globalVar &gt; 5) {
 }
 // print(x)  // ERROR: x is not defined in this scope
 </code></pre>
-<h3 id="2-variable-lifetime">2. Variable Lifetime</h3>
+<h3 id="2-variable-lifetime">2. Variable Lifetime<a class="headerlink" href="#2-variable-lifetime" title="Permanent link">&para;</a></h3>
 <p>Variables exist only from the point of their declaration to the end of their containing scope:</p>
 <pre><code class="language-firescript">{
     // print(a)  // ERROR: Cannot use 'a' before declaration
@@ -1156,7 +1156,7 @@ if (globalVar &gt; 5) {
     // print(b)  // ERROR: 'b' no longer exists
 }  // 'a' is destroyed here
 </code></pre>
-<h3 id="3-global-scope">3. Global Scope</h3>
+<h3 id="3-global-scope">3. Global Scope<a class="headerlink" href="#3-global-scope" title="Permanent link">&para;</a></h3>
 <p>Variables declared outside any braces are in the global scope and are accessible throughout the entire program:</p>
 <pre><code class="language-firescript">int globalValue = 100;  // Global variable
 
@@ -1171,7 +1171,7 @@ if (globalVar &gt; 5) {
 // User-defined functions would also have access to global variables
 // when this feature is implemented
 </code></pre>
-<h3 id="4-loop-scopes">4. Loop Scopes</h3>
+<h3 id="4-loop-scopes">4. Loop Scopes<a class="headerlink" href="#4-loop-scopes" title="Permanent link">&para;</a></h3>
 <p>Each iteration of a loop has its own scope:</p>
 <pre><code class="language-firescript">int i = 0;
 while (i &lt; 3) {
@@ -1183,7 +1183,7 @@ while (i &lt; 3) {
 
 // print(temp)  // ERROR: 'temp' is not accessible here
 </code></pre>
-<h3 id="5-conditional-scopes">5. Conditional Scopes</h3>
+<h3 id="5-conditional-scopes">5. Conditional Scopes<a class="headerlink" href="#5-conditional-scopes" title="Permanent link">&para;</a></h3>
 <p>Each branch of a conditional statement creates its own scope. This pattern prevents runtime issues where a variable may or may not be defined depending on the execution path:</p>
 <pre><code class="language-firescript">int value = 5;
 
@@ -1203,7 +1203,7 @@ if (value &gt; 10) {
 
 // print(result)  // ERROR: 'result' is not accessible here
 </code></pre>
-<h3 id="6-nested-function-scopes-future-feature">6. Nested Function Scopes (Future Feature)</h3>
+<h3 id="6-nested-function-scopes-future-feature">6. Nested Function Scopes (Future Feature)<a class="headerlink" href="#6-nested-function-scopes-future-feature" title="Permanent link">&para;</a></h3>
 <p>When user-defined functions are implemented, they will create their own scopes:</p>
 <pre><code class="language-firescript">// Global scope
 int globalVar = 10;
@@ -1226,7 +1226,7 @@ void exampleFunction() {
 
 // print(functionVar)  // ERROR: function variables only exist in function scope
 </code></pre>
-<h2 id="variable-scope-vs-object-lifetime">Variable Scope vs. Object Lifetime</h2>
+<h2 id="variable-scope-vs-object-lifetime">Variable Scope vs. Object Lifetime<a class="headerlink" href="#variable-scope-vs-object-lifetime" title="Permanent link">&para;</a></h2>
 <p>It's important to distinguish between a variable's scope (where it can be accessed) and an object's lifetime (how long it exists in memory):</p>
 <pre><code class="language-firescript">// When object-oriented features are implemented:
 {
@@ -1237,7 +1237,7 @@ void exampleFunction() {
     // The Person object may be garbage collected if no other references exist
 }
 </code></pre>
-<h2 id="best-practices-for-effective-scoping">Best Practices for Effective Scoping</h2>
+<h2 id="best-practices-for-effective-scoping">Best Practices for Effective Scoping<a class="headerlink" href="#best-practices-for-effective-scoping" title="Permanent link">&para;</a></h2>
 <ol>
 <li>
 <p><strong>Keep scopes as small as possible</strong>: Declare variables in the smallest scope where they are needed.</p>
@@ -1263,35 +1263,35 @@ void exampleFunction() {
 <p><strong>Avoid deeply nested scopes</strong>: Excessive nesting can make code harder to read and understand.</p>
 </li>
 </ol>
-<h2 id="implementation-details">Implementation Details</h2>
+<h2 id="implementation-details">Implementation Details<a class="headerlink" href="#implementation-details" title="Permanent link">&para;</a></h2>
 <p>firescript's scoping mechanism is implemented as a stack of symbol tables. When looking up a variable:</p>
 <ol>
 <li>The compiler first checks the innermost scope (top of the stack)</li>
 <li>If not found, it progressively checks outer scopes</li>
 <li>If the variable is not found in any scope, a compilation error occurs</li>
 </ol>
-<h2 id="common-scoping-errors">Common Scoping Errors</h2>
-<h3 id="1-accessing-variables-outside-their-scope">1. Accessing Variables Outside Their Scope</h3>
+<h2 id="common-scoping-errors">Common Scoping Errors<a class="headerlink" href="#common-scoping-errors" title="Permanent link">&para;</a></h2>
+<h3 id="1-accessing-variables-outside-their-scope">1. Accessing Variables Outside Their Scope<a class="headerlink" href="#1-accessing-variables-outside-their-scope" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">{
     int value = 10;
 }
 print(value)  // ERROR: 'value' is not defined in this scope
 </code></pre>
-<h3 id="2-redeclaring-variables-in-the-same-scope">2. Redeclaring Variables in the Same Scope</h3>
+<h3 id="2-redeclaring-variables-in-the-same-scope">2. Redeclaring Variables in the Same Scope<a class="headerlink" href="#2-redeclaring-variables-in-the-same-scope" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">int count = 5;
 int count = 10;  // ERROR: 'count' is already defined
 </code></pre>
-<h3 id="3-attempting-variable-shadowing">3. Attempting Variable Shadowing</h3>
+<h3 id="3-attempting-variable-shadowing">3. Attempting Variable Shadowing<a class="headerlink" href="#3-attempting-variable-shadowing" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">int value = 10;
 if (true) {
     int value = 20;  // ERROR: Shadowing is not allowed in firescript
 }
 </code></pre>
-<h3 id="4-using-variables-before-declaration">4. Using Variables Before Declaration</h3>
+<h3 id="4-using-variables-before-declaration">4. Using Variables Before Declaration<a class="headerlink" href="#4-using-variables-before-declaration" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">print(result);  // ERROR: Cannot use 'result' before declaration
 int result = 42;
 </code></pre>
-<h2 id="implementation-status">Implementation Status</h2>
+<h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <p>Scope handling in firescript is fully implemented:</p>
 <ul>
 <li>✅ Block scopes with curly braces</li>
