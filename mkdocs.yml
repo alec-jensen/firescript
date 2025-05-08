@@ -27,3 +27,6 @@ nav:
   - Scoping Rules: scoping.md
   - Type System: type_system.md
   - Changelog: changelog.md
+markdown_extensions:
+  - toc:
+      permalink: True
