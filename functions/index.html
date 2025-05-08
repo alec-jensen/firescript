@@ -956,105 +956,102 @@
 <ul>
 <li><strong><code>print(value)</code></strong> – Outputs a value to the console</li>
 </ul>
-<p><code>firescript
-  print("Hello, world!")  // Prints: Hello, world!
-  print(42)               // Prints: 42
-  print(true)             // Prints: true</code></p>
+<pre><code class="language-firescript">print(&quot;Hello, world!&quot;);  // Prints: Hello, world!
+print(42);               // Prints: 42
+print(true);             // Prints: true
+</code></pre>
 <p>This function accepts values of any type and converts them to strings for display.</p>
 <ul>
 <li><strong><code>input(prompt)</code></strong> – Reads a string from the console</li>
 </ul>
-<p><code>firescript
-  string name = input("Enter your name: ")
-  print("Hello, " + name)</code></p>
+<pre><code class="language-firescript">string name = input(&quot;Enter your name: &quot;);
+print(&quot;Hello, &quot; + name);
+</code></pre>
 <p>The <code>prompt</code> parameter is displayed to the user before waiting for input.</p>
 <h3 id="type-conversion-functions">Type Conversion Functions</h3>
 <p>These functions convert values from one type to another:</p>
 <ul>
 <li><strong><code>toInt(value)</code></strong> – Converts a value to an integer</li>
 </ul>
-<p>```firescript
-  string numberString = "123"
-  int number = toInt(numberString)  // 123</p>
-<p>float floatVal = 45.7
-  int intVal = toInt(floatVal)      // 45 (truncated)
-  ```</p>
-<ul>
-<li><strong><code>toFloat(value)</code></strong> – Converts a value to a float (32-bit floating point)</li>
-</ul>
-<p>```firescript
-  int count = 5
-  float floatCount = toFloat(count)  // 5.0</p>
-<p>string pi = "3.14159"
-  float piValue = toFloat(pi)        // 3.14159
-  ```</p>
+<pre><code class="language-firescript">string numberString = &quot;123&quot;;
+int number = toInt(numberString);  // 123
+
+float floatVal = 45.7;
+int intVal = toInt(floatVal);      // 45 (truncated)
+
+float floatCount = toFloat(count);  // 5.0
+string pi = &quot;3.14159&quot;;
+float piValue = toFloat(pi);        // 3.14159
+</code></pre>
 <ul>
 <li><strong><code>toDouble(value)</code></strong> – Converts a value to a double (64-bit floating point)</li>
 </ul>
-<p>```firescript
-  int bigNumber = 1000000
-  double doubleBig = toDouble(bigNumber)  // 1000000.0 (with double precision)</p>
-<p>string sciNotation = "6.022e23"
-  double avogadro = toDouble(sciNotation)  // 6.022e23
-  ```</p>
-<ul>
-<li><strong><code>toBool(value)</code></strong> – Converts a value to a boolean</li>
-</ul>
-<p>```firescript
-  string truthy = "true"
-  bool flag = toBool(truthy)  // true</p>
-<p>string falsy = "false"
-  bool notFlag = toBool(falsy)  // false</p>
-<p>// Non-string inputs:
-  bool nonZero = toBool(1)      // true
-  bool zero = toBool(0)         // false
-  ```</p>
+<pre><code class="language-firescript">int bigNumber = 1000000;
+double doubleBig = toDouble(bigNumber);  // 1000000.0 (with double precision)
+
+string sciNotation = &quot;6.022e23&quot;;
+double avogadro = toDouble(sciNotation);  // 6.022e23
+
+- **`toBool(value)`** – Converts a value to a boolean
+
+```firescript
+string truthy = &quot;true&quot;;
+bool flag = toBool(truthy);  // true
+
+string falsy = &quot;false&quot;;
+bool notFlag = toBool(falsy);  // false
+
+// Non-string inputs:
+bool nonZero = toBool(1);      // true
+bool zero = toBool(0);         // false
+</code></pre>
 <ul>
 <li><strong><code>toString(value)</code></strong> – Converts a value to a string</li>
 </ul>
-<p>```firescript
-  int number = 42
-  string text = toString(number)  // "42"</p>
-<p>bool state = true
-  string stateText = toString(state)  // "true"</p>
-<p>float decimal = 3.14
-  string piText = toString(decimal)  // "3.14"
-  ```</p>
+<pre><code class="language-firescript">int number = 42;
+string text = toString(number);  // &quot;42&quot;
+
+bool state = true;
+string stateText = toString(state);  // &quot;true&quot;
+
+float decimal = 3.14;
+string piText = toString(decimal);  // &quot;3.14&quot;
+</code></pre>
 <ul>
 <li><strong><code>toChar(value)</code></strong> – Converts a value to a character (represented as a string)</li>
 </ul>
-<p>```firescript
-  string word = "Hello"
-  char firstLetter = toChar(word)  // "H" (first character)</p>
-<p>int codePoint = 65
-  char letter = toChar(codePoint)  // "A" (ASCII value 65)
-  ```</p>
+<pre><code class="language-firescript">string word = &quot;Hello&quot;;
+char firstLetter = toChar(word);  // &quot;H&quot; (first character)
+
+int codePoint = 65;
+char letter = toChar(codePoint);  // &quot;A&quot; (ASCII value 65)
+</code></pre>
 <h3 id="type-introspection">Type Introspection</h3>
 <ul>
 <li><strong><code>typeof(value)</code></strong> – Returns the type name of a value as a string</li>
 </ul>
-<p><code>firescript
-  string typeOfNumber = typeof(42)         // "int"
-  string typeOfText = typeof("hello")      // "string"
-  string typeOfArray = typeof([1, 2, 3])   // "int[]"</code></p>
+<pre><code class="language-firescript">string typeOfNumber = typeof(42);         // &quot;int&quot;
+string typeOfText = typeof(&quot;hello&quot;);      // &quot;string&quot;
+string typeOfArray = typeof([1, 2, 3]);   // &quot;int[]&quot;
+</code></pre>
 <p>This can be useful for debugging and for implementing type-dependent behavior.</p>
 <h2 id="using-built-in-functions">Using Built-in Functions</h2>
 <p>Functions are called by specifying the function name followed by parentheses containing the arguments:</p>
 <pre><code class="language-firescript">// Converting user input to a number
-string inputValue = input(&quot;Enter a number: &quot;)
-int parsedValue = toInt(inputValue)
-print(&quot;You entered: &quot; + toString(parsedValue))
+string inputValue = input(&quot;Enter a number: &quot;);
+int parsedValue = toInt(inputValue);
+print(&quot;You entered: &quot; + toString(parsedValue));
 
 // Type checking
-int number = 42
-string typeInfo = typeof(number)
-print(&quot;The type of &quot; + toString(number) + &quot; is &quot; + typeInfo)
+int number = 42;
+string typeInfo = typeof(number);
+print(&quot;The type of &quot; + toString(number) + &quot; is &quot; + typeInfo);
 </code></pre>
 <h3 id="chain-of-function-calls">Chain of Function Calls</h3>
 <p>Built-in functions can be chained together:</p>
 <pre><code class="language-firescript">// Get input, convert to int, double it, and print
-int result = toInt(input(&quot;Enter a number: &quot;)) * 2
-print(&quot;Double of your number is: &quot; + toString(result))
+int result = toInt(input(&quot;Enter a number: &quot;)) * 2;
+print(&quot;Double of your number is: &quot; + toString(result));
 </code></pre>
 <h2 id="user-defined-functions-planned-not-implemented">User-defined Functions (Planned, Not Implemented)</h2>
 <p>The following syntax is planned for user-defined functions but is <strong>not yet implemented</strong> in the current compiler:</p>
@@ -1066,21 +1063,21 @@ returnType functionName(paramType1 param1, paramType2 param2) {
 
 // Examples:
 int add(int a, int b) {
-    return a + b
+    return a + b;
 }
 
 void greet(string name) {
-    print(&quot;Hello, &quot; + name)
+    print(&quot;Hello, &quot; + name);
 }
 
 float calculateAverage(int[] numbers) {
-    int sum = 0
-    int i = 0
+    int sum = 0;
+    int i = 0;
     while (i &lt; numbers.length) {
-        sum = sum + numbers[i]
-        i = i + 1
+        sum = sum + numbers[i];
+        i = i + 1;
     }
-    return toFloat(sum) / toFloat(numbers.length)
+    return toFloat(sum) / toFloat(numbers.length);
 }
 </code></pre>
 <h2 id="methods-planned-not-implemented">Methods (Planned, Not Implemented)</h2>
@@ -1091,18 +1088,18 @@ float calculateAverage(int[] numbers) {
 
     // Constructor method
     Person(this, string name, int age) {
-        this.name = name
-        this.age = age
+        this.name = name;
+        this.age = age;
     }
 
     // Instance method
     string introduce(this) {
-        return &quot;My name is &quot; + this.name + &quot; and I'm &quot; + toString(this.age) + &quot; years old&quot;
+        return &quot;My name is &quot; + this.name + &quot; and I'm &quot; + toString(this.age) + &quot; years old&quot;;
     }
 
     // Static method
     static string getSpecies() {
-        return &quot;Human&quot;
+        return &quot;Human&quot;;
     }
 }
 </code></pre>
@@ -1130,48 +1127,41 @@ float calculateAverage(int[] numbers) {
 <ul>
 <li>Optional parameters with default values:</li>
 </ul>
-<p><code>firescript
-  // Future syntax
-  void greet(string name, string greeting = "Hello") {
-      print(greeting + ", " + name)
-  }</code></p>
+<pre><code class="language-firescript">// Future syntax
+void greet(string name, string greeting = &quot;Hello&quot;) {
+    print(greeting + &quot;, &quot; + name);
+}
+</code></pre>
 <ul>
 <li>Named arguments:</li>
 </ul>
-<p><code>firescript
-  // Future syntax
-  calculateRectangle(width: 10, height: 20)</code></p>
+<pre><code class="language-firescript">// Future syntax
+calculateRectangle(width: 10, height: 20);
+</code></pre>
 <ul>
 <li>Variadic parameters (variable number of arguments):</li>
 </ul>
-<p><code>firescript
-  // Future syntax
-  int sum(int... numbers) {
-      int total = 0
-      for (int num : numbers) {
-          total = total + num
-      }
-      return total
-  }</code></p>
+<pre><code class="language-firescript">// Future syntax
+int sum(int... numbers) {
+    int total = 0;
+    for (int num : numbers) {
+        total = total + num;
+    }
+    return total;
+}
+</code></pre>
 <ul>
 <li>Function overloading:</li>
 </ul>
-<p>```firescript
-  // Future syntax
-  int add(int a, int b) {
-      return a + b
-  }</p>
-<p>float add(float a, float b) {
-      return a + b
-  }
-  ```</p>
-<ul>
-<li>First-class functions and closures:</li>
-</ul>
-<p><code>firescript
-  // Future syntax
-  function&lt;int, int, int&gt; operation = add
-  int result = operation(5, 3)</code></p>
+<pre><code class="language-firescript">// Future syntax
+int add(int a, int b) {
+    return a + b;
+}
+
+float add(float a, float b) {
+    return a + b;
+}
+</code></pre>
 <h2 id="implementation-status">Implementation Status</h2>
 <ul>
 <li>✅ Built-in functions: <code>print</code>, <code>input</code>, type conversions, <code>typeof</code></li>
@@ -1180,7 +1170,6 @@ float calculateAverage(int[] numbers) {
 <li>❌ Methods on objects</li>
 <li>❌ Optional, named, or variadic parameters</li>
 <li>❌ Function overloading</li>
-<li>❌ First-class functions and closures</li>
 </ul>
 
 

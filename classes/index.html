@@ -1058,94 +1058,94 @@
 <p>A class in firescript is defined using the <code>class</code> keyword, followed by the class name and a block containing fields and methods:</p>
 <pre><code class="language-firescript">class Person {
     // Fields (instance variables)
-    string name
-    nullable int age
-    bool isEmployed
+    string name;
+    nullable int age;
+    bool isEmployed;
 
     // Constructor: 'this' refers to the instance being created
     Person(this, string name, nullable int age = null, bool isEmployed = false) {
-        this.name = name
-        this.age = age
-        this.isEmployed = isEmployed
+        this.name = name;
+        this.age = age;
+        this.isEmployed = isEmployed;
     }
 
     // Instance methods
     string getName(this) {
-        return this.name
+        return this.name;
     }
 
     nullable int getAge(this) {
-        return this.age
+        return this.age;
     }
 
     void celebrate(this) {
         if (this.age != null) {
-            this.age = this.age + 1
-            print(this.name + &quot; is now &quot; + toString(this.age) + &quot; years old!&quot;)
+            this.age = this.age + 1;
+            print(this.name + &quot; is now &quot; + toString(this.age) + &quot; years old!&quot;);
         } else {
-            print(this.name + &quot; is celebrating!&quot;)
+            print(this.name + &quot; is celebrating!&quot;);
         }
     }
 
     // Static method (belongs to the class, not instances)
     static string species() {
-        return &quot;Homo sapiens&quot;
+        return &quot;Homo sapiens&quot;;
     }
 }
 </code></pre>
 <h3 id="fields">Fields</h3>
 <p>Fields declare the data that each instance of a class will contain. Each field must have a type:</p>
 <pre><code class="language-firescript">class Rectangle {
-    float width
-    float height
-    string color
+    float width;
+    float height;
+    string color;
 }
 </code></pre>
 <p>Fields can be nullable or const:</p>
 <pre><code class="language-firescript">class Configuration {
-    const string APP_NAME       // Constant field
-    nullable string lastUser    // Can be null
+    const string APP_NAME;       // Constant field
+    nullable string lastUser;    // Can be null
 }
 </code></pre>
 <h3 id="constructors">Constructors</h3>
 <p>Constructors are special methods that initialize a new instance of a class. They always take <code>this</code> as their first parameter, which refers to the instance being created:</p>
 <pre><code class="language-firescript">class Point {
-    float x
-    float y
+    float x;
+    float y;
 
     // Basic constructor
     Point(this, float x, float y) {
-        this.x = x
-        this.y = y
+        this.x = x;
+        this.y = y;
     }
 
     // With default values (when implemented)
     Point(this, float x = 0.0, float y = 0.0) {
-        this.x = x
-        this.y = y
+        this.x = x;
+        this.y = y;
     }
 }
 </code></pre>
 <h3 id="instance-methods">Instance Methods</h3>
 <p>Instance methods are functions that belong to an instance of a class. They always take <code>this</code> as their first parameter:</p>
 <pre><code class="language-firescript">class Circle {
-    float radius
+    float radius;
 
     Circle(this, float radius) {
-        this.radius = radius
+        this.radius = radius;
     }
 
     // Instance methods
     float getArea(this) {
-        return 3.14159 * this.radius * this.radius
+        return 3.14159 * this.radius * this.radius;
     }
 
     float getCircumference(this) {
-        return 2.0 * 3.14159 * this.radius
+        return 2.0 * 3.14159 * this.radius;
     }
 
     void scale(this, float factor) {
-        this.radius = this.radius * factor
+        this.radius = this.radius * factor;
     }
 }
 </code></pre>
@@ -1155,84 +1155,84 @@
     // Static methods
     static int max(int a, int b) {
         if (a &gt; b) {
-            return a
+            return a;
         } else {
-            return b
+            return b;
         }
     }
 
     static float average(float a, float b) {
-        return (a + b) / 2.0
+        return (a + b) / 2.0;
     }
 }
 </code></pre>
 <h2 id="creating-and-using-objects">Creating and Using Objects</h2>
 <p>Once a class is defined, you can create instances (objects) of that class:</p>
 <pre><code class="language-firescript">// Creating objects
-Person alice = Person(&quot;Alice&quot;, 30, true)
-Person bob = Person(&quot;Bob&quot;, null)
+Person alice = Person(&quot;Alice&quot;, 30, true);
+Person bob = Person(&quot;Bob&quot;, null);
 
 // Using instance methods
-string aliceName = alice.getName()
-alice.celebrate()
+string aliceName = alice.getName();
+alice.celebrate();
 
 // Using static methods
-string speciesName = Person.species()
+string speciesName = Person.species();
 </code></pre>
 <h2 id="inheritance">Inheritance</h2>
 <p>Inheritance allows a class to inherit fields and methods from another class. firescript supports single inheritance using the <code>from</code> keyword:</p>
 <pre><code class="language-firescript">class Student from Person {
-    string school
-    string[] courses
+    string school;
+    string[] courses;
 
     Student(this, string name, int age, string school) {
-        super.Student(name, age)  // Call parent constructor
-        this.school = school
-        this.courses = []
+        super.Student(name, age);  // Call parent constructor
+        this.school = school;
+        this.courses = [];
     }
 
     // Additional methods
     void enroll(this, string course) {
-        this.courses.append(course)
-        print(this.name + &quot; enrolled in &quot; + course)
+        this.courses.append(course);
+        print(this.name + &quot; enrolled in &quot; + course);
     }
 
     string[] getCourses(this) {
-        return this.courses
+        return this.courses;
     }
 
     // Override parent method
     void celebrate(this) {
-        super.celebrate()  // Call parent method
-        print(&quot;Time for a student party!&quot;)
+        super.celebrate();  // Call parent method
+        print(&quot;Time for a student party!&quot;);
     }
 }
 </code></pre>
 <h3 id="method-overriding">Method Overriding</h3>
 <p>Child classes can override methods from the parent class. To call the parent class's implementation, use <code>super</code>:</p>
 <pre><code class="language-firescript">class Shape {
-    string color
+    string color;
 
     Shape(this, string color) {
-        this.color = color
+        this.color = color;
     }
 
     string describe(this) {
-        return &quot;A &quot; + this.color + &quot; shape&quot;
+        return &quot;A &quot; + this.color + &quot; shape&quot;;
     }
 }
 
 class Square from Shape {
-    float side
+    float side;
 
     Square(this, float side, string color) {
-        super.Shape(color)
-        this.side = side
+        super.Shape(color);
+        this.side = side;
     }
 
     // Override the parent's describe method
     string describe(this) {
-        return super.describe() + &quot; (square with side &quot; + toString(this.side) + &quot;)&quot;
+        return super.describe() + &quot; (square with side &quot; + toString(this.side) + &quot;)&quot;;
     }
 }
 </code></pre>
@@ -1242,12 +1242,12 @@ class Square from Shape {
 Person[] people = [
     Person(&quot;Alice&quot;, 25),
     Student(&quot;Bob&quot;, 20, &quot;State University&quot;)
-]
+];
 
-int i = 0
+int i = 0;
 while (i &lt; people.length) {
-    print(people[i].getName())
-    i = i + 1
+    print(people[i].getName());
+    i = i + 1;
 }
 </code></pre>
 <h2 id="planned-class-features-not-yet-implemented">Planned Class Features (Not Yet Implemented)</h2>
@@ -1266,54 +1266,54 @@ class Circle implements Drawable {
     }
 
     bool isVisible(this) {
-        return true
+        return true;
     }
 }
 </code></pre>
 <h3 id="generics-on-classes">Generics on Classes</h3>
 <pre><code class="language-firescript">// Future syntax
 class Box&lt;T&gt; {
-    nullable T value
+    nullable T value;
 
     Box(this) {
-        this.value = null
+        this.value = null;
     }
 
     void set(this, T newValue) {
-        this.value = newValue
+        this.value = newValue;
     }
 
     nullable T get(this) {
-        return this.value
+        return this.value;
     }
 }
 
 // Usage
-Box&lt;int&gt; intBox = Box&lt;int&gt;()
-intBox.set(42)
+Box&lt;int&gt; intBox = Box&lt;int&gt;();
+intBox.set(42);
 </code></pre>
 <h3 id="abstract-classes-and-methods">Abstract Classes and Methods</h3>
 <pre><code class="language-firescript">// Future syntax
 abstract class Animal {
-    string species
+    string species;
 
     Animal(this, string species) {
-        this.species = species
+        this.species = species;
     }
 
     // Abstract method - no implementation
-    abstract string makeSound(this)
+    abstract string makeSound(this);
 
     // Regular method with implementation
     string getSpecies(this) {
-        return this.species
+        return this.species;
     }
 }
 
 class Cat from Animal {
     // Must implement abstract methods
     string makeSound(this) {
-        return &quot;Meow&quot;
+        return &quot;Meow&quot;;
     }
 }
 </code></pre>

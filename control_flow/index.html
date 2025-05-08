@@ -1147,9 +1147,9 @@
 }
 </code></pre>
 <p>Example:</p>
-<pre><code class="language-firescript">int age = 18
+<pre><code class="language-firescript">int age = 18;
 if (age &gt;= 18) {
-    print(&quot;You are eligible to vote&quot;)
+    print(&quot;You are eligible to vote&quot;);
 }
 </code></pre>
 <h3 id="if-else-statement">If-Else Statement</h3>
@@ -1161,11 +1161,11 @@ if (age &gt;= 18) {
 }
 </code></pre>
 <p>Example:</p>
-<pre><code class="language-firescript">int score = 65
+<pre><code class="language-firescript">int score = 65;
 if (score &gt;= 70) {
-    print(&quot;Pass&quot;)
+    print(&quot;Pass&quot;);
 } else {
-    print(&quot;Fail&quot;)
+    print(&quot;Fail&quot;);
 }
 </code></pre>
 <h3 id="if-else-if-else-chains">If-Else If-Else Chains</h3>
@@ -1181,33 +1181,33 @@ if (score &gt;= 70) {
 }
 </code></pre>
 <p>Example:</p>
-<pre><code class="language-firescript">int grade = 85
+<pre><code class="language-firescript">int grade = 85;
 
 if (grade &gt;= 90) {
-    print(&quot;A&quot;)
+    print(&quot;A&quot;);
 } else if (grade &gt;= 80) {
-    print(&quot;B&quot;)
+    print(&quot;B&quot;);
 } else if (grade &gt;= 70) {
-    print(&quot;C&quot;)
+    print(&quot;C&quot;);
 } else if (grade &gt;= 60) {
-    print(&quot;D&quot;)
+    print(&quot;D&quot;);
 } else {
-    print(&quot;F&quot;)
+    print(&quot;F&quot;);
 }
 </code></pre>
 <h3 id="nested-conditional-statements">Nested Conditional Statements</h3>
 <p>Conditional statements can be nested within other conditional statements:</p>
-<pre><code class="language-firescript">bool hasDiscount = true
-int totalAmount = 120
+<pre><code class="language-firescript">bool hasDiscount = true;
+int totalAmount = 120;
 
 if (totalAmount &gt; 100) {
     if (hasDiscount) {
-        print(&quot;You qualify for a 15% discount&quot;)
+        print(&quot;You qualify for a 15% discount&quot;);
     } else {
-        print(&quot;You qualify for a 10% discount&quot;)
+        print(&quot;You qualify for a 10% discount&quot;);
     }
 } else {
-    print(&quot;No discount available&quot;)
+    print(&quot;No discount available&quot;);
 }
 </code></pre>
 <h2 id="boolean-expressions-in-conditions">Boolean Expressions in Conditions</h2>
@@ -1217,15 +1217,15 @@ if (totalAmount &gt; 100) {
 <li>Logical operators: <code>&amp;&amp;</code> (AND), <code>||</code> (OR), <code>!</code> (NOT)</li>
 </ul>
 <p>Example:</p>
-<pre><code class="language-firescript">int age = 25
-bool hasLicense = true
+<pre><code class="language-firescript">int age = 25;
+bool hasLicense = true;
 
 if (age &gt;= 18 &amp;&amp; hasLicense) {
-    print(&quot;You can drive&quot;)
+    print(&quot;You can drive&quot;);
 }
 
 if (!(age &lt; 18 || !hasLicense)) {
-    print(&quot;Also, you can drive&quot;) // Equivalent to the above
+    print(&quot;Also, you can drive&quot;); // Equivalent to the above
 }
 </code></pre>
 <h2 id="loops">Loops</h2>
@@ -1237,10 +1237,10 @@ if (!(age &lt; 18 || !hasLicense)) {
 }
 </code></pre>
 <p>Example:</p>
-<pre><code class="language-firescript">int count = 0
+<pre><code class="language-firescript">int count = 0;
 while (count &lt; 5) {
-    print(count)
-    count = count + 1
+    print(count);
+    count = count + 1;
 }
 // Outputs: 0, 1, 2, 3, 4
 </code></pre>
@@ -1249,7 +1249,7 @@ while (count &lt; 5) {
 <pre><code class="language-firescript">while (true) {
     // This will run forever unless broken
     if (someCondition) {
-        break // Exit the loop
+        break; // Exit the loop
     }
 }
 </code></pre>
@@ -1260,79 +1260,79 @@ while (count &lt; 5) {
 <li><code>continue</code> - Skips the rest of the current iteration and starts the next one</li>
 </ul>
 <p>Example:</p>
-<pre><code class="language-firescript">int i = 0
+<pre><code class="language-firescript">int i = 0;
 while (i &lt; 10) {
-    i = i + 1
+    i = i + 1;
 
     if (i == 3) {
-        continue // Skip the rest of this iteration
+        continue; // Skip the rest of this iteration
     }
 
     if (i == 8) {
-        break // Exit the loop
+        break; // Exit the loop
     }
 
-    print(i)
+    print(i);
 }
 // Outputs: 1, 2, 4, 5, 6, 7
 </code></pre>
 <h3 id="combining-loops-and-conditionals">Combining Loops and Conditionals</h3>
 <p>Loops and conditional statements can be combined to create powerful control flows:</p>
-<pre><code class="language-firescript">int[] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-int sum = 0
-int i = 0
+<pre><code class="language-firescript">int[] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+int sum = 0;
+int i = 0;
 
 while (i &lt; numbers.length) {
     if (numbers[i] % 2 == 0) {
-        sum = sum + numbers[i] // Add only even numbers
+        sum = sum + numbers[i]; // Add only even numbers
     }
-    i = i + 1
+    i = i + 1;
 }
 
-print(sum) // Outputs: 30 (2 + 4 + 6 + 8 + 10)
+print(sum); // Outputs: 30 (2 + 4 + 6 + 8 + 10)
 </code></pre>
 <h2 id="future-control-flow-features">Future Control Flow Features</h2>
 <p>The following control flow features are planned but not yet implemented in the current compiler:</p>
 <h3 id="c-style-for-loops">C-style For Loops</h3>
 <pre><code class="language-firescript">// Future syntax
 for (int i = 0; i &lt; 5; i++) {
-    print(i)
+    print(i);
 }
 </code></pre>
 <h3 id="for-in-loops">For-In Loops</h3>
 <pre><code class="language-firescript">// Future syntax
-string[] fruits = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;]
+string[] fruits = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;];
 for (string fruit : fruits) {
-    print(fruit)
+    print(fruit);
 }
 </code></pre>
 <h3 id="range-loops">Range Loops</h3>
 <pre><code class="language-firescript">// Future syntax
 for (int i : range(5)) {
-    print(i) // 0, 1, 2, 3, 4
+    print(i); // 0, 1, 2, 3, 4
 }
 
 for (int i : range(2, 8)) {
-    print(i) // 2, 3, 4, 5, 6, 7
+    print(i); // 2, 3, 4, 5, 6, 7
 }
 
 for (int i : range(1, 10, 2)) {
-    print(i) // 1, 3, 5, 7, 9
+    print(i); // 1, 3, 5, 7, 9
 }
 </code></pre>
 <h3 id="ternary-operator">Ternary Operator</h3>
 <pre><code class="language-firescript">// Future syntax
-int max = ternary a &gt; b then a else b
+int max = ternary a &gt; b then a else b;
 </code></pre>
 <h3 id="switch-statements">Switch Statements</h3>
 <pre><code class="language-firescript">// Future syntax
 switch (value) {
     case 1:
         // code for case 1
-        break
+        break;
     case 2:
         // code for case 2
-        break
+        break;
     default:
         // default code
 }

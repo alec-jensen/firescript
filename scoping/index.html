@@ -1086,29 +1086,29 @@
 </ul>
 <pre><code class="language-firescript">// Global scope
 
-int globalVar = 10
+int globalVar = 10;
 
 if (globalVar &gt; 5) {
     // Inner scope 1 (if body)
-    int innerVar1 = 20
-    print(globalVar)  // Accessing outer scope variable: OK (prints 10)
-    print(innerVar1)  // Accessing current scope variable: OK (prints 20)
+    int innerVar1 = 20;
+    print(globalVar);  // Accessing outer scope variable: OK (prints 10)
+    print(innerVar1);  // Accessing current scope variable: OK (prints 20)
 }
 
 // print(innerVar1)  // ERROR: innerVar1 is not accessible here
 
 {
     // Inner scope 2 (bare braces)
-    int innerVar2 = 30
-    print(globalVar)  // Accessing outer scope variable: OK (prints 10)
-    print(innerVar2)  // Accessing current scope variable: OK (prints 30)
+    int innerVar2 = 30;
+    print(globalVar);  // Accessing outer scope variable: OK (prints 10)
+    print(innerVar2);  // Accessing current scope variable: OK (prints 30)
 
     if (true) {
         // Inner scope 3 (nested if body)
-        int innerVar3 = 40
-        print(globalVar)  // OK (prints 10)
-        print(innerVar2)  // OK (prints 30)
-        print(innerVar3)  // OK (prints 40)
+        int innerVar3 = 40;
+        print(globalVar);  // OK (prints 10)
+        print(innerVar2);  // OK (prints 30)
+        print(innerVar3);  // OK (prints 40)
     }
     // print(innerVar3)  // ERROR: innerVar3 is not accessible here
 }
@@ -1125,14 +1125,14 @@ if (globalVar &gt; 5) {
 <h3 id="1-variable-declaration-and-initialization">1. Variable Declaration and Initialization</h3>
 <p>Variables in firescript must be declared with an explicit type and initialized in the same statement. They are only accessible within their scope:</p>
 <pre><code class="language-firescript">{
-    int x = 5  // x is declared and initialized
+    int x = 5;  // x is declared and initialized
 
     {
         // New inner scope
-        print(x)  // Accessible, prints 5
+        print(x);  // Accessible, prints 5
 
-        // int x = 10  // ERROR: Cannot redeclare 'x' - shadowing is not allowed
-        int y = 15  // y is only accessible in this scope
+        // int x = 10;  // ERROR: Cannot redeclare 'x' - shadowing is not allowed
+        int y = 15;  // y is only accessible in this scope
     }
 
     // print(y)  // ERROR: y is not defined in this scope
@@ -1144,13 +1144,13 @@ if (globalVar &gt; 5) {
 <pre><code class="language-firescript">{
     // print(a)  // ERROR: Cannot use 'a' before declaration
 
-    int a = 1
-    print(a)  // OK: 'a' exists here
+    int a = 1;
+    print(a);  // OK: 'a' exists here
 
     {
-        int b = 2
-        print(a)  // OK: 'a' from outer scope
-        print(b)  // OK: 'b' from current scope
+        int b = 2;
+        print(a);  // OK: 'a' from outer scope
+        print(b);  // OK: 'b' from current scope
     }  // 'b' is destroyed here
 
     // print(b)  // ERROR: 'b' no longer exists
@@ -1158,13 +1158,13 @@ if (globalVar &gt; 5) {
 </code></pre>
 <h3 id="3-global-scope">3. Global Scope</h3>
 <p>Variables declared outside any braces are in the global scope and are accessible throughout the entire program:</p>
-<pre><code class="language-firescript">int globalValue = 100  // Global variable
+<pre><code class="language-firescript">int globalValue = 100;  // Global variable
 
 {
-    print(globalValue)  // Accessible anywhere in the program
+    print(globalValue);  // Accessible anywhere in the program
 
     {
-        print(globalValue)  // Still accessible
+        print(globalValue);  // Still accessible
     }
 }
 
@@ -1173,32 +1173,32 @@ if (globalVar &gt; 5) {
 </code></pre>
 <h3 id="4-loop-scopes">4. Loop Scopes</h3>
 <p>Each iteration of a loop has its own scope:</p>
-<pre><code class="language-firescript">int i = 0
+<pre><code class="language-firescript">int i = 0;
 while (i &lt; 3) {
     // New scope for each loop iteration
-    int temp = i * 10
-    print(temp)  // Prints 0, 10, 20
-    i = i + 1
+    int temp = i * 10;
+    print(temp);  // Prints 0, 10, 20
+    i = i + 1;
 }  // 'temp' is destroyed at the end of each iteration
 
 // print(temp)  // ERROR: 'temp' is not accessible here
 </code></pre>
 <h3 id="5-conditional-scopes">5. Conditional Scopes</h3>
-<p>Each branch of a conditional statement creates its own scope:</p>
-<pre><code class="language-firescript">int value = 5
+<p>Each branch of a conditional statement creates its own scope. This pattern prevents runtime issues where a variable may or may not be defined depending on the execution path:</p>
+<pre><code class="language-firescript">int value = 5;
 
 if (value &gt; 10) {
     // Scope A
-    int result = value * 2
-    print(result)
+    int result = value * 2;
+    print(result);
 } else if (value &gt; 0) {
     // Scope B (different from Scope A)
-    int result = value + 10  // OK to reuse the name 'result' here
-    print(result)  // Prints 15
+    int result = value + 10;  // OK to reuse the name 'result' here
+    print(result);  // Prints 15
 } else {
     // Scope C (different from Scopes A and B)
-    int result = 0
-    print(result)
+    int result = 0;
+    print(result);
 }
 
 // print(result)  // ERROR: 'result' is not accessible here
@@ -1206,19 +1206,19 @@ if (value &gt; 10) {
 <h3 id="6-nested-function-scopes-future-feature">6. Nested Function Scopes (Future Feature)</h3>
 <p>When user-defined functions are implemented, they will create their own scopes:</p>
 <pre><code class="language-firescript">// Global scope
-int globalVar = 10
+int globalVar = 10;
 
 // Future syntax when functions are implemented
 void exampleFunction() {
     // Function scope
-    int functionVar = 20
-    print(globalVar)  // OK: access to global scope
+    int functionVar = 20;
+    print(globalVar);  // OK: access to global scope
 
     {
         // Inner scope within the function
-        int innerVar = 30
-        print(functionVar)  // OK: access to containing function scope
-        print(globalVar)    // OK: access to global scope
+        int innerVar = 30;
+        print(functionVar);  // OK: access to containing function scope
+        print(globalVar);    // OK: access to global scope
     }
 
     // print(innerVar)  // ERROR: not accessible outside its scope
@@ -1231,7 +1231,7 @@ void exampleFunction() {
 <pre><code class="language-firescript">// When object-oriented features are implemented:
 {
     // myObj variable is scoped to this block
-    Person myObj = Person(&quot;John&quot;, 30)
+    Person myObj = Person(&quot;John&quot;, 30);
 
     // myObj reference goes out of scope here
     // The Person object may be garbage collected if no other references exist
@@ -1252,8 +1252,8 @@ void exampleFunction() {
 <p><code>firescript
    {
        // Temporary calculation scope
-       int temp = complexCalculation()
-       result = temp * 2
+       int temp = complexCalculation();
+       result = temp * 2;
    }  // 'temp' is no longer accessible, reducing scope pollution</code></p>
 <ol>
 <li>
@@ -1273,23 +1273,23 @@ void exampleFunction() {
 <h2 id="common-scoping-errors">Common Scoping Errors</h2>
 <h3 id="1-accessing-variables-outside-their-scope">1. Accessing Variables Outside Their Scope</h3>
 <pre><code class="language-firescript">{
-    int value = 10
+    int value = 10;
 }
 print(value)  // ERROR: 'value' is not defined in this scope
 </code></pre>
 <h3 id="2-redeclaring-variables-in-the-same-scope">2. Redeclaring Variables in the Same Scope</h3>
-<pre><code class="language-firescript">int count = 5
-int count = 10  // ERROR: 'count' is already defined
+<pre><code class="language-firescript">int count = 5;
+int count = 10;  // ERROR: 'count' is already defined
 </code></pre>
 <h3 id="3-attempting-variable-shadowing">3. Attempting Variable Shadowing</h3>
-<pre><code class="language-firescript">int value = 10
+<pre><code class="language-firescript">int value = 10;
 if (true) {
-    int value = 20  // ERROR: Shadowing is not allowed in firescript
+    int value = 20;  // ERROR: Shadowing is not allowed in firescript
 }
 </code></pre>
 <h3 id="4-using-variables-before-declaration">4. Using Variables Before Declaration</h3>
-<pre><code class="language-firescript">print(result)  // ERROR: Cannot use 'result' before declaration
-int result = 42
+<pre><code class="language-firescript">print(result);  // ERROR: Cannot use 'result' before declaration
+int result = 42;
 </code></pre>
 <h2 id="implementation-status">Implementation Status</h2>
 <p>Scope handling in firescript is fully implemented:</p>

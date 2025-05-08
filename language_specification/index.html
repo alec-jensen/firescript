@@ -1324,7 +1324,7 @@
 string title = null;          // Invalid - cannot assign null to non-nullable type
 </code></pre>
 <h3 id="arrays">Arrays</h3>
-<p>Arrays are ordered collections of elements of the same type.</p>
+<p>Arrays are dynamically sized ordered collections of elements of the same type.</p>
 <pre><code class="language-firescript">int[] numbers = [1, 2, 3];
 string[] names = [&quot;Alice&quot;, &quot;Bob&quot;];
 </code></pre>
@@ -1365,16 +1365,16 @@ bool isActive = true;
 </ol>
 <h2 id="5-control-flow">5. Control Flow</h2>
 <h3 id="conditional-statements">Conditional Statements</h3>
-<pre><code class="language-firescript">if condition {
+<pre><code class="language-firescript">if (condition) {
     // then branch
-} else if otherCondition {
+} else if (otherCondition) {
     // else-if branch
 } else {
     // else branch
 }
 </code></pre>
 <h3 id="while-loop">While Loop</h3>
-<pre><code class="language-firescript">while condition {
+<pre><code class="language-firescript">while (condition) {
     // body
 }
 </code></pre>
@@ -1424,6 +1424,7 @@ while (i &lt; 10) {
 <h2 id="10-not-yet-implemented-features">10. Not Yet Implemented Features</h2>
 <ul>
 <li>Array slicing and negative indices</li>
+<li>typeof() function</li>
 <li>User-defined function definitions</li>
 <li>Classes and inheritance</li>
 <li>For loops</li>

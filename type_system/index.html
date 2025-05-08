@@ -1253,141 +1253,149 @@
 <h2 id="built-in-types">Built-in Types</h2>
 <p>firescript provides several fundamental data types:</p>
 <ul>
-<li><strong><code>int</code></strong>: Represents whole numbers (integers). Example: <code>int age = 30</code></li>
-<li><strong><code>float</code></strong>: Represents single-precision floating-point numbers. Example: <code>float price = 19.95</code></li>
-<li><strong><code>double</code></strong>: Represents double-precision floating-point numbers, offering higher precision than <code>float</code>. Example: <code>double pi = 3.1415926535</code></li>
-<li><strong><code>bool</code></strong>: Represents boolean values, either <code>true</code> or <code>false</code>. Example: <code>bool isActive = true</code></li>
-<li><strong><code>string</code></strong>: Represents sequences of characters. Example: <code>string message = "Hello, World!"</code></li>
-<li><strong><code>char</code></strong>: Represents a single character. (Note: Currently handled similarly to strings in some contexts, formal <code>char</code> type might be refined). Example: <code>char initial = "A"</code></li>
+<li><strong><code>int</code></strong>: Represents whole numbers (integers). Example: <code>int age = 30;</code></li>
+<li><strong><code>float</code></strong>: Represents single-precision floating-point numbers. Example: <code>float price = 19.95;</code></li>
+<li><strong><code>double</code></strong>: Represents double-precision floating-point numbers, offering higher precision than <code>float</code>. Example: <code>double pi = 3.1415926535;</code></li>
+<li><strong><code>bool</code></strong>: Represents boolean values, either <code>true</code> or <code>false</code>. Example: <code>bool isActive = true;</code></li>
+<li><strong><code>string</code></strong>: Represents sequences of characters. Example: <code>string message = "Hello, World!";</code></li>
+<li><strong><code>char</code></strong>: Represents a single character. (Note: Currently handled similarly to strings in some contexts, formal <code>char</code> type might be refined). Example: <code>char initial = "A";</code></li>
 <li><strong><code>void</code></strong>: Represents the absence of a type, primarily used as the return type for functions that do not return a value.</li>
 </ul>
 <h2 id="type-semantics">Type Semantics</h2>
 <h3 id="integer-type-int">Integer Type (<code>int</code>)</h3>
 <p>The <code>int</code> type in firescript represents integers with arbitrary precision. There is no explicit size limit as in languages like C/C++, making it similar to Python integers that can grow as needed.</p>
-<pre><code class="language-firescript">int small = 42
-int large = 9223372036854775807  // Large integers are supported
-int calculation = (small + large) * 2  // Arithmetic operations
+<pre><code class="language-firescript">int small = 42;
+int large = 9223372036854775807;  // Large integers are supported
+int calculation = (small + large) * 2;  // Arithmetic operations
 </code></pre>
-<p>Integers support the following operations:
-- Arithmetic: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code> (modulo), <code>**</code> (power)
-- Comparison: <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>
-- Bit manipulation (planned but not yet implemented): <code>&amp;</code>, <code>|</code>, <code>^</code>, <code>~</code>, <code>&lt;&lt;</code>, <code>&gt;&gt;</code></p>
+<p>Integers support the following operations:</p>
+<ul>
+<li>Arithmetic: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code> (modulo), <code>**</code> (power)</li>
+<li>Comparison: <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></li>
+<li>Bit manipulation (planned but not yet implemented): <code>&amp;</code>, <code>|</code>, <code>^</code>, <code>~</code>, <code>&lt;&lt;</code>, <code>&gt;&gt;</code></li>
+</ul>
 <h3 id="floating-point-types-float-and-double">Floating Point Types (<code>float</code> and <code>double</code>)</h3>
 <p>The <code>float</code> type represents 32-bit floating-point numbers, while <code>double</code> represents 64-bit floating-point numbers with greater precision.</p>
-<pre><code class="language-firescript">float simpleDecimal = 3.14
-double highPrecision = 3.141592653589793
+<pre><code class="language-firescript">float simpleDecimal = 3.14;
+double highPrecision = 3.141592653589793;
 
 // Scientific notation
-double avogadro = 6.022e23
-float tiny = 1.6e-19
+double avogadro = 6.022e23;
+float tiny = 1.6e-19;
 </code></pre>
-<p>Floating point numbers support:
-- Arithmetic: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>**</code> (power)
-- Comparison: <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></p>
+<p>Floating point numbers support:</p>
+<ul>
+<li>Arithmetic: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>**</code> (power)</li>
+<li>Comparison: <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></li>
+</ul>
 <h3 id="boolean-type-bool">Boolean Type (<code>bool</code>)</h3>
 <p>The <code>bool</code> type has only two possible values: <code>true</code> and <code>false</code>. It's commonly used in conditional expressions.</p>
-<pre><code class="language-firescript">bool userLoggedIn = true
-bool hasPermission = false
+<pre><code class="language-firescript">bool userLoggedIn = true;
+bool hasPermission = false;
 
 // Boolean operations
-bool canAccess = userLoggedIn &amp;&amp; hasPermission  // Logical AND
-bool needsAttention = !userLoggedIn || !hasPermission  // Logical OR and NOT
+bool canAccess = userLoggedIn &amp;&amp; hasPermission;  // Logical AND
+bool needsAttention = !userLoggedIn || !hasPermission;  // Logical OR and NOT
 </code></pre>
-<p>Boolean values support:
-- Logical operations: <code>&amp;&amp;</code> (AND), <code>||</code> (OR), <code>!</code> (NOT)
-- Comparison: <code>==</code>, <code>!=</code></p>
+<p>Boolean values support:</p>
+<ul>
+<li>Logical operations: <code>&amp;&amp;</code> (AND), <code>||</code> (OR), <code>!</code> (NOT)</li>
+<li>Comparison: <code>==</code>, <code>!=</code></li>
+</ul>
 <h3 id="string-type-string">String Type (<code>string</code>)</h3>
 <p>The <code>string</code> type represents sequences of characters. Strings in firescript are immutable (cannot be changed after creation).</p>
-<pre><code class="language-firescript">string greeting = &quot;Hello&quot;
-string name = &quot;World&quot;
-string message = greeting + &quot;, &quot; + name + &quot;!&quot;  // String concatenation with +
+<pre><code class="language-firescript">string greeting = &quot;Hello&quot;;
+string name = &quot;World&quot;;
+string message = greeting + &quot;, &quot; + name + &quot;!&quot;;  // String concatenation with +
 
 // Multi-line strings
 string paragraph = &quot;This is a
 multi-line
-string&quot;
+string&quot;;
 </code></pre>
-<p>Strings support:
-- Concatenation: <code>+</code>
-- Comparison: <code>==</code>, <code>!=</code></p>
+<p>Strings support:</p>
+<ul>
+<li>Concatenation: <code>+</code></li>
+<li>Comparison: <code>==</code>, <code>!=</code></li>
+</ul>
 <h3 id="character-type-char">Character Type (<code>char</code>)</h3>
 <p>The <code>char</code> type represents a single character and is currently implemented as a string with length 1.</p>
-<pre><code class="language-firescript">char letter = &quot;A&quot;
-char digit = &quot;7&quot;
-char newline = &quot;\n&quot;  // Special character
+<pre><code class="language-firescript">char letter = &quot;A&quot;;
+char digit = &quot;7&quot;;
+char newline = &quot;\n&quot;;  // Special character
 </code></pre>
 <h3 id="arrays">Arrays</h3>
 <p>Arrays are ordered collections of elements of the same type.</p>
 <h4 id="declaration-and-initialization">Declaration and Initialization</h4>
 <pre><code class="language-firescript">// With initial values
-int[] numbers = [1, 2, 3, 4, 5]
-string[] fruits = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;]
+int[] numbers = [1, 2, 3, 4, 5];
+string[] fruits = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;];
 
 // Empty array
-bool[] flags = []
+bool[] flags = [];
 </code></pre>
 <h4 id="array-operations">Array Operations</h4>
-<pre><code class="language-firescript">int[] scores = [85, 92, 78]
+<pre><code class="language-firescript">int[] scores = [85, 92, 78];
 
 // Accessing elements (zero-based indexing)
-int firstScore = scores[0]  // 85
+int firstScore = scores[0];  // 85
 
 // Modifying elements
-scores[1] = 95  // Array becomes [85, 95, 78]
+scores[1] = 95;  // Array becomes [85, 95, 78]
 
 // Array methods
-scores.append(88)  // Add to end: [85, 95, 78, 88]
-scores.insert(2, 82)  // Insert at index: [85, 95, 82, 78, 88]
-int removed = scores.pop()  // Remove last: removed = 88, array = [85, 95, 82, 78]
-removed = scores.pop(1)  // Remove at index: removed = 95, array = [85, 82, 78]
+scores.append(88);  // Add to end: [85, 95, 78, 88]
+scores.insert(2, 82);  // Insert at index: [85, 95, 82, 78, 88]
+int removed = scores.pop();  // Remove last: removed = 88, array = [85, 95, 82, 78]
+removed = scores.pop(1);  // Remove at index: removed = 95, array = [85, 82, 78]
 
 // Array properties
-int count = scores.length  // 3
+int count = scores.length;  // 3
 
 // Clearing arrays
-scores.clear()  // Array becomes []
+scores.clear();  // Array becomes []
 </code></pre>
 <h2 id="nullability">Nullability</h2>
 <p>By default, variables cannot hold the value <code>null</code>. To allow a variable to be assigned <code>null</code>, you must explicitly declare it as <code>nullable</code>.</p>
 <h3 id="declaring-nullable-variables">Declaring Nullable Variables</h3>
-<pre><code class="language-firescript">nullable string username = null  // Allowed
-string title = &quot;Default&quot;
+<pre><code class="language-firescript">nullable string username = null;  // Allowed
+string title = &quot;Default&quot;;
 
-// title = null  // Error: Cannot assign null to non-nullable type 'string'
+// title = null;  // Error: Cannot assign null to non-nullable type 'string'
 
-username = &quot;John&quot;  // Can be assigned a non-null value later
+username = &quot;John&quot;;  // Can be assigned a non-null value later
 </code></pre>
 <h3 id="working-with-nullable-values">Working with Nullable Values</h3>
 <p>When working with nullable variables, it's important to check for null before using them:</p>
-<pre><code class="language-firescript">nullable string data = null
+<pre><code class="language-firescript">nullable string data = null;
 
 // Safe pattern
 if (data != null) {
-    print(data)
+    print(data);
 }
 
 // Could cause a runtime error if not checked
-print(data)  // Might try to print null
+print(data);  // Might try to print null
 </code></pre>
 <h2 id="type-compatibility-and-conversions">Type Compatibility and Conversions</h2>
 <p>firescript has strict typing rules but provides explicit conversion functions for common type conversions.</p>
 <h3 id="built-in-type-conversion-functions">Built-in Type Conversion Functions</h3>
 <pre><code class="language-firescript">// String to numeric conversions
-string numStr = &quot;42&quot;
-int num = toInt(numStr)         // 42
-float floatVal = toFloat(&quot;3.14&quot;)  // 3.14
-double doubleVal = toDouble(&quot;2.71828&quot;)  // 2.71828
+string numStr = &quot;42&quot;;
+int num = toInt(numStr);           // 42
+float floatVal = toFloat(&quot;3.14&quot;);  // 3.14
+double doubleVal = toDouble(&quot;2.71828&quot;);  // 2.71828
 
 // Numeric to string conversions
-string strFromInt = toString(42)     // &quot;42&quot;
-string strFromFloat = toString(3.14)  // &quot;3.14&quot;
+string strFromInt = toString(42);      // &quot;42&quot;
+string strFromFloat = toString(3.14);  // &quot;3.14&quot;
 
 // Boolean conversions
-bool boolValue = toBool(&quot;true&quot;)  // true
-string strFromBool = toString(false)  // &quot;false&quot;
+bool boolValue = toBool(&quot;true&quot;);  // true
+string strFromBool = toString(false);  // &quot;false&quot;
 
 // Character conversion
-char first = toChar(&quot;Hello&quot;)  // &quot;H&quot; - first character of string
+char first = toChar(&quot;Hello&quot;);  // &quot;H&quot; - first character of string
 </code></pre>
 <h3 id="implicit-type-conversions">Implicit Type Conversions</h3>
 <p>firescript generally does not perform implicit type conversions, with some exceptions:</p>
@@ -1396,28 +1404,28 @@ char first = toChar(&quot;Hello&quot;)  // &quot;H&quot; - first character of st
 <li>If one operand is <code>double</code>, the result is <code>double</code></li>
 <li>If one operand is <code>float</code> and the other is <code>int</code>, the result is <code>float</code></li>
 </ol>
-<pre><code class="language-firescript">int intVal = 5
-float floatVal = 2.5
-double doubleVal = 3.14
+<pre><code class="language-firescript">int intVal = 5;
+float floatVal = 2.5;
+double doubleVal = 3.14;
 
-float result1 = intVal + floatVal    // Result is float 7.5
-double result2 = floatVal * doubleVal  // Result is double 7.85
+float result1 = intVal + floatVal;    // Result is float 7.5
+double result2 = floatVal * doubleVal;  // Result is double 7.85
 </code></pre>
 <ol>
 <li>String concatenation with <code>+</code> will convert non-string values to strings:</li>
 </ol>
-<pre><code class="language-firescript">string message = &quot;Count: &quot; + 42  // &quot;Count: 42&quot;
-string status = &quot;Active: &quot; + true  // &quot;Active: true&quot;
+<pre><code class="language-firescript">string message = &quot;Count: &quot; + 42;  // &quot;Count: 42&quot;
+string status = &quot;Active: &quot; + true;  // &quot;Active: true&quot;
 </code></pre>
 <h2 id="type-checking-and-enforcement">Type Checking and Enforcement</h2>
 <p>The firescript parser includes a type-checking phase that runs after the initial syntax parsing.</p>
 <h3 id="static-type-checking">Static Type Checking</h3>
 <ol>
 <li>
-<p><strong>Variable Declarations</strong>: When you declare a variable (<code>int x = 5</code>), the type checker verifies that the type of the initializer (<code>5</code>, which is <code>int</code>) matches the declared type (<code>int</code>).</p>
+<p><strong>Variable Declarations</strong>: When you declare a variable (<code>int x = 5;</code>), the type checker verifies that the type of the initializer (<code>5</code>, which is <code>int</code>) matches the declared type (<code>int</code>).</p>
 </li>
 <li>
-<p><strong>Assignments</strong>: When assigning a value to an existing variable (<code>x = 10</code>), the checker ensures the assigned value's type is compatible with the variable's declared type.</p>
+<p><strong>Assignments</strong>: When assigning a value to an existing variable (<code>x = 10;</code>), the checker ensures the assigned value's type is compatible with the variable's declared type.</p>
 </li>
 <li>
 <p><strong>Expressions</strong>: Operators (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>==</code>, <code>&gt;</code>, etc.) are checked to ensure they are used with compatible operand types. For example, arithmetic operators generally require numeric types (<code>int</code>, <code>float</code>, <code>double</code>), while <code>+</code> can also be used for string concatenation. The result type of an expression is also determined (e.g., <code>1 + 2.0</code> results in a <code>float</code>).</p>
@@ -1434,78 +1442,83 @@ string status = &quot;Active: &quot; + true  // &quot;Active: true&quot;
 </ol>
 <h3 id="type-errors">Type Errors</h3>
 <p>Type errors found during the checking phase will prevent the code from compiling further, providing early feedback on potential issues:</p>
-<pre><code class="language-firescript">string name = &quot;John&quot;
-int age = 30
+<pre><code class="language-firescript">string name = &quot;John&quot;;
+int age = 30;
 
-age = &quot;thirty&quot;  // Type error: Cannot assign string to int
-name = 25       // Type error: Cannot assign int to string
-bool result = age + name  // Type error: Cannot add int and string
-                         // Also cannot assign result to bool
+age = &quot;thirty&quot;;  // Type error: Cannot assign string to int
+name = 25;       // Type error: Cannot assign int to string
+bool result = age + name;  // Type error: Cannot add int and string
+                           // Also cannot assign result to bool
 </code></pre>
 <h2 id="type-introspection">Type Introspection</h2>
 <p>The <code>typeof</code> built-in function returns a string representing the type of a value:</p>
-<pre><code class="language-firescript">string type1 = typeof(42)        // &quot;int&quot;
-string type2 = typeof(3.14)      // &quot;float&quot;
-string type3 = typeof(&quot;hello&quot;)   // &quot;string&quot;
-string type4 = typeof(true)      // &quot;bool&quot;
-string type5 = typeof([1, 2, 3]) // &quot;int[]&quot;
+<pre><code class="language-firescript">// Future syntax
+string type1 = typeof(42);        // &quot;int&quot;
+string type2 = typeof(3.14);      // &quot;float&quot;
+string type3 = typeof(&quot;hello&quot;);   // &quot;string&quot;
+string type4 = typeof(true);      // &quot;bool&quot;
+string type5 = typeof([1, 2, 3]); // &quot;int[]&quot;
 </code></pre>
 <h2 id="advanced-type-features-planned">Advanced Type Features (Planned)</h2>
 <p>The following advanced type features are planned but not yet implemented:</p>
 <h3 id="tuples">Tuples</h3>
-<p>Tuples will allow grouping of values with different types:</p>
+<p>Tuples will allow grouping of values with different types. They will be immutable and can be accessed by index:</p>
 <pre><code class="language-firescript">// Future syntax
-tuple&lt;int, string&gt; person = (30, &quot;John&quot;)
-int age = person[0]  // 30
-string name = person[1]  // &quot;John&quot;
+tuple&lt;int, string&gt; person = (30, &quot;John&quot;);
+int age = person[0];  // 30
+string name = person[1];  // &quot;John&quot;
 </code></pre>
 <h3 id="generics">Generics</h3>
 <p>Generic types will allow for more flexible and reusable code:</p>
 <pre><code class="language-firescript">// Future syntax
 T max&lt;T&gt;(T a, T b) {
     if (a &gt; b) {
-        return a
+        return a;
     } else {
-        return b
+        return b;
     }
 }
 
-int largerInt = max&lt;int&gt;(5, 10)  // 10
-string largerString = max&lt;string&gt;(&quot;apple&quot;, &quot;banana&quot;)  // &quot;banana&quot;
+int largerInt = max&lt;int&gt;(5, 10);  // 10
+string largerString = max&lt;string&gt;(&quot;apple&quot;, &quot;banana&quot;);  // &quot;banana&quot;
 </code></pre>
 <h3 id="user-defined-types-classes">User-Defined Types (Classes)</h3>
 <p>Classes will enable user-defined types with methods and properties:</p>
 <pre><code class="language-firescript">// Future syntax
 class Point {
-    float x
-    float y
+    float x;
+    float y;
 
     Point(this, float x, float y) {
-        this.x = x
-        this.y = y
+        this.x = x;
+        this.y = y;
     }
 
     float distanceTo(this, Point other) {
-        float dx = this.x - other.x
-        float dy = this.y - other.y
-        return toFloat((dx * dx + dy * dy) ** 0.5)
+        float dx = this.x - other.x;
+        float dy = this.y - other.y;
+        return toFloat((dx * dx + dy * dy) ** 0.5);
     }
 }
 </code></pre>
 <h2 id="implementation-status">Implementation Status</h2>
-<p>The current firescript compiler supports:
-- ✅ All primitive types: <code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>char</code>
-- ✅ Nullable type modifiers
-- ✅ Arrays of primitive types
-- ✅ Static type checking for expressions and assignments
-- ✅ Type conversion functions
-- ✅ Type introspection with <code>typeof</code></p>
-<p>Not yet implemented:
-- ❌ Tuples
-- ❌ Generics
-- ❌ User-defined types (classes)
-- ❌ Interface types
-- ❌ Function types</p>
+<p>The current firescript compiler supports:</p>
+<ul>
+<li>✅ All primitive types: <code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>char</code></li>
+<li>✅ Nullable type modifiers</li>
+<li>✅ Arrays of primitive types</li>
+<li>✅ Static type checking for expressions and assignments</li>
+<li>✅ Type conversion functions</li>
+</ul>
+<p>Not yet implemented:</p>
+<ul>
+<li>❌ Type introspection with <code>typeof</code></li>
+<li>❌ Tuples</li>
+<li>❌ Generics</li>
+<li>❌ User-defined types (classes)</li>
+<li>❌ Interface types</li>
+<li>❌ Function types</li>
+</ul>
 
 
 
