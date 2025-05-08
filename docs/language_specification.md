@@ -46,7 +46,7 @@ string title = null;          // Invalid - cannot assign null to non-nullable ty
 
 ### Arrays
 
-Arrays are ordered collections of elements of the same type.
+Arrays are dynamically sized ordered collections of elements of the same type.
 
 ```firescript
 int[] numbers = [1, 2, 3];
@@ -101,9 +101,9 @@ bool isActive = true;
 ### Conditional Statements
 
 ```firescript
-if condition {
+if (condition) {
     // then branch
-} else if otherCondition {
+} else if (otherCondition) {
     // else-if branch
 } else {
     // else branch
@@ -113,7 +113,7 @@ if condition {
 ### While Loop
 
 ```firescript
-while condition {
+while (condition) {
     // body
 }
 ```
@@ -181,6 +181,7 @@ Although the compiler accepts both forms, it is strongly recommended to use clea
 ## 10. Not Yet Implemented Features
 
 - Array slicing and negative indices
+- typeof() function
 - User-defined function definitions
 - Classes and inheritance
 - For loops

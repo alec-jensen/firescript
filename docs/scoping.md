@@ -14,29 +14,29 @@ A new scope is created by **any** set of curly braces `{}`. This includes:
 ```firescript
 // Global scope
 
-int globalVar = 10
+int globalVar = 10;
 
 if (globalVar > 5) {
     // Inner scope 1 (if body)
-    int innerVar1 = 20
-    print(globalVar)  // Accessing outer scope variable: OK (prints 10)
-    print(innerVar1)  // Accessing current scope variable: OK (prints 20)
+    int innerVar1 = 20;
+    print(globalVar);  // Accessing outer scope variable: OK (prints 10)
+    print(innerVar1);  // Accessing current scope variable: OK (prints 20)
 }
 
 // print(innerVar1)  // ERROR: innerVar1 is not accessible here
 
 {
     // Inner scope 2 (bare braces)
-    int innerVar2 = 30
-    print(globalVar)  // Accessing outer scope variable: OK (prints 10)
-    print(innerVar2)  // Accessing current scope variable: OK (prints 30)
+    int innerVar2 = 30;
+    print(globalVar);  // Accessing outer scope variable: OK (prints 10)
+    print(innerVar2);  // Accessing current scope variable: OK (prints 30)
 
     if (true) {
         // Inner scope 3 (nested if body)
-        int innerVar3 = 40
-        print(globalVar)  // OK (prints 10)
-        print(innerVar2)  // OK (prints 30)
-        print(innerVar3)  // OK (prints 40)
+        int innerVar3 = 40;
+        print(globalVar);  // OK (prints 10)
+        print(innerVar2);  // OK (prints 30)
+        print(innerVar3);  // OK (prints 40)
     }
     // print(innerVar3)  // ERROR: innerVar3 is not accessible here
 }
@@ -58,14 +58,14 @@ Variables in firescript must be declared with an explicit type and initialized i
 
 ```firescript
 {
-    int x = 5  // x is declared and initialized
+    int x = 5;  // x is declared and initialized
     
     {
         // New inner scope
-        print(x)  // Accessible, prints 5
+        print(x);  // Accessible, prints 5
         
-        // int x = 10  // ERROR: Cannot redeclare 'x' - shadowing is not allowed
-        int y = 15  // y is only accessible in this scope
+        // int x = 10;  // ERROR: Cannot redeclare 'x' - shadowing is not allowed
+        int y = 15;  // y is only accessible in this scope
     }
     
     // print(y)  // ERROR: y is not defined in this scope
@@ -81,13 +81,13 @@ Variables exist only from the point of their declaration to the end of their con
 {
     // print(a)  // ERROR: Cannot use 'a' before declaration
     
-    int a = 1
-    print(a)  // OK: 'a' exists here
+    int a = 1;
+    print(a);  // OK: 'a' exists here
     
     {
-        int b = 2
-        print(a)  // OK: 'a' from outer scope
-        print(b)  // OK: 'b' from current scope
+        int b = 2;
+        print(a);  // OK: 'a' from outer scope
+        print(b);  // OK: 'b' from current scope
     }  // 'b' is destroyed here
     
     // print(b)  // ERROR: 'b' no longer exists
@@ -99,13 +99,13 @@ Variables exist only from the point of their declaration to the end of their con
 Variables declared outside any braces are in the global scope and are accessible throughout the entire program:
 
 ```firescript
-int globalValue = 100  // Global variable
+int globalValue = 100;  // Global variable
 
 {
-    print(globalValue)  // Accessible anywhere in the program
+    print(globalValue);  // Accessible anywhere in the program
     
     {
-        print(globalValue)  // Still accessible
+        print(globalValue);  // Still accessible
     }
 }
 
@@ -118,12 +118,12 @@ int globalValue = 100  // Global variable
 Each iteration of a loop has its own scope:
 
 ```firescript
-int i = 0
+int i = 0;
 while (i < 3) {
     // New scope for each loop iteration
-    int temp = i * 10
-    print(temp)  // Prints 0, 10, 20
-    i = i + 1
+    int temp = i * 10;
+    print(temp);  // Prints 0, 10, 20
+    i = i + 1;
 }  // 'temp' is destroyed at the end of each iteration
 
 // print(temp)  // ERROR: 'temp' is not accessible here
@@ -131,23 +131,23 @@ while (i < 3) {
 
 ### 5. Conditional Scopes
 
-Each branch of a conditional statement creates its own scope:
+Each branch of a conditional statement creates its own scope. This pattern prevents runtime issues where a variable may or may not be defined depending on the execution path:
 
 ```firescript
-int value = 5
+int value = 5;
 
 if (value > 10) {
     // Scope A
-    int result = value * 2
-    print(result)
+    int result = value * 2;
+    print(result);
 } else if (value > 0) {
     // Scope B (different from Scope A)
-    int result = value + 10  // OK to reuse the name 'result' here
-    print(result)  // Prints 15
+    int result = value + 10;  // OK to reuse the name 'result' here
+    print(result);  // Prints 15
 } else {
     // Scope C (different from Scopes A and B)
-    int result = 0
-    print(result)
+    int result = 0;
+    print(result);
 }
 
 // print(result)  // ERROR: 'result' is not accessible here
@@ -159,19 +159,19 @@ When user-defined functions are implemented, they will create their own scopes:
 
 ```firescript
 // Global scope
-int globalVar = 10
+int globalVar = 10;
 
 // Future syntax when functions are implemented
 void exampleFunction() {
     // Function scope
-    int functionVar = 20
-    print(globalVar)  // OK: access to global scope
+    int functionVar = 20;
+    print(globalVar);  // OK: access to global scope
     
     {
         // Inner scope within the function
-        int innerVar = 30
-        print(functionVar)  // OK: access to containing function scope
-        print(globalVar)    // OK: access to global scope
+        int innerVar = 30;
+        print(functionVar);  // OK: access to containing function scope
+        print(globalVar);    // OK: access to global scope
     }
     
     // print(innerVar)  // ERROR: not accessible outside its scope
@@ -188,7 +188,7 @@ It's important to distinguish between a variable's scope (where it can be access
 // When object-oriented features are implemented:
 {
     // myObj variable is scoped to this block
-    Person myObj = Person("John", 30)
+    Person myObj = Person("John", 30);
     
     // myObj reference goes out of scope here
     // The Person object may be garbage collected if no other references exist
@@ -206,8 +206,8 @@ It's important to distinguish between a variable's scope (where it can be access
    ```firescript
    {
        // Temporary calculation scope
-       int temp = complexCalculation()
-       result = temp * 2
+       int temp = complexCalculation();
+       result = temp * 2;
    }  // 'temp' is no longer accessible, reducing scope pollution
    ```
 
@@ -229,7 +229,7 @@ firescript's scoping mechanism is implemented as a stack of symbol tables. When 
 
 ```firescript
 {
-    int value = 10
+    int value = 10;
 }
 print(value)  // ERROR: 'value' is not defined in this scope
 ```
@@ -237,32 +237,32 @@ print(value)  // ERROR: 'value' is not defined in this scope
 ### 2. Redeclaring Variables in the Same Scope
 
 ```firescript
-int count = 5
-int count = 10  // ERROR: 'count' is already defined
+int count = 5;
+int count = 10;  // ERROR: 'count' is already defined
 ```
 
 ### 3. Attempting Variable Shadowing
 
 ```firescript
-int value = 10
+int value = 10;
 if (true) {
-    int value = 20  // ERROR: Shadowing is not allowed in firescript
+    int value = 20;  // ERROR: Shadowing is not allowed in firescript
 }
 ```
 
 ### 4. Using Variables Before Declaration
 
 ```firescript
-print(result)  // ERROR: Cannot use 'result' before declaration
-int result = 42
+print(result);  // ERROR: Cannot use 'result' before declaration
+int result = 42;
 ```
 
 ## Implementation Status
 
 Scope handling in firescript is fully implemented:
 
-- ✅ Block scopes with curly braces
-- ✅ Variable visibility rules
-- ✅ Prohibition of variable shadowing
-- ✅ Scope nesting and hierarchy
-- ✅ Variable lifetime management
+* ✅ Block scopes with curly braces
+* ✅ Variable visibility rules
+* ✅ Prohibition of variable shadowing
+* ✅ Scope nesting and hierarchy
+* ✅ Variable lifetime management

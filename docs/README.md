@@ -47,7 +47,7 @@ firescript is under active development. Key limitations in the current compiler 
 * ✅ Primitive types (`int`, `float`, `double`, `bool`, `string`, `char`) are fully supported.
 * ✅ Arrays support basic operations: `append`, `insert`, `pop`, `clear`, and `length`.
 * ✅ Static type checking for expressions and assignments.
-* ✅ Built-in functions: `print`, `input`, type conversions, and `typeof`.
+* ✅ Built-in functions: `print`, `input`, and type conversions.
 * ❌ User-defined functions are not yet implemented.
 * ❌ Classes and inheritance are planned but not implemented.
 * ❌ Advanced array features like slicing and negative indices are not supported.

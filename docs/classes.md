@@ -13,38 +13,38 @@ A class in firescript is defined using the `class` keyword, followed by the clas
 ```firescript
 class Person {
     // Fields (instance variables)
-    string name
-    nullable int age
-    bool isEmployed
+    string name;
+    nullable int age;
+    bool isEmployed;
 
     // Constructor: 'this' refers to the instance being created
     Person(this, string name, nullable int age = null, bool isEmployed = false) {
-        this.name = name
-        this.age = age
-        this.isEmployed = isEmployed
+        this.name = name;
+        this.age = age;
+        this.isEmployed = isEmployed;
     }
 
     // Instance methods
     string getName(this) {
-        return this.name
+        return this.name;
     }
 
     nullable int getAge(this) {
-        return this.age
+        return this.age;
     }
 
     void celebrate(this) {
         if (this.age != null) {
-            this.age = this.age + 1
-            print(this.name + " is now " + toString(this.age) + " years old!")
+            this.age = this.age + 1;
+            print(this.name + " is now " + toString(this.age) + " years old!");
         } else {
-            print(this.name + " is celebrating!")
+            print(this.name + " is celebrating!");
         }
     }
 
     // Static method (belongs to the class, not instances)
     static string species() {
-        return "Homo sapiens"
+        return "Homo sapiens";
     }
 }
 ```
@@ -55,9 +55,9 @@ Fields declare the data that each instance of a class will contain. Each field m
 
 ```firescript
 class Rectangle {
-    float width
-    float height
-    string color
+    float width;
+    float height;
+    string color;
 }
 ```
 
@@ -65,8 +65,8 @@ Fields can be nullable or const:
 
 ```firescript
 class Configuration {
-    const string APP_NAME       // Constant field
-    nullable string lastUser    // Can be null
+    const string APP_NAME;       // Constant field
+    nullable string lastUser;    // Can be null
 }
 ```
 
@@ -76,19 +76,19 @@ Constructors are special methods that initialize a new instance of a class. They
 
 ```firescript
 class Point {
-    float x
-    float y
+    float x;
+    float y;
     
     // Basic constructor
     Point(this, float x, float y) {
-        this.x = x
-        this.y = y
+        this.x = x;
+        this.y = y;
     }
     
     // With default values (when implemented)
     Point(this, float x = 0.0, float y = 0.0) {
-        this.x = x
-        this.y = y
+        this.x = x;
+        this.y = y;
     }
 }
 ```
@@ -99,23 +99,23 @@ Instance methods are functions that belong to an instance of a class. They alway
 
 ```firescript
 class Circle {
-    float radius
+    float radius;
     
     Circle(this, float radius) {
-        this.radius = radius
+        this.radius = radius;
     }
     
     // Instance methods
     float getArea(this) {
-        return 3.14159 * this.radius * this.radius
+        return 3.14159 * this.radius * this.radius;
     }
     
     float getCircumference(this) {
-        return 2.0 * 3.14159 * this.radius
+        return 2.0 * 3.14159 * this.radius;
     }
     
     void scale(this, float factor) {
-        this.radius = this.radius * factor
+        this.radius = this.radius * factor;
     }
 }
 ```
@@ -129,14 +129,14 @@ class MathUtils {
     // Static methods
     static int max(int a, int b) {
         if (a > b) {
-            return a
+            return a;
         } else {
-            return b
+            return b;
         }
     }
     
     static float average(float a, float b) {
-        return (a + b) / 2.0
+        return (a + b) / 2.0;
     }
 }
 ```
@@ -147,15 +147,15 @@ Once a class is defined, you can create instances (objects) of that class:
 
 ```firescript
 // Creating objects
-Person alice = Person("Alice", 30, true)
-Person bob = Person("Bob", null)
+Person alice = Person("Alice", 30, true);
+Person bob = Person("Bob", null);
 
 // Using instance methods
-string aliceName = alice.getName()
-alice.celebrate()
+string aliceName = alice.getName();
+alice.celebrate();
 
 // Using static methods
-string speciesName = Person.species()
+string speciesName = Person.species();
 ```
 
 ## Inheritance
@@ -164,29 +164,29 @@ Inheritance allows a class to inherit fields and methods from another class. fir
 
 ```firescript
 class Student from Person {
-    string school
-    string[] courses
+    string school;
+    string[] courses;
     
     Student(this, string name, int age, string school) {
-        super.Student(name, age)  // Call parent constructor
-        this.school = school
-        this.courses = []
+        super.Student(name, age);  // Call parent constructor
+        this.school = school;
+        this.courses = [];
     }
     
     // Additional methods
     void enroll(this, string course) {
-        this.courses.append(course)
-        print(this.name + " enrolled in " + course)
+        this.courses.append(course);
+        print(this.name + " enrolled in " + course);
     }
     
     string[] getCourses(this) {
-        return this.courses
+        return this.courses;
     }
     
     // Override parent method
     void celebrate(this) {
-        super.celebrate()  // Call parent method
-        print("Time for a student party!")
+        super.celebrate();  // Call parent method
+        print("Time for a student party!");
     }
 }
 ```
@@ -197,28 +197,28 @@ Child classes can override methods from the parent class. To call the parent cla
 
 ```firescript
 class Shape {
-    string color
+    string color;
     
     Shape(this, string color) {
-        this.color = color
+        this.color = color;
     }
     
     string describe(this) {
-        return "A " + this.color + " shape"
+        return "A " + this.color + " shape";
     }
 }
 
 class Square from Shape {
-    float side
+    float side;
     
     Square(this, float side, string color) {
-        super.Shape(color)
-        this.side = side
+        super.Shape(color);
+        this.side = side;
     }
     
     // Override the parent's describe method
     string describe(this) {
-        return super.describe() + " (square with side " + toString(this.side) + ")"
+        return super.describe() + " (square with side " + toString(this.side) + ")";
     }
 }
 ```
@@ -232,12 +232,12 @@ Polymorphism allows objects of different classes in the same inheritance hierarc
 Person[] people = [
     Person("Alice", 25),
     Student("Bob", 20, "State University")
-]
+];
 
-int i = 0
+int i = 0;
 while (i < people.length) {
-    print(people[i].getName())
-    i = i + 1
+    print(people[i].getName());
+    i = i + 1;
 }
 ```
 
@@ -261,7 +261,7 @@ class Circle implements Drawable {
     }
     
     bool isVisible(this) {
-        return true
+        return true;
     }
 }
 ```
@@ -271,24 +271,24 @@ class Circle implements Drawable {
 ```firescript
 // Future syntax
 class Box<T> {
-    nullable T value
+    nullable T value;
     
     Box(this) {
-        this.value = null
+        this.value = null;
     }
     
     void set(this, T newValue) {
-        this.value = newValue
+        this.value = newValue;
     }
     
     nullable T get(this) {
-        return this.value
+        return this.value;
     }
 }
 
 // Usage
-Box<int> intBox = Box<int>()
-intBox.set(42)
+Box<int> intBox = Box<int>();
+intBox.set(42);
 ```
 
 ### Abstract Classes and Methods
@@ -296,25 +296,25 @@ intBox.set(42)
 ```firescript
 // Future syntax
 abstract class Animal {
-    string species
+    string species;
     
     Animal(this, string species) {
-        this.species = species
+        this.species = species;
     }
     
     // Abstract method - no implementation
-    abstract string makeSound(this)
+    abstract string makeSound(this);
     
     // Regular method with implementation
     string getSpecies(this) {
-        return this.species
+        return this.species;
     }
 }
 
 class Cat from Animal {
     // Must implement abstract methods
     string makeSound(this) {
-        return "Meow"
+        return "Meow";
     }
 }
 ```

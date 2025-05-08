@@ -23,9 +23,9 @@ if (condition) {
 Example:
 
 ```firescript
-int age = 18
+int age = 18;
 if (age >= 18) {
-    print("You are eligible to vote")
+    print("You are eligible to vote");
 }
 ```
 
@@ -44,11 +44,11 @@ if (condition) {
 Example:
 
 ```firescript
-int score = 65
+int score = 65;
 if (score >= 70) {
-    print("Pass")
+    print("Pass");
 } else {
-    print("Fail")
+    print("Fail");
 }
 ```
 
@@ -71,18 +71,18 @@ if (condition1) {
 Example:
 
 ```firescript
-int grade = 85
+int grade = 85;
 
 if (grade >= 90) {
-    print("A")
+    print("A");
 } else if (grade >= 80) {
-    print("B")
+    print("B");
 } else if (grade >= 70) {
-    print("C")
+    print("C");
 } else if (grade >= 60) {
-    print("D")
+    print("D");
 } else {
-    print("F")
+    print("F");
 }
 ```
 
@@ -91,17 +91,17 @@ if (grade >= 90) {
 Conditional statements can be nested within other conditional statements:
 
 ```firescript
-bool hasDiscount = true
-int totalAmount = 120
+bool hasDiscount = true;
+int totalAmount = 120;
 
 if (totalAmount > 100) {
     if (hasDiscount) {
-        print("You qualify for a 15% discount")
+        print("You qualify for a 15% discount");
     } else {
-        print("You qualify for a 10% discount")
+        print("You qualify for a 10% discount");
     }
 } else {
-    print("No discount available")
+    print("No discount available");
 }
 ```
 
@@ -115,15 +115,15 @@ Conditions can use various boolean operators:
 Example:
 
 ```firescript
-int age = 25
-bool hasLicense = true
+int age = 25;
+bool hasLicense = true;
 
 if (age >= 18 && hasLicense) {
-    print("You can drive")
+    print("You can drive");
 }
 
 if (!(age < 18 || !hasLicense)) {
-    print("Also, you can drive") // Equivalent to the above
+    print("Also, you can drive"); // Equivalent to the above
 }
 ```
 
@@ -144,10 +144,10 @@ while (condition) {
 Example:
 
 ```firescript
-int count = 0
+int count = 0;
 while (count < 5) {
-    print(count)
-    count = count + 1
+    print(count);
+    count = count + 1;
 }
 // Outputs: 0, 1, 2, 3, 4
 ```
@@ -160,7 +160,7 @@ A `while` loop with a condition that is always `true` creates an infinite loop. 
 while (true) {
     // This will run forever unless broken
     if (someCondition) {
-        break // Exit the loop
+        break; // Exit the loop
     }
 }
 ```
@@ -175,19 +175,19 @@ The following statements can control loop execution:
 Example:
 
 ```firescript
-int i = 0
+int i = 0;
 while (i < 10) {
-    i = i + 1
+    i = i + 1;
     
     if (i == 3) {
-        continue // Skip the rest of this iteration
+        continue; // Skip the rest of this iteration
     }
     
     if (i == 8) {
-        break // Exit the loop
+        break; // Exit the loop
     }
     
-    print(i)
+    print(i);
 }
 // Outputs: 1, 2, 4, 5, 6, 7
 ```
@@ -197,18 +197,18 @@ while (i < 10) {
 Loops and conditional statements can be combined to create powerful control flows:
 
 ```firescript
-int[] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-int sum = 0
-int i = 0
+int[] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+int sum = 0;
+int i = 0;
 
 while (i < numbers.length) {
     if (numbers[i] % 2 == 0) {
-        sum = sum + numbers[i] // Add only even numbers
+        sum = sum + numbers[i]; // Add only even numbers
     }
-    i = i + 1
+    i = i + 1;
 }
 
-print(sum) // Outputs: 30 (2 + 4 + 6 + 8 + 10)
+print(sum); // Outputs: 30 (2 + 4 + 6 + 8 + 10)
 ```
 
 ## Future Control Flow Features
@@ -220,7 +220,7 @@ The following control flow features are planned but not yet implemented in the c
 ```firescript
 // Future syntax
 for (int i = 0; i < 5; i++) {
-    print(i)
+    print(i);
 }
 ```
 
@@ -228,9 +228,9 @@ for (int i = 0; i < 5; i++) {
 
 ```firescript
 // Future syntax
-string[] fruits = ["apple", "banana", "cherry"]
+string[] fruits = ["apple", "banana", "cherry"];
 for (string fruit : fruits) {
-    print(fruit)
+    print(fruit);
 }
 ```
 
@@ -239,15 +239,15 @@ for (string fruit : fruits) {
 ```firescript
 // Future syntax
 for (int i : range(5)) {
-    print(i) // 0, 1, 2, 3, 4
+    print(i); // 0, 1, 2, 3, 4
 }
 
 for (int i : range(2, 8)) {
-    print(i) // 2, 3, 4, 5, 6, 7
+    print(i); // 2, 3, 4, 5, 6, 7
 }
 
 for (int i : range(1, 10, 2)) {
-    print(i) // 1, 3, 5, 7, 9
+    print(i); // 1, 3, 5, 7, 9
 }
 ```
 
@@ -255,7 +255,7 @@ for (int i : range(1, 10, 2)) {
 
 ```firescript
 // Future syntax
-int max = ternary a > b then a else b
+int max = ternary a > b then a else b;
 ```
 
 ### Switch Statements
@@ -265,10 +265,10 @@ int max = ternary a > b then a else b
 switch (value) {
     case 1:
         // code for case 1
-        break
+        break;
     case 2:
         // code for case 2
-        break
+        break;
     default:
         // default code
 }

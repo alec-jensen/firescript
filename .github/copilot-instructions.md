@@ -1,1 +1,1 @@
-The project name is "firescript", all lowercase. Do not capitalize it. Make sure you are not removing random code.
+The project name is "firescript", all lowercase. Do not capitalize it. Make sure you are not removing random code. When writing new code, keep a consistent style with the existing code. Do not add new features or change the functionality of the code unless explicitly instructed to do so. If you are unsure about something, ask for clarification. Do not make assumptions about the code or its purpose.

@@ -12,12 +12,12 @@ Arrays are declared by appending `[]` to any valid type and initializing with va
 
 ```firescript
 // Array initialization with values
-int[] numbers = [10, 20, 30, 40, 50]
-string[] names = ["Alice", "Bob", "Charlie"]
-bool[] flags = [true, false, true]
+int[] numbers = [10, 20, 30, 40, 50];
+string[] names = ["Alice", "Bob", "Charlie"];
+bool[] flags = [true, false, true];
 
 // Empty array initialization
-float[] prices = []
+float[] prices = [];
 ```
 
 All elements in an array must be of the same type as specified in the declaration.
@@ -27,14 +27,14 @@ All elements in an array must be of the same type as specified in the declaratio
 Individual array elements can be accessed using zero-based indexing:
 
 ```firescript
-int[] scores = [85, 92, 78, 90, 88]
+int[] scores = [85, 92, 78, 90, 88];
 
 // Access individual elements
-int firstScore = scores[0]    // 85
-int thirdScore = scores[2]    // 78
+int firstScore = scores[0];    // 85
+int thirdScore = scores[2];    // 78
 
 // Modifying elements
-scores[1] = 95                // Array becomes [85, 95, 78, 90, 88]
+scores[1] = 95;                // Array becomes [85, 95, 78, 90, 88]
 ```
 
 ⚠️ **Warning:** Accessing an index outside the array bounds will cause a runtime error. Always ensure your index is valid before access.
@@ -45,51 +45,51 @@ firescript provides several built-in methods for manipulating arrays:
 
 ### Adding Elements
 
-- **`append(element)`** – Adds an element to the end of the array
+- **`append(element)`** – Add an element to the end of the array
 
-  ```firescript
-  int[] numbers = [1, 2, 3]
-  numbers.append(4)           // Array becomes [1, 2, 3, 4]
-  ```
+```firescript
+int[] numbers = [1, 2, 3];
+numbers.append(4);        // Array becomes [1, 2, 3, 4]
+```
 
-- **`insert(index, element)`** – Inserts an element at the specified position
+- **`insert(index, element)`** – Insert an element at the specified position
 
-  ```firescript
-  string[] fruits = ["apple", "orange", "banana"]
-  fruits.insert(1, "grape")   // Array becomes ["apple", "grape", "orange", "banana"]
-  ```
+```firescript
+string[] fruits = ["apple", "orange", "banana"];
+fruits.insert(1, "grape");   // Array becomes ["apple", "grape", "orange", "banana"]
+```
 
 ### Removing Elements
 
-- **`pop()`** – Removes and returns the last element
+- **`pop()`** – Remove and return the last element of the array
 
-  ```firescript
-  int[] stack = [10, 20, 30]
-  int lastItem = stack.pop()  // lastItem = 30, stack becomes [10, 20]
-  ```
+```firescript
+int[] stack = [10, 20, 30];
+int lastItem = stack.pop();  // lastItem = 30, stack becomes [10, 20]
+```
 
-- **`pop(index)`** – Removes and returns the element at the specified index
+- **`pop(index)`** – Remove and return the element at the specified index
 
-  ```firescript
-  string[] colors = ["red", "green", "blue", "yellow"]
-  string removed = colors.pop(1)  // removed = "green", colors becomes ["red", "blue", "yellow"]
-  ```
+```firescript
+string[] colors = ["red", "green", "blue", "yellow"];
+string removed = colors.pop(1);  // removed = "green", colors becomes ["red", "blue", "yellow"]
+```
 
 ### Other Operations
 
 - **`clear()`** – Removes all elements from the array
 
-  ```firescript
-  bool[] flags = [true, false, true]
-  flags.clear()               // Array becomes []
-  ```
+```firescript
+bool[] flags = [true, false, true];
+flags.clear();               // Array becomes []
+```
 
 - **`length`** – Property that returns the current size of the array
 
-  ```firescript
-  int[] data = [5, 10, 15, 20, 25]
-  int size = data.length      // size = 5
-  ```
+```firescript
+int[] data = [5, 10, 15, 20, 25];
+int size = data.length;      // size = 5
+```
 
 ## Working with Arrays
 
@@ -98,11 +98,11 @@ firescript provides several built-in methods for manipulating arrays:
 Use a `while` loop with an index variable to iterate over array elements:
 
 ```firescript
-string[] cities = ["New York", "London", "Tokyo", "Paris", "Sydney"]
-int i = 0
+string[] cities = ["New York", "London", "Tokyo", "Paris", "Sydney"];
+int i = 0;
 while (i < cities.length) {
-    print(cities[i])
-    i = i + 1
+    print(cities[i]);
+    i = i + 1;
 }
 ```
 
@@ -113,23 +113,23 @@ Arrays can be passed to functions:
 ```firescript
 // Example of how it would work when user-defined functions are implemented
 int sum(int[] numbers) {
-    int total = 0
-    int i = 0
+    int total = 0;
+    int i = 0;
     while (i < numbers.length) {
-        total = total + numbers[i]
-        i = i + 1
+        total = total + numbers[i];
+        i = i + 1;
     }
-    return total
+    return total;
 }
 
 // Usage
-int[] values = [1, 2, 3, 4, 5]
-int result = sum(values)  // 15
+int[] values = [1, 2, 3, 4, 5];
+int result = sum(values);  // 15
 ```
 
 ### Nested Arrays
 
-Arrays can contain other arrays (though this may not be fully implemented yet):
+Arrays can contain other arrays (though this is not fully implemented yet):
 
 ```firescript
 // 2D array example
@@ -137,10 +137,10 @@ int[][] matrix = [
     [1, 2, 3],
     [4, 5, 6],
     [7, 8, 9]
-]
+];
 
 // Accessing elements
-int element = matrix[1][2]  // 6
+int element = matrix[1][2];  // 6
 ```
 
 ## Common Array Patterns
@@ -148,17 +148,17 @@ int element = matrix[1][2]  // 6
 ### Finding an Element
 
 ```firescript
-int[] numbers = [10, 20, 30, 40, 50]
-int target = 30
-int index = -1
-int i = 0
+int[] numbers = [10, 20, 30, 40, 50];
+int target = 30;
+int index = -1;
+int i = 0;
 
 while (i < numbers.length) {
     if (numbers[i] == target) {
-        index = i
-        break
+        index = i;
+        break;
     }
-    i = i + 1
+    i = i + 1;
 }
 
 // index = 2 if found, -1 if not found
@@ -167,15 +167,15 @@ while (i < numbers.length) {
 ### Filtering Elements
 
 ```firescript
-int[] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-int[] evenNumbers = []
-int i = 0
+int[] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+int[] evenNumbers = [];
+int i = 0;
 
 while (i < numbers.length) {
     if (numbers[i] % 2 == 0) {
-        evenNumbers.append(numbers[i])
+        evenNumbers.append(numbers[i]);
     }
-    i = i + 1
+    i = i + 1;
 }
 
 // evenNumbers = [2, 4, 6, 8, 10]
@@ -184,13 +184,13 @@ while (i < numbers.length) {
 ### Transforming Arrays
 
 ```firescript
-int[] numbers = [1, 2, 3, 4, 5]
-int[] doubled = []
-int i = 0
+int[] numbers = [1, 2, 3, 4, 5];
+int[] doubled = [];
+int i = 0;
 
 while (i < numbers.length) {
-    doubled.append(numbers[i] * 2)
-    i = i + 1
+    doubled.append(numbers[i] * 2);
+    i = i + 1;
 }
 
 // doubled = [2, 4, 6, 8, 10]
@@ -202,19 +202,19 @@ The following array features are planned but not yet implemented in the current 
 
 - **Array slicing** (`arr[start:end:step]`) – Extract a portion of the array
 
-  ```firescript
-  // Future syntax
-  int[] numbers = [10, 20, 30, 40, 50]
-  int[] subset = numbers[1:4]  // Would be [20, 30, 40]
-  ```
+```firescript
+// Future syntax
+int[] numbers = [10, 20, 30, 40, 50];
+int[] subset = numbers[1:4];  // Would be [20, 30, 40]
+```
 
 - **Negative indices** – Access elements from the end of the array
 
-  ```firescript
-  // Future syntax
-  string[] words = ["apple", "banana", "cherry"]
-  string last = words[-1]     // Would be "cherry"
-  ```
+```firescript
+// Future syntax
+string[] words = ["apple", "banana", "cherry"];
+string last = words[-1];     // Would be "cherry"
+```
 
 - **Additional utility methods**:
   - `remove(value)` – Remove the first occurrence of a value
