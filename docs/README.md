@@ -6,19 +6,19 @@ This documentation is organized to help both newcomers and experienced developer
 
 ## 1. Language Reference Manual
 
-* [Type System](type_system.md) - Formal definition of types, nullability, arrays
-* [Scoping Rules](scoping.md) - Variable visibility, lifetime, and scope creation
-* [Control Flow](control_flow.md) - Conditional statements and loops
+* [Type System](reference/type_system.md) - Formal definition of types, nullability, arrays
+* [Scoping Rules](reference/scoping.md) - Variable visibility, lifetime, and scope creation
+* [Control Flow](reference/control_flow.md) - Conditional statements and loops
 
 ## 2. Getting Started & Tutorials
 
-* [Types & Variables](variables.md) - Basic variable declarations and types
-* [Arrays](arrays.md) - Working with array data structures
-* [Functions & Methods](functions.md) - Built-in functions and user-defined functions
+* [Types & Variables](reference/variables.md) - Basic variable declarations and types
+* [Arrays](reference/arrays.md) - Working with array data structures
+* [Functions & Methods](reference/functions.md) - Built-in functions and user-defined functions
 
 ## 3. Language Features
 
-* [Classes & Inheritance](classes.md) - Object-oriented programming fundamentals
+* [Classes & Inheritance](reference/classes.md) - Object-oriented programming fundamentals
 
 ## 4. Standard Library Reference
 

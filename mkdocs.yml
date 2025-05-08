@@ -1,32 +1,58 @@
 site_name: firescript
 repo_url: https://github.com/alec-jensen/firescript
 repo_name: alec-jensen/firescript
+site_url: https://alec-jensen.github.io/firescript
 docs_dir: docs
 site_dir: site
 theme:
   name: material
+  font:
+    text: Lexend
+    code: Fira Code
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: red
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: red
+      accent: blue
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
   features:
     - navigation.tabs
-    - navigation.top
+    - navigation.path
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.preview
+    - navigation.tracking
+    - navigation.footer
     - search.suggest
     - search.highlight
     - content.code.copy
     - content.action.edit
-# GitHub Pages deployment configuration
-deploy:
-  provider: github
-  branch: gh-pages
 nav:
   - Home: README.md
   - Language Specification: language_specification.md
-  - Types & Variables: variables.md
-  - Arrays: arrays.md
-  - Control Flow: control_flow.md
-  - Functions & Methods: functions.md
-  - Classes & Inheritance: classes.md
-  - Scoping Rules: scoping.md
-  - Type System: type_system.md
+  - Reference:
+    - Overview: reference/overview.md
+    - Types & Variables: reference/variables.md
+    - Arrays: reference/arrays.md
+    - Control Flow: reference/control_flow.md
+    - Functions & Methods: reference/functions.md
+    - Classes & Inheritance: reference/classes.md
+    - Scoping Rules: reference/scoping.md
+    - Type System: reference/type_system.md
   - Changelog: changelog.md
 markdown_extensions:
   - toc:
       permalink: True
+copyright: Copyright &copy; 2025 Alec Jensen
