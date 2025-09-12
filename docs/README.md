@@ -1,4 +1,4 @@
-# firescript v0.2.0 Documentation
+# firescript v0.3.0 Documentation
 
 **Note:** The current compiler does not support all language features. Unsupported features are explicitly marked in each guide with **Not yet implemented** or **Note**.
 

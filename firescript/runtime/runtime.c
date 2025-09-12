@@ -2,8 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "varray.h"
 #include <gmp.h>
+#include <mpfr.h>
+#include "runtime.h"
 
 typedef struct RefCountedObject {
     void *data;
@@ -55,6 +58,11 @@ void firescript_toBigInt(mpz_t rop, const char *s) {
 void firescript_print_int(const mpz_t x) {
     mpz_out_str(stdout, 10, x);
     printf("\n");
+}
+
+// Print a int64_t followed by newline
+void firescript_print_int64(int64_t x) {
+    printf("%ld\n", x);
 }
 
 // New function that returns a RefCountedObject containing a string
@@ -152,21 +160,25 @@ void firescript_print_array(VArray* array, const char* elem_type) {
     for (size_t i = 0; i < array->size; i++) {
         // Print each element according to its type
         if (strcmp(elem_type, "int") == 0) {
-            int value = ((int*)(array->data))[i];
-            printf("%d", value);
-        } 
-        else if (strcmp(elem_type, "float") == 0) {
-            float value = ((float*)(array->data))[i];
-            printf("%f", value);
-        } 
-        else if (strcmp(elem_type, "double") == 0) {
+            int64_t value = ((int64_t*)(array->data))[i];
+            printf("%ld", value);
+        }
+        else if (strcmp(elem_type, "BigInt") == 0) {
+            mpz_t *value_ptr = (mpz_t*)(array->data) + i;
+            mpz_out_str(stdout, 10, *value_ptr);
+        }
+        else if (strcmp(elem_type, "decimal") == 0) {
+            mpfr_t *value_ptr = (mpfr_t*)(array->data) + i;
+            mpfr_out_str(stdout, 10, 10, *value_ptr, MPFR_RNDN);
+        }
+        else if (strcmp(elem_type, "float") == 0 || strcmp(elem_type, "double") == 0) {
             double value = ((double*)(array->data))[i];
             printf("%f", value);
-        } 
+        }
         else if (strcmp(elem_type, "bool") == 0) {
             bool value = ((bool*)(array->data))[i];
             printf("%s", value ? "true" : "false");
-        } 
+        }
         else if (strcmp(elem_type, "string") == 0) {
             char* value = ((char**)(array->data))[i];
             printf("\"%s\"", value ? value : "null");
@@ -181,6 +193,16 @@ void firescript_print_array(VArray* array, const char* elem_type) {
         }
     }
     printf("]\n");
+}
+
+// Print a float followed by newline
+void firescript_print_float(float x) {
+    printf("%f\n", x);
+}
+
+// Print a double followed by newline
+void firescript_print_double(double x) {
+    printf("%f\n", x);
 }
 
 // Print a reference counted string

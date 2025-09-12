@@ -1,6 +1,6 @@
 # Functions & Methods
 
-**Note:** User-defined function definitions, methods on objects, optional or named parameters, variadic parameters, and function overloading are currently not supported by the compiler. Only built-in functions are available in the current implementation.
+*Warning: The content of this document may not be accurate and depends on the final implementation of [memory management](./memory_management.md)*
 
 ## Built-in Functions
 
@@ -129,9 +129,7 @@ int result = toInt(input("Enter a number: ")) * 2;
 print("Double of your number is: " + toString(result));
 ```
 
-## User-defined Functions (Planned, Not Implemented)
-
-The following syntax is planned for user-defined functions but is **not yet implemented** in the current compiler:
+## User-defined Functions
 
 ```firescript
 // Basic function definition
@@ -214,7 +212,7 @@ void greet(string name, string greeting = "Hello") {
 }
 ```
 
-- Named arguments:
+- Named arguments in calls:
 
 ```firescript
 // Future syntax
@@ -251,7 +249,7 @@ float add(float a, float b) {
 
 - ✅ Built-in functions: `print`, `input`, type conversions, `typeof`
 - ✅ Array methods: `append`, `insert`, `pop`, `clear`, `length`
-- ❌ User-defined function definitions
+- ✅ User-defined function definitions
 - ❌ Methods on objects
 - ❌ Optional, named, or variadic parameters
 - ❌ Function overloading

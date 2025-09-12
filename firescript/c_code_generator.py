@@ -5,13 +5,12 @@ import logging
 
 # A simple type mapping from firescript types to C types.
 FIRETYPE_TO_C: dict[str, str] = {
-    # Use GMP arbitrary precision integers
-    "int": "mpz_t",
+    "int": "int64_t",
     "float": "float",
     "double": "double",
-    "bool": "bool",       # Assumes stdbool.h is included in the generated code.
-    "string": "char*",    # A basic mapping for strings.
-    "tuple": "struct tuple",  # Placeholder for tuple types.
+    "bool": "bool",
+    "string": "char*",
+    "tuple": "struct tuple",
 }
 
 class CCodeGenerator:
@@ -20,50 +19,95 @@ class CCodeGenerator:
         self.symbol_table: dict[str, tuple[str, bool]] = {}  # (type, is_array)
         self.array_temp_counter = 0  # Counter for generating unique array variable names
 
+    def _handle_array_index(self, index_expr):
+        """Helper function to properly handle array indices in C"""
+        # After removing big number support, just return the expression string
+        return str(index_expr)
+
     def generate(self) -> str:
-        header = '#include <stdio.h>\n#include <stdbool.h>\n#include <string.h>\n#include <gmp.h>\n#include "firescript/runtime/runtime.h"\n#include "firescript/runtime/conversions.h"\n#include "firescript/runtime/varray.h"\n'
-        body = self._visit(self.ast)
+        """Generate C code from the AST"""
+        header = '#include <stdio.h>\n#include <stdbool.h>\n#include <stdint.h>\n#include <string.h>\n'
+        header += '#include "firescript/runtime/runtime.h"\n'
+        header += '#include "firescript/runtime/conversions.h"\n'
+        header += '#include "firescript/runtime/varray.h"\n'
+        # Emit function definitions first, then the main body statements
+        function_defs: list[str] = []
+        main_lines: list[str] = []
+
+        for child in self.ast.children:
+            if child.node_type == NodeTypes.FUNCTION_DEFINITION:
+                func_code = self._emit_function_definition(child)
+                if func_code:
+                    function_defs.append(func_code)
+            else:
+                stmt_code = self.emit_statement(child)
+                if stmt_code:
+                    main_lines.append(stmt_code)
+
+        functions_code = ("\n\n".join(function_defs) + "\n\n") if function_defs else ""
+
         main_code = "int main(void) {\n"
-        if body:
-            indented_body = "\n".join("    " + line for line in body.split("\n"))
+        if main_lines:
+            indented_body = "\n".join("    " + line for line in "\n".join(main_lines).split("\n"))
             main_code += f"{indented_body}\n"
         main_code += "    firescript_cleanup();\n"
         main_code += "    return 0;\n"
         main_code += "}\n"
-        return header + main_code
+
+        return header + functions_code + main_code
+
+    def _map_type_to_c(self, t: str) -> str:
+        if t == "void":
+            return "void"
+        return FIRETYPE_TO_C.get(t, t)
+
+    def _emit_function_definition(self, node: ASTNode) -> str:
+        # node.return_type holds the firescript return type (e.g., 'void')
+        ret_fs = node.return_type or "void"
+        is_array_return = False
+        if ret_fs and ret_fs.endswith("[]"):
+            is_array_return = True
+            ret_fs = ret_fs[:-2]
+        ret_c = "VArray*" if is_array_return else self._map_type_to_c(ret_fs)
+
+        # Parameters are all children except the last one, which is the body scope
+        params = []
+        body_node = None
+        for child in node.children:
+            if child.node_type == NodeTypes.PARAMETER:
+                base_type = child.var_type or "int"
+                is_array_param = child.is_array
+                ctype = "VArray*" if is_array_param else self._map_type_to_c(base_type)
+                params.append(f"{ctype} {child.name}")
+            elif child.node_type == NodeTypes.SCOPE:
+                body_node = child
+
+        params_sig = ", ".join(params) if params else "void"
+
+        # Save and prepare symbol table for function scope (register params)
+        prev_symbols = self.symbol_table.copy()
+        for child in node.children:
+            if child.node_type == NodeTypes.PARAMETER:
+                self.symbol_table[child.name] = (child.var_type or "int", child.is_array)
+
+        body_code = self._visit(body_node) if body_node else "{ }"
+
+        # Restore symbol table after emitting function
+        self.symbol_table = prev_symbols
+
+        return f"{ret_c} {node.name}({params_sig}) {body_code}"
 
     def emit_statement(self, node: ASTNode) -> str:
         """
         Generate code for a node that represents a statement.
         Automatically appends a semicolon if one is not already present.
         """
-        # Handle big-int (mpz_t) assignments
-        if node.node_type == NodeTypes.VARIABLE_ASSIGNMENT \
-           and self.symbol_table.get(node.name, (None, False))[0] == "int":
-            expr_code = self._visit(node.children[0]) if node.children else "0"
-            return f"mpz_set({node.name}, {expr_code});"
-
-        # Only do ref-count adjustments for string assignments
-        elif node.node_type == NodeTypes.VARIABLE_ASSIGNMENT and self.symbol_table.get(node.name, (None, False))[0] == "string":
-            # Emit code to decrement the old reference and increment the new one
-            expr_code = self._visit(node.children[0]) if node.children else "NULL"
-            return f"decrement_ref_count({node.name}); {node.name} = {expr_code}; increment_ref_count({node.name});"
-
-        # Handle pop used as a standalone statement: remove element
-        elif node.node_type == NodeTypes.METHOD_CALL and node.name == "pop":
-            obj_node = node.children[0]
-            obj_name = obj_node.name if obj_node.node_type == NodeTypes.IDENTIFIER else None
-            # Determine index: mpz_t expression or default last element
-            if len(node.children) > 1:
-                idx_expr = self._visit(node.children[1])
-                idx_code = f"mpz_get_ui({idx_expr})"
-            else:
-                idx_code = f"{obj_name}->size - 1"
-            return f"{obj_name} = varray_remove({obj_name}, {idx_code});"
+    # (Previously special handling for big number assignments removed)
 
         code = self._visit(node)
-        # Only add semicolon if the code doesn't already end with one
-        if code and not code.strip().endswith(";") and not code.strip().endswith("}"):
+        # Only add semicolon if the code doesn't already end with one,
+        # isn't a block, and isn't a preprocessor directive.
+        if code and not code.strip().endswith(";") and not code.strip().endswith("}") and not code.strip().startswith("#"):
             code += ";"
         return code
 
@@ -72,6 +116,9 @@ class CCodeGenerator:
             lines = []
             for child in node.children:
                 # Assume all top-level nodes are statements.
+                if child.node_type == NodeTypes.FUNCTION_DEFINITION:
+                    # Functions are emitted separately by generate()
+                    continue
                 stmt_code = self.emit_statement(child)
                 if stmt_code:
                     lines.append(stmt_code)
@@ -84,140 +131,73 @@ class CCodeGenerator:
                 if stmt_code:
                     lines.append(stmt_code)
             return "{\n" + "\n".join("    " + line for line in lines) + "\n}"
-        elif node.node_type == NodeTypes.VARIABLE_DECLARATION:
-            if node.var_type is None:
-                raise ValueError("Variable type cannot be None for symbol " + node.name)
-            self.symbol_table[node.name] = (node.var_type, node.is_array)
-            fire_type = node.var_type
-            if fire_type not in FIRETYPE_TO_C:
-                raise ValueError(f"Unknown type: {fire_type}")
-            
-            # Handle array declarations differently
-            if node.is_array:
-                c_type = FIRETYPE_TO_C.get(fire_type)
-                value_node = node.children[0] if node.children else None
-                
-                # If initializing with an array literal
-                if value_node and value_node.node_type == NodeTypes.ARRAY_LITERAL:
-                    array_elements = value_node.children
-                    array_size = len(array_elements)
-                    lines = [f"VArray* {node.name} = varray_create({array_size}, sizeof({c_type}))"]
-                    for i, elem in enumerate(array_elements):
-                        elem_code = self._visit(elem)
-                        # Handle element types
-                        if fire_type == "string":
-                            # string array: store char*
-                            lines.append(f"char* {node.name}_elem{i} = {elem_code}")
-                            lines.append(f"{node.name} = varray_append({node.name}, &{node.name}_elem{i})")
-                        else:
-                            # big-int element
-                            lines.append(f"mpz_t {node.name}_elem{i}")
-                            lines.append(f"mpz_init({node.name}_elem{i})")
-                            lines.append(f"mpz_set({node.name}_elem{i}, {elem_code})")
-                            lines.append(f"{node.name} = varray_append({node.name}, &{node.name}_elem{i})")
-                    return "; ".join(lines)
-                    
-                # Empty array initialization
-                else:
-                    return f"VArray* {node.name} = varray_create(0, sizeof({c_type}))"
-            else:
-                # Big integer variable initialization
-                if fire_type == "int":
-                    child = node.children[0] if node.children else None
-                    # Special handling for initialization with pop()
-                    if child and child.node_type == NodeTypes.METHOD_CALL and child.name == "pop":
-                        obj_node_of_pop = child.children[0]
-                        # Assuming obj_node_of_pop is an IDENTIFIER for simplicity here
-                        obj_code_of_pop = obj_node_of_pop.name 
-                        
-                        pop_args_nodes = child.children[1:]
-                        pop_args_code = [self._visit(arg_node) for arg_node in pop_args_nodes]
-
-                        c_idx_expr_str_for_pop = ""
-                        if pop_args_code: # Index provided for pop
-                            index_expr_code_for_pop = pop_args_code[0]
-                            c_idx_expr_str_for_pop = f"mpz_get_ui({index_expr_code_for_pop})"
-                        else: # No index for pop
-                            c_idx_expr_str_for_pop = f"{obj_code_of_pop}->size - 1"
-                        
-                        # varray_pop will mpz_init(node.name)
-                        return f"mpz_t {node.name}; varray_pop({node.name}, &{obj_code_of_pop}, {c_idx_expr_str_for_pop});"
-                    # Regular int initializer: literal via set_si, others via mpz_set
-                    elif child and child.token and child.token.type == "INTEGER_LITERAL":
-                        val = child.token.value
-                        return f"mpz_t {node.name}; mpz_init({node.name}); mpz_set_si({node.name}, {val});"
-                    else: # Non-literal, non-pop expression
-                        expr = self._visit(child) if child else "0" # Default to 0 if no initializer
-                        return f"mpz_t {node.name}; mpz_init({node.name}); mpz_set({node.name}, {expr});"
-                # Default for other types
-                c_type = FIRETYPE_TO_C.get(fire_type)
-                expr_code = self._visit(node.children[0]) if node.children else ""
-                qualifiers = []
-                if node.is_const:
-                    qualifiers.append("const")
-                qualifiers.append(c_type)
-                qualified_type = " ".join(qualifiers)
-                return f"{qualified_type} {node.name} = {expr_code}"
-                
         elif node.node_type == NodeTypes.ARRAY_LITERAL:
-            # Handle array literals without a specific array type
-            # For standalone array literals (not part of a variable declaration)
-            
-            # Check if this is a string array by examining the first child token
-            is_string_array = False
-            fire_type = "int"  # Default to int if we can't determine the type
-            
-            if node.children and len(node.children) > 0:
-                first_child = node.children[0]
-                if first_child.token and first_child.token.type == "STRING_LITERAL":
-                    is_string_array = True
-                    fire_type = "string"
-                elif first_child.var_type:
-                    fire_type = first_child.var_type
-            
+            # Handle array literals
+            fire_type = node.var_type or "int"  # Default to int if var_type is not set
             c_type = FIRETYPE_TO_C.get(fire_type, "int")
             array_size = len(node.children)
-            
+
             temp_var = f"temp_array_{self.array_temp_counter}"
             self.array_temp_counter += 1
-            
+
+            # Create the VArray and populate it with elements
             lines = [
-                f"VArray* {temp_var} = varray_create({array_size}, sizeof({c_type}))"
+                f"VArray* {temp_var} = varray_create({array_size}, sizeof({c_type}));"
             ]
-            
-            # Use unique variable names for each element
+
             for i, elem in enumerate(node.children):
                 elem_code = self._visit(elem)
-                lines.append(f"mpz_t {temp_var}_elem{i}")
-                lines.append(f"mpz_init({temp_var}_elem{i})")
-                lines.append(f"mpz_set({temp_var}_elem{i}, {elem_code})")
-                lines.append(f"{temp_var} = varray_append({temp_var}, &{temp_var}_elem{i})")
-                
-            return "; ".join(lines)
-                
+                elem_var = f"{temp_var}_elem{i}"
+
+                if fire_type == "string":
+                    # elem_code already includes quotes if it's a string literal
+                    lines.append(f"char* {elem_var} = {elem_code};")
+                    lines.append(f"varray_append({temp_var}, &{elem_var});")
+                else:
+                    lines.append(f"{c_type} {elem_var} = {elem_code};")
+                    lines.append(f"varray_append({temp_var}, &{elem_var});")
+
+            return temp_var
+
+        elif node.node_type == NodeTypes.VARIABLE_DECLARATION:
+            var_type_fs = node.var_type or "int"
+            var_type_c = FIRETYPE_TO_C.get(var_type_fs, f"/* unknown_type_{var_type_fs} */")
+            self.symbol_table[node.name] = (var_type_fs, node.is_array)
+
+            if node.is_array:
+                # Handle array declarations inline (no temp var)
+                array_node = node.children[0]
+                fire_type = var_type_fs
+                c_type = FIRETYPE_TO_C.get(fire_type, "int")
+                elements = array_node.children
+                lines = [f"VArray* {node.name} = varray_create({len(elements)}, sizeof({c_type}));"]
+                for i, elem in enumerate(elements):
+                    elem_code = self._visit(elem)
+                    elem_var = f"{node.name}_elem{i}"
+                    if fire_type == "string":
+                        lines.append(f"char* {elem_var} = {elem_code};")
+                        lines.append(f"varray_append({node.name}, &{elem_var});")
+                    else:
+                        lines.append(f"{c_type} {elem_var} = {elem_code};")
+                        lines.append(f"varray_append({node.name}, &{elem_var});")
+                return "\n".join(lines)
+            else:
+                init_value = self._visit(node.children[0]) if node.children else "0"
+                return f"{var_type_c} {node.name} = {init_value};"
         elif node.node_type == NodeTypes.ARRAY_ACCESS:
             # Handle array access: arr[idx]
             array_node = node.children[0]
             index_node = node.children[1]
-            
-            array_name = self._visit(array_node) # Should be the C variable name of the array
-            index_expr_code = self._visit(index_node) # C code for the index expression (mpz_t)
-            
-            # Determine if index_node's type is 'int' (meaning mpz_t) to decide on mpz_get_ui
-            index_firescript_type = getattr(index_node, 'return_type', None)
-            if index_firescript_type is None: # Fallback for literals or simple identifiers
-                if index_node.node_type == NodeTypes.LITERAL and index_node.token.type == "INTEGER_LITERAL":
-                    index_firescript_type = "int"
-                elif index_node.node_type == NodeTypes.IDENTIFIER:
-                    index_firescript_type, _ = self.symbol_table.get(index_node.name, ("unknown", False))
 
-            c_index_access_expr = index_expr_code
-            if index_firescript_type == "int":
-                c_index_access_expr = f"mpz_get_ui({index_expr_code})"
-            
-            element_c_type = FIRETYPE_TO_C.get(array_node.var_type or 'int', 'int') # Default to int if var_type is None
-            return f"(({element_c_type}*)({array_name}->data))[{c_index_access_expr}]"
-            
+            array_name = self._visit(array_node)
+            index_code = self._visit(index_node)
+
+            # Determine the type of the array elements
+            fire_type = self.symbol_table.get(array_name, ("int", False))[0]
+            c_type = FIRETYPE_TO_C.get(fire_type, "int")
+
+            # Generate code for accessing the array element
+            return f"(({c_type}*)({array_name}->data))[{index_code}]"
         elif node.node_type == NodeTypes.METHOD_CALL:
             # Handle method call: obj.method(args)
             object_node = node.children[0]
@@ -230,54 +210,58 @@ class CCodeGenerator:
                 elem_type, _ = self.symbol_table.get(object_node.name, ("int", False))
 
                 if method_name == "pop":
-                    if elem_type != "int":
-                        # Placeholder for future support of pop on other array types
-                        return "/* Pop on non-int array not fully supported yet */"
-
-                    temp_popped_mpz = f"__popped_val_{self.array_temp_counter}"
-                    self.array_temp_counter += 1
+                    if elem_type == "int":
+                        temp_popped = f"__popped_val_{self.array_temp_counter}"
+                        self.array_temp_counter += 1
+                        
+                        # Handle the index differently if it's a literal integer
+                        if args_code and len(node.children) > 1:
+                            c_idx_expr_str = args_code[0]
+                        else:
+                            c_idx_expr_str = f"{object_code}->size - 1"
+                            
+                        return f"({{ int64_t {temp_popped} = ((int64_t*)({object_code}->data))[{c_idx_expr_str}]; {object_code} = varray_remove({object_code}, {c_idx_expr_str}); {temp_popped}; }})"
                     
-                    c_idx_expr_str = ""
-                    if args_code: # Index is provided: e.g., pop(i)
-                        index_mpz_expr_code = args_code[0]
-                        c_idx_expr_str = f"mpz_get_ui({index_mpz_expr_code})"
-                    else: # No index: pop last element
-                        c_idx_expr_str = f"{object_code}->size - 1"
-                    
-                    # varray_pop initializes the mpz_t it's given.
-                    # The block expression declares the temp mpz_t, calls varray_pop into it, then yields the temp mpz_t.
-                    node.return_type = "int" # Pop returns an int (mpz_t)
-                    return f"({{ mpz_t {temp_popped_mpz}; varray_pop({temp_popped_mpz}, &{object_code}, {c_idx_expr_str}); {temp_popped_mpz}; }})"
+                    else:
+                        return "/* Pop on non-int array element type not fully specialized yet */"
                 elif method_name == "append":
                     if args_code:
                         element = args_code[0]
-                        # Get element type from symbol table
                         tmp = f"_tmp_elem_{self.array_temp_counter}"
                         self.array_temp_counter += 1
                         lines = []
-                        if elem_type == "string":
-                            # append string
+                        if elem_type == "int":
+                            lines.append(f"int64_t {tmp} = {element};")
+                            lines.append(f"{object_code} = varray_append({object_code}, &{tmp});")
+                        elif elem_type == "string":
                             lines.append(f"char* {tmp} = {element};")
                             lines.append(f"{object_code} = varray_append({object_code}, &{tmp});")
+                        
                         else:
-                            # append big-int or other primitives
-                            lines.append(f"mpz_t {tmp}; mpz_init({tmp}); mpz_set({tmp}, {element});")
+                            lines.append(f"{elem_type} {tmp} = {element};")
                             lines.append(f"{object_code} = varray_append({object_code}, &{tmp});")
                         return "\n".join(lines)
                 elif method_name == "insert":
-                    if len(args_code) >= 2:
+                    if len(args_code) >= 2 and len(node.children) >= 3:
+                        index_node = node.children[1]  # First arg is index
                         index = args_code[0]
                         element = args_code[1]
-                        # Convert big-int index to size_t and prep element
-                        idx = f"mpz_get_ui({index})"
+                        
+                        # Handle literal integer differently
+                        idx = index  # Index already an integer expression
+                            
                         tmp2 = f"_tmp_elem_{self.array_temp_counter}"
                         self.array_temp_counter += 1
                         lines = []
-                        if elem_type == "string":
-                            lines.append(f"char* {tmp2} = {element}")
-                            lines.append(f"{object_code} = varray_insert({object_code}, {idx}, &{tmp2})")
+                        if elem_type == "int":
+                            lines.append(f"int64_t {tmp2} = {element};")
+                            lines.append(f"{object_code} = varray_insert({object_code}, {idx}, &{tmp2});")
+                        elif elem_type == "string":
+                            lines.append(f"char* {tmp2} = {element};")
+                            lines.append(f"{object_code} = varray_insert({object_code}, {idx}, &{tmp2});")
+                        
                         else:
-                            lines.append(f"mpz_t {tmp2}; mpz_init({tmp2}); mpz_set({tmp2}, {element});")
+                            lines.append(f"{elem_type} {tmp2} = {element};")
                             lines.append(f"{object_code} = varray_insert({object_code}, {idx}, &{tmp2});")
                         return "\n".join(lines)
                 elif method_name == "clear":
@@ -298,19 +282,15 @@ class CCodeGenerator:
             left = self._visit(node.children[0])
             right = self._visit(node.children[1])
 
-            # Use GMP functions for big int operations
+            # Use native arithmetic for float and double
+            if node.return_type == "float" or node.return_type == "double":
+                op = node.name
+                return f"({left} {op} {right})"
+
+            # Use native arithmetic for standard int (int64_t)
             if node.return_type == "int":
                 op = node.name
-                if op == "+":
-                    return f"({{ mpz_t tmp; mpz_init(tmp); mpz_add(tmp, {left}, {right}); tmp; }})"
-                if op == "-":
-                    return f"({{ mpz_t tmp; mpz_init(tmp); mpz_sub(tmp, {left}, {right}); tmp; }})"
-                if op == "*":
-                    return f"({{ mpz_t tmp; mpz_init(tmp); mpz_mul(tmp, {left}, {right}); tmp; }})"
-                if op == "/":
-                    return f"({{ mpz_t tmp; mpz_init(tmp); mpz_fdiv_q(tmp, {left}, {right}); tmp; }})"
-                if op == "%":
-                    return f"({{ mpz_t tmp; mpz_init(tmp); mpz_fdiv_r(tmp, {left}, {right}); tmp; }})"
+                return f"({left} {op} {right})"
             if (node.children[0].token and node.children[0].token.type == "STRING_LITERAL") or node.children[0].return_type == "string" or node.children[0].var_type == "string":
                 if node.children[1] is not None and ((node.children[1].token is not None and node.children[1].token.type == "STRING_LITERAL") or node.children[1].return_type == "string" or node.children[1].var_type == "string"):
                     node.return_type = "string"
@@ -321,16 +301,23 @@ class CCodeGenerator:
             op = node.name
             return f"({left} {op} {right})"
         elif node.node_type == NodeTypes.LITERAL:
-            # Big integer literal initialization
+            # Integer literal initialization (default to int64_t)
             if node.token and node.token.type == "INTEGER_LITERAL":
                 val = node.token.value
-                return f"({{ mpz_t tmp; mpz_init(tmp); mpz_set_str(tmp, \"{val}\", 10); tmp; }})"
-            # Other literals unchanged
+                
+                # Otherwise, return a regular integer literal (int64_t)
+                return val
             if node.token is None:
                 raise ValueError("Literal node missing token")
             return node.token.value
         elif node.node_type == NodeTypes.IDENTIFIER:
             return node.name
+        elif node.node_type == NodeTypes.RETURN_STATEMENT:
+            # Return with or without expression
+            if node.children:
+                expr_code = self._visit(node.children[0]) if node.children[0] is not None else ""
+                return f"return {expr_code}"
+            return "return"
         elif node.node_type == NodeTypes.FUNCTION_CALL:
             if node.name == "print":
                 arg = node.children[0]
@@ -338,10 +325,17 @@ class CCodeGenerator:
                 # Array length/size methods return native size_t
                 if arg.node_type == NodeTypes.METHOD_CALL and arg.name in ("length", "size"):
                     return f'printf("%zu\\n", {arg_code})'
-                
-                arg_type = getattr(arg, 'return_type', None)
+
+                # Detect arrays early and print using runtime helper
                 is_arr = False
-                
+                elem_type_for_array = None
+                if arg.node_type == NodeTypes.IDENTIFIER:
+                    elem_type_for_array, is_arr = self.symbol_table.get(arg.name, (None, False))
+                    if is_arr:
+                        return f'firescript_print_array({arg.name}, "{elem_type_for_array}")'
+
+                arg_type = getattr(arg, 'return_type', None)
+
                 if arg_type is None:
                     if arg.node_type == NodeTypes.LITERAL and arg.token: # Check token exists
                         if arg.token.type == "BOOLEAN_LITERAL": arg_type = "bool"
@@ -350,40 +344,36 @@ class CCodeGenerator:
                         elif arg.token.type == "FLOAT_LITERAL": arg_type = "float"
                         elif arg.token.type == "DOUBLE_LITERAL": arg_type = "double"
                     elif arg.node_type == NodeTypes.IDENTIFIER:
-                        arg_type, is_arr = self.symbol_table.get(arg.name, (None, False))
+                        arg_type, _ = self.symbol_table.get(arg.name, (None, False))
                     elif arg.node_type == NodeTypes.ARRAY_ACCESS:
                         arr_node = arg.children[0]
                         # Ensure arr_node.var_type is populated by type resolution
                         arg_type = arr_node.var_type if hasattr(arr_node, 'var_type') else None
 
-
                 # Fix all printf/gmp_printf calls to ensure newlines are properly escaped
                 # and string literals don't contain actual newlines
                 if arg_type == "bool":
                     return f'printf("%s\\n", {arg_code} ? "true" : "false")'
-                if arg_type == "int": # This will handle mpz_t expressions from pop()
-                    return f'gmp_printf("%Zd\\n", {arg_code})'
+                if arg_type == "int":
+                    return f'printf("%ld\\n", {arg_code})'
+                
                 if arg_type in ("float", "double"):
                     return f'printf("%f\\n", {arg_code})'
+                if arg_type == "float":
+                    return f'firescript_print_float({arg_code})'
+                if arg_type == "double":
+                    return f'firescript_print_double({arg_code})'
                 if arg_type == "string":
                     return f'printf("%s\\n", {arg_code})'
-                
-                if arg.node_type == NodeTypes.IDENTIFIER and is_arr: # Check original is_arr from symbol table
-                    # Ensure arg.name is used for array printing if arg_code is complex
-                    array_print_name = arg.name if arg.node_type == NodeTypes.IDENTIFIER else arg_code
-                    return f'firescript_print_array({array_print_name}, "{arg_type}")'
-                
+
                 return f'printf("%s\\n", {arg_code})' # Last resort
             elif node.name == "input":
                 return f"firescript_input({self._visit(node.children[0])})"
             elif node.name == "int":
-                # Cast string or number to a GMP big integer (mpz_t)
+                # Cast to a native C integer
                 arg_code = self._visit(node.children[0])
-                temp_var = f"__int_temp_{self.array_temp_counter}"
-                self.array_temp_counter += 1
-                
-                # Create a block that initializes an mpz_t, sets its value from the converted int, and yields it
-                return f"({{ mpz_t {temp_var}; mpz_init({temp_var}); mpz_set_si({temp_var}, firescript_toInt({arg_code})); {temp_var}; }})"
+                return f"firescript_toInt({arg_code})"
+            
             elif node.name == "toInt":
                 return f"firescript_toInt({self._visit(node.children[0])})"
             elif node.name == "toFloat":
@@ -424,12 +414,13 @@ class CCodeGenerator:
             left = self._visit(leftNode)
             right = self._visit(rightNode)
 
-            # Big-int comparison for ints
-            if leftNode.var_type == "int" or rightNode.var_type == "int":
-                if node.name == "==":
-                    return f"(mpz_cmp({left}, {right}) == 0)"
-                elif node.name == "!=":
-                    return f"(mpz_cmp({left}, {right}) != 0)"
+            # Get the types properly from symbol table or return_type (primitive only now)
+            left_type = getattr(leftNode, 'var_type', None) or (self.symbol_table.get(leftNode.name, (None, False))[0] if leftNode.node_type == NodeTypes.IDENTIFIER else getattr(leftNode, 'return_type', None))
+            right_type = getattr(rightNode, 'var_type', None) or (self.symbol_table.get(rightNode.name, (None, False))[0] if rightNode.node_type == NodeTypes.IDENTIFIER else getattr(rightNode, 'return_type', None))
+
+            if left_type in ("int","float","double") or right_type in ("int","float","double"):
+                op = node.name
+                return f"({left} {op} {right})"
 
             # String comparison unchanged
             if leftNode.token and leftNode.token.type == "STRING_LITERAL" or leftNode.return_type == "string" or leftNode.var_type == "string":
@@ -453,88 +444,40 @@ class CCodeGenerator:
             leftNode, rightNode = node.children
             left = self._visit(leftNode)
             right = self._visit(rightNode)
-            # Use GMP for int comparison, direct for others
-            if self.symbol_table.get(leftNode.name, (None, False))[0] == "int" and rightNode.token and rightNode.token.type == "INTEGER_LITERAL":
-                op = node.name
-                comp_value = rightNode.token.value
-                if op == "<":
-                    return f"(mpz_cmp_si({left}, {comp_value}) < 0)"
-                elif op == ">":
-                    return f"(mpz_cmp_si({left}, {comp_value}) > 0)"
-                elif op == "<=":
-                    return f"(mpz_cmp_si({left}, {comp_value}) <= 0)"
-                elif op == ">=":
-                    return f"(mpz_cmp_si({left}, {comp_value}) >= 0)"
-                else:
-                    return f"(mpz_cmp({left}, {right}) {op} 0)"
-            elif leftNode.var_type == "int" or rightNode.var_type == "int":
-                op = node.name
-                return f"(mpz_cmp({left}, {right}) {op} 0)"
             op = node.name
+            # Get the types properly from symbol table or return_type
+            left_type = getattr(leftNode, 'var_type', None) or self.symbol_table.get(leftNode.name, (None, False))[0] if leftNode.node_type == NodeTypes.IDENTIFIER else getattr(leftNode, 'return_type', None)
+            right_type = getattr(rightNode, 'var_type', None) or self.symbol_table.get(rightNode.name, (None, False))[0] if rightNode.node_type == NodeTypes.IDENTIFIER else getattr(rightNode, 'return_type', None)
+            
+            # Primitive numeric or fallback comparison
             return f"({left} {op} {right})"
         elif node.node_type == NodeTypes.COMPOUND_ASSIGNMENT:
-            # Handle compound assignments like += -= *= /= %=
             identifier = node.name
-            op = node.token.type
+            op = getattr(node.token, 'type', None)
             value = self._visit(node.children[0])
-            
-            # Check if this is a big-int (mpz_t) variable from symbol table
-            is_mpz = self.symbol_table.get(identifier, (None, False))[0] == "int"
-            
-            if is_mpz:
-                # Generate GMP code for the operation
-                if op == "ADD_ASSIGN":
-                    return f"mpz_add({identifier}, {identifier}, {value});"
-                elif op == "SUBTRACT_ASSIGN":
-                    return f"mpz_sub({identifier}, {identifier}, {value});"
-                elif op == "MULTIPLY_ASSIGN":
-                    return f"mpz_mul({identifier}, {identifier}, {value});"
-                elif op == "DIVIDE_ASSIGN":
-                    return f"mpz_fdiv_q({identifier}, {identifier}, {value});"
-                elif op == "MODULO_ASSIGN":
-                    return f"mpz_fdiv_r({identifier}, {identifier}, {value});"
-                else:
-                    # Default to addition if unsupported
-                    return f"mpz_add({identifier}, {identifier}, {value});"
-            else:
-                # Map firescript compound assignment operators to C operators for non-mpz_t types
-                op_map = {
-                    "ADD_ASSIGN": "+=",
-                    "SUBTRACT_ASSIGN": "-=",
-                    "MULTIPLY_ASSIGN": "*=",
-                    "DIVIDE_ASSIGN": "/=",
-                    "MODULO_ASSIGN": "%="
-                }
-                c_op = op_map.get(op, "+=")  # Default to += if unknown
-                return f"{identifier} {c_op} {value};"
+            var_type = self.symbol_table.get(identifier, (None, False))[0]
+            # Map firescript compound assignment operators to C operators (primitive only)
+            op_map = {
+                "ADD_ASSIGN": "+=",
+                "SUBTRACT_ASSIGN": "-=",
+                "MULTIPLY_ASSIGN": "*=",
+                "DIVIDE_ASSIGN": "/=",
+                "MODULO_ASSIGN": "%="
+            }
+            c_op = op_map.get(op or "", "+=")  # Default to += if unknown or op is None
+            return f"{identifier} {c_op} {value};"
             
         elif node.node_type == NodeTypes.UNARY_EXPRESSION:
-            # Handle increment/decrement operators
-            identifier = node.token.value  # The identifier is in the token value
-            op = node.name  # The operator (++ or --) is stored in the name
-            
-            # Check if this is a big-int (mpz_t) variable from symbol table
-            is_mpz = self.symbol_table.get(identifier, (None, False))[0] == "int"
-            
-            logging.debug(f"is_mpz: {is_mpz}")
-            logging.debug(f"Unary expression: {op} {identifier}")
-            if is_mpz:
-                # Generate GMP code for the operation
-                if op == "++":
-                    return f"mpz_add_ui({identifier}, {identifier}, 1)"
-                elif op == "--":
-                    return f"mpz_sub_ui({identifier}, {identifier}, 1)"
-                else:
-                    # Unrecognized operator, probably a syntax error
-                    raise ValueError(f"Unrecognized unary operator '{op}' for {identifier}")
+            if not node.token or not hasattr(node.token, 'value'):
+                raise ValueError("Missing token value in unary expression")
+            identifier = node.token.value
+            op = node.name
+            var_type = self.symbol_table.get(identifier, (None, False))[0]
+            if op == "++":
+                return f"{identifier}++"
+            elif op == "--":
+                return f"{identifier}--"
             else:
-                # The operator (++ or --) for non-mpz_t types
-                if op == "++":
-                    return f"{identifier}++"
-                elif op == "--":
-                    return f"{identifier}--"
-                else:
-                    # Shouldn't reach here with proper parsing
-                    raise ValueError(f"Unrecognized unary operator '{op}' for {identifier}")
+                raise ValueError(f"Unrecognized unary operator '{op}' for {identifier}")
         else:
             return ""

@@ -8,21 +8,21 @@ firescript supports several built-in primitive types. For detailed information a
 
 ### Numeric Types
 
-- `int`: Integer numbers with arbitrary precision
+- `int`: Integer numbers (64-bit signed)
 
 ```firescript
 int count = 42;
 int largeNumber = 9223372036854775807;  // 64-bit integer
 ```
 
-- `float`: Single-precision floating-point numbers (32-bit)
+- `float`: Single-precision floating-point numbers
 
 ```firescript
 float price = 19.99;
 float smallValue = 0.000001;
 ```
 
-- `double`: Double-precision floating-point numbers (64-bit)
+- `double`: Double-precision floating-point numbers
 
 ```firescript
 double pi = 3.14159265359;

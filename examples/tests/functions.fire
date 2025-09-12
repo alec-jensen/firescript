@@ -1,0 +1,110 @@
+// Basic int addition function
+int add(int a, int b) {
+    return a + b;
+}
+
+// Float addition
+float addFloat(float a, float b) {
+    float result = a + b; // both float
+    return result;
+}
+
+// Double multiplication
+double mulDouble(double a, double b) {
+    double prod = a * b;
+    return prod;
+}
+
+// Build and return an int array
+int[] makeIntArray(int a, int b, int c) {
+    int[] arr = [a, b, c];
+    return arr;
+}
+
+// Sum first two elements of an int array parameter
+int sumFirstTwo(int[] nums) {
+    int x = nums[0];
+    int y = nums[1];
+    return x + y;
+}
+
+
+// Bool logic (returns bool)
+bool bothTrue(bool x, bool y) {
+    // Using relational + equality expressions indirectly via arithmetic
+    // (x && y) style not implemented yet, so emulate with comparison on ints if needed
+    // Here we just return one side equality to true twice to exercise bool params
+    if (x == true) {
+        if (y == true) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// String concatenation inside function
+string greet(string name) {
+    string hello = "Hello, ";
+    string msg = hello + name; // string + string
+    return msg;
+}
+
+// Simple helper returning int
+int buildAndSum(int a, int b) {
+    int c = a + b;
+    return c;
+}
+
+// Void function (returns nothing) exercising print builtin and multiple calls
+void logValues(int a, double d, string s) {
+    print(a);
+    print(d);
+    print(s);
+}
+
+// Mixed numeric promotion test inside function returning double via double arithmetic
+double numericMix(int a, float b, double c) {
+    float part1 = a + b; // int + float -> float
+    double part2 = part1 + c; // float + double -> double
+    return part2;
+}
+
+// Character handling simulated via string single char (char type token not yet in types, using string)
+string firstChar(string word) {
+    string ch = word; // just return the string (no substring support yet)
+    return ch;
+}
+
+// =============================================================
+// Invocations / Outputs
+// =============================================================
+
+print("-- int add --");
+print(add(2, 3)); // 5
+print(add(10, 15)); // 25
+
+print("-- float addFloat --");
+print(addFloat(1.5f, 2.5f)); // 4.0
+
+print("-- double mulDouble --");
+print(mulDouble(2.0, 3.0)); // 6.0
+
+print("-- array return & param --");
+int[] built = makeIntArray(7, 8, 9);
+print(sumFirstTwo(built)); // 15
+
+print("-- bool bothTrue --");
+print(bothTrue(true, true)); // true
+print(bothTrue(true, false)); // false
+
+print("-- string greet --");
+print(greet("firescript")); // Hello, firescript
+
+print("-- void logValues --");
+logValues(42, 3.14, "value");
+
+print("-- numericMix --");
+print(numericMix(2, 3.0f, 4.0));
+
+print("-- firstChar --");
+print(firstChar("Z"));

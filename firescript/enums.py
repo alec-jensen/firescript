@@ -23,3 +23,6 @@ class NodeTypes(Enum):
     METHOD_CALL = "MethodCall"
     COMPOUND_ASSIGNMENT = "CompoundAssignment"
     UNARY_EXPRESSION = "UnaryExpression"
+    FUNCTION_DEFINITION = "FunctionDefinition"
+    PARAMETER = "Parameter"
+    RETURN_STATEMENT = "ReturnStatement"

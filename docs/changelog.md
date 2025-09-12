@@ -2,7 +2,41 @@
 
 firescript follows [Semantic Versioning](https://semver.org/). This makes it easier to understand the impact of changes in each release.
 
-## 0.2.0 (Current Version - May 2025)
+## 0.3.0 (Sep 12 2025)
+
+### Breaking Changes
+
+- **`int` type is a native int again.**
+    * The `int` type is now a native `int64_t` type in the generated C code.
+    * This change improves performance and reduces complexity in the generated code.
+    * Arbitrary precision integer / decimal support has been removed from the core. Future optional library packages may re‑introduce them without impacting the core compiler.
+
+### New Features
+
+- **Function Definitions and Calls:**
+    * Added support for defining functions.
+    * Functions can be called by their name followed by parentheses.
+    * Functions can accept parameters and return values.
+    * Example:
+        ```firescript
+        int add(int a, int b) {
+            return a + b;
+        }```
+
+### Changes
+
+- **Improved Variable Declaration Parsing:**
+    * Enhanced the parser to better handle nullable and const variable declarations.
+- **Improved Error Handling:**
+    * Enhanced error messages for syntax and type errors.
+    * More context provided in error messages to help identify issues.
+- **Refactored if-else parsing:**
+    * Improved the parsing logic for `if`, `else if`, and `else` statements.
+    * Better support for nested conditional statements.
+- **Enhanced print function:**
+    * The `print` function correctly prints all primitive types.
+
+## 0.2.0 (May 8 2025)
 
 ### New Features
 

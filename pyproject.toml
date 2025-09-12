@@ -1,6 +1,6 @@
 [project]
 name = "firescript"
-version = "0.2.0"
+version = "0.3.0"
 description = "A strongly typed language that compiles natively or to JavaScript, allowing the language to be used almost anywhere."
 readme = "README.md"
 authors = [
@@ -16,6 +16,6 @@ requires-python = ">=3.10"
 dependencies = []
 
 [project.urls]
-"Homepage" = "https://github.com/alec-jensen/firescript"
+"Homepage" = "https://firescript.alecj.com"
 "Bug Tracker" = "https://github.com/alec-jensen/firescript/issues"
 Documentation = "https://alec-jensen.github.io/firescript/"

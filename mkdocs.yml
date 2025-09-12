@@ -1,7 +1,7 @@
 site_name: firescript
 repo_url: https://github.com/alec-jensen/firescript
 repo_name: alec-jensen/firescript
-site_url: https://alec-jensen.github.io/firescript
+site_url: https://firescript.alecj.com
 docs_dir: docs
 site_dir: site
 theme:

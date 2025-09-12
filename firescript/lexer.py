@@ -39,6 +39,7 @@ class Lexer:
         "BOOL": r"bool",
         "STRING": r"string",
         "TUPLE": r"tuple",
+        "VOID": r"void",
     }
 
     keywords = keywords | types
