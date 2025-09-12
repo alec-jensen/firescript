@@ -129,8 +129,15 @@ class Lexer:
                     token.value = match.group()
                     index += len(token.value)
                 else:
+                    ch = self.file[index]
+                    # Skip whitespace silently (space, tab, newline, carriage return)
+                    if ch in (' ', '\t', '\n', '\r'):
+                        index += 1
+                        continue
+                    # Emit UNKNOWN token for any other unexpected single character
+                    token.type = "UNKNOWN"
+                    token.value = ch
                     index += 1
-                    continue
 
             tokens.append(token)
 

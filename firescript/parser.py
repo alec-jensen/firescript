@@ -1061,8 +1061,16 @@ class Parser:
             # Body/branches are checked recursively, statement itself has no type
 
         elif node.node_type == NodeTypes.BREAK_STATEMENT or node.node_type == NodeTypes.CONTINUE_STATEMENT:
-            # TODO: Check if inside a loop
-            pass
+            # Validate placement: must be inside a loop (while for now)
+            cur = node.parent
+            in_loop = False
+            while cur is not None:
+                if cur.node_type == NodeTypes.WHILE_STATEMENT:
+                    in_loop = True
+                    break
+                cur = cur.parent
+            if not in_loop:
+                self.error(f"'{node.name}' statement not within a loop", node.token)
 
         # --- Determine node's type string based on checks ---
         # If node_type_str wasn't set explicitly, try getting it generally
@@ -1073,9 +1081,27 @@ class Parser:
 
     def _parse_statement(self):
         """Determine the kind of statement and parse it."""
+        # Unknown token recovery: emit error and advance
+        if self.current_token and self.current_token.type == "UNKNOWN":
+            bad_tok = self.current_token
+            self.advance()
+            self.error(f"Unexpected character '{bad_tok.value}'", bad_tok)
+            return None
         # Handle while loops
         if self.current_token and self.current_token.type == "WHILE":
             return self.parse_while_statement()
+        # Handle break / continue
+        if self.current_token and self.current_token.type in ("BREAK", "CONTINUE"):
+            tok = self.current_token
+            self.advance()
+            node_type = NodeTypes.BREAK_STATEMENT if tok.type == "BREAK" else NodeTypes.CONTINUE_STATEMENT
+            ast = ASTNode(node_type, tok, tok.value, [], tok.index)
+            # Expect semicolon after break/continue
+            if self.current_token and self.current_token.type == "SEMICOLON":
+                self.consume("SEMICOLON")
+            else:
+                self.error("Expected semicolon after statement", self.current_token or tok)
+            return ast
         # Handle return statements
         if self.current_token and self.current_token.type == "RETURN":
             ret_tok = self.current_token
@@ -1098,6 +1124,19 @@ class Parser:
         # Handle if statements
         if self.current_token.type == "IF":
             return self.parse_if_statement()
+
+        # Dangling else (no preceding if handled this token)
+        if self.current_token.type == "ELSE":
+            tok = self.current_token
+            self.advance()
+            self.error("Unexpected 'else' without matching 'if'", tok)
+            # Attempt to parse its following statement/block to continue
+            if self.current_token and self.current_token.type == "OPEN_BRACE":
+                self.parse_scope()
+            else:
+                # Skip a single statement form
+                _ = self._parse_statement()
+            return None
 
         # Look ahead to determine statement type
         token_type = self.current_token.type
@@ -1335,7 +1374,12 @@ class Parser:
                     if self.current_token and self.current_token.type == "SEMICOLON":
                         self.consume("SEMICOLON")
                     else:
-                        self.error("Expected semicolon after statement", self.current_token)
+                        self.error("Expected semicolon after statement", self.current_token or (stmt.token if isinstance(stmt, ASTNode) else None))
+                        # Sync forward to first semicolon or brace to avoid duplicate errors
+                        while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE", "OPEN_BRACE"):
+                            self.advance()
+                        if self.current_token and self.current_token.type == "SEMICOLON":
+                            self.consume("SEMICOLON")
 
         logging.debug("Resolving variable types...")
         self.resolve_variable_types(self.ast)

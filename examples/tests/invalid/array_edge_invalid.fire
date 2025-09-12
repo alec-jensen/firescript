@@ -1,0 +1,18 @@
+// Invalid array edge scenarios
+// EXPECT: errors about arrays
+
+print("-- invalid: array access out of bounds is runtime (may not be caught at compile) so skip actual index > length --");
+
+print("-- invalid: array literal empty then inferred wrongly use as int --");
+int[] e = []; // fine
+int bad = e; // error: assigning array to int
+
+print("-- invalid: array method unknown --");
+int[] nums = [1];
+nums.remove(1); // remove not currently implemented in parser type check -> should error unknown method (or method unsupported)
+nums.sort(); // sort not implemented
+
+print("-- invalid: array literal with array element --");
+int[] bad2 = [[1,2]]; // nested array not allowed
+
+print("-- invalid array edge tests end --");

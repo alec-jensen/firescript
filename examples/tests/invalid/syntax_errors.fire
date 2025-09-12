@@ -1,0 +1,29 @@
+// Invalid syntax tests (lexer/parser should flag)
+// EXPECT: parser errors
+
+print("-- invalid syntax: missing semicolons --")
+int a = 5 // missing semicolon
+int b = 6; int c = 7 // missing semicolon after chained declaration style (unsupported)
+
+print("-- invalid syntax: unclosed paren --");
+int x = (1 + 2; // unclosed paren
+
+print("-- invalid syntax: unclosed array literal --");
+int[] arr = [1,2,3; // missing closing bracket
+
+print("-- invalid syntax: stray tokens --");
+@ # $ // unexpected symbols (if lexer produces tokens)
+
+print("-- invalid syntax: malformed if --");
+if 1) { print(1); }
+
+print("-- invalid syntax: while missing condition parens --");
+while 1 < 2 { print(1); }
+
+print("-- invalid syntax: dangling else --");
+else { print(1); }
+
+print("-- invalid syntax: array type missing closing --");
+int[ x = 4;
+
+print("-- invalid syntax tests end --");

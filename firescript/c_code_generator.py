@@ -165,22 +165,33 @@ class CCodeGenerator:
             self.symbol_table[node.name] = (var_type_fs, node.is_array)
 
             if node.is_array:
-                # Handle array declarations inline (no temp var)
-                array_node = node.children[0]
-                fire_type = var_type_fs
-                c_type = FIRETYPE_TO_C.get(fire_type, "int")
-                elements = array_node.children
-                lines = [f"VArray* {node.name} = varray_create({len(elements)}, sizeof({c_type}));"]
-                for i, elem in enumerate(elements):
-                    elem_code = self._visit(elem)
-                    elem_var = f"{node.name}_elem{i}"
-                    if fire_type == "string":
-                        lines.append(f"char* {elem_var} = {elem_code};")
-                        lines.append(f"varray_append({node.name}, &{elem_var});")
-                    else:
-                        lines.append(f"{c_type} {elem_var} = {elem_code};")
-                        lines.append(f"varray_append({node.name}, &{elem_var});")
-                return "\n".join(lines)
+                init_node = node.children[0] if node.children else None
+                # If initializer is an array literal, materialize it element by element.
+                if init_node and init_node.node_type == NodeTypes.ARRAY_LITERAL:
+                    array_node = init_node
+                    fire_type = var_type_fs
+                    c_type = FIRETYPE_TO_C.get(fire_type, "int")
+                    elements = array_node.children
+                    lines = [f"VArray* {node.name} = varray_create({len(elements)}, sizeof({c_type}));"]
+                    for i, elem in enumerate(elements):
+                        elem_code = self._visit(elem)
+                        elem_var = f"{node.name}_elem{i}"
+                        if fire_type == "string":
+                            lines.append(f"char* {elem_var} = {elem_code};")
+                            lines.append(f"varray_append({node.name}, &{elem_var});")
+                        else:
+                            lines.append(f"{c_type} {elem_var} = {elem_code};")
+                            lines.append(f"varray_append({node.name}, &{elem_var});")
+                    return "\n".join(lines)
+                else:
+                    # Otherwise, assume initializer expression returns a VArray* (e.g., function or method call)
+                    init_expr = self._visit(init_node) if init_node else "NULL"
+                    # If the generated code contains newlines (e.g., a multi-line method call), wrap in a block then assign.
+                    if "\n" in init_expr:
+                        temp_var = f"__init_arr_{self.array_temp_counter}"
+                        self.array_temp_counter += 1
+                        return f"VArray* {node.name};\n{{\n{init_expr}\n{node.name} = {init_node.name if init_node else 'NULL'};\n}}"
+                    return f"VArray* {node.name} = {init_expr};"
             else:
                 init_value = self._visit(node.children[0]) if node.children else "0"
                 return f"{var_type_c} {node.name} = {init_value};"
