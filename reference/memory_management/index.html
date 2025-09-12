@@ -8,13 +8,9 @@
       
       
       
-        <link rel="canonical" href="https://firescript.alecj.com/reference/variables/">
+        <link rel="canonical" href="https://firescript.alecj.com/reference/memory_management/">
       
       
-        <link rel="prev" href="../overview/">
-      
-      
-        <link rel="next" href="../arrays/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +18,7 @@
     
     
       
-        <title>Types & Variables - firescript</title>
+        <title>Memory Management - firescript</title>
       
     
     
@@ -74,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#types-variables" class="md-skip">
+        <a href="#memory-management" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Types & Variables
+              Memory Management
             
           </span>
         </div>
@@ -257,12 +253,10 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="../overview/" class="md-tabs__link">
           
   
@@ -387,29 +381,24 @@
       
   
   
-    
   
   
-  
     
     
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   
@@ -422,7 +411,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             Reference
@@ -456,32 +445,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Types & Variables
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../variables/" class="md-nav__link">
         
   
   
@@ -492,119 +459,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#primitive-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Primitive Types
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Primitive Types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#numeric-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Numeric Types
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#boolean-type" class="md-nav__link">
-    <span class="md-ellipsis">
-      Boolean Type
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#text-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Text Types
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#declaration-and-initialization" class="md-nav__link">
-    <span class="md-ellipsis">
-      Declaration and Initialization
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Declaration and Initialization">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#type-inference" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type Inference
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#constants" class="md-nav__link">
-    <span class="md-ellipsis">
-      Constants
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#nullability" class="md-nav__link">
-    <span class="md-ellipsis">
-      Nullability
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      Implementation Status
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -804,37 +658,136 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#primitive-types" class="md-nav__link">
+  <a href="#1-value-categories" class="md-nav__link">
     <span class="md-ellipsis">
-      Primitive Types
+      1. Value Categories
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Primitive Types">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-regions-and-lifetimes" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Regions and Lifetimes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-function-parameters-and-returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Function Parameters and Returns
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-borrowing-rules-no-runtime-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Borrowing Rules (No Runtime Cost)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-closures-and-coroutines" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Closures and Coroutines
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-destruction-and-drop" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Destruction and Drop
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-control-flow-and-last-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Control Flow and Last Use
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-conversions-and-sharing" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Conversions and Sharing
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-interop-and-backends" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Interop and Backends
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. Diagnostics
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Examples">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#numeric-types" class="md-nav__link">
+  <a href="#moves-and-clone" class="md-nav__link">
     <span class="md-ellipsis">
-      Numeric Types
+      Moves and clone
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#boolean-type" class="md-nav__link">
+  <a href="#borrowed-parameter-inferred-at-call" class="md-nav__link">
     <span class="md-ellipsis">
-      Boolean Type
+      Borrowed parameter (inferred at call)
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#text-types" class="md-nav__link">
+  <a href="#owned-parameter-consumes" class="md-nav__link">
     <span class="md-ellipsis">
-      Text Types
+      Owned parameter (consumes)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returning-references-non-escaping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returning references (non-escaping)
     </span>
   </a>
   
@@ -842,57 +795,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#declaration-and-initialization" class="md-nav__link">
-    <span class="md-ellipsis">
-      Declaration and Initialization
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Declaration and Initialization">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#type-inference" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type Inference
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#constants" class="md-nav__link">
-    <span class="md-ellipsis">
-      Constants
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#nullability" class="md-nav__link">
-    <span class="md-ellipsis">
-      Nullability
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      Implementation Status
-    </span>
-  </a>
   
 </li>
       
@@ -912,7 +814,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/reference/variables.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/reference/memory_management.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -920,93 +822,119 @@
   
 
 
-<h1 id="types-variables">Types &amp; Variables<a class="headerlink" href="#types-variables" title="Permanent link">&para;</a></h1>
-<p><strong>Note:</strong> Tuple types, the generic placeholder <code>T</code>, and declarations without an initializer are not supported by the compiler. Only built-in primitive types (<code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>char</code>) are fully implemented.</p>
-<h2 id="primitive-types">Primitive Types<a class="headerlink" href="#primitive-types" title="Permanent link">&para;</a></h2>
-<p>firescript supports several built-in primitive types. For detailed information about the type system, see the <a href="../type_system/">Type System</a> documentation.</p>
-<h3 id="numeric-types">Numeric Types<a class="headerlink" href="#numeric-types" title="Permanent link">&para;</a></h3>
+<h1 id="memory-management">Memory Management<a class="headerlink" href="#memory-management" title="Permanent link">&para;</a></h1>
+<p><em>Warning: Memory management in firescript is still being refined and none of this is implemented yet. This document may change.</em></p>
+<p>firescript provides automatic memory management without a garbage collector. The language uses ownership, move semantics, and compile-time last-use analysis to insert deterministic destruction ("drop") points. No runtime reference counting is required for ordinary values.</p>
+<p>This document is normative.</p>
+<h2 id="1-value-categories">1. Value Categories<a class="headerlink" href="#1-value-categories" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>int</code>: Integer numbers (64-bit signed)</li>
+<li>Trivially Copyable (TC): fixed-size scalars with no destructor (e.g., <code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>char</code>). Copy is bitwise; there is no drop.</li>
+<li>Owned (NON-TC): heap-backed or resource-managing values (e.g., <code>string</code>, arrays, user-defined objects, closures). Ownership is unique; assignment/pass/return moves ownership. Destruction runs at drop.</li>
 </ul>
-<pre><code class="language-firescript">int count = 42;
-int largeNumber = 9223372036854775807;  // 64-bit integer
-</code></pre>
+<p>Cloning NON-TC values is explicit via <code>.clone()</code> or <code>clone(x)</code>.</p>
+<h2 id="2-regions-and-lifetimes">2. Regions and Lifetimes<a class="headerlink" href="#2-regions-and-lifetimes" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>float</code>: Single-precision floating-point numbers</li>
+<li>Each lexical scope defines a region. An owned value lives in the region of its current owner.</li>
+<li>On scope exit, all owned values remaining in the region are dropped (in reverse creation order).</li>
+<li>The compiler performs last-use analysis and inserts drops at the final use site whenever earlier than scope end.</li>
 </ul>
-<pre><code class="language-firescript">float price = 19.99;
-float smallValue = 0.000001;
-</code></pre>
+<p>Moving a value transfers it to the destination region:
+- Passing to a function that takes <code>owned T</code> moves into the callee’s region.
+- Returning <code>T</code> moves into the caller’s region.
+- Assigning to a variable moves into that variable’s region.</p>
+<h2 id="3-function-parameters-and-returns">3. Function Parameters and Returns<a class="headerlink" href="#3-function-parameters-and-returns" title="Permanent link">&para;</a></h2>
+<p>Parameters may be:
+- <code>owned T</code>: the callee receives ownership and may retain. The caller loses ownership unless it is returned.
+- <code>&amp;T</code> (borrowed, read-only): the callee may not retain nor return it; it cannot escape the call.</p>
+<p>Returns:
+- Returning <code>T</code> transfers ownership to the caller.
+- Returning <code>&amp;T</code> is only allowed if the reference points to a value owned by the caller (non-escaping borrow). The compiler enforces this; otherwise, the program is ill-formed.</p>
+<p>Notes:
+- In most cases, <code>&amp;T</code> borrows are inferred at call sites and require no annotation in the call expression.</p>
+<h2 id="4-borrowing-rules-no-runtime-cost">4. Borrowing Rules (No Runtime Cost)<a class="headerlink" href="#4-borrowing-rules-no-runtime-cost" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>double</code>: Double-precision floating-point numbers</li>
+<li>A borrowed <code>&amp;T</code> is a non-owning, read-only view.</li>
+<li>A borrowed value cannot be stored in any owned location nor outlive the call/borrow expression.</li>
+<li>Mutability of NON-TC values is provided through methods on the owned value; borrowed views are read-only.</li>
 </ul>
-<pre><code class="language-firescript">double pi = 3.14159265359;
-double scientificNotation = 6.022e23;  // Scientific notation
-</code></pre>
-<h3 id="boolean-type">Boolean Type<a class="headerlink" href="#boolean-type" title="Permanent link">&para;</a></h3>
+<p>If a function needs to retain data beyond the call, it must take <code>owned T</code> or explicitly clone a borrowed value.</p>
+<h2 id="5-closures-and-coroutines">5. Closures and Coroutines<a class="headerlink" href="#5-closures-and-coroutines" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>bool</code>: Boolean values (<code>true</code> or <code>false</code>)</li>
+<li>Capturing by move transfers ownership into the closure’s region; the closure becomes the owner.</li>
+<li>Capturing by borrow is allowed only for non-escaping closures proven not to outlive the enclosing scope.</li>
+<li>Escaping closures must capture by move (or clone). The compiler rejects escaping borrowed captures.</li>
 </ul>
-<pre><code class="language-firescript">bool isActive = true;
-bool hasPermission = false;
-</code></pre>
-<h3 id="text-types">Text Types<a class="headerlink" href="#text-types" title="Permanent link">&para;</a></h3>
+<h2 id="6-destruction-and-drop">6. Destruction and <code>Drop</code><a class="headerlink" href="#6-destruction-and-drop" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>string</code>: Text strings, enclosed in double quotes</li>
+<li>NON-TC types may define a <code>drop(this)</code> destructor. The compiler calls <code>drop</code> at each inserted drop point.</li>
+<li>Drops occur deterministically:</li>
+<li>At last use (if provable).</li>
+<li>At scope exit (for remaining owned values).</li>
+<li>Along all control-flow exits (return, break, exception).</li>
+<li>Drops are never duplicated. Moving a value disables its previous owner’s drop.</li>
 </ul>
-<pre><code class="language-firescript">string greeting = &quot;Hello, world!&quot;;
-string emptyString = &quot;&quot;;
-string multiline = &quot;This is a
-multi-line string&quot;;
+<p>Resource safety:</p>
+<pre><code class="language-firescript">File f = File.open(&quot;log.txt&quot;);
+f.write(&quot;hello&quot;);
+// f dropped here even on early return/exception; File.drop closes the descriptor.
 </code></pre>
+<h2 id="7-control-flow-and-last-use">7. Control Flow and Last Use<a class="headerlink" href="#7-control-flow-and-last-use" title="Permanent link">&para;</a></h2>
+<p>The compiler uses non-lexical lifetimes:
+- In conditional branches, drops are placed after the join point if both branches use the value; otherwise, after the last using branch.
+- In loops, values used within the body are not dropped until the loop finishes; per-iteration owned temporaries are dropped at the end of each iteration.</p>
+<h2 id="8-conversions-and-sharing">8. Conversions and Sharing<a class="headerlink" href="#8-conversions-and-sharing" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>char</code>: Single characters, represented as strings internally</li>
+<li>To create multiple long-lived aliases of a NON-TC value, use explicit <code>.clone()</code> (deep or copy-on-write as defined by the type).</li>
+<li>The standard library may offer sharing containers with explicit semantics:</li>
+<li><code>Rc&lt;T&gt;</code>: single-threaded shared ownership (runtime refcount).</li>
+<li><code>Arc&lt;T&gt;</code>: multi-threaded shared ownership (atomic refcount).</li>
+<li>Arenas/pools for graph-like structures with bulk free.</li>
 </ul>
-<pre><code class="language-firescript">char letter = &quot;A&quot;;
-char symbol = &quot;*&quot;;
-</code></pre>
-<h2 id="declaration-and-initialization">Declaration and Initialization<a class="headerlink" href="#declaration-and-initialization" title="Permanent link">&para;</a></h2>
-<p>Variables in firescript must be declared with an explicit type and initialized in the same statement:</p>
-<pre><code class="language-firescript">int age = 30;
-string name = &quot;Alice&quot;;
-bool isRegistered = false;
-</code></pre>
-<h3 id="type-inference">Type Inference<a class="headerlink" href="#type-inference" title="Permanent link">&para;</a></h3>
-<p>firescript does not support automatic type inference:</p>
-<pre><code class="language-firescript">var score = 95;  // Not supported - must specify the type explicitly
-int score = 95;  // Supported
-</code></pre>
-<h3 id="constants">Constants<a class="headerlink" href="#constants" title="Permanent link">&para;</a></h3>
-<p>Use the <code>const</code> keyword to declare immutable variables:</p>
-<pre><code class="language-firescript">const int MAX_USERS = 100;
-const string APP_VERSION = &quot;1.0.0&quot;;
-</code></pre>
-<p>Constants must be initialized when declared and cannot be reassigned later:</p>
-<pre><code class="language-firescript">const float PI = 3.14;
-PI = 3.14159;  // Error: cannot reassign a constant
-</code></pre>
-<h2 id="nullability">Nullability<a class="headerlink" href="#nullability" title="Permanent link">&para;</a></h2>
-<p>By default, variables cannot be assigned <code>null</code>. The <code>nullable</code> keyword explicitly allows a variable to hold <code>null</code>:</p>
-<pre><code class="language-firescript">nullable string username = null;  // Valid
-string password = null;           // Invalid - non-nullable type cannot hold null
-</code></pre>
-<p>Attempting to use a nullable variable without checking for null may result in runtime errors:</p>
-<pre><code class="language-firescript">nullable string message = null;
+<p>These are opt-in; ordinary values incur no runtime reference counting.</p>
+<h2 id="9-interop-and-backends">9. Interop and Backends<a class="headerlink" href="#9-interop-and-backends" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Native: destruction translates to direct calls; memory is reclaimed immediately.</li>
+<li>JavaScript: destruction calls run at the same program points; memory reclamation of underlying JS objects is delegated to the JS runtime, but resources (files, sockets) are still closed deterministically.</li>
+</ul>
+<h2 id="10-diagnostics">10. Diagnostics<a class="headerlink" href="#10-diagnostics" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Use-after-move is a compile error with a primary note at the move site and a secondary note at the later use.</li>
+<li>Borrow escape violations point to the escaping store/return site.</li>
+<li>Destruction order is well-defined; tools may visualize last-use/drop points.</li>
+</ul>
+<h2 id="11-examples">11. Examples<a class="headerlink" href="#11-examples" title="Permanent link">&para;</a></h2>
+<h3 id="moves-and-clone">Moves and clone<a class="headerlink" href="#moves-and-clone" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">string a = &quot;hello&quot;;
+string b = a;       // move: a is now invalid
+print(b);
+// print(a);        // error: use of moved value 'a'
 
-// Safe access pattern
-if (message != null) {
-    print(message);
+string c = b.clone(); // explicit clone
+print(b);
+print(c);             // both valid, independent
+</code></pre>
+<h3 id="borrowed-parameter-inferred-at-call">Borrowed parameter (inferred at call)<a class="headerlink" href="#borrowed-parameter-inferred-at-call" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">// Signature says we only borrow; cannot retain
+int length(&amp;string s) {
+    return s.length;
+}
+
+string name = &quot;firescript&quot;;
+int n = length(name); // ok; name is still valid afterwards
+</code></pre>
+<h3 id="owned-parameter-consumes">Owned parameter (consumes)<a class="headerlink" href="#owned-parameter-consumes" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">// Takes ownership and retains internally
+void addUser(owned string username);
+
+string u = &quot;alice&quot;;
+addUser(u);    // move: 'u' invalid after call
+// print(u);   // error
+</code></pre>
+<h3 id="returning-references-non-escaping">Returning references (non-escaping)<a class="headerlink" href="#returning-references-non-escaping" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">&amp;string head(&amp;string[] xs) {
+    return xs[0]; // ok: refers to caller-owned array element
 }
 </code></pre>
-<h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
-<p>All primitive types are fully supported in the current compiler. The following features are not yet implemented:</p>
-<ul>
-<li>Tuple operations (creation, access, manipulation)</li>
-<li>Generic type placeholders and type parameters</li>
-<li>Type inference</li>
-<li>Declaration without initialization</li>
-</ul>
-<p>For more detailed information about the type system, including type conversions, type compatibility, and advanced type features, please refer to the <a href="../type_system/">Type System</a> documentation.</p>
 
 
 
@@ -1031,44 +959,6 @@ if (message != null) {
       
         <footer class="md-footer">
   
-    
-      
-      <nav class="md-footer__inner md-grid" aria-label="Footer" >
-        
-          
-          <a href="../overview/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Overview">
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-            </div>
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              <div class="md-ellipsis">
-                Overview
-              </div>
-            </div>
-          </a>
-        
-        
-          
-          <a href="../arrays/" class="md-footer__link md-footer__link--next" aria-label="Next: Arrays">
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              <div class="md-ellipsis">
-                Arrays
-              </div>
-            </div>
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
-            </div>
-          </a>
-        
-      </nav>
     
   
   <div class="md-footer-meta md-typeset">

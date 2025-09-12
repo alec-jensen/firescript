@@ -8,7 +8,7 @@
       
       
       
-        <link rel="canonical" href="https://alec-jensen.github.io/firescript/reference/functions/">
+        <link rel="canonical" href="https://firescript.alecj.com/reference/functions/">
       
       
         <link rel="prev" href="../control_flow/">
@@ -644,9 +644,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#user-defined-functions-planned-not-implemented" class="md-nav__link">
+  <a href="#user-defined-functions" class="md-nav__link">
     <span class="md-ellipsis">
-      User-defined Functions (Planned, Not Implemented)
+      User-defined Functions
     </span>
   </a>
   
@@ -888,9 +888,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#user-defined-functions-planned-not-implemented" class="md-nav__link">
+  <a href="#user-defined-functions" class="md-nav__link">
     <span class="md-ellipsis">
-      User-defined Functions (Planned, Not Implemented)
+      User-defined Functions
     </span>
   </a>
   
@@ -957,7 +957,7 @@
 
 
 <h1 id="functions-methods">Functions &amp; Methods<a class="headerlink" href="#functions-methods" title="Permanent link">&para;</a></h1>
-<p><strong>Note:</strong> User-defined function definitions, methods on objects, optional or named parameters, variadic parameters, and function overloading are currently not supported by the compiler. Only built-in functions are available in the current implementation.</p>
+<p><em>Warning: The content of this document may not be accurate and depends on the final implementation of <a href="../memory_management/">memory management</a></em></p>
 <h2 id="built-in-functions">Built-in Functions<a class="headerlink" href="#built-in-functions" title="Permanent link">&para;</a></h2>
 <p>firescript provides a set of built-in functions that are available for use without requiring any imports. These functions provide essential functionality for input/output, type conversion, and type introspection.</p>
 <h3 id="inputoutput-functions">Input/Output Functions<a class="headerlink" href="#inputoutput-functions" title="Permanent link">&para;</a></h3>
@@ -1061,8 +1061,7 @@ print(&quot;The type of &quot; + toString(number) + &quot; is &quot; + typeInfo)
 int result = toInt(input(&quot;Enter a number: &quot;)) * 2;
 print(&quot;Double of your number is: &quot; + toString(result));
 </code></pre>
-<h2 id="user-defined-functions-planned-not-implemented">User-defined Functions (Planned, Not Implemented)<a class="headerlink" href="#user-defined-functions-planned-not-implemented" title="Permanent link">&para;</a></h2>
-<p>The following syntax is planned for user-defined functions but is <strong>not yet implemented</strong> in the current compiler:</p>
+<h2 id="user-defined-functions">User-defined Functions<a class="headerlink" href="#user-defined-functions" title="Permanent link">&para;</a></h2>
 <pre><code class="language-firescript">// Basic function definition
 returnType functionName(paramType1 param1, paramType2 param2) {
     // function body
@@ -1141,7 +1140,7 @@ void greet(string name, string greeting = &quot;Hello&quot;) {
 }
 </code></pre>
 <ul>
-<li>Named arguments:</li>
+<li>Named arguments in calls:</li>
 </ul>
 <pre><code class="language-firescript">// Future syntax
 calculateRectangle(width: 10, height: 20);
@@ -1174,7 +1173,7 @@ float add(float a, float b) {
 <ul>
 <li>✅ Built-in functions: <code>print</code>, <code>input</code>, type conversions, <code>typeof</code></li>
 <li>✅ Array methods: <code>append</code>, <code>insert</code>, <code>pop</code>, <code>clear</code>, <code>length</code></li>
-<li>❌ User-defined function definitions</li>
+<li>✅ User-defined function definitions</li>
 <li>❌ Methods on objects</li>
 <li>❌ Optional, named, or variadic parameters</li>
 <li>❌ Function overloading</li>

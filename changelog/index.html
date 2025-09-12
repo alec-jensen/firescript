@@ -8,7 +8,7 @@
       
       
       
-        <link rel="canonical" href="https://alec-jensen.github.io/firescript/changelog/">
+        <link rel="canonical" href="https://firescript.alecj.com/changelog/">
       
       
         <link rel="prev" href="../reference/type_system/">
@@ -670,17 +670,59 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#020-current-version-may-2025" class="md-nav__link">
+  <a href="#030-sep-12-2025" class="md-nav__link">
     <span class="md-ellipsis">
-      0.2.0 (Current Version - May 2025)
+      0.3.0 (Sep 12 2025)
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="0.2.0 (Current Version - May 2025)">
+    <nav class="md-nav" aria-label="0.3.0 (Sep 12 2025)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Breaking Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#new-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      New Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-may-8-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.0 (May 8 2025)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.0 (May 8 2025)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-features_1" class="md-nav__link">
     <span class="md-ellipsis">
       New Features
     </span>
@@ -722,7 +764,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#new-features_1" class="md-nav__link">
+  <a href="#new-features_2" class="md-nav__link">
     <span class="md-ellipsis">
       New Features
     </span>
@@ -845,17 +887,59 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#020-current-version-may-2025" class="md-nav__link">
+  <a href="#030-sep-12-2025" class="md-nav__link">
     <span class="md-ellipsis">
-      0.2.0 (Current Version - May 2025)
+      0.3.0 (Sep 12 2025)
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="0.2.0 (Current Version - May 2025)">
+    <nav class="md-nav" aria-label="0.3.0 (Sep 12 2025)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Breaking Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#new-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      New Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-may-8-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.0 (May 8 2025)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.0 (May 8 2025)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-features_1" class="md-nav__link">
     <span class="md-ellipsis">
       New Features
     </span>
@@ -897,7 +981,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#new-features_1" class="md-nav__link">
+  <a href="#new-features_2" class="md-nav__link">
     <span class="md-ellipsis">
       New Features
     </span>
@@ -1011,8 +1095,53 @@
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
 <p>firescript follows <a href="https://semver.org/">Semantic Versioning</a>. This makes it easier to understand the impact of changes in each release.</p>
-<h2 id="020-current-version-may-2025">0.2.0 (Current Version - May 2025)<a class="headerlink" href="#020-current-version-may-2025" title="Permanent link">&para;</a></h2>
+<h2 id="030-sep-12-2025">0.3.0 (Sep 12 2025)<a class="headerlink" href="#030-sep-12-2025" title="Permanent link">&para;</a></h2>
+<h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>int</code> type is a native int again.</strong><ul>
+<li>The <code>int</code> type is now a native <code>int64_t</code> type in the generated C code.</li>
+<li>This change improves performance and reduces complexity in the generated code.</li>
+<li>Arbitrary precision integer / decimal support has been removed from the core. Future optional library packages may re‑introduce them without impacting the core compiler.</li>
+</ul>
+</li>
+</ul>
 <h3 id="new-features">New Features<a class="headerlink" href="#new-features" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Function Definitions and Calls:</strong><ul>
+<li>Added support for defining functions.</li>
+<li>Functions can be called by their name followed by parentheses.</li>
+<li>Functions can accept parameters and return values.</li>
+<li>Example:
+    <code>firescript
+    int add(int a, int b) {
+        return a + b;
+    }</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="changes">Changes<a class="headerlink" href="#changes" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Improved Variable Declaration Parsing:</strong><ul>
+<li>Enhanced the parser to better handle nullable and const variable declarations.</li>
+</ul>
+</li>
+<li><strong>Improved Error Handling:</strong><ul>
+<li>Enhanced error messages for syntax and type errors.</li>
+<li>More context provided in error messages to help identify issues.</li>
+</ul>
+</li>
+<li><strong>Refactored if-else parsing:</strong><ul>
+<li>Improved the parsing logic for <code>if</code>, <code>else if</code>, and <code>else</code> statements.</li>
+<li>Better support for nested conditional statements.</li>
+</ul>
+</li>
+<li><strong>Enhanced print function:</strong><ul>
+<li>The <code>print</code> function correctly prints all primitive types.</li>
+</ul>
+</li>
+</ul>
+<h2 id="020-may-8-2025">0.2.0 (May 8 2025)<a class="headerlink" href="#020-may-8-2025" title="Permanent link">&para;</a></h2>
+<h3 id="new-features_1">New Features<a class="headerlink" href="#new-features_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li>
 <p><strong>Improved Syntax Handling and Error Reporting:</strong></p>
@@ -1083,7 +1212,7 @@
 </ul>
 <h2 id="011-january-2025">0.1.1 (January 2025)<a class="headerlink" href="#011-january-2025" title="Permanent link">&para;</a></h2>
 <p><em>There is not a version 0.1.0 because of a versioning mishap during initial release.</em></p>
-<h3 id="new-features_1">New Features<a class="headerlink" href="#new-features_1" title="Permanent link">&para;</a></h3>
+<h3 id="new-features_2">New Features<a class="headerlink" href="#new-features_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li>
 <p><strong>Enhanced Variable Scoping:</strong></p>

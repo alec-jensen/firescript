@@ -1,47 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://alec-jensen.github.io/firescript/</loc>
-         <lastmod>2025-05-08</lastmod>
+         <loc>https://firescript.alecj.com/</loc>
+         <lastmod>2025-09-12</lastmod>
     </url>
     <url>
-         <loc>https://alec-jensen.github.io/firescript/changelog/</loc>
-         <lastmod>2025-05-08</lastmod>
+         <loc>https://firescript.alecj.com/changelog/</loc>
+         <lastmod>2025-09-12</lastmod>
     </url>
     <url>
-         <loc>https://alec-jensen.github.io/firescript/language_specification/</loc>
-         <lastmod>2025-05-08</lastmod>
+         <loc>https://firescript.alecj.com/language_specification/</loc>
+         <lastmod>2025-09-12</lastmod>
     </url>
     <url>
-         <loc>https://alec-jensen.github.io/firescript/reference/arrays/</loc>
-         <lastmod>2025-05-08</lastmod>
+         <loc>https://firescript.alecj.com/reference/arrays/</loc>
+         <lastmod>2025-09-12</lastmod>
     </url>
     <url>
-         <loc>https://alec-jensen.github.io/firescript/reference/classes/</loc>
-         <lastmod>2025-05-08</lastmod>
+         <loc>https://firescript.alecj.com/reference/classes/</loc>
+         <lastmod>2025-09-12</lastmod>
     </url>
     <url>
-         <loc>https://alec-jensen.github.io/firescript/reference/control_flow/</loc>
-         <lastmod>2025-05-08</lastmod>
+         <loc>https://firescript.alecj.com/reference/control_flow/</loc>
+         <lastmod>2025-09-12</lastmod>
     </url>
     <url>
-         <loc>https://alec-jensen.github.io/firescript/reference/functions/</loc>
-         <lastmod>2025-05-08</lastmod>
+         <loc>https://firescript.alecj.com/reference/functions/</loc>
+         <lastmod>2025-09-12</lastmod>
     </url>
     <url>
-         <loc>https://alec-jensen.github.io/firescript/reference/overview/</loc>
-         <lastmod>2025-05-08</lastmod>
+         <loc>https://firescript.alecj.com/reference/memory_management/</loc>
+         <lastmod>2025-09-12</lastmod>
     </url>
     <url>
-         <loc>https://alec-jensen.github.io/firescript/reference/scoping/</loc>
-         <lastmod>2025-05-08</lastmod>
+         <loc>https://firescript.alecj.com/reference/overview/</loc>
+         <lastmod>2025-09-12</lastmod>
     </url>
     <url>
-         <loc>https://alec-jensen.github.io/firescript/reference/type_system/</loc>
-         <lastmod>2025-05-08</lastmod>
+         <loc>https://firescript.alecj.com/reference/scoping/</loc>
+         <lastmod>2025-09-12</lastmod>
     </url>
     <url>
-         <loc>https://alec-jensen.github.io/firescript/reference/variables/</loc>
-         <lastmod>2025-05-08</lastmod>
+         <loc>https://firescript.alecj.com/reference/type_system/</loc>
+         <lastmod>2025-09-12</lastmod>
+    </url>
+    <url>
+         <loc>https://firescript.alecj.com/reference/variables/</loc>
+         <lastmod>2025-09-12</lastmod>
     </url>
 </urlset>
