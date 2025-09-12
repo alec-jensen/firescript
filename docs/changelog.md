@@ -19,10 +19,11 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
     * Functions can accept parameters and return values.
     * Example:
 
-    ```firescript
-    int add(int a, int b) {
-        return a + b;
-    }```
+```firescript
+int add(int a, int b) {
+    return a + b;
+}
+```
 
 ### Changes
 
