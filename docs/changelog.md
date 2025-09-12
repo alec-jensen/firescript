@@ -145,29 +145,3 @@ int add(int a, int b) {
   * Parser for building the abstract syntax tree
   * Simple C code generator for compilation
   * Runtime library with basic functions
-
-## Roadmap for Future Releases
-
-### Planned for Version 0.3.0
-
-- Implementation of user-defined functions
-- Enhanced array operations including slicing and negative indices
-- For loop implementations (C-style, for-in, range loops)
-- Better error recovery during compilation
-- Performance optimizations for generated code
-
-### Planned for Version 0.4.0
-
-- Basic class system with instance fields and methods
-- Improved standard library with more built-in functions
-- Support for importing code from other files
-- Optional and named function parameters
-
-### Long-term Goals
-
-- Full object-oriented programming support with inheritance
-- Module system for code organization
-- Tuple types and operations
-- Generic type parameters
-- First-class functions and closures
-- Additional language tooling (formatter, linter, debugger)
