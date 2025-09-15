@@ -1,10 +1,10 @@
 # Type System in firescript
 
-firescript employs a static type system to enhance code reliability and catch errors early during the compilation phase. This means that the type of every variable and expression is checked before the code is run.
+> firescript employs a static type system to enhance code reliability and catch errors early during the compilation phase. This means that the type of every variable and expression is checked before the code is run.
 
 ## Built-in Types
 
-firescript provides several fundamental data types:
+firescript provides several fundamental data types. These are all TC types:
 
 * **`int`**: Represents whole numbers (integers). Example: `int age = 30;`
 * **`float`**: Represents single-precision floating-point numbers. Example: `float price = 19.95;`
@@ -70,7 +70,7 @@ Boolean values support:
 
 ### String Type (`string`)
 
-The `string` type represents sequences of characters. Strings in firescript are immutable (cannot be changed after creation).
+The `string` type represents sequences of characters. Strings in firescript are immutable.
 
 ```firescript
 string greeting = "Hello";
@@ -106,17 +106,14 @@ Arrays are ordered collections of elements of the same type.
 
 ```firescript
 // With initial values
-int[] numbers = [1, 2, 3, 4, 5];
-string[] fruits = ["apple", "banana", "cherry"];
-
-// Empty array
-bool[] flags = [];
+int[5] numbers = [1, 2, 3, 4, 5];
+string[3] fruits = ["apple", "banana", "cherry"];
 ```
 
 #### Array Operations
 
 ```firescript
-int[] scores = [85, 92, 78];
+int[3] scores = [85, 92, 78];
 
 // Accessing elements (zero-based indexing)
 int firstScore = scores[0];  // 85
@@ -124,17 +121,8 @@ int firstScore = scores[0];  // 85
 // Modifying elements
 scores[1] = 95;  // Array becomes [85, 95, 78]
 
-// Array methods
-scores.append(88);  // Add to end: [85, 95, 78, 88]
-scores.insert(2, 82);  // Insert at index: [85, 95, 82, 78, 88]
-int removed = scores.pop();  // Remove last: removed = 88, array = [85, 95, 82, 78]
-removed = scores.pop(1);  // Remove at index: removed = 95, array = [85, 82, 78]
-
 // Array properties
 int count = scores.length;  // 3
-
-// Clearing arrays
-scores.clear();  // Array becomes []
 ```
 
 ## Nullability
@@ -322,9 +310,9 @@ class Point {
 
 The current firescript compiler supports:
 
-* ✅ All primitive types: `int`, `float`, `double`, `bool`, `string`, `char`
+* ✅ All TC types: `int`, `float`, `double`, `bool`, `string`, `char`
 * ✅ Nullable type modifiers
-* ✅ Arrays of primitive types
+* ✅ Arrays of TC types
 * ✅ Static type checking for expressions and assignments
 * ✅ Type conversion functions
 

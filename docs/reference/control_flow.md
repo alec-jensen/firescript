@@ -1,6 +1,6 @@
 # Control Flow
 
-**Note:** Only `if`/`else` chains and `while` loops are currently supported. C-style `for` loops, for-in loops, range loops, and the ternary operator are not supported by the compiler.
+> Only `if`/`else` chains and `while` loops are currently supported. C-style `for` loops, for-in loops, range loops, and the ternary operator are not supported by the compiler.
 
 ## Introduction to Control Flow
 

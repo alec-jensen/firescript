@@ -2,7 +2,7 @@
 
 firescript is a statically and strongly typed programming language that compiles natively or to JavaScript + Wasm. It is designed to be simple, powerful, and easy to learn while remaining expressive for advanced applications.
 
-*Disclaimer: firescript is currently in development and is not yet feature-complete. The language and compiler are subject to change. Not everything described in this document is implemented or working. Programs WILL leak memory.*
+*Disclaimer: firescript is currently in development and is not yet feature-complete. The language and compiler are subject to change. Not everything described in this document is implemented or working. Current builds may leak resources; the design goal is deterministic destruction via an ownership model.*
 
 ## Features
 
@@ -11,6 +11,7 @@ firescript is a statically and strongly typed programming language that compiles
 - **Everything is Explicit:** No implicit conversions or hidden behavior.
 - **Versatile Compilation:** Supports native binaries and JavaScript output.
 - **Cohesive Design:** All parts of the language work seamlessly together.
+- **Deterministic Ownership Model (planned):** Ownership, moves, borrows, and explicit cloning instead of a tracing garbage collector. See the [Memory Management Model](docs/reference/memory_management.md).
 
 ## Example
 
@@ -66,6 +67,8 @@ python3 firescript/firescript.py program.fire
 ## Documentation
 
 Full documentation is available at: [https://alec-jensen.github.io/firescript/](https://alec-jensen.github.io/firescript/)
+
+Learn more about planned memory semantics: [Memory Management Model](docs/reference/memory_management.md)
 
 ## Contributing
 

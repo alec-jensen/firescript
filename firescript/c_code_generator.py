@@ -425,7 +425,7 @@ class CCodeGenerator:
             left = self._visit(leftNode)
             right = self._visit(rightNode)
 
-            # Get the types properly from symbol table or return_type (primitive only now)
+            # Get the types properly from symbol table or return_type (TC only now)
             left_type = getattr(leftNode, 'var_type', None) or (self.symbol_table.get(leftNode.name, (None, False))[0] if leftNode.node_type == NodeTypes.IDENTIFIER else getattr(leftNode, 'return_type', None))
             right_type = getattr(rightNode, 'var_type', None) or (self.symbol_table.get(rightNode.name, (None, False))[0] if rightNode.node_type == NodeTypes.IDENTIFIER else getattr(rightNode, 'return_type', None))
 
@@ -440,7 +440,7 @@ class CCodeGenerator:
                     return f"firescript_strcmp({left}, {right})"
                 else:
                     raise ValueError("temp: Cannot compare string with non-string type")
-            # Default comparison for primitives
+            # Default comparison for TCs
             op = node.name
             return f"({left} {op} {right})"
         elif node.node_type == NodeTypes.WHILE_STATEMENT:
@@ -460,14 +460,14 @@ class CCodeGenerator:
             left_type = getattr(leftNode, 'var_type', None) or self.symbol_table.get(leftNode.name, (None, False))[0] if leftNode.node_type == NodeTypes.IDENTIFIER else getattr(leftNode, 'return_type', None)
             right_type = getattr(rightNode, 'var_type', None) or self.symbol_table.get(rightNode.name, (None, False))[0] if rightNode.node_type == NodeTypes.IDENTIFIER else getattr(rightNode, 'return_type', None)
             
-            # Primitive numeric or fallback comparison
+            # TC numeric or fallback comparison
             return f"({left} {op} {right})"
         elif node.node_type == NodeTypes.COMPOUND_ASSIGNMENT:
             identifier = node.name
             op = getattr(node.token, 'type', None)
             value = self._visit(node.children[0])
             var_type = self.symbol_table.get(identifier, (None, False))[0]
-            # Map firescript compound assignment operators to C operators (primitive only)
+            # Map firescript compound assignment operators to C operators (TC only)
             op_map = {
                 "ADD_ASSIGN": "+=",
                 "SUBTRACT_ASSIGN": "-=",

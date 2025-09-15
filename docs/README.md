@@ -1,6 +1,6 @@
 # firescript v0.3.0 Documentation
 
-**Note:** The current compiler does not support all language features. Unsupported features are explicitly marked in each guide with **Not yet implemented** or **Note**.
+> This documentation is being used for the most part as a reference for planning the direction of the firescript language and its features. The compiler is still in early development, so many features are not yet implemented, or are implemented differently than described here. Nothing here should be considered final until the language reaches a stable 1.0 release.
 
 This documentation is organized to help both newcomers and experienced developers understand and use the firescript language effectively.
 
@@ -44,7 +44,7 @@ For the latest updates and changes to the firescript language, see the [changelo
 
 firescript is under active development. Key limitations in the current compiler version:
 
-* ✅ Primitive types (`int`, `float`, `double`, `bool`, `string`, `char`) are fully supported.
+* ✅ Primitive (TC) types (`int`, `float`, `double`, `bool`, `string`, `char`) are fully supported.
 * ✅ Arrays support basic operations: `append`, `insert`, `pop`, `clear`, and `length`.
 * ✅ Static type checking for expressions and assignments.
 * ✅ Built-in functions: `print`, `input`, and type conversions.

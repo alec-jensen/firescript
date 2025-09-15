@@ -448,3 +448,30 @@ if (a = true)
 {
     // This gives a warning "Assignment in if statement" because it is likely a mistake
 }
+
+// ------------------------------------------------------------
+// Ownership Examples (Planned semantics)
+// These illustrate the intended ownership + borrow model. Syntax or
+// behavior shown here may not yet be enforced.
+
+// Move semantics: assigning an owned value transfers ownership
+string owner = "alpha";
+consume(owner);      // move: 'owner' becomes invalid after this call
+// print(owner);     // would be an error (use after move)
+
+// Borrow (future explicit syntax): read-only access without moving
+string name = "beta";
+printLen(&name);     // borrow: 'name' remains valid
+print(name);         // still usable
+
+// Clone: explicit duplication of owned data
+string original = "gamma";
+string copy = original.clone(); // both valid independently
+
+// Last-use drop (conceptual): compiler may insert drop immediately after final use
+string tmp = build();
+print(tmp);          // last use; drop may be placed here instead of scope end
+
+// Returning borrowed reference (non-escaping):
+// &string head(&string[] xs) { return xs[0]; }
+// Caller retains ownership of the array; borrow is tied to caller lifetime.

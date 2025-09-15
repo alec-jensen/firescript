@@ -1,6 +1,6 @@
 # Language Reference Overview
 
-This section provides a comprehensive reference for the firescript programming language. firescript is a statically and strongly typed language that prioritizes readability, explicitness, and predictable behavior.
+> This section provides a comprehensive reference for the firescript programming language. firescript is a statically and strongly typed language that prioritizes readability, explicitness, and predictable behavior.
 
 ## Core Design Principles
 
@@ -18,10 +18,10 @@ The firescript compiler is under active development. Current status:
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Primitive Types | ✅ Complete | `int`, `float`, `double`, `bool`, `string`, `char` |
+| Primitive (TC) Types | ✅ Complete | `int`, `float`, `double`, `bool`, `string`, `char` |
 | Arrays | ⚠️ Partial | Basic operations work; slicing not implemented |
 | Control Flow | ⚠️ Partial | `if/else` and `while` loops work; `for` loops planned |
-| Functions | ⚠️ Partial | Built-in functions work; user-defined functions planned |
+| Functions | ⚠️ Partial | Functions can be defined and used but lack some planned features |
 | Classes | ❌ Planned | Object-oriented features planned for future versions |
 | Modules | ❌ Planned | Code organization across files planned for future versions |
 

@@ -1,5 +1,7 @@
 # Scoping in firescript
 
+> Status: This section references planned ownership semantics. See [Memory Management](./memory_management.md#overview) for authoritative definitions.
+
 In firescript, scopes define the visibility and lifetime of variables. Understanding how scopes work is crucial for writing correct and predictable code.
 
 ## Scope Creation
@@ -182,7 +184,7 @@ void exampleFunction() {
 
 ## Variable Scope vs. Object Lifetime
 
-It's important to distinguish between a variable's scope (where it can be accessed) and an object's lifetime (how long it exists in memory):
+It's important to distinguish between a variable's scope (where it can be accessed) and an object's lifetime (how long it exists in memory and when it is dropped):
 
 ```firescript
 // When object-oriented features are implemented:
@@ -191,7 +193,8 @@ It's important to distinguish between a variable's scope (where it can be access
     Person myObj = Person("John", 30);
     
     // myObj reference goes out of scope here
-    // The Person object may be garbage collected if no other references exist
+    // The Person object will be dropped (its destructor run) when its final owner goes out of scope.
+    // (Deterministic planned behavior – see Memory Management.)
 }
 ```
 
@@ -214,6 +217,13 @@ It's important to distinguish between a variable's scope (where it can be access
 4. **Be consistent with variable naming**: Use clear, descriptive names to avoid confusion, especially with variables in different scopes.
 
 5. **Avoid deeply nested scopes**: Excessive nesting can make code harder to read and understand.
+
+## Interaction With Ownership (Planned)
+
+- Scope exit triggers deterministic drop of all still-owned values declared in that scope.
+- A move transfers ownership; the original variable becomes invalid immediately after the move.
+- A borrow (`&T`) never extends lifetime; it relies on the original owner remaining in scope.
+- Last-use analysis may drop a value before the lexical end of the scope if no further uses are provable.
 
 ## Implementation Details
 

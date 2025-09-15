@@ -49,11 +49,11 @@ int add(int a, int b) {
     * Introduced new logic for parsing `if` and `while` statements to properly support nested structures
     * Improved error messages with more context for syntax errors
 
-- **Enhanced Memory Management:**
-    * Added a new reference counter for automated memory management
-    * Currently runs in the runtime, with plans to move to the compiler in future versions
-    * Helps prevent memory leaks and dangling pointers in the generated code
-    * Improved garbage collection for dynamic arrays
+- **Memory Model Progress:**
+    * Introduced an interim reference-counting mechanism for certain heap values (e.g., strings, arrays)
+    * This is a stepping stone toward the planned ownership + deterministic drop model (see Memory Management documentation)
+    * Improves leak resilience while compiler-based last-use drop insertion is under development
+    * Dynamic array resource reclamation aligned with deterministic drop goals
 
 - **Arbitrary Precision Integers:**
     * The `int` type is now represented using `mpz_t` in the generated code

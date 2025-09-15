@@ -41,7 +41,6 @@ theme:
     - content.action.edit
 nav:
   - Home: README.md
-  - Language Specification: language_specification.md
   - Reference:
     - Overview: reference/overview.md
     - Types & Variables: reference/variables.md
@@ -51,6 +50,8 @@ nav:
     - Classes & Inheritance: reference/classes.md
     - Scoping Rules: reference/scoping.md
     - Type System: reference/type_system.md
+    - Memory Management: reference/memory_management.md
+  - Glossary: glossary.md
   - Changelog: changelog.md
 markdown_extensions:
   - toc:

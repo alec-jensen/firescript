@@ -1,10 +1,59 @@
 # Classes & Inheritance
 
+> Status: This page describes planned class semantics that integrate with the ownership-based memory model. See [Memory Management](./memory_management.md) and the [Glossary](../glossary.md#memory-management-terms) for authoritative lifetime terminology.
+
 **Note:** Class definitions, inheritance, and methods are currently not supported by the compiler. This documentation describes the planned implementation.
 
 ## Object-Oriented Programming in firescript
 
 firescript's class system is designed to provide a clean, intuitive approach to object-oriented programming with features like single inheritance, constructors, and both instance and static methods.
+
+## Ownership & Lifetime (Planned)
+
+Classes are Owned (Non-Trivially Copyable) types unless specified otherwise. Their instances participate in the deterministic ownership model:
+
+- Construction produces a new owned instance. Binding the result to a variable creates that variable as the initial owner.
+- Passing an instance to a function parameter of owned type moves it; the caller's binding becomes invalid after the call unless the value is returned.
+- Future borrow syntax (`&Person`) will allow read-only access to an instance without moving ownership.
+- Fields that are owned types are dropped in reverse order of their construction when the containing object is dropped.
+- A `drop(this)` method (planned) acts as a destructor. It runs exactly once at the inserted drop point.
+- Cloning an instance will be explicit (`person.clone()`) if the type supports it (semantics: deep vs copy-on-write TBD per type design).
+- Inheritance does not change ownership: moving a `Student` moves its base `Person` subobject as part of the same operation.
+- Borrowed references cannot escape beyond the lifetime of the owning instance; the compiler enforces non-escaping borrows.
+
+Receiver convention (planned): Methods use a borrowed receiver `&this` by default—even when mutating fields—because internal mutation does not require taking ownership of the entire object. A method takes an owning `this` only when it will consume the instance (e.g., irreversible state transition, transferring internal resources, or explicit `drop(this)` destructor). Examples below follow this convention.
+
+Borrowing applies only to Owned (Non-Trivially Copyable) types. Trivially Copyable (TC) types (`int`, `float`, `double`, `bool`, etc.) are always passed and returned by value with implicit bitwise copy; using a borrow marker on TC values is unnecessary and omitted below. When you see `&Type` it implies the type is Owned.
+
+### Example: Deterministic Drop Ordering
+
+```firescript
+class HandleBundle {
+    File log;
+    Socket conn;
+
+    HandleBundle(&this, File &log, Socket &conn) {
+        this.log = log;     // constructed first
+        this.conn = conn;   // constructed second
+    }
+
+    drop(&this) {            // planned destructor
+        // Custom cleanup (optional). Fields are then dropped automatically
+        // in reverse: conn then log.
+    }
+}
+
+HandleBundle hb = makeHandles();
+process(&hb);  // borrow
+// last use of hb here -> compiler may drop immediately after
+```
+
+### Takeaways
+
+- Instances behave like other owned values: moves invalidate the source; borrows do not.
+- Destruction is deterministic; order is reverse of field construction unless overridden by explicit semantics.
+- No implicit deep copies: cloning is explicit.
+- Inheritance does not introduce implicit sharing or reference counting.
 
 ## Defining a Class
 
@@ -18,22 +67,24 @@ class Person {
     bool isEmployed;
 
     // Constructor: 'this' refers to the instance being created
-    Person(this, string name, nullable int age = null, bool isEmployed = false) {
+    Person(&this, string &name, nullable int age = null, bool isEmployed = false) {
         this.name = name;
         this.age = age;
         this.isEmployed = isEmployed;
     }
 
     // Instance methods
-    string getName(this) {
-        return this.name;
+    // Non-mutating: borrow receiver
+    string getName(&this) {
+        return &this.name;
     }
 
-    nullable int getAge(this) {
-        return this.age;
+    nullable int getAge(&this) {
+        return &this.age;
     }
 
-    void celebrate(this) {
+    // Mutating via borrow (allowed; does not consume the instance)
+    void celebrate(&this) {
         if (this.age != null) {
             this.age = this.age + 1;
             print(this.name + " is now " + toString(this.age) + " years old!");
@@ -72,7 +123,7 @@ class Configuration {
 
 ### Constructors
 
-Constructors are special methods that initialize a new instance of a class. They always take `this` as their first parameter, which refers to the instance being created:
+Constructors are special methods that initialize a new instance of a class. They always take `this` as their first parameter, which refers to the instance being created. For most cases, `this` will be a borrowed parameter, unless you are transferring ownership of the instance.
 
 ```firescript
 class Point {
@@ -80,13 +131,13 @@ class Point {
     float y;
     
     // Basic constructor
-    Point(this, float x, float y) {
+    Point(&this, float x, float y) {
         this.x = x;
         this.y = y;
     }
     
     // With default values (when implemented)
-    Point(this, float x = 0.0, float y = 0.0) {
+    Point(&this, float x = 0.0, float y = 0.0) {
         this.x = x;
         this.y = y;
     }
@@ -101,20 +152,22 @@ Instance methods are functions that belong to an instance of a class. They alway
 class Circle {
     float radius;
     
-    Circle(this, float radius) {
+    Circle(&this, float radius) {
         this.radius = radius;
     }
     
     // Instance methods
-    float getArea(this) {
+    // Non-mutating
+    float getArea(&this) {
         return 3.14159 * this.radius * this.radius;
     }
-    
-    float getCircumference(this) {
+
+    float getCircumference(&this) {
         return 2.0 * 3.14159 * this.radius;
     }
-    
-    void scale(this, float factor) {
+
+    // Mutating via borrow
+    void scale(&this, float factor) {
         this.radius = this.radius * factor;
     }
 }
@@ -167,24 +220,24 @@ class Student from Person {
     string school;
     string[] courses;
     
-    Student(this, string name, int age, string school) {
+    Student(&this, string name, int age, string school) {
         super.Student(name, age);  // Call parent constructor
         this.school = school;
         this.courses = [];
     }
     
     // Additional methods
-    void enroll(this, string course) {
+    void enroll(&this, string &course) {
         this.courses.append(course);
         print(this.name + " enrolled in " + course);
     }
     
-    string[] getCourses(this) {
+    string[] getCourses(&this) {
         return this.courses;
     }
     
     // Override parent method
-    void celebrate(this) {
+    void celebrate(&this) {
         super.celebrate();  // Call parent method
         print("Time for a student party!");
     }
@@ -199,11 +252,11 @@ Child classes can override methods from the parent class. To call the parent cla
 class Shape {
     string color;
     
-    Shape(this, string color) {
+    Shape(&this, string color) {
         this.color = color;
     }
     
-    string describe(this) {
+    string describe(&this) {
         return "A " + this.color + " shape";
     }
 }
@@ -211,13 +264,13 @@ class Shape {
 class Square from Shape {
     float side;
     
-    Square(this, float side, string color) {
+    Square(&this, float side, string color) {
         super.Shape(color);
         this.side = side;
     }
     
     // Override the parent's describe method
-    string describe(this) {
+    string describe(&this) {
         return super.describe() + " (square with side " + toString(this.side) + ")";
     }
 }
@@ -250,17 +303,17 @@ The following features are planned for future versions of firescript:
 ```firescript
 // Future syntax
 interface Drawable {
-    void draw(this)
-    bool isVisible(this)
+    void draw(&this)
+    bool isVisible(&this)
 }
 
 class Circle implements Drawable {
     // Must implement all interface methods
-    void draw(this) {
+    void draw(&this) {
         // Drawing implementation
     }
     
-    bool isVisible(this) {
+    bool isVisible(&this) {
         return true;
     }
 }
@@ -273,15 +326,15 @@ class Circle implements Drawable {
 class Box<T> {
     nullable T value;
     
-    Box(this) {
+    Box(&this) {
         this.value = null;
     }
     
-    void set(this, T newValue) {
+    void set(&this, T newValue) { // if T is Owned this is a borrow; if T is TC it's just a copy
         this.value = newValue;
     }
-    
-    nullable T get(this) {
+
+    nullable T get(&this) {
         return this.value;
     }
 }
@@ -298,22 +351,22 @@ intBox.set(42);
 abstract class Animal {
     string species;
     
-    Animal(this, string species) {
+    Animal(&this, string &species) {
         this.species = species;
     }
     
     // Abstract method - no implementation
-    abstract string makeSound(this);
+    abstract string makeSound(&this);
     
     // Regular method with implementation
-    string getSpecies(this) {
+    string getSpecies(&this) { // non-mutating borrow
         return this.species;
     }
 }
 
 class Cat from Animal {
     // Must implement abstract methods
-    string makeSound(this) {
+    string makeSound(&this) { // non-mutating
         return "Meow";
     }
 }

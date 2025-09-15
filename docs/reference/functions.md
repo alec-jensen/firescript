@@ -1,6 +1,6 @@
 # Functions & Methods
 
-*Warning: The content of this document may not be accurate and depends on the final implementation of [memory management](./memory_management.md)*
+> Status: This section includes planned semantics for the ownership-based memory model. See [Memory Management](./memory_management.md) for authoritative definitions.
 
 ## Built-in Functions
 
@@ -158,6 +158,15 @@ float calculateAverage(int[] numbers) {
 }
 ```
 
+### Ownership Notes (Planned Semantics)
+
+- Parameters of owned types move into the function. After a call, an argument of an owned type is no longer valid unless the function returns it.
+- Future explicit borrow syntax (`&T`) will allow passing a read-only view without moving ownership. Borrowed arguments remain valid after the call.
+- `input()` returns a new owned `string`.
+- `toString()` and string concatenation produce new owned `string` values (no implicit sharing).
+- Cloning an owned value is explicit: `s.clone()`.
+- Examples currently show simple pass semantics until borrow syntax is implemented.
+
 ## Methods (Planned, Not Implemented)
 
 Methods are functions that belong to objects. This feature is planned but **not yet implemented**:
@@ -168,13 +177,13 @@ class Person {
     int age
     
     // Constructor method
-    Person(this, string name, int age) {
+    Person(&this, string name, int age) {
         this.name = name;
         this.age = age;
     }
     
     // Instance method
-    string introduce(this) {
+    string introduce(&this) {
         return "My name is " + this.name + " and I'm " + toString(this.age) + " years old";
     }
     

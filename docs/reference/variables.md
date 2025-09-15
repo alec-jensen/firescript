@@ -1,10 +1,10 @@
 # Types & Variables
 
-**Note:** Tuple types, the generic placeholder `T`, and declarations without an initializer are not supported by the compiler. Only built-in primitive types (`int`, `float`, `double`, `bool`, `string`, `char`) are fully implemented.
+**Note:** Tuple types, the generic placeholder `T`, and declarations without an initializer are not supported by the compiler. Only built-in TC types (`int`, `float`, `double`, `bool`, `string`, `char`) are fully implemented.
 
-## Primitive Types
+## TC Types
 
-firescript supports several built-in primitive types. For detailed information about the type system, see the [Type System](type_system.md) documentation.
+firescript supports several built-in TC types. For detailed information about the type system, see the [Type System](type_system.md) documentation.
 
 ### Numeric Types
 
@@ -113,7 +113,7 @@ if (message != null) {
 
 ## Implementation Status
 
-All primitive types are fully supported in the current compiler. The following features are not yet implemented:
+All TC types are fully supported in the current compiler. The following features are not yet implemented:
 
 - Tuple operations (creation, access, manipulation)
 - Generic type placeholders and type parameters
