@@ -22,8 +22,7 @@ This documentation is organized to help both newcomers and experienced developer
 
 ## 4. Standard Library Reference
 
-* Built-in functions: `print`, `input`, `toInt`, `toFloat`, etc.
-* Array operations: `append`, `insert`, `pop`, `clear`, `length`
+Standard library does not yet exist.
 
 ## 5. Examples
 
