@@ -2,50 +2,50 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://firescript.alecj.com/</loc>
-         <lastmod>2025-09-12</lastmod>
+         <lastmod>2025-09-15</lastmod>
     </url>
     <url>
          <loc>https://firescript.alecj.com/changelog/</loc>
-         <lastmod>2025-09-12</lastmod>
+         <lastmod>2025-09-15</lastmod>
     </url>
     <url>
-         <loc>https://firescript.alecj.com/language_specification/</loc>
-         <lastmod>2025-09-12</lastmod>
+         <loc>https://firescript.alecj.com/glossary/</loc>
+         <lastmod>2025-09-15</lastmod>
     </url>
     <url>
          <loc>https://firescript.alecj.com/reference/arrays/</loc>
-         <lastmod>2025-09-12</lastmod>
+         <lastmod>2025-09-15</lastmod>
     </url>
     <url>
          <loc>https://firescript.alecj.com/reference/classes/</loc>
-         <lastmod>2025-09-12</lastmod>
+         <lastmod>2025-09-15</lastmod>
     </url>
     <url>
          <loc>https://firescript.alecj.com/reference/control_flow/</loc>
-         <lastmod>2025-09-12</lastmod>
+         <lastmod>2025-09-15</lastmod>
     </url>
     <url>
          <loc>https://firescript.alecj.com/reference/functions/</loc>
-         <lastmod>2025-09-12</lastmod>
+         <lastmod>2025-09-15</lastmod>
     </url>
     <url>
          <loc>https://firescript.alecj.com/reference/memory_management/</loc>
-         <lastmod>2025-09-12</lastmod>
+         <lastmod>2025-09-15</lastmod>
     </url>
     <url>
          <loc>https://firescript.alecj.com/reference/overview/</loc>
-         <lastmod>2025-09-12</lastmod>
+         <lastmod>2025-09-15</lastmod>
     </url>
     <url>
          <loc>https://firescript.alecj.com/reference/scoping/</loc>
-         <lastmod>2025-09-12</lastmod>
+         <lastmod>2025-09-15</lastmod>
     </url>
     <url>
          <loc>https://firescript.alecj.com/reference/type_system/</loc>
-         <lastmod>2025-09-12</lastmod>
+         <lastmod>2025-09-15</lastmod>
     </url>
     <url>
          <loc>https://firescript.alecj.com/reference/variables/</loc>
-         <lastmod>2025-09-12</lastmod>
+         <lastmod>2025-09-15</lastmod>
     </url>
 </urlset>
