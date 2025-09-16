@@ -1075,31 +1075,27 @@ print(&quot;Hello, &quot; + name);
 <h3 id="type-conversion-functions">Type Conversion Functions<a class="headerlink" href="#type-conversion-functions" title="Permanent link">&para;</a></h3>
 <p>These functions convert values from one type to another:</p>
 <ul>
-<li><strong><code>toInt(value)</code></strong> – Converts a value to an integer</li>
+<li><strong><code>toIntN(value)</code></strong> – Converts a value to an N-bit integer (e.g., <code>toInt8</code>, <code>toInt16</code>, <code>toInt32</code>, <code>toInt64</code>)</li>
 </ul>
 <pre><code class="language-firescript">string numberString = &quot;123&quot;;
-int number = toInt(numberString);  // 123
+int8 number = toInt8(numberString);  // 123
 
-float floatVal = 45.7;
-int intVal = toInt(floatVal);      // 45 (truncated)
-
-float floatCount = toFloat(count);  // 5.0
-string pi = &quot;3.14159&quot;;
-float piValue = toFloat(pi);        // 3.14159
+float32 floatVal = 45.7;
+int8 intVal = toInt8(floatVal);      // 45 (truncated)
 </code></pre>
 <ul>
-<li><strong><code>toDouble(value)</code></strong> – Converts a value to a double (64-bit floating point)</li>
+<li><strong><code>toFloatN(value)</code></strong> – Converts a value to an N-bit floating point number (e.g., <code>toFloat32</code>, <code>toFloat64</code>)</li>
 </ul>
-<pre><code class="language-firescript">int bigNumber = 1000000;
-double doubleBig = toDouble(bigNumber);  // 1000000.0 (with double precision)
+<pre><code class="language-firescript">int32 bigNumber = 1000000;
+float64 doubleBig = toFloat64(bigNumber);  // 1000000.0 (with 64-bit precision)
 
 string sciNotation = &quot;6.022e23&quot;;
-double avogadro = toDouble(sciNotation);  // 6.022e23
-
-- **`toBool(value)`** – Converts a value to a boolean
-
-```firescript
-string truthy = &quot;true&quot;;
+float64 avogadro = toFloat64(sciNotation);  // 6.022e23
+</code></pre>
+<ul>
+<li><strong><code>toBool(value)</code></strong> – Converts a value to a boolean</li>
+</ul>
+<pre><code class="language-firescript">string truthy = &quot;true&quot;;
 bool flag = toBool(truthy);  // true
 
 string falsy = &quot;false&quot;;

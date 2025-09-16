@@ -896,8 +896,8 @@
 <tbody>
 <tr>
 <td>Primitive (TC) Types</td>
-<td>✅ Complete</td>
-<td><code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>char</code></td>
+<td>⚠️ Partial</td>
+<td><code>bool</code>, <code>string</code>, <code>char</code> implemented; <code>intN</code>, <code>floatN</code> planned</td>
 </tr>
 <tr>
 <td>Arrays</td>
@@ -943,16 +943,16 @@
 </ul>
 <h2 id="example-code">Example Code<a class="headerlink" href="#example-code" title="Permanent link">&para;</a></h2>
 <pre><code class="language-firescript">// Calculate fibonacci numbers
-int i = 0;
-int j = 1;
-int count = 10;
+int8 i = 0;
+int8 j = 1;
+int8 count = 10;
 
 print(&quot;Fibonacci Sequence:&quot;);
 print(i);
 print(j);
 
 while (count &gt; 0) {
-    int next = i + j;
+    int8 next = i + j;
     print(next);
     i = j;
     j = next;

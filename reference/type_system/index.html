@@ -644,20 +644,77 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#integer-type-int" class="md-nav__link">
+  <a href="#integer-type-intn-and-uintn" class="md-nav__link">
     <span class="md-ellipsis">
-      Integer Type (int)
+      Integer Type (intN and uintN)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integer Type (intN and uintN)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integer-literals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integer Literals
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#floating-point-types-float-and-double" class="md-nav__link">
+  <a href="#integer-overflow-and-underflow-behavior" class="md-nav__link">
     <span class="md-ellipsis">
-      Floating Point Types (float and double)
+      Integer Overflow and Underflow Behavior
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#floating-point-types-floatn" class="md-nav__link">
+    <span class="md-ellipsis">
+      Floating Point Types (floatN)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Floating Point Types (floatN)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#floating-point-literals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Floating Point Literals
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#special-floating-point-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Special Floating Point Values
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#floating-point-overflow-and-underflow-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      Floating Point Overflow and Underflow Behavior
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -829,6 +886,15 @@
   <a href="#type-introspection" class="md-nav__link">
     <span class="md-ellipsis">
       Type Introspection
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#standard-library-types-planned" class="md-nav__link">
+    <span class="md-ellipsis">
+      Standard Library Types (Planned)
     </span>
   </a>
   
@@ -1037,20 +1103,77 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#integer-type-int" class="md-nav__link">
+  <a href="#integer-type-intn-and-uintn" class="md-nav__link">
     <span class="md-ellipsis">
-      Integer Type (int)
+      Integer Type (intN and uintN)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integer Type (intN and uintN)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integer-literals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integer Literals
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#floating-point-types-float-and-double" class="md-nav__link">
+  <a href="#integer-overflow-and-underflow-behavior" class="md-nav__link">
     <span class="md-ellipsis">
-      Floating Point Types (float and double)
+      Integer Overflow and Underflow Behavior
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#floating-point-types-floatn" class="md-nav__link">
+    <span class="md-ellipsis">
+      Floating Point Types (floatN)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Floating Point Types (floatN)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#floating-point-literals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Floating Point Literals
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#special-floating-point-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Special Floating Point Values
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#floating-point-overflow-and-underflow-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      Floating Point Overflow and Underflow Behavior
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1228,6 +1351,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#standard-library-types-planned" class="md-nav__link">
+    <span class="md-ellipsis">
+      Standard Library Types (Planned)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#advanced-type-features-planned" class="md-nav__link">
     <span class="md-ellipsis">
       Advanced Type Features (Planned)
@@ -1309,20 +1441,29 @@
 <h2 id="built-in-types">Built-in Types<a class="headerlink" href="#built-in-types" title="Permanent link">&para;</a></h2>
 <p>firescript provides several fundamental data types. These are all TC types:</p>
 <ul>
-<li><strong><code>int</code></strong>: Represents whole numbers (integers). Example: <code>int age = 30;</code></li>
-<li><strong><code>float</code></strong>: Represents single-precision floating-point numbers. Example: <code>float price = 19.95;</code></li>
-<li><strong><code>double</code></strong>: Represents double-precision floating-point numbers, offering higher precision than <code>float</code>. Example: <code>double pi = 3.1415926535;</code></li>
+<li>Numeric Types:</li>
+<li><strong><code>int8</code></strong>: 8-bit signed integer</li>
+<li><strong><code>int16</code></strong>: 16-bit signed integer</li>
+<li><strong><code>int32</code></strong>: 32-bit signed integer</li>
+<li><strong><code>int64</code></strong>: 64-bit signed integer</li>
+<li><strong><code>uint8</code></strong>: 8-bit unsigned integer</li>
+<li><strong><code>uint16</code></strong>: 16-bit unsigned integer</li>
+<li><strong><code>uint32</code></strong>: 32-bit unsigned integer</li>
+<li><strong><code>uint64</code></strong>: 64-bit unsigned integer</li>
+<li><strong><code>float32</code></strong>: 32-bit floating point number</li>
+<li><strong><code>float64</code></strong>: 64-bit floating point number</li>
+<li><strong><code>float128</code></strong>: 128-bit floating point number</li>
 <li><strong><code>bool</code></strong>: Represents boolean values, either <code>true</code> or <code>false</code>. Example: <code>bool isActive = true;</code></li>
 <li><strong><code>string</code></strong>: Represents sequences of characters. Example: <code>string message = "Hello, World!";</code></li>
 <li><strong><code>char</code></strong>: Represents a single character. (Note: Currently handled similarly to strings in some contexts, formal <code>char</code> type might be refined). Example: <code>char initial = "A";</code></li>
 <li><strong><code>void</code></strong>: Represents the absence of a type, primarily used as the return type for functions that do not return a value.</li>
 </ul>
 <h2 id="type-semantics">Type Semantics<a class="headerlink" href="#type-semantics" title="Permanent link">&para;</a></h2>
-<h3 id="integer-type-int">Integer Type (<code>int</code>)<a class="headerlink" href="#integer-type-int" title="Permanent link">&para;</a></h3>
-<p>The <code>int</code> type in firescript represents integers with arbitrary precision. There is no explicit size limit as in languages like C/C++, making it similar to Python integers that can grow as needed.</p>
-<pre><code class="language-firescript">int small = 42;
-int large = 9223372036854775807;  // Large integers are supported
-int calculation = (small + large) * 2;  // Arithmetic operations
+<h3 id="integer-type-intn-and-uintn">Integer Type (<code>intN</code> and <code>uintN</code>)<a class="headerlink" href="#integer-type-intn-and-uintn" title="Permanent link">&para;</a></h3>
+<p>The <code>intN</code> types in firescript represent N-bit signed integers, while the <code>uintN</code> types represent N-bit unsigned integers.</p>
+<pre><code class="language-firescript">int8 small = 42;
+int64 large = 9223372036854775807;  // Large integers are supported
+int64 calculation = (small + large) * 2;  // Arithmetic operations
 </code></pre>
 <p>Integers support the following operations:</p>
 <ul>
@@ -1330,20 +1471,71 @@ int calculation = (small + large) * 2;  // Arithmetic operations
 <li>Comparison: <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></li>
 <li>Bit manipulation (planned but not yet implemented): <code>&amp;</code>, <code>|</code>, <code>^</code>, <code>~</code>, <code>&lt;&lt;</code>, <code>&gt;&gt;</code></li>
 </ul>
-<h3 id="floating-point-types-float-and-double">Floating Point Types (<code>float</code> and <code>double</code>)<a class="headerlink" href="#floating-point-types-float-and-double" title="Permanent link">&para;</a></h3>
-<p>The <code>float</code> type represents 32-bit floating-point numbers, while <code>double</code> represents 64-bit floating-point numbers with greater precision.</p>
-<pre><code class="language-firescript">float simpleDecimal = 3.14;
-double highPrecision = 3.141592653589793;
-
-// Scientific notation
-double avogadro = 6.022e23;
-float tiny = 1.6e-19;
+<h4 id="integer-literals">Integer Literals<a class="headerlink" href="#integer-literals" title="Permanent link">&para;</a></h4>
+<p>Integer literals can be made more readable using underscores:</p>
+<pre><code class="language-firescript">int32 million = 1_000_000;  // One million
+int64 bigNumber = 9_223_372_036_854_775_807;  // Large integer
+</code></pre>
+<p>Integer literals can be specified in decimal, hexadecimal, binary, or octal formats:</p>
+<pre><code class="language-firescript">int8 decimal = 42;        // Decimal
+int8 hex = 0x2A;          // Hexadecimal
+int8 binary = 0b00101010; // Binary
+int8 octal = 0o52;        // Octal
+</code></pre>
+<p>Integer literals by default will be inferred as <code>int32</code> unless specified otherwise.
+To specify a different integer type, you can use a suffix:</p>
+<pre><code class="language-firescript">int8 small = 42i8;
+int16 medium = 30000i16;
+int64 large = 9223372036854775807i64;
+uint8 usmall = 255u8;
+uint16 umedium = 60000u16;
+uint64 ularge = 18446744073709551615u64;
+</code></pre>
+<p>You can define a base and a suffix together:</p>
+<pre><code class="language-firescript">int8 hexSmall = 0x2Ai8;
+uint16 binMedium = 0b111010100110u16;
+</code></pre>
+<h4 id="integer-overflow-and-underflow-behavior">Integer Overflow and Underflow Behavior<a class="headerlink" href="#integer-overflow-and-underflow-behavior" title="Permanent link">&para;</a></h4>
+<p>For all fixed-size integer types (<code>intN</code> and <code>uintN</code>), arithmetic operations that exceed the representable range will throw an error at runtime. This is to prevent silent overflow/underflow issues.</p>
+<pre><code class="language-firescript">int8 max = 127i8;
+int8 overflow = max + 1i8;  // Runtime error: Integer overflow
+</code></pre>
+<p>Overflows that can be detected at compile-time (e.g., constant expressions) will result in a compile-time error.</p>
+<pre><code class="language-firescript">int8 compileTimeOverflow = 128i8;  // Compile-time error: Integer overflow
+</code></pre>
+<h3 id="floating-point-types-floatn">Floating Point Types (<code>floatN</code>)<a class="headerlink" href="#floating-point-types-floatn" title="Permanent link">&para;</a></h3>
+<p>The <code>floatN</code> types represent N-bit floating point numbers.</p>
+<pre><code class="language-firescript">float32 simpleDecimal = 3.14;
+float64 highPrecision = 3.141592653589793;
 </code></pre>
 <p>Floating point numbers support:</p>
 <ul>
 <li>Arithmetic: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>**</code> (power)</li>
 <li>Comparison: <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></li>
 </ul>
+<h4 id="floating-point-literals">Floating Point Literals<a class="headerlink" href="#floating-point-literals" title="Permanent link">&para;</a></h4>
+<p>Floating point literals can be specified in decimal or scientific notation:</p>
+<pre><code class="language-firescript">float32 decimal = 3.14f32;        // Decimal
+float64 scientific = 2.71828e0f64; // Scientific notation
+</code></pre>
+<p>Floating point literals by default will be inferred as <code>float32</code> unless specified otherwise.
+To specify a different floating point type, you can use a suffix:</p>
+<pre><code class="language-firescript">float32 f32Value = 3.14f32;
+float64 f64Value = 3.14f64;
+float128 f128Value = 3.14f128;
+</code></pre>
+<h4 id="special-floating-point-values">Special Floating Point Values<a class="headerlink" href="#special-floating-point-values" title="Permanent link">&para;</a></h4>
+<p>Floating point types support special values such as <code>NaN</code> (Not a Number), <code>Infinity</code>, and <code>-Infinity</code>:</p>
+<pre><code class="language-firescript">float32 notANumber = 0.0f32 / 0.0f32;  // NaN
+float64 positiveInfinity = 1.0f64 / 0.0f64;  // Infinity
+float64 negativeInfinity = -1.0f64 / 0.0f64; // -Infinity
+</code></pre>
+<h4 id="floating-point-overflow-and-underflow-behavior">Floating Point Overflow and Underflow Behavior<a class="headerlink" href="#floating-point-overflow-and-underflow-behavior" title="Permanent link">&para;</a></h4>
+<p>Floating point operations that exceed the representable range will result in <code>Infinity</code> or <code>-Infinity</code>, while operations resulting in values too close to zero will result in <code>0.0</code>. Operations resulting in undefined values will yield <code>NaN</code>.</p>
+<pre><code class="language-firescript">float32 large = 3.4e38f32 * 10.0f32;  // Results in Infinity
+float32 small = 1.0e-38f32 / 10.0f32; // Results in 0.0
+float32 undefined = 0.0f32 / 0.0f32;      // Results in NaN
+</code></pre>
 <h3 id="boolean-type-bool">Boolean Type (<code>bool</code>)<a class="headerlink" href="#boolean-type-bool" title="Permanent link">&para;</a></h3>
 <p>The <code>bool</code> type has only two possible values: <code>true</code> and <code>false</code>. It's commonly used in conditional expressions.</p>
 <pre><code class="language-firescript">bool userLoggedIn = true;
@@ -1381,23 +1573,23 @@ char digit = &quot;7&quot;;
 char newline = &quot;\n&quot;;  // Special character
 </code></pre>
 <h3 id="arrays">Arrays<a class="headerlink" href="#arrays" title="Permanent link">&para;</a></h3>
-<p>Arrays are ordered collections of elements of the same type.</p>
+<p>Arrays are fixed-size ordered collections of elements of the same type.</p>
 <h4 id="declaration-and-initialization">Declaration and Initialization<a class="headerlink" href="#declaration-and-initialization" title="Permanent link">&para;</a></h4>
 <pre><code class="language-firescript">// With initial values
-int[5] numbers = [1, 2, 3, 4, 5];
+int8[5] numbers = [1, 2, 3, 4, 5];
 string[3] fruits = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;];
 </code></pre>
 <h4 id="array-operations">Array Operations<a class="headerlink" href="#array-operations" title="Permanent link">&para;</a></h4>
-<pre><code class="language-firescript">int[3] scores = [85, 92, 78];
+<pre><code class="language-firescript">int8[3] scores = [85, 92, 78];
 
 // Accessing elements (zero-based indexing)
-int firstScore = scores[0];  // 85
+int8 firstScore = scores[0];  // 85
 
 // Modifying elements
 scores[1] = 95;  // Array becomes [85, 95, 78]
 
 // Array properties
-int count = scores.length;  // 3
+int8 count = scores.length;  // 3
 </code></pre>
 <h2 id="nullability">Nullability<a class="headerlink" href="#nullability" title="Permanent link">&para;</a></h2>
 <p>By default, variables cannot hold the value <code>null</code>. To allow a variable to be assigned <code>null</code>, you must explicitly declare it as <code>nullable</code>.</p>
@@ -1426,9 +1618,9 @@ print(data);  // Might try to print null
 <h3 id="built-in-type-conversion-functions">Built-in Type Conversion Functions<a class="headerlink" href="#built-in-type-conversion-functions" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// String to numeric conversions
 string numStr = &quot;42&quot;;
-int num = toInt(numStr);           // 42
-float floatVal = toFloat(&quot;3.14&quot;);  // 3.14
-double doubleVal = toDouble(&quot;2.71828&quot;);  // 2.71828
+int8 num = toInt(numStr);           // 42
+float32 floatVal = toFloat(&quot;3.14&quot;);  // 3.14
+float64 doubleVal = toDouble(&quot;2.71828&quot;);  // 2.71828
 
 // Numeric to string conversions
 string strFromInt = toString(42);      // &quot;42&quot;
@@ -1445,15 +1637,15 @@ char first = toChar(&quot;Hello&quot;);  // &quot;H&quot; - first character of s
 <p>firescript generally does not perform implicit type conversions, with some exceptions:</p>
 <ol>
 <li>In binary numeric operations (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, etc.) between different numeric types:</li>
-<li>If one operand is <code>double</code>, the result is <code>double</code></li>
-<li>If one operand is <code>float</code> and the other is <code>int</code>, the result is <code>float</code></li>
+<li>If one operand is <code>floatN</code>, the result is <code>floatN</code></li>
+<li>If one operand is <code>floatN</code> and the other is <code>intN</code>, the result is <code>floatN</code></li>
 </ol>
-<pre><code class="language-firescript">int intVal = 5;
-float floatVal = 2.5;
-double doubleVal = 3.14;
+<pre><code class="language-firescript">int8 intVal = 5;
+float32 floatVal = 2.5;
+float32 doubleVal = 3.14;
 
-float result1 = intVal + floatVal;    // Result is float 7.5
-double result2 = floatVal * doubleVal;  // Result is double 7.85
+float32 result1 = intVal + floatVal;    // Result is 7.5f32
+float32 result2 = floatVal * doubleVal;  // Result is 7.85f32
 </code></pre>
 <ol>
 <li>String concatenation with <code>+</code> will convert non-string values to strings:</li>
@@ -1466,13 +1658,13 @@ string status = &quot;Active: &quot; + true;  // &quot;Active: true&quot;
 <h3 id="static-type-checking">Static Type Checking<a class="headerlink" href="#static-type-checking" title="Permanent link">&para;</a></h3>
 <ol>
 <li>
-<p><strong>Variable Declarations</strong>: When you declare a variable (<code>int x = 5;</code>), the type checker verifies that the type of the initializer (<code>5</code>, which is <code>int</code>) matches the declared type (<code>int</code>).</p>
+<p><strong>Variable Declarations</strong>: When you declare a variable (<code>int8 x = 5;</code>), the type checker verifies that the type of the initializer (<code>5</code>, which is <code>int8</code>) matches the declared type (<code>int8</code>).</p>
 </li>
 <li>
 <p><strong>Assignments</strong>: When assigning a value to an existing variable (<code>x = 10;</code>), the checker ensures the assigned value's type is compatible with the variable's declared type.</p>
 </li>
 <li>
-<p><strong>Expressions</strong>: Operators (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>==</code>, <code>&gt;</code>, etc.) are checked to ensure they are used with compatible operand types. For example, arithmetic operators generally require numeric types (<code>int</code>, <code>float</code>, <code>double</code>), while <code>+</code> can also be used for string concatenation. The result type of an expression is also determined (e.g., <code>1 + 2.0</code> results in a <code>float</code>).</p>
+<p><strong>Expressions</strong>: Operators (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>==</code>, <code>&gt;</code>, etc.) are checked to ensure they are used with compatible operand types. For example, arithmetic operators generally require numeric types (<code>intN</code>, <code>floatN</code>), while <code>+</code> can also be used for string concatenation. The result type of an expression is also determined (e.g., <code>1 + 2.0</code> results in a <code>float32</code>).</p>
 </li>
 <li>
 <p><strong>Function Calls</strong>: Arguments passed to functions are checked against the expected parameter types. The return value type is also enforced.</p>
@@ -1487,7 +1679,7 @@ string status = &quot;Active: &quot; + true;  // &quot;Active: true&quot;
 <h3 id="type-errors">Type Errors<a class="headerlink" href="#type-errors" title="Permanent link">&para;</a></h3>
 <p>Type errors found during the checking phase will prevent the code from compiling further, providing early feedback on potential issues:</p>
 <pre><code class="language-firescript">string name = &quot;John&quot;;
-int age = 30;
+int8 age = 30;
 
 age = &quot;thirty&quot;;  // Type error: Cannot assign string to int
 name = 25;       // Type error: Cannot assign int to string
@@ -1497,19 +1689,24 @@ bool result = age + name;  // Type error: Cannot add int and string
 <h2 id="type-introspection">Type Introspection<a class="headerlink" href="#type-introspection" title="Permanent link">&para;</a></h2>
 <p>The <code>typeof</code> built-in function returns a string representing the type of a value:</p>
 <pre><code class="language-firescript">// Future syntax
-string type1 = typeof(42);        // &quot;int&quot;
-string type2 = typeof(3.14);      // &quot;float&quot;
+string type1 = typeof(42);        // &quot;int8&quot;
+string type2 = typeof(3.14);      // &quot;float32&quot;
 string type3 = typeof(&quot;hello&quot;);   // &quot;string&quot;
 string type4 = typeof(true);      // &quot;bool&quot;
-string type5 = typeof([1, 2, 3]); // &quot;int[]&quot;
+string type5 = typeof([1, 2, 3]); // &quot;int8[]&quot;
 </code></pre>
+<h2 id="standard-library-types-planned">Standard Library Types (Planned)<a class="headerlink" href="#standard-library-types-planned" title="Permanent link">&para;</a></h2>
+<p>The following standard library types are planned but not yet implemented:
+* <strong><code>BigInt</code></strong>: Arbitrary-precision integers for calculations requiring more than 64 bits.
+* <strong><code>Decimal</code></strong>: Fixed-point, arbitrary-precision decimal type for precise calculations.
+* <strong><code>list&lt;T&gt;</code></strong>: A dynamic array type that can grow and shrink, unlike fixed-size arrays.</p>
 <h2 id="advanced-type-features-planned">Advanced Type Features (Planned)<a class="headerlink" href="#advanced-type-features-planned" title="Permanent link">&para;</a></h2>
 <p>The following advanced type features are planned but not yet implemented:</p>
 <h3 id="tuples">Tuples<a class="headerlink" href="#tuples" title="Permanent link">&para;</a></h3>
 <p>Tuples will allow grouping of values with different types. They will be immutable and can be accessed by index:</p>
 <pre><code class="language-firescript">// Future syntax
-tuple&lt;int, string&gt; person = (30, &quot;John&quot;);
-int age = person[0];  // 30
+tuple&lt;int8, string&gt; person = (30, &quot;John&quot;);
+int8 age = person[0];  // 30
 string name = person[1];  // &quot;John&quot;
 </code></pre>
 <h3 id="generics">Generics<a class="headerlink" href="#generics" title="Permanent link">&para;</a></h3>
@@ -1530,17 +1727,17 @@ string largerString = max&lt;string&gt;(&quot;apple&quot;, &quot;banana&quot;); 
 <p>Classes will enable user-defined types with methods and properties:</p>
 <pre><code class="language-firescript">// Future syntax
 class Point {
-    float x;
-    float y;
+    float32 x;
+    float32 y;
 
-    Point(this, float x, float y) {
+    Point(this, float32 x, float32 y) {
         this.x = x;
         this.y = y;
     }
 
-    float distanceTo(this, Point other) {
-        float dx = this.x - other.x;
-        float dy = this.y - other.y;
+    float32 distanceTo(this, Point other) {
+        float32 dx = this.x - other.x;
+        float32 dy = this.y - other.y;
         return toFloat((dx * dx + dy * dy) ** 0.5);
     }
 }
@@ -1548,7 +1745,7 @@ class Point {
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <p>The current firescript compiler supports:</p>
 <ul>
-<li>✅ All TC types: <code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>char</code></li>
+<li>✅ Some TC types: <code>bool</code>, <code>string</code>, <code>char</code></li>
 <li>✅ Nullable type modifiers</li>
 <li>✅ Arrays of TC types</li>
 <li>✅ Static type checking for expressions and assignments</li>
@@ -1556,6 +1753,8 @@ class Point {
 </ul>
 <p>Not yet implemented:</p>
 <ul>
+<li>❌ All integer types (<code>int8</code>, <code>int16</code>, <code>int32</code>, <code>int64</code>, <code>uint8</code>, <code>uint16</code>, <code>uint32</code>, <code>uint64</code>)</li>
+<li>❌ All floating point types (<code>float32</code>, <code>float64</code>, <code>float128</code>)</li>
 <li>❌ Type introspection with <code>typeof</code></li>
 <li>❌ Tuples</li>
 <li>❌ Generics</li>

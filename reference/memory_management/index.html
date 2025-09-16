@@ -1303,8 +1303,8 @@
 <h2 id="detailed-rules">Detailed Rules<a class="headerlink" href="#detailed-rules" title="Permanent link">&para;</a></h2>
 <h3 id="1-value-categories">1. Value Categories<a class="headerlink" href="#1-value-categories" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Trivially Copyable (TC): Fixed-size scalars with no destructor (e.g., <code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>char</code>, and fixed-size arrays). Copy is bitwise; there is no drop. Borrowing a TC type is disallowed (<code>&amp;int</code> is invalid).</li>
-<li>Owned / Non-Trivially Copyable (NTC): Heap-backed or resource-managing values (e.g., <code>string</code>, arrays, user-defined objects, closures). Ownership is unique; assignment/pass/return <em>moves</em> ownership. Destruction runs at drop points.</li>
+<li>Trivially Copyable (TC): Fixed-size scalars with no destructor (e.g., <code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>, <code>string</code>, and fixed-size arrays). Copy is bitwise; there is no drop. Borrowing a TC type is disallowed (<code>&amp;int</code> is invalid).</li>
+<li>Owned / Non-Trivially Copyable (NTC): Heap-backed or resource-managing values (e.g., user-defined objects, closures). Ownership is unique; assignment/pass/return <em>moves</em> ownership. Destruction runs at drop points.</li>
 </ul>
 <p>Cloning NTC values is explicit via <code>.clone()</code> or <code>clone(x)</code>.</p>
 <h3 id="2-regions-and-lifetimes">2. Regions and Lifetimes<a class="headerlink" href="#2-regions-and-lifetimes" title="Permanent link">&para;</a></h3>
@@ -1325,7 +1325,7 @@
 <li><code>&amp;T</code>: (T is Owned) borrowed, read-only; callee cannot retain or return it in a longer-lived form.</li>
 </ul>
 <p>For TC types:
-- There is only pass-by-value (copy). No borrow syntax is permitted. <code>int</code>, <code>bool</code>, etc. are always copied; moves do not invalidate the source.</p>
+- There is only pass-by-value (copy). No borrow syntax is permitted. <code>intN</code>, <code>bool</code>, etc. are always copied; moves do not invalidate the source.</p>
 <p>Returns:
 - Returning <code>T</code> (Owned) transfers ownership to the caller.
 - Returning <code>&amp;T</code> (Owned) only allowed if the referenced value is owned by the caller (non-escaping). Borrow returns of TC types are invalid (they cannot be borrowed).</p>
@@ -1410,20 +1410,20 @@ acct = acct.upgrade(); // rebind because ownership moved and was returned
 4. No disallowed interior references.</p>
 <p>Example:</p>
 <pre><code class="language-firescript">copyable class Vec2 {
-    float x;
-    float y;
+    float32 x; // float32 is TC
+    float32 y;
 }
 </code></pre>
 <p><code>Vec2</code> values copy bitwise; moves do not invalidate the source.</p>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
 <p>The following examples illustrate planned semantics. Some features (e.g., full last-use optimization) may not yet be implemented.</p>
 <h3 id="example-move-vs-copy-takeaway-owned-moves-tc-copies">Example: Move vs Copy (Takeaway: Owned moves; TC copies)<a class="headerlink" href="#example-move-vs-copy-takeaway-owned-moves-tc-copies" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">string a = &quot;hello&quot;;
-string b = a;       // move: a invalid
-// print(a);        // error: moved value
+<pre><code class="language-firescript">Object o1 = Object(); // owned
+Object o2 = o1;      // move; o1 invalid afterward
+// print(o1);        // error: moved value
 
-int x = 42;
-int y = x;          // copy (TC); x still valid
+int8 x = 42;
+int8 y = x;          // copy (TC); x still valid
 print(x);           // OK
 </code></pre>
 <h3 id="example-clone-takeaway-explicit-duplication-for-owned">Example: Clone (Takeaway: explicit duplication for Owned)<a class="headerlink" href="#example-clone-takeaway-explicit-duplication-for-owned" title="Permanent link">&para;</a></h3>
@@ -1438,17 +1438,18 @@ print(s2);
 }
 
 string name = &quot;firescript&quot;;
-int n = length(name); // borrow; name still valid
+int8 n = length(name); // borrow; name still valid
 </code></pre>
 <h3 id="example-invalid-borrow-of-tc-compile-error">Example: Invalid Borrow of TC (Compile Error)<a class="headerlink" href="#example-invalid-borrow-of-tc-compile-error" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int id = 10;
+<pre><code class="language-firescript">int8 id = 10;
 printId(&amp;id);   // ERROR: cannot borrow TC type 'int'; remove '&amp;'
 
 // Correct version:
-void printId(int v) {
+void printId(int8 v) {
     print(v);
 }
 printId(id);    // copies 'id'
+print(id);      // still valid
 </code></pre>
 <h3 id="example-owned-parameter-consumed">Example: Owned Parameter Consumed<a class="headerlink" href="#example-owned-parameter-consumed" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">void addUser(owned string username);

@@ -1356,23 +1356,23 @@ void exampleFunction() {
 <h2 id="common-scoping-errors">Common Scoping Errors<a class="headerlink" href="#common-scoping-errors" title="Permanent link">&para;</a></h2>
 <h3 id="1-accessing-variables-outside-their-scope">1. Accessing Variables Outside Their Scope<a class="headerlink" href="#1-accessing-variables-outside-their-scope" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">{
-    int value = 10;
+    int8 value = 10;
 }
 print(value)  // ERROR: 'value' is not defined in this scope
 </code></pre>
 <h3 id="2-redeclaring-variables-in-the-same-scope">2. Redeclaring Variables in the Same Scope<a class="headerlink" href="#2-redeclaring-variables-in-the-same-scope" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int count = 5;
-int count = 10;  // ERROR: 'count' is already defined
+<pre><code class="language-firescript">int8 count = 5;
+int8 count = 10;  // ERROR: 'count' is already defined
 </code></pre>
 <h3 id="3-attempting-variable-shadowing">3. Attempting Variable Shadowing<a class="headerlink" href="#3-attempting-variable-shadowing" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int value = 10;
+<pre><code class="language-firescript">int8 value = 10;
 if (true) {
-    int value = 20;  // ERROR: Shadowing is not allowed in firescript
+    int8 value = 20;  // ERROR: Shadowing is not allowed in firescript
 }
 </code></pre>
 <h3 id="4-using-variables-before-declaration">4. Using Variables Before Declaration<a class="headerlink" href="#4-using-variables-before-declaration" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">print(result);  // ERROR: Cannot use 'result' before declaration
-int result = 42;
+int8 result = 42;
 </code></pre>
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <p>Scope handling in firescript is fully implemented:</p>

@@ -862,8 +862,8 @@
 </table>
 <h3 id="expanded-definitions">Expanded Definitions<a class="headerlink" href="#expanded-definitions" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Trivially Copyable (TC):</strong> Includes <code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>char</code> and other fixed-size scalars, as well as fixed-size arrays. Copies are bitwise; no destructor runs.</li>
-<li><strong>Owned / NTC:</strong> Includes <code>string</code>, arrays, user-defined objects, closures, or any type that requires a destructor. Ownership is unique unless an explicit sharing container (future <code>Rc</code>, <code>Arc</code>) is used.</li>
+<li><strong>Trivially Copyable (TC):</strong> Includes <code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>, <code>string</code>, arrays, and other fixed-size scalars. Copies are bitwise; no destructor runs.</li>
+<li><strong>Owned / NTC:</strong> Includes user-defined objects, closures, or any type that requires a destructor. Ownership is unique unless an explicit sharing container (future <code>Rc</code>, <code>Arc</code>) is used.</li>
 <li><strong>Move:</strong> Occurs on assignment, passing to a parameter of owned type, or returning a value. After a move, the source binding cannot be used (use-after-move error).</li>
 <li><strong>Borrow:</strong> Lightweight, read-only access. Cannot be stored in owned fields or escape its originating scope/call. Does not incur runtime overhead.</li>
 <li><strong>Clone:</strong> Creates an independent owned value. Semantics (deep vs copy-on-write) determined by the type implementation but always preserves logical independence.</li>

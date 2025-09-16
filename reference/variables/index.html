@@ -487,44 +487,11 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#tc-types" class="md-nav__link">
+  <a href="#types" class="md-nav__link">
     <span class="md-ellipsis">
-      TC Types
+      Types
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="TC Types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#numeric-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Numeric Types
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#boolean-type" class="md-nav__link">
-    <span class="md-ellipsis">
-      Boolean Type
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#text-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Text Types
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -850,44 +817,11 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#tc-types" class="md-nav__link">
+  <a href="#types" class="md-nav__link">
     <span class="md-ellipsis">
-      TC Types
+      Types
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="TC Types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#numeric-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Numeric Types
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#boolean-type" class="md-nav__link">
-    <span class="md-ellipsis">
-      Boolean Type
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#text-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Text Types
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -968,67 +902,26 @@
 
 <h1 id="types-variables">Types &amp; Variables<a class="headerlink" href="#types-variables" title="Permanent link">&para;</a></h1>
 <p><strong>Note:</strong> Tuple types, the generic placeholder <code>T</code>, and declarations without an initializer are not supported by the compiler. Only built-in TC types (<code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, <code>string</code>, <code>char</code>) are fully implemented.</p>
-<h2 id="tc-types">TC Types<a class="headerlink" href="#tc-types" title="Permanent link">&para;</a></h2>
-<p>firescript supports several built-in TC types. For detailed information about the type system, see the <a href="../type_system/">Type System</a> documentation.</p>
-<h3 id="numeric-types">Numeric Types<a class="headerlink" href="#numeric-types" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>int</code>: Integer numbers (64-bit signed)</li>
-</ul>
-<pre><code class="language-firescript">int count = 42;
-int largeNumber = 9223372036854775807;  // 64-bit integer
-</code></pre>
-<ul>
-<li><code>float</code>: Single-precision floating-point numbers</li>
-</ul>
-<pre><code class="language-firescript">float price = 19.99;
-float smallValue = 0.000001;
-</code></pre>
-<ul>
-<li><code>double</code>: Double-precision floating-point numbers</li>
-</ul>
-<pre><code class="language-firescript">double pi = 3.14159265359;
-double scientificNotation = 6.022e23;  // Scientific notation
-</code></pre>
-<h3 id="boolean-type">Boolean Type<a class="headerlink" href="#boolean-type" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>bool</code>: Boolean values (<code>true</code> or <code>false</code>)</li>
-</ul>
-<pre><code class="language-firescript">bool isActive = true;
-bool hasPermission = false;
-</code></pre>
-<h3 id="text-types">Text Types<a class="headerlink" href="#text-types" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>string</code>: Text strings, enclosed in double quotes</li>
-</ul>
-<pre><code class="language-firescript">string greeting = &quot;Hello, world!&quot;;
-string emptyString = &quot;&quot;;
-string multiline = &quot;This is a
-multi-line string&quot;;
-</code></pre>
-<ul>
-<li><code>char</code>: Single characters, represented as strings internally</li>
-</ul>
-<pre><code class="language-firescript">char letter = &quot;A&quot;;
-char symbol = &quot;*&quot;;
-</code></pre>
+<h2 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h2>
+<p>Types are defined in the <a href="../type_system/">Type System</a> documentation.</p>
 <h2 id="declaration-and-initialization">Declaration and Initialization<a class="headerlink" href="#declaration-and-initialization" title="Permanent link">&para;</a></h2>
 <p>Variables in firescript must be declared with an explicit type and initialized in the same statement:</p>
-<pre><code class="language-firescript">int age = 30;
+<pre><code class="language-firescript">int8 age = 30;
 string name = &quot;Alice&quot;;
 bool isRegistered = false;
 </code></pre>
 <h3 id="type-inference">Type Inference<a class="headerlink" href="#type-inference" title="Permanent link">&para;</a></h3>
 <p>firescript does not support automatic type inference:</p>
 <pre><code class="language-firescript">var score = 95;  // Not supported - must specify the type explicitly
-int score = 95;  // Supported
+int8 score = 95;  // Supported
 </code></pre>
 <h3 id="constants">Constants<a class="headerlink" href="#constants" title="Permanent link">&para;</a></h3>
 <p>Use the <code>const</code> keyword to declare immutable variables:</p>
-<pre><code class="language-firescript">const int MAX_USERS = 100;
+<pre><code class="language-firescript">const int8 MAX_USERS = 100;
 const string APP_VERSION = &quot;1.0.0&quot;;
 </code></pre>
 <p>Constants must be initialized when declared and cannot be reassigned later:</p>
-<pre><code class="language-firescript">const float PI = 3.14;
+<pre><code class="language-firescript">const float32 PI = 3.14;
 PI = 3.14159;  // Error: cannot reassign a constant
 </code></pre>
 <h2 id="nullability">Nullability<a class="headerlink" href="#nullability" title="Permanent link">&para;</a></h2>
@@ -1045,14 +938,7 @@ if (message != null) {
 }
 </code></pre>
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
-<p>All TC types are fully supported in the current compiler. The following features are not yet implemented:</p>
-<ul>
-<li>Tuple operations (creation, access, manipulation)</li>
-<li>Generic type placeholders and type parameters</li>
-<li>Type inference</li>
-<li>Declaration without initialization</li>
-</ul>
-<p>For more detailed information about the type system, including type conversions, type compatibility, and advanced type features, please refer to the <a href="../type_system/">Type System</a> documentation.</p>
+<p>Variable declaration and initialization is fully supported for some built-in TC types. User-defined types and tuples are planned for future versions. Constants and nullability are also planned features.</p>
 
 
 
