@@ -793,9 +793,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#declaring-a-tc-class" class="md-nav__link">
+  <a href="#declaring-a-copyable-class" class="md-nav__link">
     <span class="md-ellipsis">
-      Declaring a TC Class
+      Declaring a Copyable Class
     </span>
   </a>
   
@@ -817,9 +817,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example-move-vs-copy-takeaway-owned-moves-tc-copies" class="md-nav__link">
+  <a href="#example-move-vs-copy-takeaway-owned-moves-copyable-copies" class="md-nav__link">
     <span class="md-ellipsis">
-      Example: Move vs Copy (Takeaway: Owned moves; TC copies)
+      Example: Move vs Copy (Takeaway: Owned moves; Copyable copies)
     </span>
   </a>
   
@@ -844,9 +844,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-invalid-borrow-of-tc-compile-error" class="md-nav__link">
+  <a href="#example-invalid-borrow-of-copyable-compile-error" class="md-nav__link">
     <span class="md-ellipsis">
-      Example: Invalid Borrow of TC (Compile Error)
+      Example: Invalid Borrow of Copyable (Compile Error)
     </span>
   </a>
   
@@ -1148,9 +1148,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#declaring-a-tc-class" class="md-nav__link">
+  <a href="#declaring-a-copyable-class" class="md-nav__link">
     <span class="md-ellipsis">
-      Declaring a TC Class
+      Declaring a Copyable Class
     </span>
   </a>
   
@@ -1172,9 +1172,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example-move-vs-copy-takeaway-owned-moves-tc-copies" class="md-nav__link">
+  <a href="#example-move-vs-copy-takeaway-owned-moves-copyable-copies" class="md-nav__link">
     <span class="md-ellipsis">
-      Example: Move vs Copy (Takeaway: Owned moves; TC copies)
+      Example: Move vs Copy (Takeaway: Owned moves; Copyable copies)
     </span>
   </a>
   
@@ -1199,9 +1199,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-invalid-borrow-of-tc-compile-error" class="md-nav__link">
+  <a href="#example-invalid-borrow-of-copyable-compile-error" class="md-nav__link">
     <span class="md-ellipsis">
-      Example: Invalid Borrow of TC (Compile Error)
+      Example: Invalid Borrow of Copyable (Compile Error)
     </span>
   </a>
   
@@ -1277,22 +1277,22 @@
 <p>Status: This is the authoritative specification of firescript's ownership-based memory model. Some described behaviors (e.g., last-use drop insertion, borrow checking) may not yet be enforced in current builds. If another document conflicts with this page, this page takes precedence.</p>
 </blockquote>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>firescript uses a deterministic ownership model rather than a tracing garbage collector. Values are categorized as either Trivially Copyable (TC) or Owned (Non‑Trivially Copyable, NTC). Owned values move by default; borrowing (<code>&amp;T</code>) provides a temporary, read‑only view <em>only for Owned types</em>. Trivially Copyable types are always passed and assigned by value (bitwise copy); they cannot be borrowed. The compiler (planned) inserts destruction (“drop”) at the last proven use or at scope end. Ordinary owned values incur no runtime reference counting.</p>
+<p>firescript uses a deterministic ownership model rather than a tracing garbage collector. Values are categorized as either copyable or owned. Owned values move by default; borrowing (<code>&amp;T</code>) provides a temporary, read‑only view <em>only for Owned types</em>. Copyable types are always passed and assigned by value (bitwise copy); they cannot be borrowed. The compiler (planned) inserts destruction (“drop”) at the last proven use or at scope end. Ordinary owned values incur no runtime reference counting.</p>
 <p>This page is layered: first core concepts, then detailed rules. Other documentation pages should link here instead of redefining terminology.</p>
 <h2 id="core-concepts-concept-map">Core Concepts (Concept Map)<a class="headerlink" href="#core-concepts-concept-map" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Categorize each value: TC or Owned (NTC)</li>
+<li>Categorize each value: copyable or owned</li>
 <li>Moving an Owned value transfers ownership; the previous binding becomes invalid</li>
 <li>Borrowing (<code>&amp;T</code>) is only allowed for Owned types; it grants a read-only, non-owning view tied to the original owner’s lifetime</li>
-<li>TC types are simply copied; “move” is indistinguishable from copy; borrowing does not exist for TC</li>
+<li>Copyable types are simply copied; “move” is indistinguishable from copy; borrowing does not exist for Copyable types</li>
 <li>The compiler performs last-use analysis to place deterministic drop points (Owned types only)</li>
 <li>Scope exit drops any remaining owned values</li>
 <li>Cloning is explicit (<code>.clone()</code> / <code>clone(x)</code>) for Owned values</li>
 </ol>
 <h2 id="terminology">Terminology<a class="headerlink" href="#terminology" title="Permanent link">&para;</a></h2>
-<p>Core terms (Trivially Copyable, Owned / Non-Trivially Copyable, Move, Borrow, Clone, Drop) are defined centrally in the glossary. This document applies those definitions normatively and adds the constraint:</p>
+<p>Core terms (Copyable, Owned, Move, Borrow, Clone, Drop) are defined centrally in the glossary. This document applies those definitions normatively and adds the constraint:</p>
 <ul>
-<li>Borrow (<code>&amp;T</code>) is only defined for Owned types. Attempting to borrow a TC type (e.g., <code>&amp;int</code>) is a compile error.</li>
+<li>Borrow (<code>&amp;T</code>) is only defined for Owned types. Attempting to borrow a Copyable type (e.g., <code>&amp;int</code>) is a compile error.</li>
 </ul>
 <h2 id="how-this-interacts-with-other-features">How This Interacts With Other Features<a class="headerlink" href="#how-this-interacts-with-other-features" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1303,16 +1303,16 @@
 <h2 id="detailed-rules">Detailed Rules<a class="headerlink" href="#detailed-rules" title="Permanent link">&para;</a></h2>
 <h3 id="1-value-categories">1. Value Categories<a class="headerlink" href="#1-value-categories" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Trivially Copyable (TC): Fixed-size scalars with no destructor (e.g., <code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>, <code>string</code>, and fixed-size arrays). Copy is bitwise; there is no drop. Borrowing a TC type is disallowed (<code>&amp;int</code> is invalid).</li>
-<li>Owned / Non-Trivially Copyable (NTC): Heap-backed or resource-managing values (e.g., user-defined objects, closures). Ownership is unique; assignment/pass/return <em>moves</em> ownership. Destruction runs at drop points.</li>
+<li>Copyable: Fixed-size scalars with no destructor (e.g., <code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>, <code>string</code>, and fixed-size arrays). Copy is bitwise; there is no drop. Borrowing a Copyable type is disallowed (<code>&amp;int</code> is invalid).</li>
+<li>Owned: Heap-backed or resource-managing values (e.g., user-defined objects, closures). Ownership is unique; assignment/pass/return <em>moves</em> ownership. Destruction runs at drop points.</li>
 </ul>
-<p>Cloning NTC values is explicit via <code>.clone()</code> or <code>clone(x)</code>.</p>
+<p>Cloning Owned values is explicit via <code>.clone()</code> or <code>clone(x)</code>.</p>
 <h3 id="2-regions-and-lifetimes">2. Regions and Lifetimes<a class="headerlink" href="#2-regions-and-lifetimes" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Each lexical scope defines a region. An owned value lives in the region of its current owner.</li>
 <li>On scope exit, all owned values remaining in the region are dropped (reverse creation order).</li>
 <li>The compiler performs last-use analysis and inserts earlier drops when safe.</li>
-<li>TC values have no lifetime actions; they are ignored by drop logic.</li>
+<li>Copyable values have no lifetime actions; they are ignored by drop logic.</li>
 </ul>
 <p>Moving a value transfers it to the destination region:
 - Passing to a function that takes <code>owned T</code> moves into the callee’s region.
@@ -1324,14 +1324,14 @@
 <li><code>owned T</code>: (T is Owned) callee receives ownership; caller loses it unless returned.</li>
 <li><code>&amp;T</code>: (T is Owned) borrowed, read-only; callee cannot retain or return it in a longer-lived form.</li>
 </ul>
-<p>For TC types:
+<p>For Copyable types:
 - There is only pass-by-value (copy). No borrow syntax is permitted. <code>intN</code>, <code>bool</code>, etc. are always copied; moves do not invalidate the source.</p>
 <p>Returns:
 - Returning <code>T</code> (Owned) transfers ownership to the caller.
-- Returning <code>&amp;T</code> (Owned) only allowed if the referenced value is owned by the caller (non-escaping). Borrow returns of TC types are invalid (they cannot be borrowed).</p>
+- Returning <code>&amp;T</code> (Owned) only allowed if the referenced value is owned by the caller (non-escaping). Borrow returns of Copyable types are invalid (they cannot be borrowed).</p>
 <p>Notes:
 - At call sites, borrow inference applies only when the callee expects <code>&amp;OwnedType</code>.
-- Attempting to pass a TC value where <code>&amp;T</code> is required is a type error (cannot borrow TC).</p>
+- Attempting to pass a Copyable value where <code>&amp;T</code> is required is a type error (cannot borrow Copyable).</p>
 <h3 id="4-borrowing-rules-owned-types-only">4. Borrowing Rules (Owned Types Only)<a class="headerlink" href="#4-borrowing-rules-owned-types-only" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Borrowing is only defined for Owned types.</li>
@@ -1344,18 +1344,18 @@
 <ul>
 <li>Capturing by move transfers ownership into the closure’s region (Owned types only).</li>
 <li>Capturing by borrow is only allowed for non-escaping closures and only for Owned types.</li>
-<li>TC values captured are copied; no borrow form exists. (TC capture has no ownership effect.)</li>
+<li>Copyable values captured are copied; no borrow form exists. (Copyable capture has no ownership effect.)</li>
 <li>Escaping closures cannot have borrowed captures.</li>
 </ul>
 <h3 id="6-destruction-and-drop">6. Destruction and <code>Drop</code><a class="headerlink" href="#6-destruction-and-drop" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Owned (NTC) types may define <code>drop(this)</code>.</li>
+<li>Owned (Owned) types may define <code>drop(this)</code>.</li>
 <li>Drops occur deterministically:</li>
 <li>At last use (if provable).</li>
 <li>At scope exit.</li>
 <li>Along all control-flow exits (return, break, exception).</li>
 <li>Moves prevent duplicate drops (previous binding invalidated).</li>
-<li>TC values never have drops.</li>
+<li>Copyable values never have drops.</li>
 </ul>
 <p>Example:</p>
 <pre><code class="language-firescript">File f = File.open(&quot;log.txt&quot;);
@@ -1363,12 +1363,12 @@ f.write(&quot;hello&quot;);
 // f dropped here even on early return/exception; File.drop closes the descriptor.
 </code></pre>
 <h3 id="7-method-receivers">7. Method Receivers<a class="headerlink" href="#7-method-receivers" title="Permanent link">&para;</a></h3>
-<p>Method receiver kinds apply only to Owned types (TC methods implicitly copy the receiver):</p>
+<p>Method receiver kinds apply only to Owned types (Copyable methods implicitly copy the receiver):</p>
 <ul>
 <li>Borrowed receiver (default for Owned): signature form <code>name(...) ReturnType</code> implicitly receives <code>&amp;OwnedType this</code> (read-only).</li>
 <li>Consuming receiver: <code>name(owned this, ...) ReturnType</code> (or <code>name(this, ...)</code>) takes ownership; caller’s binding is invalid unless the method returns it.</li>
 </ul>
-<p>For TC types:
+<p>For Copyable types:
 - Methods always receive the value by copy; “consuming” semantics do not apply.</p>
 <p>Consuming example:</p>
 <pre><code class="language-firescript">Account upgrade(owned this) {
@@ -1382,13 +1382,13 @@ acct = acct.upgrade(); // rebind because ownership moved and was returned
 <ul>
 <li>Conditional joins: if both branches use a value, drop inserted after merge; otherwise at last branch that uses it.</li>
 <li>Loops: Values used across iterations drop after loop. Iteration-temporary owned values drop at iteration end.</li>
-<li>TC values ignored by last-use logic (always trivially copyable).</li>
+<li>Copyable values ignored by last-use logic (always trivially copyable).</li>
 </ul>
 <h3 id="9-conversions-and-sharing">9. Conversions and Sharing<a class="headerlink" href="#9-conversions-and-sharing" title="Permanent link">&para;</a></h3>
 <ul>
 <li>To create multiple independent owners of an Owned value: <code>.clone()</code>.</li>
 <li>Opt-in reference-counted or shared abstractions may be provided (e.g., <code>Rc&lt;T&gt;</code>, <code>Arc&lt;T&gt;</code>, arenas). These layer explicit runtime or bulk management semantics on top of the ownership core.</li>
-<li>TC values never require sharing constructs.</li>
+<li>Copyable values never require sharing constructs.</li>
 </ul>
 <h3 id="10-interop-and-backends">10. Interop and Backends<a class="headerlink" href="#10-interop-and-backends" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1398,32 +1398,32 @@ acct = acct.upgrade(); // rebind because ownership moved and was returned
 <h3 id="11-diagnostics">11. Diagnostics<a class="headerlink" href="#11-diagnostics" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Use-after-move (Owned) is an error: primary note at move, secondary at invalid use.</li>
-<li>Illegal borrow of a TC type (e.g., <code>&amp;int</code>) is an error: “Cannot borrow trivially copyable type ‘int’; pass by value.”</li>
+<li>Illegal borrow of a Copyable type (e.g., <code>&amp;int</code>) is an error: “Cannot borrow trivially copyable type ‘int’; pass by value.”</li>
 <li>Borrow escape detection flags returning or storing a borrow beyond its allowed lifetime.</li>
 <li>Deterministic destruction order may be visualized (tooling).</li>
 </ul>
-<h3 id="declaring-a-tc-class">Declaring a TC Class<a class="headerlink" href="#declaring-a-tc-class" title="Permanent link">&para;</a></h3>
-<p>A class may be annotated <code>copyable</code> to become Trivially Copyable if it satisfies:
-1. All fields are TC.
+<h3 id="declaring-a-copyable-class">Declaring a Copyable Class<a class="headerlink" href="#declaring-a-copyable-class" title="Permanent link">&para;</a></h3>
+<p>A class may be annotated <code>copyable</code> to become Copyable if it satisfies:
+1. All fields are Copyable.
 2. No <code>drop</code> defined.
 3. Fixed-size representation.
 4. No disallowed interior references.</p>
 <p>Example:</p>
 <pre><code class="language-firescript">copyable class Vec2 {
-    float32 x; // float32 is TC
+    float32 x; // float32 is Copyable
     float32 y;
 }
 </code></pre>
 <p><code>Vec2</code> values copy bitwise; moves do not invalidate the source.</p>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
 <p>The following examples illustrate planned semantics. Some features (e.g., full last-use optimization) may not yet be implemented.</p>
-<h3 id="example-move-vs-copy-takeaway-owned-moves-tc-copies">Example: Move vs Copy (Takeaway: Owned moves; TC copies)<a class="headerlink" href="#example-move-vs-copy-takeaway-owned-moves-tc-copies" title="Permanent link">&para;</a></h3>
+<h3 id="example-move-vs-copy-takeaway-owned-moves-copyable-copies">Example: Move vs Copy (Takeaway: Owned moves; Copyable copies)<a class="headerlink" href="#example-move-vs-copy-takeaway-owned-moves-copyable-copies" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">Object o1 = Object(); // owned
 Object o2 = o1;      // move; o1 invalid afterward
 // print(o1);        // error: moved value
 
 int8 x = 42;
-int8 y = x;          // copy (TC); x still valid
+int8 y = x;          // copy (Copyable); x still valid
 print(x);           // OK
 </code></pre>
 <h3 id="example-clone-takeaway-explicit-duplication-for-owned">Example: Clone (Takeaway: explicit duplication for Owned)<a class="headerlink" href="#example-clone-takeaway-explicit-duplication-for-owned" title="Permanent link">&para;</a></h3>
@@ -1440,9 +1440,9 @@ print(s2);
 string name = &quot;firescript&quot;;
 int8 n = length(name); // borrow; name still valid
 </code></pre>
-<h3 id="example-invalid-borrow-of-tc-compile-error">Example: Invalid Borrow of TC (Compile Error)<a class="headerlink" href="#example-invalid-borrow-of-tc-compile-error" title="Permanent link">&para;</a></h3>
+<h3 id="example-invalid-borrow-of-copyable-compile-error">Example: Invalid Borrow of Copyable (Compile Error)<a class="headerlink" href="#example-invalid-borrow-of-copyable-compile-error" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">int8 id = 10;
-printId(&amp;id);   // ERROR: cannot borrow TC type 'int'; remove '&amp;'
+printId(&amp;id);   // ERROR: cannot borrow Copyable type 'int'; remove '&amp;'
 
 // Correct version:
 void printId(int8 v) {
@@ -1476,7 +1476,7 @@ acct = acct.activate(); // rebind with returned owned value
 <thead>
 <tr>
 <th>Kind</th>
-<th>TC Types</th>
+<th>Copyable Types</th>
 <th>Owned Types</th>
 </tr>
 </thead>
@@ -1507,7 +1507,7 @@ acct = acct.activate(); // rebind with returned owned value
 1. Preserve simplicity (no redundant alias form for scalars).
 2. Keep ownership-focused diagnostics clear.
 3. Avoid needless syntactic noise for trivially cheap copies.</p>
-<p>If a future revision broadens TC to include large POD aggregates, this restriction may be reconsidered; until then it is normative.</p>
+<p>If a future revision broadens Copyable to include large POD aggregates, this restriction may be reconsidered; until then it is normative.</p>
 
 
 
