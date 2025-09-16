@@ -28,7 +28,6 @@ Core terms (Trivially Copyable, Owned / Non-Trivially Copyable, Move, Borrow, Cl
 
 - Scoping: Scope exit triggers drops of any still-owned values (see [Scoping](./scoping.md)).
 - Functions: Owned parameters move; borrowed parameters (`&T`) (Owned types only) do not transfer ownership (see [Functions](./functions.md)).
-- Arrays/Collections: Arrays (Owned) drop their elements when they are dropped; TC elements have nothing to drop.
 - Future Closures: Captures of Owned variables default to move; borrow captures are allowed only if the closure cannot escape.
 
 ## Detailed Rules
