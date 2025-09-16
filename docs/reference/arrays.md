@@ -145,6 +145,43 @@ string last = words[-1];     // Would be "cherry"
   - `count(value)` – Count occurrences of a value
   - `sort()` – Sort the array elements
 
+- **Array arithmetic** – Element-wise operations between arrays
+
+Will use SIMD where possible for performance.
+
+```firescript
+// Future syntax
+int8[] a = [1, 2, 3];
+int8[] b = [4, 5, 6];
+
+// add arrays element-wise
+int8[] c = a + b;  // Would be [5, 7, 9]
+
+// subtract arrays element-wise
+int8[] e = b - a;  // Would be [3, 3, 3]
+
+// add scalar to array
+int8[] g = a + 2;  // Would be [3, 4, 5]
+
+// subtract scalar from array
+int8[] h = b - 1;  // Would be [3, 4, 5]
+
+// multiply arrays element-wise
+int8[] j = a * b;  // Would be [4, 10, 18]
+
+// divide arrays element-wise
+int8[] k = b / a;  // Would be [4, 2, 2]
+
+// multiply arrays by scalar
+int8[] d = a * 2;  // Would be [2, 4, 6]
+
+// divide arrays by scalar
+int8[] f = b / 2;  // Would be [2, 2, 3]
+
+// dot product of two arrays
+int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
+```
+
 ## Implementation Status
 
 Arrays are functional but with limited operations in the current compiler:

@@ -17,7 +17,7 @@ firescript is a statically and strongly typed programming language that compiles
 
 ```firescript
 // Define a function that returns the nth Fibonacci number
-int fibonacci(int n) {
+int8 fibonacci(int8 n) {
     if n <= 1 {
         return n
     }
@@ -25,7 +25,7 @@ int fibonacci(int n) {
 }
 
 // Print the first 10 Fibonacci numbers
-for (int i : range(9)) {
+for (int8 i : range(9)) {
     print(fibonacci(i))
 }
 ```
@@ -34,7 +34,7 @@ for (int i : range(9)) {
 
 ### Prerequisites
 
-- C Compiler (GCC recommended, but any C compiler should work as long as it's location is in the CC environment variable)
+- C Compiler (GCC recommended, but any C compiler should work as long as its location is in the CC environment variable)
 - Python 3
 
 ### Installation
