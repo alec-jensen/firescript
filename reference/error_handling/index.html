@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://firescript.alecj.com/reference/control_flow/">
+        <link rel="canonical" href="https://firescript.alecj.com/reference/error_handling/">
       
       
-        <link rel="prev" href="../arrays/">
+        <link rel="prev" href="../memory_management/">
       
       
-        <link rel="next" href="../functions/">
+        <link rel="next" href="../../glossary/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Control Flow - firescript</title>
+        <title>Error Handling - firescript</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#control-flow" class="md-skip">
+        <a href="#runtime-error-handling" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Control Flow
+              Error Handling
             
           </span>
         </div>
@@ -480,32 +480,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Control Flow
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../control_flow/" class="md-nav__link">
         
   
   
@@ -516,230 +494,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#introduction-to-control-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      Introduction to Control Flow
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#conditional-statements" class="md-nav__link">
-    <span class="md-ellipsis">
-      Conditional Statements
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Conditional Statements">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#basic-if-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      Basic If Statement
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#if-else-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      If-Else Statement
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#if-else-if-else-chains" class="md-nav__link">
-    <span class="md-ellipsis">
-      If-Else If-Else Chains
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nested-conditional-statements" class="md-nav__link">
-    <span class="md-ellipsis">
-      Nested Conditional Statements
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#boolean-expressions-in-conditions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Boolean Expressions in Conditions
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      Loops
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Loops">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#while-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      While Loops
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="While Loops">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#infinite-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      Infinite Loops
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#loop-control-statements" class="md-nav__link">
-    <span class="md-ellipsis">
-      Loop Control Statements
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#combining-loops-and-conditionals" class="md-nav__link">
-    <span class="md-ellipsis">
-      Combining Loops and Conditionals
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#future-control-flow-features" class="md-nav__link">
-    <span class="md-ellipsis">
-      Future Control Flow Features
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Future Control Flow Features">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#c-style-for-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      C-style For Loops
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-in-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      For-In Loops
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#range-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      Range Loops
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ternary-operator" class="md-nav__link">
-    <span class="md-ellipsis">
-      Ternary Operator
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#switch-statements" class="md-nav__link">
-    <span class="md-ellipsis">
-      Switch Statements
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#best-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      Best Practices
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      Implementation Status
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -864,10 +618,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../error_handling/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Error Handling
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -878,6 +654,53 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#error-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Handling
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -961,188 +784,20 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#introduction-to-control-flow" class="md-nav__link">
+  <a href="#error-types" class="md-nav__link">
     <span class="md-ellipsis">
-      Introduction to Control Flow
+      Error Types
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#conditional-statements" class="md-nav__link">
+  <a href="#error-handling" class="md-nav__link">
     <span class="md-ellipsis">
-      Conditional Statements
+      Error Handling
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Conditional Statements">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#basic-if-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      Basic If Statement
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#if-else-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      If-Else Statement
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#if-else-if-else-chains" class="md-nav__link">
-    <span class="md-ellipsis">
-      If-Else If-Else Chains
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nested-conditional-statements" class="md-nav__link">
-    <span class="md-ellipsis">
-      Nested Conditional Statements
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#boolean-expressions-in-conditions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Boolean Expressions in Conditions
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      Loops
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Loops">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#while-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      While Loops
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="While Loops">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#infinite-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      Infinite Loops
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#loop-control-statements" class="md-nav__link">
-    <span class="md-ellipsis">
-      Loop Control Statements
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#combining-loops-and-conditionals" class="md-nav__link">
-    <span class="md-ellipsis">
-      Combining Loops and Conditionals
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#future-control-flow-features" class="md-nav__link">
-    <span class="md-ellipsis">
-      Future Control Flow Features
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Future Control Flow Features">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#c-style-for-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      C-style For Loops
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-in-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      For-In Loops
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#range-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      Range Loops
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ternary-operator" class="md-nav__link">
-    <span class="md-ellipsis">
-      Ternary Operator
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#switch-statements" class="md-nav__link">
-    <span class="md-ellipsis">
-      Switch Statements
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1150,15 +805,6 @@
   <a href="#best-practices" class="md-nav__link">
     <span class="md-ellipsis">
       Best Practices
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      Implementation Status
     </span>
   </a>
   
@@ -1180,7 +826,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/reference/control_flow.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/reference/error_handling.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1188,240 +834,38 @@
   
 
 
-<h1 id="control-flow">Control Flow<a class="headerlink" href="#control-flow" title="Permanent link">&para;</a></h1>
-<blockquote>
-<p>Only <code>if</code>/<code>else</code> chains and <code>while</code> loops are currently supported. C-style <code>for</code> loops, for-in loops, range loops, and the ternary operator are not supported by the compiler.</p>
-</blockquote>
-<h2 id="introduction-to-control-flow">Introduction to Control Flow<a class="headerlink" href="#introduction-to-control-flow" title="Permanent link">&para;</a></h2>
-<p>Control flow structures determine the order in which statements are executed in a program. They allow for conditional execution (if/else) and repeated execution (loops) of code blocks. In firescript, control flow constructs use curly braces <code>{}</code> to define code blocks.</p>
-<h2 id="conditional-statements">Conditional Statements<a class="headerlink" href="#conditional-statements" title="Permanent link">&para;</a></h2>
-<p>Conditional statements execute different blocks of code depending on whether a specified condition evaluates to <code>true</code> or <code>false</code>. firescript supports <code>if</code>, <code>else if</code>, and <code>else</code> statements.</p>
-<h3 id="basic-if-statement">Basic If Statement<a class="headerlink" href="#basic-if-statement" title="Permanent link">&para;</a></h3>
-<p>The simplest form executes a block of code only if the condition is true:</p>
-<pre><code class="language-firescript">if (condition) {
-    // Code executed only if condition is true
-}
-</code></pre>
-<p>Example:</p>
-<pre><code class="language-firescript">int age = 18;
-if (age &gt;= 18) {
-    print(&quot;You are eligible to vote&quot;);
-}
-</code></pre>
-<h3 id="if-else-statement">If-Else Statement<a class="headerlink" href="#if-else-statement" title="Permanent link">&para;</a></h3>
-<p>You can specify an alternative block of code to execute when the condition is false:</p>
-<pre><code class="language-firescript">if (condition) {
-    // Code executed if condition is true
-} else {
-    // Code executed if condition is false
-}
-</code></pre>
-<p>Example:</p>
-<pre><code class="language-firescript">int score = 65;
-if (score &gt;= 70) {
-    print(&quot;Pass&quot;);
-} else {
-    print(&quot;Fail&quot;);
-}
-</code></pre>
-<h3 id="if-else-if-else-chains">If-Else If-Else Chains<a class="headerlink" href="#if-else-if-else-chains" title="Permanent link">&para;</a></h3>
-<p>For multiple conditions, you can use <code>else if</code>:</p>
-<pre><code class="language-firescript">if (condition1) {
-    // Executed if condition1 is true
-} else if (condition2) {
-    // Executed if condition1 is false and condition2 is true
-} else if (condition3) {
-    // Executed if condition1 and condition2 are false and condition3 is true
-} else {
-    // Executed if all conditions are false
-}
-</code></pre>
-<p>Example:</p>
-<pre><code class="language-firescript">int grade = 85;
-
-if (grade &gt;= 90) {
-    print(&quot;A&quot;);
-} else if (grade &gt;= 80) {
-    print(&quot;B&quot;);
-} else if (grade &gt;= 70) {
-    print(&quot;C&quot;);
-} else if (grade &gt;= 60) {
-    print(&quot;D&quot;);
-} else {
-    print(&quot;F&quot;);
-}
-</code></pre>
-<h3 id="nested-conditional-statements">Nested Conditional Statements<a class="headerlink" href="#nested-conditional-statements" title="Permanent link">&para;</a></h3>
-<p>Conditional statements can be nested within other conditional statements:</p>
-<pre><code class="language-firescript">bool hasDiscount = true;
-int totalAmount = 120;
-
-if (totalAmount &gt; 100) {
-    if (hasDiscount) {
-        print(&quot;You qualify for a 15% discount&quot;);
-    } else {
-        print(&quot;You qualify for a 10% discount&quot;);
-    }
-} else {
-    print(&quot;No discount available&quot;);
-}
-</code></pre>
-<h2 id="boolean-expressions-in-conditions">Boolean Expressions in Conditions<a class="headerlink" href="#boolean-expressions-in-conditions" title="Permanent link">&para;</a></h2>
-<p>Conditions can use various boolean operators:</p>
+<h1 id="runtime-error-handling">Runtime Error Handling<a class="headerlink" href="#runtime-error-handling" title="Permanent link">&para;</a></h1>
+<p>firescript is designed in a way that minimizes runtime errors through static type checking and compile-time validation. However, some errors may still occur during execution, such as division by zero or out-of-bounds array access.</p>
+<h2 id="error-types">Error Types<a class="headerlink" href="#error-types" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Syntax Errors</strong>: Caught at compile-time, these errors occur when the code is not well-formed.</li>
+<li><strong>Type Errors</strong>: Also caught at compile-time, these occur when operations are applied to incompatible types.</li>
+<li><strong>Runtime Errors</strong>: These occur during execution and can include:</li>
+<li>Division by zero</li>
+<li>Null reference access</li>
+<li>Array index out of bounds</li>
+</ol>
+<h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
+<p>firescript provides a way to handle runtime errors gracefully:</p>
 <ul>
-<li>Comparison operators: <code>==</code>, <code>!=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code></li>
-<li>Logical operators: <code>&amp;&amp;</code> (AND), <code>||</code> (OR), <code>!</code> (NOT)</li>
+<li><strong>Try/Catch Blocks</strong>: You can wrap code that may throw an error in a try block, and handle the error in a catch block.</li>
 </ul>
-<p>Example:</p>
-<pre><code class="language-firescript">int age = 25;
-bool hasLicense = true;
-
-if (age &gt;= 18 &amp;&amp; hasLicense) {
-    print(&quot;You can drive&quot;);
-}
-
-if (!(age &lt; 18 || !hasLicense)) {
-    print(&quot;Also, you can drive&quot;); // Equivalent to the above
+<pre><code class="language-firescript">try {
+    int result = 10 / 0;
+} catch (DivisionByZeroError e) {
+    print(&quot;Error: &quot; + e.message);
 }
 </code></pre>
-<h2 id="loops">Loops<a class="headerlink" href="#loops" title="Permanent link">&para;</a></h2>
-<p>Loops allow for repeated execution of a block of code. firescript supports <code>while</code> loops and plans to support various forms of <code>for</code> loops in the future.</p>
-<h3 id="while-loops">While Loops<a class="headerlink" href="#while-loops" title="Permanent link">&para;</a></h3>
-<p>A <code>while</code> loop repeatedly executes a block of code as long as a specified condition is <code>true</code>:</p>
-<pre><code class="language-firescript">while (condition) {
-    // Loop body: code executed repeatedly as long as condition is true
-}
-</code></pre>
-<p>Example:</p>
-<pre><code class="language-firescript">int count = 0;
-while (count &lt; 5) {
-    print(count);
-    count = count + 1;
-}
-// Outputs: 0, 1, 2, 3, 4
-</code></pre>
-<h4 id="infinite-loops">Infinite Loops<a class="headerlink" href="#infinite-loops" title="Permanent link">&para;</a></h4>
-<p>A <code>while</code> loop with a condition that is always <code>true</code> creates an infinite loop. These should be used with caution and should include a break statement:</p>
-<pre><code class="language-firescript">while (true) {
-    // This will run forever unless broken
-    if (someCondition) {
-        break; // Exit the loop
-    }
-}
-</code></pre>
-<h4 id="loop-control-statements">Loop Control Statements<a class="headerlink" href="#loop-control-statements" title="Permanent link">&para;</a></h4>
-<p>The following statements can control loop execution:</p>
 <ul>
-<li><code>break</code> - Immediately exits the loop</li>
-<li><code>continue</code> - Skips the rest of the current iteration and starts the next one</li>
+<li><strong>Assertions</strong>: Use the <code>assert</code> function to check for conditions that must be true. If the condition is false, an error is raised.</li>
 </ul>
-<p>Example:</p>
-<pre><code class="language-firescript">int i = 0;
-while (i &lt; 10) {
-    i = i + 1;
-
-    if (i == 3) {
-        continue; // Skip the rest of this iteration
-    }
-
-    if (i == 8) {
-        break; // Exit the loop
-    }
-
-    print(i);
-}
-// Outputs: 1, 2, 4, 5, 6, 7
-</code></pre>
-<h3 id="combining-loops-and-conditionals">Combining Loops and Conditionals<a class="headerlink" href="#combining-loops-and-conditionals" title="Permanent link">&para;</a></h3>
-<p>Loops and conditional statements can be combined to create powerful control flows:</p>
-<pre><code class="language-firescript">int[] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-int sum = 0;
-int i = 0;
-
-while (i &lt; numbers.length) {
-    if (numbers[i] % 2 == 0) {
-        sum = sum + numbers[i]; // Add only even numbers
-    }
-    i = i + 1;
-}
-
-print(sum); // Outputs: 30 (2 + 4 + 6 + 8 + 10)
-</code></pre>
-<h2 id="future-control-flow-features">Future Control Flow Features<a class="headerlink" href="#future-control-flow-features" title="Permanent link">&para;</a></h2>
-<p>The following control flow features are planned but not yet implemented in the current compiler:</p>
-<h3 id="c-style-for-loops">C-style For Loops<a class="headerlink" href="#c-style-for-loops" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">// Future syntax
-for (int i = 0; i &lt; 5; i++) {
-    print(i);
-}
-</code></pre>
-<h3 id="for-in-loops">For-In Loops<a class="headerlink" href="#for-in-loops" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">// Future syntax
-string[] fruits = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;];
-for (string fruit : fruits) {
-    print(fruit);
-}
-</code></pre>
-<h3 id="range-loops">Range Loops<a class="headerlink" href="#range-loops" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">// Future syntax
-for (int i : range(5)) {
-    print(i); // 0, 1, 2, 3, 4
-}
-
-for (int i : range(2, 8)) {
-    print(i); // 2, 3, 4, 5, 6, 7
-}
-
-for (int i : range(1, 10, 2)) {
-    print(i); // 1, 3, 5, 7, 9
-}
-</code></pre>
-<h3 id="ternary-operator">Ternary Operator<a class="headerlink" href="#ternary-operator" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">// Future syntax
-int max = ternary a &gt; b then a else b;
-</code></pre>
-<h3 id="switch-statements">Switch Statements<a class="headerlink" href="#switch-statements" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">// Future syntax
-switch (value) {
-    case 1:
-        // code for case 1
-        break;
-    case 2:
-        // code for case 2
-        break;
-    default:
-        // default code
-}
+<pre><code class="language-firescript">assert(x &gt; 0, &quot;x must be positive&quot;);
 </code></pre>
 <h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
-<ol>
-<li>
-<p><strong>Keep conditions simple</strong>: Split complex conditions into multiple variables for better readability.</p>
-</li>
-<li>
-<p><strong>Avoid deep nesting</strong>: Too many nested if/else statements make code hard to follow. Consider refactoring deeply nested code.</p>
-</li>
-<li>
-<p><strong>Be careful with while loops</strong>: Always ensure that the condition will eventually become false to avoid infinite loops.</p>
-</li>
-<li>
-<p><strong>Use appropriate loop types</strong>: Once implemented, choose the right loop for the task: <code>while</code> for unknown iteration counts, <code>for</code> for counting, and <code>for-in</code> for collections.</p>
-</li>
-</ol>
-<h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
-<p>The current firescript compiler supports:</p>
 <ul>
-<li>✅ <code>if</code>/<code>else</code>/<code>else if</code> conditional statements</li>
-<li>✅ <code>while</code> loops</li>
-<li>✅ <code>break</code> and <code>continue</code> statements</li>
-</ul>
-<p>Not yet implemented:</p>
-<ul>
-<li>❌ C-style <code>for</code> loops</li>
-<li>❌ <code>for-in</code> loops</li>
-<li>❌ Range-based loops</li>
-<li>❌ Ternary operator</li>
-<li>❌ <code>switch</code>/<code>case</code> statements</li>
+<li>Always validate user input to prevent errors.</li>
+<li>Use try/catch blocks to handle potential runtime errors.</li>
+<li>Write unit tests to catch errors early in the development process.</li>
 </ul>
 
 
@@ -1452,7 +896,7 @@ switch (value) {
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../arrays/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Arrays">
+          <a href="../memory_management/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Memory Management">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1462,20 +906,20 @@ switch (value) {
                 Previous
               </span>
               <div class="md-ellipsis">
-                Arrays
+                Memory Management
               </div>
             </div>
           </a>
         
         
           
-          <a href="../functions/" class="md-footer__link md-footer__link--next" aria-label="Next: Functions &amp; Methods">
+          <a href="../../glossary/" class="md-footer__link md-footer__link--next" aria-label="Next: Glossary">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Functions & Methods
+                Glossary
               </div>
             </div>
             <div class="md-footer__button md-icon">

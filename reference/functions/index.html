@@ -592,6 +592,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -782,6 +791,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Error Handling
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -891,6 +923,15 @@
   <a href="#type-introspection" class="md-nav__link">
     <span class="md-ellipsis">
       Type Introspection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing
     </span>
   </a>
   
@@ -1098,6 +1139,14 @@ string typeOfText = typeof(&quot;hello&quot;);      // &quot;string&quot;
 string typeOfArray = typeof([1, 2, 3]);   // &quot;int[]&quot;
 </code></pre>
 <p>This can be useful for debugging and for implementing type-dependent behavior.</p>
+<h3 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>assert(condition, message)</code></strong> – Asserts that a condition is true, otherwise raises an error with the given message</li>
+</ul>
+<pre><code class="language-firescript">int x = 5;
+assert(x &gt; 0, &quot;x must be positive&quot;);  // Passes
+assert(x &lt; 0, &quot;x must be negative&quot;);  // Fails with error: &quot;Assertion failed: x must be negative&quot;
+</code></pre>
 <h2 id="using-built-in-functions">Using Built-in Functions<a class="headerlink" href="#using-built-in-functions" title="Permanent link">&para;</a></h2>
 <p>Functions are called by specifying the function name followed by parentheses containing the arguments:</p>
 <pre><code class="language-firescript">// Converting user input to a number
