@@ -103,6 +103,16 @@ string typeOfArray = typeof([1, 2, 3]);   // "int[]"
 
   This can be useful for debugging and for implementing type-dependent behavior.
 
+### Testing
+
+- **`assert(condition, message)`** – Asserts that a condition is true, otherwise raises an error with the given message
+
+```firescript
+int x = 5;
+assert(x > 0, "x must be positive");  // Passes
+assert(x < 0, "x must be negative");  // Fails with error: "Assertion failed: x must be negative"
+```
+
 ## Using Built-in Functions
 
 Functions are called by specifying the function name followed by parentheses containing the arguments:
