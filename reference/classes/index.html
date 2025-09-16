@@ -750,6 +750,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#copyable-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Copyable Classes
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1123,6 +1132,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#copyable-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Copyable Classes
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1482,6 +1500,23 @@ class Cat from Animal {
     // Must implement abstract methods
     string makeSound(&amp;this) { // non-mutating
         return &quot;Meow&quot;;
+    }
+}
+</code></pre>
+<h3 id="copyable-classes">Copyable Classes<a class="headerlink" href="#copyable-classes" title="Permanent link">&para;</a></h3>
+<p>A class may be annotated <code>copyable</code> to become Copyable if it satisfies:
+1. All fields are Copyable.
+2. No <code>drop</code> defined.
+3. Fixed-size representation.
+4. No disallowed interior references.</p>
+<pre><code class="language-firescript">// Future syntax
+copyable class Point {
+    float32 x;
+    float32 y;
+
+    Point(this, float32 x, float32 y) {
+        this.x = x;
+        this.y = y;
     }
 }
 </code></pre>
