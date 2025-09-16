@@ -19,7 +19,7 @@ firescript provides a way to handle runtime errors gracefully:
 
 ```firescript
 try {
-    int result = 10 / 0;
+    int8 result = 10 / 0;
 } catch (DivisionByZeroError e) {
     print("Error: " + e.message);
 }

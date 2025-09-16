@@ -15,8 +15,8 @@ This glossary contains definitions of terms commonly used in the firescript docu
 
 ### Expanded Definitions
 
-- **Trivially Copyable (TC):** Includes `int`, `float`, `double`, `bool`, `char` and other fixed-size scalars, as well as fixed-size arrays. Copies are bitwise; no destructor runs.
-- **Owned / NTC:** Includes `string`, arrays, user-defined objects, closures, or any type that requires a destructor. Ownership is unique unless an explicit sharing container (future `Rc`, `Arc`) is used.
+- **Trivially Copyable (TC):** Includes `intN`, `floatN`, `bool`, `char`, `string`, arrays, and other fixed-size scalars. Copies are bitwise; no destructor runs.
+- **Owned / NTC:** Includes user-defined objects, closures, or any type that requires a destructor. Ownership is unique unless an explicit sharing container (future `Rc`, `Arc`) is used.
 - **Move:** Occurs on assignment, passing to a parameter of owned type, or returning a value. After a move, the source binding cannot be used (use-after-move error).
 - **Borrow:** Lightweight, read-only access. Cannot be stored in owned fields or escape its originating scope/call. Does not incur runtime overhead.
 - **Clone:** Creates an independent owned value. Semantics (deep vs copy-on-write) determined by the type implementation but always preserves logical independence.

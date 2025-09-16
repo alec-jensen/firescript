@@ -31,28 +31,25 @@ print("Hello, " + name);
 
 These functions convert values from one type to another:
 
-- **`toInt(value)`** – Converts a value to an integer
+- **`toIntN(value)`** – Converts a value to an N-bit integer (e.g., `toInt8`, `toInt16`, `toInt32`, `toInt64`)
 
 ```firescript
 string numberString = "123";
-int number = toInt(numberString);  // 123
+int8 number = toInt8(numberString);  // 123
 
-float floatVal = 45.7;
-int intVal = toInt(floatVal);      // 45 (truncated)
-
-float floatCount = toFloat(count);  // 5.0
-string pi = "3.14159";
-float piValue = toFloat(pi);        // 3.14159
+float32 floatVal = 45.7;
+int8 intVal = toInt8(floatVal);      // 45 (truncated)
 ```
 
-- **`toDouble(value)`** – Converts a value to a double (64-bit floating point)
+- **`toFloatN(value)`** – Converts a value to an N-bit floating point number (e.g., `toFloat32`, `toFloat64`)
 
 ```firescript
-int bigNumber = 1000000;
-double doubleBig = toDouble(bigNumber);  // 1000000.0 (with double precision)
+int32 bigNumber = 1000000;
+float64 doubleBig = toFloat64(bigNumber);  // 1000000.0 (with 64-bit precision)
 
 string sciNotation = "6.022e23";
-double avogadro = toDouble(sciNotation);  // 6.022e23
+float64 avogadro = toFloat64(sciNotation);  // 6.022e23
+```
 
 - **`toBool(value)`** – Converts a value to a boolean
 

@@ -23,7 +23,7 @@ if (condition) {
 Example:
 
 ```firescript
-int age = 18;
+int8 age = 18;
 if (age >= 18) {
     print("You are eligible to vote");
 }
@@ -44,7 +44,7 @@ if (condition) {
 Example:
 
 ```firescript
-int score = 65;
+int8 score = 65;
 if (score >= 70) {
     print("Pass");
 } else {
@@ -71,7 +71,7 @@ if (condition1) {
 Example:
 
 ```firescript
-int grade = 85;
+int8 grade = 85;
 
 if (grade >= 90) {
     print("A");
@@ -92,7 +92,7 @@ Conditional statements can be nested within other conditional statements:
 
 ```firescript
 bool hasDiscount = true;
-int totalAmount = 120;
+int8 totalAmount = 120;
 
 if (totalAmount > 100) {
     if (hasDiscount) {
@@ -115,7 +115,7 @@ Conditions can use various boolean operators:
 Example:
 
 ```firescript
-int age = 25;
+int8 age = 25;
 bool hasLicense = true;
 
 if (age >= 18 && hasLicense) {
@@ -144,7 +144,7 @@ while (condition) {
 Example:
 
 ```firescript
-int count = 0;
+uint8 count = 0;
 while (count < 5) {
     print(count);
     count = count + 1;
@@ -175,7 +175,7 @@ The following statements can control loop execution:
 Example:
 
 ```firescript
-int i = 0;
+uint8 i = 0;
 while (i < 10) {
     i = i + 1;
     
@@ -197,9 +197,9 @@ while (i < 10) {
 Loops and conditional statements can be combined to create powerful control flows:
 
 ```firescript
-int[] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-int sum = 0;
-int i = 0;
+int8[] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+int8 sum = 0;
+uint8 i = 0;
 
 while (i < numbers.length) {
     if (numbers[i] % 2 == 0) {
@@ -219,7 +219,7 @@ The following control flow features are planned but not yet implemented in the c
 
 ```firescript
 // Future syntax
-for (int i = 0; i < 5; i++) {
+for (uint8 i = 0; i < 5; i++) {
     print(i);
 }
 ```
@@ -238,15 +238,15 @@ for (string fruit : fruits) {
 
 ```firescript
 // Future syntax
-for (int i : range(5)) {
+for (uint8 i : range(5)) {
     print(i); // 0, 1, 2, 3, 4
 }
 
-for (int i : range(2, 8)) {
+for (uint8 i : range(2, 8)) {
     print(i); // 2, 3, 4, 5, 6, 7
 }
 
-for (int i : range(1, 10, 2)) {
+for (uint8 i : range(1, 10, 2)) {
     print(i); // 1, 3, 5, 7, 9
 }
 ```
@@ -255,22 +255,29 @@ for (int i : range(1, 10, 2)) {
 
 ```firescript
 // Future syntax
-int max = ternary a > b then a else b;
+int8 max = ternary a > b then a else b;
 ```
 
 ### Switch Statements
 
+Switch statements provide a way to execute different parts of code based on the value of a variable:
+
 ```firescript
 // Future syntax
 switch (value) {
-    case 1:
+    case (1) {
         // code for case 1
-        break;
-    case 2:
+    }
+    case (2) {
         // code for case 2
-        break;
-    default:
+    }
+    case (value > 2 && value < 5) {
+        // code for range case
+    }
+    default {
         // default code
+        // executed if no cases match
+    }
 }
 ```
 

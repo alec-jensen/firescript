@@ -18,7 +18,7 @@ The firescript compiler is under active development. Current status:
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Primitive (TC) Types | ✅ Complete | `int`, `float`, `double`, `bool`, `string`, `char` |
+| Primitive (TC) Types | ⚠️ Partial | `bool`, `string`, `char` implemented; `intN`, `floatN` planned |
 | Arrays | ⚠️ Partial | Basic operations work; slicing not implemented |
 | Control Flow | ⚠️ Partial | `if/else` and `while` loops work; `for` loops planned |
 | Functions | ⚠️ Partial | Functions can be defined and used but lack some planned features |
@@ -46,16 +46,16 @@ For more detailed information, each section of this reference covers specific as
 
 ```firescript
 // Calculate fibonacci numbers
-int i = 0;
-int j = 1;
-int count = 10;
+int8 i = 0;
+int8 j = 1;
+int8 count = 10;
 
 print("Fibonacci Sequence:");
 print(i);
 print(j);
 
 while (count > 0) {
-    int next = i + j;
+    int8 next = i + j;
     print(next);
     i = j;
     j = next;

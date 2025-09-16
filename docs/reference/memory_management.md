@@ -34,8 +34,8 @@ Core terms (Trivially Copyable, Owned / Non-Trivially Copyable, Move, Borrow, Cl
 
 ### 1. Value Categories
 
-- Trivially Copyable (TC): Fixed-size scalars with no destructor (e.g., `int`, `float`, `double`, `bool`, `char`, and fixed-size arrays). Copy is bitwise; there is no drop. Borrowing a TC type is disallowed (`&int` is invalid).
-- Owned / Non-Trivially Copyable (NTC): Heap-backed or resource-managing values (e.g., `string`, arrays, user-defined objects, closures). Ownership is unique; assignment/pass/return *moves* ownership. Destruction runs at drop points.
+- Trivially Copyable (TC): Fixed-size scalars with no destructor (e.g., `intN`, `floatN`, `bool`, `char`, `string`, and fixed-size arrays). Copy is bitwise; there is no drop. Borrowing a TC type is disallowed (`&int` is invalid).
+- Owned / Non-Trivially Copyable (NTC): Heap-backed or resource-managing values (e.g., user-defined objects, closures). Ownership is unique; assignment/pass/return *moves* ownership. Destruction runs at drop points.
 
 Cloning NTC values is explicit via `.clone()` or `clone(x)`.
 
@@ -59,7 +59,7 @@ Parameters may be:
 - `&T`: (T is Owned) borrowed, read-only; callee cannot retain or return it in a longer-lived form.
 
 For TC types:
-- There is only pass-by-value (copy). No borrow syntax is permitted. `int`, `bool`, etc. are always copied; moves do not invalidate the source.
+- There is only pass-by-value (copy). No borrow syntax is permitted. `intN`, `bool`, etc. are always copied; moves do not invalidate the source.
 
 Returns:
 - Returning `T` (Owned) transfers ownership to the caller.
@@ -159,8 +159,8 @@ Example:
 
 ```firescript
 copyable class Vec2 {
-    float x;
-    float y;
+    float32 x; // float32 is TC
+    float32 y;
 }
 ```
 
@@ -173,12 +173,12 @@ The following examples illustrate planned semantics. Some features (e.g., full l
 ### Example: Move vs Copy (Takeaway: Owned moves; TC copies)
 
 ```firescript
-string a = "hello";
-string b = a;       // move: a invalid
-// print(a);        // error: moved value
+Object o1 = Object(); // owned
+Object o2 = o1;      // move; o1 invalid afterward
+// print(o1);        // error: moved value
 
-int x = 42;
-int y = x;          // copy (TC); x still valid
+int8 x = 42;
+int8 y = x;          // copy (TC); x still valid
 print(x);           // OK
 ```
 
@@ -199,20 +199,21 @@ int length(&string s) {
 }
 
 string name = "firescript";
-int n = length(name); // borrow; name still valid
+int8 n = length(name); // borrow; name still valid
 ```
 
 ### Example: Invalid Borrow of TC (Compile Error)
 
 ```firescript
-int id = 10;
+int8 id = 10;
 printId(&id);   // ERROR: cannot borrow TC type 'int'; remove '&'
 
 // Correct version:
-void printId(int v) {
+void printId(int8 v) {
     print(v);
 }
 printId(id);    // copies 'id'
+print(id);      // still valid
 ```
 
 ### Example: Owned Parameter Consumed

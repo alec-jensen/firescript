@@ -43,7 +43,7 @@ For the latest updates and changes to the firescript language, see the [changelo
 
 firescript is under active development. Key limitations in the current compiler version:
 
-* ✅ Primitive (TC) types (`int`, `float`, `double`, `bool`, `string`, `char`) are fully supported.
+* ❌ Primitive (TC) types (`bool`, `string`, `char`) are fully supported. `intN` and `floatN` types are planned.
 * ✅ Arrays support basic operations: `append`, `insert`, `pop`, `clear`, and `length`.
 * ✅ Static type checking for expressions and assignments.
 * ✅ Built-in functions: `print`, `input`, and type conversions.

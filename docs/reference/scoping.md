@@ -239,7 +239,7 @@ firescript's scoping mechanism is implemented as a stack of symbol tables. When 
 
 ```firescript
 {
-    int value = 10;
+    int8 value = 10;
 }
 print(value)  // ERROR: 'value' is not defined in this scope
 ```
@@ -247,16 +247,16 @@ print(value)  // ERROR: 'value' is not defined in this scope
 ### 2. Redeclaring Variables in the Same Scope
 
 ```firescript
-int count = 5;
-int count = 10;  // ERROR: 'count' is already defined
+int8 count = 5;
+int8 count = 10;  // ERROR: 'count' is already defined
 ```
 
 ### 3. Attempting Variable Shadowing
 
 ```firescript
-int value = 10;
+int8 value = 10;
 if (true) {
-    int value = 20;  // ERROR: Shadowing is not allowed in firescript
+    int8 value = 20;  // ERROR: Shadowing is not allowed in firescript
 }
 ```
 
@@ -264,7 +264,7 @@ if (true) {
 
 ```firescript
 print(result);  // ERROR: Cannot use 'result' before declaration
-int result = 42;
+int8 result = 42;
 ```
 
 ## Implementation Status

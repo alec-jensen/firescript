@@ -6,9 +6,18 @@
 
 firescript provides several fundamental data types. These are all TC types:
 
-* **`int`**: Represents whole numbers (integers). Example: `int age = 30;`
-* **`float`**: Represents single-precision floating-point numbers. Example: `float price = 19.95;`
-* **`double`**: Represents double-precision floating-point numbers, offering higher precision than `float`. Example: `double pi = 3.1415926535;`
+* Numeric Types:
+  * **`int8`**: 8-bit signed integer
+  * **`int16`**: 16-bit signed integer
+  * **`int32`**: 32-bit signed integer
+  * **`int64`**: 64-bit signed integer
+  * **`uint8`**: 8-bit unsigned integer
+  * **`uint16`**: 16-bit unsigned integer
+  * **`uint32`**: 32-bit unsigned integer
+  * **`uint64`**: 64-bit unsigned integer
+  * **`float32`**: 32-bit floating point number
+  * **`float64`**: 64-bit floating point number
+  * **`float128`**: 128-bit floating point number
 * **`bool`**: Represents boolean values, either `true` or `false`. Example: `bool isActive = true;`
 * **`string`**: Represents sequences of characters. Example: `string message = "Hello, World!";`
 * **`char`**: Represents a single character. (Note: Currently handled similarly to strings in some contexts, formal `char` type might be refined). Example: `char initial = "A";`
@@ -16,14 +25,14 @@ firescript provides several fundamental data types. These are all TC types:
 
 ## Type Semantics
 
-### Integer Type (`int`)
+### Integer Type (`intN` and `uintN`)
 
-The `int` type in firescript represents integers with arbitrary precision. There is no explicit size limit as in languages like C/C++, making it similar to Python integers that can grow as needed.
+The `intN` types in firescript represent N-bit signed integers, while the `uintN` types represent N-bit unsigned integers.
 
 ```firescript
-int small = 42;
-int large = 9223372036854775807;  // Large integers are supported
-int calculation = (small + large) * 2;  // Arithmetic operations
+int8 small = 42;
+int64 large = 9223372036854775807;  // Large integers are supported
+int64 calculation = (small + large) * 2;  // Arithmetic operations
 ```
 
 Integers support the following operations:
@@ -32,23 +41,109 @@ Integers support the following operations:
 * Comparison: `==`, `!=`, `<`, `>`, `<=`, `>=`
 * Bit manipulation (planned but not yet implemented): `&`, `|`, `^`, `~`, `<<`, `>>`
 
-### Floating Point Types (`float` and `double`)
+#### Integer Literals
 
-The `float` type represents 32-bit floating-point numbers, while `double` represents 64-bit floating-point numbers with greater precision.
+Integer literals can be made more readable using underscores:
 
 ```firescript
-float simpleDecimal = 3.14;
-double highPrecision = 3.141592653589793;
+int32 million = 1_000_000;  // One million
+int64 bigNumber = 9_223_372_036_854_775_807;  // Large integer
+```
 
-// Scientific notation
-double avogadro = 6.022e23;
-float tiny = 1.6e-19;
+Integer literals can be specified in decimal, hexadecimal, binary, or octal formats:
+
+```firescript
+int8 decimal = 42;        // Decimal
+int8 hex = 0x2A;          // Hexadecimal
+int8 binary = 0b00101010; // Binary
+int8 octal = 0o52;        // Octal
+```
+
+Integer literals by default will be inferred as `int32` unless specified otherwise.
+To specify a different integer type, you can use a suffix:
+
+```firescript
+int8 small = 42i8;
+int16 medium = 30000i16;
+int64 large = 9223372036854775807i64;
+uint8 usmall = 255u8;
+uint16 umedium = 60000u16;
+uint64 ularge = 18446744073709551615u64;
+```
+
+You can define a base and a suffix together:
+
+```firescript
+int8 hexSmall = 0x2Ai8;
+uint16 binMedium = 0b111010100110u16;
+```
+
+#### Integer Overflow and Underflow Behavior
+
+For all fixed-size integer types (`intN` and `uintN`), arithmetic operations that exceed the representable range will throw an error at runtime. This is to prevent silent overflow/underflow issues.
+
+```firescript
+int8 max = 127i8;
+int8 overflow = max + 1i8;  // Runtime error: Integer overflow
+```
+
+Overflows that can be detected at compile-time (e.g., constant expressions) will result in a compile-time error.
+
+```firescript
+int8 compileTimeOverflow = 128i8;  // Compile-time error: Integer overflow
+```
+
+### Floating Point Types (`floatN`)
+
+The `floatN` types represent N-bit floating point numbers.
+
+```firescript
+float32 simpleDecimal = 3.14;
+float64 highPrecision = 3.141592653589793;
 ```
 
 Floating point numbers support:
 
 * Arithmetic: `+`, `-`, `*`, `/`, `**` (power)
 * Comparison: `==`, `!=`, `<`, `>`, `<=`, `>=`
+
+#### Floating Point Literals
+
+Floating point literals can be specified in decimal or scientific notation:
+
+```firescript
+float32 decimal = 3.14f32;        // Decimal
+float64 scientific = 2.71828e0f64; // Scientific notation
+```
+
+Floating point literals by default will be inferred as `float32` unless specified otherwise.
+To specify a different floating point type, you can use a suffix:
+
+```firescript
+float32 f32Value = 3.14f32;
+float64 f64Value = 3.14f64;
+float128 f128Value = 3.14f128;
+```
+
+#### Special Floating Point Values
+
+Floating point types support special values such as `NaN` (Not a Number), `Infinity`, and `-Infinity`:
+
+```firescript
+float32 notANumber = 0.0f32 / 0.0f32;  // NaN
+float64 positiveInfinity = 1.0f64 / 0.0f64;  // Infinity
+float64 negativeInfinity = -1.0f64 / 0.0f64; // -Infinity
+```
+
+#### Floating Point Overflow and Underflow Behavior
+
+Floating point operations that exceed the representable range will result in `Infinity` or `-Infinity`, while operations resulting in values too close to zero will result in `0.0`. Operations resulting in undefined values will yield `NaN`.
+
+```firescript
+float32 large = 3.4e38f32 * 10.0f32;  // Results in Infinity
+float32 small = 1.0e-38f32 / 10.0f32; // Results in 0.0
+float32 undefined = 0.0f32 / 0.0f32;      // Results in NaN
+```
 
 ### Boolean Type (`bool`)
 
@@ -100,29 +195,29 @@ char newline = "\n";  // Special character
 
 ### Arrays
 
-Arrays are ordered collections of elements of the same type.
+Arrays are fixed-size ordered collections of elements of the same type.
 
 #### Declaration and Initialization
 
 ```firescript
 // With initial values
-int[5] numbers = [1, 2, 3, 4, 5];
+int8[5] numbers = [1, 2, 3, 4, 5];
 string[3] fruits = ["apple", "banana", "cherry"];
 ```
 
 #### Array Operations
 
 ```firescript
-int[3] scores = [85, 92, 78];
+int8[3] scores = [85, 92, 78];
 
 // Accessing elements (zero-based indexing)
-int firstScore = scores[0];  // 85
+int8 firstScore = scores[0];  // 85
 
 // Modifying elements
 scores[1] = 95;  // Array becomes [85, 95, 78]
 
 // Array properties
-int count = scores.length;  // 3
+int8 count = scores.length;  // 3
 ```
 
 ## Nullability
@@ -165,9 +260,9 @@ firescript has strict typing rules but provides explicit conversion functions fo
 ```firescript
 // String to numeric conversions
 string numStr = "42";
-int num = toInt(numStr);           // 42
-float floatVal = toFloat("3.14");  // 3.14
-double doubleVal = toDouble("2.71828");  // 2.71828
+int8 num = toInt(numStr);           // 42
+float32 floatVal = toFloat("3.14");  // 3.14
+float64 doubleVal = toDouble("2.71828");  // 2.71828
 
 // Numeric to string conversions
 string strFromInt = toString(42);      // "42"
@@ -186,16 +281,16 @@ char first = toChar("Hello");  // "H" - first character of string
 firescript generally does not perform implicit type conversions, with some exceptions:
 
 1. In binary numeric operations (`+`, `-`, `*`, `/`, etc.) between different numeric types:
-   * If one operand is `double`, the result is `double`
-   * If one operand is `float` and the other is `int`, the result is `float`
+   * If one operand is `floatN`, the result is `floatN`
+   * If one operand is `floatN` and the other is `intN`, the result is `floatN`
 
 ```firescript
-int intVal = 5;
-float floatVal = 2.5;
-double doubleVal = 3.14;
+int8 intVal = 5;
+float32 floatVal = 2.5;
+float32 doubleVal = 3.14;
 
-float result1 = intVal + floatVal;    // Result is float 7.5
-double result2 = floatVal * doubleVal;  // Result is double 7.85
+float32 result1 = intVal + floatVal;    // Result is 7.5f32
+float32 result2 = floatVal * doubleVal;  // Result is 7.85f32
 ```
 
 2. String concatenation with `+` will convert non-string values to strings:
@@ -211,11 +306,11 @@ The firescript parser includes a type-checking phase that runs after the initial
 
 ### Static Type Checking
 
-1. **Variable Declarations**: When you declare a variable (`int x = 5;`), the type checker verifies that the type of the initializer (`5`, which is `int`) matches the declared type (`int`).
+1. **Variable Declarations**: When you declare a variable (`int8 x = 5;`), the type checker verifies that the type of the initializer (`5`, which is `int8`) matches the declared type (`int8`).
 
 2. **Assignments**: When assigning a value to an existing variable (`x = 10;`), the checker ensures the assigned value's type is compatible with the variable's declared type.
 
-3. **Expressions**: Operators (`+`, `-`, `*`, `/`, `==`, `>`, etc.) are checked to ensure they are used with compatible operand types. For example, arithmetic operators generally require numeric types (`int`, `float`, `double`), while `+` can also be used for string concatenation. The result type of an expression is also determined (e.g., `1 + 2.0` results in a `float`).
+3. **Expressions**: Operators (`+`, `-`, `*`, `/`, `==`, `>`, etc.) are checked to ensure they are used with compatible operand types. For example, arithmetic operators generally require numeric types (`intN`, `floatN`), while `+` can also be used for string concatenation. The result type of an expression is also determined (e.g., `1 + 2.0` results in a `float32`).
 
 4. **Function Calls**: Arguments passed to functions are checked against the expected parameter types. The return value type is also enforced.
 
@@ -229,7 +324,7 @@ Type errors found during the checking phase will prevent the code from compiling
 
 ```firescript
 string name = "John";
-int age = 30;
+int8 age = 30;
 
 age = "thirty";  // Type error: Cannot assign string to int
 name = 25;       // Type error: Cannot assign int to string
@@ -243,12 +338,19 @@ The `typeof` built-in function returns a string representing the type of a value
 
 ```firescript
 // Future syntax
-string type1 = typeof(42);        // "int"
-string type2 = typeof(3.14);      // "float"
+string type1 = typeof(42);        // "int8"
+string type2 = typeof(3.14);      // "float32"
 string type3 = typeof("hello");   // "string"
 string type4 = typeof(true);      // "bool"
-string type5 = typeof([1, 2, 3]); // "int[]"
+string type5 = typeof([1, 2, 3]); // "int8[]"
 ```
+
+## Standard Library Types (Planned)
+
+The following standard library types are planned but not yet implemented:
+* **`BigInt`**: Arbitrary-precision integers for calculations requiring more than 64 bits.
+* **`Decimal`**: Fixed-point, arbitrary-precision decimal type for precise calculations.
+* **`list<T>`**: A dynamic array type that can grow and shrink, unlike fixed-size arrays.
 
 ## Advanced Type Features (Planned)
 
@@ -260,8 +362,8 @@ Tuples will allow grouping of values with different types. They will be immutabl
 
 ```firescript
 // Future syntax
-tuple<int, string> person = (30, "John");
-int age = person[0];  // 30
+tuple<int8, string> person = (30, "John");
+int8 age = person[0];  // 30
 string name = person[1];  // "John"
 ```
 
@@ -290,17 +392,17 @@ Classes will enable user-defined types with methods and properties:
 ```firescript
 // Future syntax
 class Point {
-    float x;
-    float y;
-    
-    Point(this, float x, float y) {
+    float32 x;
+    float32 y;
+
+    Point(this, float32 x, float32 y) {
         this.x = x;
         this.y = y;
     }
-    
-    float distanceTo(this, Point other) {
-        float dx = this.x - other.x;
-        float dy = this.y - other.y;
+
+    float32 distanceTo(this, Point other) {
+        float32 dx = this.x - other.x;
+        float32 dy = this.y - other.y;
         return toFloat((dx * dx + dy * dy) ** 0.5);
     }
 }
@@ -310,7 +412,7 @@ class Point {
 
 The current firescript compiler supports:
 
-* ✅ All TC types: `int`, `float`, `double`, `bool`, `string`, `char`
+* ✅ Some TC types: `bool`, `string`, `char`
 * ✅ Nullable type modifiers
 * ✅ Arrays of TC types
 * ✅ Static type checking for expressions and assignments
@@ -318,6 +420,8 @@ The current firescript compiler supports:
 
 Not yet implemented:
 
+* ❌ All integer types (`int8`, `int16`, `int32`, `int64`, `uint8`, `uint16`, `uint32`, `uint64`)
+* ❌ All floating point types (`float32`, `float64`, `float128`)
 * ❌ Type introspection with `typeof`
 * ❌ Tuples
 * ❌ Generics

@@ -63,11 +63,11 @@ A class in firescript is defined using the `class` keyword, followed by the clas
 class Person {
     // Fields (instance variables)
     string name;
-    nullable int age;
+    nullable int8 age;
     bool isEmployed;
 
     // Constructor: 'this' refers to the instance being created
-    Person(&this, string &name, nullable int age = null, bool isEmployed = false) {
+    Person(&this, string &name, nullable int8 age = null, bool isEmployed = false) {
         this.name = name;
         this.age = age;
         this.isEmployed = isEmployed;
@@ -106,8 +106,8 @@ Fields declare the data that each instance of a class will contain. Each field m
 
 ```firescript
 class Rectangle {
-    float width;
-    float height;
+    float32 width;
+    float32 height;
     string color;
 }
 ```
@@ -127,17 +127,17 @@ Constructors are special methods that initialize a new instance of a class. They
 
 ```firescript
 class Point {
-    float x;
-    float y;
+    float32 x;
+    float32 y;
     
     // Basic constructor
-    Point(&this, float x, float y) {
+    Point(&this, float32 x, float32 y) {
         this.x = x;
         this.y = y;
     }
     
     // With default values (when implemented)
-    Point(&this, float x = 0.0, float y = 0.0) {
+    Point(&this, float32 x = 0.0, float32 y = 0.0) {
         this.x = x;
         this.y = y;
     }
@@ -150,9 +150,9 @@ Instance methods are functions that belong to an instance of a class. They alway
 
 ```firescript
 class Circle {
-    float radius;
-    
-    Circle(&this, float radius) {
+    float32 radius;
+
+    Circle(&this, float32 radius) {
         this.radius = radius;
     }
     
@@ -167,7 +167,7 @@ class Circle {
     }
 
     // Mutating via borrow
-    void scale(&this, float factor) {
+    void scale(&this, float32 factor) {
         this.radius = this.radius * factor;
     }
 }
@@ -180,15 +180,15 @@ Static methods belong to the class itself rather than any instance. They don't t
 ```firescript
 class MathUtils {
     // Static methods
-    static int max(int a, int b) {
+    static int8 max(int8 a, int8 b) {
         if (a > b) {
             return a;
         } else {
             return b;
         }
     }
-    
-    static float average(float a, float b) {
+
+    static float32 average(float32 a, float32 b) {
         return (a + b) / 2.0;
     }
 }
@@ -220,7 +220,7 @@ class Student from Person {
     string school;
     string[] courses;
     
-    Student(&this, string name, int age, string school) {
+    Student(&this, string name, int8 age, string school) {
         super.Student(name, age);  // Call parent constructor
         this.school = school;
         this.courses = [];
@@ -262,9 +262,9 @@ class Shape {
 }
 
 class Square from Shape {
-    float side;
+    float32 side;
     
-    Square(&this, float side, string color) {
+    Square(&this, float32 side, string color) {
         super.Shape(color);
         this.side = side;
     }
@@ -287,7 +287,7 @@ Person[] people = [
     Student("Bob", 20, "State University")
 ];
 
-int i = 0;
+uint8 i = 0;
 while (i < people.length) {
     print(people[i].getName());
     i = i + 1;
