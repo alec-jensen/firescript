@@ -372,6 +372,27 @@ class Cat from Animal {
 }
 ```
 
+### Copyable Classes
+
+A class may be annotated `copyable` to become Copyable if it satisfies:
+1. All fields are Copyable.
+2. No `drop` defined.
+3. Fixed-size representation.
+4. No disallowed interior references.
+
+```firescript
+// Future syntax
+copyable class Point {
+    float32 x;
+    float32 y;
+    
+    Point(this, float32 x, float32 y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+```
+
 ## Best Practices for Class Design
 
 1. **Single Responsibility Principle**: Each class should have only one reason to change.\
