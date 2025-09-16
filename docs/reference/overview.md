@@ -18,7 +18,7 @@ The firescript compiler is under active development. Current status:
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Primitive (TC) Types | ⚠️ Partial | `bool`, `string`, `char` implemented; `intN`, `floatN` planned |
+| Copyable Types | ⚠️ Partial | `bool`, `string`, `char` implemented; `intN`, `floatN` planned |
 | Arrays | ⚠️ Partial | Basic operations work; slicing not implemented |
 | Control Flow | ⚠️ Partial | `if/else` and `while` loops work; `for` loops planned |
 | Functions | ⚠️ Partial | Functions can be defined and used but lack some planned features |

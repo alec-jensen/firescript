@@ -873,7 +873,7 @@ class Parser:
 
             if left_type is None or right_type is None: return None
 
-            # Define numeric types (TC only)
+            # Define numeric types (Copyable only)
             numeric_types = {"int", "float", "double"}
             # String concatenation
             if op == '+':

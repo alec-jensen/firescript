@@ -1,6 +1,6 @@
 # Types & Variables
 
-**Note:** Tuple types, the generic placeholder `T`, and declarations without an initializer are not supported by the compiler. Only built-in TC types (`int`, `float`, `double`, `bool`, `string`, `char`) are fully implemented.
+**Note:** Tuple types, the generic placeholder `T`, and declarations without an initializer are not supported by the compiler. Only built-in Copyable types (`intN`, `floatN`, `bool`, `string`, `char`) are fully implemented.
 
 ## Types
 
@@ -63,4 +63,4 @@ if (message != null) {
 
 ## Implementation Status
 
-Variable declaration and initialization is fully supported for some built-in TC types. User-defined types and tuples are planned for future versions. Constants and nullability are also planned features.
+Variable declaration and initialization is fully supported for some built-in Copyable types. User-defined types and tuples are planned for future versions. Constants and nullability are also planned features.

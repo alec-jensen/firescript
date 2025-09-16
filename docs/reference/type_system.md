@@ -4,7 +4,7 @@
 
 ## Built-in Types
 
-firescript provides several fundamental data types. These are all TC types:
+firescript provides several fundamental data types. These are all Copyable types:
 
 * Numeric Types:
   * **`int8`**: 8-bit signed integer
@@ -412,9 +412,9 @@ class Point {
 
 The current firescript compiler supports:
 
-* ✅ Some TC types: `bool`, `string`, `char`
+* ✅ Some Copyable types: `bool`, `string`, `char`
 * ✅ Nullable type modifiers
-* ✅ Arrays of TC types
+* ✅ Arrays of Copyable types
 * ✅ Static type checking for expressions and assignments
 * ✅ Type conversion functions
 
