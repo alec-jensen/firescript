@@ -1298,7 +1298,6 @@
 <ul>
 <li>Scoping: Scope exit triggers drops of any still-owned values (see <a href="../scoping/">Scoping</a>).</li>
 <li>Functions: Owned parameters move; borrowed parameters (<code>&amp;T</code>) (Owned types only) do not transfer ownership (see <a href="../functions/">Functions</a>).</li>
-<li>Arrays/Collections: Arrays (Owned) drop their elements when they are dropped; TC elements have nothing to drop.</li>
 <li>Future Closures: Captures of Owned variables default to move; borrow captures are allowed only if the closure cannot escape.</li>
 </ul>
 <h2 id="detailed-rules">Detailed Rules<a class="headerlink" href="#detailed-rules" title="Permanent link">&para;</a></h2>
