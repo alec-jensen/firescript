@@ -99,6 +99,7 @@ Example:
 ```firescript
 File f = File.open("log.txt");
 f.write("hello");
+f.flush();
 // f dropped here even on early return/exception; File.drop closes the descriptor.
 ```
 

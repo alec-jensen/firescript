@@ -52,6 +52,7 @@ nav:
     - Type System: reference/type_system.md
     - Memory Management: reference/memory_management.md
     - Error Handling: reference/error_handling.md
+    - Imports: reference/imports.md
   - Glossary: glossary.md
   - Changelog: changelog.md
 markdown_extensions:
