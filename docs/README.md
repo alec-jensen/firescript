@@ -1,6 +1,6 @@
 # firescript v0.3.0 Documentation
 
-> This documentation is being used for the most part as a reference for planning the direction of the firescript language and its features. The compiler is still in early development, so many features are not yet implemented, or are implemented differently than described here. Nothing here should be considered final until the language reaches a stable 1.0 release.
+> This documentation is being used for the most part as a reference for planning the direction of the firescript language and its features. The compiler is still in early development, so many features are not yet implemented, or are implemented differently than described here. Nothing here should be considered final until the language reaches a stable 1.0.0 release.
 
 This documentation is organized to help both newcomers and experienced developers understand and use the firescript language effectively.
 

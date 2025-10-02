@@ -25,4 +25,3 @@ directive enable_syscalls;
 ## Available Directives
 
 - `enable_syscalls`: Allows the use of syscalls in the file. This is required for files in the standard library that need syscall access.
-- `enable_drop_statement`: Enables the use of the `drop` statement for manual resource management. This is generally discouraged in favor of automatic resource management but can be used in specific scenarios.
