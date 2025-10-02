@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://firescript.alecj.com/reference/scoping/">
+        <link rel="canonical" href="https://firescript.alecj.com/reference/imports/">
       
       
-        <link rel="prev" href="../classes/">
+        <link rel="prev" href="../error_handling/">
       
       
-        <link rel="next" href="../type_system/">
+        <link rel="next" href="../../glossary/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Scoping Rules - firescript</title>
+        <title>Imports - firescript</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#scoping-in-firescript" class="md-skip">
+        <a href="#imports" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Scoping Rules
+              Imports
             
           </span>
         </div>
@@ -549,32 +549,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Scoping Rules
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../scoping/" class="md-nav__link">
         
   
   
@@ -585,209 +563,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#scope-creation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Scope Creation
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#scope-hierarchy-and-variable-access" class="md-nav__link">
-    <span class="md-ellipsis">
-      Scope Hierarchy and Variable Access
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#detailed-scoping-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Detailed Scoping Rules
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Detailed Scoping Rules">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-variable-declaration-and-initialization" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Variable Declaration and Initialization
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-variable-lifetime" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Variable Lifetime
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-global-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Global Scope
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-loop-scopes" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. Loop Scopes
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-conditional-scopes" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Conditional Scopes
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6-nested-function-scopes-future-feature" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Nested Function Scopes (Future Feature)
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#variable-scope-vs-object-lifetime" class="md-nav__link">
-    <span class="md-ellipsis">
-      Variable Scope vs. Object Lifetime
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#best-practices-for-effective-scoping" class="md-nav__link">
-    <span class="md-ellipsis">
-      Best Practices for Effective Scoping
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#interaction-with-ownership-planned" class="md-nav__link">
-    <span class="md-ellipsis">
-      Interaction With Ownership (Planned)
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-details" class="md-nav__link">
-    <span class="md-ellipsis">
-      Implementation Details
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#common-scoping-errors" class="md-nav__link">
-    <span class="md-ellipsis">
-      Common Scoping Errors
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Common Scoping Errors">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-accessing-variables-outside-their-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Accessing Variables Outside Their Scope
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-redeclaring-variables-in-the-same-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Redeclaring Variables in the Same Scope
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-attempting-variable-shadowing" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Attempting Variable Shadowing
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-using-variables-before-declaration" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. Using Variables Before Declaration
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      Implementation Status
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -866,10 +641,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../imports/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Imports
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -880,6 +677,140 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#import-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      Import Syntax
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Import Syntax">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#importing-local-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Importing local modules
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#importing-external-packages-reserved" class="md-nav__link">
+    <span class="md-ellipsis">
+      Importing external packages (reserved)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#paths-and-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Paths and Resolution
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Examples
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wildcards-aliasing-and-explicitness" class="md-nav__link">
+    <span class="md-ellipsis">
+      Wildcards, Aliasing, and Explicitness
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reserved-future-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reserved &amp; Future Features
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#not-supported" class="md-nav__link">
+    <span class="md-ellipsis">
+      Not Supported
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#syntax-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Syntax Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Notes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Status
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -963,82 +894,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#scope-creation" class="md-nav__link">
+  <a href="#import-syntax" class="md-nav__link">
     <span class="md-ellipsis">
-      Scope Creation
+      Import Syntax
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#scope-hierarchy-and-variable-access" class="md-nav__link">
-    <span class="md-ellipsis">
-      Scope Hierarchy and Variable Access
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#detailed-scoping-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Detailed Scoping Rules
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Detailed Scoping Rules">
+    <nav class="md-nav" aria-label="Import Syntax">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-variable-declaration-and-initialization" class="md-nav__link">
+  <a href="#importing-local-modules" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Variable Declaration and Initialization
+      Importing local modules
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-variable-lifetime" class="md-nav__link">
+  <a href="#importing-external-packages-reserved" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Variable Lifetime
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-global-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Global Scope
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-loop-scopes" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. Loop Scopes
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-conditional-scopes" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Conditional Scopes
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6-nested-function-scopes-future-feature" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Nested Function Scopes (Future Feature)
+      Importing external packages (reserved)
     </span>
   </a>
   
@@ -1050,89 +927,74 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#variable-scope-vs-object-lifetime" class="md-nav__link">
+  <a href="#paths-and-resolution" class="md-nav__link">
     <span class="md-ellipsis">
-      Variable Scope vs. Object Lifetime
+      Paths and Resolution
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#best-practices-for-effective-scoping" class="md-nav__link">
+  <a href="#examples" class="md-nav__link">
     <span class="md-ellipsis">
-      Best Practices for Effective Scoping
+      Examples
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#interaction-with-ownership-planned" class="md-nav__link">
+  <a href="#wildcards-aliasing-and-explicitness" class="md-nav__link">
     <span class="md-ellipsis">
-      Interaction With Ownership (Planned)
+      Wildcards, Aliasing, and Explicitness
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#implementation-details" class="md-nav__link">
+  <a href="#reserved-future-features" class="md-nav__link">
     <span class="md-ellipsis">
-      Implementation Details
+      Reserved &amp; Future Features
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#common-scoping-errors" class="md-nav__link">
+  <a href="#best-practices" class="md-nav__link">
     <span class="md-ellipsis">
-      Common Scoping Errors
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Common Scoping Errors">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-accessing-variables-outside-their-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Accessing Variables Outside Their Scope
+      Best Practices
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#2-redeclaring-variables-in-the-same-scope" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#not-supported" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Redeclaring Variables in the Same Scope
+      Not Supported
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#3-attempting-variable-shadowing" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#syntax-summary" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Attempting Variable Shadowing
+      Syntax Summary
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#4-using-variables-before-declaration" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#implementation-notes" class="md-nav__link">
     <span class="md-ellipsis">
-      4. Using Variables Before Declaration
+      Implementation Notes
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1161,7 +1023,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/reference/scoping.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/reference/imports.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1169,242 +1031,138 @@
   
 
 
-<h1 id="scoping-in-firescript">Scoping in firescript<a class="headerlink" href="#scoping-in-firescript" title="Permanent link">&para;</a></h1>
+<h1 id="imports">Imports<a class="headerlink" href="#imports" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>Status: This section references planned ownership semantics. See <a href="../memory_management/#overview">Memory Management</a> for authoritative definitions.</p>
+<p>Status: Modules and import resolution are planned but not yet implemented. The syntax below is reserved and may evolve as the compiler gains module support.</p>
 </blockquote>
-<p>In firescript, scopes define the visibility and lifetime of variables. Understanding how scopes work is crucial for writing correct and predictable code.</p>
-<h2 id="scope-creation">Scope Creation<a class="headerlink" href="#scope-creation" title="Permanent link">&para;</a></h2>
-<p>A new scope is created by <strong>any</strong> set of curly braces <code>{}</code>. This includes:</p>
+<p>firescript uses an explicit, Java-inspired import system for organizing code across files and (in the future) external packages. All imports must specify full paths; there is no implicit or relative import behavior.</p>
+<h2 id="import-syntax">Import Syntax<a class="headerlink" href="#import-syntax" title="Permanent link">&para;</a></h2>
+<h3 id="importing-local-modules">Importing local modules<a class="headerlink" href="#importing-local-modules" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Control Flow Statements:</strong> The bodies of <code>if</code>, <code>else if</code>, <code>else</code>, <code>for</code>, <code>while</code>, and other control flow statements each create their own scope.</li>
-<li><strong>Function Bodies:</strong> The body of a function defines a scope.</li>
-<li><strong>Class Bodies:</strong> The body of a class defines a scope.</li>
-<li><strong>Bare Braces:</strong> You can create an explicit scope simply by using a pair of curly braces <code>{}</code> anywhere they are syntactically allowed.</li>
+<li>Import an entire module:</li>
 </ul>
-<pre><code class="language-firescript">// Global scope
-
-int globalVar = 10;
-
-if (globalVar &gt; 5) {
-    // Inner scope 1 (if body)
-    int innerVar1 = 20;
-    print(globalVar);  // Accessing outer scope variable: OK (prints 10)
-    print(innerVar1);  // Accessing current scope variable: OK (prints 20)
-}
-
-// print(innerVar1)  // ERROR: innerVar1 is not accessible here
-
-{
-    // Inner scope 2 (bare braces)
-    int innerVar2 = 30;
-    print(globalVar);  // Accessing outer scope variable: OK (prints 10)
-    print(innerVar2);  // Accessing current scope variable: OK (prints 30)
-
-    if (true) {
-        // Inner scope 3 (nested if body)
-        int innerVar3 = 40;
-        print(globalVar);  // OK (prints 10)
-        print(innerVar2);  // OK (prints 30)
-        print(innerVar3);  // OK (prints 40)
-    }
-    // print(innerVar3)  // ERROR: innerVar3 is not accessible here
-}
-
-// print(innerVar2)  // ERROR: innerVar2 is not accessible here
+<pre><code class="language-firescript">import src.utils.utils
 </code></pre>
-<h2 id="scope-hierarchy-and-variable-access">Scope Hierarchy and Variable Access<a class="headerlink" href="#scope-hierarchy-and-variable-access" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Outer Scope Access:</strong> An inner scope can access variables declared in any of its enclosing (outer) scopes, all the way up to the global scope.</li>
-<li><strong>Inner Scope Isolation:</strong> An outer scope <em>cannot</em> access variables declared within any of its inner scopes. Once a scope block is exited, all variables declared directly within that scope are destroyed and become inaccessible.</li>
-<li><strong>Variable Shadowing:</strong> Variable shadowing is not allowed. firescript will throw an error if you try to declare a variable with the same name in an inner scope that already exists in an outer scope. This is to prevent confusion and ensure that the intended variable is always accessed.</li>
+<li>Import a specific symbol from a module:</li>
 </ul>
-<h2 id="detailed-scoping-rules">Detailed Scoping Rules<a class="headerlink" href="#detailed-scoping-rules" title="Permanent link">&para;</a></h2>
-<h3 id="1-variable-declaration-and-initialization">1. Variable Declaration and Initialization<a class="headerlink" href="#1-variable-declaration-and-initialization" title="Permanent link">&para;</a></h3>
-<p>Variables in firescript must be declared with an explicit type and initialized in the same statement. They are only accessible within their scope:</p>
-<pre><code class="language-firescript">{
-    int x = 5;  // x is declared and initialized
-
-    {
-        // New inner scope
-        print(x);  // Accessible, prints 5
-
-        // int x = 10;  // ERROR: Cannot redeclare 'x' - shadowing is not allowed
-        int y = 15;  // y is only accessible in this scope
-    }
-
-    // print(y)  // ERROR: y is not defined in this scope
-}
-// print(x)  // ERROR: x is not defined in this scope
+<pre><code class="language-firescript">import src.utils.utils.helper
 </code></pre>
-<h3 id="2-variable-lifetime">2. Variable Lifetime<a class="headerlink" href="#2-variable-lifetime" title="Permanent link">&para;</a></h3>
-<p>Variables exist only from the point of their declaration to the end of their containing scope:</p>
-<pre><code class="language-firescript">{
-    // print(a)  // ERROR: Cannot use 'a' before declaration
-
-    int a = 1;
-    print(a);  // OK: 'a' exists here
-
-    {
-        int b = 2;
-        print(a);  // OK: 'a' from outer scope
-        print(b);  // OK: 'b' from current scope
-    }  // 'b' is destroyed here
-
-    // print(b)  // ERROR: 'b' no longer exists
-}  // 'a' is destroyed here
-</code></pre>
-<h3 id="3-global-scope">3. Global Scope<a class="headerlink" href="#3-global-scope" title="Permanent link">&para;</a></h3>
-<p>Variables declared outside any braces are in the global scope and are accessible throughout the entire program:</p>
-<pre><code class="language-firescript">int globalValue = 100;  // Global variable
-
-{
-    print(globalValue);  // Accessible anywhere in the program
-
-    {
-        print(globalValue);  // Still accessible
-    }
-}
-
-// User-defined functions would also have access to global variables
-// when this feature is implemented
-</code></pre>
-<h3 id="4-loop-scopes">4. Loop Scopes<a class="headerlink" href="#4-loop-scopes" title="Permanent link">&para;</a></h3>
-<p>Each iteration of a loop has its own scope:</p>
-<pre><code class="language-firescript">int i = 0;
-while (i &lt; 3) {
-    // New scope for each loop iteration
-    int temp = i * 10;
-    print(temp);  // Prints 0, 10, 20
-    i = i + 1;
-}  // 'temp' is destroyed at the end of each iteration
-
-// print(temp)  // ERROR: 'temp' is not accessible here
-</code></pre>
-<h3 id="5-conditional-scopes">5. Conditional Scopes<a class="headerlink" href="#5-conditional-scopes" title="Permanent link">&para;</a></h3>
-<p>Each branch of a conditional statement creates its own scope. This pattern prevents runtime issues where a variable may or may not be defined depending on the execution path:</p>
-<pre><code class="language-firescript">int value = 5;
-
-if (value &gt; 10) {
-    // Scope A
-    int result = value * 2;
-    print(result);
-} else if (value &gt; 0) {
-    // Scope B (different from Scope A)
-    int result = value + 10;  // OK to reuse the name 'result' here
-    print(result);  // Prints 15
-} else {
-    // Scope C (different from Scopes A and B)
-    int result = 0;
-    print(result);
-}
-
-// print(result)  // ERROR: 'result' is not accessible here
-</code></pre>
-<h3 id="6-nested-function-scopes-future-feature">6. Nested Function Scopes (Future Feature)<a class="headerlink" href="#6-nested-function-scopes-future-feature" title="Permanent link">&para;</a></h3>
-<p>When user-defined functions are implemented, they will create their own scopes:</p>
-<pre><code class="language-firescript">// Global scope
-int globalVar = 10;
-
-// Future syntax when functions are implemented
-void exampleFunction() {
-    // Function scope
-    int functionVar = 20;
-    print(globalVar);  // OK: access to global scope
-
-    {
-        // Inner scope within the function
-        int innerVar = 30;
-        print(functionVar);  // OK: access to containing function scope
-        print(globalVar);    // OK: access to global scope
-    }
-
-    // print(innerVar)  // ERROR: not accessible outside its scope
-}
-
-// print(functionVar)  // ERROR: function variables only exist in function scope
-</code></pre>
-<h2 id="variable-scope-vs-object-lifetime">Variable Scope vs. Object Lifetime<a class="headerlink" href="#variable-scope-vs-object-lifetime" title="Permanent link">&para;</a></h2>
-<p>It's important to distinguish between a variable's scope (where it can be accessed) and an object's lifetime (how long it exists in memory and when it is dropped):</p>
-<pre><code class="language-firescript">// When object-oriented features are implemented:
-{
-    // myObj variable is scoped to this block
-    Person myObj = Person(&quot;John&quot;, 30);
-
-    // myObj reference goes out of scope here
-    // The Person object will be dropped (its destructor run) when its final owner goes out of scope.
-    // (Deterministic planned behavior – see Memory Management.)
-}
-</code></pre>
-<h2 id="best-practices-for-effective-scoping">Best Practices for Effective Scoping<a class="headerlink" href="#best-practices-for-effective-scoping" title="Permanent link">&para;</a></h2>
-<ol>
-<li>
-<p><strong>Keep scopes as small as possible</strong>: Declare variables in the smallest scope where they are needed.</p>
-</li>
-<li>
-<p><strong>Declare variables close to their first use</strong>: This improves code readability and maintainability.</p>
-</li>
-<li>
-<p><strong>Use explicit scopes for temporary variables</strong>: Use bare braces <code>{}</code> to create explicit scopes for temporary variables.</p>
-</li>
-</ol>
-<p><code>firescript
-   {
-       // Temporary calculation scope
-       int temp = complexCalculation();
-       result = temp * 2;
-   }  // 'temp' is no longer accessible, reducing scope pollution</code></p>
-<ol>
-<li>
-<p><strong>Be consistent with variable naming</strong>: Use clear, descriptive names to avoid confusion, especially with variables in different scopes.</p>
-</li>
-<li>
-<p><strong>Avoid deeply nested scopes</strong>: Excessive nesting can make code harder to read and understand.</p>
-</li>
-</ol>
-<h2 id="interaction-with-ownership-planned">Interaction With Ownership (Planned)<a class="headerlink" href="#interaction-with-ownership-planned" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Scope exit triggers deterministic drop of all still-owned values declared in that scope.</li>
-<li>A move transfers ownership; the original variable becomes invalid immediately after the move.</li>
-<li>A borrow (<code>&amp;T</code>) never extends lifetime; it relies on the original owner remaining in scope.</li>
-<li>Last-use analysis may drop a value before the lexical end of the scope if no further uses are provable.</li>
+<li>Import multiple symbols from a module:</li>
 </ul>
-<h2 id="implementation-details">Implementation Details<a class="headerlink" href="#implementation-details" title="Permanent link">&para;</a></h2>
-<p>firescript's scoping mechanism is implemented as a stack of symbol tables. When looking up a variable:</p>
+<pre><code class="language-firescript">import src.utils.utils.{helper, CONSTANT}
+</code></pre>
+<ul>
+<li>Import all symbols from a module (allowed, but discouraged for explicitness):</li>
+</ul>
+<pre><code class="language-firescript">import src.utils.utils.*
+</code></pre>
+<ul>
+<li>Aliasing imports (optional):</li>
+</ul>
+<pre><code class="language-firescript">import src.utils.utils.helper as help
+import src.utils.utils as Utils
+</code></pre>
+<h3 id="importing-external-packages-reserved">Importing external packages (reserved)<a class="headerlink" href="#importing-external-packages-reserved" title="Permanent link">&para;</a></h3>
+<p>These forms are reserved for future package management and standard library support:</p>
+<pre><code class="language-firescript">import @user/package
+import @firescript/std
+</code></pre>
+<h2 id="paths-and-resolution">Paths and Resolution<a class="headerlink" href="#paths-and-resolution" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Import paths are absolute from the project root. For example, <code>src.utils.utils</code> maps to <code>{project-root}/src/utils/utils.fire</code>.</li>
+<li>Relative imports (e.g., <code>import ../utils</code>) are not permitted.</li>
+<li>There are no default or magic imports—every symbol must be explicitly imported.</li>
+<li>The <code>.fire</code> extension is omitted in import statements but always resolves to a file with that extension.</li>
+<li>A configurable import root may be supported in the future; the default is the project root.</li>
+</ul>
+<h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
+<p>Given the structure:</p>
+<pre><code>src/
+    main.fire
+    utils/
+        utils.fire
+    enums/
+        colors.fire
+</code></pre>
+<p>From <code>colors.fire</code>, to import a function <code>helper</code> from <code>utils.fire</code>:</p>
+<pre><code class="language-firescript">import src.utils.utils.helper
+</code></pre>
+<p>To import the entire module:</p>
+<pre><code class="language-firescript">import src.utils.utils
+</code></pre>
+<p>To import multiple symbols:</p>
+<pre><code class="language-firescript">import src.utils.utils.{helper, CONSTANT}
+</code></pre>
+<h2 id="wildcards-aliasing-and-explicitness">Wildcards, Aliasing, and Explicitness<a class="headerlink" href="#wildcards-aliasing-and-explicitness" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Wildcards via <code>*</code> are allowed but discouraged; prefer explicit symbol lists.</li>
+<li>Aliasing is available for both modules and symbols to improve clarity and resolve naming conflicts.</li>
+<li>Explicitness is required—no implicit re-exports or default imports.</li>
+</ul>
+<h2 id="reserved-future-features">Reserved &amp; Future Features<a class="headerlink" href="#reserved-future-features" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>import @user/package</code> is reserved for future package management.</li>
+<li><code>import @firescript/std</code> is reserved for standard library modules.</li>
+</ul>
+<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
 <ol>
-<li>The compiler first checks the innermost scope (top of the stack)</li>
-<li>If not found, it progressively checks outer scopes</li>
-<li>If the variable is not found in any scope, a compilation error occurs</li>
+<li>Prefer explicit symbol imports over wildcards.</li>
+<li>Avoid broad module imports unless you intentionally need many symbols.</li>
+<li>Use aliasing when names conflict or when a shorter local name improves readability.</li>
 </ol>
-<h2 id="common-scoping-errors">Common Scoping Errors<a class="headerlink" href="#common-scoping-errors" title="Permanent link">&para;</a></h2>
-<h3 id="1-accessing-variables-outside-their-scope">1. Accessing Variables Outside Their Scope<a class="headerlink" href="#1-accessing-variables-outside-their-scope" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">{
-    int8 value = 10;
-}
-print(value)  // ERROR: 'value' is not defined in this scope
-</code></pre>
-<h3 id="2-redeclaring-variables-in-the-same-scope">2. Redeclaring Variables in the Same Scope<a class="headerlink" href="#2-redeclaring-variables-in-the-same-scope" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int8 count = 5;
-int8 count = 10;  // ERROR: 'count' is already defined
-</code></pre>
-<h3 id="3-attempting-variable-shadowing">3. Attempting Variable Shadowing<a class="headerlink" href="#3-attempting-variable-shadowing" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int8 value = 10;
-if (true) {
-    int8 value = 20;  // ERROR: Shadowing is not allowed in firescript
-}
-</code></pre>
-<h3 id="4-using-variables-before-declaration">4. Using Variables Before Declaration<a class="headerlink" href="#4-using-variables-before-declaration" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">print(result);  // ERROR: Cannot use 'result' before declaration
-int8 result = 42;
-</code></pre>
+<h2 id="not-supported">Not Supported<a class="headerlink" href="#not-supported" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Relative imports</li>
+<li>Implicit “import everything” behavior</li>
+<li>Omitting paths or symbols</li>
+</ul>
+<h2 id="syntax-summary">Syntax Summary<a class="headerlink" href="#syntax-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Syntax</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>import src.utils.utils</code></td>
+<td>Import entire module</td>
+</tr>
+<tr>
+<td><code>import src.utils.utils.helper</code></td>
+<td>Import a specific symbol</td>
+</tr>
+<tr>
+<td><code>import src.utils.utils.{a, b}</code></td>
+<td>Import multiple symbols</td>
+</tr>
+<tr>
+<td><code>import src.utils.utils.*</code></td>
+<td>Import all symbols (discouraged)</td>
+</tr>
+<tr>
+<td><code>import src.utils.utils.helper as h</code></td>
+<td>Alias an imported symbol</td>
+</tr>
+<tr>
+<td><code>import @user/package</code></td>
+<td>External package (future)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Import statements are only valid at the top level of a source file.</li>
+<li>The compiler will resolve imports from the project root and report missing files or symbols.</li>
+<li>Cyclic imports should be detected and reported as errors.</li>
+</ul>
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
-<p>Scope handling in firescript is fully implemented:</p>
 <ul>
-<li>✅ Block scopes with curly braces</li>
-<li>✅ Variable visibility rules</li>
-<li>✅ Prohibition of variable shadowing</li>
-<li>✅ Scope nesting and hierarchy</li>
-<li>✅ Variable lifetime management</li>
+<li>❌ Modules and import resolution are planned but not implemented in the current compiler.</li>
+<li>✅ Syntax is reserved and documented here for future implementation.</li>
 </ul>
 
 
@@ -1435,7 +1193,7 @@ int8 result = 42;
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../classes/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Classes &amp; Inheritance">
+          <a href="../error_handling/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Error Handling">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1445,20 +1203,20 @@ int8 result = 42;
                 Previous
               </span>
               <div class="md-ellipsis">
-                Classes & Inheritance
+                Error Handling
               </div>
             </div>
           </a>
         
         
           
-          <a href="../type_system/" class="md-footer__link md-footer__link--next" aria-label="Next: Type System">
+          <a href="../../glossary/" class="md-footer__link md-footer__link--next" aria-label="Next: Glossary">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Type System
+                Glossary
               </div>
             </div>
             <div class="md-footer__button md-icon">

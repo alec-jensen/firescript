@@ -8,13 +8,9 @@
       
       
       
-        <link rel="canonical" href="https://firescript.alecj.com/glossary/">
+        <link rel="canonical" href="https://firescript.alecj.com/internal/">
       
       
-        <link rel="prev" href="../reference/imports/">
-      
-      
-        <link rel="next" href="../changelog/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -22,7 +18,7 @@
     
     
       
-        <title>Glossary - firescript</title>
+        <title>Internal Documentation - firescript</title>
       
     
     
@@ -74,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#glossary" class="md-skip">
+        <a href="#internal-documentation" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Glossary
+              Internal Documentation
             
           </span>
         </div>
@@ -258,11 +254,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../glossary/" class="md-tabs__link">
         
   
   
@@ -666,32 +660,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Glossary
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../glossary/" class="md-nav__link">
         
   
   
@@ -702,50 +674,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#memory-management-terms" class="md-nav__link">
-    <span class="md-ellipsis">
-      Memory Management Terms
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Memory Management Terms">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#expanded-definitions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Expanded Definitions
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -792,38 +720,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#memory-management-terms" class="md-nav__link">
-    <span class="md-ellipsis">
-      Memory Management Terms
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Memory Management Terms">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#expanded-definitions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Expanded Definitions
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -838,7 +734,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/glossary.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/README.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -846,52 +742,8 @@
   
 
 
-<h1 id="glossary">Glossary<a class="headerlink" href="#glossary" title="Permanent link">&para;</a></h1>
-<p>This glossary contains definitions of terms commonly used in the firescript documentation. For authoritative rules on ownership and lifetimes see <a href="../reference/memory_management/">Memory Management</a>.</p>
-<h2 id="memory-management-terms">Memory Management Terms<a class="headerlink" href="#memory-management-terms" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Term</th>
-<th>Definition</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Copyable</td>
-<td>Fixed-size value with no destructor; copied bitwise.</td>
-</tr>
-<tr>
-<td>Owned</td>
-<td>Resource/heap-managing value with unique ownership semantics.</td>
-</tr>
-<tr>
-<td>Move</td>
-<td>Transfer of ownership; original binding becomes invalid.</td>
-</tr>
-<tr>
-<td>Borrow (<code>&amp;T</code>)</td>
-<td>Read-only, non-owning view whose lifetime is limited to an expression or call boundary.</td>
-</tr>
-<tr>
-<td>Clone</td>
-<td>Explicit duplication of an owned value’s contents (deep or COW per type).</td>
-</tr>
-<tr>
-<td>Drop</td>
-<td>Deterministic destruction at an inserted point (last use or scope exit).</td>
-</tr>
-</tbody>
-</table>
-<h3 id="expanded-definitions">Expanded Definitions<a class="headerlink" href="#expanded-definitions" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Copyable:</strong> Includes <code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>, <code>string</code>, arrays, and other fixed-size scalars. Copies are bitwise; no destructor runs.</li>
-<li><strong>Owned:</strong> Includes user-defined objects, closures, or any type that requires a destructor. Ownership is unique unless an explicit sharing container (future <code>Rc</code>, <code>Arc</code>) is used.</li>
-<li><strong>Move:</strong> Occurs on assignment, passing to a parameter of owned type, or returning a value. After a move, the source binding cannot be used (use-after-move error).</li>
-<li><strong>Borrow:</strong> Lightweight, read-only access. Cannot be stored in owned fields or escape its originating scope/call. Does not incur runtime overhead.</li>
-<li><strong>Clone:</strong> Creates an independent owned value. Semantics (deep vs copy-on-write) determined by the type implementation but always preserves logical independence.</li>
-<li><strong>Drop:</strong> Compiler-inserted destructor invocation (<code>drop(this)</code>) ensuring timely resource release (files, sockets, buffers) without tracing GC.</li>
-</ul>
+<h1 id="internal-documentation">Internal Documentation<a class="headerlink" href="#internal-documentation" title="Permanent link">&para;</a></h1>
+<p>This is documentation for internal language features intended for use in the compiler and standard library. These are not intended for use in user code, as these features require careful handling to be used safely and correctly.</p>
 
 
 
@@ -916,44 +768,6 @@
       
         <footer class="md-footer">
   
-    
-      
-      <nav class="md-footer__inner md-grid" aria-label="Footer" >
-        
-          
-          <a href="../reference/imports/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Imports">
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-            </div>
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              <div class="md-ellipsis">
-                Imports
-              </div>
-            </div>
-          </a>
-        
-        
-          
-          <a href="../changelog/" class="md-footer__link md-footer__link--next" aria-label="Next: Changelog">
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              <div class="md-ellipsis">
-                Changelog
-              </div>
-            </div>
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
-            </div>
-          </a>
-        
-      </nav>
     
   
   <div class="md-footer-meta md-typeset">
