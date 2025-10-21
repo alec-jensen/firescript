@@ -1,30 +1,30 @@
 // Basic int addition function
-int add(int a, int b) {
+int32 add(int32 a, int32 b) {
     return a + b;
 }
 
-// Float addition
-float addFloat(float a, float b) {
-    float result = a + b; // both float
+// float32 addition
+float32 addFloat(float32 a, float32 b) {
+    float32 result = a + b; // both float32
     return result;
 }
 
-// Double multiplication
-double mulDouble(double a, double b) {
-    double prod = a * b;
+// float64 multiplication
+float64 mulDouble(float64 a, float64 b) {
+    float64 prod = a * b;
     return prod;
 }
 
 // Build and return an int array
-int[] makeIntArray(int a, int b, int c) {
-    int[] arr = [a, b, c];
+int32[] makeIntArray(int32 a, int32 b, int32 c) {
+    int32[] arr = [a, b, c];
     return arr;
 }
 
 // Sum first two elements of an int array parameter
-int sumFirstTwo(int[] nums) {
-    int x = nums[0];
-    int y = nums[1];
+int32 sumFirstTwo(int32[] nums) {
+    int32 x = nums[0];
+    int32 y = nums[1];
     return x + y;
 }
 
@@ -50,22 +50,22 @@ string greet(string name) {
 }
 
 // Simple helper returning int
-int buildAndSum(int a, int b) {
-    int c = a + b;
+int32 buildAndSum(int32 a, int32 b) {
+    int32 c = a + b;
     return c;
 }
 
 // Void function (returns nothing) exercising print builtin and multiple calls
-void logValues(int a, double d, string s) {
+void logValues(int32 a, float64 d, string s) {
     print(a);
     print(d);
     print(s);
 }
 
-// Mixed numeric promotion test inside function returning double via double arithmetic
-double numericMix(int a, float b, double c) {
-    float part1 = a + b; // int + float -> float
-    double part2 = part1 + c; // float + double -> double
+// Same-type numeric test returning float64 via float64 arithmetic
+float64 numericMix(float64 a, float64 b, float64 c) {
+    float64 part1 = a + b; // float64 + float64 -> float64
+    float64 part2 = part1 + c; // float64 + float64 -> float64
     return part2;
 }
 
@@ -90,7 +90,7 @@ print("-- double mulDouble --");
 print(mulDouble(2.0, 3.0)); // 6.0
 
 print("-- array return & param --");
-int[] built = makeIntArray(7, 8, 9);
+int32[] built = makeIntArray(7, 8, 9);
 print(sumFirstTwo(built)); // 15
 
 print("-- bool bothTrue --");
@@ -104,7 +104,7 @@ print("-- void logValues --");
 logValues(42, 3.14, "value");
 
 print("-- numericMix --");
-print(numericMix(2, 3.0f, 4.0));
+print(numericMix(2.0, 3.0, 4.0));
 
 print("-- firstChar --");
 print(firstChar("Z"));

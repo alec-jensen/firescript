@@ -2,7 +2,7 @@
 
 // Test 1: Array declaration and initialization
 print("Test 1: Array declaration and initialization");
-int[] numbers = [10, 20, 30, 40, 50];
+int32[] numbers = [10, 20, 30, 40, 50];
 print(numbers);
 
 // Test 2: Array indexing (access)
@@ -56,7 +56,7 @@ print(numbers);
 
 // Test 7: Empty array initialization and operations
 print("\nTest 7: Empty array operations");
-int[] empty = [];
+int32[] empty = [];
 print("Empty array:");
 print(empty);
 empty.append(100);
@@ -65,7 +65,7 @@ print(empty);
 
 // Test 8: Multiple operations in sequence
 print("\nTest 8: Multiple operations in sequence");
-int[] sequence = [1, 2, 3, 4, 5];
+int32[] sequence = [1, 2, 3, 4, 5];
 print("Initial array:");
 print(sequence);
 sequence.pop(0);
@@ -76,7 +76,7 @@ print(sequence);
 
 // Test 9: Array size check
 print("\nTest 9: Array size");
-int[] sizeTest = [1, 2, 3, 4, 5];
+int32[] sizeTest = [1, 2, 3, 4, 5];
 print("Array:");
 print(sizeTest);
 print("Size should be 5");

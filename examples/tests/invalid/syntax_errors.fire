@@ -2,14 +2,14 @@
 // EXPECT: parser errors
 
 print("-- invalid syntax: missing semicolons --")
-int a = 5 // missing semicolon
-int b = 6; int c = 7 // missing semicolon after chained declaration style (unsupported)
+int32 a = 5 // missing semicolon
+int32 b = 6; int32 c = 7 // missing semicolon after chained declaration style (unsupported)
 
 print("-- invalid syntax: unclosed paren --");
-int x = (1 + 2; // unclosed paren
+int32 x = (1 + 2; // unclosed paren
 
 print("-- invalid syntax: unclosed array literal --");
-int[] arr = [1,2,3; // missing closing bracket
+int32[] arr = [1,2,3; // missing closing bracket
 
 print("-- invalid syntax: stray tokens --");
 @ # $ // unexpected symbols (if lexer produces tokens)
@@ -24,6 +24,6 @@ print("-- invalid syntax: dangling else --");
 else { print(1); }
 
 print("-- invalid syntax: array type missing closing --");
-int[ x = 4;
+int32[ x = 4;
 
 print("-- invalid syntax tests end --");

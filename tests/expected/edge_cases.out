@@ -1,0 +1,27 @@
+-- edge: empty int array literal used immediately --
+1
+-- edge: nested scopes deep variable access --
+8
+-- edge: numeric same-type arithmetic --
+7
+5.000000
+5.000000
+-- edge: compound assignments and inc/dec --
+0
+1
+-- edge: while loop zero iterations --
+loop skipped
+-- edge: function returning array and array param --
+21
+-- edge: method argument type mismatch is not here (all valid) --
+99
+-- edge: array access expression in arithmetic --
+100
+-- edge: equality and relational chaining separately --
+true
+true
+true
+-- edge: clear then reuse array --
+42
+-- edge: empty array literal passed as arg (should have undetermined type so skip) --
+-- edge cases complete --

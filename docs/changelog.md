@@ -2,6 +2,26 @@
 
 firescript follows [Semantic Versioning](https://semver.org/). This makes it easier to understand the impact of changes in each release.
 
+## Currently in Development
+
+### Breaking Changes
+
+- Removed legacy numeric aliases: `int`, `float`, and `double`.
+    - Use explicit-width types instead: `int8|16|32|64`, `uint8|16|32|64`, and `float32|64|128`.
+    - Integer literals default to `int32` when unsuffixed.
+    - No implicit numeric promotions. Arithmetic and comparisons require operands of the exact same type.
+    - Modulo (`%`) is defined only for integer types.
+
+### New Language Features
+
+- Fixed-width numeric types across the board:
+    - Integers: `int8`, `int16`, `int32`, `int64`, `uint8`, `uint16`, `uint32`, `uint64`.
+    - Floats: `float32`, `float64`, `float128`.
+- Literal suffixes for precise typing:
+    - Integers: `i8/i16/i32/i64` and `u8/u16/u32/u64` (e.g., `42i8`, `7u32`).
+    - Floats: `f32`, `f64`, `f128` (e.g., `3.14f32`, `2.0f64`, `1.0f128`).
+- String concatenation remains supported via `+` between two strings.
+
 ## 0.3.0 (Sep 12 2025)
 
 ### Breaking Changes

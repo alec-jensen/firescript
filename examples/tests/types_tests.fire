@@ -1,30 +1,30 @@
 // Integer arithmetic
 print("Integer arithmetic");
-int i1 = 5;
-int i2 = 10;
-int sum = i1 + i2;
-int diff = i2 - i1;
-int prod = i1 * i2;
-int quot = i2 / i1;
-int rem = i2 % 3;
+int32 i1 = 5;
+int32 i2 = 10;
+int32 sum = i1 + i2;
+int32 diff = i2 - i1;
+int32 prod = i1 * i2;
+int32 quot = i2 / i1;
+int32 rem = i2 % 3;
 print(sum);     // 15
 print(diff);    // 5
 print(prod);    // 50
 print(quot);    // 2
 print(rem);     // 1
 
-// Floating point
+// Floating point (float32)
 print("Floating point arithmetic");
-float f1 = 5.5f;
-float f2 = 10.0f;
-float fsum = f1 + f2;
+float32 f1 = 5.5f;
+float32 f2 = 10.0f;
+float32 fsum = f1 + f2;
 print(fsum);   // 15.5
 
-// Double precision
+// Double precision (float64)
 print("Double precision arithmetic");
-double d1 = 5.5;
-double d2 = 10.0;
-double dsum = d1 + d2;
+float64 d1 = 5.5;
+float64 d2 = 10.0;
+float64 dsum = d1 + d2;
 print(dsum);   // 15.5
 
 // Booleans and comparisons
@@ -33,9 +33,9 @@ bool t = true;
 bool f = false;
 print(t);       // true
 print(f);       // false
-print(i1 < i2); // true
+print(i1 < i2); // true (int32 relational)
 print(i1 == 5); // true
-print(d1 > d2); // false
+print(d1 > d2); // false (float64 relational)
 
 // Strings and concatenation
 print("String concatenation");
@@ -46,14 +46,14 @@ print(greeting); // Hello, world!
 
 // Arrays of ints
 print("Array of integers");
-int[] a = [1, 2, 3];
+int32[] a = [1, 2, 3];
 print(a.length());   // 3
 a.append(4);
 print(a.length());   // 4
 print(a[0]);         // 1
 a.insert(2, 99);
 print(a[2]);         // 99
-int popped = a.pop();
+int32 popped = a.pop();
 print(popped);       // 4
 print(a.length());   // 3
 a.clear();

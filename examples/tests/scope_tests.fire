@@ -1,10 +1,10 @@
 // Global scope
 
-int globalVar = 10;
+int32 globalVar = 10;
 
 if (globalVar > 5) {
     // Inner scope 1 (if body)
-    int innerVar1 = 20;
+    int32 innerVar1 = 20;
     print(globalVar); // Accessing outer scope variable: OK (prints 10)
     print(innerVar1); // Accessing current scope variable: OK (prints 20)
 }
@@ -13,13 +13,13 @@ if (globalVar > 5) {
 
 {
     // Inner scope 2 (bare braces)
-    int innerVar2 = 30;
+    int32 innerVar2 = 30;
     print(globalVar); // Accessing outer scope variable: OK (prints 10)
     print(innerVar2); // Accessing current scope variable: OK (prints 30)
 
     if (true) {
         // Inner scope 3 (nested if body)
-        int innerVar3 = 40;
+    int32 innerVar3 = 40;
         print(globalVar); // OK (prints 10)
         print(innerVar2); // OK (prints 30)
         print(innerVar3); // OK (prints 40)

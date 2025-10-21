@@ -56,46 +56,45 @@ comment
 
 // Variables
 
-// Types are: int, float, double, bool, string, char, tuple, T
+// Types are: int8, int16, int32, int64, uint8, uint16, uint32, uint64, float32, float64, float128, bool, string, char, tuple, T
 
-int a = 10;
+int32 a = 10;
 float b = 10.5;
 double c = 10.5;
 bool d = true; // or false
 string e = "Hello";
-tuple<int, string> t = (10, "Hello");
+tuple<int32, string> t = (10, "Hello");
 T f = 10; // T is a generic type
 
-int g; // variables can be declared without being initialized, but must be initialized before use.
+int32 g; // variables can be declared without being initialized, but must be initialized before use.
 g = 10; // now g is initialized and can be used
 
 // Arrays
 
 // Arrays in firescript are different from other languages
-// They are very similar to Python's lists
 // They do not have a fixed size
 // They can not, however, contain different types than the type they are declared with
 
-int[] arr = {1, 2, 3, 4, 5}; // arrays can contain any type, and are mutable. fixed length
-int[] arr2 = new int[]; // create an array
+int32[] arr = {1, 2, 3, 4, 5}; // arrays can contain any type, and are mutable. fixed length
+int32[] arr2 = new int32[]; // create an array
 
 // Arrays can be accessed using the index operator
 arr[0] = 10; // set the first element to 10
-int firstElement = arr[0]; // get the first element
+int32 firstElement = arr[0]; // get the first element
 
 // If the index is negative, it will start from the end of the array
-int lastElement = arr[-1]; // get the last element
+int32 lastElement = arr[-1]; // get the last element
 
 // Arrays can be sliced using the slice operator
 // [start:end:step]
 // start defaults to 0, end defaults to the length of the array, step defaults to 1
 // If start is negative, it will start from the end of the array
 // If end is negative, it will end from the end of the array
-int[] sliced = arr[0:2]; // get the first two elements
-int[] sliced2 = arr[2:]; // get all elements from the third element
-int[] sliced3 = arr[:2]; // get the first two elements
-int[] sliced4 = arr[0:2:2]; // get the first two elements with a step of 2
-int[] reversed = arr[::-1]; // reverse the array
+int32[] sliced = arr[0:2]; // get the first two elements
+int32[] sliced2 = arr[2:]; // get all elements from the third element
+int32[] sliced3 = arr[:2]; // get the first two elements
+int32[] sliced4 = arr[0:2:2]; // get the first two elements with a step of 2
+int32[] reversed = arr[::-1]; // reverse the array
 
 // Array methods
 
@@ -115,13 +114,13 @@ arr.pop(0);
 arr.clear();
 
 // length - get the length of the array
-int length = arr.length;
+int32 length = arr.length;
 
 // index - get the index of an element
-int index = arr.index(10);
+int32 index = arr.index(10);
 
 // count - count the number of occurrences of an element
-int count = arr.count(10);
+int32 count = arr.count(10);
 
 // sort - sort the array
 arr.sort();
@@ -136,12 +135,12 @@ arr.sort();
 // By default, variables are non-nullable unless otherwise specified
 // This works for all types, including arrays
 
-nullable int f = null; // nullable
-int g = 10; // non-nullable
+nullable int32 f = null; // nullable
+int32 g = 10; // non-nullable
 
 // To make a variable constant, add the "const" keyword. Constants must be initialized when declared and cannot be changed.
 
-const int h = 10;
+const int32 h = 10;
 
 // If a constant is an object, the object itself is constant, but the object's properties can be changed (unless they are also constant)
 
@@ -178,27 +177,27 @@ string formattedRawByteString = rfb"Hello, {name} \n World"; // You can combine 
 // firescript provides some functions to convert between types
 // toInt(), toFloat(), toDouble(), toBool(), toString(), toChar()
 
-int a = toInt(10.5); // a will be 10
+int32 a = toInt(10.5); // a will be 10
 float b = toFloat(10); // b will be 10.0
 double c = toDouble(10); // c will be 10.0
 bool d = toBool(0); // d will be false
 string e = toString(10); // e will be "10"
 char f = toChar("A"); // f will be 'A'
 
-int g = toInt("10"); // g will be 10
+int32 g = toInt("10"); // g will be 10
 float h = toFloat("10.5"); // h will be 10.5
 double i = toDouble("10.5"); // i will be 10.5
 bool j = toBool("true"); // j will be true
 char k = toChar("A"); // k will be 'A'
 
-// Type checking
+    int32 a = toInt(10.5); // a will be 10
 // firescript provides the typeof() function to check the type of a variable
 // This is useful for generic types
 
 // Logic structures
 
 // Scopes
-
+    int32 g = toInt("10"); // g will be 10
 // Scopes are defined by curly braces
 
 {
@@ -208,11 +207,11 @@ char k = toChar("A"); // k will be 'A'
 // Variables declared inside a scope are only accessible inside that scope and any nested scopes
 
 {
-    int a = 10;
+    int32 a = 10;
 
     {
         print(a); // This will print 10
-        int b = 20;
+        int32 b = 20;
     }
 
     print(b); // This will throw an error
@@ -295,7 +294,7 @@ void printHello()
     print("Hello");
 }
 
-int add(int a, int b)
+int32 add(int32 a, int32 b)
 {
     return a + b;
 }
@@ -303,7 +302,7 @@ int add(int a, int b)
 // Nullable methods and parameters
 // Nullable parameters must be the last parameters in the method. Required parameters cannot follow nullable parameters
 
-nullable int add(int a, nullable int b, nullable int c) // b & c are optional. If not provided, they will be null
+nullable int32 add(int32 a, nullable int32 b, nullable int32 c) // b & c are optional. If not provided, they will be null
 {
     if (b == null)
     {
@@ -313,16 +312,15 @@ nullable int add(int a, nullable int b, nullable int c) // b & c are optional. I
     return a + b;
 }
 
-// Nested methods
-
-int add(int a, int b)
+// Nested methods (example)
+int32 add_nested(int32 a, int32 b)
 {
-    int add(int c, int d)
+    int32 add_inner(int32 c, int32 d)
     {
         return c + d;
     }
 
-    return add(a, b);
+    return add_inner(a, b);
 }
 
 // Calling a method with optional parameters
@@ -337,11 +335,11 @@ class Person
 {
     // Define class variables
     string name;
-    nullable int age;
+    nullable int32 age;
 
     // `this` is the class instance. It is passed as the first argument to all constructors and non-static methods
     // it can be called whatever you want, but `this` is the convention
-    Person(this, string name, int age)
+    Person(this, string name, int32 age)
     {
         this.name = name;
         this.age = age;
@@ -361,7 +359,7 @@ class Person
         this.name = name;
     }
 
-    string set(this, int age)
+    string set(this, int32 age)
     {
         this.age = age;
     }
@@ -371,7 +369,7 @@ class Person
         return this.name;
     }
 
-    int getAge(this)
+    int32 getAge(this)
     {
         return this.age;
     }
@@ -398,7 +396,7 @@ class Student from Person
 {
     string school;
 
-    Student(this, string name, int age, string school)
+    Student(this, string name, int32 age, string school)
     {
         super.Student(name, age); // Call the parent constructor. super is the parent instance
 
@@ -432,10 +430,10 @@ string age = person.age; // This will throw an error
 // The syntax is `ternary condition then value1 else value2`
 // This syntax is more readable and easier to understand than the traditional ternary operator
 
-int a = 10;
-int b = 20;
+int32 a = 10;
+int32 b = 20;
 
-int c = ternary a > b then a else b; // c will be 20
+int32 c = ternary a > b then a else b; // c will be 20
 
 // Generators
 

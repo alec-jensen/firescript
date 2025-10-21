@@ -1,6 +1,7 @@
 import logging
 import re
 
+
 class Token:
     type: str
     value: str
@@ -13,6 +14,7 @@ class Token:
 
     def __str__(self):
         return f"Token('{self.type}', '{self.value}', {self.index})"
+
 
 class Lexer:
     identifier: str = r"[a-zA-Z_][a-zA-Z0-9_]*"
@@ -33,9 +35,17 @@ class Lexer:
     }
 
     types: dict[str, str] = {
-        "INT": r"int",
-        "FLOAT": r"float",
-        "DOUBLE": r"double",
+        "INT8": r"int8",
+        "INT16": r"int16",
+        "INT32": r"int32",
+        "INT64": r"int64",
+        "UINT8": r"uint8",
+        "UINT16": r"uint16",
+        "UINT32": r"uint32",
+        "UINT64": r"uint64",
+        "FLOAT32": r"float32",
+        "FLOAT64": r"float64",
+        "FLOAT128": r"float128",
         "BOOL": r"bool",
         "STRING": r"string",
         "TUPLE": r"tuple",
@@ -84,13 +94,28 @@ class Lexer:
         "NOT": r"\!",
     }
 
+    # Literal patterns
+    # Notes:
+    # - Support underscores in numeric literals (e.g., 1_000, 0xFF_FF)
+    # - Support bases for integers: 0b, 0o, 0x (with underscores)
+    # - Support integer suffixes: i8|i16|i32|i64|u8|u16|u32|u64
+    # - Support float forms with decimal and/or exponent, with suffixes: f|f32|f64|f128
+    #   (legacy 'f' is treated as float32 downstream)
+    # - Keep token categories aligned with parser expectations. The parser will further
+    #   interpret suffixes to determine precise types.
+    float_core = r"(?:[0-9](?:_?[0-9])*\.(?:[0-9](?:_?[0-9])*)?(?:[eE][+\-]?(?:[0-9](?:_?[0-9])*))?|[0-9](?:_?[0-9])*(?:[eE][+\-]?(?:[0-9](?:_?[0-9])*)))"
+    int_core = r"(?:0[bB](?:_?[01])+|0[oO](?:_?[0-7])+|0[xX](?:_?[0-9a-fA-F])+|[0-9](?:_?[0-9])*)"
+
     literals: dict[str, str] = {
         "BOOLEAN_LITERAL": r"true|false",
         "NULL_LITERAL": r"null",
         "VOID_LITERAL": r"void",
-        "FLOAT_LITERAL": r"(-?)[0-9]+\.[0-9]+f",
-        "DOUBLE_LITERAL": r"(-?)[0-9]+\.[0-9]+",
-        "INTEGER_LITERAL": r"(-?)[0-9]+",
+    # Float literal with explicit suffix (f, f32, f64, f128) - longest first to avoid premature 'f' match
+    "FLOAT_LITERAL": rf"-?{float_core}(?:f128|f64|f32|f)",
+        # Float literal without suffix
+        "DOUBLE_LITERAL": rf"-?{float_core}",
+        # Integer literal (bases with underscores) with optional width/unsigned suffix
+        "INTEGER_LITERAL": rf"-?{int_core}(?:i8|i16|i32|i64|u8|u16|u32|u64)?",
         "STRING_LITERAL": r"(?:[rfb](?!.*[rfb])){0,3}\"(?:\\.|[^\\\"])*\"",
     }
 
@@ -102,7 +127,13 @@ class Lexer:
 
     def __init__(self, file: str) -> None:
         self.file: str = file
-        self.all_token_types = self.comments | self.keywords | self.seperators | self.operators | self.literals
+        self.all_token_types = (
+            self.comments
+            | self.keywords
+            | self.seperators
+            | self.operators
+            | self.literals
+        )
 
     def tokenize(self):
         logging.debug(f"tokenizing file")
@@ -131,7 +162,7 @@ class Lexer:
                 else:
                     ch = self.file[index]
                     # Skip whitespace silently (space, tab, newline, carriage return)
-                    if ch in (' ', '\t', '\n', '\r'):
+                    if ch in (" ", "\t", "\n", "\r"):
                         index += 1
                         continue
                     # Emit UNKNOWN token for any other unexpected single character

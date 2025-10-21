@@ -1,7 +1,9 @@
 import logging
 
+
 class Colors:
-    """ ANSI color codes """
+    """ANSI color codes"""
+
     BLACK = "\033[0;30m"
     RED = "\033[0;31m"
     GREEN = "\033[0;32m"
@@ -38,13 +40,19 @@ class Colors:
             kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
             del kernel32
 
+
 class LogFormatter(logging.Formatter):
     prefix = f"{Colors.BLUE}[%(asctime)s] "
     msg = "[%(levelname)8s] --- %(message)s "
     suffix = f"{Colors.DARK_GRAY}"
 
     FORMATS = {
-        logging.DEBUG: prefix + Colors.LIGHT_GRAY + msg + suffix + "(%(name)s - %(filename)s:%(lineno)s)" + Colors.END,
+        logging.DEBUG: prefix
+        + Colors.LIGHT_GRAY
+        + msg
+        + suffix
+        + "(%(name)s - %(filename)s:%(lineno)s)"
+        + Colors.END,
         logging.INFO: prefix + Colors.LIGHT_WHITE + msg + suffix + Colors.END,
         logging.WARNING: prefix + Colors.YELLOW + msg + suffix + Colors.END,
         logging.ERROR: prefix + Colors.LIGHT_RED + msg + suffix + Colors.END,
@@ -53,6 +61,5 @@ class LogFormatter(logging.Formatter):
 
     def format(self, record):
         log_fmt = self.FORMATS.get(record.levelno)
-        formatter = logging.Formatter(log_fmt, '%H:%M:%S')
+        formatter = logging.Formatter(log_fmt, "%H:%M:%S")
         return formatter.format(record)
-    

@@ -5,13 +5,13 @@
 
 // input
 
-// range(int end)
+// range(int32 end)
 // start defaults to 0, step defaults to 1, inclusive defaults to false
 
-// range(int start, int end)
+// range(int32 start, int32 end)
 // step defaults to 1, inclusive defaults to false
 
-// range(int start, int end, int step)
+// range(int32 start, int32 end, int32 step)
 // inclusive defaults to false
 
-// range(int start, int end, int step, bool inclusive)
+// range(int32 start, int32 end, int32 step, bool inclusive)

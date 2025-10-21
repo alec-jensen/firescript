@@ -14,5 +14,6 @@ def get_line_and_coumn_from_index(file: str, index: int) -> tuple[int, int]:
 
     return line, column
 
+
 def get_line(file: str, line: int) -> str:
     return file.splitlines()[line - 1]

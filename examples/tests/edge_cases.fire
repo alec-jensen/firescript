@@ -3,35 +3,35 @@
 // while loops with zero iterations, if without else, function returning array, function with array params
 
 print("-- edge: empty int array literal used immediately --");
-int[] empty = [];
+int32[] empty = [];
 // append then pop to ensure methods on previously empty array
 empty.append(1);
 print(empty.pop());
 
 print("-- edge: nested scopes deep variable access --");
-int base = 5;
+int32 base = 5;
 {
-    int a = base + 1;
+    int32 a = base + 1;
     {
-        int b = a + 1;
+    int32 b = a + 1;
         {
-            int c = b + 1; // chain
+            int32 c = b + 1; // chain
             print(c); // expect 8
         }
     }
 }
 
-print("-- edge: numeric widening promotions --");
-int i = 2;
-float f = 3.0f;
-double dd = 4.0;
-// valid combinations (parser/type checker currently promotes inside binary handling)
-print(i + f); // expect float
-print(f + dd); // expect double
-print(i + dd); // expect double
+print("-- edge: numeric same-type arithmetic --");
+int32 i = 2;
+float32 f = 3.0f;
+float64 dd = 4.0;
+// Only same-type arithmetic is allowed; demonstrate valid cases
+print(i + 5); // int32
+print(f + 2.0f); // float32
+print(dd + 1.0); // float64
 
 print("-- edge: compound assignments and inc/dec --");
-int cx = 10;
+int32 cx = 10;
 // simple compound (ensuring parser accepts it)
 cx += 5;
 cx -= 3;
@@ -40,41 +40,41 @@ cx /= 3;
 cx %= 4;
 print(cx); // final value just for exercise
 
-int counter = 0;
+int32 counter = 0;
 counter++;
 counter++;
 counter--;
 print(counter);
 
 print("-- edge: while loop zero iterations --");
-int limit = 0;
-while (limit < 0) { // should not execute
+int32 limit = 0;
+while (limit < 0) { // should not execute (int32 < int32 is valid)
     print("UNREACHABLE");
 }
 print("loop skipped");
 
 print("-- edge: function returning array and array param --");
-int[] build(int n) {
-    int[] arr = [n, n+1];
+int32[] build(int32 n) {
+    int32[] arr = [n, n+1];
     return arr;
 }
 
-int sum2(int[] vals) {
-    int a0 = vals[0];
-    int a1 = vals[1];
+int32 sum2(int32[] vals) {
+    int32 a0 = vals[0];
+    int32 a1 = vals[1];
     return a0 + a1;
 }
 
-int[] made = build(10);
+int32[] made = build(10);
 print(sum2(made)); // expect 21
 
 print("-- edge: method argument type mismatch is not here (all valid) --");
-int[] seq = [1,2,3];
+int32[] seq = [1,2,3];
 seq.insert(0, 99);
 print(seq[0]); // 99
 
 print("-- edge: array access expression in arithmetic --");
-int x = seq[0] + 1; // tests ARRAY_ACCESS inside expression
+int32 x = seq[0] + 1; // tests ARRAY_ACCESS inside expression
 print(x);
 
 print("-- edge: equality and relational chaining separately --");

@@ -1,0 +1,22 @@
+-- int add --
+5
+25
+-- float addFloat --
+4.000000
+-- double mulDouble --
+6.000000
+-- array return & param --
+15
+-- bool bothTrue --
+true
+false
+-- string greet --
+Hello, firescript
+-- void logValues --
+42
+3.140000
+value
+-- numericMix --
+9.000000
+-- firstChar --
+Z

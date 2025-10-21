@@ -1,0 +1,60 @@
+Test 1: Array declaration and initialization
+[?, ?, ?, ?, ?]
+
+Test 2: Array indexing
+10
+30
+50
+
+Test 3: Array pop() operation
+Before pop:
+[?, ?, ?, ?, ?]
+Popped element:
+20
+After pop:
+[?, ?, ?, ?]
+Popped last element:
+50
+After pop last:
+[?, ?, ?]
+
+Test 4: Array append() operation
+Before append:
+[?, ?, ?]
+After append 60:
+[?, ?, ?, ?]
+After append 70:
+[?, ?, ?, ?, ?]
+
+Test 5: Array insert() operation
+Before insert:
+[?, ?, ?, ?, ?]
+After insert 35 at index 2:
+[?, ?, ?, ?, ?, ?]
+After insert 5 at beginning:
+[?, ?, ?, ?, ?, ?, ?]
+
+Test 6: Array clear() operation
+Before clear:
+[?, ?, ?, ?, ?, ?, ?]
+After clear:
+[]
+
+Test 7: Empty array operations
+Empty array:
+[]
+After append to empty array:
+[?]
+
+Test 8: Multiple operations in sequence
+Initial array:
+[?, ?, ?, ?, ?]
+After pop(0), append(6), insert(1, 10):
+[?, ?, ?, ?, ?, ?]
+
+Test 9: Array size
+Array:
+[?, ?, ?, ?, ?]
+Size should be 5
+
+All array tests completed!

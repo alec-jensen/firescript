@@ -1,19 +1,10 @@
 // Recursive Fibonacci test using functions
 
-int fib(int n) {
-    if (n <= 1) {
+int64 fib(int64 n) {
+    if (n <= 1i64) {
         return n;
     }
-    return fib(n - 1) + fib(n - 2);
+    return fib(n - 1i64) + fib(n - 2i64);
 }
 
-int n = int(input("How many Fibonacci numbers do you want to generate? "));
-if (n <= 0) {
-    print("Please enter a positive integer.");
-} else {
-    int i = 0;
-    while (i < n) {
-        print(fib(i));
-        i = i + 1;
-    }
-}
+print(fib(47i64));
