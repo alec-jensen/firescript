@@ -54,8 +54,8 @@ Tests are run on an AMD Ryzen 7 5800H processor.
 | C             | 3.5s (avg)     |
 | firescript ⭐ | 4.2s (avg)     |
 | Rust          | 5.8s (avg)     |
-| Go            | 13.2s (avg)    |
 | Zig           | 6.5s (avg)     |
+| Go            | 13.2s (avg)    |
 
 ## Getting Started
 
