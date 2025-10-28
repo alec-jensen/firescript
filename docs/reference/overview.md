@@ -18,8 +18,9 @@ The firescript compiler is under active development. Current status:
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Copyable Types | ⚠️ Partial | `bool`, `string`, `char` implemented; `intN`, `floatN` planned |
+| Copyable Types | ⚠️ Partial | `bool`, `string`, `char`, `intN`, `floatN` |
 | Arrays | ⚠️ Partial | Basic operations work; slicing not implemented |
+| Memory Model | ⚠️ In Progress | Ownership model documented; compiler enforcement WIP. Arrays are targeted as the first Owned type. See [Memory Management](memory_management.md). |
 | Control Flow | ⚠️ Partial | `if/else` and `while` loops work; `for` loops planned |
 | Functions | ⚠️ Partial | Functions can be defined and used but lack some planned features |
 | Classes | ❌ Planned | Object-oriented features planned for future versions |

@@ -22,6 +22,15 @@ directive <name> [<arg1> [, <arg2> ...]];
 directive enable_syscalls;
 ```
 
+- Enable compiler-inserted drops (preprocessor inserts drop() calls):
+
+Should ONLY be used internally by the preprocessor.
+
+```firescript
+directive enable_drops;
+```
+
 ## Available Directives
 
 - `enable_syscalls`: Allows the use of syscalls in the file. This is required for files in the standard library that need syscall access.
+- `enable_drops`: Enables the preprocessor to insert deterministic drop() calls for Owned values (e.g., arrays) at scope boundaries and early exits.

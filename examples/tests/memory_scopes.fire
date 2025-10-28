@@ -1,0 +1,7 @@
+int32[] a = [1, 2, 3];
+print(a.length());
+{
+    int32[] b = [10, 20];
+    print(b.length());
+}
+print(a.length());

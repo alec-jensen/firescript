@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "varray.h"
 #include <gmp.h>
 #include <mpfr.h>
 #include "runtime.h"
@@ -180,61 +179,6 @@ bool firescript_strcmp_ref(RefCountedObject *s1_obj, RefCountedObject *s2_obj)
     return strcmp((const char *)s1_obj->data, (const char *)s2_obj->data) == 0;
 }
 
-void firescript_print_array(VArray *array, const char *elem_type)
-{
-    if (!array)
-    {
-        printf("null");
-        return;
-    }
-
-    printf("[");
-    for (size_t i = 0; i < array->size; i++)
-    {
-        // Print each element according to its type
-        if (strcmp(elem_type, "int") == 0)
-        {
-            int64_t value = ((int64_t *)(array->data))[i];
-            printf("%ld", value);
-        }
-        else if (strcmp(elem_type, "BigInt") == 0)
-        {
-            mpz_t *value_ptr = (mpz_t *)(array->data) + i;
-            mpz_out_str(stdout, 10, *value_ptr);
-        }
-        else if (strcmp(elem_type, "decimal") == 0)
-        {
-            mpfr_t *value_ptr = (mpfr_t *)(array->data) + i;
-            mpfr_out_str(stdout, 10, 10, *value_ptr, MPFR_RNDN);
-        }
-        else if (strcmp(elem_type, "float") == 0 || strcmp(elem_type, "double") == 0)
-        {
-            double value = ((double *)(array->data))[i];
-            printf("%f", value);
-        }
-        else if (strcmp(elem_type, "bool") == 0)
-        {
-            bool value = ((bool *)(array->data))[i];
-            printf("%s", value ? "true" : "false");
-        }
-        else if (strcmp(elem_type, "string") == 0)
-        {
-            char *value = ((char **)(array->data))[i];
-            printf("\"%s\"", value ? value : "null");
-        }
-        else
-        {
-            printf("?");
-        }
-
-        // Print comma between elements, but not after the last one
-        if (i < array->size - 1)
-        {
-            printf(", ");
-        }
-    }
-    printf("]\n");
-}
 
 // Print a float followed by newline
 void firescript_print_float(float x)

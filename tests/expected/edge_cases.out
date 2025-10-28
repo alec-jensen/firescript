@@ -1,5 +1,6 @@
--- edge: empty int array literal used immediately --
+-- edge: fixed-size array basics --
 1
+2
 -- edge: nested scopes deep variable access --
 8
 -- edge: numeric same-type arithmetic --
@@ -11,7 +12,7 @@
 1
 -- edge: while loop zero iterations --
 loop skipped
--- edge: function returning array and array param --
+-- edge: functions (no array params/returns) --
 21
 -- edge: method argument type mismatch is not here (all valid) --
 99
@@ -21,7 +22,7 @@ loop skipped
 true
 true
 true
--- edge: clear then reuse array --
+-- edge: reuse variable with new array --
 42
--- edge: empty array literal passed as arg (should have undetermined type so skip) --
+-- edge: avoid empty array literals in fixed-size mode --
 -- edge cases complete --

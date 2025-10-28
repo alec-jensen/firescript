@@ -1,0 +1,15 @@
+// Constructors and instance methods test
+class Point {
+    int32 x;
+    int32 y;
+    // Constructor named same as class
+    Point(int32 x, int32 y) {
+        return Point(x, y);
+    }
+    int32 sum() {
+        return self.x + self.y;
+    }
+}
+
+Point p = new Point(2, 3);
+print(p.sum());

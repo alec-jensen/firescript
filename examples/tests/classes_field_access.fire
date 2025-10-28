@@ -1,0 +1,12 @@
+// Class field access test
+class Point {
+    int32 x;
+    int32 y;
+    Point Point(int32 x, int32 y) {
+        return Point(x, y);
+    }
+}
+
+Point p = new Point(0, 0);
+p.x = 7;
+print(p.x);

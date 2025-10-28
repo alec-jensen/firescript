@@ -9,6 +9,7 @@ import glob
 from lexer import Lexer
 from parser import Parser
 from log_formatter import LogFormatter
+from preprocessor import enable_and_insert_drops
 
 
 def setup_logging(debug_mode=False):
@@ -62,6 +63,14 @@ def compile_file(file_path, target, cc=None, output=None):
         logging.error(f"Parsing failed with {len(parser_instance.errors)} errors")
         return False
 
+    # Preprocess: enable and insert drop() calls if needed (ownership cleanup)
+    try:
+        ast = enable_and_insert_drops(ast)
+        logging.debug("Preprocessing (drop insertion) completed.")
+    except Exception as e:
+        logging.error(f"Preprocessing failed: {e}")
+        return False
+
     logging.debug("Starting code generation...")
 
     if target == "native":
@@ -97,7 +106,7 @@ def compile_file(file_path, target, cc=None, output=None):
 
         logging.debug(f"Using C compiler: {compiler}")
 
-        # Update the compile command to include varray.c and use detected compiler
+        # Build the transpiled C with runtime
         compile_command = [
             compiler,
             "-O3",
@@ -116,7 +125,6 @@ def compile_file(file_path, target, cc=None, output=None):
             ".",
             temp_c_file,
             "firescript/runtime/runtime.c",
-            "firescript/runtime/varray.c",
             "-Wl,-O2",
             "-Wl,--as-needed",
             "-Wl,--gc-sections",

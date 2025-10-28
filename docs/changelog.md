@@ -4,6 +4,10 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 
 ## Currently in Development
 
+These are unversioned changes living on the main branch. They will be included in the next release.
+
+This is a MAJOR rewrite and WILL be buggy and will not work correctly.
+
 ### Breaking Changes
 
 - Removed legacy numeric aliases: `int`, `float`, and `double`.
@@ -11,6 +15,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
     - Integer literals default to `int32` when unsuffixed.
     - No implicit numeric promotions. Arithmetic and comparisons require operands of the exact same type.
     - Modulo (`%`) is defined only for integer types.
+- Beginning memory management implementation
 
 ### New Language Features
 
@@ -21,6 +26,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
     - Integers: `i8/i16/i32/i64` and `u8/u16/u32/u64` (e.g., `42i8`, `7u32`).
     - Floats: `f32`, `f64`, `f128` (e.g., `3.14f32`, `2.0f64`, `1.0f128`).
 - String concatenation remains supported via `+` between two strings.
+- Initial support for classes
 
 ## 0.3.0 (Sep 12 2025)
 

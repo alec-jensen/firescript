@@ -29,9 +29,9 @@ print("-- BOOLS & STRINGS --");
 bool t = true; bool f = false; print(t); print(f); print(t == t); print(t == f); print(f == f);
 string s1 = "fi"; string s2 = "rescript"; string s3 = s1 + s2; print(s1); print(s2); print(s3);
 
-print("-- ARRAYS: typed ops --");
-int32[] ai = [1,2,3]; print(ai.length()); ai.append(4); print(ai.length()); print(ai[0]); ai.insert(1, 10); print(ai[1]); int32 popped = ai.pop(); print(popped); print(ai.length()); ai.clear(); print(ai.length());
-string[] as = ["a","b"]; print(as.length()); as.append("c"); print(as.length()); print(as[2]); as.clear(); print(as.length());
+print("-- ARRAYS: fixed-size --");
+int32[] ai = [1,2,3]; print(ai.length()); print(ai[0]); print(ai[1]); print(ai[2]);
+string[] as = ["a","b","c"]; print(as.length()); print(as[2]);
 
 print("-- REL/COMP: same-type only --");
 print( (1 + 2) == 3 ); print( (1 + 2) > 1 ); print( (1 + 2) < 5 );

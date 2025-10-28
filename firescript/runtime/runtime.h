@@ -4,7 +4,6 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "varray.h"
 #include <gmp.h>
 #include <mpfr.h>
 
@@ -59,7 +58,6 @@ void firescript_print_double(double x);
 char *firescript_input(char *prompt);
 char *firescript_strcat(const char *s1, const char *s2);
 bool firescript_strcmp(const char *s1, const char *s2);
-void firescript_print_array(VArray *array, const char *elem_type);
 void firescript_cleanup(void);
 
 #endif

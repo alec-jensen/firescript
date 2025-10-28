@@ -1,3 +1,5 @@
+<img src="assets/firescript-logo.svg" alt="firescript logo" width="200"/>
+
 # firescript
 
 firescript is a statically and strongly typed programming language that compiles natively or to JavaScript + Wasm. It is designed to be simple, powerful, and easy to learn while remaining expressive for advanced applications.

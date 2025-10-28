@@ -30,9 +30,46 @@ class CCodeGenerator:
     def __init__(self, ast: ASTNode):
         self.ast = ast
         self.symbol_table: dict[str, tuple[str, bool]] = {}  # (type, is_array)
+        # Fixed-size array lengths by variable name
+        self.array_lengths: dict[str, int] = {}
         self.array_temp_counter = (
             0  # Counter for generating unique array variable names
         )
+        # Track arrays declared per lexical scope to free them at scope exit
+        # Each element is a list of variable names for that scope
+        self.scope_stack: list[list[str]] = [[]]
+        # Track whether we're currently visiting inside a function body
+        self._in_function: bool = False
+        # Detect if drop() insertion is enabled via directive in AST
+        self.drops_enabled: bool = any(
+            c.node_type == NodeTypes.DIRECTIVE and getattr(c, "name", "") == "enable_drops"
+            for c in (self.ast.children or [])
+        )
+        # Collect class names and metadata for constructors and methods
+        self.class_names: set[str] = set()
+        self.class_fields: dict[str, list[tuple[str, str]]] = {}
+        self.class_methods: dict[str, list[ASTNode]] = {}
+        for c in (self.ast.children or []):
+            if c.node_type == NodeTypes.CLASS_DEFINITION:
+                self.class_names.add(c.name)
+                fields: list[tuple[str, str]] = []
+                methods: list[ASTNode] = []
+                for ch in c.children:
+                    if ch.node_type == NodeTypes.CLASS_FIELD:
+                        fields.append((ch.name, ch.var_type or "int32"))
+                    elif ch.node_type == NodeTypes.CLASS_METHOD_DEFINITION:
+                        methods.append(ch)
+                self.class_fields[c.name] = fields
+                self.class_methods[c.name] = methods
+
+    def _free_arrays_in_current_scope(self) -> list[str]:
+        """Return lines to free arrays declared in the current scope (no pop)."""
+        # Fixed-size arrays require no dynamic cleanup
+        return []
+
+    def _free_arrays_in_all_active_scopes(self) -> list[str]:
+        """Return lines to free arrays declared in all active scopes (outer to inner)."""
+        return []
 
     def _handle_array_index(self, index_expr):
         """Helper function to properly handle array indices in C"""
@@ -41,24 +78,36 @@ class CCodeGenerator:
 
     def generate(self) -> str:
         """Generate C code from the AST"""
-    header = "#include <stdio.h>\n#include <stdbool.h>\n#include <stdint.h>\n#include <inttypes.h>\n#include <string.h>\n"
+        header = "#include <stdio.h>\n#include <stdbool.h>\n#include <stdint.h>\n#include <inttypes.h>\n#include <string.h>\n"
         header += '#include "firescript/runtime/runtime.h"\n'
         header += '#include "firescript/runtime/conversions.h"\n'
-        header += '#include "firescript/runtime/varray.h"\n'
-        # Emit function definitions first, then the main body statements
+        # No dynamic array runtime needed for fixed-size arrays
+        # Emit class typedefs, then function definitions, then the main body statements
+        typedefs: list[str] = []
         function_defs: list[str] = []
         main_lines: list[str] = []
+
+        # Ensure outer (main) scope exists for tracking arrays declared at top-level
+        self.scope_stack = [[]]
 
         for child in self.ast.children:
             if child.node_type == NodeTypes.FUNCTION_DEFINITION:
                 func_code = self._emit_function_definition(child)
                 if func_code:
                     function_defs.append(func_code)
+            elif child.node_type == NodeTypes.CLASS_DEFINITION:
+                typedefs.append(self._emit_class_typedef(child))
+                # Emit method functions for this class
+                for m in self.class_methods.get(child.name, []):
+                    mcode = self._emit_method_definition(child.name, m)
+                    if mcode:
+                        function_defs.append(mcode)
             else:
                 stmt_code = self.emit_statement(child)
                 if stmt_code:
                     main_lines.append(stmt_code)
 
+        typedefs_code = ("\n\n".join(typedefs) + "\n\n") if typedefs else ""
         functions_code = ("\n\n".join(function_defs) + "\n\n") if function_defs else ""
 
         main_code = "int main(void) {\n"
@@ -67,16 +116,124 @@ class CCodeGenerator:
                 "    " + line for line in "\n".join(main_lines).split("\n")
             )
             main_code += f"{indented_body}\n"
+        # Free any arrays declared at the top level (outermost scope)
+        if (not self.drops_enabled) and self.scope_stack and self.scope_stack[0]:
+            # Fixed-size arrays don't require explicit frees
+            pass
         main_code += "    firescript_cleanup();\n"
         main_code += "    return 0;\n"
         main_code += "}\n"
 
-        return header + functions_code + main_code
+        return header + typedefs_code + functions_code + main_code
 
     def _map_type_to_c(self, t: str) -> str:
         if t == "void":
             return "void"
         return FIRETYPE_TO_C.get(t, t)
+
+    def _normalize_integer_literal(self, s: str) -> str:
+        """Convert firescript integer literal (with optional suffix/underscores) to valid C."""
+        # strip underscores
+        s2 = s.replace("_", "")
+        # strip width/unsigned suffixes
+        for suf in ("i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64"):
+            if s2.lower().endswith(suf):
+                return s2[: -len(suf)]
+        return s2
+
+    def _normalize_float_literal(self, s: str, ftype: str | None) -> str:
+        """Convert firescript float literal (with optional suffix/underscores) to valid C.
+        ftype can be 'float32' | 'float64' | 'float128' or None if unknown.
+        """
+        s2 = s.replace("_", "")
+        # Remove explicit suffix from literal text if present
+        for suf in ("f128", "f64", "f32", "f"):
+            if s2.lower().endswith(suf):
+                s2 = s2[: -len(suf)]
+                break
+        # Apply C-specific suffix based on target type
+        if ftype == "float32":
+            return s2 + "f"
+        if ftype == "float128":
+            # Map to long double with L suffix
+            return s2 + "L"
+        # float64 (double) default: no suffix
+        return s2
+
+    def _emit_class_typedef(self, node: ASTNode) -> str:
+        """Emit a C typedef struct for a class definition."""
+        lines = [f"typedef struct {node.name} {{"]
+        for field in node.children:
+            if field.node_type == NodeTypes.CLASS_FIELD:
+                ctype = self._map_type_to_c(field.var_type or "int32")
+                lines.append(f"    {ctype} {field.name};")
+        lines.append(f"}} {node.name};")
+        return "\n".join(lines)
+
+    def _emit_method_definition(self, class_name: str, node: ASTNode) -> str:
+        """Emit a C function for a class method: ClassName_methodName(ClassName self, ...) { ... }"""
+        ret_fs = node.return_type or "void"
+        if ret_fs.endswith("[]"):
+            raise NotImplementedError("Array returns are not supported in methods")
+        ret_c = self._map_type_to_c(ret_fs)
+
+        params = []
+        body_node = None
+        for child in node.children:
+            if child.node_type == NodeTypes.PARAMETER:
+                base_type = child.var_type or "int32"
+                if child.is_array:
+                    raise NotImplementedError("Array parameters are not supported in methods")
+                ctype = self._map_type_to_c(base_type)
+                params.append(f"{ctype} {child.name}")
+            elif child.node_type == NodeTypes.SCOPE:
+                body_node = child
+
+        params_sig = ", ".join(params) if params else "void"
+
+        # Prepare symbol table for method scope (register params)
+        prev_symbols = self.symbol_table.copy()
+        for child in node.children:
+            if child.node_type == NodeTypes.PARAMETER:
+                self.symbol_table[child.name] = (
+                    child.var_type or "int32",
+                    child.is_array,
+                )
+
+        prev_in_fn = self._in_function
+        self._in_function = True
+        prev_scope_stack = self.scope_stack
+        self.scope_stack = [[]]
+        body_code = self._visit(body_node) if body_node else "{ }"
+        self.scope_stack = prev_scope_stack
+        self._in_function = prev_in_fn
+        self.symbol_table = prev_symbols
+
+        cname = class_name
+        mname = node.name
+        return f"{ret_c} {cname}_{mname}({params_sig}) {body_code}"
+
+    def _literal_to_c(self, node: ASTNode) -> str:
+        """Turn a LITERAL node into a valid C expression string."""
+        tok = node.token
+        if tok is None:
+            return ""
+        t = tok.type
+        # Booleans, null, and strings can be used as-is (string includes quotes)
+        if t == "BOOLEAN_LITERAL":
+            return tok.value
+        if t == "NULL_LITERAL":
+            return "NULL"
+        if t == "STRING_LITERAL":
+            return tok.value
+        # Numbers
+        if t == "INTEGER_LITERAL":
+            return self._normalize_integer_literal(tok.value)
+        if t in ("FLOAT_LITERAL", "DOUBLE_LITERAL"):
+            # Choose target float type if known from parser
+            ftype = getattr(node, "return_type", None)
+            return self._normalize_float_literal(tok.value, ftype)
+        return tok.value or ""
 
     def _emit_function_definition(self, node: ASTNode) -> str:
         # node.return_type holds the firescript return type (e.g., 'void')
@@ -85,7 +242,9 @@ class CCodeGenerator:
         if ret_fs and ret_fs.endswith("[]"):
             is_array_return = True
             ret_fs = ret_fs[:-2]
-        ret_c = "VArray*" if is_array_return else self._map_type_to_c(ret_fs)
+        if is_array_return:
+            raise NotImplementedError("Returning arrays is not supported for fixed-size arrays")
+        ret_c = self._map_type_to_c(ret_fs)
 
         # Parameters are all children except the last one, which is the body scope
         params = []
@@ -94,7 +253,9 @@ class CCodeGenerator:
             if child.node_type == NodeTypes.PARAMETER:
                 base_type = child.var_type or "int32"
                 is_array_param = child.is_array
-                ctype = "VArray*" if is_array_param else self._map_type_to_c(base_type)
+                if is_array_param:
+                    raise NotImplementedError("Array parameters are not supported for fixed-size arrays")
+                ctype = self._map_type_to_c(base_type)
                 params.append(f"{ctype} {child.name}")
             elif child.node_type == NodeTypes.SCOPE:
                 body_node = child
@@ -110,7 +271,20 @@ class CCodeGenerator:
                     child.is_array,
                 )
 
+        # Mark we are in a function for return cleanup logic
+        prev_in_fn = self._in_function
+        self._in_function = True
+        # Reset scope stack for the function body (fresh nested scopes inside function)
+        prev_scope_stack = self.scope_stack
+        self.scope_stack = [[]]
         body_code = self._visit(body_node) if body_node else "{ }"
+        # At function end, append frees if drops are not enabled
+        if (not self.drops_enabled) and body_code.startswith("{") and body_code.endswith("}") and self.scope_stack and self.scope_stack[0]:
+            # No dynamic array cleanup needed for fixed arrays
+            body_code = body_code
+        # Restore state
+        self.scope_stack = prev_scope_stack
+        self._in_function = prev_in_fn
 
         # Restore symbol table after emitting function
         self.symbol_table = prev_symbols
@@ -125,15 +299,20 @@ class CCodeGenerator:
         # (Previously special handling for big number assignments removed)
 
         code = self._visit(node)
-        # Only add semicolon if the code doesn't already end with one,
-        # isn't a block, and isn't a preprocessor directive.
-        if (
-            code
-            and not code.strip().endswith(";")
-            and not code.strip().endswith("}")
-            and not code.strip().startswith("#")
-        ):
-            code += ";"
+        # Only add semicolon if needed. Special-case return statements whose expression may end with '}'
+        if code:
+            stripped = code.strip()
+            needs_semicolon = True
+            if stripped.endswith(";"):
+                needs_semicolon = False
+            elif stripped.endswith("}"):
+                # Blocks shouldn't get semicolons, but return statements returning
+                # compound literals like '(Type){...}' end with '}' and still need one.
+                needs_semicolon = (node.node_type == NodeTypes.RETURN_STATEMENT)
+            elif stripped.startswith("#"):
+                needs_semicolon = False
+            if needs_semicolon:
+                code += ";"
         return code
 
     def _visit(self, node: ASTNode) -> str:
@@ -149,255 +328,124 @@ class CCodeGenerator:
                     lines.append(stmt_code)
             return "\n".join(lines)
         elif node.node_type == NodeTypes.SCOPE:
+            # Enter new scope for tracking arrays
+            self.scope_stack.append([])
             lines = []
             for child in node.children:
                 # In scopes, each child is a statement.
                 stmt_code = self.emit_statement(child)
                 if stmt_code:
                     lines.append(stmt_code)
+            # Append frees for arrays declared in this scope only when drops not enabled
+            to_free = list(self.scope_stack.pop())
+            # No cleanup needed for fixed-size arrays
             return "{\n" + "\n".join("    " + line for line in lines) + "\n}"
         elif node.node_type == NodeTypes.ARRAY_LITERAL:
-            # Handle array literals
-            fire_type = node.var_type or "int32"
-            c_type = FIRETYPE_TO_C.get(fire_type, "int32_t")
-            array_size = len(node.children)
-
-            temp_var = f"temp_array_{self.array_temp_counter}"
-            self.array_temp_counter += 1
-
-            # Create the VArray and populate it with elements
-            lines = [
-                f"VArray* {temp_var} = varray_create({array_size}, sizeof({c_type}));"
-            ]
-
-            for i, elem in enumerate(node.children):
-                elem_code = self._visit(elem)
-                elem_var = f"{temp_var}_elem{i}"
-
-                if fire_type == "string":
-                    # elem_code already includes quotes if it's a string literal
-                    lines.append(f"char* {elem_var} = {elem_code};")
-                    lines.append(f"varray_append({temp_var}, &{elem_var});")
-                else:
-                    lines.append(f"{c_type} {elem_var} = {elem_code};")
-                    lines.append(f"varray_append({temp_var}, &{elem_var});")
-
-            return temp_var
+            # Only supported as part of variable initialization for fixed-size arrays
+            # If evaluated as an expression directly, return a comment placeholder
+            return "/* array literal */"
 
         elif node.node_type == NodeTypes.VARIABLE_DECLARATION:
             var_type_fs = node.var_type or "int32"
-            var_type_c = FIRETYPE_TO_C.get(
-                var_type_fs, f"/* unknown_type_{var_type_fs} */"
-            )
+            var_type_c = self._map_type_to_c(var_type_fs)
             self.symbol_table[node.name] = (var_type_fs, node.is_array)
 
             if node.is_array:
                 init_node = node.children[0] if node.children else None
-                # If initializer is an array literal, materialize it element by element.
+                # Fixed-size arrays: support only literal initialization
                 if init_node and init_node.node_type == NodeTypes.ARRAY_LITERAL:
-                    array_node = init_node
+                    elements = init_node.children
+                    elem_exprs = [self._visit(elem) for elem in elements]
                     fire_type = var_type_fs
                     c_type = FIRETYPE_TO_C.get(fire_type, "int32_t")
-                    elements = array_node.children
-                    lines = [
-                        f"VArray* {node.name} = varray_create({len(elements)}, sizeof({c_type}));"
-                    ]
-                    for i, elem in enumerate(elements):
-                        elem_code = self._visit(elem)
-                        elem_var = f"{node.name}_elem{i}"
-                        if fire_type == "string":
-                            lines.append(f"char* {elem_var} = {elem_code};")
-                            lines.append(f"varray_append({node.name}, &{elem_var});")
-                        else:
-                            lines.append(f"{c_type} {elem_var} = {elem_code};")
-                            lines.append(f"varray_append({node.name}, &{elem_var});")
-                    return "\n".join(lines)
+                    n = len(elem_exprs)
+                    self.array_lengths[node.name] = n
+                    init_list = ", ".join(elem_exprs)
+                    return f"{c_type} {node.name}[{n}] = {{ {init_list} }};"
                 else:
-                    # Otherwise, assume initializer expression returns a VArray* (e.g., function or method call)
-                    init_expr = self._visit(init_node) if init_node else "NULL"
-                    # If the generated code contains newlines (e.g., a multi-line method call), wrap in a block then assign.
-                    if "\n" in init_expr:
-                        temp_var = f"__init_arr_{self.array_temp_counter}"
-                        self.array_temp_counter += 1
-                        return f"VArray* {node.name};\n{{\n{init_expr}\n{node.name} = {init_node.name if init_node else 'NULL'};\n}}"
-                    return f"VArray* {node.name} = {init_expr};"
+                    raise NotImplementedError("Fixed-size arrays must be initialized with a literal")
             else:
                 init_value = self._visit(node.children[0]) if node.children else "0"
                 return f"{var_type_c} {node.name} = {init_value};"
         elif node.node_type == NodeTypes.ARRAY_ACCESS:
-            # Handle array access: arr[idx]
+            # Fixed-size array access: arr[idx]
             array_node = node.children[0]
             index_node = node.children[1]
-
             array_name = self._visit(array_node)
             index_code = self._visit(index_node)
-
-            # Determine the type of the array elements
-            fire_type = self.symbol_table.get(array_name, ("int32", False))[0]
-            c_type = FIRETYPE_TO_C.get(fire_type, "int32_t")
-
-            # Generate code for accessing the array element
-            return f"(({c_type}*)({array_name}->data))[{index_code}]"
+            return f"{array_name}[{index_code}]"
+        elif node.node_type == NodeTypes.LITERAL:
+            return self._literal_to_c(node)
+        elif node.node_type == NodeTypes.BINARY_EXPRESSION:
+            # Generic arithmetic or string concatenation
+            left_node, right_node = node.children
+            left = self._visit(left_node)
+            right = self._visit(right_node)
+            op = node.name
+            # String concatenation with '+'
+            left_t = (
+                getattr(left_node, "return_type", None)
+                or getattr(left_node, "var_type", None)
+                or (self.symbol_table.get(getattr(left_node, "name", ""), (None, False))[0]
+                   if left_node.node_type == NodeTypes.IDENTIFIER else None)
+            )
+            right_t = (
+                getattr(right_node, "return_type", None)
+                or getattr(right_node, "var_type", None)
+                or (self.symbol_table.get(getattr(right_node, "name", ""), (None, False))[0]
+                   if right_node.node_type == NodeTypes.IDENTIFIER else None)
+            )
+            if op == "+" and (left_t == "string" or right_t == "string"):
+                return f"firescript_strcat({left}, {right})"
+            # Numeric or generic binary op fallback
+            return f"({left} {op} {right})"
         elif node.node_type == NodeTypes.METHOD_CALL:
-            # Handle method call: obj.method(args)
+            # Fixed-size array methods: only length()/size()
             object_node = node.children[0]
-            object_code = self._visit(object_node)  # C name of the object/array
+            object_code = self._visit(object_node)
             method_name = node.name
-
-            args_code = [self._visit(child) for child in node.children[1:]]
-
             if (
                 object_node.var_type
-                and self.symbol_table.get(object_node.name, (None, False))[1]
-            ):  # If it's an array
-                elem_type, _ = self.symbol_table.get(object_node.name, ("int32", False))
-
-                if method_name == "pop":
-                    temp_popped = f"__popped_val_{self.array_temp_counter}"
-                    self.array_temp_counter += 1
-
-                    # Handle the index differently if it's provided
-                    if args_code and len(node.children) > 1:
-                        c_idx_expr_str = args_code[0]
-                    else:
-                        c_idx_expr_str = f"{object_code}->size - 1"
-
-                    c_elem = FIRETYPE_TO_C.get(elem_type, elem_type)
-                    return (
-                        f"({{ {c_elem} {temp_popped} = (({c_elem}*)({object_code}->data))[{c_idx_expr_str}]; "
-                        f"{object_code} = varray_remove({object_code}, {c_idx_expr_str}); {temp_popped}; }})"
-                    )
-                elif method_name == "append":
-                    if args_code:
-                        element = args_code[0]
-                        tmp = f"_tmp_elem_{self.array_temp_counter}"
-                        self.array_temp_counter += 1
-                        lines = []
-                        if elem_type in ("int8","int16","int32","int64","uint8","uint16","uint32","uint64"):
-                            c_elem = FIRETYPE_TO_C.get(elem_type, "int32_t")
-                            lines.append(f"{c_elem} {tmp} = {element};")
-                            lines.append(
-                                f"{object_code} = varray_append({object_code}, &{tmp});"
-                            )
-                        elif elem_type == "string":
-                            lines.append(f"char* {tmp} = {element};")
-                            lines.append(
-                                f"{object_code} = varray_append({object_code}, &{tmp});"
-                            )
-
-                        else:
-                            lines.append(f"{elem_type} {tmp} = {element};")
-                            lines.append(
-                                f"{object_code} = varray_append({object_code}, &{tmp});"
-                            )
-                        return "\n".join(lines)
-                elif method_name == "insert":
-                    if len(args_code) >= 2 and len(node.children) >= 3:
-                        index_node = node.children[1]  # First arg is index
-                        index = args_code[0]
-                        element = args_code[1]
-
-                        # Handle literal integer differently
-                        idx = index  # Index already an integer expression
-
-                        tmp2 = f"_tmp_elem_{self.array_temp_counter}"
-                        self.array_temp_counter += 1
-                        lines = []
-                        if elem_type in ("int8","int16","int32","int64","uint8","uint16","uint32","uint64"):
-                            c_elem = FIRETYPE_TO_C.get(elem_type, "int32_t")
-                            lines.append(f"{c_elem} {tmp2} = {element};")
-                            lines.append(
-                                f"{object_code} = varray_insert({object_code}, {idx}, &{tmp2});"
-                            )
-                        elif elem_type == "string":
-                            lines.append(f"char* {tmp2} = {element};")
-                            lines.append(
-                                f"{object_code} = varray_insert({object_code}, {idx}, &{tmp2});"
-                            )
-
-                        else:
-                            lines.append(f"{elem_type} {tmp2} = {element};")
-                            lines.append(
-                                f"{object_code} = varray_insert({object_code}, {idx}, &{tmp2});"
-                            )
-                        return "\n".join(lines)
-                elif method_name == "clear":
-                    # clear() - Remove all elements
-                    return f"varray_clear({object_code})"
-
-                elif method_name == "length" or method_name == "size":
-                    # Return the size of the array
-                    return f"{object_code}->size"
-
-            # Default case for unknown methods
-            return f"{object_code}.{method_name}({', '.join(args_code)})"
-
-        elif node.node_type == NodeTypes.VARIABLE_ASSIGNMENT:
-            expr_code = self._visit(node.children[0]) if node.children else ""
-            return f"{node.name} = {expr_code}"
-        elif node.node_type == NodeTypes.BINARY_EXPRESSION:
-            left = self._visit(node.children[0])
-            right = self._visit(node.children[1])
-
-            # Use native arithmetic for floating point (maps to float/double/long double)
-            if node.return_type in ("float32", "float64", "float128"):
-                op = node.name
-                return f"({left} {op} {right})"
-
-            # Use native arithmetic for standard int (int64_t)
-            if node.return_type in ("int8","int16","int32","int64","uint8","uint16","uint32","uint64"):
-                op = node.name
-                return f"({left} {op} {right})"
-            if (
-                (
-                    node.children[0].token
-                    and node.children[0].token.type == "STRING_LITERAL"
-                )
-                or node.children[0].return_type == "string"
-                or node.children[0].var_type == "string"
+                and self.symbol_table.get(getattr(object_node, "name", ""), (None, False))[1]
             ):
-                if node.children[1] is not None and (
-                    (
-                        node.children[1].token is not None
-                        and node.children[1].token.type == "STRING_LITERAL"
-                    )
-                    or node.children[1].return_type == "string"
-                    or node.children[1].var_type == "string"
-                ):
-                    node.return_type = "string"
-                    return f"firescript_strcat({left}, {right})"
-                else:
-                    raise ValueError(
-                        "temp: Cannot concatenate string with non-string type"
-                    )
-
-            op = node.name
-            return f"({left} {op} {right})"
-        elif node.node_type == NodeTypes.LITERAL:
-            # Integer literal initialization (emit as-is; mapped by type elsewhere)
-            if node.token and node.token.type == "INTEGER_LITERAL":
-                val = node.token.value
-                # Strip firescript width/unsigned suffixes (i8/i16/i32/i64/u8/u16/u32/u64) for C
-                for suf in ("i8","i16","i32","i64","u8","u16","u32","u64"):
-                    if val.endswith(suf):
-                        val = val[: -len(suf)]
-                        break
-                return val
-            # Normalize float literal suffixes to valid C forms
-            if node.token and node.token.type == "FLOAT_LITERAL":
-                val = node.token.value
-                if val.endswith("f32"):
-                    val = val[:-3] + "f"  # float literal in C
-                elif val.endswith("f64"):
-                    val = val[:-3]  # double: no suffix
-                elif val.endswith("f128"):
-                    val = val[:-4] + "L"  # long double literal in C
-                return val
-            if node.token is None:
-                raise ValueError("Literal node missing token")
-            return node.token.value
+                if method_name in ("length", "size"):
+                    n = self.array_lengths.get(object_node.name)
+                    if n is not None:
+                        return f"{n}"
+                    return f"(sizeof({object_code})/sizeof({object_code}[0]))"
+                raise NotImplementedError(
+                    f"Array method '{method_name}' is not supported for fixed-size arrays"
+                )
+            # Class instance method call -> dispatch to free function Class_method(self, ...)
+            # Determine class name from object expression type
+            obj_type = (
+                getattr(object_node, "var_type", None)
+                or getattr(object_node, "return_type", None)
+            )
+            if obj_type in self.class_names:
+                args_code = [self._visit(child) for child in node.children[1:]]
+                return f"{obj_type}_{method_name}({object_code}{(', ' + ', '.join(args_code)) if args_code else ''})"
+            # Fallback (shouldn't happen if type checking is correct)
+            args_code = [self._visit(child) for child in node.children[1:]]
+            return f"{object_code}.{method_name}({', '.join(args_code)})"
+        elif node.node_type == NodeTypes.FIELD_ACCESS:
+            # Emit obj.field
+            obj_code = self._visit(node.children[0]) if node.children else ""
+            return f"{obj_code}.{node.name}"
         elif node.node_type == NodeTypes.IDENTIFIER:
             return node.name
+        elif node.node_type == NodeTypes.VARIABLE_ASSIGNMENT:
+            # Simple assignment to identifier from expression
+            name = node.name
+            value_code = self._visit(node.children[0]) if node.children else "0"
+            return f"{name} = {value_code}"
+        elif node.node_type == NodeTypes.ASSIGNMENT:
+            # General assignment: lhs can be identifier, field access, or array access
+            lhs = node.children[0] if node.children else None
+            rhs = node.children[1] if node.children and len(node.children) > 1 else None
+            lhs_code = self._visit(lhs) if lhs else ""
+            rhs_code = self._visit(rhs) if rhs else "0"
+            return f"{lhs_code} = {rhs_code}"
         elif node.node_type == NodeTypes.RETURN_STATEMENT:
             # Return with or without expression
             if node.children:
@@ -406,20 +454,40 @@ class CCodeGenerator:
                     if node.children[0] is not None
                     else ""
                 )
+                # Free arrays in all active scopes before returning from a function
+                cleanup_lines = []
+                if (not self.drops_enabled) and self._in_function:
+                    cleanup_lines = self._free_arrays_in_all_active_scopes()
+                if cleanup_lines:
+                    cleanup = "\n".join(cleanup_lines)
+                    return f"{{\n{cleanup}\nreturn {expr_code};\n}}"
                 return f"return {expr_code}"
+            # bare return
+            cleanup_lines = []
+            if (not self.drops_enabled) and self._in_function:
+                cleanup_lines = self._free_arrays_in_all_active_scopes()
+            if cleanup_lines:
+                cleanup = "\n".join(cleanup_lines)
+                return f"{{\n{cleanup}\nreturn;\n}}"
             return "return"
         elif node.node_type == NodeTypes.FUNCTION_CALL:
+            # Positional constructors for classes (no zero-arg default): map args by field order
+            if node.name in getattr(self, "class_names", set()):
+                args = [self._visit(arg) for arg in node.children]
+                fields = self.class_fields.get(node.name, [])
+                inits = []
+                for (fname, _ftype), val in zip(fields, args):
+                    inits.append(f".{fname} = {val}")
+                init_str = ", ".join(inits)
+                return f"({node.name}){{ {init_str} }}"
             if node.name == "print":
                 arg = node.children[0]
                 arg_code = self._visit(arg)
-                # Array length/size methods return native size_t
-                if arg.node_type == NodeTypes.METHOD_CALL and arg.name in (
-                    "length",
-                    "size",
-                ):
-                    return f'printf("%zu\\n", {arg_code})'
+                # Array length/size prints as integer
+                if arg.node_type == NodeTypes.METHOD_CALL and arg.name in ("length", "size"):
+                    return f'printf("%d\\n", {arg_code})'
 
-                # Detect arrays early and print using runtime helper
+                # Detect fixed-size arrays and print inline
                 is_arr = False
                 elem_type_for_array = None
                 if arg.node_type == NodeTypes.IDENTIFIER:
@@ -427,7 +495,43 @@ class CCodeGenerator:
                         arg.name, (None, False)
                     )
                     if is_arr:
-                        return f'firescript_print_array({arg.name}, "{elem_type_for_array}")'
+                        n = self.array_lengths.get(arg.name)
+                        length_expr = (
+                            str(n) if n is not None else f"(sizeof({arg.name})/sizeof({arg.name}[0]))"
+                        )
+                        lines = []
+                        lines.append('printf("[");')
+                        lines.append(f"for (size_t __i = 0; __i < {length_expr}; ++__i) {{")
+                        if elem_type_for_array == "bool":
+                            lines.append(f'    printf("%s", {arg.name}[__i] ? "true" : "false");')
+                        elif elem_type_for_array == "string":
+                            lines.append(f'    printf("%s", {arg.name}[__i]);')
+                        elif elem_type_for_array == "int8":
+                            lines.append(f'    printf("%" PRId8, (int8_t){arg.name}[__i]);')
+                        elif elem_type_for_array == "int16":
+                            lines.append(f'    printf("%" PRId16, (int16_t){arg.name}[__i]);')
+                        elif elem_type_for_array == "int32":
+                            lines.append(f'    printf("%" PRId32, (int32_t){arg.name}[__i]);')
+                        elif elem_type_for_array == "int64":
+                            lines.append(f'    printf("%" PRId64, (int64_t){arg.name}[__i]);')
+                        elif elem_type_for_array == "uint8":
+                            lines.append(f'    printf("%" PRIu8, (uint8_t){arg.name}[__i]);')
+                        elif elem_type_for_array == "uint16":
+                            lines.append(f'    printf("%" PRIu16, (uint16_t){arg.name}[__i]);')
+                        elif elem_type_for_array == "uint32":
+                            lines.append(f'    printf("%" PRIu32, (uint32_t){arg.name}[__i]);')
+                        elif elem_type_for_array == "uint64":
+                            lines.append(f'    printf("%" PRIu64, (uint64_t){arg.name}[__i]);')
+                        elif elem_type_for_array in ("float32", "float64"):
+                            lines.append(f'    printf("%f", {arg.name}[__i]);')
+                        elif elem_type_for_array == "float128":
+                            lines.append(f'    printf("%Lf", {arg.name}[__i]);')
+                        else:
+                            lines.append('    printf("%s", "<unknown>");')
+                        lines.append(f'    if (__i + 1 < {length_expr}) printf(", ");')
+                        lines.append("}")
+                        lines.append('printf("]\\n");')
+                        return "\n".join(lines)
 
                 arg_type = getattr(arg, "return_type", None)
 
@@ -484,6 +588,9 @@ class CCodeGenerator:
                     return f'printf("%s\\n", {arg_code})'
 
                 return f'printf("%s\\n", {arg_code})'  # Last resort
+            elif node.name == "drop":
+                # Fixed-size arrays are copyable; drop is a no-op
+                return "/* drop noop */"
             elif node.name == "input":
                 return f"firescript_input({self._visit(node.children[0])})"
             elif node.name == "int":
@@ -506,6 +613,17 @@ class CCodeGenerator:
             else:
                 args = ", ".join(self._visit(arg) for arg in node.children)
                 return f"{node.name}({args})"
+        elif node.node_type == NodeTypes.TYPE_METHOD_CALL:
+            # Dispatch to generated constructor/static function: Class_method(args)
+            class_name = getattr(node, "class_name", "")
+            args = ", ".join(self._visit(arg) for arg in node.children)
+            return f"{class_name}_{node.name}({args})"
+        elif node.node_type == NodeTypes.CONSTRUCTOR_CALL:
+            # new Class(args) -> call generated function Class_Class(args)
+            args = [self._visit(arg) for arg in node.children]
+            cname = node.name
+            arglist = ", ".join(args)
+            return f"{cname}_{cname}({arglist})"
         elif node.node_type == NodeTypes.IF_STATEMENT:
             # The first child is the condition, the second is the then-branch,
             # and the optional third child is the else-branch.
@@ -576,8 +694,18 @@ class CCodeGenerator:
             body_code = self._visit(node.children[1])
             return f"while ({condition_code}) {body_code}"
         elif node.node_type == NodeTypes.BREAK_STATEMENT:
+            # On break, free arrays declared in current scope so far
+            cleanup_lines = self._free_arrays_in_current_scope()
+            if cleanup_lines:
+                cleanup = "\n".join(cleanup_lines)
+                return f"{{\n{cleanup}\nbreak;\n}}"
             return "break"
         elif node.node_type == NodeTypes.CONTINUE_STATEMENT:
+            # On continue, free arrays declared in current scope so far
+            cleanup_lines = self._free_arrays_in_current_scope()
+            if cleanup_lines:
+                cleanup = "\n".join(cleanup_lines)
+                return f"{{\n{cleanup}\ncontinue;\n}}"
             return "continue"
         elif node.node_type == NodeTypes.RELATIONAL_EXPRESSION:
             leftNode, rightNode = node.children

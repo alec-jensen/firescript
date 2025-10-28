@@ -3,6 +3,7 @@ from enum import Enum, auto
 
 class NodeTypes(Enum):
     ROOT = "Root"
+    DIRECTIVE = "Directive"
     IF_STATEMENT = "IfStatement"
     ELIF_STATEMENT = "ElifStatement"
     ELSE_STATEMENT = "ElseStatement"
@@ -26,3 +27,15 @@ class NodeTypes(Enum):
     FUNCTION_DEFINITION = "FunctionDefinition"
     PARAMETER = "Parameter"
     RETURN_STATEMENT = "ReturnStatement"
+    CLASS_DEFINITION = "ClassDefinition"
+    CLASS_FIELD = "ClassField"
+    FIELD_ACCESS = "FieldAccess"
+    ASSIGNMENT = "Assignment"
+    CLASS_METHOD_DEFINITION = "ClassMethodDefinition"
+    TYPE_METHOD_CALL = "TypeMethodCall"
+    CONSTRUCTOR_CALL = "ConstructorCall"
+
+
+class CompilerDirective(Enum):
+    ENABLE_SYSCALLS = "enable_syscalls"
+    ENABLE_DROPS = "enable_drops"

@@ -2,11 +2,14 @@ import logging
 from typing import Union, Optional
 
 from lexer import Token
+from utils.type_utils import is_owned, is_copyable
 from utils.file_utils import get_line_and_coumn_from_index, get_line
-from enums import NodeTypes
+from enums import NodeTypes, CompilerDirective
 
 
 class ASTNode:
+    # Optional semantic metadata for semantic passes
+    value_category: Optional[str]
     def __init__(
         self,
         node_type: NodeTypes,
@@ -44,6 +47,8 @@ class ASTNode:
         self.is_array: bool = is_array
         self.is_ref_counted: bool = is_ref_counted
         self.parent: Optional[ASTNode] = None  # Parent is typically set externally
+        # Optional semantic metadata; populated by analysis passes
+        self.value_category = None
 
     def tree(self, prefix: str = "", is_last: bool = True) -> str:
         # Build the display line differently for variable declarations.
@@ -127,6 +132,9 @@ class Parser:
         "typeof": "string",
     }
 
+    # Register for user-defined methods (className -> methodName -> signature)
+    user_methods = {}
+
     def __init__(self, tokens: list[Token], file: str, filename: str):
         self.tokens: list[Token] = tokens
         self.current_token: Optional[Token] = self.tokens[0]
@@ -137,12 +145,22 @@ class Parser:
         # Registry for user-defined functions discovered during parsing
         # Maps function name -> return type string (e.g., "int", "void")
         self.user_functions = {}
+        # Collected compiler directives in this file
+        self.directives: set[str] = set()
+        # User-defined class registry and type names
+        self.user_classes: dict[str, dict[str, str]] = {}
+        self.user_types: set[str] = set()
+        # className -> methodName -> {"return": str, "params": [str, ...]}
+        self.user_methods = {}
 
     def _is_type_token(self, tok: Optional[Token]) -> bool:
         """Return True if the token denotes a type keyword."""
         if tok is None:
             return False
         if tok.type in self.TYPE_TOKEN_NAMES:
+            return True
+        # Allow user-defined class names as types
+        if tok.type == "IDENTIFIER" and tok.value in self.user_types:
             return True
         return False
 
@@ -325,6 +343,32 @@ class Parser:
         token = self.current_token
         if token is None:
             return None
+        # Java-like constructor: new ClassName(args)
+        if token.type == "NEW":
+            self.advance()
+            cls_tok = self.consume("IDENTIFIER")
+            if cls_tok is None:
+                self.error("Expected class name after 'new'", self.current_token)
+                return None
+            if cls_tok.value not in self.user_types:
+                self.error(f"Unknown type '{cls_tok.value}' in constructor", cls_tok)
+            if not self.consume("OPEN_PAREN"):
+                self.error("Expected '(' after constructor type", self.current_token)
+                return None
+            args = []
+            if self.current_token and self.current_token.type != "CLOSE_PAREN":
+                while True:
+                    arg = self.parse_expression()
+                    if arg:
+                        args.append(arg)
+                    if self.current_token and self.current_token.type == "COMMA":
+                        self.consume("COMMA")
+                        continue
+                    break
+            if not self.consume("CLOSE_PAREN"):
+                self.error("Expected ')' after constructor arguments", self.current_token)
+                return None
+            return ASTNode(NodeTypes.CONSTRUCTOR_CALL, cls_tok, cls_tok.value, args, cls_tok.index)
         if token.type == "OPEN_PAREN":
             self.advance()  # skip '('
             expr = self.parse_expression()
@@ -358,36 +402,112 @@ class Parser:
             return node
         elif token.type == "IDENTIFIER" or token.value in self.builtin_functions:
             self.advance()
-            node = ASTNode(NodeTypes.IDENTIFIER, token, token.value, [], token.index)
-            # Array access
-            if self.current_token and self.current_token.type == "OPEN_BRACKET":
-                return self.parse_array_access(node)
-            # Method call
-            elif self.current_token and self.current_token.type == "DOT":
-                return self.parse_method_call(node)
-            # Function call
-            elif self.current_token and self.current_token.type == "OPEN_PAREN":
-                open_paren = self.consume("OPEN_PAREN")
-                arguments = []
+            # Special-case: type-level method call like Type.method(...)
+            if token.value in self.user_types and self.current_token and self.current_token.type == "DOT":
+                self.consume("DOT")
+                method_name = self.consume("IDENTIFIER")
+                if not method_name:
+                    self.error("Expected method name after type '.'", self.current_token)
+                    return None
+                if not self.consume("OPEN_PAREN"):
+                    self.error("Expected '(' after type method name", self.current_token)
+                    return None
+                args = []
                 if self.current_token and self.current_token.type != "CLOSE_PAREN":
                     while True:
                         arg = self.parse_expression()
                         if arg:
-                            arguments.append(arg)
+                            args.append(arg)
                         if self.current_token and self.current_token.type == "COMMA":
                             self.consume("COMMA")
                             continue
                         break
-                close_paren = self.consume("CLOSE_PAREN")
-                if not close_paren:
-                    self.error("Expected ')' after function arguments", token)
-                node = ASTNode(
-                    NodeTypes.FUNCTION_CALL, token, token.value, arguments, token.index
-                )
-                if token.value in self.builtin_functions:
-                    node.return_type = self.builtin_functions[token.value]
-                elif token.value in getattr(self, "user_functions", {}):
-                    node.return_type = self.user_functions[token.value]
+                if not self.consume("CLOSE_PAREN"):
+                    self.error("Expected ')' after arguments", self.current_token)
+                    return None
+                node = ASTNode(NodeTypes.TYPE_METHOD_CALL, method_name, method_name.value, args, method_name.index)
+                setattr(node, "class_name", token.value)
+                return node
+
+            node = ASTNode(NodeTypes.IDENTIFIER, token, token.value, [], token.index)
+            # Handle postfix operations in a loop: array access, field access, method call, function call
+            while True:
+                # Array access
+                if self.current_token and self.current_token.type == "OPEN_BRACKET":
+                    node = self.parse_array_access(node)
+                    return node  # For now, stop at array access in primary
+                # Field access or method call starting with '.'
+                elif self.current_token and self.current_token.type == "DOT":
+                    # Lookahead to distinguish field vs method call
+                    dot_tok = self.consume("DOT")
+                    ident_tok = self.consume("IDENTIFIER")
+                    if not ident_tok:
+                        self.error("Expected identifier after '.'", self.current_token or dot_tok)
+                        break
+                    # Method call if next is '('
+                    if self.current_token and self.current_token.type == "OPEN_PAREN":
+                        # Parse arguments
+                        self.consume("OPEN_PAREN")
+                        arguments = []
+                        if self.current_token and self.current_token.type != "CLOSE_PAREN":
+                            while True:
+                                arg = self.parse_expression()
+                                if arg:
+                                    arguments.append(arg)
+                                if self.current_token and self.current_token.type == "COMMA":
+                                    self.consume("COMMA")
+                                    continue
+                                break
+                        if not self.consume("CLOSE_PAREN"):
+                            self.error("Expected ')' after method arguments", self.current_token)
+                        node = ASTNode(
+                            NodeTypes.METHOD_CALL,
+                            ident_tok,
+                            ident_tok.value,
+                            [node] + arguments,
+                            ident_tok.index,
+                        )
+                        # Array methods: handled in type checker later
+                    else:
+                        # Field access: chainable
+                        node = ASTNode(
+                            NodeTypes.FIELD_ACCESS,
+                            ident_tok,
+                            ident_tok.value,
+                            [node],
+                            ident_tok.index,
+                        )
+                        # Continue loop to allow chaining a.b.c
+                        continue
+                # Function call (identifier followed by '(')
+                elif self.current_token and self.current_token.type == "OPEN_PAREN":
+                    open_paren = self.consume("OPEN_PAREN")
+                    arguments = []
+                    if self.current_token and self.current_token.type != "CLOSE_PAREN":
+                        while True:
+                            arg = self.parse_expression()
+                            if arg:
+                                arguments.append(arg)
+                            if self.current_token and self.current_token.type == "COMMA":
+                                self.consume("COMMA")
+                                continue
+                            break
+                    close_paren = self.consume("CLOSE_PAREN")
+                    if not close_paren:
+                        self.error("Expected ')' after function arguments", token)
+                    node = ASTNode(
+                        NodeTypes.FUNCTION_CALL, token, token.value, arguments, token.index
+                    )
+                    if token.value in self.builtin_functions:
+                        node.return_type = self.builtin_functions[token.value]
+                    elif token.value in getattr(self, "user_functions", {}):
+                        node.return_type = self.user_functions[token.value]
+                    # Allow zero-arg constructor call for user-defined classes
+                    elif token.type == "IDENTIFIER" and token.value in self.user_types:
+                        # Constructor call: validate in type checker; return type will be set there
+                        pass
+                    return node
+                break
             return node
         else:
             self.error(f"Unexpected token {token.value}", token)
@@ -489,17 +609,16 @@ class Parser:
             [object_node] + arguments,
             method_name.index,
         )
-        # Set return type for array methods
+        # Set return type for array methods (fixed-size: only length/size allowed)
         if object_node.is_array:
-            elem_type = object_node.var_type
-            if method_name.value == "pop":
-                node.return_type = elem_type
-            elif method_name.value in ("append", "insert"):
-                node.return_type = elem_type + "[]"
-            elif method_name.value == "clear":
-                node.return_type = None
-            elif method_name.value in ("length", "size"):
+            if method_name.value in ("length", "size"):
                 node.return_type = "int"
+            else:
+                self.error(
+                    f"Unsupported array method '{method_name.value}' for fixed-size arrays",
+                    method_name,
+                )
+                node.return_type = None
         return node
 
     def parse_if_statement(self):
@@ -789,7 +908,43 @@ class Parser:
                             child.token,
                         )
                     new_scope[param_name] = (param_type, is_array)
+                    # Annotate parameter node with value category
+                    try:
+                        child.value_category = (
+                            "Owned" if is_owned(param_type, is_array) else (
+                                "Copyable" if is_copyable(param_type, is_array) else None
+                            )
+                        )
+                    except Exception:
+                        pass
             # Traverse body with parameter scope
+            body = node.children[-1] if node.children else None
+            if body:
+                self.resolve_variable_types(body, new_scope)
+            return
+
+        # Class method definition: similar to function but includes synthetic 'self' parameter
+        if node.node_type == NodeTypes.CLASS_METHOD_DEFINITION:
+            new_scope = current_scope.copy()
+            for child in node.children[:-1]:  # params (including 'self')
+                if child.node_type == NodeTypes.PARAMETER:
+                    param_type = child.var_type
+                    param_name = child.name
+                    is_array = child.is_array
+                    if param_name in new_scope:
+                        self.error(
+                            f"Parameter '{param_name}' already declared in an outer scope; shadowing not allowed",
+                            child.token,
+                        )
+                    new_scope[param_name] = (param_type, is_array)
+                    try:
+                        child.value_category = (
+                            "Owned" if is_owned(param_type, is_array) else (
+                                "Copyable" if is_copyable(param_type, is_array) else None
+                            )
+                        )
+                    except Exception:
+                        pass
             body = node.children[-1] if node.children else None
             if body:
                 self.resolve_variable_types(body, new_scope)
@@ -803,6 +958,15 @@ class Parser:
                     node.token,
                 )
             current_scope[node.name] = (node.var_type, node.is_array)
+            # Annotate declaration with value category
+            try:
+                node.value_category = (
+                    "Owned" if is_owned(node.var_type, node.is_array) else (
+                        "Copyable" if is_copyable(node.var_type, node.is_array) else None
+                    )
+                )
+            except Exception:
+                pass
             # Resolve initializer expression
             for child in node.children:
                 self.resolve_variable_types(child, current_scope)
@@ -814,6 +978,15 @@ class Parser:
                 self.error(f"Variable '{node.name}' not defined", node.token)
             else:
                 node.var_type, node.is_array = current_scope[node.name]
+                # Annotate identifier with value category
+                try:
+                    node.value_category = (
+                        "Owned" if is_owned(node.var_type, node.is_array) else (
+                            "Copyable" if is_copyable(node.var_type, node.is_array) else None
+                        )
+                    )
+                except Exception:
+                    pass
             return
 
         # Recurse into children for all other nodes
@@ -1153,7 +1326,27 @@ class Parser:
                         )
 
             # Return type is already set in the node for builtins during parsing
-            node_type_str = node.return_type
+            # Constructors: calling a class name acts as a constructor with positional args matching field order
+            if func_name in self.user_types:
+                # Validate against class fields order
+                fields_map = self.user_classes.get(func_name, {})
+                field_order = list(fields_map.items())  # [(name, type), ...] insertion order preserved
+                if len(child_types) != len(field_order):
+                    self.error(
+                        f"Constructor '{func_name}' expected {len(field_order)} args, got {len(child_types)}",
+                        node.token,
+                    )
+                else:
+                    for i, (arg_t, (_, exp_t)) in enumerate(zip(child_types, field_order)):
+                        if arg_t != exp_t:
+                            self.error(
+                                f"Constructor '{func_name}' arg {i+1} expected {exp_t}, got {arg_t}",
+                                node.children[i].token if i < len(node.children) else node.token,
+                            )
+                node_type_str = func_name
+                node.return_type = func_name
+            else:
+                node_type_str = node.return_type
 
         elif node.node_type == NodeTypes.METHOD_CALL:
             object_type = child_types[0]
@@ -1165,7 +1358,7 @@ class Parser:
 
             node.return_type = None  # Reset before check
 
-            if object_type.endswith("[]"):  # It's an array method
+            if isinstance(object_type, str) and object_type.endswith("[]"):  # It's an array method
                 elem_type = object_type[:-2]
                 if method_name == "append":
                     if len(arg_types) == 1:
@@ -1241,13 +1434,98 @@ class Parser:
                         node.token,
                     )
             else:
-                # TODO: Handle methods for other object types when classes are implemented
+                # Class instance methods
+                if object_type in self.user_methods and method_name in self.user_methods[object_type]:
+                    sig = self.user_methods[object_type][method_name]
+                    expected_params = sig.get("params", [])
+                    if len(arg_types) != len(expected_params):
+                        self.error(
+                            f"Method '{method_name}' for '{object_type}' expected {len(expected_params)} args, got {len(arg_types)}",
+                            node.token,
+                        )
+                    else:
+                        for i, (arg_t, exp_t) in enumerate(zip(arg_types, expected_params)):
+                            if arg_t != exp_t:
+                                self.error(
+                                    f"Argument {i+1} for method '{method_name}' expected type {exp_t}, got {arg_t}",
+                                    node.children[i+1].token if len(node.children) > i+1 else node.token,
+                                )
+                    node.return_type = sig.get("return")
+                else:
+                    self.error(
+                        f"Methods not supported for type {object_type}",
+                        node.children[0].token,
+                    )
+        elif node.node_type == NodeTypes.TYPE_METHOD_CALL:
+            class_name = getattr(node, "class_name", None)
+            method_name = node.name
+            if not class_name or class_name not in self.user_methods or method_name not in self.user_methods[class_name]:
+                self.error(f"Unknown constructor or static method '{method_name}' for type '{class_name}'", node.token)
+                return None
+            sig = self.user_methods[class_name][method_name]
+            # Require constructor to return the class type
+            if sig.get("return") != class_name:
+                self.error(f"'{method_name}' is not a constructor for type '{class_name}'", node.token)
+                return None
+            # Validate args
+            expected_params = sig.get("params", [])
+            if len(child_types) != len(expected_params):
                 self.error(
-                    f"Methods not supported for type {object_type}",
-                    node.children[0].token,
+                    f"Constructor '{class_name}.{method_name}' expected {len(expected_params)} args, got {len(child_types)}",
+                    node.token,
                 )
+            else:
+                for i, (arg_t, exp_t) in enumerate(zip(child_types, expected_params)):
+                    if arg_t != exp_t:
+                        self.error(
+                            f"Constructor '{class_name}.{method_name}' arg {i+1} expected {exp_t}, got {arg_t}",
+                            node.children[i].token if i < len(node.children) else node.token,
+                        )
+            node.return_type = class_name
+            node_type_str = class_name
 
             node_type_str = node.return_type
+        elif node.node_type == NodeTypes.CONSTRUCTOR_CALL:
+            class_name = node.name
+            # Look up a constructor method whose name equals the class name
+            if class_name not in self.user_methods or class_name not in self.user_methods[class_name]:
+                self.error(f"No constructor defined for type '{class_name}'", node.token)
+                return None
+            sig = self.user_methods[class_name][class_name]
+            expected_params = sig.get("params", [])
+            if len(child_types) != len(expected_params):
+                self.error(
+                    f"Constructor '{class_name}' expected {len(expected_params)} args, got {len(child_types)}",
+                    node.token,
+                )
+            else:
+                for i, (arg_t, exp_t) in enumerate(zip(child_types, expected_params)):
+                    if arg_t != exp_t:
+                        self.error(
+                            f"Constructor '{class_name}' arg {i+1} expected {exp_t}, got {arg_t}",
+                            node.children[i].token if i < len(node.children) else node.token,
+                        )
+            node.return_type = class_name
+            node_type_str = class_name
+
+        elif node.node_type == NodeTypes.FIELD_ACCESS:
+            # Field access: left child is the object expression
+            obj_type = child_types[0]
+            field_name = node.name
+            if obj_type is None:
+                return None
+            # Only support user-defined classes for now
+            if obj_type in self.user_classes:
+                fields = self.user_classes[obj_type]
+                if field_name in fields:
+                    node.return_type = fields[field_name]
+                    node_type_str = fields[field_name]
+                else:
+                    self.error(f"Type '{obj_type}' has no field '{field_name}'", node.token)
+                    node_type_str = None
+            else:
+                self.error(f"Field access on non-class type '{obj_type}'", node.token)
+                node_type_str = None
 
         elif node.node_type == NodeTypes.ARRAY_ACCESS:
             array_type = child_types[0]
@@ -1309,6 +1587,48 @@ class Parser:
 
     def _parse_statement(self):
         """Determine the kind of statement and parse it."""
+        # Handle compiler directives: directive <name> [<arg1>, ...];
+        if self.current_token and self.current_token.type == "DIRECTIVE":
+            dir_tok = self.current_token
+            self.advance()
+            name_tok = self.consume("IDENTIFIER")
+            if name_tok is None:
+                self.error("Expected directive name after 'directive'", self.current_token or dir_tok)
+                return None
+            # Validate directive name against known directives
+            directive_value = name_tok.value
+            try:
+                directive_enum = CompilerDirective(directive_value)
+            except Exception:
+                self.error(f"Unknown directive '{directive_value}'", name_tok)
+                directive_enum = None
+            # Consume optional simple comma-separated arguments until semicolon (currently ignored)
+            while self.current_token and self.current_token.type not in ("SEMICOLON",):
+                if self.current_token.type == "COMMA":
+                    self.advance()
+                    # Optionally accept IDENTIFIER or literals as args but ignore their values
+                    if self.current_token and self.current_token.type in (
+                        "IDENTIFIER",
+                        "INTEGER_LITERAL",
+                        "FLOAT_LITERAL",
+                        "DOUBLE_LITERAL",
+                        "STRING_LITERAL",
+                        "BOOLEAN_LITERAL",
+                    ):
+                        self.advance()
+                    continue
+                # Any unexpected token before semicolon: bail and sync
+                self.error("Unexpected token in directive arguments", self.current_token)
+                break
+            if self.current_token and self.current_token.type == "SEMICOLON":
+                self.consume("SEMICOLON")
+            # Record directive name and emit a node
+            if directive_enum is not None:
+                self.directives.add(directive_enum.value)
+                node_name = directive_enum.value
+            else:
+                node_name = directive_value
+            return ASTNode(NodeTypes.DIRECTIVE, dir_tok, node_name, [], dir_tok.index)
         # Unknown token recovery: emit error and advance
         if self.current_token and self.current_token.type == "UNKNOWN":
             bad_tok = self.current_token
@@ -1420,23 +1740,28 @@ class Parser:
                 # Could be a standalone function call statement
                 return self.parse_function_call()
             elif next_token and next_token.type == "DOT":
-                # Could be a method call used as a statement (e.g., list.clear();)
-                # Need to parse the primary expression which handles method calls
-                expr = self.parse_primary()
-                # If it parsed successfully as a method call, return it.
-                # Otherwise, it might be just an identifier (which isn't a valid statement alone)
-                # or an error occurred during parsing.
-                if expr and expr.node_type == NodeTypes.METHOD_CALL:
-                    return expr
-                else:
-                    # If it wasn't a method call, it's likely an error or just an expression
-                    # not allowed as a standalone statement here.
-                    self.error(
-                        "Expected assignment, function call, or method call",
-                        self.current_token,
-                    )
-                    self.advance()  # Consume the identifier to avoid loops
+                # Could be a method call or field access; parse the primary expression first
+                lhs = self.parse_primary()
+                if lhs is None:
                     return None
+                # If it's a method call used as a statement, return it
+                if lhs.node_type == NodeTypes.METHOD_CALL:
+                    return lhs
+                # If it's a field access followed by assignment, handle assignment
+                if self.current_token and self.current_token.type == "ASSIGN":
+                    assign_tok = self.consume("ASSIGN")
+                    rhs = self.parse_expression()
+                    if rhs is None:
+                        self.error("Expected expression after '='", self.current_token)
+                        self._sync_to_semicolon()
+                        return None
+                    # Safe token index fallback for typing
+                    idx = assign_tok.index if assign_tok else (lhs.token.index if lhs and lhs.token else 0)
+                    return ASTNode(NodeTypes.ASSIGNMENT, assign_tok, "=", [lhs, rhs], idx)
+                # Otherwise, field access alone is not a valid statement
+                self.error("Expected assignment after field access", self.current_token)
+                self._sync_to_semicolon()
+                return None
             elif next_token and next_token.type == "OPEN_BRACKET":
                 # Could be an array access followed by assignment (arr[0] = ...)
                 # This case needs careful handling. Let's parse it as an expression first.
@@ -1444,14 +1769,18 @@ class Parser:
                 # Check if the *next* token after the expression is ASSIGN
                 if self.current_token and self.current_token.type == "ASSIGN":
                     # This looks like an assignment to an array element or similar complex l-value
-                    # We need a specific parsing function for this kind of assignment.
-                    # For now, let's report an error as it's not fully handled.
-                    self.error(
-                        "Array element assignment not yet fully implemented",
-                        self.current_token,
-                    )
-                    self._sync_to_semicolon()
-                    return None
+                    assign_tok = self.consume("ASSIGN")
+                    rhs = self.parse_expression()
+                    if rhs is None:
+                        self.error("Expected expression after '='", self.current_token)
+                        self._sync_to_semicolon()
+                        return None
+                    if expr is None:
+                        self.error("Invalid assignment target", assign_tok)
+                        self._sync_to_semicolon()
+                        return None
+                    idx = assign_tok.index if assign_tok else (expr.token.index if expr and expr.token else 0)
+                    return ASTNode(NodeTypes.ASSIGNMENT, assign_tok, "=", [expr, rhs], idx)
                 return expr
             else:
                 # If it's just an identifier without assignment, function call, etc.
@@ -1482,6 +1811,11 @@ class Parser:
                 )
                 return None
             ret_is_array = True
+        if ret_is_array:
+            self.error(
+                "Array return types are not supported for fixed-size arrays",
+                ret_type_token,
+            )
 
         name_token = self.consume("IDENTIFIER")
         if name_token is None:
@@ -1510,6 +1844,11 @@ class Parser:
                         )
                         return None
                     p_is_array = True
+                if p_is_array:
+                    self.error(
+                        "Array parameters are not supported for fixed-size arrays",
+                        ptype_tok,
+                    )
                 pname_tok = self.consume("IDENTIFIER")
                 if pname_tok is None:
                     self.error("Expected parameter name", self.current_token)
@@ -1608,6 +1947,13 @@ class Parser:
                 and not self.current_token.value.strip()
             ):
                 self.advance()
+                continue
+            # Class definition
+            if self.current_token.type == "CLASS":
+                cls = self._parse_class_definition()
+                if cls:
+                    cls.parent = self.ast
+                    self.ast.children.append(cls)
                 continue
             # Try function definition first: <type> <identifier> '(' ... ')'{ ... }
             stmt = None
@@ -1713,6 +2059,253 @@ class Parser:
         self.type_check()
 
         return self.ast
+
+    def _parse_class_definition(self):
+        """Parse a class definition: class Name { <type> <field>; ... }"""
+        class_tok = self.consume("CLASS")
+        if class_tok is None:
+            return None
+        name_tok = self.consume("IDENTIFIER")
+        if name_tok is None:
+            self.error("Expected class name after 'class'", self.current_token)
+            return None
+        if not self.consume("OPEN_BRACE"):
+            self.error("Expected '{' to start class body", self.current_token)
+            return None
+        fields: list[ASTNode] = []
+        methods: list[ASTNode] = []
+        field_types: dict[str, str] = {}
+        while self.current_token and self.current_token.type != "CLOSE_BRACE":
+            # Skip comments and empty statements inside class body
+            if self.current_token.type in (
+                "SINGLE_LINE_COMMENT",
+                "MULTI_LINE_COMMENT_START",
+            ):
+                self._skip_comment()
+                continue
+            if self.current_token.type == "SEMICOLON":
+                self.advance()
+                continue
+            # Accept types that are either known types or the current class name (for methods/fields/constructors)
+            if not (self._is_type_token(self.current_token) or (
+                self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
+            )):
+                self.error("Expected field or method return type in class body", self.current_token)
+                # recover to ';' or '}'
+                while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
+                    self.advance()
+                if self.current_token and self.current_token.type == "SEMICOLON":
+                    self.advance()
+                continue
+            ftype_tok = self.current_token
+            self.advance()
+
+            # Special-case: constructor without explicit return type
+            # Pattern: ClassName(<params>) { ... }
+            if (
+                ftype_tok.type == "IDENTIFIER"
+                and ftype_tok.value == name_tok.value
+                and self.current_token
+                and self.current_token.type == "OPEN_PAREN"
+            ):
+                # Treat ftype_tok as the method name (constructor) and set return type to class name
+                method_name_tok = ftype_tok
+                # Parse parameters
+                self.consume("OPEN_PAREN")
+                params: list[ASTNode] = []
+                if self.current_token and self.current_token.type != "CLOSE_PAREN":
+                    while True:
+                        # Parameter type: allow known types or current class name
+                        if not (self.current_token and (self._is_type_token(self.current_token) or (
+                            self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
+                        ))):
+                            self.error("Expected parameter type in method", self.current_token)
+                            return None
+                        ptype_tok = self.current_token
+                        self.advance()
+                        p_is_array = False
+                        if self.current_token and self.current_token.type == "OPEN_BRACKET":
+                            self.error("Array parameters are not supported for methods", self.current_token)
+                            # try to recover
+                            while self.current_token and self.current_token.type != "CLOSE_PAREN":
+                                self.advance()
+                            break
+                        pname_tok = self.consume("IDENTIFIER")
+                        if pname_tok is None:
+                            self.error("Expected parameter name in method", self.current_token)
+                            return None
+                        param_node = ASTNode(
+                            NodeTypes.PARAMETER,
+                            pname_tok,
+                            pname_tok.value,
+                            [],
+                            pname_tok.index,
+                            self._normalize_type_name(ptype_tok),
+                            False,
+                            False,
+                            None,
+                            p_is_array,
+                            p_is_array,
+                        )
+                        params.append(param_node)
+                        if self.current_token and self.current_token.type == "COMMA":
+                            self.advance()
+                            continue
+                        break
+                if not self.consume("CLOSE_PAREN"):
+                    self.error("Expected ')' after method parameters", self.current_token)
+                    return None
+                if not (self.current_token and self.current_token.type == "OPEN_BRACE"):
+                    self.error("Expected '{' to start method body", self.current_token)
+                    return None
+                body_node = self.parse_scope()
+                if body_node is None:
+                    return None
+                # Constructor: no synthetic 'self' parameter
+                method_node = ASTNode(
+                    NodeTypes.CLASS_METHOD_DEFINITION,
+                    method_name_tok,
+                    method_name_tok.value,
+                    [*params, body_node],
+                    method_name_tok.index,
+                    None,
+                    False,
+                    False,
+                    name_tok.value,  # return type is the class itself
+                    False,
+                    False,
+                )
+                setattr(method_node, "class_name", name_tok.value)
+                setattr(method_node, "is_constructor", True)
+                methods.append(method_node)
+                continue
+            # Look ahead: IDENTIFIER then '(' => method; IDENTIFIER then ';' => field
+            name_tok2 = self.consume("IDENTIFIER")
+            if name_tok2 is None:
+                self.error("Expected identifier after type in class body", self.current_token)
+                break
+            # Method definition
+            if self.current_token and self.current_token.type == "OPEN_PAREN":
+                # Parse parameters
+                self.consume("OPEN_PAREN")
+                params: list[ASTNode] = []
+                if self.current_token and self.current_token.type != "CLOSE_PAREN":
+                    while True:
+                        # Parameter type: allow known types or current class name
+                        if not (self.current_token and (self._is_type_token(self.current_token) or (
+                            self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
+                        ))):
+                            self.error("Expected parameter type in method", self.current_token)
+                            return None
+                        ptype_tok = self.current_token
+                        self.advance()
+                        p_is_array = False
+                        if self.current_token and self.current_token.type == "OPEN_BRACKET":
+                            self.error("Array parameters are not supported for methods", self.current_token)
+                            # try to recover
+                            while self.current_token and self.current_token.type != "CLOSE_PAREN":
+                                self.advance()
+                            break
+                        pname_tok = self.consume("IDENTIFIER")
+                        if pname_tok is None:
+                            self.error("Expected parameter name in method", self.current_token)
+                            return None
+                        param_node = ASTNode(
+                            NodeTypes.PARAMETER,
+                            pname_tok,
+                            pname_tok.value,
+                            [],
+                            pname_tok.index,
+                            self._normalize_type_name(ptype_tok),
+                            False,
+                            False,
+                            None,
+                            p_is_array,
+                            p_is_array,
+                        )
+                        params.append(param_node)
+                        if self.current_token and self.current_token.type == "COMMA":
+                            self.advance()
+                            continue
+                        break
+                if not self.consume("CLOSE_PAREN"):
+                    self.error("Expected ')' after method parameters", self.current_token)
+                    return None
+                if not (self.current_token and self.current_token.type == "OPEN_BRACE"):
+                    self.error("Expected '{' to start method body", self.current_token)
+                    return None
+                body_node = self.parse_scope()
+                if body_node is None:
+                    return None
+                # Determine if this is a constructor: method name equals class name
+                is_constructor = (name_tok2.value == name_tok.value)
+                param_nodes = params
+                if not is_constructor:
+                    # Inject synthetic 'self' parameter at position 0 for instance methods
+                    self_param = ASTNode(
+                        NodeTypes.PARAMETER,
+                        name_tok2,
+                        "self",
+                        [],
+                        name_tok2.index,
+                        self._normalize_type_name(name_tok),
+                        False,
+                        False,
+                        None,
+                        False,
+                        False,
+                    )
+                    param_nodes = [self_param, *params]
+
+                method_node = ASTNode(
+                    NodeTypes.CLASS_METHOD_DEFINITION,
+                    name_tok2,
+                    name_tok2.value,
+                    [*param_nodes, body_node],
+                    name_tok2.index,
+                    None,
+                    False,
+                    False,
+                    self._normalize_type_name(ftype_tok),
+                    False,
+                    False,
+                )
+                # Tag class name on node for downstream passes
+                setattr(method_node, "class_name", name_tok.value)
+                setattr(method_node, "is_constructor", is_constructor)
+                methods.append(method_node)
+            else:
+                # Field declaration path
+                if not self.consume("SEMICOLON"):
+                    self.error("Expected ';' after field declaration", self.current_token)
+                    while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
+                        self.advance()
+                    if self.current_token and self.current_token.type == "SEMICOLON":
+                        self.advance()
+                field_type = self._normalize_type_name(ftype_tok)
+                field_node = ASTNode(NodeTypes.CLASS_FIELD, name_tok2, name_tok2.value, [], name_tok2.index, var_type=field_type)
+                fields.append(field_node)
+                field_types[name_tok2.value] = field_type
+        # consume closing brace if present
+        if self.current_token and self.current_token.type == "CLOSE_BRACE":
+            self.consume("CLOSE_BRACE")
+        # register class type
+        self.user_types.add(name_tok.value)
+        self.user_classes[name_tok.value] = field_types
+        # register methods meta
+        if name_tok.value not in self.user_methods:
+            self.user_methods[name_tok.value] = {}
+        for m in methods:
+            # Gather parameter nodes (exclude trailing body scope)
+            param_nodes = [p for p in m.children[:-1] if p.node_type == NodeTypes.PARAMETER]
+            # Exclude the synthetic 'self' only for instance methods
+            if getattr(m, "is_constructor", False):
+                effective_params = param_nodes
+            else:
+                effective_params = param_nodes[1:] if len(param_nodes) > 0 else []
+            params_types = [p.var_type for p in effective_params]
+            self.user_methods[name_tok.value][m.name] = {"return": m.return_type, "params": params_types}
+        return ASTNode(NodeTypes.CLASS_DEFINITION, name_tok, name_tok.value, [*fields, *methods], name_tok.index)
 
     def _skip_comment(self):
         """Advances past single or multi-line comments."""

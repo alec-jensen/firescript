@@ -1,0 +1,26 @@
+// Nested classes test: Rect composed of Points
+class Point {
+    int32 x;
+    int32 y;
+    Point Point(int32 x, int32 y) {
+        return Point(x, y);
+    }
+}
+
+class Rect {
+    Point topLeft;
+    Point bottomRight;
+    Rect Rect(Point tl, Point br) {
+        return Rect(tl, br);
+    }
+    int32 width() {
+        return self.bottomRight.x - self.topLeft.x;
+    }
+}
+
+Point p1 = new Point(1, 2);
+Point p2 = new Point(5, 7);
+Rect r = new Rect(p1, p2);
+print(r.topLeft.x);
+print(r.bottomRight.y);
+print(r.width());

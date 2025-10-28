@@ -2,11 +2,10 @@
 // Covers: empty arrays, nested scopes, mixed numeric promotions, compound assignments, increment/decrement,
 // while loops with zero iterations, if without else, function returning array, function with array params
 
-print("-- edge: empty int array literal used immediately --");
-int32[] empty = [];
-// append then pop to ensure methods on previously empty array
-empty.append(1);
-print(empty.pop());
+print("-- edge: fixed-size array basics --");
+int32[] simple = [1, 2];
+print(simple[0]);
+print(simple.length());
 
 print("-- edge: nested scopes deep variable access --");
 int32 base = 5;
@@ -53,24 +52,14 @@ while (limit < 0) { // should not execute (int32 < int32 is valid)
 }
 print("loop skipped");
 
-print("-- edge: function returning array and array param --");
-int32[] build(int32 n) {
-    int32[] arr = [n, n+1];
-    return arr;
+print("-- edge: functions (no array params/returns) --");
+int32 add2(int32 x, int32 y) {
+    return x + y;
 }
-
-int32 sum2(int32[] vals) {
-    int32 a0 = vals[0];
-    int32 a1 = vals[1];
-    return a0 + a1;
-}
-
-int32[] made = build(10);
-print(sum2(made)); // expect 21
+print(add2(10, 11)); // 21
 
 print("-- edge: method argument type mismatch is not here (all valid) --");
-int32[] seq = [1,2,3];
-seq.insert(0, 99);
+int32[] seq = [99,2,3];
 print(seq[0]); // 99
 
 print("-- edge: array access expression in arithmetic --");
@@ -82,12 +71,10 @@ print( (1 + 2) == 3 );
 print( (1 + 2) > 2 );
 print( (1 + 2) < 5 );
 
-print("-- edge: clear then reuse array --");
-seq.clear();
-seq.append(42);
-print(seq[0]);
+print("-- edge: reuse variable with new array --");
+int32[] seq2 = [42];
+print(seq2[0]);
 
-print("-- edge: empty array literal passed as arg (should have undetermined type so skip) --");
-// Currently empty literal type inference returns None; avoid direct invalid usage; just ensure it's declared with explicit type above.
+print("-- edge: avoid empty array literals in fixed-size mode --");
 
 print("-- edge cases complete --");

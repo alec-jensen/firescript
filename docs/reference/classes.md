@@ -43,7 +43,7 @@ class HandleBundle {
     }
 }
 
-HandleBundle hb = makeHandles();
+HandleBundle hb = makeHandles(); // this would be invalid since you need to provide owned File and Socket
 process(&hb);  // borrow
 // last use of hb here -> compiler may drop immediately after
 ```

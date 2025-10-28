@@ -1,0 +1,8 @@
+// Reassignment semantics test adapted for fixed-size arrays model
+// Arrays are fixed-size and non-assignable; test scalar reassignment instead.
+{
+    int32 x = 3;
+    print(x);
+    x = 42;
+    print(x);
+}
