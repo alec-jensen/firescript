@@ -923,10 +923,10 @@ class Parser:
                 self.resolve_variable_types(body, new_scope)
             return
 
-        # Class method definition: similar to function but includes synthetic 'self' parameter
+        # Class method definition: similar to function but includes receiver parameter
         if node.node_type == NodeTypes.CLASS_METHOD_DEFINITION:
             new_scope = current_scope.copy()
-            for child in node.children[:-1]:  # params (including 'self')
+            for child in node.children[:-1]:  # params (including receiver)
                 if child.node_type == NodeTypes.PARAMETER:
                     param_type = child.var_type
                     param_name = child.name
@@ -945,6 +945,11 @@ class Parser:
                         )
                     except Exception:
                         pass
+            # Inject implicit alias 'this' to the class type for method/constructor bodies,
+            # so 'this.x' resolves even if receiver param was named differently or synthetic.
+            cls_name = getattr(node, "class_name", None)
+            if cls_name and "this" not in new_scope:
+                new_scope["this"] = (cls_name, False)
             body = node.children[-1] if node.children else None
             if body:
                 self.resolve_variable_types(body, new_scope)
@@ -970,6 +975,29 @@ class Parser:
             # Resolve initializer expression
             for child in node.children:
                 self.resolve_variable_types(child, current_scope)
+            return
+
+        # Variable assignment: allow implicit declaration for class-typed RHS
+        if node.node_type == NodeTypes.VARIABLE_ASSIGNMENT:
+            # Resolve RHS first to allow identifiers inside it to be typed
+            for child in node.children:
+                self.resolve_variable_types(child, current_scope)
+            if node.name not in current_scope:
+                inferred_type = None
+                rhs = node.children[0] if node.children else None
+                if rhs is not None:
+                    # Constructor-style call: ClassName(...)
+                    if rhs.node_type == NodeTypes.FUNCTION_CALL and rhs.name in self.user_types:
+                        inferred_type = rhs.name
+                    # Instance method call: obj.method(...)
+                    elif rhs.node_type == NodeTypes.METHOD_CALL and rhs.children:
+                        obj = rhs.children[0]
+                        obj_type = getattr(obj, "var_type", None)
+                        if obj_type is None and isinstance(obj, ASTNode) and obj.node_type == NodeTypes.IDENTIFIER:
+                            obj_type = current_scope.get(obj.name, (None, False))[0]
+                        if obj_type and (obj_type in self.user_methods) and (rhs.name in self.user_methods[obj_type]):
+                            inferred_type = self.user_methods[obj_type][rhs.name].get("return")
+                current_scope[node.name] = (inferred_type, False)
             return
 
         # Identifier usage: ensure variable defined
@@ -1174,26 +1202,30 @@ class Parser:
 
         elif node.node_type == NodeTypes.VARIABLE_ASSIGNMENT:
             var_info = symbol_table.get(node.name)
-            if not var_info:
-                # This should ideally be caught by resolve_variable_types if identifier is used before declaration
-                self.error(f"Variable '{node.name}' not defined", node.token)
-                return None  # Cannot proceed
-
-            var_type, is_array = var_info
-            expected_type = f"{var_type}[]" if is_array else var_type
             assigned_type = child_types[0] if child_types else None
-
-            if assigned_type:
-                if assigned_type == "null":
-                    # Need to check nullability of the variable type (requires enhancement to symbol table or ASTNode)
-                    # For now, assume resolve_variable_types handles basic declaration checks
-                    pass  # Assume nullable check happened at declaration if applicable
-                elif expected_type != assigned_type:
-                    # TODO: Implement type coercion rules
-                    self.error(
-                        f"Type mismatch assigning to variable '{node.name}'. Expected {expected_type}, got {assigned_type}",
-                        node.token,
-                    )
+            if not var_info:
+                # Implicit declaration on first assignment: register with inferred type
+                if assigned_type is not None:
+                    # assigned_type may be 'Type[]'; identify array-ness
+                    is_arr = assigned_type.endswith("[]")
+                    base_t = assigned_type[:-2] if is_arr else assigned_type
+                    symbol_table[node.name] = (base_t, is_arr)
+                else:
+                    self.error(f"Variable '{node.name}' not defined", node.token)
+                    return None
+            else:
+                var_type, is_array = var_info
+                expected_type = f"{var_type}[]" if is_array else var_type
+                if assigned_type:
+                    if assigned_type == "null":
+                        # TODO: enforce nullability on existing variable types
+                        pass
+                    elif expected_type != assigned_type:
+                        # TODO: Implement type coercion rules
+                        self.error(
+                            f"Type mismatch assigning to variable '{node.name}'. Expected {expected_type}, got {assigned_type}",
+                            node.token,
+                        )
 
         elif node.node_type == NodeTypes.BINARY_EXPRESSION:
             left_type = child_types[0]
@@ -1210,7 +1242,8 @@ class Parser:
 
             # String concatenation stays allowed for string + string
             if op == "+":
-                if left_type == "string" and right_type == "string":
+                # Allow string concatenation with any type (converted in codegen)
+                if left_type == "string" or right_type == "string":
                     node_type_str = "string"
                 elif left_type == right_type and left_type in integer_types:
                     node_type_str = left_type
@@ -2113,41 +2146,68 @@ class Parser:
                 # Parse parameters
                 self.consume("OPEN_PAREN")
                 params: list[ASTNode] = []
+                seen_receiver = False
                 if self.current_token and self.current_token.type != "CLOSE_PAREN":
                     while True:
-                        # Parameter type: allow known types or current class name
-                        if not (self.current_token and (self._is_type_token(self.current_token) or (
-                            self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
-                        ))):
-                            self.error("Expected parameter type in method", self.current_token)
-                            return None
-                        ptype_tok = self.current_token
-                        self.advance()
-                        p_is_array = False
-                        if self.current_token and self.current_token.type == "OPEN_BRACKET":
-                            self.error("Array parameters are not supported for methods", self.current_token)
-                            # try to recover
-                            while self.current_token and self.current_token.type != "CLOSE_PAREN":
-                                self.advance()
-                            break
-                        pname_tok = self.consume("IDENTIFIER")
-                        if pname_tok is None:
-                            self.error("Expected parameter name in method", self.current_token)
-                            return None
-                        param_node = ASTNode(
-                            NodeTypes.PARAMETER,
-                            pname_tok,
-                            pname_tok.value,
-                            [],
-                            pname_tok.index,
-                            self._normalize_type_name(ptype_tok),
-                            False,
-                            False,
-                            None,
-                            p_is_array,
-                            p_is_array,
-                        )
-                        params.append(param_node)
+                        # Borrowed receiver syntax: &this
+                        if (not seen_receiver) and self.current_token and self.current_token.type == "AMPERSAND":
+                            amp_tok = self.current_token
+                            self.advance()
+                            th_tok = self.consume("IDENTIFIER")
+                            if th_tok is None or th_tok.value != "this":
+                                self.error("Expected 'this' after '&' for receiver", th_tok or amp_tok)
+                                return None
+                            recv = ASTNode(
+                                NodeTypes.PARAMETER,
+                                th_tok,
+                                "this",
+                                [],
+                                th_tok.index,
+                                self._normalize_type_name(name_tok),
+                                False,
+                                False,
+                                None,
+                                False,
+                                False,
+                            )
+                            setattr(recv, "is_borrowed", True)
+                            setattr(recv, "is_receiver", True)
+                            params.append(recv)
+                            seen_receiver = True
+                        else:
+                            # Parameter type: allow known types or current class name
+                            if not (self.current_token and (self._is_type_token(self.current_token) or (
+                                self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
+                            ))):
+                                self.error("Expected parameter type in method", self.current_token)
+                                return None
+                            ptype_tok = self.current_token
+                            self.advance()
+                            p_is_array = False
+                            if self.current_token and self.current_token.type == "OPEN_BRACKET":
+                                self.error("Array parameters are not supported for methods", self.current_token)
+                                # try to recover
+                                while self.current_token and self.current_token.type != "CLOSE_PAREN":
+                                    self.advance()
+                                break
+                            pname_tok = self.consume("IDENTIFIER")
+                            if pname_tok is None:
+                                self.error("Expected parameter name in method", self.current_token)
+                                return None
+                            param_node = ASTNode(
+                                NodeTypes.PARAMETER,
+                                pname_tok,
+                                pname_tok.value,
+                                [],
+                                pname_tok.index,
+                                self._normalize_type_name(ptype_tok),
+                                False,
+                                False,
+                                None,
+                                p_is_array,
+                                p_is_array,
+                            )
+                            params.append(param_node)
                         if self.current_token and self.current_token.type == "COMMA":
                             self.advance()
                             continue
@@ -2189,41 +2249,68 @@ class Parser:
                 # Parse parameters
                 self.consume("OPEN_PAREN")
                 params: list[ASTNode] = []
+                seen_receiver = False
                 if self.current_token and self.current_token.type != "CLOSE_PAREN":
                     while True:
-                        # Parameter type: allow known types or current class name
-                        if not (self.current_token and (self._is_type_token(self.current_token) or (
-                            self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
-                        ))):
-                            self.error("Expected parameter type in method", self.current_token)
-                            return None
-                        ptype_tok = self.current_token
-                        self.advance()
-                        p_is_array = False
-                        if self.current_token and self.current_token.type == "OPEN_BRACKET":
-                            self.error("Array parameters are not supported for methods", self.current_token)
-                            # try to recover
-                            while self.current_token and self.current_token.type != "CLOSE_PAREN":
-                                self.advance()
-                            break
-                        pname_tok = self.consume("IDENTIFIER")
-                        if pname_tok is None:
-                            self.error("Expected parameter name in method", self.current_token)
-                            return None
-                        param_node = ASTNode(
-                            NodeTypes.PARAMETER,
-                            pname_tok,
-                            pname_tok.value,
-                            [],
-                            pname_tok.index,
-                            self._normalize_type_name(ptype_tok),
-                            False,
-                            False,
-                            None,
-                            p_is_array,
-                            p_is_array,
-                        )
-                        params.append(param_node)
+                        # Borrowed receiver syntax: &this (only allowed as first parameter)
+                        if (not seen_receiver) and self.current_token and self.current_token.type == "AMPERSAND":
+                            amp_tok = self.current_token
+                            self.advance()
+                            th_tok = self.consume("IDENTIFIER")
+                            if th_tok is None or th_tok.value != "this":
+                                self.error("Expected 'this' after '&' for receiver", th_tok or amp_tok)
+                                return None
+                            recv = ASTNode(
+                                NodeTypes.PARAMETER,
+                                th_tok,
+                                "this",
+                                [],
+                                th_tok.index,
+                                self._normalize_type_name(name_tok),
+                                False,
+                                False,
+                                None,
+                                False,
+                                False,
+                            )
+                            setattr(recv, "is_borrowed", True)
+                            setattr(recv, "is_receiver", True)
+                            params.append(recv)
+                            seen_receiver = True
+                        else:
+                            # Parameter type: allow known types or current class name
+                            if not (self.current_token and (self._is_type_token(self.current_token) or (
+                                self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
+                            ))):
+                                self.error("Expected parameter type in method", self.current_token)
+                                return None
+                            ptype_tok = self.current_token
+                            self.advance()
+                            p_is_array = False
+                            if self.current_token and self.current_token.type == "OPEN_BRACKET":
+                                self.error("Array parameters are not supported for methods", self.current_token)
+                                # try to recover
+                                while self.current_token and self.current_token.type != "CLOSE_PAREN":
+                                    self.advance()
+                                break
+                            pname_tok = self.consume("IDENTIFIER")
+                            if pname_tok is None:
+                                self.error("Expected parameter name in method", self.current_token)
+                                return None
+                            param_node = ASTNode(
+                                NodeTypes.PARAMETER,
+                                pname_tok,
+                                pname_tok.value,
+                                [],
+                                pname_tok.index,
+                                self._normalize_type_name(ptype_tok),
+                                False,
+                                False,
+                                None,
+                                p_is_array,
+                                p_is_array,
+                            )
+                            params.append(param_node)
                         if self.current_token and self.current_token.type == "COMMA":
                             self.advance()
                             continue
@@ -2240,12 +2327,12 @@ class Parser:
                 # Determine if this is a constructor: method name equals class name
                 is_constructor = (name_tok2.value == name_tok.value)
                 param_nodes = params
-                if not is_constructor:
-                    # Inject synthetic 'self' parameter at position 0 for instance methods
+                if not is_constructor and not (params and params[0].name == "this"):
+                    # Inject synthetic receiver named 'this' if not explicitly provided
                     self_param = ASTNode(
                         NodeTypes.PARAMETER,
                         name_tok2,
-                        "self",
+                        "this",
                         [],
                         name_tok2.index,
                         self._normalize_type_name(name_tok),
@@ -2255,6 +2342,7 @@ class Parser:
                         False,
                         False,
                     )
+                    setattr(self_param, "is_receiver", True)
                     param_nodes = [self_param, *params]
 
                 method_node = ASTNode(
@@ -2298,11 +2386,15 @@ class Parser:
         for m in methods:
             # Gather parameter nodes (exclude trailing body scope)
             param_nodes = [p for p in m.children[:-1] if p.node_type == NodeTypes.PARAMETER]
-            # Exclude the synthetic 'self' only for instance methods
+            # Exclude receiver (explicit &this or synthetic) from external signature
             if getattr(m, "is_constructor", False):
-                effective_params = param_nodes
+                effective_params = (
+                    param_nodes[1:] if (param_nodes and param_nodes[0].name == "this") else param_nodes
+                )
             else:
-                effective_params = param_nodes[1:] if len(param_nodes) > 0 else []
+                effective_params = (
+                    param_nodes[1:] if (param_nodes and param_nodes[0].name == "this") else param_nodes
+                )
             params_types = [p.var_type for p in effective_params]
             self.user_methods[name_tok.value][m.name] = {"return": m.return_type, "params": params_types}
         return ASTNode(NodeTypes.CLASS_DEFINITION, name_tok, name_tok.value, [*fields, *methods], name_tok.index)

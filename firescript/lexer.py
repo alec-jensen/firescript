@@ -93,6 +93,7 @@ class Lexer:
         "LESS_THAN": r"\<",
         "ASSIGN": r"\=",
         "AND": r"\&\&",
+        "AMPERSAND": r"\&",
         "OR": r"\|\|",
         "NOT": r"\!",
     }
@@ -113,8 +114,8 @@ class Lexer:
         "BOOLEAN_LITERAL": r"true|false",
         "NULL_LITERAL": r"null",
         "VOID_LITERAL": r"void",
-    # Float literal with explicit suffix (f, f32, f64, f128) - longest first to avoid premature 'f' match
-    "FLOAT_LITERAL": rf"-?{float_core}(?:f128|f64|f32|f)",
+        # Float literal with explicit suffix (f, f32, f64, f128) - longest first to avoid premature 'f' match
+        "FLOAT_LITERAL": rf"-?{float_core}(?:f128|f64|f32|f)",
         # Float literal without suffix
         "DOUBLE_LITERAL": rf"-?{float_core}",
         # Integer literal (bases with underscores) with optional width/unsigned suffix

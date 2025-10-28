@@ -306,9 +306,14 @@ class CCodeGenerator:
             if stripped.endswith(";"):
                 needs_semicolon = False
             elif stripped.endswith("}"):
-                # Blocks shouldn't get semicolons, but return statements returning
-                # compound literals like '(Type){...}' end with '}' and still need one.
-                needs_semicolon = (node.node_type == NodeTypes.RETURN_STATEMENT)
+                # Do not add semicolons after blocks, but ensure assignment statements
+                # that produce compound literals do get a semicolon.
+                if node.node_type in (NodeTypes.SCOPE, NodeTypes.IF_STATEMENT, NodeTypes.ELSE_STATEMENT, NodeTypes.ELIF_STATEMENT, NodeTypes.WHILE_STATEMENT):
+                    needs_semicolon = False
+                elif node.node_type in (NodeTypes.VARIABLE_ASSIGNMENT, NodeTypes.ASSIGNMENT, NodeTypes.RETURN_STATEMENT):
+                    needs_semicolon = True
+                else:
+                    needs_semicolon = True
             elif stripped.startswith("#"):
                 needs_semicolon = False
             if needs_semicolon:
@@ -396,7 +401,13 @@ class CCodeGenerator:
                    if right_node.node_type == NodeTypes.IDENTIFIER else None)
             )
             if op == "+" and (left_t == "string" or right_t == "string"):
-                return f"firescript_strcat({left}, {right})"
+                lcode = left
+                rcode = right
+                if left_t != "string":
+                    lcode = f"firescript_toString({left})"
+                if right_t != "string":
+                    rcode = f"firescript_toString({right})"
+                return f"firescript_strcat({lcode}, {rcode})"
             # Numeric or generic binary op fallback
             return f"({left} {op} {right})"
         elif node.node_type == NodeTypes.METHOD_CALL:
@@ -438,6 +449,18 @@ class CCodeGenerator:
             # Simple assignment to identifier from expression
             name = node.name
             value_code = self._visit(node.children[0]) if node.children else "0"
+            # If variable not yet declared, attempt implicit declaration using RHS type
+            if name not in self.symbol_table:
+                rhs = node.children[0] if node.children else None
+                rhs_type_fs = getattr(rhs, "return_type", None) if rhs is not None else None
+                if rhs_type_fs is None and rhs is not None and rhs.node_type == NodeTypes.FUNCTION_CALL and rhs.name in getattr(self, "class_names", set()):
+                    rhs_type_fs = rhs.name
+                # If still unknown, fall back to int32
+                fs_type = rhs_type_fs or "int32"
+                c_type = self._map_type_to_c(fs_type)
+                # Record in symbol table for subsequent uses
+                self.symbol_table[name] = (fs_type, False)
+                return f"{c_type} {name} = {value_code}"
             return f"{name} = {value_code}"
         elif node.node_type == NodeTypes.ASSIGNMENT:
             # General assignment: lhs can be identifier, field access, or array access
