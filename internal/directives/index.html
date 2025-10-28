@@ -800,9 +800,16 @@
 </ul>
 <pre><code class="language-firescript">directive enable_syscalls;
 </code></pre>
+<ul>
+<li>Enable compiler-inserted drops (preprocessor inserts drop() calls):</li>
+</ul>
+<p>Should ONLY be used internally by the preprocessor.</p>
+<pre><code class="language-firescript">directive enable_drops;
+</code></pre>
 <h2 id="available-directives">Available Directives<a class="headerlink" href="#available-directives" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>enable_syscalls</code>: Allows the use of syscalls in the file. This is required for files in the standard library that need syscall access.</li>
+<li><code>enable_drops</code>: Enables the preprocessor to insert deterministic drop() calls for Owned values (e.g., arrays) at scope boundaries and early exits.</li>
 </ul>
 
 

@@ -1248,7 +1248,7 @@
     }
 }
 
-HandleBundle hb = makeHandles();
+HandleBundle hb = makeHandles(); // this would be invalid since you need to provide owned File and Socket
 process(&amp;hb);  // borrow
 // last use of hb here -&gt; compiler may drop immediately after
 </code></pre>
