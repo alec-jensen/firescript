@@ -16,6 +16,7 @@ This is a MAJOR rewrite and WILL be buggy and will not work correctly.
     - No implicit numeric promotions. Arithmetic and comparisons require operands of the exact same type.
     - Modulo (`%`) is defined only for integer types.
 - Beginning memory management implementation
+- Remove type conversion functions in favor of future Java-style casting.
 
 ### New Language Features
 
@@ -27,6 +28,7 @@ This is a MAJOR rewrite and WILL be buggy and will not work correctly.
     - Floats: `f32`, `f64`, `f128` (e.g., `3.14f32`, `2.0f64`, `1.0f128`).
 - String concatenation remains supported via `+` between two strings.
 - Initial support for classes
+- Imports
 
 ## 0.3.0 (Sep 12 2025)
 

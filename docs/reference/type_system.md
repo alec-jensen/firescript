@@ -59,8 +59,28 @@ int8 binary = 0b00101010; // Binary
 int8 octal = 0o52;        // Octal
 ```
 
-Integer literals by default will be inferred as `int32` unless specified otherwise.
-To specify a different integer type, you can use a suffix:
+**Type Inference for Literals:**
+
+When you assign a literal to a variable with an explicit type, the literal automatically takes on that type:
+
+```firescript
+int8 small = 42;          // Literal 42 inferred as int8
+uint16 medium = 30000;    // Literal 30000 inferred as uint16
+int64 large = 9223372036854775807;  // Literal inferred as int64
+float32 pi = 3.14;        // Literal 3.14 inferred as float32
+float64 e = 2.71828;      // Literal 2.71828 inferred as float64
+```
+
+If the literal is too large or too small for the target type, you'll get a compile-time error:
+
+```firescript
+// int8 overflow = 200;   // ❌ Compile error: 200 exceeds int8 range (-128 to 127)
+// uint8 negative = -1;   // ❌ Compile error: -1 invalid for unsigned type
+```
+
+**Explicit Type Suffixes:**
+
+You can also explicitly specify the type using a suffix, which is useful in contexts where the type cannot be inferred (like in expressions):
 
 ```firescript
 int8 small = 42i8;
@@ -109,15 +129,22 @@ Floating point numbers support:
 
 #### Floating Point Literals
 
-Floating point literals can be specified in decimal or scientific notation:
+Floating point literals can be specified in decimal or scientific notation.
+
+**Type Inference for Literals:**
+
+When you assign a floating-point literal to a variable with an explicit type, the literal automatically takes on that type:
 
 ```firescript
-float32 decimal = 3.14f32;        // Decimal
-float64 scientific = 2.71828e0f64; // Scientific notation
+float32 pi = 3.14159;              // Literal inferred as float32
+float64 e = 2.71828;               // Literal inferred as float64
+float128 phi = 1.618033988749;     // Literal inferred as float128
+float64 scientific = 6.022e23;     // Scientific notation, inferred as float64
 ```
 
-Floating point literals by default will be inferred as `float32` unless specified otherwise.
-To specify a different floating point type, you can use a suffix:
+**Explicit Type Suffixes:**
+
+You can also explicitly specify the type using a suffix:
 
 ```firescript
 float32 f32Value = 3.14f32;
@@ -253,51 +280,109 @@ print(data);  // Might try to print null
 
 ## Type Compatibility and Conversions
 
-firescript has strict typing rules but provides explicit conversion functions for common type conversions.
+firescript has strict typing rules and requires explicit type conversions using casting syntax.
 
-### Built-in Type Conversion Functions
+### Explicit Type Casting
+
+To convert between types, use Java-style casting with parentheses:
 
 ```firescript
-// String to numeric conversions
-string numStr = "42";
-int8 num = toInt(numStr);           // 42
-float32 floatVal = toFloat("3.14");  // 3.14
-float64 doubleVal = toDouble("2.71828");  // 2.71828
+// Numeric conversions
+int32 intVal = 42;
+float64 floatVal = (float64)intVal;     // 42.0
 
-// Numeric to string conversions
-string strFromInt = toString(42);      // "42"
-string strFromFloat = toString(3.14);  // "3.14"
+float32 pi = 3.14f32;
+int32 truncated = (int32)pi;            // 3 (truncates decimal)
+
+// Between numeric types
+int8 small = 100i8;
+int64 large = (int64)small;             // 100i64
+
+uint32 unsigned = 42u32;
+int32 signed = (int32)unsigned;         // 42i32
+
+// String conversions
+string numStr = "42";
+int32 parsed = (int32)numStr;           // 42
+float64 parsedFloat = (float64)"3.14";  // 3.14
+
+// To string
+string str1 = (string)42;               // "42"
+string str2 = (string)3.14f32;          // "3.14"
+string str3 = (string)true;             // "true"
 
 // Boolean conversions
-bool boolValue = toBool("true");  // true
-string strFromBool = toString(false);  // "false"
+bool fromString = (bool)"true";         // true
+bool fromInt = (bool)1;                 // true (non-zero is true)
 
-// Character conversion
-char first = toChar("Hello");  // "H" - first character of string
+// Character conversions
+char first = (char)"Hello";             // "H" - first character
 ```
 
-### Implicit Type Conversions
+**Casting Rules:**
 
-firescript generally does not perform implicit type conversions, with some exceptions:
+1. **Numeric to numeric**: Always allowed, may lose precision or truncate
+2. **String to numeric**: Parses the string, throws error if invalid format
+3. **Numeric to string**: Converts to string representation
+4. **Boolean to string**: "true" or "false"
+5. **String to boolean**: "true" → true, anything else → false
+6. **Numeric to boolean**: 0 → false, non-zero → true
+7. **String to char**: Takes first character
 
-1. In binary numeric operations (`+`, `-`, `*`, `/`, etc.) between different numeric types:
-   * If one operand is `floatN`, the result is `floatN`
-   * If one operand is `floatN` and the other is `intN`, the result is `floatN`
+**Invalid Casts:**
+
+Some casts are not allowed and will result in compile-time errors:
 
 ```firescript
-int8 intVal = 5;
-float32 floatVal = 2.5;
-float32 doubleVal = 3.14;
-
-float32 result1 = intVal + floatVal;    // Result is 7.5f32
-float32 result2 = floatVal * doubleVal;  // Result is 7.85f32
+// int32 x = (int32)[1, 2, 3];  // ❌ Error: Cannot cast array to int32
+// bool b = (bool)"hello";       // ⚠️ Runtime error: Invalid boolean string
 ```
 
-2. String concatenation with `+` will convert non-string values to strings:
+### Mixed-Type Arithmetic
+
+firescript does **not** perform implicit type conversions in arithmetic operations. When performing operations between different types or precisions, you must explicitly cast to the desired result type.
 
 ```firescript
-string message = "Count: " + 42;  // "Count: 42"
-string status = "Active: " + true;  // "Active: true"
+int32 a = 10;
+int64 b = 20i64;
+
+// int32 result = a + b;  // ❌ Error: Cannot mix int32 and int64
+
+// Must explicitly cast to desired type
+int32 result1 = (int32)(a + (int32)b);  // Cast b to int32 first
+int64 result2 = (int64)((int64)a + b);  // Cast a to int64 first
+
+// Mixed integer and float
+int32 intVal = 5;
+float32 floatVal = 2.5f32;
+
+// float32 mixed = intVal + floatVal;  // ❌ Error: Cannot mix int32 and float32
+
+float32 result3 = (float32)((float32)intVal + floatVal);  // Cast int to float
+int32 result4 = (int32)((int32)floatVal + intVal);        // Cast float to int (truncates)
+
+// Different float precisions
+float32 f32 = 3.14f32;
+float64 f64 = 2.71f64;
+
+// float64 sum = f32 + f64;  // ❌ Error: Cannot mix float32 and float64
+
+float64 result5 = (float64)((float64)f32 + f64);  // Cast to float64
+float32 result6 = (float32)(f32 + (float32)f64);  // Cast to float32
+```
+
+**Design Rationale:**
+
+This explicit approach prevents silent precision loss and makes data type conversions visible in the code, aligning with firescript's philosophy of explicitness and safety.
+
+### String Concatenation
+
+String concatenation with `+` is an exception - it will implicitly convert non-string values to strings:
+
+```firescript
+string message = "Count: " + 42;  // "Count: 42" - int32 converted to string
+string status = "Active: " + true;  // "Active: true" - bool converted to string
+string pi = "Pi is approximately " + 3.14f32;  // Converts float to string
 ```
 
 ## Type Checking and Enforcement
@@ -306,9 +391,9 @@ The firescript parser includes a type-checking phase that runs after the initial
 
 ### Static Type Checking
 
-1. **Variable Declarations**: When you declare a variable (`int8 x = 5;`), the type checker verifies that the type of the initializer (`5`, which is `int8`) matches the declared type (`int8`).
+1. **Variable Declarations**: When you declare a variable (`int8 x = 5i8;`), the type checker verifies that the type of the initializer (`5i8`, which is `int8`) matches the declared type (`int8`).
 
-2. **Assignments**: When assigning a value to an existing variable (`x = 10;`), the checker ensures the assigned value's type is compatible with the variable's declared type.
+2. **Assignments**: When assigning a value to an existing variable (`x = 10i8;`), the checker ensures the assigned value's type is compatible with the variable's declared type.
 
 3. **Expressions**: Operators (`+`, `-`, `*`, `/`, `==`, `>`, etc.) are checked to ensure they are used with compatible operand types. For example, arithmetic operators generally require numeric types (`intN`, `floatN`), while `+` can also be used for string concatenation. The result type of an expression is also determined (e.g., `1 + 2.0` results in a `float32`).
 
@@ -1239,10 +1324,11 @@ The current firescript compiler supports:
 * ✅ Nullable type modifiers
 * ✅ Arrays of Copyable types
 * ✅ Static type checking for expressions and assignments
-* ✅ Type conversion functions
 
 Not yet implemented:
 
+* ❌ Type inference on variable declarations
+* ❌ Explicit type casting (Java-style with parentheses)
 * ❌ Type introspection with `typeof`
 * ❌ Tuples
 * ❌ Interfaces (syntax and semantics documented, implementation pending)
