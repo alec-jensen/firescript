@@ -827,18 +827,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#built-in-type-conversion-functions" class="md-nav__link">
+  <a href="#explicit-type-casting" class="md-nav__link">
     <span class="md-ellipsis">
-      Built-in Type Conversion Functions
+      Explicit Type Casting
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#implicit-type-conversions" class="md-nav__link">
+  <a href="#mixed-type-arithmetic" class="md-nav__link">
     <span class="md-ellipsis">
-      Implicit Type Conversions
+      Mixed-Type Arithmetic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#string-concatenation" class="md-nav__link">
+    <span class="md-ellipsis">
+      String Concatenation
     </span>
   </a>
   
@@ -1528,18 +1537,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#built-in-type-conversion-functions" class="md-nav__link">
+  <a href="#explicit-type-casting" class="md-nav__link">
     <span class="md-ellipsis">
-      Built-in Type Conversion Functions
+      Explicit Type Casting
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#implicit-type-conversions" class="md-nav__link">
+  <a href="#mixed-type-arithmetic" class="md-nav__link">
     <span class="md-ellipsis">
-      Implicit Type Conversions
+      Mixed-Type Arithmetic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#string-concatenation" class="md-nav__link">
+    <span class="md-ellipsis">
+      String Concatenation
     </span>
   </a>
   
@@ -1943,8 +1961,20 @@ int8 hex = 0x2A;          // Hexadecimal
 int8 binary = 0b00101010; // Binary
 int8 octal = 0o52;        // Octal
 </code></pre>
-<p>Integer literals by default will be inferred as <code>int32</code> unless specified otherwise.
-To specify a different integer type, you can use a suffix:</p>
+<p><strong>Type Inference for Literals:</strong></p>
+<p>When you assign a literal to a variable with an explicit type, the literal automatically takes on that type:</p>
+<pre><code class="language-firescript">int8 small = 42;          // Literal 42 inferred as int8
+uint16 medium = 30000;    // Literal 30000 inferred as uint16
+int64 large = 9223372036854775807;  // Literal inferred as int64
+float32 pi = 3.14;        // Literal 3.14 inferred as float32
+float64 e = 2.71828;      // Literal 2.71828 inferred as float64
+</code></pre>
+<p>If the literal is too large or too small for the target type, you'll get a compile-time error:</p>
+<pre><code class="language-firescript">// int8 overflow = 200;   // ❌ Compile error: 200 exceeds int8 range (-128 to 127)
+// uint8 negative = -1;   // ❌ Compile error: -1 invalid for unsigned type
+</code></pre>
+<p><strong>Explicit Type Suffixes:</strong></p>
+<p>You can also explicitly specify the type using a suffix, which is useful in contexts where the type cannot be inferred (like in expressions):</p>
 <pre><code class="language-firescript">int8 small = 42i8;
 int16 medium = 30000i16;
 int64 large = 9223372036854775807i64;
@@ -1975,12 +2005,16 @@ float64 highPrecision = 3.141592653589793;
 <li>Comparison: <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></li>
 </ul>
 <h4 id="floating-point-literals">Floating Point Literals<a class="headerlink" href="#floating-point-literals" title="Permanent link">&para;</a></h4>
-<p>Floating point literals can be specified in decimal or scientific notation:</p>
-<pre><code class="language-firescript">float32 decimal = 3.14f32;        // Decimal
-float64 scientific = 2.71828e0f64; // Scientific notation
+<p>Floating point literals can be specified in decimal or scientific notation.</p>
+<p><strong>Type Inference for Literals:</strong></p>
+<p>When you assign a floating-point literal to a variable with an explicit type, the literal automatically takes on that type:</p>
+<pre><code class="language-firescript">float32 pi = 3.14159;              // Literal inferred as float32
+float64 e = 2.71828;               // Literal inferred as float64
+float128 phi = 1.618033988749;     // Literal inferred as float128
+float64 scientific = 6.022e23;     // Scientific notation, inferred as float64
 </code></pre>
-<p>Floating point literals by default will be inferred as <code>float32</code> unless specified otherwise.
-To specify a different floating point type, you can use a suffix:</p>
+<p><strong>Explicit Type Suffixes:</strong></p>
+<p>You can also explicitly specify the type using a suffix:</p>
 <pre><code class="language-firescript">float32 f32Value = 3.14f32;
 float64 f64Value = 3.14f64;
 float128 f128Value = 3.14f128;
@@ -2075,54 +2109,101 @@ if (data != null) {
 print(data);  // Might try to print null
 </code></pre>
 <h2 id="type-compatibility-and-conversions">Type Compatibility and Conversions<a class="headerlink" href="#type-compatibility-and-conversions" title="Permanent link">&para;</a></h2>
-<p>firescript has strict typing rules but provides explicit conversion functions for common type conversions.</p>
-<h3 id="built-in-type-conversion-functions">Built-in Type Conversion Functions<a class="headerlink" href="#built-in-type-conversion-functions" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">// String to numeric conversions
-string numStr = &quot;42&quot;;
-int8 num = toInt(numStr);           // 42
-float32 floatVal = toFloat(&quot;3.14&quot;);  // 3.14
-float64 doubleVal = toDouble(&quot;2.71828&quot;);  // 2.71828
+<p>firescript has strict typing rules and requires explicit type conversions using casting syntax.</p>
+<h3 id="explicit-type-casting">Explicit Type Casting<a class="headerlink" href="#explicit-type-casting" title="Permanent link">&para;</a></h3>
+<p>To convert between types, use Java-style casting with parentheses:</p>
+<pre><code class="language-firescript">// Numeric conversions
+int32 intVal = 42;
+float64 floatVal = (float64)intVal;     // 42.0
 
-// Numeric to string conversions
-string strFromInt = toString(42);      // &quot;42&quot;
-string strFromFloat = toString(3.14);  // &quot;3.14&quot;
+float32 pi = 3.14f32;
+int32 truncated = (int32)pi;            // 3 (truncates decimal)
+
+// Between numeric types
+int8 small = 100i8;
+int64 large = (int64)small;             // 100i64
+
+uint32 unsigned = 42u32;
+int32 signed = (int32)unsigned;         // 42i32
+
+// String conversions
+string numStr = &quot;42&quot;;
+int32 parsed = (int32)numStr;           // 42
+float64 parsedFloat = (float64)&quot;3.14&quot;;  // 3.14
+
+// To string
+string str1 = (string)42;               // &quot;42&quot;
+string str2 = (string)3.14f32;          // &quot;3.14&quot;
+string str3 = (string)true;             // &quot;true&quot;
 
 // Boolean conversions
-bool boolValue = toBool(&quot;true&quot;);  // true
-string strFromBool = toString(false);  // &quot;false&quot;
+bool fromString = (bool)&quot;true&quot;;         // true
+bool fromInt = (bool)1;                 // true (non-zero is true)
 
-// Character conversion
-char first = toChar(&quot;Hello&quot;);  // &quot;H&quot; - first character of string
+// Character conversions
+char first = (char)&quot;Hello&quot;;             // &quot;H&quot; - first character
 </code></pre>
-<h3 id="implicit-type-conversions">Implicit Type Conversions<a class="headerlink" href="#implicit-type-conversions" title="Permanent link">&para;</a></h3>
-<p>firescript generally does not perform implicit type conversions, with some exceptions:</p>
+<p><strong>Casting Rules:</strong></p>
 <ol>
-<li>In binary numeric operations (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, etc.) between different numeric types:</li>
-<li>If one operand is <code>floatN</code>, the result is <code>floatN</code></li>
-<li>If one operand is <code>floatN</code> and the other is <code>intN</code>, the result is <code>floatN</code></li>
+<li><strong>Numeric to numeric</strong>: Always allowed, may lose precision or truncate</li>
+<li><strong>String to numeric</strong>: Parses the string, throws error if invalid format</li>
+<li><strong>Numeric to string</strong>: Converts to string representation</li>
+<li><strong>Boolean to string</strong>: "true" or "false"</li>
+<li><strong>String to boolean</strong>: "true" → true, anything else → false</li>
+<li><strong>Numeric to boolean</strong>: 0 → false, non-zero → true</li>
+<li><strong>String to char</strong>: Takes first character</li>
 </ol>
-<pre><code class="language-firescript">int8 intVal = 5;
-float32 floatVal = 2.5;
-float32 doubleVal = 3.14;
+<p><strong>Invalid Casts:</strong></p>
+<p>Some casts are not allowed and will result in compile-time errors:</p>
+<pre><code class="language-firescript">// int32 x = (int32)[1, 2, 3];  // ❌ Error: Cannot cast array to int32
+// bool b = (bool)&quot;hello&quot;;       // ⚠️ Runtime error: Invalid boolean string
+</code></pre>
+<h3 id="mixed-type-arithmetic">Mixed-Type Arithmetic<a class="headerlink" href="#mixed-type-arithmetic" title="Permanent link">&para;</a></h3>
+<p>firescript does <strong>not</strong> perform implicit type conversions in arithmetic operations. When performing operations between different types or precisions, you must explicitly cast to the desired result type.</p>
+<pre><code class="language-firescript">int32 a = 10;
+int64 b = 20i64;
 
-float32 result1 = intVal + floatVal;    // Result is 7.5f32
-float32 result2 = floatVal * doubleVal;  // Result is 7.85f32
+// int32 result = a + b;  // ❌ Error: Cannot mix int32 and int64
+
+// Must explicitly cast to desired type
+int32 result1 = (int32)(a + (int32)b);  // Cast b to int32 first
+int64 result2 = (int64)((int64)a + b);  // Cast a to int64 first
+
+// Mixed integer and float
+int32 intVal = 5;
+float32 floatVal = 2.5f32;
+
+// float32 mixed = intVal + floatVal;  // ❌ Error: Cannot mix int32 and float32
+
+float32 result3 = (float32)((float32)intVal + floatVal);  // Cast int to float
+int32 result4 = (int32)((int32)floatVal + intVal);        // Cast float to int (truncates)
+
+// Different float precisions
+float32 f32 = 3.14f32;
+float64 f64 = 2.71f64;
+
+// float64 sum = f32 + f64;  // ❌ Error: Cannot mix float32 and float64
+
+float64 result5 = (float64)((float64)f32 + f64);  // Cast to float64
+float32 result6 = (float32)(f32 + (float32)f64);  // Cast to float32
 </code></pre>
-<ol>
-<li>String concatenation with <code>+</code> will convert non-string values to strings:</li>
-</ol>
-<pre><code class="language-firescript">string message = &quot;Count: &quot; + 42;  // &quot;Count: 42&quot;
-string status = &quot;Active: &quot; + true;  // &quot;Active: true&quot;
+<p><strong>Design Rationale:</strong></p>
+<p>This explicit approach prevents silent precision loss and makes data type conversions visible in the code, aligning with firescript's philosophy of explicitness and safety.</p>
+<h3 id="string-concatenation">String Concatenation<a class="headerlink" href="#string-concatenation" title="Permanent link">&para;</a></h3>
+<p>String concatenation with <code>+</code> is an exception - it will implicitly convert non-string values to strings:</p>
+<pre><code class="language-firescript">string message = &quot;Count: &quot; + 42;  // &quot;Count: 42&quot; - int32 converted to string
+string status = &quot;Active: &quot; + true;  // &quot;Active: true&quot; - bool converted to string
+string pi = &quot;Pi is approximately &quot; + 3.14f32;  // Converts float to string
 </code></pre>
 <h2 id="type-checking-and-enforcement">Type Checking and Enforcement<a class="headerlink" href="#type-checking-and-enforcement" title="Permanent link">&para;</a></h2>
 <p>The firescript parser includes a type-checking phase that runs after the initial syntax parsing.</p>
 <h3 id="static-type-checking">Static Type Checking<a class="headerlink" href="#static-type-checking" title="Permanent link">&para;</a></h3>
 <ol>
 <li>
-<p><strong>Variable Declarations</strong>: When you declare a variable (<code>int8 x = 5;</code>), the type checker verifies that the type of the initializer (<code>5</code>, which is <code>int8</code>) matches the declared type (<code>int8</code>).</p>
+<p><strong>Variable Declarations</strong>: When you declare a variable (<code>int8 x = 5i8;</code>), the type checker verifies that the type of the initializer (<code>5i8</code>, which is <code>int8</code>) matches the declared type (<code>int8</code>).</p>
 </li>
 <li>
-<p><strong>Assignments</strong>: When assigning a value to an existing variable (<code>x = 10;</code>), the checker ensures the assigned value's type is compatible with the variable's declared type.</p>
+<p><strong>Assignments</strong>: When assigning a value to an existing variable (<code>x = 10i8;</code>), the checker ensures the assigned value's type is compatible with the variable's declared type.</p>
 </li>
 <li>
 <p><strong>Expressions</strong>: Operators (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>==</code>, <code>&gt;</code>, etc.) are checked to ensure they are used with compatible operand types. For example, arithmetic operators generally require numeric types (<code>intN</code>, <code>floatN</code>), while <code>+</code> can also be used for string concatenation. The result type of an expression is also determined (e.g., <code>1 + 2.0</code> results in a <code>float32</code>).</p>
@@ -2926,10 +3007,11 @@ class Point {
 <li>✅ Nullable type modifiers</li>
 <li>✅ Arrays of Copyable types</li>
 <li>✅ Static type checking for expressions and assignments</li>
-<li>✅ Type conversion functions</li>
 </ul>
 <p>Not yet implemented:</p>
 <ul>
+<li>❌ Type inference on variable declarations</li>
+<li>❌ Explicit type casting (Java-style with parentheses)</li>
 <li>❌ Type introspection with <code>typeof</code></li>
 <li>❌ Tuples</li>
 <li>❌ Interfaces (syntax and semantics documented, implementation pending)</li>

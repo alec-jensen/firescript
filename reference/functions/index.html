@@ -575,15 +575,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#type-conversion-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type Conversion Functions
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#type-introspection" class="md-nav__link">
     <span class="md-ellipsis">
       Type Introspection
@@ -934,15 +925,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#type-conversion-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type Conversion Functions
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#type-introspection" class="md-nav__link">
     <span class="md-ellipsis">
       Type Introspection
@@ -1095,60 +1077,6 @@ print(true);             // Prints: true
 print(&quot;Hello, &quot; + name);
 </code></pre>
 <p>The <code>prompt</code> parameter is displayed to the user before waiting for input.</p>
-<h3 id="type-conversion-functions">Type Conversion Functions<a class="headerlink" href="#type-conversion-functions" title="Permanent link">&para;</a></h3>
-<p>These functions convert values from one type to another:</p>
-<ul>
-<li><strong><code>toIntN(value)</code></strong> – Converts a value to an N-bit integer (e.g., <code>toInt8</code>, <code>toInt16</code>, <code>toInt32</code>, <code>toInt64</code>)</li>
-</ul>
-<pre><code class="language-firescript">string numberString = &quot;123&quot;;
-int8 number = toInt8(numberString);  // 123
-
-float32 floatVal = 45.7;
-int8 intVal = toInt8(floatVal);      // 45 (truncated)
-</code></pre>
-<ul>
-<li><strong><code>toFloatN(value)</code></strong> – Converts a value to an N-bit floating point number (e.g., <code>toFloat32</code>, <code>toFloat64</code>)</li>
-</ul>
-<pre><code class="language-firescript">int32 bigNumber = 1000000;
-float64 doubleBig = toFloat64(bigNumber);  // 1000000.0 (with 64-bit precision)
-
-string sciNotation = &quot;6.022e23&quot;;
-float64 avogadro = toFloat64(sciNotation);  // 6.022e23
-</code></pre>
-<ul>
-<li><strong><code>toBool(value)</code></strong> – Converts a value to a boolean</li>
-</ul>
-<pre><code class="language-firescript">string truthy = &quot;true&quot;;
-bool flag = toBool(truthy);  // true
-
-string falsy = &quot;false&quot;;
-bool notFlag = toBool(falsy);  // false
-
-// Non-string inputs:
-bool nonZero = toBool(1);      // true
-bool zero = toBool(0);         // false
-</code></pre>
-<ul>
-<li><strong><code>toString(value)</code></strong> – Converts a value to a string</li>
-</ul>
-<pre><code class="language-firescript">int number = 42;
-string text = toString(number);  // &quot;42&quot;
-
-bool state = true;
-string stateText = toString(state);  // &quot;true&quot;
-
-float decimal = 3.14;
-string piText = toString(decimal);  // &quot;3.14&quot;
-</code></pre>
-<ul>
-<li><strong><code>toChar(value)</code></strong> – Converts a value to a character (represented as a string)</li>
-</ul>
-<pre><code class="language-firescript">string word = &quot;Hello&quot;;
-char firstLetter = toChar(word);  // &quot;H&quot; (first character)
-
-int codePoint = 65;
-char letter = toChar(codePoint);  // &quot;A&quot; (ASCII value 65)
-</code></pre>
 <h3 id="type-introspection">Type Introspection<a class="headerlink" href="#type-introspection" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong><code>typeof(value)</code></strong> – Returns the type name of a value as a string</li>
