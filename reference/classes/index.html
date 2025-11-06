@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.22">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.23">
     
     
       
@@ -1464,18 +1464,56 @@ while (i &lt; people.length) {
 <h3 id="interfaces">Interfaces<a class="headerlink" href="#interfaces" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Future syntax
 interface Drawable {
-    void draw(&amp;this)
-    bool isVisible(&amp;this)
+    void draw(&amp;this);
+    bool isVisible(&amp;this);
 }
 
 class Circle implements Drawable {
+    float32 radius;
+
+    Circle(&amp;this, float32 radius) {
+        this.radius = radius;
+    }
+
     // Must implement all interface methods
     void draw(&amp;this) {
-        // Drawing implementation
+        print(&quot;Drawing circle with radius &quot; + toString(this.radius));
     }
 
     bool isVisible(&amp;this) {
         return true;
+    }
+}
+
+// Multiple interfaces
+interface Movable {
+    void move(&amp;this, int32 dx, int32 dy);
+}
+
+class Square implements Drawable, Movable {
+    float32 x;
+    float32 y;
+    float32 size;
+
+    Square(&amp;this, float32 x, float32 y, float32 size) {
+        this.x = x;
+        this.y = y;
+        this.size = size;
+    }
+
+    // Implement Drawable
+    void draw(&amp;this) {
+        print(&quot;Drawing square at (&quot; + toString(this.x) + &quot;, &quot; + toString(this.y) + &quot;)&quot;);
+    }
+
+    bool isVisible(&amp;this) {
+        return true;
+    }
+
+    // Implement Movable
+    void move(&amp;this, int32 dx, int32 dy) {
+        this.x = this.x + cast&lt;float32&gt;(dx);
+        this.y = this.y + cast&lt;float32&gt;(dy);
     }
 }
 </code></pre>

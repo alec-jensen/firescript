@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.22">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.23">
     
     
       
@@ -1033,7 +1033,7 @@
 
 <h1 id="imports">Imports<a class="headerlink" href="#imports" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>Status: Modules and import resolution are planned but not yet implemented. The syntax below is reserved and may evolve as the compiler gains module support.</p>
+<p>Status: ✅ <strong>Implemented</strong> - Imports are now fully functional! Use <code>--enable-imports</code> flag when compiling.</p>
 </blockquote>
 <p>firescript uses an explicit, Java-inspired import system for organizing code across files and (in the future) external packages. All imports must specify full paths; there is no implicit or relative import behavior.</p>
 <h2 id="import-syntax">Import Syntax<a class="headerlink" href="#import-syntax" title="Permanent link">&para;</a></h2>
@@ -1068,6 +1068,17 @@ import src.utils.utils as Utils
 <p>These forms are reserved for future package management and standard library support:</p>
 <pre><code class="language-firescript">import @user/package
 import @firescript/std
+</code></pre>
+<p>These imports can be used the same as local imports, like so:</p>
+<pre><code class="language-firescript">import @firescript/std.math
+
+import @firescript/std.math.sqrt
+
+import @firescript/std.{math, io}
+
+import @firescript/std.math.*
+
+import @firescript/std.math.sqrt as squareRoot
 </code></pre>
 <h2 id="paths-and-resolution">Paths and Resolution<a class="headerlink" href="#paths-and-resolution" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1161,9 +1172,16 @@ import @firescript/std
 </ul>
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <ul>
-<li>❌ Modules and import resolution are planned but not implemented in the current compiler.</li>
-<li>✅ Syntax is reserved and documented here for future implementation.</li>
+<li>✅ Import syntax parsing (Phase 0) - fully implemented</li>
+<li>✅ Module resolution and dependency loading (Phase 1) - fully implemented</li>
+<li>✅ Multi-module compilation with merged AST (Phase 2 basic) - fully implemented</li>
+<li>✅ Wildcard imports (<code>import module.*</code>)</li>
+<li>✅ Symbol imports (<code>import module.{a, b}</code>)</li>
+<li>✅ Cyclic import detection</li>
+<li>⚠️  Module aliases and qualified access (e.g., <code>Utils.helper()</code>) - not yet implemented</li>
+<li>❌ External packages (<code>@user/package</code>, <code>@firescript/std</code>) - not supported yet</li>
 </ul>
+<p>To use imports, compile with <code>--enable-imports</code> and optionally specify <code>--import-root</code> (defaults to project root).</p>
 
 
 

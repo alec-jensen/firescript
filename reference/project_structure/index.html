@@ -8,7 +8,7 @@
       
       
       
-        <link rel="canonical" href="https://firescript.alecj.com/internal/syscalls/">
+        <link rel="canonical" href="https://firescript.alecj.com/reference/project_structure/">
       
       
       
@@ -18,7 +18,7 @@
     
     
       
-        <title>syscalls docs - firescript</title>
+        <title>Project Structure - firescript</title>
       
     
     
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#syscalls-docs" class="md-skip">
+        <a href="#project-structure" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              syscalls docs
+              Project Structure
             
           </span>
         </div>
@@ -238,7 +238,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/overview/" class="md-tabs__link">
+        <a href="../overview/" class="md-tabs__link">
           
   
   
@@ -403,7 +403,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/overview/" class="md-nav__link">
+      <a href="../overview/" class="md-nav__link">
         
   
   
@@ -426,7 +426,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/variables/" class="md-nav__link">
+      <a href="../variables/" class="md-nav__link">
         
   
   
@@ -449,7 +449,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/arrays/" class="md-nav__link">
+      <a href="../arrays/" class="md-nav__link">
         
   
   
@@ -472,7 +472,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/control_flow/" class="md-nav__link">
+      <a href="../control_flow/" class="md-nav__link">
         
   
   
@@ -495,7 +495,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/functions/" class="md-nav__link">
+      <a href="../functions/" class="md-nav__link">
         
   
   
@@ -518,7 +518,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/classes/" class="md-nav__link">
+      <a href="../classes/" class="md-nav__link">
         
   
   
@@ -541,7 +541,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/scoping/" class="md-nav__link">
+      <a href="../scoping/" class="md-nav__link">
         
   
   
@@ -564,7 +564,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/type_system/" class="md-nav__link">
+      <a href="../type_system/" class="md-nav__link">
         
   
   
@@ -587,7 +587,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/memory_management/" class="md-nav__link">
+      <a href="../memory_management/" class="md-nav__link">
         
   
   
@@ -610,7 +610,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/error_handling/" class="md-nav__link">
+      <a href="../error_handling/" class="md-nav__link">
         
   
   
@@ -633,7 +633,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/imports/" class="md-nav__link">
+      <a href="../imports/" class="md-nav__link">
         
   
   
@@ -727,44 +727,11 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#available-syscalls" class="md-nav__link">
+  <a href="#initfire" class="md-nav__link">
     <span class="md-ellipsis">
-      Available Syscalls
+      init.fire
     </span>
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-file-and-descriptor-objects-work" class="md-nav__link">
-    <span class="md-ellipsis">
-      How File and Descriptor Objects Work
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="How File and Descriptor Objects Work">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#example-usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Usage
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Notes
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -784,7 +751,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/syscalls.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/reference/project_structure.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -792,103 +759,36 @@
   
 
 
-<h1 id="syscalls-docs">syscalls docs<a class="headerlink" href="#syscalls-docs" title="Permanent link">&para;</a></h1>
-<p>Syscalls are only intended to be used in the standard library. When we need them in the standard library, you add this directive at the top of the file:</p>
-<pre><code class="language-firescript">directive enable_syscalls;
+<h1 id="project-structure">Project Structure<a class="headerlink" href="#project-structure" title="Permanent link">&para;</a></h1>
+<h2 id="initfire">init.fire<a class="headerlink" href="#initfire" title="Permanent link">&para;</a></h2>
+<p>say you have the following project structure:</p>
+<pre><code>my_project/
+├── src/
+│   ├── main.fire
+│   └── math
+│       └── constants.fire
 </code></pre>
-<h2 id="available-syscalls">Available Syscalls<a class="headerlink" href="#available-syscalls" title="Permanent link">&para;</a></h2>
-<p>Enabling syscalls gives you access to the following functions:</p>
-<table>
-<thead>
-<tr>
-<th>Syscall</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>syscall_open(path, mode)</td>
-<td>Opens a file at <code>path</code> with the given <code>mode</code> ("r", "w", "a", etc.). Returns a file descriptor or file object referencing the open file.</td>
-</tr>
-<tr>
-<td>syscall_read(fd, buf, n)</td>
-<td>Reads up to <code>n</code> bytes from file descriptor or file object <code>fd</code> into buffer <code>buf</code>. Returns number of bytes read or error code.</td>
-</tr>
-<tr>
-<td>syscall_write(fd, buf, n)</td>
-<td>Writes up to <code>n</code> bytes from buffer <code>buf</code> to file descriptor or file object <code>fd</code>. Returns number of bytes written or error code.</td>
-</tr>
-<tr>
-<td>syscall_close(fd)</td>
-<td>Closes file descriptor or file object <code>fd</code>. Returns 0 on success or error code.</td>
-</tr>
-<tr>
-<td>syscall_remove(path)</td>
-<td>Removes (deletes) the file at the given <code>path</code>.</td>
-</tr>
-<tr>
-<td>syscall_rename(old, new)</td>
-<td>Renames file <code>old</code> to <code>new</code>.</td>
-</tr>
-<tr>
-<td>syscall_stat(path, stat)</td>
-<td>Gets metadata for file at <code>path</code> into <code>stat</code> struct.</td>
-</tr>
-<tr>
-<td>syscall_exec(cmd, args)</td>
-<td>Executes shell command <code>cmd</code> with arguments <code>args</code>.</td>
-</tr>
-<tr>
-<td>syscall_getenv(name, buf)</td>
-<td>Gets the value of the environment variable <code>name</code> into <code>buf</code>.</td>
-</tr>
-<tr>
-<td>syscall_system(cmd)</td>
-<td>Executes shell command <code>cmd</code> via the system shell.</td>
-</tr>
-<tr>
-<td>syscall_exit(code)</td>
-<td>Exits the process with exit code <code>code</code>.</td>
-</tr>
-<tr>
-<td>syscall_time()</td>
-<td>Returns the current system time (seconds since epoch).</td>
-</tr>
-<tr>
-<td>syscall_sleep(ms)</td>
-<td>Sleeps for <code>ms</code> milliseconds.</td>
-</tr>
-</tbody>
-</table>
-<h2 id="how-file-and-descriptor-objects-work">How File and Descriptor Objects Work<a class="headerlink" href="#how-file-and-descriptor-objects-work" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>File handles/descriptors are returned by <code>syscall_open</code> and uniquely identify an open file.</strong></li>
-<li><strong>Parallel I/O:</strong> You can open multiple files at once. Each operation (<code>read</code>, <code>write</code>, <code>close</code>) targets a specific file via its descriptor/object, allowing independent and parallel operations on multiple files.</li>
-<li><strong>Lifetime:</strong> The file descriptor/object remains valid until explicitly closed via <code>syscall_close</code>. After closing, further operations on that handle are invalid.</li>
-<li><strong>Threading/Concurrency:</strong> If the firescript runtime or standard library supports threading, syscalls are designed so that concurrent threads can operate on different file descriptors in parallel, with OS-level guarantees of isolation and safety.</li>
-<li><strong>Error Handling:</strong> Functions typically return 0 or a positive value on success, and a negative error code on failure (e.g., invalid descriptor, permission denied).</li>
-</ul>
-<h3 id="example-usage">Example Usage<a class="headerlink" href="#example-usage" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">directive enable_syscalls;
+<p>and you wanted to have functions directly available on <code>math</code>. You would create an <code>init.fire</code> file in the <code>math</code> directory:</p>
+<p>```my_project/
+├── src/
+│   ├── main.fire
+│   └── math
+│       ├── init.fire
+│       └── constants.fire</p>
+<pre><code>
+The `init.fire` file could look like this:
 
-// Open two files for parallel access
-int fd1 = syscall_open(&quot;output1.txt&quot;, &quot;w&quot;);
-int fd2 = syscall_open(&quot;output2.txt&quot;, &quot;w&quot;);
-
-if fd1 &gt;= 0 and fd2 &gt;= 0 {
-    // Write to both files independently
-    syscall_write(fd1, &quot;foo&quot;, 3);
-    syscall_write(fd2, &quot;bar&quot;, 3);
-
-    syscall_close(fd1);
-    syscall_close(fd2);
+```firescript
+// math/init.fire
+int32 add(int32 a, int32 b) {
+    return a + b;
 }
 </code></pre>
-<h3 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Syscalls are low-level; errors are returned as negative numbers where applicable.</li>
-<li>Buffer types and argument conventions are subject to firescript's standard library conventions.</li>
-</ul>
+<p>Now, in your <code>main.fire</code>, you can import the <code>math</code> module and use the <code>add</code> function directly:</p>
+<p>```firescript// main.fire
+import math.add;</p>
+<p>int32 result = add(5, 10);
+```</p>
 
 
 
