@@ -1620,6 +1620,16 @@ class Parser:
 
     def _parse_statement(self):
         """Determine the kind of statement and parse it."""
+        # Imports are top-level only; error if seen in a statement context (inside scopes)
+        if self.current_token and self.current_token.type == "IMPORT":
+            tok = self.current_token
+            self.error("Imports must appear at top level", tok)
+            # Simple recovery: consume until semicolon or brace
+            while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE", "OPEN_BRACE"):
+                self.advance()
+            if self.current_token and self.current_token.type == "SEMICOLON":
+                self.consume("SEMICOLON")
+            return None
         # Handle compiler directives: directive <name> [<arg1>, ...];
         if self.current_token and self.current_token.type == "DIRECTIVE":
             dir_tok = self.current_token
@@ -1981,6 +1991,16 @@ class Parser:
             ):
                 self.advance()
                 continue
+            # Top-level import statements
+            if self.current_token.type == "IMPORT":
+                imp = self._parse_import()
+                if imp:
+                    imp.parent = self.ast
+                    self.ast.children.append(imp)
+                # Optional semicolon
+                if self.current_token and self.current_token.type == "SEMICOLON":
+                    self.consume("SEMICOLON")
+                continue
             # Class definition
             if self.current_token.type == "CLASS":
                 cls = self._parse_class_definition()
@@ -2092,6 +2112,172 @@ class Parser:
         self.type_check()
 
         return self.ast
+
+    def _parse_import(self) -> Optional[ASTNode]:
+        """Parse an import statement in one of the accepted forms.
+        Forms:
+          - import module.path
+          - import module.path as Alias
+          - import module.path.symbol [as alias]
+          - import module.path.{a [as x]?, b [as y]?}
+          - import module.path.*
+          - import @user/package (external; parse then error)
+        """
+        start_tok = self.consume("IMPORT")
+        if start_tok is None:
+            return None
+
+        kind: Optional[str] = None
+        module_path = ""
+        alias: Optional[str] = None
+        symbols: list[dict] = []
+
+        # External package form begins with '@'
+        if self.current_token and self.current_token.type == "AT":
+            # Collect '@' + path tokens (IDENTIFIER separated by '/'), until non-path token
+            segs: list[str] = []
+            at_tok = self.consume("AT")
+            if not (self.current_token and self.current_token.type == "IDENTIFIER"):
+                self.error("Expected package name after '@'", self.current_token or at_tok)
+                return None
+            idtok = self.consume("IDENTIFIER")
+            if idtok is None:
+                self.error("Expected identifier after '@'", self.current_token or at_tok)
+                return None
+            segs.append(idtok.value)
+            # Accept sequence of '/' IDENTIFIER (slash tokenized as DIVIDE)
+            while self.current_token and self.current_token.type == "DIVIDE":
+                self.advance()
+                if not (self.current_token and self.current_token.type == "IDENTIFIER"):
+                    self.error("Expected identifier after '/' in external package name", self.current_token)
+                    break
+                nxtok = self.consume("IDENTIFIER")
+                if nxtok is None:
+                    self.error("Expected identifier after '/' in external package name", self.current_token)
+                    break
+                segs.append(nxtok.value)
+            module_path = "@" + "/".join(segs)
+            kind = "external"
+        else:
+            # Parse dotted module path: IDENTIFIER ('.' IDENTIFIER)*
+            # Note: type keywords (like 'string') can appear in module names
+            segs: list[str] = []
+            if not (self.current_token and (self.current_token.type == "IDENTIFIER" or self._is_type_token(self.current_token))):
+                self.error("Expected module name after 'import'", self.current_token or start_tok)
+                return None
+            idtok = self.current_token
+            self.advance()
+            segs.append(idtok.value)
+            while self.current_token and self.current_token.type == "DOT":
+                # Lookahead to decide whether this dot continues the module path or begins symbol/wildcard/group
+                nxt = self.peek(1)
+                if nxt and (nxt.type == "IDENTIFIER" or self._is_type_token(nxt)):
+                    # Check if there's another DOT after this identifier to decide if it's part of module path
+                    nxt2 = self.peek(2)
+                    if nxt2 and nxt2.type == "DOT":
+                        # More path segments coming, so this identifier is part of module path
+                        self.advance()  # consume '.'
+                        id2 = self.current_token
+                        self.advance()
+                        segs.append(id2.value)
+                        continue
+                    else:
+                        # No more dots after next identifier, so treat as: module.symbol
+                        # Don't consume the dot yet - let the symbol handling logic below process it
+                        break
+                break
+            module_path = ".".join(segs)
+
+            # Optional: .symbol / .{a,b} / .* or module alias
+            if self.current_token and self.current_token.type == "DOT":
+                self.advance()
+                if self.current_token and self.current_token.type == "OPEN_BRACE":
+                    # Group of symbols: {a [as x]?, b [as y]?}
+                    self.advance()
+                    while self.current_token and self.current_token.type != "CLOSE_BRACE":
+                        if not (self.current_token and self.current_token.type == "IDENTIFIER"):
+                            self.error("Expected identifier in import symbol list", self.current_token)
+                            break
+                        sname_tok = self.consume("IDENTIFIER")
+                        salias = None
+                        # Support contextual 'as' even if it's lexed as IDENTIFIER
+                        if self.current_token and (
+                            self.current_token.type == "AS"
+                            or (self.current_token.type == "IDENTIFIER" and self.current_token.value == "as")
+                        ):
+                            self.advance()  # consume 'as'
+                            al = self.consume("IDENTIFIER")
+                            if al is None:
+                                self.error("Expected alias name after 'as'", self.current_token)
+                                return None
+                            salias = al.value
+                        if sname_tok is None:
+                            self.error("Expected identifier in import symbol list", self.current_token)
+                            break
+                        symbols.append({"name": sname_tok.value, "alias": salias})
+                        if self.current_token and self.current_token.type == "COMMA":
+                            self.advance()
+                            continue
+                        else:
+                            break
+                    if not self.consume("CLOSE_BRACE"):
+                        self.error("Expected '}' to close import symbol list", self.current_token)
+                        return None
+                    kind = "symbols"
+                elif self.current_token and self.current_token.type == "MULTIPLY":
+                    # Wildcard import
+                    self.advance()
+                    kind = "wildcard"
+                elif self.current_token and self.current_token.type == "IDENTIFIER":
+                    # Single symbol
+                    sname_tok = self.consume("IDENTIFIER")
+                    if sname_tok is None:
+                        self.error("Expected symbol name after '.' in import", self.current_token)
+                        return None
+                    salias = None
+                    if self.current_token and (
+                        self.current_token.type == "AS"
+                        or (self.current_token.type == "IDENTIFIER" and self.current_token.value == "as")
+                    ):
+                        self.advance()  # consume 'as'
+                        al = self.consume("IDENTIFIER")
+                        if al is None:
+                            self.error("Expected alias name after 'as'", self.current_token)
+                            return None
+                        salias = al.value
+                    symbols.append({"name": sname_tok.value, "alias": salias})
+                    kind = "symbols"
+                else:
+                    self.error("Expected symbol name, '*', or '{' after '.' in import", self.current_token)
+                    return None
+            else:
+                # Module import with optional alias: import module.path [as Alias]
+                if self.current_token and (
+                    self.current_token.type == "AS"
+                    or (self.current_token.type == "IDENTIFIER" and self.current_token.value == "as")
+                ):
+                    self.advance()  # consume 'as'
+                    al = self.consume("IDENTIFIER")
+                    if al is None:
+                        self.error("Expected alias name after 'as'", self.current_token)
+                        return None
+                    alias = al.value
+                kind = "module"
+
+        # Build node
+        node = ASTNode(NodeTypes.IMPORT_STATEMENT, start_tok, "import", [], start_tok.index)
+        setattr(node, "module_path", module_path)
+        setattr(node, "kind", kind)
+        setattr(node, "alias", alias)
+        setattr(node, "symbols", symbols)
+        end_tok = self.current_token or start_tok
+        setattr(node, "span", (start_tok.index, end_tok.index))
+
+        # For external imports, produce an error now
+        if kind == "external":
+            self.error("External packages are not supported", start_tok)
+
+        return node
 
     def _parse_class_definition(self):
         """Parse a class definition: class Name { <type> <field>; ... }"""

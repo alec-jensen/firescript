@@ -303,18 +303,56 @@ The following features are planned for future versions of firescript:
 ```firescript
 // Future syntax
 interface Drawable {
-    void draw(&this)
-    bool isVisible(&this)
+    void draw(&this);
+    bool isVisible(&this);
 }
 
 class Circle implements Drawable {
+    float32 radius;
+    
+    Circle(&this, float32 radius) {
+        this.radius = radius;
+    }
+    
     // Must implement all interface methods
     void draw(&this) {
-        // Drawing implementation
+        print("Drawing circle with radius " + toString(this.radius));
     }
     
     bool isVisible(&this) {
         return true;
+    }
+}
+
+// Multiple interfaces
+interface Movable {
+    void move(&this, int32 dx, int32 dy);
+}
+
+class Square implements Drawable, Movable {
+    float32 x;
+    float32 y;
+    float32 size;
+    
+    Square(&this, float32 x, float32 y, float32 size) {
+        this.x = x;
+        this.y = y;
+        this.size = size;
+    }
+    
+    // Implement Drawable
+    void draw(&this) {
+        print("Drawing square at (" + toString(this.x) + ", " + toString(this.y) + ")");
+    }
+    
+    bool isVisible(&this) {
+        return true;
+    }
+    
+    // Implement Movable
+    void move(&this, int32 dx, int32 dy) {
+        this.x = this.x + cast<float32>(dx);
+        this.y = this.y + cast<float32>(dy);
     }
 }
 ```

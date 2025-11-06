@@ -4,6 +4,7 @@ from enum import Enum, auto
 class NodeTypes(Enum):
     ROOT = "Root"
     DIRECTIVE = "Directive"
+    IMPORT_STATEMENT = "ImportStatement"
     IF_STATEMENT = "IfStatement"
     ELIF_STATEMENT = "ElifStatement"
     ELSE_STATEMENT = "ElseStatement"

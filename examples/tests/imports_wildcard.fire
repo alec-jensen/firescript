@@ -1,0 +1,5 @@
+// Test: wildcard import
+import utils.*
+
+print(helper(5));
+print(CONSTANT);

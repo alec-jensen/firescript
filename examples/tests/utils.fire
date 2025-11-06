@@ -1,0 +1,6 @@
+// Helper module with utility functions
+int32 helper(int32 x) {
+    return x + 100;
+}
+
+int32 CONSTANT = 42;

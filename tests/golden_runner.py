@@ -50,8 +50,10 @@ def discover_cases(patterns: List[str]) -> List[TestCase]:
     sources: List[str] = []
     for pat in patterns:
         sources.extend(glob.glob(pat))
-    # Exclude invalid tests by simple path check
+    # Exclude invalid tests and helper modules (utils.fire, math_utils.fire, string_utils.fire) by simple path check
     sources = [s for s in sources if os.sep + "invalid" + os.sep not in s]
+    helper_modules = {"utils.fire", "math_utils.fire", "string_utils.fire"}
+    sources = [s for s in sources if os.path.basename(s) not in helper_modules]
     cases: List[TestCase] = []
     for src in sorted(set(sources)):
         base = os.path.splitext(os.path.basename(src))[0]

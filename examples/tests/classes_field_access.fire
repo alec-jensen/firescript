@@ -2,8 +2,10 @@
 class Point {
     int32 x;
     int32 y;
-    Point Point(int32 x, int32 y) {
-        return Point(x, y);
+
+    Point(&this, int32 x, int32 y) {
+        this.x = x;
+        this.y = y;
     }
 }
 

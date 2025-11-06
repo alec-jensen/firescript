@@ -7,7 +7,7 @@ class Vec2 {
         this.y = y;
     }
 
-    Vec2 add(&this, Vec2 other) {
+    Vec2 add(&this, Vec2 &other) {
         return Vec2(this.x + other.x, this.y + other.y);
     }
 }

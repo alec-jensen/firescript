@@ -2,12 +2,14 @@
 class Point {
     int32 x;
     int32 y;
+
     // Constructor named same as class
-    Point(int32 x, int32 y) {
-        return Point(x, y);
+    Point(&this, int32 x, int32 y) {
+        this.x = x;
+        this.y = y;
     }
-    int32 sum() {
-        return self.x + self.y;
+    int32 sum(&this) {
+        return this.x + this.y;
     }
 }
 

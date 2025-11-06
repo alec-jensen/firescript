@@ -369,10 +369,13 @@ string name = person[1];  // "John"
 
 ### Generics
 
-Generic types will allow for more flexible and reusable code:
+Generics allow you to write flexible, reusable code that works with multiple types while maintaining type safety. Instead of writing separate functions for each type, you write one generic function that works with any compatible type.
+
+#### Basic Generic Functions
+
+A generic function is declared with type parameters in angle brackets after the function name:
 
 ```firescript
-// Future syntax
 T max<T>(T a, T b) {
     if (a > b) {
         return a;
@@ -381,8 +384,827 @@ T max<T>(T a, T b) {
     }
 }
 
-int largerInt = max<int>(5, 10);  // 10
-string largerString = max<string>("apple", "banana");  // "banana"
+// Type parameter is inferred from arguments
+int8 largerInt = max(5i8, 10i8);        // T inferred as int8
+string largerString = max("apple", "banana");  // T inferred as string
+
+// Or explicitly specified
+float32 largerFloat = max<float32>(3.14f32, 2.71f32);
+```
+
+#### Type Constraints
+
+Type constraints restrict which types can be used with a generic function. This ensures the function only accepts types that support the required operations.
+
+**Interface Constraints:**
+
+```firescript
+// T must satisfy the Comparable interface
+T max<T: Comparable>(T a, T b) {
+    return a > b ? a : b;
+}
+
+// T must satisfy the Numeric interface
+T add<T: Numeric>(T a, T b) {
+    return a + b;
+}
+```
+
+**Type Union Constraints:**
+
+For simpler cases, you can use type unions to explicitly list which types are allowed:
+
+```firescript
+// T can be int32, int64, or float64
+T add<T: int32 | int64 | float64>(T a, T b) {
+    return a + b;
+}
+
+// Works with any of the specified types
+int32 result1 = add(5i32, 10i32);        // ✅ Works
+float64 result2 = add(3.14f64, 2.71f64); // ✅ Works
+// int8 result3 = add(1i8, 2i8);         // ❌ Error: int8 not in union
+
+// Type unions work with any types, including custom classes
+class Point { /* ... */ }
+class Circle { /* ... */ }
+
+T process<T: Point | Circle>(T shape) {
+    // Can work with Point or Circle
+    return shape;
+}
+```
+
+**Multiple Constraints:**
+
+You can combine both interface constraints and type unions:
+
+```firescript
+// T must satisfy Comparable AND be in the union
+T clamp<T: Comparable & (int32 | float64)>(T value, T min, T max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
+
+// Multiple interface constraints
+T process<T: Printable & Drawable>(T item) {
+    print(item.toString());
+    item.draw();
+    return item;
+}
+```
+
+**When to Use Each:**
+
+- **Interface constraints** (`T: Comparable`): When you need types with specific capabilities, works with any type that implements the interface
+- **Type unions** (`T: int32 | float64`): When you want to explicitly list allowed types, simple and explicit
+- **Built-in interfaces** (`T: Numeric`, `SignedInt`, `Float`): For common operations across type families
+
+#### Type Union Constraints
+
+Type unions provide a simple, explicit way to define generic constraints by listing the exact types allowed. This is inspired by Python's `Union` but with firescript's explicit syntax.
+
+**Basic Type Unions:**
+
+```firescript
+// Simple union - T can be int32 or float64
+T convert<T: int32 | float64>(T value) {
+    return value;
+}
+
+// Multiple types in union
+T process<T: int8 | int16 | int32 | int64>(T value) {
+    return value * 2;
+}
+
+// Works with custom types too
+class Dog { /* ... */ }
+class Cat { /* ... */ }
+
+T feed<T: Dog | Cat>(T animal) {
+    // Feed the animal
+    return animal;
+}
+```
+
+**Combining Unions with Interfaces:**
+
+You can require that types satisfy both an interface AND be in a specific union:
+
+```firescript
+// T must be Comparable AND one of these specific types
+T max<T: Comparable & (int32 | int64 | float64)>(T a, T b) {
+    return a > b ? a : b;
+}
+
+// Custom interface with type union
+interface Drawable {
+    void draw(&this);
+}
+
+class Square implements Drawable { /* ... */ }
+class Circle implements Drawable { /* ... */ }
+
+// T must implement Drawable AND be one of these types
+T render<T: Drawable & (Square | Circle)>(T shape) {
+    shape.draw();
+    return shape;
+}
+```
+
+**Type Unions vs. Interfaces:**
+
+```firescript
+// Using interface - open-ended, any type that implements Numeric
+T addWithInterface<T: Numeric>(T a, T b) {
+    return a + b;
+}
+
+// Using type union - closed, only these specific types
+T addWithUnion<T: int32 | int64 | float64>(T a, T b) {
+    return a + b;
+}
+
+// Interface: More flexible, allows future types
+// Union: More explicit, you know exactly what's allowed
+```
+
+**Practical Example:**
+
+```firescript
+// Define a function that only works with specific numeric types
+T safeDivide<T: float32 | float64>(T a, T b) {
+    if (b == 0.0) {
+        return 0.0;  // Safe default for floats
+    }
+    return a / b;
+}
+
+float32 result1 = safeDivide(10.0f32, 2.0f32);  // ✅ Works
+float64 result2 = safeDivide(10.0f64, 2.0f64);  // ✅ Works
+// int32 result3 = safeDivide(10i32, 2i32);     // ❌ Error: int32 not in union
+```
+
+#### Built-in Type Constraints
+
+firescript provides several built-in constraint interfaces that are automatically implemented by appropriate types:
+
+**Numeric Constraints:**
+
+- **`Numeric`** - Any numeric type (int, uint, float of any precision)
+  - Supports: `+`, `-`, `*`, `/`, `%`, `**`
+  - Implemented by: All `intN`, `uintN`, and `floatN` types
+
+- **`Integer`** - Any integer type (signed or unsigned)
+  - Supports: All `Numeric` operations plus bitwise operations
+  - Implemented by: All `intN` and `uintN` types
+
+- **`SignedInt`** - Signed integers only
+  - Supports: All `Integer` operations plus unary negation
+  - Implemented by: All `intN` types (`int8`, `int16`, `int32`, `int64`)
+
+- **`UnsignedInt`** - Unsigned integers only
+  - Supports: All `Integer` operations
+  - Implemented by: All `uintN` types (`uint8`, `uint16`, `uint32`, `uint64`)
+
+- **`Float`** - Floating-point types only
+  - Supports: All `Numeric` operations
+  - Implemented by: All `floatN` types (`float32`, `float64`, `float128`)
+
+**Behavioral Constraints:**
+
+- **`Comparable`** - Types that can be compared
+  - Supports: `<`, `>`, `<=`, `>=`, `==`, `!=`
+  - Implemented by: All numeric types, `string`, `char`, `bool`
+
+- **`Equatable`** - Types that support equality testing
+  - Supports: `==`, `!=`
+  - Implemented by: All built-in types
+
+- **`Copyable`** - Types that can be copied (as opposed to moved)
+  - All primitive types are `Copyable`
+  - Classes are `Owned` by default (not `Copyable`)
+
+**Examples:**
+
+```firescript
+// Works with any numeric type
+T square<T: Numeric>(T x) {
+    return x * x;
+}
+
+// Only works with floating-point types
+T sqrt<T: Float>(T value) {
+    // Implementation uses floating-point operations
+    return __builtin_sqrt(value);
+}
+
+// Only works with signed integers
+T abs<T: SignedInt>(T value) {
+    return value < 0 ? -value : value;
+}
+
+// Works with any comparable type
+T clamp<T: Comparable>(T value, T min, T max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
+```
+
+
+
+#### Multiple Type Parameters
+
+Functions can have multiple generic type parameters:
+
+```firescript
+// Convert from one type to another
+R convert<T, R>(T value) {
+    return cast<R>(value);
+}
+
+// Map a function over a value
+R map<T, R>(T value, R func(T)) {
+    return func(value);
+}
+
+// Combine two values of different types
+R combine<T1, T2, R: Numeric>(T1 a, T2 b) {
+    return cast<R>(a) + cast<R>(b);
+}
+
+// With constraints on each parameter
+R interpolate<T: Float, R: Float>(T a, T b, R t) {
+    return cast<R>(a) + cast<R>((b - a) * cast<T>(t));
+}
+```
+
+#### Generic Constants and Type-Associated Values
+
+For constants that need to adapt to the type precision, use type-associated constant functions:
+
+```firescript
+// Type-associated constants (planned syntax)
+T pi<T: float<N>>() {
+    // Compiler provides appropriate precision for each float type
+    return cast<T>(3.141592653589793238462643383279502884197);
+}
+
+T e<T: float<N>>() {
+    return cast<T>(2.718281828459045235360287471352662497757);
+}
+
+// Usage - type is inferred from context
+float32 circumference32(float32 radius) {
+    return 2.0f32 * pi<float32>() * radius;
+}
+
+float64 circumference64(float64 radius) {
+    return 2.0f64 * pi<float64>() * radius;
+}
+
+// Or with type inference
+float32 area(float32 radius) {
+    float32 piValue = pi();  // Type inferred as float32 from variable type
+    return piValue * radius * radius;
+}
+```
+
+#### Type Inference
+
+The firescript compiler can infer generic type parameters from function arguments in most cases:
+
+```firescript
+T identity<T>(T value) {
+    return value;
+}
+
+// Type parameter inferred from argument
+int32 x = identity(42i32);        // T inferred as int32
+string s = identity("hello");      // T inferred as string
+
+// Explicit type parameter when needed
+float64 y = identity<float64>(42); // Converts 42 to float64
+```
+
+Type inference follows these rules:
+
+1. If argument types match the parameter types, infer from arguments
+2. If return type is known and argument types are ambiguous, infer from return type
+3. If neither works, require explicit type parameters
+4. All type parameters must be consistently inferred
+
+```firescript
+T add<T: Numeric>(T a, T b) {
+    return a + b;
+}
+
+int32 result1 = add(10i32, 20i32);  // ✅ T inferred as int32
+float32 result2 = add(1.5f32, 2.5f32);  // ✅ T inferred as float32
+
+// int32 result3 = add(10i32, 20i64);  // ❌ Error: T cannot be both int32 and int64
+```
+
+#### Generic Classes (Planned)
+
+Generic classes will allow creating data structures that work with any type:
+
+```firescript
+// Planned syntax
+class Box<T> {
+    T value;
+
+    Box(&this, T value) {
+        this.value = value;
+    }
+
+    T getValue(&this) {
+        return this.value;
+    }
+
+    void setValue(&this, T newValue) {
+        this.value = newValue;
+    }
+}
+
+// Usage
+Box<int32> intBox = Box(42i32);
+Box<string> strBox = Box("hello");
+
+int32 x = intBox.getValue();    // 42
+string s = strBox.getValue();    // "hello"
+```
+
+Generic classes with constraints:
+
+```firescript
+// Planned syntax
+class Pair<T: Comparable> {
+    T first;
+    T second;
+
+    Pair(&this, T first, T second) {
+        this.first = first;
+        this.second = second;
+    }
+
+    T max(&this) {
+        return this.first > this.second ? this.first : this.second;
+    }
+}
+```
+
+#### Generic Arrays and Collections (Planned)
+
+The standard library will provide generic collection types:
+
+```firescript
+// Planned syntax
+list<T> myList = list<int32>();
+myList.push(1);
+myList.push(2);
+myList.push(3);
+
+map<string, int32> scores = map<string, int32>();
+scores.set("Alice", 100);
+scores.set("Bob", 95);
+
+nullable int32 aliceScore = scores.get("Alice");  // 100
+```
+
+#### Implementation Notes
+
+Generics in firescript use **monomorphization** at compile time:
+
+1. When you call a generic function with specific types, the compiler generates a specialized version
+2. Each unique combination of type parameters gets its own compiled function
+3. This means zero runtime overhead - generic code is as fast as hand-written type-specific code
+4. The tradeoff is slightly larger binary size (one copy of the function per type combination used)
+
+```firescript
+// You write this once:
+T max<T: Comparable>(T a, T b) {
+    return a > b ? a : b;
+}
+
+// If you call it with int32 and float32:
+int32 x = max(5i32, 10i32);
+float32 y = max(3.14f32, 2.71f32);
+
+// The compiler generates (conceptually):
+int32 max_int32(int32 a, int32 b) { return a > b ? a : b; }
+float32 max_float32(float32 a, float32 b) { return a > b ? a : b; }
+
+// And replaces your calls with:
+int32 x = max_int32(5i32, 10i32);
+float32 y = max_float32(3.14f32, 2.71f32);
+```
+
+This approach is similar to C++ templates and Rust generics, ensuring that generic code has no performance penalty.
+
+### Interfaces
+
+Interfaces define a set of capabilities that types can implement. They are used primarily as constraints for generic type parameters, ensuring that generic code only accepts types that support the required operations.
+
+**Key Design Principles:**
+
+1. **Primitive types are closed**: You cannot implement interfaces directly on primitive types like `int32`, `float64`, etc.
+2. **Built-in interfaces have compiler support**: Interfaces like `Numeric`, `Comparable`, etc. work with primitives through compiler magic.
+3. **Custom interfaces need wrappers**: For custom interfaces, create wrapper classes or use standard library wrappers.
+4. **Classes use `implements`**: Custom classes declare interfaces using the `implements` keyword (Java-style).
+
+```firescript
+// Built-in interfaces work with primitives (compiler support)
+T max<T: Comparable>(T a, T b) { return a > b ? a : b; }
+int32 result = max(5i32, 10i32);  // ✅ Works
+
+// Custom interfaces need wrapper classes
+interface Printable {
+    string toString(&this);
+}
+
+class PrintableInt implements Printable {
+    int32 value;
+    string toString(&this) { return toString(this.value); }
+}
+```
+
+#### Defining an Interface
+
+An interface is defined using the `interface` keyword followed by the interface name and a body:
+
+```firescript
+// Basic interface definition
+interface Printable {
+    // Method signature that implementing types must provide
+    string toString(&this);
+}
+
+// Interface with multiple methods
+interface Drawable {
+    void draw(&this);
+    void move(&this, int32 x, int32 y);
+    bool isVisible(&this);
+}
+```
+
+#### Interface Inheritance
+
+Interfaces can inherit from other interfaces, creating a hierarchy of capabilities:
+
+```firescript
+// Base interface
+interface Equatable {
+    bool equals(&this, &this other);
+}
+
+// Child interface inherits parent's requirements
+interface Comparable from Equatable {
+    int32 compare(&this, &this other);  // Returns -1, 0, or 1
+}
+
+// Types implementing Comparable must also implement Equatable
+```
+
+#### Implementing Interfaces for Types
+
+Classes declare which interfaces they implement using the `implements` keyword:
+
+```firescript
+// Define a class that implements an interface
+class Point implements Printable {
+    float32 x;
+    float32 y;
+    
+    Point(&this, float32 x, float32 y) {
+        this.x = x;
+        this.y = y;
+    }
+    
+    // Implement the required method from Printable
+    string toString(&this) {
+        return "Point(" + toString(this.x) + ", " + toString(this.y) + ")";
+    }
+}
+
+// Implement multiple interfaces
+class Circle implements Drawable, Printable {
+    float32 radius;
+    
+    Circle(&this, float32 radius) {
+        this.radius = radius;
+    }
+    
+    // Implement Drawable methods
+    void draw(&this) {
+        print("Drawing circle with radius " + toString(this.radius));
+    }
+    
+    void move(&this, int32 dx, int32 dy) {
+        // Movement logic
+    }
+    
+    bool isVisible(&this) {
+        return true;
+    }
+    
+    // Implement Printable method
+    string toString(&this) {
+        return "Circle(radius=" + toString(this.radius) + ")";
+    }
+}
+```
+
+#### Primitives with Generic Constraints
+
+Built-in interfaces like `Numeric`, `Comparable`, etc. work directly with primitive types through compiler magic. You don't need wrappers for these:
+
+```firescript
+// Built-in interfaces work with primitives directly
+T max<T: Comparable>(T a, T b) {
+    return a > b ? a : b;
+}
+
+int32 result = max(5i32, 10i32);  // ✅ Works! No wrapper needed
+float64 fResult = max(3.14f64, 2.71f64);  // ✅ Works!
+
+// This is compiler magic - the compiler knows int32 satisfies Comparable
+```
+
+**For custom interfaces, you need wrappers:**
+
+```firescript
+// Custom interface
+interface Printable {
+    string toString(&this);
+}
+
+// This won't work with primitives directly
+void printValue<T: Printable>(T value) {
+    print(value.toString());
+}
+
+// printValue(42i32);  // ❌ Error: int32 does not implement Printable
+
+// Create a wrapper class
+class PrintableInt implements Printable {
+    int32 value;
+    
+    PrintableInt(&this, int32 value) {
+        this.value = value;
+    }
+    
+    string toString(&this) {
+        return "Value: " + toString(this.value);
+    }
+}
+
+// Now it works
+printValue(PrintableInt(42));  // ✅ Works!
+```
+
+**Summary:**
+- **Type unions** (`T: int32 | float64`): Simplest way to constrain primitives - **use this first!**
+- **Built-in interfaces** (`SignedInt`, `Float`, `Comparable`, etc.): Work with primitives directly for broader type families
+- **Custom interfaces with wrappers**: Only when you need custom methods on primitives
+
+#### Using Interfaces as Generic Constraints
+
+Interfaces are most commonly used to constrain generic type parameters:
+
+```firescript
+// Function that works with any Printable type
+void printValue<T: Printable>(T value) {
+    print(value.toString());
+}
+
+// Function that works with any Drawable type
+void renderAll<T: Drawable>(T[] items) {
+    for (int32 i = 0; i < items.length; i = i + 1) {
+        items[i].draw();
+    }
+}
+
+// Multiple interface constraints
+void processItem<T: Printable & Drawable>(T item) {
+    print("Processing: " + item.toString());
+    item.draw();
+}
+```
+
+#### Marker Interfaces
+
+Some interfaces don't require any methods - they simply mark that a type has certain properties. These are called marker interfaces:
+
+```firescript
+// Marker interface - no methods required
+interface Copyable {
+    // Types implementing this can be copied bitwise
+}
+
+interface Serializable {
+    // Types implementing this can be serialized
+}
+
+// Implementing marker interfaces in class definition
+class Point implements Copyable, Serializable {
+    float32 x;
+    float32 y;
+    
+    // No methods to implement - just marks Point as copyable and serializable
+    Point(&this, float32 x, float32 y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+```
+
+#### Built-in Interfaces
+
+firescript provides several built-in interfaces that are automatically "implemented" by primitive types through compiler support. These are defined in `std/interfaces/`:
+
+**Numeric Interfaces** (in `std/interfaces/numeric.fire`):
+- `Numeric` - Any numeric type supporting arithmetic operations
+- `Integer` - Any integer type (signed or unsigned)
+- `SignedInt` - Signed integers only
+- `UnsignedInt` - Unsigned integers only
+- `Float` - Floating-point types only
+
+**Comparison Interfaces** (in `std/interfaces/comparable.fire`):
+- `Equatable` - Types supporting `==` and `!=`
+- `Comparable` - Types supporting comparison operators (`<`, `>`, `<=`, `>=`)
+
+**Memory Interfaces** (in `std/interfaces/copyable.fire`):
+- `Copyable` - Types that can be copied (vs. moved)
+
+These interfaces are automatically imported and available without explicit `import` statements.
+
+**How Built-in Interfaces Work:**
+
+- **Primitive types** (`int32`, `float64`, etc.): The compiler automatically recognizes that they satisfy built-in interfaces. You can use them directly with generic constraints.
+- **Custom classes**: Must explicitly implement interfaces using `implements` in their class definition.
+
+```firescript
+// Built-in interfaces work with primitives
+T add<T: Numeric>(T a, T b) {
+    return a + b;
+}
+
+int32 sum = add(5i32, 10i32);  // ✅ Compiler knows int32 satisfies Numeric
+
+// Custom classes must explicitly implement
+class MyNumber implements Numeric {
+    int32 value;
+    
+    MyNumber(&this, int32 value) {
+        this.value = value;
+    }
+    
+    // Must implement Numeric operations...
+}
+```
+
+#### Combining Interface Constraints
+
+You can combine multiple interface constraints to require specific capabilities:
+
+```firescript
+// Works with any signed integer precision
+T negate<T: SignedInt>(T value) {
+    return -value;
+}
+
+// Works with any float precision
+T normalize<T: Float>(T value, T min, T max) {
+    return (value - min) / (max - min);
+}
+
+// Combine interface constraints
+T clamp<T: Comparable & Numeric>(T value, T min, T max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
+```
+
+#### Default Implementations (Planned)
+
+In the future, interfaces may support default method implementations:
+
+```firescript
+// Planned syntax
+interface Comparable from Equatable {
+    int32 compare(&this, &this other);
+    
+    // Default implementations based on compare()
+    bool lessThan(&this, &this other) {
+        return this.compare(other) < 0;
+    }
+    
+    bool greaterThan(&this, &this other) {
+        return this.compare(other) > 0;
+    }
+}
+
+// Types implementing Comparable only need to provide compare()
+// They get lessThan() and greaterThan() for free
+```
+
+#### Associated Types (Planned)
+
+Interfaces may support associated types for more flexible generic programming:
+
+```firescript
+// Planned syntax
+interface Container {
+    type Item;  // Associated type
+    
+    Item get(&this, int32 index);
+    void set(&this, int32 index, Item value);
+    int32 size(&this);
+}
+
+impl Container for IntArray {
+    type Item = int32;  // Specify the associated type
+    
+    int32 get(&this, int32 index) {
+        return this.data[index];
+    }
+    
+    void set(&this, int32 index, int32 value) {
+        this.data[index] = value;
+    }
+    
+    int32 size(&this) {
+        return this.length;
+    }
+}
+```
+
+#### Interface Objects (Planned)
+
+In the future, interfaces may be used as types themselves, allowing for dynamic dispatch:
+
+```firescript
+// Planned syntax
+void printAll(Printable[] items) {  // Array of interface objects
+    for (int32 i = 0; i < items.length; i = i + 1) {
+        print(items[i].toString());
+    }
+}
+
+// Can pass any type implementing Printable
+Point p = Point(1.0f32, 2.0f32);
+Circle c = Circle(3.0f32);
+Printable[] mixed = [p, c];  // Different types, same interface
+printAll(mixed);
+```
+
+#### Design Guidelines for Interfaces
+
+When designing interfaces, follow these guidelines:
+
+1. **Single Responsibility**: Each interface should represent one cohesive capability
+2. **Small and Focused**: Prefer many small interfaces over few large ones
+3. **Composable**: Use interface inheritance to build complex capabilities from simple ones
+4. **Clear Naming**: Interface names should clearly indicate the capability (e.g., `Readable`, `Writable`, `Comparable`)
+5. **Minimal Requirements**: Only include methods that are truly essential to the interface
+
+```firescript
+// Good: Small, focused interfaces
+interface Readable {
+    string read(&this);
+}
+
+interface Writable {
+    void write(&this, string data);
+}
+
+interface Seekable {
+    void seek(&this, int64 position);
+}
+
+// Can combine them as needed
+class File implements Readable, Writable, Seekable {
+    // ... fields ...
+    
+    // Implement all required methods
+    string read(&this) { /* ... */ }
+    void write(&this, string data) { /* ... */ }
+    void seek(&this, int64 position) { /* ... */ }
+}
+
+// Bad: One monolithic interface
+interface FileOperations {
+    string read(&this);
+    void write(&this, string data);
+    void seek(&this, int64 position);
+    bool exists(&this);
+    void delete(&this);
+    // Too many unrelated operations!
+}
 ```
 
 ### User-Defined Types (Classes)
@@ -412,7 +1234,8 @@ class Point {
 
 The current firescript compiler supports:
 
-* ✅ Some Copyable types: `bool`, `string`, `char`
+* ✅ All integer types (`int8`, `int16`, `int32`, `int64`, `uint8`, `uint16`, `uint32`, `uint64`)
+* ✅ All floating point types (`float32`, `float64`, `float128`)
 * ✅ Nullable type modifiers
 * ✅ Arrays of Copyable types
 * ✅ Static type checking for expressions and assignments
@@ -420,11 +1243,23 @@ The current firescript compiler supports:
 
 Not yet implemented:
 
-* ❌ All integer types (`int8`, `int16`, `int32`, `int64`, `uint8`, `uint16`, `uint32`, `uint64`)
-* ❌ All floating point types (`float32`, `float64`, `float128`)
 * ❌ Type introspection with `typeof`
 * ❌ Tuples
-* ❌ Generics
+* ❌ Interfaces (syntax and semantics documented, implementation pending)
+  * ❌ Interface definitions (`interface Name { }`)
+  * ❌ Interface inheritance (`interface Child from Parent { }`)
+  * ❌ Interface implementations (`class Type implements Interface { }`)
+  * ❌ Built-in interfaces with compiler support (Numeric, Comparable, etc.)
+  * ❌ Primitive type wrapper classes (`Integer`, `Float`, etc.)
+  * ❌ Marker interfaces
+  * ❌ Default implementations in interfaces
+  * ❌ Associated types
+  * ❌ Interface objects / dynamic dispatch
+* ❌ Generics (syntax and semantics documented, implementation pending)
+  * ❌ Generic functions
+  * ❌ Type constraints with interfaces
+  * ❌ Type union constraints (`T: int32 | float64`)
+  * ❌ Generic classes
+  * ❌ Type inference for generics
 * ❌ User-defined types (classes)
-* ❌ Interface types
 * ❌ Function types

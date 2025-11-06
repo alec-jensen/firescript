@@ -1,6 +1,6 @@
 # Imports
 
-> Status: Modules and import resolution are planned but not yet implemented. The syntax below is reserved and may evolve as the compiler gains module support.
+> Status: ✅ **Implemented** - Imports are now fully functional! Use `--enable-imports` flag when compiling.
 
 firescript uses an explicit, Java-inspired import system for organizing code across files and (in the future) external packages. All imports must specify full paths; there is no implicit or relative import behavior.
 
@@ -46,6 +46,20 @@ These forms are reserved for future package management and standard library supp
 ```firescript
 import @user/package
 import @firescript/std
+```
+
+These imports can be used the same as local imports, like so:
+
+```firescript
+import @firescript/std.math
+
+import @firescript/std.math.sqrt
+
+import @firescript/std.{math, io}
+
+import @firescript/std.math.*
+
+import @firescript/std.math.sqrt as squareRoot
 ```
 
 ## Paths and Resolution
@@ -129,6 +143,14 @@ import src.utils.utils.{helper, CONSTANT}
 
 ## Implementation Status
 
-- ❌ Modules and import resolution are planned but not implemented in the current compiler.
-- ✅ Syntax is reserved and documented here for future implementation.
+- ✅ Import syntax parsing (Phase 0) - fully implemented
+- ✅ Module resolution and dependency loading (Phase 1) - fully implemented
+- ✅ Multi-module compilation with merged AST (Phase 2 basic) - fully implemented
+- ✅ Wildcard imports (`import module.*`)
+- ✅ Symbol imports (`import module.{a, b}`)
+- ✅ Cyclic import detection
+- ⚠️  Module aliases and qualified access (e.g., `Utils.helper()`) - not yet implemented
+- ❌ External packages (`@user/package`, `@firescript/std`) - not supported yet
+
+To use imports, compile with `--enable-imports` and optionally specify `--import-root` (defaults to project root).
 

@@ -1,0 +1,5 @@
+// Test: import specific symbols
+import utils.{helper, CONSTANT}
+
+print(helper(10));
+print(CONSTANT);

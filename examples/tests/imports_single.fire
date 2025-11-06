@@ -1,0 +1,4 @@
+// Test: import and use a single symbol
+import utils.helper
+
+print(helper(20));

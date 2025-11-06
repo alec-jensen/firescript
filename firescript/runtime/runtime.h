@@ -7,6 +7,16 @@
 #include <gmp.h>
 #include <mpfr.h>
 
+// Safe allocation wrappers to avoid double-free and freeing static literals
+void *firescript_malloc(size_t size);
+char *firescript_strdup(const char *s);
+void firescript_free(void *p);
+
+// Map common allocators to safe wrappers in generated code
+#define malloc  firescript_malloc
+#define strdup  firescript_strdup
+#define free    firescript_free
+
 // Structure for reference-counted objects
 typedef struct RefCountedObject
 {

@@ -1,0 +1,12 @@
+// Demo: importing from multiple modules
+import math_utils.{square, MAX}
+import string_utils.*
+
+print("-- Math Operations --");
+print(square(5));
+print(square(10));
+print(MAX);
+
+print("-- String Operations --");
+print(wrap("hello"));
+print(wrap("imports work"));

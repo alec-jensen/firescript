@@ -10,6 +10,9 @@ from lexer import Lexer
 from parser import Parser
 from log_formatter import LogFormatter
 from preprocessor import enable_and_insert_drops
+from enums import NodeTypes
+from imports import ModuleResolver, build_merged_ast
+from enums import NodeTypes
 
 
 def setup_logging(debug_mode=False):
@@ -59,7 +62,37 @@ def compile_file(file_path, target, cc=None, output=None):
     ast = parser_instance.parse()
     logging.debug(f"ast:\n{ast}")
 
-    if parser_instance.errors:
+    # Resolve imports if present
+    has_imports = any(c.node_type == NodeTypes.IMPORT_STATEMENT for c in ast.children)
+    if has_imports:
+        # Resolve module graph and merge ASTs
+        try:
+            # Import root defaults to directory containing the entry file
+            import_root = os.path.dirname(os.path.abspath(file_path))
+            resolver = ModuleResolver(import_root)
+            # Prime resolver with already-parsed entry AST to avoid re-parsing errors on undefined imported symbols
+            entry_abs = os.path.abspath(file_path)
+            dotted = resolver.path_to_dotted(entry_abs)
+            from imports import Module  # local import to avoid circular typing
+            entry_mod_obj = Module(dotted, entry_abs, ast)
+            resolver.modules[dotted] = entry_mod_obj
+            # Load dependencies of entry
+            for imp in entry_mod_obj.imports:
+                if imp.kind != "external":
+                    resolver._load_module(imp.module_path, [dotted])
+            # Now build full order including entry
+            entry_mod, topo = resolver.resolve_for_entry(file_path)
+            logging.debug("Import resolution completed successfully.")
+            # Build merged AST for single-file codegen
+            ast = build_merged_ast(entry_mod, topo)
+            logging.debug("Import merge completed successfully.")
+        except Exception as e:
+            logging.error(f"Import resolution failed: {e}")
+            return False
+
+    # If there were parser errors and no imports, fail now.
+    # If imports were present, some 'undefined symbol' errors may be resolved by the merge above.
+    if parser_instance.errors and not has_imports:
         logging.error(f"Parsing failed with {len(parser_instance.errors)} errors")
         return False
 
@@ -79,6 +112,11 @@ def compile_file(file_path, target, cc=None, output=None):
         # Generate C code
         generator = CCodeGenerator(ast)
         output = generator.generate()
+        # Safety: wrap any raw free() calls emitted by codegen into firescript_free()
+        # This prevents double-free and freeing static literals.
+        output = output.replace(" free(", " firescript_free(")
+        output = output.replace("\tfree(", "\tfirescript_free(")
+        output = output.replace("\nfree(", "\nfirescript_free(")
 
         # Create temp folder if it doesn't exist
         os.makedirs("build/temp", exist_ok=True)
@@ -195,6 +233,7 @@ def main():
     parser.add_argument("file", nargs="?", help="Input file")
     parser.add_argument("--dir", help="Compile all .fire files in directory")
 
+
     args = parser.parse_args()
 
     # Configure logging
@@ -219,7 +258,11 @@ def main():
 
     # Compile individual file if specified
     if args.file:
-        output_path = compile_file(args.file, args.target, args.cc)
+        output_path = compile_file(
+            args.file,
+            args.target,
+            args.cc,
+        )
 
         # Handle output file renaming for single file case
         if output_path and args.output:
@@ -246,7 +289,11 @@ def main():
         failed = 0
 
         for file_path in fire_files:
-            if compile_file(file_path, args.target, args.cc):
+            if compile_file(
+                file_path,
+                args.target,
+                args.cc,
+            ):
                 successful += 1
             else:
                 failed += 1

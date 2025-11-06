@@ -7,6 +7,67 @@
 #include <mpfr.h>
 #include "runtime.h"
 
+// Internal registry to track heap pointers allocated via firescript_malloc/strdup
+typedef struct PtrNode {
+    void *p;
+    struct PtrNode *next;
+} PtrNode;
+
+static PtrNode *g_ptrs = NULL;
+
+// Use the real libc functions inside our wrappers
+#undef malloc
+#undef strdup
+#undef free
+
+static void registry_add(void *p) {
+    if (!p) return;
+    PtrNode *n = (PtrNode*)malloc(sizeof(PtrNode));
+    if (!n) return; // out of memory, best effort: still return allocated pointer
+    n->p = p;
+    n->next = g_ptrs;
+    g_ptrs = n;
+}
+
+static int registry_remove(void *p) {
+    if (!p) return 0;
+    PtrNode *prev = NULL;
+    PtrNode *cur = g_ptrs;
+    while (cur) {
+        if (cur->p == p) {
+            if (prev) prev->next = cur->next; else g_ptrs = cur->next;
+            free(cur);
+            return 1;
+        }
+        prev = cur;
+        cur = cur->next;
+    }
+    return 0;
+}
+
+void *firescript_malloc(size_t size) {
+    void *p = malloc(size);
+    registry_add(p);
+    return p;
+}
+
+char *firescript_strdup(const char *s) {
+    char *p = strdup(s ? s : "");
+    registry_add(p);
+    return p;
+}
+
+void firescript_free(void *p) {
+    // Only free if we allocated and tracked it
+    if (registry_remove(p)) {
+        fprintf(stderr, "firescript_free: freeing %p\n", p);
+        free(p);
+    } else {
+        // ignore frees of untracked pointers (e.g., string literals or already freed)
+        fprintf(stderr, "firescript_free: ignore %p\n", p);
+    }
+}
+
 typedef struct RefCountedObject
 {
     void *data;
@@ -207,5 +268,13 @@ void firescript_print_string_ref(RefCountedObject *str_obj)
 
 void firescript_cleanup(void)
 {
-    // No registries to clean up - objects clean themselves up via reference counting
+    // Cleanup any leaked tracked pointers (best-effort)
+    PtrNode *cur = g_ptrs;
+    while (cur) {
+        PtrNode *n = cur->next;
+        free(cur->p);
+        free(cur);
+        cur = n;
+    }
+    g_ptrs = NULL;
 }

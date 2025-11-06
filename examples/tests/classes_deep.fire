@@ -1,21 +1,20 @@
-// Deeper class test: vector operations
 class Vec2 {
     int32 x;
     int32 y;
-    Vec2 Vec2(int32 x, int32 y) {
-        return Vec2(x, y);
+
+    Vec2(&this, int32 x, int32 y) {
+        this.x = x;
+        this.y = y;
     }
-    Vec2 add(Vec2 other) {
-        return Vec2(self.x + other.x, self.y + other.y);
-    }
-    int32 dot(Vec2 other) {
-        return self.x * other.x + self.y * other.y;
+
+    Vec2 add(&this, Vec2 &other) {
+        return Vec2(this.x + other.x, this.y + other.y);
     }
 }
 
-Vec2 v1 = new Vec2(1, 2);
-Vec2 v2 = new Vec2(3, 4);
-Vec2 v3 = v1.add(v2);
+v1 = Vec2(3, 4);
+v2 = Vec2(1, 2);
+v3 = v1.add(v2);
 print(v3.x);
 print(v3.y);
 print(v1.dot(v2));
