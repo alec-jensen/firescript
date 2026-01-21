@@ -221,7 +221,7 @@ class Student from Person {
     string[] courses;
     
     Student(&this, string name, int8 age, string school) {
-        super.Student(name, age);  // Call parent constructor
+        this.super(name, age);  // Call parent constructor
         this.school = school;
         this.courses = [];
     }
@@ -238,7 +238,7 @@ class Student from Person {
     
     // Override parent method
     void celebrate(&this) {
-        super.celebrate();  // Call parent method
+        this.super.celebrate();  // Call parent method
         print("Time for a student party!");
     }
 }
@@ -246,7 +246,7 @@ class Student from Person {
 
 ### Method Overriding
 
-Child classes can override methods from the parent class. To call the parent class's implementation, use `super`:
+Child classes can override methods from the parent class. To call the parent class's implementation, use `this.super`:
 
 ```firescript
 class Shape {
@@ -265,13 +265,13 @@ class Square from Shape {
     float32 side;
     
     Square(&this, float32 side, string color) {
-        super.Shape(color);
+        this.super(color);
         this.side = side;
     }
     
     // Override the parent's describe method
     string describe(&this) {
-        return super.describe() + " (square with side " + toString(this.side) + ")";
+        return this.super.describe() + " (square with side " + toString(this.side) + ")";
     }
 }
 ```

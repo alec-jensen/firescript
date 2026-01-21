@@ -36,6 +36,7 @@ class NodeTypes(Enum):
     TYPE_METHOD_CALL = "TypeMethodCall"
     CONSTRUCTOR_CALL = "ConstructorCall"
     CAST_EXPRESSION = "CastExpression"
+    SUPER_CALL = "SuperCall"
 
 
 class CompilerDirective(Enum):

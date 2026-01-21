@@ -51,6 +51,7 @@ fibonacci(47)
 
 Fibonacci of 47 is used to provide a reasonable runtime for comparison. Test is run 5 times and the average time is reported.
 Tests are run on an AMD Ryzen 7 5800H processor.
+These tests were run against the latest stable releases of each language's compiler/interpreter as of October 2025.
 | Language      | Time (seconds) |
 |---------------|----------------|
 | C             | 3.5s (avg)     |

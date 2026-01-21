@@ -722,6 +722,23 @@ class CCodeGenerator:
             cname = node.name
             arglist = ", ".join(args)
             return f"{cname}_{cname}({arglist})"
+        elif node.node_type == NodeTypes.SUPER_CALL:
+            super_class = getattr(node, "super_class", None)
+            if not super_class:
+                return "/* invalid super call */"
+            args_code = [self._visit(arg) for arg in (node.children or [])]
+
+            # `this.super(...)` constructor chaining: call base constructor and copy base fields onto derived `this`
+            tmp = f"__super_tmp_{self.array_temp_counter}"
+            self.array_temp_counter += 1
+            fields = self.class_fields.get(super_class, [])
+            call = f"{super_class}_{super_class}({', '.join(args_code)})"
+            lines: list[str] = []
+            lines.append(f"{super_class} {tmp} = {call};")
+            for fname, _ftype in fields:
+                lines.append(f"this.{fname} = {tmp}.{fname};")
+            inner = "\n".join("    " + l for l in lines)
+            return "{\n" + inner + "\n}"
         elif node.node_type == NodeTypes.IF_STATEMENT:
             # The first child is the condition, the second is the then-branch,
             # and the optional third child is the else-branch.

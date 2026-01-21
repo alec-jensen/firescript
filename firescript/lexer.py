@@ -29,6 +29,7 @@ class Lexer:
         "CONTINUE": r"continue\b",
         "RETURN": r"return\b",
         "IMPORT": r"import\b",
+            "FROM": r"from\b",
         "NEW": r"new\b",
         "CLASS": r"class\b",
         "DIRECTIVE": r"directive\b",

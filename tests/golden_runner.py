@@ -27,6 +27,7 @@ import subprocess
 import sys
 import os
 import glob
+import difflib
 from dataclasses import dataclass
 from typing import List, Tuple, Optional
 
@@ -37,6 +38,34 @@ DEFAULT_SEARCH = [
 ]
 EXPECTED_DIR = os.path.join(REPO_ROOT, "tests", "expected")
 INPUTS_DIR = os.path.join(REPO_ROOT, "tests", "inputs")
+DIFFS_DIR = os.path.join(REPO_ROOT, "tests", "diffs")
+
+
+TAG_WIDTH = 6  # e.g. CASE, PASS, UPDATE
+
+
+def _supports_color() -> bool:
+    if os.environ.get("NO_COLOR") is not None:
+        return False
+    try:
+        return sys.stdout.isatty()
+    except Exception:
+        return False
+
+
+def _colorize(text: str, code: str) -> str:
+    if not _supports_color():
+        return text
+    return f"\x1b[{code}m{text}\x1b[0m"
+
+
+def _tag(label: str, *, color_code: Optional[str] = None) -> str:
+    padded = f"[{label:<{TAG_WIDTH}}]"
+    return _colorize(padded, color_code) if color_code else padded
+
+
+def _log(label: str, message: str, *, color_code: Optional[str] = None) -> None:
+    print(f"{_tag(label, color_code=color_code)} {message}")
 
 @dataclass
 class TestCase:
@@ -117,6 +146,21 @@ def normalize(s: str) -> str:
     return "\n".join(line.rstrip() for line in s.replace("\r\n", "\n").replace("\r", "\n").split("\n")).strip() + "\n"
 
 
+def write_diff(tc: TestCase, expected_norm: str, actual_norm: str) -> str:
+    os.makedirs(DIFFS_DIR, exist_ok=True)
+    base = os.path.splitext(os.path.basename(tc.source))[0]
+    diff_path = os.path.join(DIFFS_DIR, f"{base}.diff")
+    diff_lines = difflib.unified_diff(
+        expected_norm.splitlines(keepends=True),
+        actual_norm.splitlines(keepends=True),
+        fromfile=tc.expected_path,
+        tofile=f"actual:{tc.binary}",
+    )
+    with open(diff_path, "w", encoding="utf-8", newline="\n") as f:
+        f.writelines(diff_lines)
+    return diff_path
+
+
 def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bool, timeout: Optional[float]) -> int:
     total = 0
     passed = 0
@@ -125,11 +169,12 @@ def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bo
     for tc in cases:
         total += 1
         try:
+            _log("CASE", tc.source, color_code="36")  # cyan
             if verbose:
-                print(f"[BUILD] {tc.source}")
+                _log("BUILD", tc.source, color_code="90")  # dim
             compile_fire(tc.source)
             if verbose:
-                print(f"[RUN  ] {tc.binary}")
+                _log("RUN", tc.binary, color_code="90")  # dim
             input_text = read_file(tc.input_path) if tc.input_path else None
             actual = run_binary(tc.binary, input_text=input_text, timeout=timeout)
             actual_norm = normalize(actual)
@@ -138,35 +183,39 @@ def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bo
                 expected_norm = normalize(read_file(tc.expected_path))
                 if actual_norm == expected_norm:
                     passed += 1
-                    if verbose:
-                        print(f"[PASS] {tc.source}")
+                    _log("PASS", tc.source, color_code="32")  # green
                 else:
                     if update:
                         write_file(tc.expected_path, actual_norm)
                         passed += 1
-                        print(f"[UPDATE] {tc.expected_path}")
+                        _log("UPDATE", tc.expected_path, color_code="33")  # yellow
                     else:
                         failed.append((tc, expected_norm, actual_norm))
-                        print(f"[FAIL] {tc.source} -> see diff")
+                        diff_path = write_diff(tc, expected_norm, actual_norm)
+                        _log("FAIL", f"{tc.source} -> {diff_path}", color_code="31")  # red
                         if fail_fast:
                             break
             else:
                 if update:
                     write_file(tc.expected_path, actual_norm)
                     passed += 1
-                    print(f"[NEW] wrote golden {tc.expected_path}")
+                    _log("NEW", f"wrote golden {tc.expected_path}", color_code="33")  # yellow
                 else:
                     failed.append((tc, "<missing>", actual_norm))
-                    print(f"[FAIL] missing golden for {tc.source}: {tc.expected_path}")
+                    _log("FAIL", f"missing golden for {tc.source}: {tc.expected_path}", color_code="31")
                     if fail_fast:
                         break
         except Exception as e:
             failed.append((tc, "<exception>", str(e)))
-            print(f"[ERROR] {tc.source}: {e}")
+            _log("ERROR", f"{tc.source}: {e}", color_code="31")
             if fail_fast:
                 break
 
-    print(f"\nSummary: {passed}/{total} passed, {len(failed)} failed")
+    summary_line = f"Summary: {passed}/{total} passed, {len(failed)} failed"
+    if failed:
+        print(_colorize("\n" + summary_line, "31"))
+    else:
+        print(_colorize("\n" + summary_line, "32"))
     if failed and verbose:
         for tc, exp, act in failed:
             print("\nCase:", tc.source)

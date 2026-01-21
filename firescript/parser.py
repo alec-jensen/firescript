@@ -1,4 +1,5 @@
 import logging
+import copy
 from typing import Union, Optional
 
 from lexer import Token
@@ -164,6 +165,20 @@ class Parser:
         self.user_types: set[str] = set()
         # className -> methodName -> {"return": str, "params": [str, ...]}
         self.user_methods = {}
+
+        # Inheritance metadata: class -> base class (single inheritance)
+        self.user_class_bases: dict[str, Optional[str]] = {}
+        # Keep parsed class field/method nodes around so we can synthesize inherited members.
+        self._class_field_nodes: dict[str, list[ASTNode]] = {}
+        self._class_method_nodes: dict[str, list[ASTNode]] = {}
+
+        # Parsing context for class bodies (used for `super.*` parsing)
+        self._class_context_stack: list[tuple[str, bool, Optional[str]]] = []  # (class_name, in_constructor, base_class)
+
+    def _current_class_context(self) -> tuple[Optional[str], bool, Optional[str]]:
+        if not self._class_context_stack:
+            return (None, False, None)
+        return self._class_context_stack[-1]
 
     def _is_type_token(self, tok: Optional[Token]) -> bool:
         """Return True if the token denotes a type keyword."""
@@ -511,6 +526,21 @@ class Parser:
                                 break
                         if not self.consume("CLOSE_PAREN"):
                             self.error("Expected ')' after method arguments", self.current_token)
+
+                        # Special-case: `this.super(...)` inside constructors.
+                        cls_name, in_ctor, super_class = self._current_class_context()
+                        if (
+                            ident_tok.value == "super"
+                            and in_ctor
+                            and node.node_type == NodeTypes.IDENTIFIER
+                            and node.name == "this"
+                        ):
+                            super_node = ASTNode(NodeTypes.SUPER_CALL, ident_tok, "super", arguments, ident_tok.index)
+                            setattr(super_node, "enclosing_class", cls_name)
+                            setattr(super_node, "super_class", super_class)
+                            setattr(super_node, "in_constructor", True)
+                            return super_node
+
                         node = ASTNode(
                             NodeTypes.METHOD_CALL,
                             ident_tok,
@@ -1172,6 +1202,14 @@ class Parser:
                     base_type = base_type[:-2]
             else:
                 is_array = False
+        elif node.node_type == NodeTypes.SUPER_CALL:
+            base_type = node.return_type
+            if base_type:
+                is_array = base_type.endswith("[]")
+                if is_array:
+                    base_type = base_type[:-2]
+            else:
+                is_array = False
         elif node.node_type == NodeTypes.ARRAY_ACCESS:
             # Type is the element type of the array
             array_expr_node = node.children[0]
@@ -1596,6 +1634,44 @@ class Parser:
                         f"Methods not supported for type {object_type}",
                         node.children[0].token,
                     )
+
+        elif node.node_type == NodeTypes.SUPER_CALL:
+            enclosing_class = getattr(node, "enclosing_class", None)
+            super_class = getattr(node, "super_class", None)
+            in_ctor = bool(getattr(node, "in_constructor", False))
+
+            if not enclosing_class:
+                self.error("'super' can only be used inside a class method", node.token)
+                return None
+            if not super_class:
+                self.error(f"Class '{enclosing_class}' has no base class; cannot use 'super'", node.token)
+                return None
+
+            if not in_ctor:
+                self.error("'this.super(...)' is only valid inside a constructor", node.token)
+                return None
+
+            # Validate constructor exists on base
+            if super_class not in self.user_methods or super_class not in self.user_methods[super_class]:
+                self.error(f"No constructor defined for base type '{super_class}'", node.token)
+                return None
+            sig = self.user_methods[super_class][super_class]
+            expected_params = sig.get("params", [])
+            if len(child_types) != len(expected_params):
+                self.error(
+                    f"Super constructor '{super_class}' expected {len(expected_params)} args, got {len(child_types)}",
+                    node.token,
+                )
+            else:
+                for i, (arg_t, exp_t) in enumerate(zip(child_types, expected_params)):
+                    if arg_t != exp_t:
+                        self.error(
+                            f"Super constructor '{super_class}' arg {i+1} expected {exp_t}, got {arg_t}",
+                            node.children[i].token if i < len(node.children) else node.token,
+                        )
+
+            node.return_type = "void"
+            node_type_str = "void"
         elif node.node_type == NodeTypes.TYPE_METHOD_CALL:
             class_name = getattr(node, "class_name", None)
             method_name = node.name
@@ -1895,7 +1971,7 @@ class Parser:
                 if lhs is None:
                     return None
                 # If it's a method call used as a statement, return it
-                if lhs.node_type == NodeTypes.METHOD_CALL:
+                if lhs.node_type in (NodeTypes.METHOD_CALL, NodeTypes.SUPER_CALL):
                     return lhs
                 # If it's a field access followed by assignment, handle assignment
                 if self.current_token and self.current_token.type == "ASSIGN":
@@ -2377,7 +2453,7 @@ class Parser:
         return node
 
     def _parse_class_definition(self):
-        """Parse a class definition: class Name { <type> <field>; ... }"""
+        """Parse a class definition: class Name [from Base] { <type> <field>; ... }"""
         class_tok = self.consume("CLASS")
         if class_tok is None:
             return None
@@ -2385,6 +2461,18 @@ class Parser:
         if name_tok is None:
             self.error("Expected class name after 'class'", self.current_token)
             return None
+
+        base_class: Optional[str] = None
+        if self.current_token and self.current_token.type == "FROM":
+            self.advance()  # consume 'from'
+            base_tok = self.consume("IDENTIFIER")
+            if base_tok is None:
+                self.error("Expected base class name after 'from'", self.current_token)
+                return None
+            base_class = base_tok.value
+            if base_class == name_tok.value:
+                self.error("A class cannot inherit from itself", base_tok)
+
         if not self.consume("OPEN_BRACE"):
             self.error("Expected '{' to start class body", self.current_token)
             return None
@@ -2507,7 +2595,12 @@ class Parser:
                 if not (self.current_token and self.current_token.type == "OPEN_BRACE"):
                     self.error("Expected '{' to start method body", self.current_token)
                     return None
-                body_node = self.parse_scope()
+
+                self._class_context_stack.append((name_tok.value, True, base_class))
+                try:
+                    body_node = self.parse_scope()
+                finally:
+                    self._class_context_stack.pop()
                 if body_node is None:
                     return None
                 # Constructor: no synthetic 'self' parameter
@@ -2535,6 +2628,8 @@ class Parser:
                 break
             # Method definition
             if self.current_token and self.current_token.type == "OPEN_PAREN":
+                # Determine if this is a constructor: method name equals class name
+                is_constructor = (name_tok2.value == name_tok.value)
                 # Parse parameters
                 self.consume("OPEN_PAREN")
                 params: list[ASTNode] = []
@@ -2616,11 +2711,14 @@ class Parser:
                 if not (self.current_token and self.current_token.type == "OPEN_BRACE"):
                     self.error("Expected '{' to start method body", self.current_token)
                     return None
-                body_node = self.parse_scope()
+
+                self._class_context_stack.append((name_tok.value, bool(is_constructor), base_class))
+                try:
+                    body_node = self.parse_scope()
+                finally:
+                    self._class_context_stack.pop()
                 if body_node is None:
                     return None
-                # Determine if this is a constructor: method name equals class name
-                is_constructor = (name_tok2.value == name_tok.value)
                 param_nodes = params
                 if not is_constructor and not (params and params[0].name == "this"):
                     # Inject synthetic receiver named 'this' if not explicitly provided
@@ -2672,13 +2770,68 @@ class Parser:
         # consume closing brace if present
         if self.current_token and self.current_token.type == "CLOSE_BRACE":
             self.consume("CLOSE_BRACE")
+
+        # Inheritance: synthesize inherited fields/methods (single inheritance)
+        inherited_fields: list[ASTNode] = []
+        inherited_methods: list[ASTNode] = []
+        if base_class:
+            base_fields_map = self.user_classes.get(base_class)
+            if base_fields_map is not None:
+                for fname, ftype in base_fields_map.items():
+                    if fname in field_types:
+                        self.error(
+                            f"Field '{fname}' in '{name_tok.value}' conflicts with inherited field from '{base_class}'",
+                            name_tok,
+                        )
+                        continue
+                    inherited_node = ASTNode(
+                        NodeTypes.CLASS_FIELD,
+                        name_tok,
+                        fname,
+                        [],
+                        name_tok.index,
+                        var_type=ftype,
+                    )
+                    inherited_fields.append(inherited_node)
+                    field_types[fname] = ftype
+
+            base_method_nodes = self._class_method_nodes.get(base_class, [])
+            existing_method_names = {m.name for m in methods if m.node_type == NodeTypes.CLASS_METHOD_DEFINITION}
+            for bm in base_method_nodes:
+                if getattr(bm, "is_constructor", False):
+                    continue
+                if bm.name in existing_method_names:
+                    continue
+                dm = copy.deepcopy(bm)
+                setattr(dm, "class_name", name_tok.value)
+                setattr(dm, "is_constructor", False)
+                for ch in dm.children:
+                    if ch.node_type == NodeTypes.PARAMETER and ch.name == "this":
+                        ch.var_type = name_tok.value
+                        break
+                inherited_methods.append(dm)
+
+        all_fields = [*inherited_fields, *fields]
+        all_methods = [*methods, *inherited_methods]
+
         # register class type
         self.user_types.add(name_tok.value)
         self.user_classes[name_tok.value] = field_types
+        self.user_class_bases[name_tok.value] = base_class
+        self._class_field_nodes[name_tok.value] = all_fields
+        self._class_method_nodes[name_tok.value] = all_methods
+
         # register methods meta
         if name_tok.value not in self.user_methods:
             self.user_methods[name_tok.value] = {}
-        for m in methods:
+
+        # Merge base method signatures into derived lookup (override by derived if present)
+        if base_class and base_class in self.user_methods:
+            for mname, sig in self.user_methods[base_class].items():
+                if mname not in self.user_methods[name_tok.value]:
+                    self.user_methods[name_tok.value][mname] = sig
+
+        for m in all_methods:
             # Gather parameter nodes (exclude trailing body scope)
             param_nodes = [p for p in m.children[:-1] if p.node_type == NodeTypes.PARAMETER]
             # Exclude receiver (explicit &this or synthetic) from external signature
@@ -2692,7 +2845,10 @@ class Parser:
                 )
             params_types = [p.var_type for p in effective_params]
             self.user_methods[name_tok.value][m.name] = {"return": m.return_type, "params": params_types}
-        return ASTNode(NodeTypes.CLASS_DEFINITION, name_tok, name_tok.value, [*fields, *methods], name_tok.index)
+
+        cls_node = ASTNode(NodeTypes.CLASS_DEFINITION, name_tok, name_tok.value, [*all_fields, *all_methods], name_tok.index)
+        setattr(cls_node, "base_class", base_class)
+        return cls_node
 
     def _skip_comment(self):
         """Advances past single or multi-line comments."""
