@@ -29,6 +29,7 @@ This is a MAJOR rewrite and WILL be buggy and will not work correctly.
 - String concatenation remains supported via `+` between two strings.
 - Initial support for classes
 - Imports
+- Inheritance
 
 ## 0.3.0 (Sep 12 2025)
 
