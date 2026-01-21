@@ -10,6 +10,10 @@ class Vec2 {
     Vec2 add(&this, Vec2 &other) {
         return Vec2(this.x + other.x, this.y + other.y);
     }
+
+    int32 dot(&this, Vec2 &other) {
+        return (this.x * other.x) + (this.y * other.y);
+    }
 }
 
 v1 = Vec2(3, 4);

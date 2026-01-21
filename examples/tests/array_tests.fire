@@ -17,7 +17,7 @@ print(numbers.length()); // 5
 
 // Test 4: Iterate over array
 print("\nTest 4: Iterate over array");
-uint8 i = 0;
+int32 i = 0;
 while (i < numbers.length()) {
 	print(numbers[i]);
 	i = i + 1;

@@ -35,6 +35,7 @@ class NodeTypes(Enum):
     CLASS_METHOD_DEFINITION = "ClassMethodDefinition"
     TYPE_METHOD_CALL = "TypeMethodCall"
     CONSTRUCTOR_CALL = "ConstructorCall"
+    CAST_EXPRESSION = "CastExpression"
 
 
 class CompilerDirective(Enum):

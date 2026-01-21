@@ -25,6 +25,24 @@ firescript provides several fundamental data types. These are all Copyable types
 
 ## Type Semantics
 
+### Explicit Casts (`as`)
+
+firescript requires **explicit** numeric conversions. There are no implicit casts between integer widths/signedness.
+
+Use Rust-style casts:
+
+```firescript
+int8 myInt = (59i16 as int8);
+uint8 u = (255i16 as uint8);
+float64 f = (42i32 as float64);
+```
+
+Notes:
+
+* `as` is a postfix operator: `expr as type`.
+* For readability, parentheses are recommended when mixing with other operators.
+* `as` is currently supported for numeric-to-numeric casts.
+
 ### Integer Type (`intN` and `uintN`)
 
 The `intN` types in firescript represent N-bit signed integers, while the `uintN` types represent N-bit unsigned integers.
@@ -32,7 +50,7 @@ The `intN` types in firescript represent N-bit signed integers, while the `uintN
 ```firescript
 int8 small = 42;
 int64 large = 9223372036854775807;  // Large integers are supported
-int64 calculation = (small + large) * 2;  // Arithmetic operations
+int64 calculation = ((small as int64) + large) * 2i64;  // Arithmetic operations
 ```
 
 Integers support the following operations:

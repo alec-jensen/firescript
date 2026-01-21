@@ -58,7 +58,14 @@ def compile_file(file_path, target, cc=None, output=None):
     logging.debug(f"tokens:\n{'\n'.join([str(token) for token in tokens])}")
 
     # Parsing
-    parser_instance = Parser(tokens, file_content, os.path.relpath(file_path))
+    # If imports are present, defer some undefined-name checks until after import merge.
+    has_import_tokens = any(getattr(t, "type", None) == "IMPORT" for t in tokens)
+    parser_instance = Parser(
+        tokens,
+        file_content,
+        os.path.relpath(file_path),
+        defer_undefined_identifiers=has_import_tokens,
+    )
     ast = parser_instance.parse()
     logging.debug(f"ast:\n{ast}")
 
@@ -88,6 +95,26 @@ def compile_file(file_path, target, cc=None, output=None):
             logging.debug("Import merge completed successfully.")
         except Exception as e:
             logging.error(f"Import resolution failed: {e}")
+            return False
+
+        # If we deferred undefined-identifier checks while parsing (because imports existed),
+        # validate them now against the merged symbol table.
+        deferred = getattr(parser_instance, "deferred_undefined_identifiers", [])
+        if deferred:
+            merged_symbols = getattr(ast, "_merged_symbols", {}) or {}
+            for name, tok in deferred:
+                if name in merged_symbols:
+                    continue
+                # Also allow class names imported via merge.
+                if any(
+                    c.node_type == NodeTypes.CLASS_DEFINITION and getattr(c, "name", None) == name
+                    for c in (ast.children or [])
+                ):
+                    continue
+                parser_instance.error(f"Variable '{name}' not defined", tok)
+
+        if parser_instance.errors:
+            logging.error(f"Parsing failed with {len(parser_instance.errors)} errors")
             return False
 
     # If there were parser errors and no imports, fail now.
@@ -163,6 +190,7 @@ def compile_file(file_path, target, cc=None, output=None):
             ".",
             temp_c_file,
             "firescript/runtime/runtime.c",
+            "firescript/runtime/varray.c",
             "-Wl,-O2",
             "-Wl,--as-needed",
             "-Wl,--gc-sections",
@@ -263,6 +291,9 @@ def main():
             args.target,
             args.cc,
         )
+
+        if not output_path:
+            sys.exit(1)
 
         # Handle output file renaming for single file case
         if output_path and args.output:

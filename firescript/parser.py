@@ -135,13 +135,25 @@ class Parser:
     # Register for user-defined methods (className -> methodName -> signature)
     user_methods = {}
 
-    def __init__(self, tokens: list[Token], file: str, filename: str):
+    def __init__(
+        self,
+        tokens: list[Token],
+        file: str,
+        filename: str,
+        defer_undefined_identifiers: Optional[bool] = None,
+    ):
         self.tokens: list[Token] = tokens
         self.current_token: Optional[Token] = self.tokens[0]
         self.ast = ASTNode(NodeTypes.ROOT, None, "program", [], 0)
         self.file = file
         self.filename = filename
         self.errors = []
+        if defer_undefined_identifiers is None:
+            self.defer_undefined_identifiers = any(t.type == "IMPORT" for t in tokens)
+        else:
+            self.defer_undefined_identifiers = defer_undefined_identifiers
+        # Track identifier uses we deferred checking (typically because imports are present).
+        self.deferred_undefined_identifiers: list[tuple[str, Optional[Token]]] = []
         # Registry for user-defined functions discovered during parsing
         # Maps function name -> return type string (e.g., "int", "void")
         self.user_functions = {}
@@ -246,6 +258,41 @@ class Parser:
     def parse_expression(self):
         """Parse an expression using equality and additive operators."""
         return self.parse_equality()
+
+    def _parse_postfix_cast(self, node: Optional[ASTNode]) -> Optional[ASTNode]:
+        """Parse Rust-style postfix cast: <expr> as <type>."""
+        if node is None:
+            return None
+        while self.current_token and (
+            self.current_token.type == "AS"
+            or (self.current_token.type == "IDENTIFIER" and self.current_token.value == "as")
+        ):
+            self.advance()  # consume 'as'
+            t_tok = self.current_token
+            if t_tok is None:
+                self.error("Expected type after 'as'", node.token)
+                break
+            if not (self._is_type_token(t_tok) or t_tok.type == "IDENTIFIER"):
+                self.error("Expected type after 'as'", t_tok)
+                break
+            self.advance()
+
+            # Normalize built-in type tokens; allow user-defined types via IDENTIFIER.
+            if self._is_type_token(t_tok):
+                target_type = self._normalize_type_name(t_tok)
+            else:
+                target_type = t_tok.value
+
+            cast_node = ASTNode(
+                NodeTypes.CAST_EXPRESSION,
+                t_tok,
+                target_type,
+                [node],
+                t_tok.index,
+            )
+            cast_node.return_type = target_type
+            node = cast_node
+        return node
 
     def parse_equality(self):
         """Parse equality and relational expressions (handles '==', '>', '<', etc)."""
@@ -374,9 +421,9 @@ class Parser:
             expr = self.parse_expression()
             if not self.current_token or self.current_token.type != "CLOSE_PAREN":
                 self.error("Expected closing parenthesis", self.current_token)
-                return expr
+                return self._parse_postfix_cast(expr)
             self.advance()  # skip ')'
-            return expr
+            return self._parse_postfix_cast(expr)
         elif token.type == "OPEN_BRACKET":
             # Parse an array literal [elem1, elem2, ...]
             return self.parse_array_literal()
@@ -399,7 +446,7 @@ class Parser:
                 node.return_type = "null"
             elif token.type in ("INTEGER_LITERAL", "FLOAT_LITERAL", "DOUBLE_LITERAL"):
                 node.return_type = self._infer_literal_type(token)
-            return node
+            return self._parse_postfix_cast(node)
         elif token.type == "IDENTIFIER" or token.value in self.builtin_functions:
             self.advance()
             # Special-case: type-level method call like Type.method(...)
@@ -435,9 +482,13 @@ class Parser:
                 # Array access
                 if self.current_token and self.current_token.type == "OPEN_BRACKET":
                     node = self.parse_array_access(node)
-                    return node  # For now, stop at array access in primary
+                    if node is None:
+                        return None
+                    continue
                 # Field access or method call starting with '.'
                 elif self.current_token and self.current_token.type == "DOT":
+                    if node is None:
+                        return None
                     # Lookahead to distinguish field vs method call
                     dot_tok = self.consume("DOT")
                     ident_tok = self.consume("IDENTIFIER")
@@ -506,9 +557,19 @@ class Parser:
                     elif token.type == "IDENTIFIER" and token.value in self.user_types:
                         # Constructor call: validate in type checker; return type will be set there
                         pass
-                    return node
+                    continue
+
+                # Postfix cast: <expr> as <type>
+                elif self.current_token and (
+                    self.current_token.type == "AS"
+                    or (
+                        self.current_token.type == "IDENTIFIER" and self.current_token.value == "as"
+                    )
+                ):
+                    node = self._parse_postfix_cast(node)
+                    continue
                 break
-            return node
+            return self._parse_postfix_cast(node)
         else:
             self.error(f"Unexpected token {token.value}", token)
             self.advance()
@@ -842,16 +903,18 @@ class Parser:
             self._sync_to_semicolon()
             return None
 
-        # Allow built-in functions and user-defined functions
+        # Allow built-in functions and user-defined functions.
+        # If imports are present, defer undefined-function checks until after import merge.
         if (
             function_name_token.value not in self.builtin_functions
             and function_name_token.value not in getattr(self, "user_functions", {})
         ):
-            self.error(
-                f"Function '{function_name_token.value}' is not defined",
-                function_name_token,
-            )
-            return None
+            if not self.defer_undefined_identifiers:
+                self.error(
+                    f"Function '{function_name_token.value}' is not defined",
+                    function_name_token,
+                )
+                return None
 
         node = ASTNode(
             NodeTypes.FUNCTION_CALL,
@@ -1003,7 +1066,10 @@ class Parser:
         # Identifier usage: ensure variable defined
         if node.node_type == NodeTypes.IDENTIFIER:
             if node.name not in current_scope:
-                self.error(f"Variable '{node.name}' not defined", node.token)
+                if self.defer_undefined_identifiers:
+                    self.deferred_undefined_identifiers.append((node.name, node.token))
+                else:
+                    self.error(f"Variable '{node.name}' not defined", node.token)
             else:
                 node.var_type, node.is_array = current_scope[node.name]
                 # Annotate identifier with value category
@@ -1321,6 +1387,47 @@ class Parser:
                 )
 
             node.return_type = node_type_str
+
+        elif node.node_type == NodeTypes.CAST_EXPRESSION:
+            expr_type = child_types[0] if child_types else None
+            target_type = getattr(node, "name", None)
+
+            if expr_type is None or target_type is None:
+                return None
+
+            # No array casts for now
+            if isinstance(expr_type, str) and expr_type.endswith("[]"):
+                self.error(
+                    f"Cannot cast array type {expr_type} to {target_type}",
+                    node.token,
+                )
+                return None
+            if isinstance(target_type, str) and target_type.endswith("[]"):
+                self.error(
+                    f"Cannot cast to array type {target_type}",
+                    node.token,
+                )
+                return None
+
+            integer_types = self.INTEGER_TYPES
+            float_types = {"float32", "float64", "float128"}
+
+            if target_type not in integer_types and target_type not in float_types:
+                self.error(
+                    f"Cannot cast to unknown or non-numeric type {target_type}",
+                    node.token,
+                )
+                return None
+
+            if expr_type not in integer_types and expr_type not in float_types:
+                self.error(
+                    f"Cannot cast non-numeric type {expr_type} to {target_type}",
+                    node.token,
+                )
+                return None
+
+            node_type_str = target_type
+            node.return_type = target_type
 
         elif node.node_type == NodeTypes.FUNCTION_CALL:
             # Basic check for built-ins
@@ -1854,11 +1961,6 @@ class Parser:
                 )
                 return None
             ret_is_array = True
-        if ret_is_array:
-            self.error(
-                "Array return types are not supported for fixed-size arrays",
-                ret_type_token,
-            )
 
         name_token = self.consume("IDENTIFIER")
         if name_token is None:
@@ -1887,11 +1989,6 @@ class Parser:
                         )
                         return None
                     p_is_array = True
-                if p_is_array:
-                    self.error(
-                        "Array parameters are not supported for fixed-size arrays",
-                        ptype_tok,
-                    )
                 pname_tok = self.consume("IDENTIFIER")
                 if pname_tok is None:
                     self.error("Expected parameter name", self.current_token)
@@ -2376,6 +2473,10 @@ class Parser:
                                 while self.current_token and self.current_token.type != "CLOSE_PAREN":
                                     self.advance()
                                 break
+                            p_is_borrowed = False
+                            if self.current_token and self.current_token.type == "AMPERSAND":
+                                p_is_borrowed = True
+                                self.advance()
                             pname_tok = self.consume("IDENTIFIER")
                             if pname_tok is None:
                                 self.error("Expected parameter name in method", self.current_token)
@@ -2393,6 +2494,8 @@ class Parser:
                                 p_is_array,
                                 p_is_array,
                             )
+                            if p_is_borrowed:
+                                setattr(param_node, "is_borrowed", True)
                             params.append(param_node)
                         if self.current_token and self.current_token.type == "COMMA":
                             self.advance()
@@ -2479,6 +2582,10 @@ class Parser:
                                 while self.current_token and self.current_token.type != "CLOSE_PAREN":
                                     self.advance()
                                 break
+                            p_is_borrowed = False
+                            if self.current_token and self.current_token.type == "AMPERSAND":
+                                p_is_borrowed = True
+                                self.advance()
                             pname_tok = self.consume("IDENTIFIER")
                             if pname_tok is None:
                                 self.error("Expected parameter name in method", self.current_token)
@@ -2496,6 +2603,8 @@ class Parser:
                                 p_is_array,
                                 p_is_array,
                             )
+                            if p_is_borrowed:
+                                setattr(param_node, "is_borrowed", True)
                             params.append(param_node)
                         if self.current_token and self.current_token.type == "COMMA":
                             self.advance()
