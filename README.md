@@ -96,9 +96,7 @@ python3 firescript/firescript.py program.fire
 
 ## Documentation
 
-Full documentation is available at: [https://alec-jensen.github.io/firescript/](https://alec-jensen.github.io/firescript/)
-
-Learn more about planned memory semantics: [Memory Management Model](docs/reference/memory_management.md)
+Full documentation is available at: [https://alec-jensen.github.io/firescript/](https://firescript.alecj.com/)
 
 ## Contributing
 
