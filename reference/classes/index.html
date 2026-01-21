@@ -1610,7 +1610,7 @@ string speciesName = Person.species();
     string[] courses;
 
     Student(&amp;this, string name, int8 age, string school) {
-        super.Student(name, age);  // Call parent constructor
+        this.super(name, age);  // Call parent constructor
         this.school = school;
         this.courses = [];
     }
@@ -1627,13 +1627,13 @@ string speciesName = Person.species();
 
     // Override parent method
     void celebrate(&amp;this) {
-        super.celebrate();  // Call parent method
+        this.super.celebrate();  // Call parent method
         print(&quot;Time for a student party!&quot;);
     }
 }
 </code></pre>
 <h3 id="method-overriding">Method Overriding<a class="headerlink" href="#method-overriding" title="Permanent link">&para;</a></h3>
-<p>Child classes can override methods from the parent class. To call the parent class's implementation, use <code>super</code>:</p>
+<p>Child classes can override methods from the parent class. To call the parent class's implementation, use <code>this.super</code>:</p>
 <pre><code class="language-firescript">class Shape {
     string color;
 
@@ -1650,13 +1650,13 @@ class Square from Shape {
     float32 side;
 
     Square(&amp;this, float32 side, string color) {
-        super.Shape(color);
+        this.super(color);
         this.side = side;
     }
 
     // Override the parent's describe method
     string describe(&amp;this) {
-        return super.describe() + &quot; (square with side &quot; + toString(this.side) + &quot;)&quot;;
+        return this.super.describe() + &quot; (square with side &quot; + toString(this.side) + &quot;)&quot;;
     }
 }
 </code></pre>
