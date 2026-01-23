@@ -206,6 +206,6 @@ float add(float a, float b) {
 - ✅ Built-in functions: `print`, `input`, type conversions, `typeof`
 - ✅ Array methods: `append`, `insert`, `pop`, `clear`, `length`
 - ✅ User-defined function definitions
-- ❌ Methods on objects
+- ✅ Methods on objects
 - ❌ Optional, named, or variadic parameters
 - ❌ Function overloading

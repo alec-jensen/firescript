@@ -442,11 +442,11 @@ copyable class Point {
 
 Classes in firescript are planned but not yet implemented in the current compiler:
 
-- ❌ Class definitions
-- ❌ Instance fields and methods
-- ❌ Constructors
+- ✅ Class definitions
+- ✅ Instance fields and methods
+- ✅ Constructors
 - ❌ Static methods
-- ❌ Inheritance
+- ✅ Inheritance
 - ❌ Method overriding
 - ❌ Polymorphism
 - ❌ Interfaces

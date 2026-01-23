@@ -1342,11 +1342,11 @@ The current firescript compiler supports:
 * ✅ Nullable type modifiers
 * ✅ Arrays of Copyable types
 * ✅ Static type checking for expressions and assignments
+* ⚠️ Explicit type casting (only for numeric types at present)
 
 Not yet implemented:
 
 * ❌ Type inference on variable declarations
-* ❌ Explicit type casting (Java-style with parentheses)
 * ❌ Type introspection with `typeof`
 * ❌ Tuples
 * ❌ Interfaces (syntax and semantics documented, implementation pending)

@@ -28,8 +28,13 @@ This is a MAJOR rewrite and WILL be buggy and will not work correctly.
     - Floats: `f32`, `f64`, `f128` (e.g., `3.14f32`, `2.0f64`, `1.0f128`).
 - String concatenation remains supported via `+` between two strings.
 - Initial support for classes
+    - Class definitions with fields, methods, and constructors.
+    - Object instantiation using `new` keyword.
+    - Method calls on class instances.
+    - Inheritance
 - Imports
-- Inheritance
+- Casting (rust-like syntax `(87 as int8)`)
+    - Currently only supported for numeric->numeric casts.
 
 ## 0.3.0 (Sep 12 2025)
 
