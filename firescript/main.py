@@ -229,6 +229,12 @@ def compile_file(file_path, target, cc=None, output=None):
         # Default output location
         output_path = os.path.join("build", base_name)
 
+        # Windows toolchains typically emit .exe even if -o omits extension
+        if os.name == "nt":
+            if os.path.exists(compiled_binary + ".exe"):
+                compiled_binary = compiled_binary + ".exe"
+                output_path = output_path + ".exe"
+
         try:
             shutil.move(compiled_binary, output_path)
             logging.info(f"Binary written to {output_path}")

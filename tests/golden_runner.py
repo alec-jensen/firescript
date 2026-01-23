@@ -120,9 +120,13 @@ def compile_fire(src: str) -> None:
 
 
 def run_binary(path: str, input_text: Optional[str], timeout: Optional[float]) -> str:
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Binary not found: {path}")
-    cmd = [path]
+    resolved_path = path
+    if not os.path.exists(resolved_path):
+        if os.name == "nt" and os.path.exists(resolved_path + ".exe"):
+            resolved_path = resolved_path + ".exe"
+        else:
+            raise FileNotFoundError(f"Binary not found: {path}")
+    cmd = [resolved_path]
     code, out, err = run_cmd(cmd, cwd=REPO_ROOT, check=False, input_text=input_text, timeout=timeout)
     if code != 0:
         print(f"[FAIL] run {path}\nstdout:\n{out}\nstderr:\n{err}")
