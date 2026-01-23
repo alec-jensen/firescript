@@ -623,7 +623,11 @@ class CCodeGenerator:
                         elif elem_type_for_array in ("float32", "float64"):
                             lines.append(f'    printf("%f", {elem_expr});')
                         elif elem_type_for_array == "float128":
-                            lines.append(f'    printf("%Lf", {elem_expr});')
+                            buf_name = f"__ldbuf_{self.array_temp_counter}"
+                            self.array_temp_counter += 1
+                            lines.append(f"    char {buf_name}[128];")
+                            lines.append(f"    firescript_format_long_double({buf_name}, sizeof({buf_name}), {elem_expr});")
+                            lines.append(f"    printf(\"%s\", {buf_name});")
                         else:
                             lines.append('    printf("%s", "<unknown>");')
                         lines.append(f'    if (__i + 1 < {length_expr}) printf(", ");')
@@ -681,7 +685,7 @@ class CCodeGenerator:
                 if arg_type in ("float32", "float64"):
                     return f'printf("%f\\n", {arg_code})'
                 if arg_type == "float128":
-                    return f'printf("%Lf\\n", {arg_code})'
+                    return f'firescript_print_long_double({arg_code})'
                 if arg_type == "string":
                     return f'printf("%s\\n", {arg_code})'
 

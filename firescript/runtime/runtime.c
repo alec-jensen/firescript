@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <gmp.h>
 #include <mpfr.h>
+#include <float.h>
 #include "runtime.h"
 
 // Internal registry to track heap pointers allocated via firescript_malloc/strdup
@@ -251,6 +252,37 @@ void firescript_print_float(float x)
 void firescript_print_double(double x)
 {
     printf("%f\n", x);
+}
+
+// Format a long double into a buffer (portable across platforms lacking %Lf in printf)
+size_t firescript_format_long_double(char *buf, size_t size, long double x)
+{
+    if (!buf || size == 0)
+        return 0;
+    buf[0] = '\0';
+
+    mpfr_t tmp;
+    mpfr_init2(tmp, (mpfr_prec_t)LDBL_MANT_DIG);
+    mpfr_set_ld(tmp, x, MPFR_RNDN);
+    int n = mpfr_snprintf(buf, size, "%.10Rf", tmp);
+    mpfr_clear(tmp);
+
+    if (n < 0)
+    {
+        buf[0] = '\0';
+        return 0;
+    }
+    // Ensure null-termination even if truncated
+    buf[size - 1] = '\0';
+    return (size_t)n;
+}
+
+// Print a long double followed by newline
+void firescript_print_long_double(long double x)
+{
+    char buf[128];
+    firescript_format_long_double(buf, sizeof(buf), x);
+    puts(buf);
 }
 
 // Print a reference counted string

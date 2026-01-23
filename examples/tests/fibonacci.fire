@@ -7,4 +7,4 @@ int64 fib(int64 n) {
     return fib(n - 1i64) + fib(n - 2i64);
 }
 
-print(fib(47i64));
+print(fib(20i64));

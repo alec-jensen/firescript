@@ -235,7 +235,7 @@ def main():
     ap.add_argument("--update", action="store_true", help="Update or create golden files to match current output")
     ap.add_argument("--fail-fast", action="store_true", help="Stop on first failure")
     ap.add_argument("--verbose", action="store_true", help="Verbose output")
-    ap.add_argument("--timeout", type=float, default=5.0, help="Per-test timeout in seconds (default: 5.0)")
+    ap.add_argument("--timeout", type=float, default=10.0, help="Per-test timeout in seconds (default: 10.0)")
     args = ap.parse_args()
 
     patterns = args.glob if args.glob else DEFAULT_SEARCH

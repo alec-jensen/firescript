@@ -63,6 +63,10 @@ int firescript_decimal_cmp(const mpfr_t a, const mpfr_t b);
 void firescript_print_float(float x);
 // Print a double with newline
 void firescript_print_double(double x);
+// Print a long double (float128) with newline
+void firescript_print_long_double(long double x);
+// Format a long double into a buffer (returns bytes written, excluding null)
+size_t firescript_format_long_double(char *buf, size_t size, long double x);
 
 // Legacy functions for backward compatibility
 char *firescript_input(char *prompt);
