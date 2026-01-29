@@ -1,1 +1,146 @@
-//
+// firescript std.math
+// Simple math utilities and basic trig (float64)
+
+import firescript.std.math.constants.{PI64, PI_2_64}
+
+const float64 TWO_PI = PI64 * 2.0;
+
+float64 abs(float64 x) {
+	if (x < 0.0) {
+		return -x;
+	}
+	return x;
+}
+
+int32 abs_i32(int32 x) {
+	if (x < 0) {
+		return -x;
+	}
+	return x;
+}
+
+float64 min(float64 a, float64 b) {
+	if (a < b) {
+		return a;
+	}
+	return b;
+}
+
+float64 max(float64 a, float64 b) {
+	if (a > b) {
+		return a;
+	}
+	return b;
+}
+
+int32 min_i32(int32 a, int32 b) {
+	if (a < b) {
+		return a;
+	}
+	return b;
+}
+
+int32 max_i32(int32 a, int32 b) {
+	if (a > b) {
+		return a;
+	}
+	return b;
+}
+
+float64 clamp(float64 x, float64 lo, float64 hi) {
+	if (x < lo) {
+		return lo;
+	}
+	if (x > hi) {
+		return hi;
+	}
+	return x;
+}
+
+float64 lerp(float64 a, float64 b, float64 t) {
+	return a + (b - a) * t;
+}
+
+float64 deg_to_rad(float64 degrees) {
+	return degrees * (PI64 / 180.0);
+}
+
+float64 rad_to_deg(float64 radians) {
+	return radians * (180.0 / PI64);
+}
+
+int32 pow_i32(int32 base, int32 exp) {
+	int32 result = 1;
+	int32 i = 0;
+	while (i < exp) {
+		result = result * base;
+		i++;
+	}
+	return result;
+}
+
+float64 pow(float64 base, int32 exp) {
+	float64 result = 1.0;
+	int32 i = 0;
+	while (i < exp) {
+		result = result * base;
+		i++;
+	}
+	return result;
+}
+
+float64 sqrt(float64 x) {
+	if (x <= 0.0) {
+		return 0.0;
+	}
+	float64 guess = x;
+	int32 i = 0;
+	while (i < 20) {
+		guess = 0.5 * (guess + (x / guess));
+		i++;
+	}
+	return guess;
+}
+
+float64 _wrap_radians(float64 x) {
+	while (x > PI64) {
+		x = x - TWO_PI;
+	}
+	while (x < -PI64) {
+		x = x + TWO_PI;
+	}
+	return x;
+}
+
+float64 sin(float64 x) {
+	x = _wrap_radians(x);
+	float64 term = x;
+	float64 sum = x;
+	int32 n = 1;
+	while (n < 6) {
+		float64 denom = (2.0 * n) * (2.0 * n + 1.0);
+		term = -term * x * x / denom;
+		sum = sum + term;
+		n++;
+	}
+	return sum;
+}
+
+float64 cos(float64 x) {
+	x = _wrap_radians(x);
+	float64 term = 1.0;
+	float64 sum = 1.0;
+	int32 n = 1;
+	while (n < 6) {
+		float64 denom = (2.0 * n - 1.0) * (2.0 * n);
+		term = -term * x * x / denom;
+		sum = sum + term;
+		n++;
+	}
+	return sum;
+}
+
+float64 tan(float64 x) {
+	float64 c = cos(x);
+	return sin(x) / c;
+}
