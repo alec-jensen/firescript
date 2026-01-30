@@ -449,6 +449,9 @@ class CCodeGenerator:
 
         is_constructor = bool(getattr(node, "is_constructor", False))
 
+        # Push a new name scope for this method BEFORE building params
+        self.name_scope_stack.append({})
+
         params = []
         body_node = None
         for child in node.children:
@@ -459,8 +462,10 @@ class CCodeGenerator:
                 ctype = self._map_type_to_c(base_type)
                 if is_constructor and child.name == "this":
                     # Constructors synthesize a local `this` instance rather than taking it as a parameter.
+                    # Register 'this' in the name scope without mangling since it will be a local variable
+                    self.name_scope_stack[-1]["this"] = "this"
                     continue
-                params.append(f"{ctype} {child.name}")
+                params.append(f"{ctype} {self._mangle_name(child.name)}")
             elif child.node_type == NodeTypes.SCOPE:
                 body_node = child
 
@@ -515,6 +520,9 @@ class CCodeGenerator:
         self._in_function = prev_in_fn
         self.symbol_table = prev_symbols
 
+        # Pop the name scope for this method
+        self.name_scope_stack.pop()
+
         cname = class_name
         mname = node.name
         return f"{ret_c} {cname}_{mname}({params_sig}) {body_code}"
@@ -556,10 +564,17 @@ class CCodeGenerator:
         # node.return_type holds the firescript return type (e.g., 'void')
         ret_fs = node.return_type or "void"
         ret_c = self._map_type_to_c(ret_fs)
+        
+        # Mangle the function name BEFORE pushing new scope so recursive calls can find it
+        mangled_func_name = self._mangle_name(node.name)
 
         # Parameters are all children except the last one, which is the body scope
         params = []
         body_node = None
+        
+        # Push a new name scope for this function
+        self.name_scope_stack.append({})
+        
         for child in node.children:
             if child.node_type == NodeTypes.PARAMETER:
                 base_type = child.var_type or "int32"
@@ -570,9 +585,6 @@ class CCodeGenerator:
                 body_node = child
 
         params_sig = ", ".join(params) if params else "void"
-
-        # Push a new name scope for this function
-        self.name_scope_stack.append({})
 
         # Save and prepare symbol table for function scope (register params)
         prev_symbols = self.symbol_table.copy()
@@ -604,7 +616,7 @@ class CCodeGenerator:
         # Pop the name scope for this function
         self.name_scope_stack.pop()
 
-        return f"{ret_c} {self._mangle_name(node.name)}({params_sig}) {body_code}"
+        return f"{ret_c} {mangled_func_name}({params_sig}) {body_code}"
 
     def emit_statement(self, node: ASTNode) -> str:
         """
@@ -667,6 +679,9 @@ class CCodeGenerator:
 
         elif node.node_type == NodeTypes.VARIABLE_DECLARATION:
             var_type_fs = node.var_type or "int32"
+            # Apply type substitution if we're in a generic function
+            if hasattr(self, '_current_type_map') and self._current_type_map:
+                var_type_fs = self._current_type_map.get(var_type_fs, var_type_fs)
             var_type_c = self._map_type_to_c(var_type_fs)
             self.symbol_table[node.name] = (var_type_fs, node.is_array)
 
@@ -752,7 +767,8 @@ class CCodeGenerator:
             # Increment/decrement operators (++/--) have no children
             if op in ("++", "--"):
                 var_name = node.token.value if hasattr(node.token, 'value') else ""
-                return f"{var_name}{op}"
+                mangled_var_name = self._mangle_name(var_name)
+                return f"{mangled_var_name}{op}"
             
             # Unary +/- operators have a child operand
             if not node.children:
@@ -1168,6 +1184,7 @@ class CCodeGenerator:
             return f"({left} {op} {right})"
         elif node.node_type == NodeTypes.COMPOUND_ASSIGNMENT:
             identifier = node.name
+            mangled_identifier = self._mangle_name(identifier)
             op = getattr(node.token, "type", None)
             value = self._visit(node.children[0])
             var_type = self.symbol_table.get(identifier, (None, False))[0]
@@ -1180,18 +1197,19 @@ class CCodeGenerator:
                 "MODULO_ASSIGN": "%=",
             }
             c_op = op_map.get(op or "", "+=")  # Default to += if unknown or op is None
-            return f"{identifier} {c_op} {value};"
+            return f"{mangled_identifier} {c_op} {value};"
 
         elif node.node_type == NodeTypes.UNARY_EXPRESSION:
             if not node.token or not hasattr(node.token, "value"):
                 raise ValueError("Missing token value in unary expression")
             identifier = node.token.value
+            mangled_identifier = self._mangle_name(identifier)
             op = node.name
             var_type = self.symbol_table.get(identifier, (None, False))[0]
             if op == "++":
-                return f"{identifier}++"
+                return f"{mangled_identifier}++"
             elif op == "--":
-                return f"{identifier}--"
+                return f"{mangled_identifier}--"
             else:
                 raise ValueError(f"Unrecognized unary operator '{op}' for {identifier}")
         else:

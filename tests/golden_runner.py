@@ -215,7 +215,7 @@ def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bo
             if fail_fast:
                 break
 
-    summary_line = f"Summary: {passed}/{total} passed, {len(failed)} failed"
+    summary_line = f"Summary: {passed}/{total} passed, {len(failed)}/{total} failed"
     if failed:
         print(_colorize("\n" + summary_line, "31"))
     else:

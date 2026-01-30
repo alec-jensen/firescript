@@ -1,7 +1,5 @@
 # Imports
 
-> Status: ✅ **Implemented** - Imports are now fully functional! Use `--enable-imports` flag when compiling.
-
 firescript uses an explicit, Java-inspired import system for organizing code across files and (in the future) external packages. All imports must specify full paths; there is no implicit or relative import behavior.
 
 ## Import Syntax

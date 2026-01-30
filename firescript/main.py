@@ -213,7 +213,8 @@ def compile_file(file_path, target, cc=None, output=None):
             )
 
             if process.returncode != 0:
-                logging.error(f"Compilation failed with error:\n{process.stderr}")
+                logging.error(f"C Compilation failed with error:\n{process.stderr}")
+                logging.error("This is not an error in your firescript code, but an issue in the compiler.")
                 return False
 
             if process.stdout:

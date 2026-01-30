@@ -16,24 +16,22 @@ T abs<T: SignedInteger>(T x, T zero) {
     return x;
 }
 
-int32 main() {
-    // Test with NumericPrimitive constraint
-    int32 sum1 = add(10i32, 20i32);
-    int64 sum2 = add(100i64, 200i64);
-    float32 sum3 = add(1.5f32, 2.5f32);
-    float64 sum4 = add(3.14f64, 2.71f64);
-    
-    print(sum1);  // 30
-    print(sum2);  // 300
-    print(sum3);  // 4.0
-    print(sum4);  // 5.85
-    
-    // Test with SignedInteger constraint
-    int32 abs1 = abs(-42i32, 0i32);
-    int64 abs2 = abs(-999i64, 0i64);
-    
-    print(abs1);  // 42
-    print(abs2);  // 999
-    
-    return 0;
-}
+// Test with NumericPrimitive constraint
+int32 sum1 = add(10i32, 20i32);
+int64 sum2 = add(100i64, 200i64);
+float32 sum3 = add(1.5f32, 2.5f32);
+float64 sum4 = add(3.14f64, 2.71f64);
+
+print(sum1);  // 30
+print(sum2);  // 300
+print(sum3);  // 4.0
+print(sum4);  // 5.85
+
+// Test with SignedInteger constraint
+int32 abs1 = abs(-42i32, 0i32);
+int64 abs2 = abs(-999i64, 0i64);
+
+print(abs1);  // 42
+print(abs2);  // 999
+
+return 0;
