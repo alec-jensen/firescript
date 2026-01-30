@@ -147,7 +147,7 @@ class CCodeGenerator:
             else:
                 # For literals, infer from the literal value
                 if arg.node_type == NodeTypes.LITERAL:
-                    lit_val = str(arg.value)
+                    lit_val = str(getattr(arg, 'value', ''))
                     if lit_val.endswith('i8'):
                         arg_types.append('int8')
                     elif lit_val.endswith('i16'):
@@ -766,7 +766,7 @@ class CCodeGenerator:
             
             # Increment/decrement operators (++/--) have no children
             if op in ("++", "--"):
-                var_name = node.token.value if hasattr(node.token, 'value') else ""
+                var_name = node.token.value if node.token and hasattr(node.token, 'value') else ""
                 mangled_var_name = self._mangle_name(var_name)
                 return f"{mangled_var_name}{op}"
             

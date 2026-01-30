@@ -1551,7 +1551,7 @@ class Parser:
             # Increment/decrement operators (++/--) have no children - they operate on the identifier stored in node.token
             if op in ("++", "--"):
                 # The variable being incremented/decremented is in node.token
-                var_name = node.token.value if hasattr(node.token, 'value') else None
+                var_name = node.token.value if node.token and hasattr(node.token, 'value') else None
                 if var_name:
                     var_info = symbol_table.get(var_name)
                     if var_info:
@@ -1707,7 +1707,7 @@ class Parser:
                         )
                 else:
                     # Infer type arguments from call arguments
-                    inferred = self._infer_generic_type_args(func_name, child_types)
+                    inferred = self._infer_generic_type_args(func_name, [t for t in child_types if t is not None])
                     if inferred is None:
                         self.error(
                             f"Could not infer type arguments for generic function '{func_name}'",
@@ -2397,7 +2397,7 @@ class Parser:
             self.advance()  # consume >
         
         # Validate return type if it was an IDENTIFIER (type parameter)
-        if ret_type_token.type == "IDENTIFIER" and ret_type_token.value not in self.TYPE_TOKEN_NAMES:
+        if ret_type_token and ret_type_token.type == "IDENTIFIER" and ret_type_token.value not in self.TYPE_TOKEN_NAMES:
             # It must be a declared type parameter
             if ret_type_token.value not in type_params:
                 self.error(f"Return type '{ret_type_token.value}' is not a declared type parameter", ret_type_token)
