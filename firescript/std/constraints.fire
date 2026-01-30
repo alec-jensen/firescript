@@ -1,0 +1,5 @@
+constraint Numeric = int8 | int16 | int32 | int64 | uint8 | uint16 | uint32 | uint64 | float32 | float64 | float128;
+constraint SignedInteger = int8 | int16 | int32 | int64;
+constraint UnsignedInteger = uint8 | uint16 | uint32 | uint64;
+constraint Integer = SignedInteger | UnsignedInteger;
+constraint FloatingPoint = float32 | float64 | float128;

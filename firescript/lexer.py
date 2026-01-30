@@ -32,6 +32,7 @@ class Lexer:
             "FROM": r"from\b",
         "NEW": r"new\b",
         "CLASS": r"class\b",
+        "CONSTRAINT": r"constraint\b",
         "DIRECTIVE": r"directive\b",
         "NULLABLE": r"nullable\b",
         "GENERATOR": r"generator\b",
@@ -69,8 +70,11 @@ class Lexer:
         "COMMA": r",",
         "SEMICOLON": r";",
         "COLON": r":",
+        "PIPE": r"\|",
         "DOT": r"\.",
         "AT": r"\@",
+        "GREATER_THAN": r"\>",
+        "LESS_THAN": r"\<",
     }
 
     operators: dict[str, str] = {
@@ -92,8 +96,6 @@ class Lexer:
         "NOT_EQUALS": r"\!\=",
         "GREATER_THAN_OR_EQUAL": r"\>\=",
         "LESS_THAN_OR_EQUAL": r"\<\=",
-        "GREATER_THAN": r"\>",
-        "LESS_THAN": r"\<",
         "ASSIGN": r"\=",
         "AND": r"\&\&",
         "AMPERSAND": r"\&",
@@ -137,8 +139,8 @@ class Lexer:
         self.all_token_types = (
             self.comments
             | self.keywords
-            | self.seperators
             | self.operators
+            | self.seperators
             | self.literals
         )
 

@@ -149,8 +149,6 @@ import src.utils.utils.{helper, CONSTANT}
 - ✅ Wildcard imports (`import module.*`)
 - ✅ Symbol imports (`import module.{a, b}`)
 - ✅ Cyclic import detection
+- ✅ Standard library imports (`import @firescript/std`)
 - ⚠️  Module aliases and qualified access (e.g., `Utils.helper()`) - not yet implemented
-- ❌ External packages (`@user/package`, `@firescript/std`) - not supported yet
-
-To use imports, compile with `--enable-imports` and optionally specify `--import-root` (defaults to project root).
-
+- ❌ External packages (`@user/package`) - not supported yet

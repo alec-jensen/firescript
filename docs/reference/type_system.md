@@ -907,6 +907,143 @@ float32 y = max_float32(3.14f32, 2.71f32);
 
 This approach is similar to C++ templates and Rust generics, ensuring that generic code has no performance penalty.
 
+#### Custom Type Constraints
+
+For frequently used type union constraints, you can define named constraint aliases to avoid repetition and improve code readability.
+
+**Defining Constraint Aliases:**
+
+```firescript
+// Define a constraint alias using the 'constraint' keyword
+constraint NumericPrimitive = int32 | int64 | float32 | float64;
+
+constraint SignedInteger = int8 | int16 | int32 | int64;
+
+constraint UnsignedInteger = uint8 | uint16 | uint32 | uint64;
+
+constraint FloatingPoint = float32 | float64 | float128;
+```
+
+**Using Constraint Aliases:**
+
+```firescript
+// Use the constraint alias just like a built-in constraint
+T add<T: NumericPrimitive>(T a, T b) {
+    return a + b;
+}
+
+T abs<T: SignedInteger>(T x, T zero) {
+    if (x < zero) {
+        return -x;
+    }
+    return x;
+}
+
+T clamp<T: FloatingPoint>(T value, T min, T max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
+
+// Usage is natural
+int32 sum = add(10i32, 20i32);          // ✅ Works with NumericPrimitive
+float64 clamped = clamp(5.5, 0.0, 10.0); // ✅ Works with FloatingPoint
+```
+
+**Combining Constraint Aliases:**
+
+You can combine constraint aliases with other constraints:
+
+```firescript
+constraint IntegerType = SignedInteger | UnsignedInteger;
+
+// Combine with interface constraints
+T process<T: Comparable & IntegerType>(T value) {
+    // T must be comparable AND one of the integer types
+    return value;
+}
+
+// Combine multiple constraint aliases with unions
+constraint AllNumeric = SignedInteger | UnsignedInteger | FloatingPoint;
+
+T compute<T: AllNumeric>(T value) {
+    return value * value;
+}
+```
+
+**Constraint Aliases for Custom Types:**
+
+Constraint aliases also work with custom classes:
+
+```firescript
+class Circle { /* ... */ }
+class Square { /* ... */ }
+class Triangle { /* ... */ }
+
+// Define a constraint for shape types
+constraint Shape2D = Circle | Square | Triangle;
+
+// Use in generic functions
+T area<T: Shape2D>(T shape) {
+    // Calculate area for any 2D shape
+    return shape.calculateArea();
+}
+
+// Can be combined with interfaces
+interface Drawable {
+    void draw(&this);
+}
+
+T render<T: Drawable & Shape2D>(T shape) {
+    shape.draw();
+    return shape;
+}
+```
+
+**Benefits:**
+
+1. **DRY (Don't Repeat Yourself)**: Define the constraint once, use it many times
+2. **Readability**: `T: NumericPrimitive` is clearer than `T: int32 | int64 | float32 | float64`
+3. **Maintainability**: Change the constraint in one place instead of updating every function
+4. **Semantic clarity**: Names like `SignedInteger` convey intent better than type lists
+
+**Constraint Aliases vs. Interfaces:**
+
+```firescript
+// Constraint alias - just a shorthand for a type union
+constraint FastInt = int32 | int64;
+T add<T: FastInt>(T a, T b) { return a + b; }
+// Expands to: T add<T: int32 | int64>(T a, T b)
+
+// Interface - defines required capabilities
+interface Printable {
+    string toString(&this);
+}
+T print<T: Printable>(T value) { /* ... */ }
+// Requires T to have a toString() method
+```
+
+**Scope and Visibility:**
+
+Constraint aliases follow the same scoping rules as other declarations:
+
+```firescript
+// Module-level constraint (usable throughout the file)
+constraint ModuleNumeric = int32 | float32;
+
+// Within a namespace (planned)
+namespace Math {
+    constraint PreciseFloat = float64 | float128;
+    
+    T compute<T: PreciseFloat>(T value) {
+        return value;
+    }
+}
+
+// Import constraints from other modules (planned)
+import std.types.{NumericPrimitive, SignedInteger};
+```
+
 ### Interfaces
 
 Interfaces define a set of capabilities that types can implement. They are used primarily as constraints for generic type parameters, ensuring that generic code only accepts types that support the required operations.

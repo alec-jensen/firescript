@@ -1,6 +1,7 @@
 # firescript/c_code_generator.py
 from enums import NodeTypes  # [firescript/enums.py]
 from parser import ASTNode  # [firescript/parser.py]
+from typing import Optional
 import logging
 
 # A simple type mapping from firescript types to C types.
@@ -45,6 +46,15 @@ class CCodeGenerator:
             c.node_type == NodeTypes.DIRECTIVE and getattr(c, "name", "") == "enable_drops"
             for c in (self.ast.children or [])
         )
+        
+        # Name mangling support: map original names to mangled names
+        self.name_counter = 0
+        self.mangled_names: dict[str, str] = {}
+        # Stack of name scopes for nested functions/blocks
+        self.name_scope_stack: list[dict[str, str]] = [{}]
+        # Built-in functions that shouldn't be mangled
+        self.builtin_names = {"print", "input", "drop"}
+        
         # Collect class names and metadata for constructors and methods
         self.class_names: set[str] = set()
         self.class_fields: dict[str, list[tuple[str, str]]] = {}
@@ -61,6 +71,18 @@ class CCodeGenerator:
                         methods.append(ch)
                 self.class_fields[c.name] = fields
                 self.class_methods[c.name] = methods
+        
+        # Generics support: track monomorphized instances
+        # Maps (func_name, tuple of concrete types) -> mangled function name
+        self.monomorphized_funcs: dict[tuple[str, tuple[str, ...]], str] = {}
+        # Track which generic functions need to be instantiated
+        self.generic_templates: dict[str, ASTNode] = {}
+        # Collect generic function templates
+        for c in (self.ast.children or []):
+            if c.node_type == NodeTypes.FUNCTION_DEFINITION:
+                if hasattr(c, 'type_params') and c.type_params:
+                    self.generic_templates[c.name] = c
+                    logging.debug(f"Found generic template: {c.name} with type params {c.type_params}")
 
     def _free_arrays_in_current_scope(self) -> list[str]:
         """Return lines to free arrays declared in the current scope (no pop)."""
@@ -75,6 +97,214 @@ class CCodeGenerator:
         """Helper function to properly handle array indices in C"""
         # After removing big number support, just return the expression string
         return str(index_expr)
+    
+    def _mangle_name(self, name: str) -> str:
+        """Generate a unique mangled name for a user symbol to avoid C collisions."""
+        # Don't mangle built-in functions
+        if name in self.builtin_names:
+            return name
+        
+        # Check current scope first, then parent scopes
+        for scope in reversed(self.name_scope_stack):
+            if name in scope:
+                return scope[name]
+        
+        # Not found in any scope - create new mangled name in current scope
+        mangled = f"{name}_{self.name_counter}"
+        self.name_counter += 1
+        self.name_scope_stack[-1][name] = mangled
+        return mangled
+    
+    def _mangle_generic_name(self, func_name: str, type_args: tuple[str, ...]) -> str:
+        """Generate a mangled name for a monomorphized generic function."""
+        # Simple mangling: func_name$type1$type2$...
+        type_suffix = "$".join(type_args)
+        return f"{func_name}${type_suffix}"
+    
+    def _infer_type_args_from_call(self, func_name: str, call_node: ASTNode) -> Optional[list[str]]:
+        """Infer type arguments for a generic function call based on argument types."""
+        if func_name not in self.generic_templates:
+            return None
+        
+        template = self.generic_templates[func_name]
+        type_params = getattr(template, 'type_params', [])
+        if not type_params:
+            return []
+        
+        # Get parameter types from template
+        param_types = []
+        for child in template.children:
+            if child.node_type == NodeTypes.PARAMETER:
+                param_types.append(child.var_type or "")
+        
+        # Get argument types from call
+        arg_types = []
+        for arg in (call_node.children or []):
+            # Try to get the type from the argument node
+            arg_type = getattr(arg, 'return_type', None) or getattr(arg, 'var_type', None)
+            if arg_type:
+                arg_types.append(arg_type)
+            else:
+                # For literals, infer from the literal value
+                if arg.node_type == NodeTypes.LITERAL:
+                    lit_val = str(arg.value)
+                    if lit_val.endswith('i8'):
+                        arg_types.append('int8')
+                    elif lit_val.endswith('i16'):
+                        arg_types.append('int16')
+                    elif lit_val.endswith('i32') or (lit_val.isdigit() and not any(x in lit_val for x in ['.', 'e', 'E'])):
+                        arg_types.append('int32')
+                    elif lit_val.endswith('i64'):
+                        arg_types.append('int64')
+                    elif lit_val.endswith('u8'):
+                        arg_types.append('uint8')
+                    elif lit_val.endswith('u16'):
+                        arg_types.append('uint16')
+                    elif lit_val.endswith('u32'):
+                        arg_types.append('uint32')
+                    elif lit_val.endswith('u64'):
+                        arg_types.append('uint64')
+                    elif lit_val.endswith('f32'):
+                        arg_types.append('float32')
+                    elif lit_val.endswith('f64') or any(x in lit_val for x in ['.', 'e', 'E']):
+                        arg_types.append('float64')
+                    elif lit_val.endswith('f128'):
+                        arg_types.append('float128')
+                    else:
+                        arg_types.append('int32')  # Default
+                elif arg.node_type == NodeTypes.IDENTIFIER:
+                    # Look up in symbol table
+                    sym_info = self.symbol_table.get(arg.name)
+                    if sym_info:
+                        arg_types.append(sym_info[0])
+                    else:
+                        return None
+                else:
+                    return None
+        
+        # Build type mapping
+        type_map: dict[str, str] = {}
+        for param_type, arg_type in zip(param_types, arg_types):
+            if param_type in type_params:
+                if param_type in type_map:
+                    if type_map[param_type] != arg_type:
+                        # Conflicting inference
+                        return None
+                else:
+                    type_map[param_type] = arg_type
+        
+        # Return inferred types in parameter order
+        inferred = []
+        for tp in type_params:
+            if tp not in type_map:
+                return None
+            inferred.append(type_map[tp])
+        
+        return inferred
+    
+    def _collect_generic_instances(self, node: ASTNode):
+        """Recursively collect all generic function calls that need monomorphization."""
+        if node.node_type == NodeTypes.FUNCTION_CALL:
+            func_name = node.name
+            logging.debug(f"Function call to '{func_name}', in templates: {func_name in self.generic_templates}, type_args: {getattr(node, 'type_args', None)}")
+            if func_name in self.generic_templates:
+                # This is a generic function call
+                type_args = getattr(node, 'type_args', [])
+                
+                # If type arguments weren't set during parsing, try to infer them now
+                if not type_args:
+                    inferred = self._infer_type_args_from_call(func_name, node)
+                    if inferred:
+                        type_args = inferred
+                        node.type_args = type_args  # Set it on the node for later
+                        logging.debug(f"Inferred type args for {func_name}: {type_args}")
+                
+                if type_args:
+                    key = (func_name, tuple(type_args))
+                    if key not in self.monomorphized_funcs:
+                        # Generate mangled name
+                        mangled = self._mangle_generic_name(func_name, tuple(type_args))
+                        self.monomorphized_funcs[key] = mangled
+                        logging.debug(f"Added monomorphized {func_name} with types {type_args} as {mangled}")
+        
+        # Recurse into children
+        for child in (node.children or []):
+            if child:
+                self._collect_generic_instances(child)
+    
+    def _instantiate_generic_function(self, func_name: str, type_args: tuple[str, ...]) -> str:
+        """Generate C code for a monomorphized instance of a generic function."""
+        template = self.generic_templates[func_name]
+        type_params = getattr(template, 'type_params', [])
+        
+        # Build type substitution map
+        type_map = dict(zip(type_params, type_args))
+        
+        # Substitute types in the function definition
+        def substitute_type(t: str) -> str:
+            return type_map.get(t, t)
+        
+        # Get return type and substitute
+        ret_type_fs = template.return_type or "void"
+        if template.is_array:
+            ret_type_fs = ret_type_fs + "[]"
+        
+        # Substitute type parameters in return type
+        for tp, concrete in type_map.items():
+            ret_type_fs = ret_type_fs.replace(tp, concrete)
+        
+        ret_c = self._map_type_to_c(ret_type_fs)
+        
+        # Get mangled name
+        mangled_name = self.monomorphized_funcs[(func_name, type_args)]
+        
+        # Push a new name scope for this function BEFORE building params
+        self.name_scope_stack.append({})
+        
+        # Build parameters with substituted types
+        params = []
+        body_node = None
+        for child in template.children:
+            if child.node_type == NodeTypes.PARAMETER:
+                base_type = child.var_type or "int32"
+                # Substitute type parameters
+                base_type = substitute_type(base_type)
+                is_array_param = child.is_array
+                ctype = "VArray*" if is_array_param else self._map_type_to_c(base_type)
+                params.append(f"{ctype} {self._mangle_name(child.name)}")
+            elif child.node_type == NodeTypes.SCOPE:
+                body_node = child
+        
+        params_sig = ", ".join(params) if params else "void"
+        
+        # Save and prepare symbol table for function scope
+        prev_symbols = self.symbol_table.copy()
+        for child in template.children:
+            if child.node_type == NodeTypes.PARAMETER:
+                base_type = substitute_type(child.var_type or "int32")
+                self.symbol_table[child.name] = (base_type, child.is_array)
+        
+        # Save current type substitution context
+        prev_type_map = getattr(self, '_current_type_map', {})
+        self._current_type_map = type_map
+        
+        # Generate body
+        prev_in_fn = self._in_function
+        self._in_function = True
+        prev_scope_stack = self.scope_stack
+        self.scope_stack = [[]]
+        body_code = self._visit(body_node) if body_node else "{ }"
+        
+        # Restore state
+        self.scope_stack = prev_scope_stack
+        self._in_function = prev_in_fn
+        self.symbol_table = prev_symbols
+        self._current_type_map = prev_type_map
+        
+        # Pop the name scope for this function
+        self.name_scope_stack.pop()
+        
+        return f"{ret_c} {mangled_name}({params_sig}) {body_code}"
 
     def generate(self) -> str:
         """Generate C code from the AST"""
@@ -82,19 +312,33 @@ class CCodeGenerator:
         header += '#include "firescript/runtime/runtime.h"\n'
         header += '#include "firescript/runtime/conversions.h"\n'
         header += '#include "firescript/runtime/varray.h"\n'
-        # Emit class typedefs, then function definitions, then the main body statements
+        
+        # First pass: collect all generic function instantiations needed
+        for child in self.ast.children:
+            self._collect_generic_instances(child)
+        
+        # Emit class typedefs, then constant declarations, then function definitions, then the main body statements
         typedefs: list[str] = []
+        constants: list[str] = []
         function_defs: list[str] = []
         main_lines: list[str] = []
+        main_function_code: str | None = None  # Store the main() function separately
 
         # Ensure outer (main) scope exists for tracking arrays declared at top-level
         self.scope_stack = [[]]
 
         for child in self.ast.children:
             if child.node_type == NodeTypes.FUNCTION_DEFINITION:
-                func_code = self._emit_function_definition(child)
-                if func_code:
-                    function_defs.append(func_code)
+                # Skip generic templates - they'll be instantiated on demand
+                if hasattr(child, 'type_params') and child.type_params:
+                    continue
+                # Check if this is the main() function
+                if child.name == "main":
+                    main_function_code = self._emit_function_definition(child)
+                else:
+                    func_code = self._emit_function_definition(child)
+                    if func_code:
+                        function_defs.append(func_code)
             elif child.node_type == NodeTypes.CLASS_DEFINITION:
                 typedefs.append(self._emit_class_typedef(child))
                 # Emit method functions for this class
@@ -102,29 +346,49 @@ class CCodeGenerator:
                     mcode = self._emit_method_definition(child.name, m)
                     if mcode:
                         function_defs.append(mcode)
+            elif child.node_type == NodeTypes.VARIABLE_DECLARATION and getattr(child, 'is_const', False):
+                # Emit const declarations as global constants
+                const_code = self._emit_const_declaration(child)
+                if const_code:
+                    constants.append(const_code)
             else:
                 stmt_code = self.emit_statement(child)
                 if stmt_code:
                     main_lines.append(stmt_code)
+        
+        # Emit monomorphized generic function instances BEFORE main() function
+        for (func_name, type_args), mangled_name in self.monomorphized_funcs.items():
+            mono_code = self._instantiate_generic_function(func_name, type_args)
+            if mono_code:
+                function_defs.append(mono_code)
+        
+        # Add the main() function if it was defined
+        if main_function_code:
+            function_defs.append(main_function_code)
 
         typedefs_code = ("\n\n".join(typedefs) + "\n\n") if typedefs else ""
+        constants_code = ("\n".join(constants) + "\n\n") if constants else ""
         functions_code = ("\n\n".join(function_defs) + "\n\n") if function_defs else ""
 
-        main_code = "int main(void) {\n"
-        if main_lines:
-            indented_body = "\n".join(
-                "    " + line for line in "\n".join(main_lines).split("\n")
-            )
-            main_code += f"{indented_body}\n"
-        # Free any arrays declared at the top level (outermost scope)
-        if (not self.drops_enabled) and self.scope_stack and self.scope_stack[0]:
-            for arr_name in self.scope_stack[0]:
-                main_code += f"    varray_free({arr_name});\n"
-        main_code += "    firescript_cleanup();\n"
-        main_code += "    return 0;\n"
-        main_code += "}\n"
+        # Only generate wrapper main() if user didn't define one
+        if not main_function_code:
+            main_code = "int main(void) {\n"
+            if main_lines:
+                indented_body = "\n".join(
+                    "    " + line for line in "\n".join(main_lines).split("\n")
+                )
+                main_code += f"{indented_body}\n"
+            # Free any arrays declared at the top level (outermost scope)
+            if (not self.drops_enabled) and self.scope_stack and self.scope_stack[0]:
+                for arr_name in self.scope_stack[0]:
+                    main_code += f"    varray_free({arr_name});\n"
+            main_code += "    firescript_cleanup();\n"
+            main_code += "    return 0;\n"
+            main_code += "}\n"
+        else:
+            main_code = ""
 
-        return header + typedefs_code + functions_code + main_code
+        return header + typedefs_code + constants_code + functions_code + main_code
 
     def _map_type_to_c(self, t: str) -> str:
         if t == "void":
@@ -277,6 +541,17 @@ class CCodeGenerator:
             return self._normalize_float_literal(tok.value, ftype)
         return tok.value or ""
 
+    def _emit_const_declaration(self, node: ASTNode) -> str:
+        """Emit a global constant declaration in C."""
+        var_type_fs = node.var_type or "float64"
+        var_type_c = self._map_type_to_c(var_type_fs)
+        
+        # Get initializer value
+        init_value = self._visit(node.children[0]) if node.children else "0"
+        
+        # In C, we use 'const' keyword
+        return f"const {var_type_c} {self._mangle_name(node.name)} = {init_value};"
+
     def _emit_function_definition(self, node: ASTNode) -> str:
         # node.return_type holds the firescript return type (e.g., 'void')
         ret_fs = node.return_type or "void"
@@ -290,11 +565,14 @@ class CCodeGenerator:
                 base_type = child.var_type or "int32"
                 is_array_param = child.is_array
                 ctype = "VArray*" if is_array_param else self._map_type_to_c(base_type)
-                params.append(f"{ctype} {child.name}")
+                params.append(f"{ctype} {self._mangle_name(child.name)}")
             elif child.node_type == NodeTypes.SCOPE:
                 body_node = child
 
         params_sig = ", ".join(params) if params else "void"
+
+        # Push a new name scope for this function
+        self.name_scope_stack.append({})
 
         # Save and prepare symbol table for function scope (register params)
         prev_symbols = self.symbol_table.copy()
@@ -323,7 +601,10 @@ class CCodeGenerator:
         # Restore symbol table after emitting function
         self.symbol_table = prev_symbols
 
-        return f"{ret_c} {node.name}({params_sig}) {body_code}"
+        # Pop the name scope for this function
+        self.name_scope_stack.pop()
+
+        return f"{ret_c} {self._mangle_name(node.name)}({params_sig}) {body_code}"
 
     def emit_statement(self, node: ASTNode) -> str:
         """
@@ -398,19 +679,20 @@ class CCodeGenerator:
                     elements = init_node.children or []
                     n = len(elements)
                     lines: list[str] = []
-                    lines.append(f"VArray* {node.name} = varray_create({n}, sizeof({elem_c}));")
+                    mangled_name = self._mangle_name(node.name)
+                    lines.append(f"VArray* {mangled_name} = varray_create({n}, sizeof({elem_c}));")
                     for idx, elem in enumerate(elements):
                         elem_code = self._visit(elem)
-                        tmp_name = f"{node.name}_elem{idx}"
+                        tmp_name = f"{mangled_name}_elem{idx}"
                         lines.append(f"{elem_c} {tmp_name} = {elem_code};")
-                        lines.append(f"varray_append({node.name}, &{tmp_name});")
+                        lines.append(f"varray_append({mangled_name}, &{tmp_name});")
                     return "\n".join(lines)
                 # Allow initializing from an expression (e.g., function returning an array)
                 init_value = self._visit(node.children[0]) if node.children else "NULL"
-                return f"VArray* {node.name} = {init_value};"
+                return f"VArray* {self._mangle_name(node.name)} = {init_value};"
             else:
                 init_value = self._visit(node.children[0]) if node.children else "0"
-                return f"{var_type_c} {node.name} = {init_value};"
+                return f"{var_type_c} {self._mangle_name(node.name)} = {init_value};"
         elif node.node_type == NodeTypes.ARRAY_ACCESS:
             # Dynamic array access: ((T*)(arr->data))[idx]
             array_node = node.children[0]
@@ -463,6 +745,29 @@ class CCodeGenerator:
                 return f"firescript_strcat({lcode}, {rcode})"
             # Numeric or generic binary op fallback
             return f"({left} {op} {right})"
+        
+        elif node.node_type == NodeTypes.UNARY_EXPRESSION:
+            op = node.name
+            
+            # Increment/decrement operators (++/--) have no children
+            if op in ("++", "--"):
+                var_name = node.token.value if hasattr(node.token, 'value') else ""
+                return f"{var_name}{op}"
+            
+            # Unary +/- operators have a child operand
+            if not node.children:
+                return ""  # Shouldn't happen, but safety check
+                
+            operand_node = node.children[0]
+            operand = self._visit(operand_node)
+            # Unary operators: + is no-op, - negates
+            if op == "-":
+                return f"(-{operand})"
+            elif op == "+":
+                return f"(+{operand})"
+            else:
+                return operand  # Fallback
+        
         elif node.node_type == NodeTypes.METHOD_CALL:
             object_node = node.children[0]
             object_code = self._visit(object_node)
@@ -517,10 +822,11 @@ class CCodeGenerator:
             obj_code = self._visit(node.children[0]) if node.children else ""
             return f"{obj_code}.{node.name}"
         elif node.node_type == NodeTypes.IDENTIFIER:
-            return node.name
+            return self._mangle_name(node.name)
         elif node.node_type == NodeTypes.VARIABLE_ASSIGNMENT:
             # Simple assignment to identifier from expression
             name = node.name
+            mangled_name = self._mangle_name(name)
             value_code = self._visit(node.children[0]) if node.children else "0"
             # If variable not yet declared, attempt implicit declaration using RHS type
             if name not in self.symbol_table:
@@ -532,14 +838,14 @@ class CCodeGenerator:
                     elem_fs = rhs_type_fs[:-2]
                     self.symbol_table[name] = (elem_fs, True)
                     self.scope_stack[-1].append(name)
-                    return f"VArray* {name} = {value_code}"
+                    return f"VArray* {mangled_name} = {value_code}"
                 # If still unknown, fall back to int32
                 fs_type = rhs_type_fs or "int32"
                 c_type = self._map_type_to_c(fs_type)
                 # Record in symbol table for subsequent uses
                 self.symbol_table[name] = (fs_type, False)
-                return f"{c_type} {name} = {value_code}"
-            return f"{name} = {value_code}"
+                return f"{c_type} {mangled_name} = {value_code}"
+            return f"{mangled_name} = {value_code}"
         elif node.node_type == NodeTypes.ASSIGNMENT:
             # General assignment: lhs can be identifier, field access, or array access
             lhs = node.children[0] if node.children else None
@@ -713,8 +1019,21 @@ class CCodeGenerator:
             elif node.name == "toBool":
                 return f"firescript_toBool({self._visit(node.children[0])})"
             else:
+                # Check if this is a generic function call
+                func_name = node.name
+                type_args = getattr(node, 'type_args', [])
+                
+                if type_args and func_name in self.generic_templates:
+                    # Use the mangled name for generic function
+                    key = (func_name, tuple(type_args))
+                    if key in self.monomorphized_funcs:
+                        mangled_name = self.monomorphized_funcs[key]
+                        args = ", ".join(self._visit(arg) for arg in node.children)
+                        return f"{mangled_name}({args})"
+                
+                # Regular function call
                 args = ", ".join(self._visit(arg) for arg in node.children)
-                return f"{node.name}({args})"
+                return f"{self._mangle_name(node.name)}({args})"
         elif node.node_type == NodeTypes.TYPE_METHOD_CALL:
             # Dispatch to generated constructor/static function: Class_method(args)
             class_name = getattr(node, "class_name", "")

@@ -1,0 +1,26 @@
+// Test combining constraint aliases
+
+constraint SmallInt = int8 | int16;
+constraint MediumInt = int32 | int64;
+constraint AllInt = SmallInt | MediumInt;  // Nested alias
+
+T triple<T: AllInt>(T value) {
+    return value + value + value;
+}
+
+int8 a = 10i8;
+int16 b = 100i16;
+int32 c = 1000i32;
+int64 d = 10000i64;
+
+int8 r1 = triple(a);
+int16 r2 = triple(b);
+int32 r3 = triple(c);
+int64 r4 = triple(d);
+
+print(r1);  // 30
+print(r2);  // 300
+print(r3);  // 3000
+print(r4);  // 30000
+
+return 0;

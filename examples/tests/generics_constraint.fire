@@ -1,0 +1,12 @@
+T max<T: int32 | int64>(T a, T b) {
+    if (a > b) {
+        return a;
+    }
+    return b;
+}
+
+int32 main() {
+    int32 x = max(10, 20);
+    print(x);
+    return 0;
+}

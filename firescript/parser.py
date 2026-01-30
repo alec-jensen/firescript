@@ -50,6 +50,10 @@ class ASTNode:
         self.parent: Optional[ASTNode] = None  # Parent is typically set externally
         # Optional semantic metadata; populated by analysis passes
         self.value_category = None
+        # Generic function metadata
+        self.type_params: list[str] = []  # Type parameter names for generic functions
+        self.type_constraints: dict[str, str] = {}  # Type param -> constraint
+        self.type_args: list[str] = []  # Concrete type arguments for generic calls
 
     def tree(self, prefix: str = "", is_last: bool = True) -> str:
         # Build the display line differently for variable declarations.
@@ -174,6 +178,19 @@ class Parser:
 
         # Parsing context for class bodies (used for `super.*` parsing)
         self._class_context_stack: list[tuple[str, bool, Optional[str]]] = []  # (class_name, in_constructor, base_class)
+        
+        # Generic function tracking
+        # Maps function name -> list of type parameter names
+        self.generic_functions: dict[str, list[str]] = {}
+        # Maps function name -> dict of type param -> constraint
+        self.generic_constraints: dict[str, dict[str, str]] = {}
+        # Track monomorphized instances: (func_name, tuple of concrete types) -> mangled name
+        self.monomorphized_functions: dict[tuple[str, tuple[str, ...]], str] = {}
+        # Track type parameters in current scope (for parsing inside generic functions)
+        self._current_type_params: list[str] = []
+        
+        # Custom type constraint aliases: constraint_name -> type_union_string
+        self.constraint_aliases: dict[str, str] = {}
 
     def _current_class_context(self) -> tuple[Optional[str], bool, Optional[str]]:
         if not self._class_context_stack:
@@ -188,6 +205,9 @@ class Parser:
             return True
         # Allow user-defined class names as types
         if tok.type == "IDENTIFIER" and tok.value in self.user_types:
+            return True
+        # Allow type parameters in current generic function scope
+        if tok.type == "IDENTIFIER" and tok.value in self._current_type_params:
             return True
         return False
 
@@ -375,7 +395,7 @@ class Parser:
 
     def parse_multiplicative(self):
         """Parse multiplicative expressions (handles *, /, and %)."""
-        node = self.parse_primary()
+        node = self.parse_unary()
         if node is None:  # If LHS is not parsable
             return None
 
@@ -386,9 +406,9 @@ class Parser:
         ):
             op_token = self.current_token
             self.advance()
-            right = self.parse_primary()
+            right = self.parse_unary()
             if right is None:  # If RHS is not parsable
-                # Error already logged by parse_primary.
+                # Error already logged by parse_unary.
                 return None  # Propagate failure.
 
             # Both node and right are valid ASTNodes here.
@@ -400,6 +420,24 @@ class Parser:
                 op_token.index,
             )
         return node
+
+    def parse_unary(self):
+        """Parse unary expressions (handles unary - and +).""" 
+        if self.current_token and self.current_token.type in ("SUBTRACT", "ADD"):
+            op_token = self.current_token
+            self.advance()
+            operand = self.parse_unary()  # Right-associative for chained unary ops
+            if operand is None:
+                self.error(f"Expected expression after unary '{op_token.value}'", op_token)
+                return None
+            return ASTNode(
+                NodeTypes.UNARY_EXPRESSION,
+                op_token,
+                op_token.value,
+                [operand],
+                op_token.index,
+            )
+        return self.parse_primary()
 
     def parse_primary(self):
         token = self.current_token
@@ -588,6 +626,60 @@ class Parser:
                         # Constructor call: validate in type checker; return type will be set there
                         pass
                     continue
+                
+                # Explicit generic type arguments: func<T1, T2>(...)
+                elif self.current_token and self.current_token.type == "LESS_THAN":
+                    # Check if this is a generic function call
+                    if token.value in self.generic_functions:
+                        self.advance()  # consume <
+                        type_args = []
+                        while True:
+                            if not (self.current_token and self._is_type_token(self.current_token)):
+                                self.error("Expected type argument", self.current_token)
+                                break
+                            targ_tok = self.current_token
+                            self.advance()
+                            type_args.append(self._normalize_type_name(targ_tok))
+                            
+                            if self.current_token and self.current_token.type == "COMMA":
+                                self.advance()
+                                continue
+                            break
+                        
+                        if not (self.current_token and self.current_token.type == "GREATER_THAN"):
+                            self.error("Expected '>' to close type arguments", self.current_token)
+                        else:
+                            self.advance()  # consume >
+                        
+                        # Now parse the function call
+                        if not (self.current_token and self.current_token.type == "OPEN_PAREN"):
+                            self.error("Expected '(' after generic type arguments", self.current_token)
+                            break
+                        
+                        open_paren = self.consume("OPEN_PAREN")
+                        arguments = []
+                        if self.current_token and self.current_token.type != "CLOSE_PAREN":
+                            while True:
+                                arg = self.parse_expression()
+                                if arg:
+                                    arguments.append(arg)
+                                if self.current_token and self.current_token.type == "COMMA":
+                                    self.consume("COMMA")
+                                    continue
+                                break
+                        close_paren = self.consume("CLOSE_PAREN")
+                        if not close_paren:
+                            self.error("Expected ')' after function arguments", token)
+                        
+                        node = ASTNode(
+                            NodeTypes.FUNCTION_CALL, token, token.value, arguments, token.index
+                        )
+                        node.type_args = type_args
+                        node.return_type = self.user_functions.get(token.value, "void")
+                        continue
+                    else:
+                        # Not a generic function, this is a comparison operator
+                        break
 
                 # Postfix cast: <expr> as <type>
                 elif self.current_token and (
@@ -1267,15 +1359,74 @@ class Parser:
         if token.type == "DOUBLE_LITERAL":
             return "float64"
         return ""
+    
+    def _infer_generic_type_args(self, func_name: str, arg_types: list[str]) -> Optional[list[str]]:
+        """Infer type arguments for a generic function call based on argument types.
+        Returns a list of concrete types for each type parameter, or None if inference fails.
+        """
+        if func_name not in self.generic_functions:
+            return None
+        
+        type_params = self.generic_functions[func_name]
+        if not type_params:
+            return []
+        
+        # Get the function definition to examine parameter types
+        func_def = None
+        for child in self.ast.children:
+            if child.node_type == NodeTypes.FUNCTION_DEFINITION and child.name == func_name:
+                func_def = child
+                break
+        
+        if not func_def:
+            return None
+        
+        # Extract parameter types from function definition
+        param_types = []
+        for child in func_def.children:
+            if child.node_type == NodeTypes.PARAMETER:
+                param_types.append(child.var_type or "")
+        
+        # Build a mapping from type parameters to inferred concrete types
+        type_map: dict[str, str] = {}
+        
+        for param_type, arg_type in zip(param_types, arg_types):
+            if param_type in type_params:
+                # Direct type parameter match
+                if param_type in type_map:
+                    if type_map[param_type] != arg_type:
+                        # Conflicting inference
+                        return None
+                else:
+                    type_map[param_type] = arg_type
+        
+        # Check if all type parameters were inferred
+        inferred_types = []
+        for tp in type_params:
+            if tp not in type_map:
+                # Could not infer this type parameter
+                return None
+            inferred_types.append(type_map[tp])
+        
+        return inferred_types
 
     def _type_check_node(self, node: ASTNode, symbol_table: dict) -> Optional[str]:
         """Recursively checks types in the AST node and returns the node's expression type."""
         node_type_str = None  # The type of the expression this node represents
 
-        # First, recursively check children to determine their types
-        child_types = [
-            self._type_check_node(child, symbol_table) for child in node.children
-        ]
+        # Special handling for generic function definitions: set type parameter context
+        if node.node_type == NodeTypes.FUNCTION_DEFINITION and hasattr(node, 'type_params') and node.type_params:
+            prev_type_params = self._current_type_params
+            self._current_type_params = node.type_params.copy()
+            child_types = [
+                self._type_check_node(child, symbol_table) for child in node.children
+            ]
+            self._current_type_params = prev_type_params
+        else:
+            # First, recursively check children to determine their types
+            child_types = [
+                self._type_check_node(child, symbol_table) for child in node.children
+            ]
 
         # --- Type Checking Logic based on Node Type ---
         if node.node_type == NodeTypes.ROOT or node.node_type == NodeTypes.SCOPE:
@@ -1341,6 +1492,10 @@ class Parser:
 
             integer_types = self.INTEGER_TYPES
             float_types = {"float", "double", "float32", "float64", "float128"}
+            
+            # Check if a type is a type parameter (in current generic function scope)
+            is_left_type_param = left_type in self._current_type_params
+            is_right_type_param = right_type in self._current_type_params
 
             node_type_str: Optional[str] = None
 
@@ -1353,6 +1508,9 @@ class Parser:
                     node_type_str = left_type
                 elif left_type == right_type and left_type in float_types:
                     node_type_str = left_type
+                # Allow if both are the same type parameter (assumed to be numeric via constraints)
+                elif left_type == right_type and is_left_type_param:
+                    node_type_str = left_type
                 else:
                     self.error(
                         f"Operator '{op}' not supported between types {left_type} and {right_type}",
@@ -1363,6 +1521,9 @@ class Parser:
                     node_type_str = left_type
                 elif left_type == right_type and left_type in float_types:
                     node_type_str = left_type
+                # Allow if both are the same type parameter (assumed to be numeric via constraints)
+                elif left_type == right_type and is_left_type_param:
+                    node_type_str = left_type
                 else:
                     self.error(
                         f"Operator '{op}' not supported between types {left_type} and {right_type}",
@@ -1371,6 +1532,9 @@ class Parser:
             elif op == "%":
                 if left_type == right_type and left_type in integer_types:
                     node_type_str = left_type
+                # Allow if both are the same type parameter (assumed to be numeric via constraints)
+                elif left_type == right_type and is_left_type_param:
+                    node_type_str = left_type
                 else:
                     self.error(
                         f"Operator '{op}' requires integer operands of the same type, got {left_type} and {right_type}",
@@ -1378,6 +1542,58 @@ class Parser:
                     )
             else:
                 self.error(f"Unsupported binary operator '{op}'", node.token)
+
+            node.return_type = node_type_str
+
+        elif node.node_type == NodeTypes.UNARY_EXPRESSION:
+            op = node.name
+            
+            # Increment/decrement operators (++/--) have no children - they operate on the identifier stored in node.token
+            if op in ("++", "--"):
+                # The variable being incremented/decremented is in node.token
+                var_name = node.token.value if hasattr(node.token, 'value') else None
+                if var_name:
+                    var_info = symbol_table.get(var_name)
+                    if var_info:
+                        var_type, is_array = var_info
+                        # Increment/decrement only work on integer types
+                        if var_type in self.INTEGER_TYPES:
+                            node_type_str = var_type
+                        else:
+                            self.error(f"Operator '{op}' requires an integer variable, got {var_type}", node.token)
+                    else:
+                        self.error(f"Variable '{var_name}' not defined", node.token)
+                return node_type_str
+            
+            # Unary +/- operators have a child operand
+            if not child_types:
+                self.error(f"Unary operator '{op}' missing operand", node.token)
+                return None
+                
+            operand_type = child_types[0]
+
+            if operand_type is None:
+                return None
+
+            integer_types = self.INTEGER_TYPES
+            float_types = {"float", "double", "float32", "float64", "float128"}
+            
+            # Unary + and - work on numeric types and type parameters
+            if op in ("+", "-"):
+                is_numeric = operand_type in integer_types or operand_type in float_types
+                is_type_param = operand_type in self._current_type_params
+                
+                if is_numeric or is_type_param:
+                    node_type_str = operand_type  # Same type as operand
+                else:
+                    self.error(
+                        f"Unary operator '{op}' requires numeric operand, got {operand_type}",
+                        node.token,
+                    )
+                    node_type_str = None
+            else:
+                self.error(f"Unsupported unary operator '{op}'", node.token)
+                node_type_str = None
 
             node.return_type = node_type_str
 
@@ -1416,7 +1632,14 @@ class Parser:
 
             integer_types = self.INTEGER_TYPES
             float_types = {"float32", "float64", "float128"}
-            if (left_type == right_type and (left_type in integer_types or left_type in float_types)):
+            
+            # Allow comparisons if both types are the same, and either:
+            # 1. They are known numeric types, OR
+            # 2. They are type parameters (assumed to be constrained to numeric types)
+            is_numeric = left_type in integer_types or left_type in float_types
+            is_type_param = left_type in self._current_type_params
+            
+            if left_type == right_type and (is_numeric or is_type_param):
                 node_type_str = "bool"
             else:
                 self.error(
@@ -1470,6 +1693,58 @@ class Parser:
         elif node.node_type == NodeTypes.FUNCTION_CALL:
             # Basic check for built-ins
             func_name = node.name
+            
+            # Check if this is a generic function call
+            if func_name in self.generic_functions:
+                # Check if type arguments are explicitly provided
+                if hasattr(node, 'type_args') and node.type_args:
+                    # Explicit type arguments provided
+                    type_params = self.generic_functions[func_name]
+                    if len(node.type_args) != len(type_params):
+                        self.error(
+                            f"Generic function '{func_name}' expects {len(type_params)} type arguments, got {len(node.type_args)}",
+                            node.token,
+                        )
+                else:
+                    # Infer type arguments from call arguments
+                    inferred = self._infer_generic_type_args(func_name, child_types)
+                    if inferred is None:
+                        self.error(
+                            f"Could not infer type arguments for generic function '{func_name}'",
+                            node.token,
+                        )
+                        node.type_args = []
+                    else:
+                        node.type_args = inferred
+                
+                # Validate type constraints if we have type arguments
+                if hasattr(node, 'type_args') and node.type_args:
+                    constraints = self.generic_constraints.get(func_name, {})
+                    type_params = self.generic_functions[func_name]
+                    for tp, concrete_type in zip(type_params, node.type_args):
+                        if tp in constraints:
+                            constraint = constraints[tp]
+                            # Parse constraint (simple version: just check if type is in union)
+                            allowed_types = [t.strip() for t in constraint.split("|")]
+                            if concrete_type not in allowed_types and constraint not in ["Numeric", "Comparable", "SignedInt", "UnsignedInt", "Float", "Integer"]:
+                                self.error(
+                                    f"Type '{concrete_type}' does not satisfy constraint '{constraint}' for type parameter '{tp}'",
+                                    node.token,
+                                )
+                    
+                    # Set return type by substituting type parameters
+                    generic_return_type = self.user_functions.get(func_name)
+                    if generic_return_type:
+                        # Create type substitution map
+                        type_subst = dict(zip(type_params, node.type_args))
+                        # Substitute return type if it's a type parameter
+                        if generic_return_type in type_subst:
+                            node.return_type = type_subst[generic_return_type]
+                            node_type_str = node.return_type
+                        else:
+                            node.return_type = generic_return_type
+                            node_type_str = generic_return_type
+            
             expected_arg_count = -1  # Use -1 for variable args like print
             expected_arg_types = []  # Define expected types for builtins
 
@@ -1524,6 +1799,9 @@ class Parser:
                 node_type_str = func_name
                 node.return_type = func_name
             else:
+                # For non-generic functions, use the stored return type
+                if func_name not in self.generic_functions and not hasattr(node, 'return_type'):
+                    node.return_type = self.user_functions.get(func_name)
                 node_type_str = node.return_type
 
         elif node.node_type == NodeTypes.METHOD_CALL:
@@ -2020,8 +2298,19 @@ class Parser:
 
     def _parse_function_definition(self):
         """Parse a function definition with optional array types: <type>[[]] <name>(<type>[[]] name, ...) { ... }"""
-        # Return type
-        if not self._is_type_token(self.current_token):
+        # Return type - can be a known type OR an IDENTIFIER (for generic type parameters)
+        # Check if this is a type token, or an IDENTIFIER followed by another IDENTIFIER and LESS_THAN (generic pattern)
+        is_valid_return_type = self._is_type_token(self.current_token)
+        
+        # Also allow IDENTIFIER if it could be a type parameter (will be validated after parsing type params)
+        if not is_valid_return_type and self.current_token and self.current_token.type == "IDENTIFIER":
+            # Peek ahead to see if this looks like a generic function: T funcName<...>
+            next_tok = self.peek(1)
+            second_tok = self.peek(2)
+            if next_tok and next_tok.type == "IDENTIFIER" and second_tok and second_tok.type == "LESS_THAN":
+                is_valid_return_type = True
+        
+        if not is_valid_return_type:
             self.error("Expected return type at function definition", self.current_token)
             return None
         ret_type_token = self.current_token
@@ -2042,9 +2331,85 @@ class Parser:
         if name_token is None:
             self.error("Expected function name after return type", self.current_token)
             return None
+        
+        # Parse optional generic type parameters: <T, U, ...>
+        type_params: list[str] = []
+        type_constraints: dict[str, str] = {}
+        
+        if self.current_token and self.current_token.type == "LESS_THAN":
+            self.advance()  # consume <
+            # Parse type parameters
+            while True:
+                if not (self.current_token and self.current_token.type == "IDENTIFIER"):
+                    self.error("Expected type parameter name", self.current_token)
+                    return None
+                tparam_tok = self.consume("IDENTIFIER")
+                if tparam_tok is None:
+                    return None
+                type_params.append(tparam_tok.value)
+                
+                # Parse optional constraint: T: Comparable or T: int32 | float64 or T: NumericPrimitive (alias)
+                if self.current_token and self.current_token.type == "COLON":
+                    self.advance()  # consume :
+                    constraint_parts = []
+                    while True:
+                        # Constraints can be type names (int32, float64) or interface names (Comparable)
+                        # or constraint aliases (NumericPrimitive)
+                        # Type names come as TYPE tokens, interface names as IDENTIFIER tokens
+                        if not (self.current_token and (self._is_type_token(self.current_token) or self.current_token.type == "IDENTIFIER")):
+                            self.error("Expected constraint type or interface", self.current_token)
+                            return None
+                        
+                        constraint_tok = self.current_token
+                        self.advance()
+                        if constraint_tok is None:
+                            return None
+                        
+                        # Check if this is a constraint alias and expand it
+                        if constraint_tok.value in self.constraint_aliases:
+                            # Expand the alias inline
+                            alias_expansion = self.constraint_aliases[constraint_tok.value]
+                            constraint_parts.append(alias_expansion)
+                        else:
+                            constraint_parts.append(constraint_tok.value)
+                        
+                        # Check for union operator |
+                        if self.current_token and self.current_token.type == "PIPE":
+                            self.advance()  # consume |
+                            continue
+                        # Check for intersection operator &
+                        elif self.current_token and self.current_token.type == "AMPERSAND":
+                            self.advance()  # consume &
+                            constraint_parts.append("&")
+                            continue
+                        break
+                    
+                    type_constraints[tparam_tok.value] = " | ".join(constraint_parts)
+                
+                if self.current_token and self.current_token.type == "COMMA":
+                    self.advance()  # consume ,
+                    continue
+                break
+            
+            if not (self.current_token and self.current_token.type == "GREATER_THAN"):
+                self.error("Expected '>' to close type parameters", self.current_token)
+                return None
+            self.advance()  # consume >
+        
+        # Validate return type if it was an IDENTIFIER (type parameter)
+        if ret_type_token.type == "IDENTIFIER" and ret_type_token.value not in self.TYPE_TOKEN_NAMES:
+            # It must be a declared type parameter
+            if ret_type_token.value not in type_params:
+                self.error(f"Return type '{ret_type_token.value}' is not a declared type parameter", ret_type_token)
+                return None
+        
         if not self.consume("OPEN_PAREN"):
             self.error("Expected '(' after function name", self.current_token)
             return None
+
+        # Set current type parameters for parsing function body
+        prev_type_params = self._current_type_params
+        self._current_type_params = type_params.copy()
 
         params: list[ASTNode] = []
         if self.current_token and self.current_token.type != "CLOSE_PAREN":
@@ -2115,8 +2480,18 @@ class Parser:
             ret_is_array,
             ret_is_array,
         )
+        # Attach generic metadata
+        func_node.type_params = type_params
+        func_node.type_constraints = type_constraints
+        
+        # Restore previous type parameters
+        self._current_type_params = prev_type_params
+        
         if ret_type_token and name_token:
             self.user_functions[name_token.value] = return_type_value
+            if type_params:
+                self.generic_functions[name_token.value] = type_params
+                self.generic_constraints[name_token.value] = type_constraints
         return func_node
 
     def parse_scope(self):
@@ -2181,14 +2556,37 @@ class Parser:
                     cls.parent = self.ast
                     self.ast.children.append(cls)
                 continue
+            # Constraint declaration
+            if self.current_token.type == "CONSTRAINT":
+                self._parse_constraint_declaration()
+                # Optional semicolon
+                if self.current_token and self.current_token.type == "SEMICOLON":
+                    self.consume("SEMICOLON")
+                continue
             # Try function definition first: <type> <identifier> '(' ... ')'{ ... }
+            # Also handle generic functions where return type might be a type parameter
             stmt = None
+            # Check for function definition patterns
+            can_be_func = False
             if self._is_type_token(self.current_token):
+                can_be_func = True
+            elif self.current_token and self.current_token.type == "IDENTIFIER":
+                # Could be a generic function with type parameter as return type
+                # Look for pattern: IDENTIFIER IDENTIFIER '<' ...
+                # Need to peek ahead more carefully to handle constraints with PIPE tokens
+                idx_cur = self.tokens.index(self.current_token)
+                if idx_cur + 2 < len(self.tokens):
+                    next1 = self.tokens[idx_cur + 1]
+                    next2 = self.tokens[idx_cur + 2]
+                    if next1.type == "IDENTIFIER" and next2.type == "LESS_THAN":
+                        can_be_func = True  # Likely a generic function
+            
+            if can_be_func:
                 idx_cur = self.tokens.index(self.current_token)
                 # Gather next few meaningful tokens to detect patterns
                 look = []
                 m = idx_cur + 1
-                while m < len(self.tokens) and len(look) < 5:
+                while m < len(self.tokens) and len(look) < 30:  # Increased for generics with long constraints
                     if self.tokens[m].type not in (
                         "SINGLE_LINE_COMMENT",
                         "MULTI_LINE_COMMENT_START",
@@ -2199,6 +2597,7 @@ class Parser:
                 # Patterns:
                 # 1) TYPE IDENTIFIER '('
                 # 2) TYPE '[' ']' IDENTIFIER '('
+                # 3) TYPE IDENTIFIER '<' ... '>' '('  (generic function)
                 is_func = False
                 if (
                     len(look) >= 2
@@ -2214,6 +2613,24 @@ class Parser:
                     and look[3].type == "OPEN_PAREN"
                 ):
                     is_func = True
+                elif (
+                    len(look) >= 3
+                    and look[0].type == "IDENTIFIER"
+                    and look[1].type == "LESS_THAN"
+                ):
+                    # Generic function: TYPE IDENTIFIER '<' ...
+                    # Look for matching '>' followed by '('
+                    angle_depth = 1
+                    i = 2
+                    while i < len(look) and angle_depth > 0:
+                        if look[i].type == "LESS_THAN":
+                            angle_depth += 1
+                        elif look[i].type == "GREATER_THAN":
+                            angle_depth -= 1
+                        i += 1
+                    # Check if we have '(' after the closing '>'
+                    if i < len(look) and look[i].type == "OPEN_PAREN":
+                        is_func = True
                 if is_func:
                     stmt = self._parse_function_definition()
             if stmt is None:
@@ -2329,8 +2746,120 @@ class Parser:
                     self.error("Expected identifier after '/' in external package name", self.current_token)
                     break
                 segs.append(nxtok.value)
-            module_path = "@" + "/".join(segs)
-            kind = "external"
+            
+            # Check if this is @firescript/ (standard library)
+            if segs and segs[0] == "firescript":
+                # This is a standard library import, treat as internal module
+                # @firescript/std.math -> firescript.std.math
+                # Continue parsing dotted path after the / part
+                module_segs = segs.copy()
+                
+                # Parse any additional .IDENTIFIER parts
+                iteration = 0
+                while self.current_token and self.current_token.type == "DOT":
+                    iteration += 1
+                    if iteration > 20:
+                        self.error(f"Too many iterations parsing dotted path. Current token: {self.current_token}, module_segs: {module_segs}", self.current_token)
+                        break
+                    # Lookahead to see if this is part of module path or symbol syntax
+                    nxt = self.peek(1)
+                    if not nxt:
+                        break
+                    if nxt.type == "OPEN_BRACE":
+                        # This is .{symbols} syntax, stop module path parsing
+                        break
+                    if nxt.type == "MULTIPLY":
+                        # This is .* syntax, stop module path parsing
+                        break
+                    if nxt.type == "IDENTIFIER" or self._is_type_token(nxt):
+                        # Check what comes after the identifier
+                        nxt2 = self.peek(2)
+                        # If followed by {, *, or end of tokens, this is symbol syntax
+                        if nxt2 and nxt2.type in ("OPEN_BRACE", "MULTIPLY"):
+                            # The identifier after DOT is part of symbol syntax, stop here
+                            break
+                        # Otherwise, this identifier is part of module path
+                        self.advance()  # consume '.'
+                        id_tok = self.current_token
+                        self.advance()  # consume identifier
+                        module_segs.append(id_tok.value)
+                        # Continue to check if there's more path
+                    else:
+                        # Unknown token after DOT, stop
+                        break
+                
+                module_path = ".".join(module_segs)
+                kind = None  # Will be determined later (module, symbols, wildcard)
+                
+                # Now parse any symbol syntax: .{symbols}, .*, or .symbol
+                if self.current_token and self.current_token.type == "DOT":
+                    self.advance()
+                    if self.current_token and self.current_token.type == "OPEN_BRACE":
+                        # Group of symbols: {a [as x]?, b [as y]?}
+                        self.advance()
+                        while self.current_token and self.current_token.type != "CLOSE_BRACE":
+                            if not (self.current_token and self.current_token.type == "IDENTIFIER"):
+                                self.error("Expected identifier in import symbol list", self.current_token)
+                                break
+                            sname_tok = self.consume("IDENTIFIER")
+                            salias = None
+                            # Support contextual 'as' even if it's lexed as IDENTIFIER
+                            if self.current_token and (
+                                self.current_token.type == "AS"
+                                or (self.current_token.type == "IDENTIFIER" and self.current_token.value == "as")
+                            ):
+                                self.advance()  # consume 'as'
+                                al = self.consume("IDENTIFIER")
+                                if al is None:
+                                    self.error("Expected alias name after 'as'", self.current_token)
+                                    return None
+                                salias = al.value
+                            if sname_tok is None:
+                                self.error("Expected identifier in import symbol list", self.current_token)
+                                break
+                            symbols.append({"name": sname_tok.value, "alias": salias})
+                            if self.current_token and self.current_token.type == "COMMA":
+                                self.advance()
+                                continue
+                            else:
+                                break
+                        if not self.consume("CLOSE_BRACE"):
+                            self.error("Expected '}' to close import symbol list", self.current_token)
+                            return None
+                        kind = "symbols"
+                    elif self.current_token and self.current_token.type == "MULTIPLY":
+                        # Wildcard import
+                        self.advance()
+                        kind = "wildcard"
+                    elif self.current_token and self.current_token.type == "IDENTIFIER":
+                        # Single symbol
+                        sname_tok = self.consume("IDENTIFIER")
+                        if sname_tok is None:
+                            self.error("Expected symbol name after '.' in import", self.current_token)
+                            return None
+                        salias = None
+                        if self.current_token and (
+                            self.current_token.type == "AS"
+                            or (self.current_token.type == "IDENTIFIER" and self.current_token.value == "as")
+                        ):
+                            self.advance()  # consume 'as'
+                            al = self.consume("IDENTIFIER")
+                            if al is None:
+                                self.error("Expected alias name after 'as'", self.current_token)
+                                return None
+                            salias = al.value
+                        symbols.append({"name": sname_tok.value, "alias": salias})
+                        kind = "symbols"
+                    else:
+                        self.error("Expected symbol name, '*', or '{' after '.' in import", self.current_token)
+                        return None
+                else:
+                    # No symbol syntax, just module import
+                    kind = "module"
+            else:
+                # External package (not supported)
+                module_path = "@" + "/".join(segs)
+                kind = "external"
         else:
             # Parse dotted module path: IDENTIFIER ('.' IDENTIFIER)*
             # Note: type keywords (like 'string') can appear in module names
@@ -2362,7 +2891,8 @@ class Parser:
             module_path = ".".join(segs)
 
             # Optional: .symbol / .{a,b} / .* or module alias
-            if self.current_token and self.current_token.type == "DOT":
+            # Skip for external packages (already marked)
+            if kind != "external" and self.current_token and self.current_token.type == "DOT":
                 self.advance()
                 if self.current_token and self.current_token.type == "OPEN_BRACE":
                     # Group of symbols: {a [as x]?, b [as y]?}
@@ -2451,6 +2981,62 @@ class Parser:
             self.error("External packages are not supported", start_tok)
 
         return node
+
+    def _parse_constraint_declaration(self):
+        """Parse a constraint declaration: constraint Name = type1 | type2 | ...; """
+        constraint_tok = self.consume("CONSTRAINT")
+        if constraint_tok is None:
+            return None
+        
+        name_tok = self.consume("IDENTIFIER")
+        if name_tok is None:
+            self.error("Expected constraint name after 'constraint'", self.current_token)
+            return None
+        
+        if not self.consume("ASSIGN"):
+            self.error("Expected '=' after constraint name", self.current_token)
+            return None
+        
+        # Parse the type union: type1 | type2 | type3 | ...
+        type_parts = []
+        while True:
+            # Accept IDENTIFIER (for interface names or aliases) or type tokens (int32, float64, etc.)
+            if not (self.current_token and (self.current_token.type == "IDENTIFIER" or self._is_type_token(self.current_token))):
+                self.error("Expected type name in constraint definition", self.current_token)
+                return None
+            
+            type_tok = self.current_token
+            self.advance()
+            if type_tok is None:
+                return None
+            
+            # Normalize type token names (convert INT32 -> int32, etc.)
+            type_name = self._normalize_type_name(type_tok) if self._is_type_token(type_tok) else type_tok.value
+            
+            # If it's a constraint alias, expand it recursively
+            if type_name in self.constraint_aliases:
+                # Recursively expand the alias
+                type_parts.append(self.constraint_aliases[type_name])
+            else:
+                type_parts.append(type_name)
+            
+            # Check for pipe operator (union)
+            if self.current_token and self.current_token.type == "PIPE":
+                self.advance()  # consume |
+                continue
+            # Check for ampersand (intersection - for combining with interfaces)
+            elif self.current_token and self.current_token.type == "AMPERSAND":
+                self.advance()  # consume &
+                type_parts.append("&")
+                continue
+            break
+        
+        # Store the constraint alias
+        constraint_string = " | ".join(type_parts)
+        self.constraint_aliases[name_tok.value] = constraint_string
+        
+        # Constraint declarations don't produce AST nodes, they just update the constraint map
+        return None
 
     def _parse_class_definition(self):
         """Parse a class definition: class Name [from Base] { <type> <field>; ... }"""

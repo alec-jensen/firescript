@@ -1,53 +1,33 @@
 // firescript std.math
-// Simple math utilities and basic trig (float64)
+// Simple math utilities and basic trig
 
-import firescript.std.math.constants.{PI64, PI_2_64}
+import @firescript/std.constraints.{Numeric}
+import @firescript/std.math.constants.{PI64, PI_2_64}
 
 const float64 TWO_PI = PI64 * 2.0;
 
-float64 abs(float64 x) {
-	if (x < 0.0) {
+T abs<T: Numeric>(T x, T zero) {
+	if (x < zero) {
 		return -x;
 	}
 	return x;
 }
 
-int32 abs_i32(int32 x) {
-	if (x < 0) {
-		return -x;
-	}
-	return x;
-}
-
-float64 min(float64 a, float64 b) {
+T min<T: Numeric>(T a, T b) {
 	if (a < b) {
 		return a;
 	}
 	return b;
 }
 
-float64 max(float64 a, float64 b) {
+T max<T: Numeric>(T a, T b) {
 	if (a > b) {
 		return a;
 	}
 	return b;
 }
 
-int32 min_i32(int32 a, int32 b) {
-	if (a < b) {
-		return a;
-	}
-	return b;
-}
-
-int32 max_i32(int32 a, int32 b) {
-	if (a > b) {
-		return a;
-	}
-	return b;
-}
-
-float64 clamp(float64 x, float64 lo, float64 hi) {
+T clamp<T: Numeric>(T x, T lo, T hi) {
 	if (x < lo) {
 		return lo;
 	}
@@ -57,7 +37,7 @@ float64 clamp(float64 x, float64 lo, float64 hi) {
 	return x;
 }
 
-float64 lerp(float64 a, float64 b, float64 t) {
+T lerp<T: Numeric>(T a, T b, T t) {
 	return a + (b - a) * t;
 }
 
@@ -69,8 +49,8 @@ float64 rad_to_deg(float64 radians) {
 	return radians * (180.0 / PI64);
 }
 
-int32 pow_i32(int32 base, int32 exp) {
-	int32 result = 1;
+T pow_int<T: Numeric>(T base, int32 exp, T one) {
+	T result = one;
 	int32 i = 0;
 	while (i < exp) {
 		result = result * base;
@@ -118,7 +98,8 @@ float64 sin(float64 x) {
 	float64 sum = x;
 	int32 n = 1;
 	while (n < 6) {
-		float64 denom = (2.0 * n) * (2.0 * n + 1.0);
+		float64 n_f64 = (n as float64);
+		float64 denom = (2.0 * n_f64) * (2.0 * n_f64 + 1.0);
 		term = -term * x * x / denom;
 		sum = sum + term;
 		n++;
@@ -132,7 +113,8 @@ float64 cos(float64 x) {
 	float64 sum = 1.0;
 	int32 n = 1;
 	while (n < 6) {
-		float64 denom = (2.0 * n - 1.0) * (2.0 * n);
+		float64 n_f64 = (n as float64);
+		float64 denom = (2.0 * n_f64 - 1.0) * (2.0 * n_f64);
 		term = -term * x * x / denom;
 		sum = sum + term;
 		n++;

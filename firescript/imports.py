@@ -43,8 +43,31 @@ class ModuleResolver:
             import_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.import_root = os.path.abspath(import_root)
         self.modules: Dict[str, Module] = {}
+        # Store the firescript package directory for @firescript/ imports
+        self.firescript_root = os.path.dirname(os.path.abspath(__file__))
 
     def dotted_to_path(self, dotted: str) -> str:
+        # Handle @firescript/std imports (module path will be firescript.std.xxx)
+        if dotted.startswith("firescript.std.") or dotted == "firescript.std":
+            # Resolve relative to the firescript package directory
+            # Remove "firescript." prefix and resolve to std/ subdirectory
+            rel_path = dotted[len("firescript."):].replace(".", os.sep)
+            base_path = os.path.join(self.firescript_root, rel_path)
+            
+            # Try init.fire first (for package-style modules)
+            init_path = os.path.join(base_path, "init.fire")
+            if os.path.isfile(init_path):
+                return init_path
+            
+            # Try as direct file
+            file_path = base_path + ".fire"
+            if os.path.isfile(file_path):
+                return file_path
+            
+            # Return the init.fire path (will fail later with clearer error)
+            return init_path
+        
+        # Regular import relative to import_root
         rel = dotted.replace(".", os.sep) + ".fire"
         return os.path.join(self.import_root, rel)
 
@@ -163,15 +186,20 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
     # Create a new ROOT AST node
     root = ASTNode(NodeTypes.ROOT, None, "root", [], 0)
 
+    logging.debug(f"Merging {len(ordered)} modules: {[m.dotted for m in ordered]}")
+    
     seen: Dict[str, ASTNode] = {}
 
     def append_export(node: ASTNode):
         name = getattr(node, "name", None)
         if not name:
+            logging.debug(f"Skipping node with no name: {node.node_type}")
             return
         if name in seen:
+            logging.debug(f"Skipping duplicate symbol: {name}")
             logging.error(f"Conflicting top-level symbol '{name}' from imports; already defined.")
             return
+        logging.debug(f"Appending export: {name} (type: {node.node_type})")
         node.parent = root
         root.children.append(node)
         seen[name] = node
@@ -181,6 +209,7 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
         if mod is entry:
             # We'll handle entry's own items after imports to preserve user order later
             continue
+        logging.debug(f"Adding exports from module {mod.dotted}: {list(mod.exports.keys())}")
         for name, node in mod.exports.items():
             # Only include function, class, and top-level var declarations
             if node.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION):

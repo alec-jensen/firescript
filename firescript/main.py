@@ -5,6 +5,7 @@ import sys
 import subprocess
 import shutil
 import glob
+import time
 
 from lexer import Lexer
 from parser import Parser
@@ -40,6 +41,8 @@ def detect_c_compiler():
 def compile_file(file_path, target, cc=None, output=None):
     """Compile a single firescript file"""
     logging.info(f"Starting compilation of {file_path}...")
+
+    start_time = time.perf_counter_ns()
 
     try:
         # Read source file
@@ -220,7 +223,9 @@ def compile_file(file_path, target, cc=None, output=None):
             logging.error(f"Failed to execute compiler: {e}")
             return False
 
-        logging.info("Compilation successful!")
+        end_time = time.perf_counter_ns()
+
+        logging.info(f"Compilation of {file_path} completed successfully in {(end_time - start_time) / 1_000_000:.2f} ms")
 
         # Handle output file location
         compiled_binary = os.path.splitext(temp_c_file)[0]

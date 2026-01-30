@@ -35,6 +35,12 @@ This is a MAJOR rewrite and WILL be buggy and will not work correctly.
 - Imports
 - Casting (rust-like syntax `(87 as int8)`)
     - Currently only supported for numeric->numeric casts.
+- Generic functions
+- `std.math` library with basic math functions like `abs`, `min`, `max`, etc.
+
+### Compiler/Backend Improvements
+
+- Name mangling in generated C code to prevent name collisions between multiple source files and built-in C functions.
 
 ## 0.3.0 (Sep 12 2025)
 
