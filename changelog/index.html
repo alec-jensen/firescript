@@ -1369,6 +1369,8 @@
 </li>
 <li>Beginning memory management implementation</li>
 <li>Remove type conversion functions in favor of future Java-style casting.</li>
+<li>Removed built-in <code>print()</code> function in favor of <code>std.io.print()</code> and <code>std.io.println()</code>.</li>
+<li>Arrays are now fixed-size. Future dynamic arrays will be in the standard library.</li>
 </ul>
 <h3 id="new-language-features">New Language Features<a class="headerlink" href="#new-language-features" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1392,11 +1394,12 @@
 </li>
 <li>Imports</li>
 <li>Casting (rust-like syntax <code>(87 as int8)</code>)<ul>
-<li>Currently only supported for numeric-&gt;numeric casts.</li>
+<li>Currently only supported for numeric-&gt;numeric casts, and built-in types to string.</li>
 </ul>
 </li>
 <li>Generic functions</li>
 <li><code>std.math</code> library with basic math functions like <code>abs</code>, <code>min</code>, <code>max</code>, etc.</li>
+<li><code>std.io</code> library with <code>print</code> and <code>println</code> functions.</li>
 </ul>
 <h3 id="compilerbackend-improvements">Compiler/Backend Improvements<a class="headerlink" href="#compilerbackend-improvements" title="Permanent link">&para;</a></h3>
 <ul>

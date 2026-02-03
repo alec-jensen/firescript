@@ -1263,14 +1263,14 @@
 <h2 id="declaration-and-initialization">Declaration and Initialization<a class="headerlink" href="#declaration-and-initialization" title="Permanent link">&para;</a></h2>
 <p>Arrays are declared by appending <code>[N]</code> to any valid type and initializing with values in square brackets:</p>
 <pre><code class="language-firescript">// Array initialization with values
-int8[5] numbers = [10, 20, 30, 40, 50];
-string[3] names = [&quot;Alice&quot;, &quot;Bob&quot;, &quot;Charlie&quot;];
-bool[3] flags = [true, false, true];
+int8[] numbers = [10, 20, 30, 40, 50];
+string[] names = [&quot;Alice&quot;, &quot;Bob&quot;, &quot;Charlie&quot;];
+bool[] flags = [true, false, true];
 </code></pre>
 <p>All elements in an array must be of the same type as specified in the declaration.</p>
 <h2 id="accessing-array-elements">Accessing Array Elements<a class="headerlink" href="#accessing-array-elements" title="Permanent link">&para;</a></h2>
 <p>Individual array elements can be accessed using zero-based indexing:</p>
-<pre><code class="language-firescript">int8[5] scores = [85, 92, 78, 90, 88];
+<pre><code class="language-firescript">int8[] scores = [85, 92, 78, 90, 88];
 
 // Access individual elements
 int8 firstScore = scores[0];    // 85
@@ -1285,13 +1285,13 @@ scores[1] = 95;                // Array becomes [85, 95, 78, 90, 88]
 <ul>
 <li><strong><code>length</code></strong> – Property that returns the current size of the array</li>
 </ul>
-<pre><code class="language-firescript">int8[5] data = [5, 10, 15, 20, 25];
+<pre><code class="language-firescript">int8[] data = [5, 10, 15, 20, 25];
 int8 size = data.length;      // size = 5
 </code></pre>
 <h2 id="working-with-arrays">Working with Arrays<a class="headerlink" href="#working-with-arrays" title="Permanent link">&para;</a></h2>
 <h3 id="iterating-over-arrays">Iterating Over Arrays<a class="headerlink" href="#iterating-over-arrays" title="Permanent link">&para;</a></h3>
 <p>Use a <code>while</code> loop with an index variable to iterate over array elements:</p>
-<pre><code class="language-firescript">string[5] cities = [&quot;New York&quot;, &quot;London&quot;, &quot;Tokyo&quot;, &quot;Paris&quot;, &quot;Sydney&quot;];
+<pre><code class="language-firescript">string[] cities = [&quot;New York&quot;, &quot;London&quot;, &quot;Tokyo&quot;, &quot;Paris&quot;, &quot;Sydney&quot;];
 uint8 i = 0;
 while (i &lt; cities.length) {
     print(cities[i]);
@@ -1312,13 +1312,13 @@ int32 sum(int8[] numbers) {
 }
 
 // Usage
-int8[5] values = [1, 2, 3, 4, 5];
+int8[] values = [1, 2, 3, 4, 5];
 int32 result = sum(values);  // 15
 </code></pre>
 <h3 id="nested-arrays">Nested Arrays<a class="headerlink" href="#nested-arrays" title="Permanent link">&para;</a></h3>
 <p>Arrays can contain other arrays (though this is not fully implemented yet):</p>
 <pre><code class="language-firescript">// 2D array example
-int8[3][3] matrix = [
+int8[][] matrix = [
     [1, 2, 3],
     [4, 5, 6],
     [7, 8, 9]
@@ -1329,7 +1329,7 @@ int8 element = matrix[1][2];  // 6
 </code></pre>
 <h2 id="common-array-patterns">Common Array Patterns<a class="headerlink" href="#common-array-patterns" title="Permanent link">&para;</a></h2>
 <h3 id="finding-an-element">Finding an Element<a class="headerlink" href="#finding-an-element" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int8[5] numbers = [10, 20, 30, 40, 50];
+<pre><code class="language-firescript">int8[] numbers = [10, 20, 30, 40, 50];
 int8 target = 30;
 int8 index = -1;
 uint8 i = 0;
@@ -1350,14 +1350,14 @@ while (i &lt; numbers.length) {
 <li><strong>Array slicing</strong> (<code>arr[start:end:step]</code>) – Extract a portion of the array</li>
 </ul>
 <pre><code class="language-firescript">// Future syntax
-int8[5] numbers = [10, 20, 30, 40, 50];
-int8[3] subset = numbers[1:4];  // Would be [20, 30, 40]
+int8[] numbers = [10, 20, 30, 40, 50];
+int8[] subset = numbers[1:4];  // Would be [20, 30, 40]
 </code></pre>
 <ul>
 <li><strong>Negative indices</strong> – Access elements from the end of the array</li>
 </ul>
 <pre><code class="language-firescript">// Future syntax
-string[3] words = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;];
+string[] words = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;];
 string last = words[-1];     // Would be &quot;cherry&quot;
 </code></pre>
 <ul>
@@ -1373,32 +1373,32 @@ string last = words[-1];     // Would be &quot;cherry&quot;
 </ul>
 <p>Will use SIMD where possible for performance.</p>
 <pre><code class="language-firescript">// Future syntax
-int8[3] a = [1, 2, 3];
-int8[3] b = [4, 5, 6];
+int8[] a = [1, 2, 3];
+int8[] b = [4, 5, 6];
 
 // add arrays element-wise
-int8[3] c = a + b;  // Would be [5, 7, 9]
+int8[] c = a + b;  // Would be [5, 7, 9]
 
 // subtract arrays element-wise
-int8[3] e = b - a;  // Would be [3, 3, 3]
+int8[] e = b - a;  // Would be [3, 3, 3]
 
 // add scalar to array
-int8[3] g = a + 2;  // Would be [3, 4, 5]
+int8[] g = a + 2;  // Would be [3, 4, 5]
 
 // subtract scalar from array
-int8[3] h = b - 1;  // Would be [3, 4, 5]
+int8[] h = b - 1;  // Would be [3, 4, 5]
 
 // multiply arrays element-wise
-int8[3] j = a * b;  // Would be [4, 10, 18]
+int8[] j = a * b;  // Would be [4, 10, 18]
 
 // divide arrays element-wise
-int8[3] k = b / a;  // Would be [4, 2, 2]
+int8[] k = b / a;  // Would be [4, 2, 2]
 
 // multiply arrays by scalar
-int8[3] d = a * 2;  // Would be [2, 4, 6]
+int8[] d = a * 2;  // Would be [2, 4, 6]
 
 // divide arrays by scalar
-int8[3] f = b / 2;  // Would be [2, 2, 3]
+int8[] f = b / 2;  // Would be [2, 2, 3]
 
 // dot product of two arrays
 int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)

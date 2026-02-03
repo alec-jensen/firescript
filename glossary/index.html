@@ -1012,6 +1012,18 @@
 <td>Drop</td>
 <td>Deterministic destruction at an inserted point (last use or scope exit).</td>
 </tr>
+<tr>
+<td>Module</td>
+<td>A piece of firescript code that is imported or included in another firescript file.</td>
+</tr>
+<tr>
+<td>Package</td>
+<td>A module or collection of modules that is installed via the package manager.</td>
+</tr>
+<tr>
+<td>Library</td>
+<td>A module or collection of modules that is provided with the firescript installation.</td>
+</tr>
 </tbody>
 </table>
 <h3 id="expanded-definitions">Expanded Definitions<a class="headerlink" href="#expanded-definitions" title="Permanent link">&para;</a></h3>
@@ -1022,6 +1034,9 @@
 <li><strong>Borrow:</strong> Lightweight, read-only access. Cannot be stored in owned fields or escape its originating scope/call. Does not incur runtime overhead.</li>
 <li><strong>Clone:</strong> Creates an independent owned value. Semantics (deep vs copy-on-write) determined by the type implementation but always preserves logical independence.</li>
 <li><strong>Drop:</strong> Compiler-inserted destructor invocation (<code>drop(this)</code>) ensuring timely resource release (files, sockets, buffers) without tracing GC.</li>
+<li><strong>Module:</strong> A single <code>.fire</code> file or a collection of files that can be imported. Modules encapsulate code and can expose public APIs.</li>
+<li><strong>Package:</strong> A distributable unit of code, often hosted in a package registry. Packages can contain multiple modules and dependencies.</li>
+<li><strong>Library:</strong> A set of pre-written modules provided with the firescript installation, offering standard functionality (e.g., <code>std.io</code>, <code>std.math</code>).</li>
 </ul>
 
 
