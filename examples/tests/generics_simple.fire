@@ -1,5 +1,7 @@
 // Simplest generic function test - just max
 
+import @firescript/std.io.{println};
+
 T max<T>(T a, T b) {
     if (a > b) {
         return a;
@@ -8,4 +10,4 @@ T max<T>(T a, T b) {
 }
 
 int32 x = max(10, 20);
-print(x);
+println(x);

@@ -1,8 +1,10 @@
 # firescript/c_code_generator.py
 from enums import NodeTypes  # [firescript/enums.py]
-from parser import ASTNode  # [firescript/parser.py]
+from parser import ASTNode, get_line_and_coumn_from_index, get_line  # [firescript/parser.py]
 from typing import Optional
 import logging
+import sys
+import os
 
 # A simple type mapping from firescript types to C types.
 FIRETYPE_TO_C: dict[str, str] = {
@@ -28,8 +30,10 @@ FIRETYPE_TO_C: dict[str, str] = {
 
 
 class CCodeGenerator:
-    def __init__(self, ast: ASTNode):
+    def __init__(self, ast: ASTNode, source_file: Optional[str] = None):
         self.ast = ast
+        self.source_file = source_file
+        self.source_code: Optional[str] = None
         self.symbol_table: dict[str, tuple[str, bool]] = {}  # (type, is_array)
         # Fixed-size array lengths by variable name
         self.array_lengths: dict[str, int] = {}
@@ -41,11 +45,29 @@ class CCodeGenerator:
         self.scope_stack: list[list[str]] = [[]]
         # Track whether we're currently visiting inside a function body
         self._in_function: bool = False
-        # Detect if drop() insertion is enabled via directive in AST
-        self.drops_enabled: bool = any(
-            c.node_type == NodeTypes.DIRECTIVE and getattr(c, "name", "") == "enable_drops"
-            for c in (self.ast.children or [])
-        )
+        
+        # Get the entry file path from the root AST (set during import merge)
+        entry_file = getattr(self.ast, "entry_file", None)
+        
+        # Build per-file directive maps
+        # Map: file_path -> set of enabled directive names
+        # Normalize paths to ensure consistent lookups regardless of how the file was specified
+        self.file_directives: dict[str, set[str]] = {}
+        for c in (self.ast.children or []):
+            if c.node_type == NodeTypes.DIRECTIVE:
+                directive_name = getattr(c, "name", "")
+                source_file = getattr(c, "source_file", entry_file or source_file)
+                # Normalize the path for consistent lookup (use abspath to handle relative vs absolute)
+                normalized_source = os.path.abspath(source_file) if source_file else source_file
+                if normalized_source not in self.file_directives:
+                    self.file_directives[normalized_source] = set()
+                self.file_directives[normalized_source].add(directive_name)
+        
+        # For backward compatibility, check entry file directives
+        normalized_entry = os.path.abspath(entry_file or source_file) if (entry_file or source_file) else None
+        entry_directives = self.file_directives.get(normalized_entry, set()) if normalized_entry else set()
+        self.drops_enabled: bool = "enable_drops" in entry_directives
+        self.stdout_enabled: bool = "enable_lowlevel_stdout" in entry_directives
         
         # Name mangling support: map original names to mangled names
         self.name_counter = 0
@@ -53,7 +75,7 @@ class CCodeGenerator:
         # Stack of name scopes for nested functions/blocks
         self.name_scope_stack: list[dict[str, str]] = [{}]
         # Built-in functions that shouldn't be mangled
-        self.builtin_names = {"print", "input", "drop"}
+        self.builtin_names = {"stdout", "input", "drop"}
         
         # Collect class names and metadata for constructors and methods
         self.class_names: set[str] = set()
@@ -83,6 +105,40 @@ class CCodeGenerator:
                 if hasattr(c, 'type_params') and c.type_params:
                     self.generic_templates[c.name] = c
                     logging.debug(f"Found generic template: {c.name} with type params {c.type_params}")
+
+    def error(self, text: str, node: Optional[ASTNode] = None):
+        """Report a compilation error with source location"""
+        if node is None:
+            logging.error(text)
+            return
+        
+        # Get source file and source code for this node
+        node_source_file = getattr(node, 'source_file', self.source_file)
+        source_map = getattr(self.ast, 'source_map', {})
+        node_source_code = source_map.get(node_source_file) if source_map else None
+        
+        # Fall back to main source if not in map
+        if node_source_code is None:
+            node_source_code = self.source_code
+            node_source_file = self.source_file
+        
+        if node_source_file is None or node_source_code is None:
+            logging.error(text)
+            return
+
+        try:
+            line_num, column_num = get_line_and_coumn_from_index(node_source_code, node.index)
+            line_text = get_line(node_source_code, line_num)
+            logging.error(
+                text
+                + f"\n> {line_text.strip()}\n"
+                + " " * (column_num + 1)
+                + "^"
+                + f"\n({node_source_file}:{line_num}:{column_num})"
+            )
+        except (IndexError, ValueError):
+            # Node index is out of range - just show the error without source location
+            logging.error(text)
 
     def _free_arrays_in_current_scope(self) -> list[str]:
         """Return lines to free arrays declared in the current scope (no pop)."""
@@ -118,7 +174,9 @@ class CCodeGenerator:
     def _mangle_generic_name(self, func_name: str, type_args: tuple[str, ...]) -> str:
         """Generate a mangled name for a monomorphized generic function."""
         # Simple mangling: func_name$type1$type2$...
-        type_suffix = "$".join(type_args)
+        # Replace [] with _arr for C-safe names
+        safe_types = [t.replace("[]", "_arr") for t in type_args]
+        type_suffix = "$".join(safe_types)
         return f"{func_name}${type_suffix}"
     
     def _infer_type_args_from_call(self, func_name: str, call_node: ASTNode) -> Optional[list[str]]:
@@ -140,9 +198,25 @@ class CCodeGenerator:
         # Get argument types from call
         arg_types = []
         for arg in (call_node.children or []):
+            logging.debug(f"Processing arg: {arg.node_type}, name={getattr(arg, 'name', None)}, is_array={getattr(arg, 'is_array', None)}")
             # Try to get the type from the argument node
             arg_type = getattr(arg, 'return_type', None) or getattr(arg, 'var_type', None)
+            # Check if it's an array identifier
+            if arg.node_type == NodeTypes.IDENTIFIER and getattr(arg, 'is_array', False):
+                # It's an array - append []
+                arg_type = f"{arg_type}[]"
+            
+            # Apply type parameter substitution if we're in a monomorphization context
             if arg_type:
+                type_map = getattr(self, '_current_type_map', {})
+                logging.debug(f"  Trying to substitute arg_type={arg_type}, type_map={type_map}")
+                if type_map and arg_type in type_map:
+                    original_arg_type = arg_type
+                    arg_type = type_map[arg_type]
+                    logging.debug(f"  Substituted arg_type from {original_arg_type} to {arg_type}")
+            
+            if arg_type:
+                logging.debug(f"  Got arg_type from node: {arg_type}")
                 arg_types.append(arg_type)
             else:
                 # For literals, infer from the literal value
@@ -175,8 +249,23 @@ class CCodeGenerator:
                 elif arg.node_type == NodeTypes.IDENTIFIER:
                     # Look up in symbol table
                     sym_info = self.symbol_table.get(arg.name)
+                    logging.debug(f"Looking up {arg.name} in symbol table: {sym_info}")
                     if sym_info:
-                        arg_types.append(sym_info[0])
+                        # sym_info is (type, is_array, [optional_size])
+                        base_type = sym_info[0]
+                        is_arr = sym_info[1] if len(sym_info) > 1 else False
+                        
+                        # Apply type parameter substitution if we're in a monomorphization context
+                        type_map = getattr(self, '_current_type_map', {})
+                        logging.debug(f"Type map for substitution: {type_map}, base_type: {base_type}")
+                        if type_map and base_type in type_map:
+                            base_type = type_map[base_type]
+                            logging.debug(f"Substituted to: {base_type}")
+                        
+                        if is_arr:
+                            arg_types.append(f"{base_type}[]")
+                        else:
+                            arg_types.append(base_type)
                     else:
                         return None
                 else:
@@ -203,7 +292,20 @@ class CCodeGenerator:
         return inferred
     
     def _collect_generic_instances(self, node: ASTNode):
-        """Recursively collect all generic function calls that need monomorphization."""
+        """Recursively collect all generic function calls that need monomorphization.
+        
+        Skip collecting from inside generic function templates during initial pass,
+        since type parameters haven't been substituted yet. They'll be collected
+        during instantiation when the type_map is active.
+        """
+        # Skip generic function templates during initial pass (when type_map is not set)
+        if node.node_type == NodeTypes.FUNCTION_DEFINITION:
+            if hasattr(node, 'type_params') and node.type_params:
+                # Only collect from template if we're in an instantiation context (type_map is active)
+                if not getattr(self, '_current_type_map', {}):
+                    logging.debug(f"Skipping collection from generic template {node.name} (no type_map)")
+                    return
+        
         if node.node_type == NodeTypes.FUNCTION_CALL:
             func_name = node.name
             logging.debug(f"Function call to '{func_name}', in templates: {func_name in self.generic_templates}, type_args: {getattr(node, 'type_args', None)}")
@@ -212,12 +314,14 @@ class CCodeGenerator:
                 type_args = getattr(node, 'type_args', [])
                 
                 # If type arguments weren't set during parsing, try to infer them now
-                if not type_args:
+                # Always re-infer if we're in a monomorphization context (type_map is set)
+                # since the same generic function in different instantiations may have different concrete types
+                if not type_args or getattr(self, '_current_type_map', {}):
                     inferred = self._infer_type_args_from_call(func_name, node)
+                    logging.debug(f"Inferred type args for {func_name}: {inferred}")
                     if inferred:
                         type_args = inferred
-                        node.type_args = type_args  # Set it on the node for later
-                        logging.debug(f"Inferred type args for {func_name}: {type_args}")
+                        logging.debug(f"Using inferred type args for {func_name}: {type_args}")
                 
                 if type_args:
                     key = (func_name, tuple(type_args))
@@ -270,7 +374,8 @@ class CCodeGenerator:
                 # Substitute type parameters
                 base_type = substitute_type(base_type)
                 is_array_param = child.is_array
-                ctype = "VArray*" if is_array_param else self._map_type_to_c(base_type)
+                # For arrays, pass pointer to first element
+                ctype = f"{self._map_type_to_c(base_type)}*" if is_array_param else self._map_type_to_c(base_type)
                 params.append(f"{ctype} {self._mangle_name(child.name)}")
             elif child.node_type == NodeTypes.SCOPE:
                 body_node = child
@@ -279,20 +384,41 @@ class CCodeGenerator:
         
         # Save and prepare symbol table for function scope
         prev_symbols = self.symbol_table.copy()
+        # Store array sizes from call site
+        array_size_map = {}
         for child in template.children:
             if child.node_type == NodeTypes.PARAMETER:
                 base_type = substitute_type(child.var_type or "int32")
-                self.symbol_table[child.name] = (base_type, child.is_array)
+                # Check if the substituted type is an array
+                param_is_array = base_type.endswith("[]")
+                if param_is_array:
+                    # Remove [] from base_type for element type
+                    elem_type = base_type[:-2]
+                    # For now, we can't know the size of array parameters
+                    # Store with no size (None)
+                    self.symbol_table[child.name] = (elem_type, True, None)
+                else:
+                    self.symbol_table[child.name] = (base_type, child.is_array)
         
         # Save current type substitution context
         prev_type_map = getattr(self, '_current_type_map', {})
         self._current_type_map = type_map
+        
+        # Track current function name for error messages
+        prev_function_name = getattr(self, '_current_function_name', None)
+        self._current_function_name = func_name
         
         # Generate body
         prev_in_fn = self._in_function
         self._in_function = True
         prev_scope_stack = self.scope_stack
         self.scope_stack = [[]]
+        
+        # Collect generic instances within the body while type_map is active
+        # This handles nested generic calls like println(T) inside swap<T>
+        if body_node:
+            self._collect_generic_instances(body_node)
+        
         body_code = self._visit(body_node) if body_node else "{ }"
         
         # Restore state
@@ -311,7 +437,6 @@ class CCodeGenerator:
         header = "#include <stdio.h>\n#include <stdbool.h>\n#include <stdint.h>\n#include <inttypes.h>\n#include <string.h>\n"
         header += '#include "firescript/runtime/runtime.h"\n'
         header += '#include "firescript/runtime/conversions.h"\n'
-        header += '#include "firescript/runtime/varray.h"\n'
         
         # First pass: collect all generic function instantiations needed
         for child in self.ast.children:
@@ -321,6 +446,7 @@ class CCodeGenerator:
         typedefs: list[str] = []
         constants: list[str] = []
         function_defs: list[str] = []
+        monomorphized_funcs_code: list[str] = []  # Keep monomorphized functions separate
         main_lines: list[str] = []
         main_function_code: str | None = None  # Store the main() function separately
 
@@ -356,11 +482,33 @@ class CCodeGenerator:
                 if stmt_code:
                     main_lines.append(stmt_code)
         
-        # Emit monomorphized generic function instances BEFORE main() function
-        for (func_name, type_args), mangled_name in self.monomorphized_funcs.items():
-            mono_code = self._instantiate_generic_function(func_name, type_args)
-            if mono_code:
-                function_defs.append(mono_code)
+        # Emit monomorphized generic function instances BEFORE regular functions
+        # Keep instantiating until no new instances are discovered
+        instantiated_keys = set()
+        iteration = 0
+        while True:
+            iteration += 1
+            logging.debug(f"Monomorphization iteration {iteration}, total instances: {len(self.monomorphized_funcs)}, instantiated: {len(instantiated_keys)}")
+            keys_to_instantiate = [k for k in self.monomorphized_funcs.keys() if k not in instantiated_keys]
+            logging.debug(f"  Keys to instantiate this iteration: {keys_to_instantiate}")
+            if not keys_to_instantiate:
+                break
+            for key in keys_to_instantiate:
+                func_name, type_args = key
+                logging.debug(f"  Instantiating {func_name} with {type_args}")
+                mono_code = self._instantiate_generic_function(func_name, type_args)
+                if mono_code:
+                    monomorphized_funcs_code.append(mono_code)
+                instantiated_keys.add(key)
+        
+        # Generate forward declarations for all monomorphized functions
+        # This allows them to call each other regardless of definition order
+        forward_decls: list[str] = []
+        for mono_code in monomorphized_funcs_code:
+            # Extract function signature (first line before the opening brace)
+            if ' {' in mono_code:
+                signature = mono_code.split(' {')[0]
+                forward_decls.append(f"{signature};")
         
         # Add the main() function if it was defined
         if main_function_code:
@@ -368,7 +516,13 @@ class CCodeGenerator:
 
         typedefs_code = ("\n\n".join(typedefs) + "\n\n") if typedefs else ""
         constants_code = ("\n".join(constants) + "\n\n") if constants else ""
-        functions_code = ("\n\n".join(function_defs) + "\n\n") if function_defs else ""
+        
+        # Emit forward declarations for monomorphized functions
+        forward_decls_code = ("\n".join(forward_decls) + "\n\n") if forward_decls else ""
+        
+        # Emit monomorphized functions first, then regular functions
+        all_functions = monomorphized_funcs_code + function_defs
+        functions_code = ("\n\n".join(all_functions) + "\n\n") if all_functions else ""
 
         # Only generate wrapper main() if user didn't define one
         if not main_function_code:
@@ -378,23 +532,22 @@ class CCodeGenerator:
                     "    " + line for line in "\n".join(main_lines).split("\n")
                 )
                 main_code += f"{indented_body}\n"
-            # Free any arrays declared at the top level (outermost scope)
-            if (not self.drops_enabled) and self.scope_stack and self.scope_stack[0]:
-                for arr_name in self.scope_stack[0]:
-                    main_code += f"    varray_free({arr_name});\n"
+            # Fixed-size arrays on stack, no cleanup needed
             main_code += "    firescript_cleanup();\n"
             main_code += "    return 0;\n"
             main_code += "}\n"
         else:
             main_code = ""
 
-        return header + typedefs_code + constants_code + functions_code + main_code
+        return header + typedefs_code + constants_code + forward_decls_code + functions_code + main_code
 
     def _map_type_to_c(self, t: str) -> str:
         if t == "void":
             return "void"
         if t.endswith("[]"):
-            return "VArray*"
+            # Arrays map to pointer to element type
+            elem_type = t[:-2]
+            return f"{FIRETYPE_TO_C.get(elem_type, elem_type)}*"
         return FIRETYPE_TO_C.get(t, t)
 
     def _normalize_integer_literal(self, s: str) -> str:
@@ -579,7 +732,8 @@ class CCodeGenerator:
             if child.node_type == NodeTypes.PARAMETER:
                 base_type = child.var_type or "int32"
                 is_array_param = child.is_array
-                ctype = "VArray*" if is_array_param else self._map_type_to_c(base_type)
+                # For arrays, pass pointer to first element
+                ctype = f"{self._map_type_to_c(base_type)}*" if is_array_param else self._map_type_to_c(base_type)
                 params.append(f"{ctype} {self._mangle_name(child.name)}")
             elif child.node_type == NodeTypes.SCOPE:
                 body_node = child
@@ -686,49 +840,106 @@ class CCodeGenerator:
             self.symbol_table[node.name] = (var_type_fs, node.is_array)
 
             if node.is_array:
-                # Dynamic array (VArray*)
-                self.scope_stack[-1].append(node.name)
+                # Fixed-size array on stack
                 init_node = node.children[0] if node.children else None
                 elem_c = self._map_type_to_c(var_type_fs)
+                mangled_name = self._mangle_name(node.name)
                 if init_node and init_node.node_type == NodeTypes.ARRAY_LITERAL:
                     elements = init_node.children or []
                     n = len(elements)
-                    lines: list[str] = []
-                    mangled_name = self._mangle_name(node.name)
-                    lines.append(f"VArray* {mangled_name} = varray_create({n}, sizeof({elem_c}));")
-                    for idx, elem in enumerate(elements):
-                        elem_code = self._visit(elem)
-                        tmp_name = f"{mangled_name}_elem{idx}"
-                        lines.append(f"{elem_c} {tmp_name} = {elem_code};")
-                        lines.append(f"varray_append({mangled_name}, &{tmp_name});")
-                    return "\n".join(lines)
-                # Allow initializing from an expression (e.g., function returning an array)
-                init_value = self._visit(node.children[0]) if node.children else "NULL"
-                return f"VArray* {self._mangle_name(node.name)} = {init_value};"
+                    # Store array size for length() method
+                    self.symbol_table[node.name] = (var_type_fs, node.is_array, n)
+                    # Generate C array initialization
+                    elem_codes = [self._visit(elem) for elem in elements]
+                    init_list = ", ".join(elem_codes)
+                    return f"{elem_c} {mangled_name}[{n}] = {{{init_list}}};"
+                # Allow initializing from an expression (would need additional handling)
+                self.error("Array initialization from expressions not yet supported for fixed-size arrays", node.token)
+                return ""
             else:
                 init_value = self._visit(node.children[0]) if node.children else "0"
                 return f"{var_type_c} {self._mangle_name(node.name)} = {init_value};"
         elif node.node_type == NodeTypes.ARRAY_ACCESS:
-            # Dynamic array access: ((T*)(arr->data))[idx]
+            # Fixed-size array access: arr[idx]
             array_node = node.children[0]
             index_node = node.children[1]
             array_code = self._visit(array_node)
             index_code = self._visit(index_node)
-
-            elem_fs: str | None = getattr(array_node, "var_type", None)
-            if not (getattr(array_node, "is_array", False) and elem_fs):
-                rt = getattr(array_node, "return_type", None)
-                if isinstance(rt, str) and rt.endswith("[]"):
-                    elem_fs = rt[:-2]
-
-            elem_c = self._map_type_to_c(elem_fs or "int32")
-            return f"(({elem_c}*)({array_code}->data))[{index_code}]"
+            # Direct array indexing
+            return f"{array_code}[{index_code}]"  
         elif node.node_type == NodeTypes.LITERAL:
             return self._literal_to_c(node)
         elif node.node_type == NodeTypes.CAST_EXPRESSION:
             expr_node = node.children[0] if node.children else None
             expr_code = self._visit(expr_node) if expr_node is not None else ""
             target_fs = node.name
+            
+            # Special handling for casting to string
+            if target_fs == "string":
+                # Check if source is an array
+                expr_type = (
+                    getattr(expr_node, "return_type", None)
+                    or getattr(expr_node, "var_type", None)
+                    or (self.symbol_table.get(getattr(expr_node, "name", ""), (None, False))[0]
+                       if expr_node and expr_node.node_type == NodeTypes.IDENTIFIER else None)
+                )
+                is_array = (
+                    getattr(expr_node, "is_array", False)
+                    or (self.symbol_table.get(getattr(expr_node, "name", ""), (None, False))[1]
+                       if expr_node and expr_node.node_type == NodeTypes.IDENTIFIER else False)
+                )
+                
+                # Also check if expr_type ends with [] (for monomorphized type parameters)
+                if is_array or (expr_type and isinstance(expr_type, str) and expr_type.endswith("[]")):
+                    # Array to string conversion - generate inline code
+                    # Get element type and size
+                    if expr_type and expr_type.endswith("[]"):
+                        elem_type = expr_type[:-2]
+                    else:
+                        elem_type = expr_type or "int32"
+                    
+                    # Try to get array size from symbol table
+                    array_size = None
+                    if expr_node and expr_node.node_type == NodeTypes.IDENTIFIER:
+                        sym_info = self.symbol_table.get(expr_node.name)
+                        if sym_info and len(sym_info) >= 3:
+                            array_size = sym_info[2]
+                    
+                    if array_size is None:
+                        # Can't determine size - this happens with array parameters
+                        # For now, just return a simple representation
+                        return "strdup(\"[...]\")"
+                    
+                    # Generate inline array-to-string code
+                    temp_var = f"__arr_str_{self.array_temp_counter}"
+                    self.array_temp_counter += 1
+                    elem_c = self._map_type_to_c(elem_type)
+                    
+                    # Generate code that builds the string representation
+                    # Use format instead of f-strings to handle complex brace escaping
+                    code = "({ " + elem_c + "* " + temp_var + "_arr = " + expr_code + "; "
+                    code += "size_t " + temp_var + "_size = " + str(array_size) + "; "
+                    code += "size_t " + temp_var + "_bufsize = 1024; "
+                    code += "char* " + temp_var + " = malloc(" + temp_var + "_bufsize); "
+                    code += "size_t " + temp_var + "_len = 0; "
+                    code += temp_var + "[" + temp_var + "_len++] = '['; "
+                    code += "for (size_t " + temp_var + "_i = 0; " + temp_var + "_i < " + temp_var + "_size; " + temp_var + "_i++) { "
+                    code += "if (" + temp_var + "_i > 0) { " + temp_var + "[" + temp_var + "_len++] = ','; " + temp_var + "[" + temp_var + "_len++] = ' '; } "
+                    code += "char* " + temp_var + "_elem = firescript_toString(" + temp_var + "_arr[" + temp_var + "_i]); "
+                    code += "size_t " + temp_var + "_elem_len = strlen(" + temp_var + "_elem); "
+                    code += "while (" + temp_var + "_len + " + temp_var + "_elem_len + 2 >= " + temp_var + "_bufsize) { " + temp_var + "_bufsize *= 2; " + temp_var + " = realloc(" + temp_var + ", " + temp_var + "_bufsize); } "
+                    code += "memcpy(" + temp_var + " + " + temp_var + "_len, " + temp_var + "_elem, " + temp_var + "_elem_len); "
+                    code += temp_var + "_len += " + temp_var + "_elem_len; "
+                    code += "free(" + temp_var + "_elem); "
+                    code += "} "
+                    code += temp_var + "[" + temp_var + "_len++] = ']'; "
+                    code += temp_var + "[" + temp_var + "_len] = '\\0'; "
+                    code += temp_var + "; })"
+                    return code
+                else:
+                    # Primitive to string conversion
+                    return f"firescript_toString({expr_code})"
+            
             target_c = self._map_type_to_c(target_fs)
             return f"(({target_c})({expr_code}))"
         elif node.node_type == NodeTypes.BINARY_EXPRESSION:
@@ -798,29 +1009,16 @@ class CCodeGenerator:
             )
             if isinstance(obj_type, str) and obj_type.endswith("[]"):
                 if method_name in ("length", "size"):
-                    return f"(int32_t)({object_code}->size)"
-                # Minimal support for common mutators (used by some examples)
-                if method_name == "append":
-                    arg = node.children[1] if len(node.children) > 1 else None
-                    elem_fs = obj_type[:-2]
-                    elem_c = self._map_type_to_c(elem_fs)
-                    tmp = f"__tmp_{self.array_temp_counter}"
-                    self.array_temp_counter += 1
-                    arg_code = self._visit(arg) if arg is not None else "0"
-                    return f"({{{elem_c} {tmp} = {arg_code}; {object_code} = varray_append({object_code}, &{tmp}); {object_code};}})"
-                if method_name == "insert":
-                    arg_idx = node.children[1] if len(node.children) > 1 else None
-                    arg_val = node.children[2] if len(node.children) > 2 else None
-                    elem_fs = obj_type[:-2]
-                    elem_c = self._map_type_to_c(elem_fs)
-                    tmp = f"__tmp_{self.array_temp_counter}"
-                    self.array_temp_counter += 1
-                    idx_code = self._visit(arg_idx) if arg_idx is not None else "0"
-                    val_code = self._visit(arg_val) if arg_val is not None else "0"
-                    return f"({{{elem_c} {tmp} = {val_code}; {object_code} = varray_insert({object_code}, (size_t)({idx_code}), &{tmp}); {object_code};}})"
-                if method_name == "clear":
-                    return f"(varray_clear({object_code}), ({object_code}))"
-                raise NotImplementedError(f"Array method '{method_name}' is not supported")
+                    # For fixed-size arrays, return compile-time size
+                    if object_node.node_type == NodeTypes.IDENTIFIER:
+                        sym_info = self.symbol_table.get(object_node.name)
+                        if sym_info and len(sym_info) >= 3:
+                            array_size = sym_info[2]
+                            return f"(int32_t){array_size}"
+                    self.error("Cannot determine array size at compile time", node.token)
+                    return "0"
+                # Fixed-size arrays don't support mutation methods
+                self.error(f"Fixed-size arrays don't support method '{method_name}'. Arrays are immutable.", node.token)
             # Class instance method call -> dispatch to free function Class_method(self, ...)
             # Determine class name from object expression type
             obj_type = (
@@ -903,115 +1101,26 @@ class CCodeGenerator:
                     inits.append(f".{fname} = {val}")
                 init_str = ", ".join(inits)
                 return f"({node.name}){{ {init_str} }}"
-            if node.name == "print":
+            if node.name == "stdout":
+                # Check if stdout is enabled in the file where this call is made
+                node_source_file = getattr(node, 'source_file', self.source_file)
+                # Normalize path for consistent lookup (use abspath to handle relative vs absolute)
+                normalized_source = os.path.abspath(node_source_file) if node_source_file else node_source_file
+                node_file_directives = self.file_directives.get(normalized_source, set())
+                
+                logging.debug(f"stdout() call: node_source_file={node_source_file}, normalized={normalized_source}, file_directives={self.file_directives}, node_directives={node_file_directives}")
+                
+                if "enable_lowlevel_stdout" not in node_file_directives:
+                    self.error(
+                        "stdout() is not available. Use 'directive enable_lowlevel_stdout;' "
+                        "in this file to enable it.",
+                        node
+                    )
+                    sys.exit(1)
+                # stdout only accepts strings - no special formatting
                 arg = node.children[0]
                 arg_code = self._visit(arg)
-                # Array length/size prints as integer
-                if arg.node_type == NodeTypes.METHOD_CALL and arg.name in ("length", "size"):
-                    return f'printf("%d\\n", {arg_code})'
-
-                # Detect dynamic arrays (VArray*) and print inline
-                is_arr = False
-                elem_type_for_array = None
-                if arg.node_type == NodeTypes.IDENTIFIER:
-                    elem_type_for_array, is_arr = self.symbol_table.get(arg.name, (None, False))
-                    if is_arr:
-                        elem_c = self._map_type_to_c(elem_type_for_array or "int32")
-                        length_expr = f"{arg_code}->size"
-                        elem_expr = f"(({elem_c}*)({arg_code}->data))[__i]"
-                        lines = []
-                        lines.append('printf("[");')
-                        lines.append(f"for (size_t __i = 0; __i < {length_expr}; ++__i) {{")
-                        if elem_type_for_array == "bool":
-                            lines.append(f'    printf("%s", {elem_expr} ? "true" : "false");')
-                        elif elem_type_for_array == "string":
-                            lines.append(f'    printf("%s", {elem_expr});')
-                        elif elem_type_for_array == "int8":
-                            lines.append(f'    printf("%" PRId8, (int8_t){elem_expr});')
-                        elif elem_type_for_array == "int16":
-                            lines.append(f'    printf("%" PRId16, (int16_t){elem_expr});')
-                        elif elem_type_for_array == "int32":
-                            lines.append(f'    printf("%" PRId32, (int32_t){elem_expr});')
-                        elif elem_type_for_array == "int64":
-                            lines.append(f'    printf("%" PRId64, (int64_t){elem_expr});')
-                        elif elem_type_for_array == "uint8":
-                            lines.append(f'    printf("%" PRIu8, (uint8_t){elem_expr});')
-                        elif elem_type_for_array == "uint16":
-                            lines.append(f'    printf("%" PRIu16, (uint16_t){elem_expr});')
-                        elif elem_type_for_array == "uint32":
-                            lines.append(f'    printf("%" PRIu32, (uint32_t){elem_expr});')
-                        elif elem_type_for_array == "uint64":
-                            lines.append(f'    printf("%" PRIu64, (uint64_t){elem_expr});')
-                        elif elem_type_for_array in ("float32", "float64"):
-                            lines.append(f'    printf("%f", {elem_expr});')
-                        elif elem_type_for_array == "float128":
-                            buf_name = f"__ldbuf_{self.array_temp_counter}"
-                            self.array_temp_counter += 1
-                            lines.append(f"    char {buf_name}[128];")
-                            lines.append(f"    firescript_format_long_double({buf_name}, sizeof({buf_name}), {elem_expr});")
-                            lines.append(f"    printf(\"%s\", {buf_name});")
-                        else:
-                            lines.append('    printf("%s", "<unknown>");')
-                        lines.append(f'    if (__i + 1 < {length_expr}) printf(", ");')
-                        lines.append("}")
-                        lines.append('printf("]\\n");')
-                        return "\n".join(lines)
-
-                arg_type = getattr(arg, "return_type", None)
-
-                if arg_type is None:
-                    if (
-                        arg.node_type == NodeTypes.LITERAL and arg.token
-                    ):  # Check token exists
-                        if arg.token.type == "BOOLEAN_LITERAL":
-                            arg_type = "bool"
-                        elif arg.token.type == "STRING_LITERAL":
-                            arg_type = "string"
-                        elif arg.token.type == "INTEGER_LITERAL":
-                            arg_type = "int32"  # default inference
-                        elif arg.token.type == "FLOAT_LITERAL":
-                            arg_type = "float32"
-                        elif arg.token.type == "DOUBLE_LITERAL":
-                            arg_type = "float64"
-                    elif arg.node_type == NodeTypes.IDENTIFIER:
-                        arg_type, _ = self.symbol_table.get(arg.name, (None, False))
-                    elif arg.node_type == NodeTypes.ARRAY_ACCESS:
-                        arr_node = arg.children[0]
-                        # Ensure arr_node.var_type is populated by type resolution
-                        arg_type = (
-                            arr_node.var_type if hasattr(arr_node, "var_type") else None
-                        )
-
-                # Fix all printf/gmp_printf calls to ensure newlines are properly escaped
-                # and string literals don't contain actual newlines
-                if arg_type == "bool":
-                    return f'printf("%s\\n", {arg_code} ? "true" : "false")'
-                # Width-correct integer printing
-                if arg_type == "int8":
-                    return f'printf("%" PRId8 "\\n", (int8_t){arg_code})'
-                if arg_type == "int16":
-                    return f'printf("%" PRId16 "\\n", (int16_t){arg_code})'
-                if arg_type == "int32":
-                    return f'printf("%" PRId32 "\\n", (int32_t){arg_code})'
-                if arg_type == "int64":
-                    return f'printf("%" PRId64 "\\n", (int64_t){arg_code})'
-                if arg_type == "uint8":
-                    return f'printf("%" PRIu8 "\\n", (uint8_t){arg_code})'
-                if arg_type == "uint16":
-                    return f'printf("%" PRIu16 "\\n", (uint16_t){arg_code})'
-                if arg_type == "uint32":
-                    return f'printf("%" PRIu32 "\\n", (uint32_t){arg_code})'
-                if arg_type == "uint64":
-                    return f'printf("%" PRIu64 "\\n", (uint64_t){arg_code})'
-
-                if arg_type in ("float32", "float64"):
-                    return f'printf("%f\\n", {arg_code})'
-                if arg_type == "float128":
-                    return f'firescript_print_long_double({arg_code})'
-                if arg_type == "string":
-                    return f'printf("%s\\n", {arg_code})'
-
-                return f'printf("%s\\n", {arg_code})'  # Last resort
+                return f'printf("%s", {arg_code})'
             elif node.name == "drop":
                 # Fixed-size arrays are copyable; drop is a no-op
                 return "/* drop noop */"
@@ -1038,6 +1147,14 @@ class CCodeGenerator:
                 # Check if this is a generic function call
                 func_name = node.name
                 type_args = getattr(node, 'type_args', [])
+                
+                # Re-infer if in monomorphization context, since type parameters may have been substituted
+                # OR if type_args not set at all, try to infer them
+                if func_name in self.generic_templates:
+                    if getattr(self, '_current_type_map', {}) or not type_args:
+                        inferred = self._infer_type_args_from_call(func_name, node)
+                        if inferred:
+                            type_args = inferred
                 
                 if type_args and func_name in self.generic_templates:
                     # Use the mangled name for generic function

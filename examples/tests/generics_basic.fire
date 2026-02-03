@@ -1,5 +1,7 @@
 // Test basic generic functions with type inference and explicit type arguments
 
+import @firescript/std.io.{println};
+
 // Generic max function with type union constraint
 T max<T: int32 | int64 | float32 | float64>(T a, T b) {
     if (a > b) {
@@ -28,28 +30,28 @@ T abs<T: int8 | int16 | int32 | int64>(T x, T zero) {
 int32 a = 10;
 int32 b = 20;
 int32 maxVal = max(a, b);
-print(maxVal);  // 20
+println(maxVal);  // 20
 
 int32 minVal = min(a, b);
-print(minVal);  // 10
+println(minVal);  // 10
 
 // Test with int64 (type inference)
 int64 c = 100i64;
 int64 d = 50i64;
 int64 maxVal64 = max(c, d);
-print(maxVal64);  // 100
+println(maxVal64);  // 100
 
 // Test with float32 (explicit type arguments)
 float32 e = 3.14f32;
 float32 f = 2.71f32;
 float32 maxFloat = max<float32>(e, f);
-print(maxFloat);  // 3.14
+println(maxFloat);  // 3.14
 
 // Test abs with different integer types
 int32 negInt = -42;
 int32 absInt = abs(negInt, 0);
-print(absInt);  // 42
+println(absInt);  // 42
 
 int64 negInt64 = -999i64;
 int64 absInt64 = abs(negInt64, 0i64);
-print(absInt64);  // 999
+println(absInt64);  // 999

@@ -1,4 +1,7 @@
 // Class field access test
+
+import @firescript/std.io.{println};
+
 class Point {
     int32 x;
     int32 y;
@@ -11,4 +14,4 @@ class Point {
 
 Point p = new Point(0, 0);
 p.x = 7;
-print(p.x);
+println(p.x);

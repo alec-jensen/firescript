@@ -1,4 +1,6 @@
 // Test: import and use a single symbol
+
+import @firescript/std.io.{println};
 import utils.helper
 
-print(helper(20));
+println(helper(20));

@@ -1,34 +1,36 @@
 // Fixed-size Array Test Suite
 
+import @firescript/std.io.{println};
+
 // Test 1: Array declaration and initialization
-print("Test 1: Array declaration and initialization");
+println("Test 1: Array declaration and initialization");
 int32[] numbers = [10, 20, 30, 40, 50];
-print(numbers);
+println(numbers);
 
 // Test 2: Array indexing (access)
-print("\nTest 2: Array indexing");
-print(numbers[0]);  // First element
-print(numbers[2]);  // Middle element
-print(numbers[4]);  // Last element
+println("\nTest 2: Array indexing");
+println(numbers[0]);  // First element
+println(numbers[2]);  // Middle element
+println(numbers[4]);  // Last element
 
 // Test 3: Array length property
-print("\nTest 3: Array length property");
-print(numbers.length()); // 5
+println("\nTest 3: Array length property");
+println(numbers.length()); // 5
 
 // Test 4: Iterate over array
-print("\nTest 4: Iterate over array");
+println("\nTest 4: Iterate over array");
 int32 i = 0;
 while (i < numbers.length()) {
-	print(numbers[i]);
+	println(numbers[i]);
 	i = i + 1;
 }
 
 // Test 5: Array of strings
-print("\nTest 5: Array of strings");
+println("\nTest 5: Array of strings");
 string[] names = ["Alice", "Bob", "Charlie"];
-print(names);
-print(names.length()); // 3
-print(names[1]);       // Bob
+println(names);
+println(names.length()); // 3
+println(names[1]);       // Bob
 
 // End of tests
-print("\nAll array tests completed!");
+println("\nAll array tests completed!");

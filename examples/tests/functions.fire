@@ -1,4 +1,7 @@
 // Basic int addition function
+
+import @firescript/std.io.{println};
+
 int32 add(int32 a, int32 b) {
     return a + b;
 }
@@ -13,12 +16,6 @@ float32 addFloat(float32 a, float32 b) {
 float64 mulDouble(float64 a, float64 b) {
     float64 prod = a * b;
     return prod;
-}
-
-// Build and return an int array
-int32[] makeIntArray(int32 a, int32 b, int32 c) {
-    int32[] arr = [a, b, c];
-    return arr;
 }
 
 // Sum first two elements of an int array parameter
@@ -57,9 +54,9 @@ int32 buildAndSum(int32 a, int32 b) {
 
 // Void function (returns nothing) exercising print builtin and multiple calls
 void logValues(int32 a, float64 d, string s) {
-    print(a);
-    print(d);
-    print(s);
+    println(a);
+    println(d);
+    println(s);
 }
 
 // Same-type numeric test returning float64 via float64 arithmetic
@@ -79,32 +76,32 @@ string firstChar(string word) {
 // Invocations / Outputs
 // =============================================================
 
-print("-- int add --");
-print(add(2, 3)); // 5
-print(add(10, 15)); // 25
+println("-- int add --");
+println(add(2, 3)); // 5
+println(add(10, 15)); // 25
 
-print("-- float addFloat --");
-print(addFloat(1.5f, 2.5f)); // 4.0
+println("-- float addFloat --");
+println(addFloat(1.5f, 2.5f)); // 4.0
 
-print("-- double mulDouble --");
-print(mulDouble(2.0, 3.0)); // 6.0
+println("-- double mulDouble --");
+println(mulDouble(2.0, 3.0)); // 6.0
 
-print("-- array return & param --");
-int32[] built = makeIntArray(7, 8, 9);
-print(sumFirstTwo(built)); // 15
+println("-- array param --");
+int32[] built = [7, 8, 9];
+println(sumFirstTwo(built)); // 15
 
-print("-- bool bothTrue --");
-print(bothTrue(true, true)); // true
-print(bothTrue(true, false)); // false
+println("-- bool bothTrue --");
+println(bothTrue(true, true)); // true
+println(bothTrue(true, false)); // false
 
-print("-- string greet --");
-print(greet("firescript")); // Hello, firescript
+println("-- string greet --");
+println(greet("firescript")); // Hello, firescript
 
-print("-- void logValues --");
+println("-- void logValues --");
 logValues(42, 3.14, "value");
 
-print("-- numericMix --");
-print(numericMix(2.0, 3.0, 4.0));
+println("-- numericMix --");
+println(numericMix(2.0, 3.0, 4.0));
 
-print("-- firstChar --");
-print(firstChar("Z"));
+println("-- firstChar --");
+println(firstChar("Z"));

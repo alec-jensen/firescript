@@ -1,0 +1,115 @@
+// Test casting all primitive types to string
+
+directive enable_lowlevel_stdout;
+
+// Test int8
+int8 i8_val = 127i8;
+string i8_str = i8_val as string;
+stdout("int8 to string: ");
+stdout(i8_str);
+stdout("\n");
+
+// Test int16
+int16 i16_val = 32767i16;
+string i16_str = i16_val as string;
+stdout("int16 to string: ");
+stdout(i16_str);
+stdout("\n");
+
+// Test int32
+int32 i32_val = 2147483647i32;
+string i32_str = i32_val as string;
+stdout("int32 to string: ");
+stdout(i32_str);
+stdout("\n");
+
+// Test int64
+int64 i64_val = 9223372036854775807i64;
+string i64_str = i64_val as string;
+stdout("int64 to string: ");
+stdout(i64_str);
+stdout("\n");
+
+// Test uint8
+uint8 u8_val = 255u8;
+string u8_str = u8_val as string;
+stdout("uint8 to string: ");
+stdout(u8_str);
+stdout("\n");
+
+// Test uint16
+uint16 u16_val = 65535u16;
+string u16_str = u16_val as string;
+stdout("uint16 to string: ");
+stdout(u16_str);
+stdout("\n");
+
+// Test uint32
+uint32 u32_val = 4294967295u32;
+string u32_str = u32_val as string;
+stdout("uint32 to string: ");
+stdout(u32_str);
+stdout("\n");
+
+// Test uint64
+uint64 u64_val = 18446744073709551615u64;
+string u64_str = u64_val as string;
+stdout("uint64 to string: ");
+stdout(u64_str);
+stdout("\n");
+
+// Test float32
+float32 f32_val = 3.14159f32;
+string f32_str = f32_val as string;
+stdout("float32 to string: ");
+stdout(f32_str);
+stdout("\n");
+
+// Test float64
+float64 f64_val = 2.718281828f64;
+string f64_str = f64_val as string;
+stdout("float64 to string: ");
+stdout(f64_str);
+stdout("\n");
+
+// Test float128
+float128 f128_val = 1.23456789f128;
+string f128_str = f128_val as string;
+stdout("float128 to string: ");
+stdout(f128_str);
+stdout("\n");
+
+// Test bool true
+bool b_true = true;
+string b_true_str = b_true as string;
+stdout("bool true to string: ");
+stdout(b_true_str);
+stdout("\n");
+
+// Test bool false
+bool b_false = false;
+string b_false_str = b_false as string;
+stdout("bool false to string: ");
+stdout(b_false_str);
+stdout("\n");
+
+// Test string to string (should be identity)
+string str_val = "Hello, World!";
+string str_str = str_val as string;
+stdout("string to string: ");
+stdout(str_str);
+stdout("\n");
+
+// Test with negative values
+int32 negative = -42i32;
+string neg_str = negative as string;
+stdout("negative int32 to string: ");
+stdout(neg_str);
+stdout("\n");
+
+// Test zero
+int32 zero = 0i32;
+string zero_str = zero as string;
+stdout("zero to string: ");
+stdout(zero_str);
+stdout("\n");

@@ -161,6 +161,62 @@ static char *firescript_toString_impl_int(int i)
     return strdup(buffer);
 }
 
+static char *firescript_toString_impl_int8(int8_t i)
+{
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%" PRId8, i);
+    return strdup(buffer);
+}
+
+static char *firescript_toString_impl_int16(int16_t i)
+{
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%" PRId16, i);
+    return strdup(buffer);
+}
+
+static char *firescript_toString_impl_int32(int32_t i)
+{
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%" PRId32, i);
+    return strdup(buffer);
+}
+
+static char *firescript_toString_impl_int64(int64_t i)
+{
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%" PRId64, i);
+    return strdup(buffer);
+}
+
+static char *firescript_toString_impl_uint8(uint8_t i)
+{
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%" PRIu8, i);
+    return strdup(buffer);
+}
+
+static char *firescript_toString_impl_uint16(uint16_t i)
+{
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%" PRIu16, i);
+    return strdup(buffer);
+}
+
+static char *firescript_toString_impl_uint32(uint32_t i)
+{
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%" PRIu32, i);
+    return strdup(buffer);
+}
+
+static char *firescript_toString_impl_uint64(uint64_t i)
+{
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%" PRIu64, i);
+    return strdup(buffer);
+}
+
 static char *firescript_toString_impl_float(float f)
 {
     char buffer[32];
@@ -175,6 +231,13 @@ static char *firescript_toString_impl_double(double d)
     return strdup(buffer);
 }
 
+static char *firescript_toString_impl_long_double(long double d)
+{
+    char buffer[128];
+    firescript_format_long_double(buffer, sizeof(buffer), d);
+    return strdup(buffer);
+}
+
 static char *firescript_toString_impl_mpfr(mpfr_t d)
 {
     char buffer[128];
@@ -186,9 +249,17 @@ static char *firescript_toString_impl_mpfr(mpfr_t d)
     char *: firescript_toString_impl_string,       \
     const char *: firescript_toString_impl_string, \
     bool: firescript_toString_impl_bool,           \
-    int: firescript_toString_impl_int,             \
+    int8_t: firescript_toString_impl_int8,         \
+    int16_t: firescript_toString_impl_int16,       \
+    int32_t: firescript_toString_impl_int32,       \
+    int64_t: firescript_toString_impl_int64,       \
+    uint8_t: firescript_toString_impl_uint8,       \
+    uint16_t: firescript_toString_impl_uint16,     \
+    uint32_t: firescript_toString_impl_uint32,     \
+    uint64_t: firescript_toString_impl_uint64,     \
     float: firescript_toString_impl_float,         \
     double: firescript_toString_impl_double,       \
+    long double: firescript_toString_impl_long_double, \
     mpfr_t: firescript_toString_impl_mpfr,         \
     default: firescript_toString_impl_string)(x)
 

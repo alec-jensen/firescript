@@ -1,41 +1,43 @@
 // Comprehensive type coverage and operations
 
-print("-- INTS: widths and ops --");
+import @firescript/std.io.{println};
+
+println("-- INTS: widths and ops --");
 int8 i8a = 120i8; 
 int8 i8b = 0i8 - 5i8; 
-print(i8a); print(i8b); print(i8a + i8b); print(i8a - i8b);
+println(i8a); println(i8b); println(i8a + i8b); println(i8a - i8b);
 int16 i16a = 30000i16; 
 int16 i16b = 0i16 - 123i16; 
-print(i16a); print(i16b); print(i16a + i16b); print(i16a - i16b);
+println(i16a); println(i16b); println(i16a + i16b); println(i16a - i16b);
 int32 i32a = 2000000000i32; 
 int32 i32b = 0i32 - 100i32; 
-print(i32a); print(i32b); print(i32a + i32b); print(i32a - i32b);
+println(i32a); println(i32b); println(i32a + i32b); println(i32a - i32b);
 int64 i64a = 9000000000000000000i64; 
 int64 i64b = 0i64 - 7i64; 
-print(i64a); print(i64b); print(i64a + i64b); print(i64a - i64b);
+println(i64a); println(i64b); println(i64a + i64b); println(i64a - i64b);
 
-print("-- UINTS: widths and ops --");
-uint8 u8a = 250u8; uint8 u8b = 5u8; print(u8a); print(u8b); print(u8a + u8b); print(u8a - u8b);
-uint16 u16a = 65000u16; uint16 u16b = 400u16; print(u16a); print(u16b); print(u16a + u16b); print(u16a - u16b);
-uint32 u32a = 4000000000u32; uint32 u32b = 10u32; print(u32a); print(u32b); print(u32a + u32b); print(u32a - u32b);
-uint64 u64a = 18446744073709551610u64; uint64 u64b = 2u64; print(u64a); print(u64b); print(u64a + u64b); print(u64a - u64b);
+println("-- UINTS: widths and ops --");
+uint8 u8a = 250u8; uint8 u8b = 5u8; println(u8a); println(u8b); println(u8a + u8b); println(u8a - u8b);
+uint16 u16a = 65000u16; uint16 u16b = 400u16; println(u16a); println(u16b); println(u16a + u16b); println(u16a - u16b);
+uint32 u32a = 4000000000u32; uint32 u32b = 10u32; println(u32a); println(u32b); println(u32a + u32b); println(u32a - u32b);
+uint64 u64a = 18446744073709551610u64; uint64 u64b = 2u64; println(u64a); println(u64b); println(u64a + u64b); println(u64a - u64b);
 
-print("-- FLOATS: 32/64/128 --");
-float32 f32a = 1.5f32; float32 f32b = 2.25f32; print(f32a); print(f32b); print(f32a + f32b); print(f32a - f32b); print(f32a * f32b); print(f32a / f32b);
-float64 f64a = 3.5; float64 f64b = 1.25; print(f64a); print(f64b); print(f64a + f64b); print(f64a - f64b); print(f64a * f64b); print(f64a / f64b);
-float128 f128a = 1.2345678901234567f128; float128 f128b = 0.3333333333333333f128; print(f128a); print(f128b); print(f128a + f128b); print(f128a - f128b); print(f128a * f128b); print(f128a / f128b);
+println("-- FLOATS: 32/64/128 --");
+float32 f32a = 1.5f32; float32 f32b = 2.25f32; println(f32a); println(f32b); println(f32a + f32b); println(f32a - f32b); println(f32a * f32b); println(f32a / f32b);
+float64 f64a = 3.5; float64 f64b = 1.25; println(f64a); println(f64b); println(f64a + f64b); println(f64a - f64b); println(f64a * f64b); println(f64a / f64b);
+float128 f128a = 1.2345678901234567f128; float128 f128b = 0.3333333333333333f128; println(f128a); println(f128b); println(f128a + f128b); println(f128a - f128b); println(f128a * f128b); println(f128a / f128b);
 
-print("-- BOOLS & STRINGS --");
-bool t = true; bool f = false; print(t); print(f); print(t == t); print(t == f); print(f == f);
-string s1 = "fi"; string s2 = "rescript"; string s3 = s1 + s2; print(s1); print(s2); print(s3);
+println("-- BOOLS & STRINGS --");
+bool t = true; bool f = false; println(t); println(f); println(t == t); println(t == f); println(f == f);
+string s1 = "fi"; string s2 = "rescript"; string s3 = s1 + s2; println(s1); println(s2); println(s3);
 
-print("-- ARRAYS: fixed-size --");
-int32[] ai = [1,2,3]; print(ai.length()); print(ai[0]); print(ai[1]); print(ai[2]);
-string[] as = ["a","b","c"]; print(as.length()); print(as[2]);
+println("-- ARRAYS: fixed-size --");
+int32[] ai = [1,2,3]; println(ai.length()); println(ai[0]); println(ai[1]); println(ai[2]);
+string[] as = ["a","b","c"]; println(as.length()); println(as[2]);
 
-print("-- REL/COMP: same-type only --");
-print( (1 + 2) == 3 ); print( (1 + 2) > 1 ); print( (1 + 2) < 5 );
-print( (3.0) == (3.0) ); print( (3.5) > (3.25) ); print( (3.5) < (3.75) );
+println("-- REL/COMP: same-type only --");
+println( (1 + 2) == 3 ); println( (1 + 2) > 1 ); println( (1 + 2) < 5 );
+println( (3.0) == (3.0) ); println( (3.5) > (3.25) ); println( (3.5) < (3.75) );
 
-print("-- MODULO: integers only --");
-print( 10i32 % 3i32 ); print( 7u32 % 4u32 );
+println("-- MODULO: integers only --");
+println( 10i32 % 3i32 ); println( 7u32 % 4u32 );

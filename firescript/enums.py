@@ -42,3 +42,4 @@ class NodeTypes(Enum):
 class CompilerDirective(Enum):
     ENABLE_SYSCALLS = "enable_syscalls"
     ENABLE_DROPS = "enable_drops"
+    ENABLE_LOWLEVEL_STDOUT = "enable_lowlevel_stdout"

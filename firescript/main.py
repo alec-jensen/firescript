@@ -140,7 +140,8 @@ def compile_file(file_path, target, cc=None, output=None):
         from c_code_generator import CCodeGenerator
 
         # Generate C code
-        generator = CCodeGenerator(ast)
+        generator = CCodeGenerator(ast, source_file=file_path)
+        generator.source_code = file_content
         output = generator.generate()
         # Safety: wrap any raw free() calls emitted by codegen into firescript_free()
         # This prevents double-free and freeing static literals.
@@ -193,7 +194,6 @@ def compile_file(file_path, target, cc=None, output=None):
             ".",
             temp_c_file,
             "firescript/runtime/runtime.c",
-            "firescript/runtime/varray.c",
             "-Wl,-O2",
             "-Wl,--as-needed",
             "-Wl,--gc-sections",

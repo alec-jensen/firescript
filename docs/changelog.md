@@ -17,6 +17,8 @@ This is a MAJOR rewrite and WILL be buggy and will not work correctly.
     - Modulo (`%`) is defined only for integer types.
 - Beginning memory management implementation
 - Remove type conversion functions in favor of future Java-style casting.
+- Removed built-in `print()` function in favor of `std.io.print()` and `std.io.println()`.
+- Arrays are now fixed-size. Future dynamic arrays will be in the standard library.
 
 ### New Language Features
 
@@ -34,9 +36,10 @@ This is a MAJOR rewrite and WILL be buggy and will not work correctly.
     - Inheritance
 - Imports
 - Casting (rust-like syntax `(87 as int8)`)
-    - Currently only supported for numeric->numeric casts.
+    - Currently only supported for numeric->numeric casts, and built-in types to string.
 - Generic functions
 - `std.math` library with basic math functions like `abs`, `min`, `max`, etc.
+- `std.io` library with `print` and `println` functions.
 
 ### Compiler/Backend Improvements
 

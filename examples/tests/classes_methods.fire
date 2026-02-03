@@ -1,4 +1,7 @@
 // Constructors and instance methods test
+
+import @firescript/std.io.{println};
+
 class Point {
     int32 x;
     int32 y;
@@ -14,4 +17,4 @@ class Point {
 }
 
 Point p = new Point(2, 3);
-print(p.sum());
+println(p.sum());

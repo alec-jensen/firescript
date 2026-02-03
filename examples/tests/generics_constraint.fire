@@ -1,3 +1,5 @@
+import @firescript/std.io.{println};
+
 T max<T: int32 | int64>(T a, T b) {
     if (a > b) {
         return a;
@@ -6,5 +8,5 @@ T max<T: int32 | int64>(T a, T b) {
 }
 
 int32 x = max(10, 20);
-print(x);
+println(x);
 return 0;

@@ -1,3 +1,5 @@
+import @firescript/std.io.{println};
+
 class Person {
     string name;
     int32 age;
@@ -27,9 +29,9 @@ class Student from Person {
 }
 
 Student s = new Student("Jane", 18, "School");
-print(s.describe());
-print(s.name);
-print(s.age);
+println(s.describe());
+println(s.name);
+println(s.age);
 
 // Multi-level inheritance (double/triple/quad)
 
@@ -97,11 +99,11 @@ class D from C {
 }
 
 D d = new D("a", "b", "c", "d");
-print(d.chain());
-print(d.id);
-print(d.bid);
-print(d.cid);
-print(d.did);
-print(d.root());
-print(d.onlyB());
-print(d.onlyC());
+println(d.chain());
+println(d.id);
+println(d.bid);
+println(d.cid);
+println(d.did);
+println(d.root());
+println(d.onlyB());
+println(d.onlyC());

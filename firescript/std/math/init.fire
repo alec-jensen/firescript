@@ -1,4 +1,4 @@
-// firescript std.math
+// firescript std.math library
 // Simple math utilities and basic trig
 
 import @firescript/std.constraints.{Numeric}

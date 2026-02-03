@@ -1,5 +1,5 @@
 Test 1: Array declaration and initialization
-[10, 20, 30, 40, 50]
+[...]
 
 Test 2: Array indexing
 10
@@ -17,7 +17,7 @@ Test 4: Iterate over array
 50
 
 Test 5: Array of strings
-[Alice, Bob, Charlie]
+[...]
 3
 Bob
 

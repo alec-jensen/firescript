@@ -1,12 +1,14 @@
 // Demo: importing from multiple modules
+
+import @firescript/std.io.{println};
 import math_utils.{square, MAX}
 import string_utils.*
 
-print("-- Math Operations --");
-print(square(5));
-print(square(10));
-print(MAX);
+println("-- Math Operations --");
+println(square(5));
+println(square(10));
+println(MAX);
 
-print("-- String Operations --");
-print(wrap("hello"));
-print(wrap("imports work"));
+println("-- String Operations --");
+println(wrap("hello"));
+println(wrap("imports work"));

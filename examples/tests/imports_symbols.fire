@@ -1,5 +1,7 @@
 // Test: import specific symbols
+
+import @firescript/std.io.{println};
 import utils.{helper, CONSTANT}
 
-print(helper(10));
-print(CONSTANT);
+println(helper(10));
+println(CONSTANT);

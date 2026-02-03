@@ -61,12 +61,9 @@ char *firescript_strdup(const char *s) {
 void firescript_free(void *p) {
     // Only free if we allocated and tracked it
     if (registry_remove(p)) {
-        fprintf(stderr, "firescript_free: freeing %p\n", p);
         free(p);
-    } else {
-        // ignore frees of untracked pointers (e.g., string literals or already freed)
-        fprintf(stderr, "firescript_free: ignore %p\n", p);
     }
+    // ignore frees of untracked pointers (e.g., string literals or already freed)
 }
 
 typedef struct RefCountedObject

@@ -1,3 +1,5 @@
+import @firescript/std.io.{println};
+
 class Vec2 {
     int32 x;
     int32 y;
@@ -19,6 +21,6 @@ class Vec2 {
 v1 = Vec2(3, 4);
 v2 = Vec2(1, 2);
 v3 = v1.add(v2);
-print(v3.x);
-print(v3.y);
-print(v1.dot(v2));
+println(v3.x);
+println(v3.y);
+println(v1.dot(v2));

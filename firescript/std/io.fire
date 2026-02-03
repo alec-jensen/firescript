@@ -1,0 +1,11 @@
+// firescript std.io library
+
+directive enable_lowlevel_stdout;
+
+void print<T>(T value) {
+    stdout(value as string);
+}
+
+void println<T>(T value) {
+    stdout((value as string) + "\n");
+}

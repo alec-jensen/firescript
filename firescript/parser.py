@@ -122,8 +122,9 @@ class Parser:
     }
 
     builtin_functions: dict[str, str] = {
-        "print": "void",
+        "stdout": "void",
         "input": "string",
+        "drop": "void",
         # type constructor builtins (pending explicit cast design): keep names but map to canonical firescript types
         "int": "int32",
         "int32": "int32",
@@ -1656,14 +1657,19 @@ class Parser:
             if expr_type is None or target_type is None:
                 return None
 
-            # No array casts for now
+            # Allow casting arrays to string
             if isinstance(expr_type, str) and expr_type.endswith("[]"):
-                self.error(
-                    f"Cannot cast array type {expr_type} to {target_type}",
-                    node.token,
-                )
-                return None
-            if isinstance(target_type, str) and target_type.endswith("[]"):
+                if target_type == "string":
+                    # Array to string is allowed
+                    node_type_str = "string"
+                    node.return_type = "string"
+                else:
+                    self.error(
+                        f"Cannot cast array type {expr_type} to {target_type}",
+                        node.token,
+                    )
+                    return None
+            elif isinstance(target_type, str) and target_type.endswith("[]"):
                 self.error(
                     f"Cannot cast to array type {target_type}",
                     node.token,
@@ -1672,23 +1678,26 @@ class Parser:
 
             integer_types = self.INTEGER_TYPES
             float_types = {"float32", "float64", "float128"}
-
-            if target_type not in integer_types and target_type not in float_types:
+            
+            # Allow casting to string from any type
+            if target_type == "string":
+                node_type_str = "string"
+                node.return_type = "string"
+            elif target_type not in integer_types and target_type not in float_types:
                 self.error(
                     f"Cannot cast to unknown or non-numeric type {target_type}",
                     node.token,
                 )
                 return None
-
-            if expr_type not in integer_types and expr_type not in float_types:
+            elif expr_type not in integer_types and expr_type not in float_types and expr_type != "bool" and expr_type != "string":
                 self.error(
                     f"Cannot cast non-numeric type {expr_type} to {target_type}",
                     node.token,
                 )
                 return None
-
-            node_type_str = target_type
-            node.return_type = target_type
+            else:
+                node_type_str = target_type
+                node.return_type = target_type
 
         elif node.node_type == NodeTypes.FUNCTION_CALL:
             # Basic check for built-ins
@@ -2132,7 +2141,10 @@ class Parser:
                 node_name = directive_enum.value
             else:
                 node_name = directive_value
-            return ASTNode(NodeTypes.DIRECTIVE, dir_tok, node_name, [], dir_tok.index)
+            directive_node = ASTNode(NodeTypes.DIRECTIVE, dir_tok, node_name, [], dir_tok.index)
+            # Mark the directive with the source file so we can filter by file later
+            directive_node.source_file = self.filename
+            return directive_node
         # Unknown token recovery: emit error and advance
         if self.current_token and self.current_token.type == "UNKNOWN":
             bad_tok = self.current_token
@@ -2548,6 +2560,38 @@ class Parser:
                 # Optional semicolon
                 if self.current_token and self.current_token.type == "SEMICOLON":
                     self.consume("SEMICOLON")
+                continue
+            # Compiler directives
+            if self.current_token.type == "DIRECTIVE":
+                dir_tok = self.current_token
+                self.advance()
+                name_tok = self.consume("IDENTIFIER")
+                if name_tok is None:
+                    self.error("Expected directive name after 'directive'", self.current_token or dir_tok)
+                    continue
+                # Validate directive name against known directives
+                directive_value = name_tok.value
+                try:
+                    directive_enum = CompilerDirective(directive_value)
+                except Exception:
+                    self.error(f"Unknown directive '{directive_value}'", name_tok)
+                    directive_enum = None
+                # Consume semicolon
+                if self.current_token and self.current_token.type == "SEMICOLON":
+                    self.consume("SEMICOLON")
+                else:
+                    self.error("Expected semicolon after directive", self.current_token or name_tok)
+                # Record directive name and emit a node
+                if directive_enum is not None:
+                    self.directives.add(directive_enum.value)
+                    node_name = directive_enum.value
+                else:
+                    node_name = directive_value
+                directive_node = ASTNode(NodeTypes.DIRECTIVE, dir_tok, node_name, [], dir_tok.index)
+                # Mark the directive with the source file so we can filter by file later
+                directive_node.source_file = self.filename
+                directive_node.parent = self.ast
+                self.ast.children.append(directive_node)
                 continue
             # Class definition
             if self.current_token.type == "CLASS":

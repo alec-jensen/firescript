@@ -34,4 +34,4 @@ directive enable_drops;
 
 - `enable_syscalls`: Allows the use of syscalls in the file. This is required for files in the standard library that need syscall access.
 - `enable_drops`: Enables the preprocessor to insert deterministic drop() calls for Owned values (e.g., arrays) at scope boundaries and early exits.
-- `enable_lowlevel_print`: Allows the use of low-level print function.
+- `enable_lowlevel_stdout`: Allows the use of low-level stdout function.

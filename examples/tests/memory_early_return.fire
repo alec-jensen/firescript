@@ -1,7 +1,9 @@
+import @firescript/std.io.{println};
+
 int32 test() {
     int32[] temp = [1, 2, 3];
-    print(temp.length());
+    println(temp.length());
     return 7i32;
 }
 
-print(test());
+println(test());

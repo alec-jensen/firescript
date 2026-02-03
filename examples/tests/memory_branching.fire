@@ -1,10 +1,12 @@
+import @firescript/std.io.{println};
+
 int32[] a = [1, 2];
 int32 cond = 1i32;
 if (cond == 1i32) {
     int32[] b = [5];
-    print(b.length());
+    println(b.length());
 } else {
     int32[] c = [7, 8, 9];
-    print(c.length());
+    println(c.length());
 }
-print(a.length());
+println(a.length());

@@ -1,0 +1,69 @@
+import @firescript/std.io.{print, println};
+
+// Test int8
+int8 i8_val = 127i8;
+print("int8: ");
+println(i8_val);
+
+// Test int16
+int16 i16_val = 32767i16;
+print("int16: ");
+println(i16_val);
+
+// Test int32
+int32 i32_val = 2147483647i32;
+print("int32: ");
+println(i32_val);
+
+// Test int64
+int64 i64_val = 9223372036854775807i64;
+print("int64: ");
+println(i64_val);
+
+// Test uint8
+uint8 u8_val = 255u8;
+print("uint8: ");
+println(u8_val);
+
+// Test uint16
+uint16 u16_val = 65535u16;
+print("uint16: ");
+println(u16_val);
+
+// Test uint32
+uint32 u32_val = 4294967295u32;
+print("uint32: ");
+println(u32_val);
+
+// Test uint64
+uint64 u64_val = 18446744073709551615u64;
+print("uint64: ");
+println(u64_val);
+
+// Test float32
+float32 f32_val = 3.14159f32;
+print("float32: ");
+println(f32_val);
+
+// Test float64
+float64 f64_val = 2.71828f64;
+print("float64: ");
+println(f64_val);
+
+// Test float128
+float128 f128_val = 1.23456789f128;
+print("float128: ");
+println(f128_val);
+
+// Test bool
+bool b_true = true;
+bool b_false = false;
+print("bool true: ");
+println(b_true);
+print("bool false: ");
+println(b_false);
+
+// Test string
+string str_val = "Hello, firescript!";
+print("string: ");
+println(str_val);

@@ -185,12 +185,24 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
     """
     # Create a new ROOT AST node
     root = ASTNode(NodeTypes.ROOT, None, "root", [], 0)
+    
+    # Store the entry file path on the root for directive filtering
+    root.entry_file = entry.path
+    
+    # Store source code map for error reporting
+    root.source_map = {}  # file_path -> source_code
 
     logging.debug(f"Merging {len(ordered)} modules: {[m.dotted for m in ordered]}")
     
     seen: Dict[str, ASTNode] = {}
 
-    def append_export(node: ASTNode):
+    def annotate_source_file(node: ASTNode, source_file: str):
+        """Recursively annotate all nodes in a tree with their source file"""
+        node.source_file = source_file
+        for child in getattr(node, "children", []) or []:
+            annotate_source_file(child, source_file)
+
+    def append_export(node: ASTNode, source_file: str):
         name = getattr(node, "name", None)
         if not name:
             logging.debug(f"Skipping node with no name: {node.node_type}")
@@ -200,6 +212,8 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
             logging.error(f"Conflicting top-level symbol '{name}' from imports; already defined.")
             return
         logging.debug(f"Appending export: {name} (type: {node.node_type})")
+        # Annotate this node and all its children with source file
+        annotate_source_file(node, source_file)
         node.parent = root
         root.children.append(node)
         seen[name] = node
@@ -210,15 +224,36 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
             # We'll handle entry's own items after imports to preserve user order later
             continue
         logging.debug(f"Adding exports from module {mod.dotted}: {list(mod.exports.keys())}")
+        # Read source code for this module for error reporting
+        try:
+            with open(mod.path, 'r', encoding='utf-8') as f:
+                root.source_map[mod.path] = f.read()
+        except Exception:
+            pass  # If we can't read it, just skip
+        # Include directives from this module (for file-scoped directive tracking)
+        for child in mod.ast.children:
+            if child.node_type == NodeTypes.DIRECTIVE:
+                annotate_source_file(child, mod.path)
+                child.parent = root
+                root.children.append(child)
         for name, node in mod.exports.items():
             # Only include function, class, and top-level var declarations
             if node.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION):
-                append_export(node)
+                append_export(node, mod.path)
+
+    # Read entry module source for error reporting
+    try:
+        with open(entry.path, 'r', encoding='utf-8') as f:
+            root.source_map[entry.path] = f.read()
+    except Exception:
+        pass
 
     # Finally, include entry module's non-import top-level statements in order
     for c in entry.ast.children:
         if c.node_type == NodeTypes.IMPORT_STATEMENT:
             continue
+        # Annotate entry nodes with source file
+        annotate_source_file(c, entry.path)
         # Prevent duplicate symbol definitions when an import pulled in a symbol with same name
         if c.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION):
             if getattr(c, "name", None) in seen:
@@ -232,7 +267,7 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
                     seen[c.name] = c
                 except ValueError:
                     # If somehow not present, just append
-                    append_export(c)
+                    append_export(c, entry.path)
                 continue
         # For non-symbol statements, just append
         c.parent = root

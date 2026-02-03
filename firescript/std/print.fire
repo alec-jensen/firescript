@@ -1,9 +1,0 @@
-// firescript standard library print module
-
-// placeholder for future expansion
-
-directive enable_lowlevel_print;
-
-T print<T>(T value) {
-    llprint(value);
-}
