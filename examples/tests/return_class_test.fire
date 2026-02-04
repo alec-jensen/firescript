@@ -1,7 +1,5 @@
 // Test returning a class from a function
 
-directive enable_drops;
-
 import @firescript/std.io.{println};
 
 class Point {

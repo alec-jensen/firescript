@@ -1,7 +1,5 @@
 // Comprehensive ownership and borrowing demonstration
 
-directive enable_drops;
-
 import @firescript/std.io.{println};
 
 // =============================================================================
@@ -28,9 +26,9 @@ int32 distanceSquared(&Point p) {
 }
 
 // =============================================================================
-// 4. OWNED PARAMETER (owned T) - takes ownership, invalidates caller's binding
+// 4. PARAMETER - takes ownership, invalidates caller's binding
 // =============================================================================
-void destroyPoint(owned Point p) {
+void destroyPoint(Point p) {
     println(p.x);
     // p is dropped when function returns
 }

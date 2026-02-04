@@ -4,7 +4,7 @@
 
 ## Array Basics
 
-In firescript, arrays are fixed-size, ordered collections of elements that all share the same type. Arrays are declared using square brackets and the size after the type.
+In firescript, arrays are fixed-size, ordered collections of elements that all share the same type. Arrays are Owned types—they are stored on the heap with pointers on the stack and use move semantics. Arrays are declared using square brackets and the size after the type.
 
 ## Declaration and Initialization
 

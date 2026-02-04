@@ -106,12 +106,13 @@ float calculateAverage(int[] numbers) {
 
 ### Ownership Notes (Planned Semantics)
 
-- Parameters of owned types move into the function. After a call, an argument of an owned type is no longer valid unless the function returns it.
+- Parameters of owned types (strings, arrays, user-defined objects) move into the function. After a call, an argument of an owned type is no longer valid unless the function returns it.
 - Future explicit borrow syntax (`&T`) will allow passing a read-only view without moving ownership. Borrowed arguments remain valid after the call.
- - For Copyable types (e.g., `intN`, `floatN`, `bool`, `char`, `string`), calls pass by value; borrowing is not defined for Copyable types.
- - `input()` returns a new `string` (Copyable).
- - `toString()` and string concatenation produce new `string` values. Strings are Copyable and passed by value.
- - Cloning is explicit for Owned values (not needed for Copyable types like `string`).
+ - For Copyable types (e.g., `intN`, `floatN`, `bool`, `char`), calls pass by value; borrowing is not defined for Copyable types.
+ - `input()` returns a new `string` (Owned, heap-allocated).
+ - `toString()` and string concatenation produce new `string` values. Strings are Owned and use move semantics.
+ - Arrays are Owned and use move semantics.
+ - Cloning is explicit for Owned values (needed for `string`, arrays, and user-defined objects).
 - Examples currently show simple pass semantics until borrow syntax is implemented.
 
 ## Methods (Planned, Not Implemented)

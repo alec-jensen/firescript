@@ -2408,10 +2408,12 @@ class Parser:
                 return None
             self.advance()  # consume >
         
-        # Validate return type if it was an IDENTIFIER (type parameter)
+        # Validate return type if it was an IDENTIFIER (type parameter or user-defined class)
         if ret_type_token and ret_type_token.type == "IDENTIFIER" and ret_type_token.value not in self.TYPE_TOKEN_NAMES:
-            # It must be a declared type parameter
-            if ret_type_token.value not in type_params:
+            # It could be: 1) a type parameter, 2) a user-defined class, or 3) an error
+            is_type_param = ret_type_token.value in type_params
+            is_user_class = ret_type_token.value in self.user_types
+            if not is_type_param and not is_user_class:
                 self.error(f"Return type '{ret_type_token.value}' is not a declared type parameter", ret_type_token)
                 return None
         
@@ -2474,9 +2476,8 @@ class Parser:
                     p_is_array,
                     p_is_array,
                 )
-                # Mark parameter as borrowed or explicitly owned
+                # Mark parameter as borrowed
                 setattr(param_node, "is_borrowed", p_is_borrowed)
-                setattr(param_node, "is_owned", p_is_owned)
                 params.append(param_node)
                 if self.current_token and self.current_token.type == "COMMA":
                     self.advance()

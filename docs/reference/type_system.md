@@ -4,7 +4,11 @@
 
 ## Built-in Types
 
-firescript provides several fundamental data types. These are all Copyable types:
+firescript provides several fundamental data types categorized by their memory semantics:
+
+### Copyable Types (Stack-Allocated)
+
+These are fixed-size scalars stored on the stack and copied by value:
 
 * Numeric Types:
   * **`int8`**: 8-bit signed integer
@@ -19,8 +23,18 @@ firescript provides several fundamental data types. These are all Copyable types
   * **`float64`**: 64-bit floating point number
   * **`float128`**: 128-bit floating point number
 * **`bool`**: Represents boolean values, either `true` or `false`. Example: `bool isActive = true;`
-* **`string`**: Represents sequences of characters. Example: `string message = "Hello, World!";`
 * **`char`**: Represents a single character. (Note: Currently handled similarly to strings in some contexts, formal `char` type might be refined). Example: `char initial = "A";`
+
+### Owned Types (Heap-Allocated)
+
+These values are stored on the heap with pointers on the stack and use move semantics:
+
+* **`string`**: Represents sequences of characters. Example: `string message = "Hello, World!";`
+* **Arrays**: Collections of elements (see [Arrays](arrays.md))
+* **User-defined classes**: Custom objects (planned)
+
+### Special Types
+
 * **`void`**: Represents the absence of a type, primarily used as the return type for functions that do not return a value.
 
 ## Type Semantics
@@ -1477,7 +1491,7 @@ The current firescript compiler supports:
 * ✅ All integer types (`int8`, `int16`, `int32`, `int64`, `uint8`, `uint16`, `uint32`, `uint64`)
 * ✅ All floating point types (`float32`, `float64`, `float128`)
 * ✅ Nullable type modifiers
-* ✅ Arrays of Copyable types
+* ✅ Arrays (as Owned heap-allocated types)
 * ✅ Static type checking for expressions and assignments
 * ⚠️ Explicit type casting (only for numeric types at present)
 

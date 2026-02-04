@@ -4,9 +4,10 @@ from typing import Optional
 # Utility helpers for value category queries used by semantic analysis and codegen.
 # Copyable vs Owned is a language-level concept described in docs/reference/memory_management.md.
 # Current implementation:
-# - Copyable: bool, char, string, all fixed-width ints (int8/16/32/64, uint8/16/32/64), floats (float32/64/128)
+# - Copyable: bool, char, all fixed-width ints (int8/16/32/64, uint8/16/32/64), floats (float32/64/128)
 #            AND classes explicitly marked as 'copyable' (if they satisfy constraints)
-# - Owned: arrays (T[]), user-defined classes (unless marked copyable), closures (future)
+# - Owned: strings, arrays (T[]), user-defined classes (unless marked copyable), closures (future)
+#          Owned values are stored on the heap with pointers on the stack.
 
 _NUMERIC_INTS = {
     "int8", "int16", "int32", "int64",
@@ -15,7 +16,7 @@ _NUMERIC_INTS = {
 
 _NUMERIC_FLOATS = {"float32", "float64", "float128"}
 
-_COPYABLE_BASE = _NUMERIC_INTS | _NUMERIC_FLOATS | {"bool", "char", "string"}
+_COPYABLE_BASE = _NUMERIC_INTS | _NUMERIC_FLOATS | {"bool", "char"}
 
 # Global registries (populated by parser and semantic analyzer)
 # Set of class names that are explicitly marked as copyable
@@ -59,15 +60,19 @@ def is_owned(base_type: str | None, is_array: bool) -> bool:
     """Return True if this value is considered Owned.
 
     Per spec:
-    - Arrays are always Owned
-    - User-defined classes are Owned unless explicitly marked copyable
+    - Arrays are always Owned (heap-allocated)
+    - Strings are always Owned (heap-allocated)
+    - User-defined classes are Owned unless explicitly marked copyable (heap-allocated)
     - Closures will be Owned (future)
-    - Primitive scalars are not Owned (they're Copyable)
+    - Primitive scalars (intN, floatN, bool, char) are not Owned (they're Copyable, stack-allocated)
     """
     if base_type is None:
         return False
     if is_array:
         # Arrays are always Owned
+        return True
+    # Strings are Owned
+    if base_type == "string":
         return True
     # User-defined classes are Owned unless copyable
     if base_type in _USER_CLASSES:

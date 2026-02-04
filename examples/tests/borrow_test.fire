@@ -1,7 +1,5 @@
 // Test borrowing syntax
 
-directive enable_drops;
-
 import @firescript/std.io.{println};
 
 class Point {
@@ -15,7 +13,7 @@ int32 getX(&Point p) {
 }
 
 // Function with owned parameter - takes ownership
-void consumePoint(owned Point p) {
+void consumePoint(Point p) {
     println(p.x);
 }
 

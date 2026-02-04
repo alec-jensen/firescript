@@ -2,10 +2,10 @@
 
 directive enable_lowlevel_stdout;
 
-void print<T>(T value) {
+void print<T>(&T value) {
     stdout(value as string);
 }
 
-void println<T>(T value) {
+void println<T>(&T value) {
     stdout((value as string) + "\n");
 }

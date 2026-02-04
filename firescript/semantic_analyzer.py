@@ -82,14 +82,45 @@ class SemanticAnalyzer:
         
         # Track if we're currently in a move context (to skip use-after-move check on RHS)
         self._in_move_rhs: bool = False
+        
+        # Track function signatures: func_name -> list of (param_name, param_type, is_array, is_borrowed)
+        self.function_signatures: Dict[str, List[Tuple[str, str, bool, bool]]] = {}
     
     def analyze(self) -> bool:
         """
         Run semantic analysis on the AST.
         Returns True if no errors, False otherwise.
         """
+        # First pass: collect function signatures
+        self._collect_function_signatures(self.ast)
+        
+        # Second pass: analyze ownership and borrows
         self._analyze_node(self.ast)
         return len(self.errors) == 0
+    
+    def _collect_function_signatures(self, node: ASTNode) -> None:
+        """First pass: collect all function signatures for parameter checking."""
+        if node is None:
+            return
+            
+        if node.node_type == NodeTypes.FUNCTION_DEFINITION:
+            func_name = node.name
+            params = []
+            for child in node.children:
+                if child.node_type == NodeTypes.PARAMETER:
+                    param_name = child.name
+                    param_type = child.var_type or "int32"
+                    is_array = child.is_array
+                    is_borrowed = getattr(child, "is_borrowed", False)
+                    params.append((param_name, param_type, is_array, is_borrowed))
+            self.function_signatures[func_name] = params
+            # Don't recurse into function body - we only need signatures
+            return
+        
+        # Recurse for non-function nodes
+        if hasattr(node, 'children'):
+            for child in node.children:
+                self._collect_function_signatures(child)
     
     def _current_scope(self) -> Dict[str, BindingInfo]:
         """Get the current (innermost) scope."""
@@ -152,7 +183,16 @@ class SemanticAnalyzer:
         is_array: bool,
         node: ASTNode,
     ) -> None:
-        """Validate that borrowing is only used on Owned types."""
+        """Validate that borrowing is only used on Owned types.
+        
+        Exception: Generic type parameters (single capital letter like T, U, etc.)
+        are allowed to be borrowed - Copyable values will be implicitly copied
+        while Owned values will be borrowed.
+        """
+        # Allow borrowing of generic type parameters (T, U, etc.)
+        if var_type and len(var_type) == 1 and var_type.isupper():
+            return  # Generic type parameter - skip validation
+            
         if not is_owned(var_type, is_array):
             type_str = f"{var_type}[]" if is_array else var_type
             self.errors.append(
@@ -237,10 +277,32 @@ class SemanticAnalyzer:
                 # Skip analysis of drop() arguments to avoid false positives
                 pass
             else:
-                # TODO: Implement parameter ownership checking
-                # For now, just recurse
-                for child in node.children:
-                    self._analyze_node(child)
+                # Get function signature if available
+                func_sig = self.function_signatures.get(node.name)
+                
+                if func_sig:
+                    # Check each argument against its parameter
+                    args = node.children
+                    for i, arg in enumerate(args):
+                        if i >= len(func_sig):
+                            # More args than params - parser should have caught this
+                            continue
+                        
+                        param_name, param_type, param_is_array, param_is_borrowed = func_sig[i]
+                        
+                        # Analyze the argument expression
+                        self._analyze_node(arg)
+                        
+                        # If parameter is not borrowed and argument is an identifier of Owned type, it's a move
+                        if not param_is_borrowed and arg.node_type == NodeTypes.IDENTIFIER:
+                            arg_binding = self._lookup_binding(arg.name)
+                            if arg_binding and is_owned(arg_binding.var_type, arg_binding.is_array):
+                                # This is a move - mark the argument as moved
+                                self._mark_moved(arg.name, node)
+                else:
+                    # Built-in function or method - just analyze arguments
+                    for child in node.children:
+                        self._analyze_node(child)
         
         # Scope: enter/exit scope tracking
         elif node.node_type == NodeTypes.SCOPE:

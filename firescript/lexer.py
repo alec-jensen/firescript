@@ -38,7 +38,6 @@ class Lexer:
         "GENERATOR": r"generator\b",
         "CONST": r"const\b",
         "TERNARY": r"ternary\b",
-        "OWNED": r"owned\b",
         "COPYABLE": r"copyable\b",
     }
 

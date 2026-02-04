@@ -1,6 +1,5 @@
 // Test copyable class parsing
 
-directive enable_drops;
 
 import @firescript/std.io.{println};
 

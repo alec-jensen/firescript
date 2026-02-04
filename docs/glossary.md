@@ -18,8 +18,8 @@ This glossary contains definitions of terms commonly used in the firescript docu
 
 ### Expanded Definitions
 
-- **Copyable:** Includes `intN`, `floatN`, `bool`, `char`, `string`, arrays, and other fixed-size scalars. Copies are bitwise; no destructor runs.
-- **Owned:** Includes user-defined objects, closures, or any type that requires a destructor. Ownership is unique unless an explicit sharing container (future `Rc`, `Arc`) is used.
+- **Copyable:** Includes `intN`, `floatN`, `bool`, and `char`. These are fixed-size scalars stored on the stack. Copies are bitwise; no destructor runs.
+- **Owned:** Includes user-defined objects, closures, arrays, and strings. These values are stored on the heap with pointers on the stack. Ownership is unique unless an explicit sharing container (future `Rc`, `Arc`) is used.
 - **Move:** Occurs on assignment, passing to a parameter of owned type, or returning a value. After a move, the source binding cannot be used (use-after-move error).
 - **Borrow:** Lightweight, read-only access. Cannot be stored in owned fields or escape its originating scope/call. Does not incur runtime overhead.
 - **Clone:** Creates an independent owned value. Semantics (deep vs copy-on-write) determined by the type implementation but always preserves logical independence.

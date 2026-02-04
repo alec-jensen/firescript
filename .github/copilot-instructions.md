@@ -6,3 +6,5 @@ Add the -d flag to view debug output during compilation.
 python firescript/main.py <source-file> -d
 
 Whenever add a file to examples/tests, make sure to create a corresponding golden file in tests/expected with the same name but a .out extension. The golden file should contain the expected output of running the firescript source file.
+
+Veryify the docs (/docs) for language syntax, features, and examples are accurate and up to date with the current implementation of firescript.

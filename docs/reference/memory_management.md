@@ -34,8 +34,8 @@ Core terms (Copyable, Owned, Move, Borrow, Clone, Drop) are defined centrally in
 
 ### 1. Value Categories
 
-- Copyable: Fixed-size scalars with no destructor (e.g., `intN`, `floatN`, `bool`, `char`, `string`, and fixed-size arrays). Copy is bitwise; there is no drop. Borrowing a Copyable type is disallowed (`&int` is invalid).
-- Owned: Heap-backed or resource-managing values (e.g., user-defined objects, closures). Ownership is unique; assignment/pass/return *moves* ownership. Destruction runs at drop points.
+- Copyable: Fixed-size scalars with no destructor (e.g., `intN`, `floatN`, `bool`, `char`). These values are stored on the stack. Copy is bitwise; there is no drop. Borrowing a Copyable type is disallowed (`&int` is invalid).
+- Owned: Heap-backed or resource-managing values (e.g., user-defined objects, closures, arrays, strings). These values are stored on the heap with pointers on the stack. Ownership is unique; assignment/pass/return *moves* ownership. Destruction runs at drop points.
 
 Cloning Owned values is explicit via `.clone()` or `clone(x)`.
 
@@ -47,7 +47,7 @@ Cloning Owned values is explicit via `.clone()` or `clone(x)`.
 - Copyable values have no lifetime actions; they are ignored by drop logic.
 
 Moving a value transfers it to the destination region:
-- Passing to a function that takes `owned T` moves into the callee’s region.
+- Passing to a function that takes `T` moves into the callee's region.
 - Returning `T` moves into the caller’s region.
 - Assigning to a variable moves into that variable’s region.
 
@@ -55,8 +55,8 @@ Moving a value transfers it to the destination region:
 
 Parameters may be:
 
-- `owned T`: (T is Owned) callee receives ownership; caller loses it unless returned.
-- `&T`: (T is Owned) borrowed, read-only; callee cannot retain or return it in a longer-lived form.
+- `T`: (T is Owned) callee receives ownership; caller loses it unless returned. All parameters default to move semantics.
+- `&T`: (T is Owned) borrowed, read-only; callee cannot retain or return it in a longer-lived form. **Borrowing must be explicit.**
 
 For Copyable types:
 - There is only pass-by-value (copy). No borrow syntax is permitted. `intN`, `bool`, etc. are always copied; moves do not invalidate the source.
@@ -66,8 +66,11 @@ Returns:
 - Returning `&T` (Owned) only allowed if the referenced value is owned by the caller (non-escaping). Borrow returns of Copyable types are invalid (they cannot be borrowed).
 
 Notes:
-- At call sites, borrow inference applies only when the callee expects `&OwnedType`.
+- For owned types, `T` means move semantics. If you want to borrow, you **must** use `&T`.
+- There is no implicit borrowing - borrowing must be explicitly requested with the `&` marker.
+- At call sites, passing an owned value to a function expecting `T` moves ownership; passing to `&T` borrows.
 - Attempting to pass a Copyable value where `&T` is required is a type error (cannot borrow Copyable).
+- **Generic Parameters Exception**: For generic type parameters (e.g., `&T` in a generic function), Copyable values are implicitly copied rather than borrowed. This allows generic functions to accept both Copyable and Owned types. For concrete (non-generic) Owned types, the borrow restriction still applies.
 
 ### 4. Borrowing Rules (Owned Types Only)
 
@@ -76,6 +79,8 @@ Notes:
 - A borrow cannot be stored in any owned field or global location that outlives the borrow expression/call.
 - Mutability of Owned values occurs via methods on an owned receiver or a consuming pattern (no mutable borrow form yet).
 - If a function must retain or store a value, it must take ownership (`owned T`) or clone inside the borrow’s scope.
+
+TL;DRL Borrowing passes a read-only pointer.
 
 ### 5. Closures and Coroutines
 
@@ -108,7 +113,7 @@ f.flush();
 Method receiver kinds apply only to Owned types (Copyable methods implicitly copy the receiver):
 
 - Borrowed receiver (default for Owned): signature form `name(...) ReturnType` implicitly receives `&OwnedType this` (read-only).
-- Consuming receiver: `name(owned this, ...) ReturnType` (or `name(this, ...)`) takes ownership; caller’s binding is invalid unless the method returns it.
+- Consuming receiver: `name(this, ...) ReturnType` takes ownership; caller's binding is invalid unless the method returns it.
 
 For Copyable types:
 - Methods always receive the value by copy; “consuming” semantics do not apply.
@@ -116,7 +121,7 @@ For Copyable types:
 Consuming example:
 
 ```firescript
-Account upgrade(owned this) {
+Account upgrade(this) {
   // ... mutate internal state
   return this;
 }
@@ -217,10 +222,20 @@ printId(id);    // copies 'id'
 print(id);      // still valid
 ```
 
-### Example: Owned Parameter Consumed
+### Example: Owned Parameter Consumed (Move)
 
 ```firescript
-void addUser(owned string username);
+void addUser(string username);  // Plain 'string' means owned/move
+
+string u = "alice";
+addUser(u);   // move; u invalid afterward
+// print(u);  // ERROR: use after move
+```
+
+Or equivalently with explicit `owned`:
+
+```firescript
+void addUser(owned string username);  // Explicit owned
 
 string u = "alice";
 addUser(u);   // move; u invalid afterward

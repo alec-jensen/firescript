@@ -23,7 +23,7 @@ Classes are Owned (Non-Trivially Copyable) types unless specified otherwise. The
 
 Receiver convention (planned): Methods use a borrowed receiver `&this` by default—even when mutating fields—because internal mutation does not require taking ownership of the entire object. A method takes an owning `this` only when it will consume the instance (e.g., irreversible state transition, transferring internal resources, or explicit `drop(this)` destructor). Examples below follow this convention.
 
-Borrowing applies only to Owned (Non-Trivially Copyable) types. Copyable types (`int`, `float`, `double`, `bool`, etc.) are always passed and returned by value with implicit bitwise copy; using a borrow marker on copyable values is unnecessary and omitted below. When you see `&Type` it implies the type is Owned.
+Borrowing applies only to Owned (Non-Trivially Copyable) types. Copyable types (`intN`, `floatN`, `bool`, `char`) are always passed and returned by value with implicit bitwise copy; using a borrow marker on copyable values is unnecessary and omitted below. Owned types include `string`, arrays, and user-defined classes. When you see `&Type` it implies the type is Owned.
 
 ### Example: Deterministic Drop Ordering
 

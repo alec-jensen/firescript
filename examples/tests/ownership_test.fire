@@ -1,7 +1,5 @@
 // Test basic ownership semantics
 
-directive enable_drops;
-
 import @firescript/std.io.{println};
 
 // Test 1: Basic class as Owned type

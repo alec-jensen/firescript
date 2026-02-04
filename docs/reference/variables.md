@@ -1,6 +1,6 @@
 # Types & Variables
 
-**Note:** Tuple types, the generic placeholder `T`, and declarations without an initializer are not supported by the compiler. Only built-in Copyable types (`intN`, `floatN`, `bool`, `string`, `char`) are fully implemented.
+**Note:** Tuple types, the generic placeholder `T`, and declarations without an initializer are not supported by the compiler. Built-in Copyable types (`intN`, `floatN`, `bool`, `char`) are stack-allocated. Owned types (`string`, arrays) are heap-allocated with move semantics.
 
 ## Types
 

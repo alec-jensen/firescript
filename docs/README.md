@@ -43,7 +43,7 @@ For the latest updates and changes to the firescript language, see the [changelo
 
 firescript is under active development. Key limitations in the current compiler version:
 
-* ❌ Some copyable types (`bool`, `string`, `char`) are supported. `intN` and `floatN` types are planned.
+* ❌ Some types are supported: Copyable types (`bool`, `char`), Owned types (`string`, arrays), and numeric types (`intN`, `floatN`) are planned.
 * ✅ Static type checking for expressions and assignments.
 * ✅ Built-in functions: `print`, `input`, and type conversions.
 * ❌ User-defined functions are not yet implemented.

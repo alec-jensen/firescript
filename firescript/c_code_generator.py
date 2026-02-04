@@ -1,6 +1,7 @@
 # firescript/c_code_generator.py
 from enums import NodeTypes  # [firescript/enums.py]
 from parser import ASTNode, get_line_and_coumn_from_index, get_line  # [firescript/parser.py]
+from utils.type_utils import is_copyable, is_owned, register_class
 from typing import Optional
 import logging
 import sys
@@ -40,9 +41,9 @@ class CCodeGenerator:
         self.array_temp_counter = (
             0  # Counter for generating unique array variable names
         )
-        # Track arrays declared per lexical scope to free them at scope exit
-        # Each element is a list of variable names for that scope
-        self.scope_stack: list[list[str]] = [[]]
+        # Track owned values (strings, arrays, non-copyable classes) declared per lexical scope
+        # to free them at scope exit. Each element is a list of (var_name, var_type) tuples.
+        self.scope_stack: list[list[tuple[str, str]]] = [[]]
         # Track whether we're currently visiting inside a function body
         self._in_function: bool = False
         
@@ -84,6 +85,9 @@ class CCodeGenerator:
         for c in (self.ast.children or []):
             if c.node_type == NodeTypes.CLASS_DEFINITION:
                 self.class_names.add(c.name)
+                # Register class with type_utils
+                is_copyable_class = getattr(c, "is_copyable", False)
+                register_class(c.name, is_copyable_class)
                 fields: list[tuple[str, str]] = []
                 methods: list[ASTNode] = []
                 for ch in c.children:
@@ -141,13 +145,37 @@ class CCodeGenerator:
             logging.error(text)
 
     def _free_arrays_in_current_scope(self) -> list[str]:
-        """Return lines to free arrays declared in the current scope (no pop)."""
-        # Fixed-size arrays require no dynamic cleanup
-        return []
+        """Return lines to free owned values declared in the current scope (no pop)."""
+        if not self.scope_stack:
+            return []
+        
+        cleanup_lines = []
+        # Current scope is the last element in scope_stack
+        for var_name, var_type in self.scope_stack[-1]:
+            # Generate firescript_free call for each owned value
+            cleanup_lines.append(f"firescript_free({var_name});")
+        
+        return cleanup_lines
 
-    def _free_arrays_in_all_active_scopes(self) -> list[str]:
-        """Return lines to free arrays declared in all active scopes (outer to inner)."""
-        return []
+    def _free_arrays_in_all_active_scopes(self, exclude_var: str = None) -> list[str]:
+        """Return lines to free owned values declared in all active scopes (for early returns).
+        
+        Args:
+            exclude_var: Optional mangled variable name to exclude from cleanup (e.g., the returned value)
+        """
+        if not self.scope_stack:
+            return []
+        
+        cleanup_lines = []
+        # Free from innermost to outermost scope (reverse order of allocation)
+        for scope in reversed(self.scope_stack):
+            for var_name, var_type in reversed(scope):
+                # Skip the variable being returned (ownership transfers to caller)
+                if exclude_var and var_name == exclude_var:
+                    continue
+                cleanup_lines.append(f"firescript_free({var_name});")
+        
+        return cleanup_lines
 
     def _handle_array_index(self, index_expr):
         """Helper function to properly handle array indices in C"""
@@ -421,6 +449,16 @@ class CCodeGenerator:
         
         body_code = self._visit(body_node) if body_node else "{ }"
         
+        # Add cleanup code for owned values before function exits
+        # Inject cleanup before the closing brace of the function body
+        cleanup_lines = self._free_arrays_in_current_scope()
+        if cleanup_lines and body_code.startswith("{") and body_code.endswith("}"):
+            # Extract the body content (without braces)
+            inner = body_code[1:-1].rstrip()
+            # Add cleanup before the closing brace
+            cleanup_code = "\n".join("    " + line for line in cleanup_lines)
+            body_code = "{\n" + inner + "\n" + cleanup_code + "\n}"
+        
         # Restore state
         self.scope_stack = prev_scope_stack
         self._in_function = prev_in_fn
@@ -532,6 +570,11 @@ class CCodeGenerator:
                     "    " + line for line in "\n".join(main_lines).split("\n")
                 )
                 main_code += f"{indented_body}\n"
+            # Add cleanup for owned values declared at top level
+            cleanup_lines = self._free_arrays_in_current_scope()
+            if cleanup_lines:
+                cleanup_code = "\n".join("    " + line for line in cleanup_lines)
+                main_code += f"{cleanup_code}\n"
             # Fixed-size arrays on stack, no cleanup needed
             main_code += "    firescript_cleanup();\n"
             main_code += "    return 0;\n"
@@ -548,6 +591,10 @@ class CCodeGenerator:
             # Arrays map to pointer to element type
             elem_type = t[:-2]
             return f"{FIRETYPE_TO_C.get(elem_type, elem_type)}*"
+        # Check if this is an owned (non-copyable) class
+        if t in self.class_names and is_owned(t, False):
+            # Owned classes are heap-allocated and use pointers
+            return f"{t}*"
         return FIRETYPE_TO_C.get(t, t)
 
     def _normalize_integer_literal(self, s: str) -> str:
@@ -640,8 +687,17 @@ class CCodeGenerator:
         body_code = self._visit(body_node) if body_node else "{ }"
 
         if is_constructor:
-            # Inject a local instance for `this` and implicitly return it when the body has no explicit return.
-            init_line = f"    {class_name} this = ({class_name}){{0}};"
+            # Check if this is an owned (non-copyable) class
+            class_is_owned = is_owned(class_name, False)
+            
+            if class_is_owned:
+                # Owned classes: allocate on heap with malloc, return pointer
+                init_line = f"    {class_name}* this = malloc(sizeof({class_name}));"
+                zero_init = f"    *this = ({class_name}){{0}};"
+            else:
+                # Copyable classes: stack allocation
+                init_line = f"    {class_name} this = ({class_name}){{0}};"
+                zero_init = ""
 
             def _contains_return(n: ASTNode | None) -> bool:
                 if n is None:
@@ -659,16 +715,35 @@ class CCodeGenerator:
             if body_code.startswith("{\n") and body_code.endswith("\n}"):
                 inner = body_code[len("{\n") : -len("\n}")].rstrip("\n")
                 lines = ["{", init_line]
+                if zero_init:
+                    lines.append(zero_init)
                 if inner:
                     lines.append(inner)
+                # Add cleanup before return
+                cleanup_lines = self._free_arrays_in_current_scope()
+                if cleanup_lines:
+                    lines.extend("    " + line for line in cleanup_lines)
                 if add_implicit_return:
                     lines.append("    return this;")
                 lines.append("}")
                 body_code = "\n".join(lines)
             else:
                 # Fallback: wrap the generated body in a new block.
+                cleanup_lines = self._free_arrays_in_current_scope()
+                cleanup_code = "\n".join("    " + line for line in cleanup_lines) if cleanup_lines else ""
                 ret_line = "\n    return this;" if add_implicit_return else ""
-                body_code = f"{{\n{init_line}\n    {body_code}{ret_line}\n}}"
+                init_lines = f"{init_line}\n{zero_init}\n" if zero_init else f"{init_line}\n"
+                body_code = f"{{\n{init_lines}    {body_code}\n{cleanup_code}{ret_line}\n}}"
+        else:
+            # Regular method - add cleanup before function exits
+            cleanup_lines = self._free_arrays_in_current_scope()
+            if cleanup_lines and body_code.startswith("{") and body_code.endswith("}"):
+                # Extract the body content (without braces)
+                inner = body_code[1:-1].rstrip()
+                # Add cleanup before the closing brace
+                cleanup_code = "\n".join("    " + line for line in cleanup_lines)
+                body_code = "{\n" + inner + "\n" + cleanup_code + "\n}"
+        
         self.scope_stack = prev_scope_stack
         self._in_function = prev_in_fn
         self.symbol_table = prev_symbols
@@ -756,10 +831,17 @@ class CCodeGenerator:
         prev_scope_stack = self.scope_stack
         self.scope_stack = [[]]
         body_code = self._visit(body_node) if body_node else "{ }"
-        # At function end, append frees if drops are not enabled
-        if (not self.drops_enabled) and body_code.startswith("{") and body_code.endswith("}") and self.scope_stack and self.scope_stack[0]:
-            # No dynamic array cleanup needed for fixed arrays
-            body_code = body_code
+        
+        # Add cleanup code for owned values before function exits
+        # Inject cleanup before the closing brace of the function body
+        cleanup_lines = self._free_arrays_in_current_scope()
+        if cleanup_lines and body_code.startswith("{") and body_code.endswith("}"):
+            # Extract the body content (without braces)
+            inner = body_code[1:-1].rstrip()
+            # Add cleanup before the closing brace
+            cleanup_code = "\n".join("    " + line for line in cleanup_lines)
+            body_code = "{\n" + inner + "\n" + cleanup_code + "\n}"
+        
         # Restore state
         self.scope_stack = prev_scope_stack
         self._in_function = prev_in_fn
@@ -814,7 +896,7 @@ class CCodeGenerator:
                     lines.append(stmt_code)
             return "\n".join(lines)
         elif node.node_type == NodeTypes.SCOPE:
-            # Enter new scope for tracking arrays
+            # Enter new scope for tracking owned values
             self.scope_stack.append([])
             lines = []
             for child in node.children:
@@ -822,9 +904,12 @@ class CCodeGenerator:
                 stmt_code = self.emit_statement(child)
                 if stmt_code:
                     lines.append(stmt_code)
-            # Append frees for arrays declared in this scope only when drops not enabled
-            _ = list(self.scope_stack.pop())
-            # NOTE: arrays are only freed at the top level to avoid premature frees when arrays escape via returns.
+            # Generate cleanup code for owned values in this scope
+            cleanup_lines = self._free_arrays_in_current_scope()
+            if cleanup_lines:
+                lines.extend(cleanup_lines)
+            # Pop the scope
+            self.scope_stack.pop()
             return "{\n" + "\n".join("    " + line for line in lines) + "\n}"
         elif node.node_type == NodeTypes.ARRAY_LITERAL:
             # Array literals are typically handled in variable declarations for correct element typing.
@@ -840,7 +925,7 @@ class CCodeGenerator:
             self.symbol_table[node.name] = (var_type_fs, node.is_array)
 
             if node.is_array:
-                # Fixed-size array on stack
+                # Arrays are Owned types - allocate on heap
                 init_node = node.children[0] if node.children else None
                 elem_c = self._map_type_to_c(var_type_fs)
                 mangled_name = self._mangle_name(node.name)
@@ -849,16 +934,73 @@ class CCodeGenerator:
                     n = len(elements)
                     # Store array size for length() method
                     self.symbol_table[node.name] = (var_type_fs, node.is_array, n)
-                    # Generate C array initialization
+                    # Track array for cleanup at scope exit
+                    if self.scope_stack:
+                        self.scope_stack[-1].append((mangled_name, var_type_fs))
+                    # Generate heap allocation for array
                     elem_codes = [self._visit(elem) for elem in elements]
-                    init_list = ", ".join(elem_codes)
-                    return f"{elem_c} {mangled_name}[{n}] = {{{init_list}}};"
+                    lines = []
+                    # Allocate array on heap
+                    lines.append(f"{elem_c}* {mangled_name} = malloc({n} * sizeof({elem_c}));")
+                    # Initialize elements
+                    for i, elem_code in enumerate(elem_codes):
+                        lines.append(f"{mangled_name}[{i}] = {elem_code};")
+                    return "\n".join(lines)
                 # Allow initializing from an expression (would need additional handling)
                 self.error("Array initialization from expressions not yet supported for fixed-size arrays", node.token)
                 return ""
+            elif var_type_fs == "string":
+                # Strings are Owned (heap-allocated)
+                # String literals need to be duplicated to heap
+                init_node = node.children[0] if node.children else None
+                mangled_name = self._mangle_name(node.name)
+                
+                # Only track for cleanup if this creates a NEW allocation (not a borrow)
+                # Track if: literal, function call, or no initializer (default empty string)
+                should_track = (
+                    init_node is None or  # Default empty string
+                    init_node.node_type == NodeTypes.LITERAL or  # String literal
+                    init_node.node_type == NodeTypes.FUNCTION_CALL  # Function returns new string
+                )
+                if should_track and self.scope_stack:
+                    self.scope_stack[-1].append((mangled_name, "string"))
+                
+                if init_node and init_node.node_type == NodeTypes.LITERAL and init_node.token and init_node.token.type == "STRING_LITERAL":
+                    # String literal - use strdup to allocate on heap
+                    literal_value = init_node.token.value
+                    return f"{var_type_c} {mangled_name} = strdup({literal_value});"
+                else:
+                    # Expression result (already should be heap-allocated)
+                    init_value = self._visit(init_node) if init_node else "strdup(\"\")"
+                    return f"{var_type_c} {mangled_name} = {init_value};"
             else:
-                init_value = self._visit(node.children[0]) if node.children else "0"
-                return f"{var_type_c} {self._mangle_name(node.name)} = {init_value};"
+                # Non-array, non-string variable
+                mangled_name = self._mangle_name(node.name)
+                init_node = node.children[0] if node.children else None
+                
+                # Track owned (non-copyable) classes for cleanup ONLY if allocated (not borrowed)
+                # Track if: 
+                # 1. CONSTRUCTOR_CALL (new ClassName(...))
+                # 2. FUNCTION_CALL that is a constructor or returns an owned type
+                # 3. NOT an identifier (which would be a borrow/copy)
+                is_class_type = is_owned(var_type_fs, False)
+                should_track = False
+                if is_class_type and init_node is not None:
+                    if init_node.node_type == NodeTypes.CONSTRUCTOR_CALL:
+                        # new ClassName(...) always creates a new allocation
+                        should_track = True
+                    elif init_node.node_type == NodeTypes.FUNCTION_CALL:
+                        # Either constructor or function returning owned type
+                        should_track = True
+                    # Don't track if it's just copying from another variable (borrow)
+                    elif init_node.node_type == NodeTypes.IDENTIFIER:
+                        should_track = False
+                
+                if should_track and self.scope_stack:
+                    self.scope_stack[-1].append((mangled_name, var_type_fs))
+                
+                init_value = self._visit(init_node) if init_node else "0"
+                return f"{var_type_c} {mangled_name} = {init_value};"
         elif node.node_type == NodeTypes.ARRAY_ACCESS:
             # Fixed-size array access: arr[idx]
             array_node = node.children[0]
@@ -1032,9 +1174,22 @@ class CCodeGenerator:
             args_code = [self._visit(child) for child in node.children[1:]]
             return f"{object_code}.{method_name}({', '.join(args_code)})"
         elif node.node_type == NodeTypes.FIELD_ACCESS:
-            # Emit obj.field
-            obj_code = self._visit(node.children[0]) if node.children else ""
-            return f"{obj_code}.{node.name}"
+            # Emit obj.field or obj->field depending on whether obj is a pointer (owned class)
+            obj_node = node.children[0] if node.children else None
+            obj_code = self._visit(obj_node) if obj_node else ""
+            
+            # Determine if the object is an owned class (pointer type)
+            obj_type = None
+            if obj_node and obj_node.node_type == NodeTypes.IDENTIFIER:
+                obj_type = self.symbol_table.get(obj_node.name, (None, False))[0]
+            elif obj_node:
+                obj_type = getattr(obj_node, "return_type", None) or getattr(obj_node, "var_type", None)
+            
+            # Use -> for owned classes, . for copyable classes and primitives
+            if obj_type and obj_type in self.class_names and is_owned(obj_type, False):
+                return f"{obj_code}->{node.name}"
+            else:
+                return f"{obj_code}.{node.name}"
         elif node.node_type == NodeTypes.IDENTIFIER:
             return self._mangle_name(node.name)
         elif node.node_type == NodeTypes.VARIABLE_ASSIGNMENT:
@@ -1070,22 +1225,31 @@ class CCodeGenerator:
         elif node.node_type == NodeTypes.RETURN_STATEMENT:
             # Return with or without expression
             if node.children:
+                expr_node = node.children[0]
                 expr_code = (
-                    self._visit(node.children[0])
-                    if node.children[0] is not None
+                    self._visit(expr_node)
+                    if expr_node is not None
                     else ""
                 )
-                # Free arrays in all active scopes before returning from a function
+                # For owned values being returned, ownership transfers to caller - don't free them
+                # Check if we're returning a simple variable (identifier) - if so, exclude it from cleanup
+                exclude_var = None
+                if expr_node and expr_node.node_type == NodeTypes.IDENTIFIER:
+                    # Returning a variable - exclude it from cleanup (ownership transfers)
+                    exclude_var = self._mangle_name(expr_node.name)
+                
+                # Cleanup other owned values in scope
                 cleanup_lines = []
-                if (not self.drops_enabled) and self._in_function:
-                    cleanup_lines = self._free_arrays_in_all_active_scopes()
+                if self._in_function:
+                    cleanup_lines = self._free_arrays_in_all_active_scopes(exclude_var)
+                
                 if cleanup_lines:
                     cleanup = "\n".join(cleanup_lines)
                     return f"{{\n{cleanup}\nreturn {expr_code};\n}}"
                 return f"return {expr_code}"
-            # bare return
+            # bare return - no value being returned, safe to cleanup all
             cleanup_lines = []
-            if (not self.drops_enabled) and self._in_function:
+            if self._in_function:
                 cleanup_lines = self._free_arrays_in_all_active_scopes()
             if cleanup_lines:
                 cleanup = "\n".join(cleanup_lines)
@@ -1100,7 +1264,17 @@ class CCodeGenerator:
                 for (fname, _ftype), val in zip(fields, args):
                     inits.append(f".{fname} = {val}")
                 init_str = ", ".join(inits)
-                return f"({node.name}){{ {init_str} }}"
+                
+                # Check if this is an owned (non-copyable) class
+                if is_owned(node.name, False):
+                    # Owned classes need heap allocation
+                    # Generate inline compound statement that allocates and initializes
+                    tmp_var = f"__tmp_class_{self.array_temp_counter}"
+                    self.array_temp_counter += 1
+                    return f"({{ {node.name}* {tmp_var} = malloc(sizeof({node.name})); *{tmp_var} = ({node.name}){{ {init_str} }}; {tmp_var}; }})"
+                else:
+                    # Copyable classes use stack allocation with compound literal
+                    return f"({node.name}){{ {init_str} }}"
             if node.name == "stdout":
                 # Check if stdout is enabled in the file where this call is made
                 node_source_file = getattr(node, 'source_file', self.source_file)
@@ -1190,9 +1364,25 @@ class CCodeGenerator:
             fields = self.class_fields.get(super_class, [])
             call = f"{super_class}_{super_class}({', '.join(args_code)})"
             lines: list[str] = []
-            lines.append(f"{super_class} {tmp} = {call};")
-            for fname, _ftype in fields:
-                lines.append(f"this.{fname} = {tmp}.{fname};")
+            
+            # Check if parent class is owned (returns pointer) or copyable (returns value)
+            parent_is_owned = is_owned(super_class, False)
+            
+            if parent_is_owned:
+                # Parent constructor returns a pointer - dereference to copy fields
+                lines.append(f"{super_class}* {tmp} = {call};")
+                for fname, _ftype in fields:
+                    # this is also a pointer for owned classes, use ->
+                    lines.append(f"this->{fname} = {tmp}->{fname};")
+                # Free the temporary parent object after copying fields
+                lines.append(f"firescript_free({tmp});")
+            else:
+                # Parent constructor returns a value - copy directly
+                lines.append(f"{super_class} {tmp} = {call};")
+                for fname, _ftype in fields:
+                    # this is a value for copyable classes, use .
+                    lines.append(f"this.{fname} = {tmp}.{fname};")
+            
             inner = "\n".join("    " + l for l in lines)
             return "{\n" + inner + "\n}"
         elif node.node_type == NodeTypes.IF_STATEMENT:
