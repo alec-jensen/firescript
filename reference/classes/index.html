@@ -1474,7 +1474,7 @@
 <li>Borrowed references cannot escape beyond the lifetime of the owning instance; the compiler enforces non-escaping borrows.</li>
 </ul>
 <p>Receiver convention (planned): Methods use a borrowed receiver <code>&amp;this</code> by default—even when mutating fields—because internal mutation does not require taking ownership of the entire object. A method takes an owning <code>this</code> only when it will consume the instance (e.g., irreversible state transition, transferring internal resources, or explicit <code>drop(this)</code> destructor). Examples below follow this convention.</p>
-<p>Borrowing applies only to Owned (Non-Trivially Copyable) types. Copyable types (<code>int</code>, <code>float</code>, <code>double</code>, <code>bool</code>, etc.) are always passed and returned by value with implicit bitwise copy; using a borrow marker on copyable values is unnecessary and omitted below. When you see <code>&amp;Type</code> it implies the type is Owned.</p>
+<p>Borrowing applies only to Owned (Non-Trivially Copyable) types. Copyable types (<code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>) are always passed and returned by value with implicit bitwise copy; using a borrow marker on copyable values is unnecessary and omitted below. Owned types include <code>string</code>, arrays, and user-defined classes. When you see <code>&amp;Type</code> it implies the type is Owned.</p>
 <h3 id="example-deterministic-drop-ordering">Example: Deterministic Drop Ordering<a class="headerlink" href="#example-deterministic-drop-ordering" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">class HandleBundle {
     File log;

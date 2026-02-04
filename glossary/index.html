@@ -1028,8 +1028,8 @@
 </table>
 <h3 id="expanded-definitions">Expanded Definitions<a class="headerlink" href="#expanded-definitions" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Copyable:</strong> Includes <code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>, <code>string</code>, arrays, and other fixed-size scalars. Copies are bitwise; no destructor runs.</li>
-<li><strong>Owned:</strong> Includes user-defined objects, closures, or any type that requires a destructor. Ownership is unique unless an explicit sharing container (future <code>Rc</code>, <code>Arc</code>) is used.</li>
+<li><strong>Copyable:</strong> Includes <code>intN</code>, <code>floatN</code>, <code>bool</code>, and <code>char</code>. These are fixed-size scalars stored on the stack. Copies are bitwise; no destructor runs.</li>
+<li><strong>Owned:</strong> Includes user-defined objects, closures, arrays, and strings. These values are stored on the heap with pointers on the stack. Ownership is unique unless an explicit sharing container (future <code>Rc</code>, <code>Arc</code>) is used.</li>
 <li><strong>Move:</strong> Occurs on assignment, passing to a parameter of owned type, or returning a value. After a move, the source binding cannot be used (use-after-move error).</li>
 <li><strong>Borrow:</strong> Lightweight, read-only access. Cannot be stored in owned fields or escape its originating scope/call. Does not incur runtime overhead.</li>
 <li><strong>Clone:</strong> Creates an independent owned value. Semantics (deep vs copy-on-write) determined by the type implementation but always preserves logical independence.</li>

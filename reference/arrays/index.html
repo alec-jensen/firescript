@@ -1259,7 +1259,7 @@
 <p>Only arrays with literal initialization and methods <code>length</code> are supported by the compiler. Array slicing, negative indices, and other utility methods are not implemented.</p>
 </blockquote>
 <h2 id="array-basics">Array Basics<a class="headerlink" href="#array-basics" title="Permanent link">&para;</a></h2>
-<p>In firescript, arrays are fixed-size, ordered collections of elements that all share the same type. Arrays are declared using square brackets and the size after the type.</p>
+<p>In firescript, arrays are fixed-size, ordered collections of elements that all share the same type. Arrays are Owned types—they are stored on the heap with pointers on the stack and use move semantics. Arrays are declared using square brackets and the size after the type.</p>
 <h2 id="declaration-and-initialization">Declaration and Initialization<a class="headerlink" href="#declaration-and-initialization" title="Permanent link">&para;</a></h2>
 <p>Arrays are declared by appending <code>[N]</code> to any valid type and initializing with values in square brackets:</p>
 <pre><code class="language-firescript">// Array initialization with values

@@ -1103,12 +1103,12 @@
 <tr>
 <td>Copyable Types</td>
 <td>⚠️ Partial</td>
-<td><code>bool</code>, <code>string</code>, <code>char</code>, <code>intN</code>, <code>floatN</code></td>
+<td><code>bool</code>, <code>char</code>, <code>intN</code>, <code>floatN</code> (stack-allocated scalars)</td>
 </tr>
 <tr>
-<td>Arrays</td>
+<td>Owned Types</td>
 <td>⚠️ Partial</td>
-<td>Basic operations work; slicing not implemented</td>
+<td><code>string</code>, arrays (heap-allocated with move semantics)</td>
 </tr>
 <tr>
 <td>Memory Model</td>

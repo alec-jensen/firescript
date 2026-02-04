@@ -1111,7 +1111,7 @@
 
 
 <h1 id="types-variables">Types &amp; Variables<a class="headerlink" href="#types-variables" title="Permanent link">&para;</a></h1>
-<p><strong>Note:</strong> Tuple types, the generic placeholder <code>T</code>, and declarations without an initializer are not supported by the compiler. Only built-in Copyable types (<code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>string</code>, <code>char</code>) are fully implemented.</p>
+<p><strong>Note:</strong> Tuple types, the generic placeholder <code>T</code>, and declarations without an initializer are not supported by the compiler. Built-in Copyable types (<code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>) are stack-allocated. Owned types (<code>string</code>, arrays) are heap-allocated with move semantics.</p>
 <h2 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h2>
 <p>Types are defined in the <a href="../type_system/">Type System</a> documentation.</p>
 <h2 id="declaration-and-initialization">Declaration and Initialization<a class="headerlink" href="#declaration-and-initialization" title="Permanent link">&para;</a></h2>

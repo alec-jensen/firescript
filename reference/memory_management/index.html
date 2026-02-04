@@ -963,10 +963,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-owned-parameter-consumed" class="md-nav__link">
+  <a href="#example-owned-parameter-consumed-move" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example: Owned Parameter Consumed
+        Example: Owned Parameter Consumed (Move)
       
     </span>
   </a>
@@ -1441,10 +1441,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-owned-parameter-consumed" class="md-nav__link">
+  <a href="#example-owned-parameter-consumed-move" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example: Owned Parameter Consumed
+        Example: Owned Parameter Consumed (Move)
       
     </span>
   </a>
@@ -1593,8 +1593,8 @@
 <h2 id="detailed-rules">Detailed Rules<a class="headerlink" href="#detailed-rules" title="Permanent link">&para;</a></h2>
 <h3 id="1-value-categories">1. Value Categories<a class="headerlink" href="#1-value-categories" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Copyable: Fixed-size scalars with no destructor (e.g., <code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>, <code>string</code>, and fixed-size arrays). Copy is bitwise; there is no drop. Borrowing a Copyable type is disallowed (<code>&amp;int</code> is invalid).</li>
-<li>Owned: Heap-backed or resource-managing values (e.g., user-defined objects, closures). Ownership is unique; assignment/pass/return <em>moves</em> ownership. Destruction runs at drop points.</li>
+<li>Copyable: Fixed-size scalars with no destructor (e.g., <code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>). These values are stored on the stack. Copy is bitwise; there is no drop. Borrowing a Copyable type is disallowed (<code>&amp;int</code> is invalid).</li>
+<li>Owned: Heap-backed or resource-managing values (e.g., user-defined objects, closures, arrays, strings). These values are stored on the heap with pointers on the stack. Ownership is unique; assignment/pass/return <em>moves</em> ownership. Destruction runs at drop points.</li>
 </ul>
 <p>Cloning Owned values is explicit via <code>.clone()</code> or <code>clone(x)</code>.</p>
 <h3 id="2-regions-and-lifetimes">2. Regions and Lifetimes<a class="headerlink" href="#2-regions-and-lifetimes" title="Permanent link">&para;</a></h3>
@@ -1605,14 +1605,14 @@
 <li>Copyable values have no lifetime actions; they are ignored by drop logic.</li>
 </ul>
 <p>Moving a value transfers it to the destination region:
-- Passing to a function that takes <code>owned T</code> moves into the callee’s region.
+- Passing to a function that takes <code>T</code> moves into the callee's region.
 - Returning <code>T</code> moves into the caller’s region.
 - Assigning to a variable moves into that variable’s region.</p>
 <h3 id="3-function-parameters-and-returns">3. Function Parameters and Returns<a class="headerlink" href="#3-function-parameters-and-returns" title="Permanent link">&para;</a></h3>
 <p>Parameters may be:</p>
 <ul>
-<li><code>owned T</code>: (T is Owned) callee receives ownership; caller loses it unless returned.</li>
-<li><code>&amp;T</code>: (T is Owned) borrowed, read-only; callee cannot retain or return it in a longer-lived form.</li>
+<li><code>T</code>: (T is Owned) callee receives ownership; caller loses it unless returned. All parameters default to move semantics.</li>
+<li><code>&amp;T</code>: (T is Owned) borrowed, read-only; callee cannot retain or return it in a longer-lived form. <strong>Borrowing must be explicit.</strong></li>
 </ul>
 <p>For Copyable types:
 - There is only pass-by-value (copy). No borrow syntax is permitted. <code>intN</code>, <code>bool</code>, etc. are always copied; moves do not invalidate the source.</p>
@@ -1620,8 +1620,11 @@
 - Returning <code>T</code> (Owned) transfers ownership to the caller.
 - Returning <code>&amp;T</code> (Owned) only allowed if the referenced value is owned by the caller (non-escaping). Borrow returns of Copyable types are invalid (they cannot be borrowed).</p>
 <p>Notes:
-- At call sites, borrow inference applies only when the callee expects <code>&amp;OwnedType</code>.
-- Attempting to pass a Copyable value where <code>&amp;T</code> is required is a type error (cannot borrow Copyable).</p>
+- For owned types, <code>T</code> means move semantics. If you want to borrow, you <strong>must</strong> use <code>&amp;T</code>.
+- There is no implicit borrowing - borrowing must be explicitly requested with the <code>&amp;</code> marker.
+- At call sites, passing an owned value to a function expecting <code>T</code> moves ownership; passing to <code>&amp;T</code> borrows.
+- Attempting to pass a Copyable value where <code>&amp;T</code> is required is a type error (cannot borrow Copyable).
+- <strong>Generic Parameters Exception</strong>: For generic type parameters (e.g., <code>&amp;T</code> in a generic function), Copyable values are implicitly copied rather than borrowed. This allows generic functions to accept both Copyable and Owned types. For concrete (non-generic) Owned types, the borrow restriction still applies.</p>
 <h3 id="4-borrowing-rules-owned-types-only">4. Borrowing Rules (Owned Types Only)<a class="headerlink" href="#4-borrowing-rules-owned-types-only" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Borrowing is only defined for Owned types.</li>
@@ -1630,6 +1633,7 @@
 <li>Mutability of Owned values occurs via methods on an owned receiver or a consuming pattern (no mutable borrow form yet).</li>
 <li>If a function must retain or store a value, it must take ownership (<code>owned T</code>) or clone inside the borrow’s scope.</li>
 </ul>
+<p>TL;DRL Borrowing passes a read-only pointer.</p>
 <h3 id="5-closures-and-coroutines">5. Closures and Coroutines<a class="headerlink" href="#5-closures-and-coroutines" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Capturing by move transfers ownership into the closure’s region (Owned types only).</li>
@@ -1657,12 +1661,12 @@ f.flush();
 <p>Method receiver kinds apply only to Owned types (Copyable methods implicitly copy the receiver):</p>
 <ul>
 <li>Borrowed receiver (default for Owned): signature form <code>name(...) ReturnType</code> implicitly receives <code>&amp;OwnedType this</code> (read-only).</li>
-<li>Consuming receiver: <code>name(owned this, ...) ReturnType</code> (or <code>name(this, ...)</code>) takes ownership; caller’s binding is invalid unless the method returns it.</li>
+<li>Consuming receiver: <code>name(this, ...) ReturnType</code> takes ownership; caller's binding is invalid unless the method returns it.</li>
 </ul>
 <p>For Copyable types:
 - Methods always receive the value by copy; “consuming” semantics do not apply.</p>
 <p>Consuming example:</p>
-<pre><code class="language-firescript">Account upgrade(owned this) {
+<pre><code class="language-firescript">Account upgrade(this) {
   // ... mutate internal state
   return this;
 }
@@ -1742,8 +1746,15 @@ void printId(int8 v) {
 printId(id);    // copies 'id'
 print(id);      // still valid
 </code></pre>
-<h3 id="example-owned-parameter-consumed">Example: Owned Parameter Consumed<a class="headerlink" href="#example-owned-parameter-consumed" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">void addUser(owned string username);
+<h3 id="example-owned-parameter-consumed-move">Example: Owned Parameter Consumed (Move)<a class="headerlink" href="#example-owned-parameter-consumed-move" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">void addUser(string username);  // Plain 'string' means owned/move
+
+string u = &quot;alice&quot;;
+addUser(u);   // move; u invalid afterward
+// print(u);  // ERROR: use after move
+</code></pre>
+<p>Or equivalently with explicit <code>owned</code>:</p>
+<pre><code class="language-firescript">void addUser(owned string username);  // Explicit owned
 
 string u = &quot;alice&quot;;
 addUser(u);   // move; u invalid afterward

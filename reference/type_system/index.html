@@ -694,6 +694,45 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Built-in Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#copyable-types-stack-allocated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Copyable Types (Stack-Allocated)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#owned-types-heap-allocated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Owned Types (Heap-Allocated)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#special-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Special Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1589,6 +1628,45 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Built-in Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#copyable-types-stack-allocated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Copyable Types (Stack-Allocated)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#owned-types-heap-allocated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Owned Types (Heap-Allocated)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#special-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Special Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2345,7 +2423,9 @@
 <p>firescript employs a static type system to enhance code reliability and catch errors early during the compilation phase. This means that the type of every variable and expression is checked before the code is run.</p>
 </blockquote>
 <h2 id="built-in-types">Built-in Types<a class="headerlink" href="#built-in-types" title="Permanent link">&para;</a></h2>
-<p>firescript provides several fundamental data types. These are all Copyable types:</p>
+<p>firescript provides several fundamental data types categorized by their memory semantics:</p>
+<h3 id="copyable-types-stack-allocated">Copyable Types (Stack-Allocated)<a class="headerlink" href="#copyable-types-stack-allocated" title="Permanent link">&para;</a></h3>
+<p>These are fixed-size scalars stored on the stack and copied by value:</p>
 <ul>
 <li>Numeric Types:</li>
 <li><strong><code>int8</code></strong>: 8-bit signed integer</li>
@@ -2360,8 +2440,17 @@
 <li><strong><code>float64</code></strong>: 64-bit floating point number</li>
 <li><strong><code>float128</code></strong>: 128-bit floating point number</li>
 <li><strong><code>bool</code></strong>: Represents boolean values, either <code>true</code> or <code>false</code>. Example: <code>bool isActive = true;</code></li>
-<li><strong><code>string</code></strong>: Represents sequences of characters. Example: <code>string message = "Hello, World!";</code></li>
 <li><strong><code>char</code></strong>: Represents a single character. (Note: Currently handled similarly to strings in some contexts, formal <code>char</code> type might be refined). Example: <code>char initial = "A";</code></li>
+</ul>
+<h3 id="owned-types-heap-allocated">Owned Types (Heap-Allocated)<a class="headerlink" href="#owned-types-heap-allocated" title="Permanent link">&para;</a></h3>
+<p>These values are stored on the heap with pointers on the stack and use move semantics:</p>
+<ul>
+<li><strong><code>string</code></strong>: Represents sequences of characters. Example: <code>string message = "Hello, World!";</code></li>
+<li><strong>Arrays</strong>: Collections of elements (see <a href="../arrays/">Arrays</a>)</li>
+<li><strong>User-defined classes</strong>: Custom objects (planned)</li>
+</ul>
+<h3 id="special-types">Special Types<a class="headerlink" href="#special-types" title="Permanent link">&para;</a></h3>
+<ul>
 <li><strong><code>void</code></strong>: Represents the absence of a type, primarily used as the return type for functions that do not return a value.</li>
 </ul>
 <h2 id="type-semantics">Type Semantics<a class="headerlink" href="#type-semantics" title="Permanent link">&para;</a></h2>
@@ -3559,7 +3648,7 @@ class Point {
 <li>✅ All integer types (<code>int8</code>, <code>int16</code>, <code>int32</code>, <code>int64</code>, <code>uint8</code>, <code>uint16</code>, <code>uint32</code>, <code>uint64</code>)</li>
 <li>✅ All floating point types (<code>float32</code>, <code>float64</code>, <code>float128</code>)</li>
 <li>✅ Nullable type modifiers</li>
-<li>✅ Arrays of Copyable types</li>
+<li>✅ Arrays (as Owned heap-allocated types)</li>
 <li>✅ Static type checking for expressions and assignments</li>
 <li>⚠️ Explicit type casting (only for numeric types at present)</li>
 </ul>

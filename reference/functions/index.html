@@ -1351,12 +1351,13 @@ float calculateAverage(int[] numbers) {
 </code></pre>
 <h3 id="ownership-notes-planned-semantics">Ownership Notes (Planned Semantics)<a class="headerlink" href="#ownership-notes-planned-semantics" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Parameters of owned types move into the function. After a call, an argument of an owned type is no longer valid unless the function returns it.</li>
+<li>Parameters of owned types (strings, arrays, user-defined objects) move into the function. After a call, an argument of an owned type is no longer valid unless the function returns it.</li>
 <li>Future explicit borrow syntax (<code>&amp;T</code>) will allow passing a read-only view without moving ownership. Borrowed arguments remain valid after the call.</li>
-<li>For Copyable types (e.g., <code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>, <code>string</code>), calls pass by value; borrowing is not defined for Copyable types.</li>
-<li><code>input()</code> returns a new <code>string</code> (Copyable).</li>
-<li><code>toString()</code> and string concatenation produce new <code>string</code> values. Strings are Copyable and passed by value.</li>
-<li>Cloning is explicit for Owned values (not needed for Copyable types like <code>string</code>).</li>
+<li>For Copyable types (e.g., <code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>), calls pass by value; borrowing is not defined for Copyable types.</li>
+<li><code>input()</code> returns a new <code>string</code> (Owned, heap-allocated).</li>
+<li><code>toString()</code> and string concatenation produce new <code>string</code> values. Strings are Owned and use move semantics.</li>
+<li>Arrays are Owned and use move semantics.</li>
+<li>Cloning is explicit for Owned values (needed for <code>string</code>, arrays, and user-defined objects).</li>
 <li>Examples currently show simple pass semantics until borrow syntax is implemented.</li>
 </ul>
 <h2 id="methods-planned-not-implemented">Methods (Planned, Not Implemented)<a class="headerlink" href="#methods-planned-not-implemented" title="Permanent link">&para;</a></h2>
