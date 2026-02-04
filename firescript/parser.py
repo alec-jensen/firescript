@@ -2426,7 +2426,22 @@ class Parser:
         params: list[ASTNode] = []
         if self.current_token and self.current_token.type != "CLOSE_PAREN":
             while True:
-                if not (self.current_token and self._is_type_token(self.current_token)):
+                # Check for 'owned' keyword
+                p_is_owned = False
+                if self.current_token and self.current_token.type == "OWNED":
+                    p_is_owned = True
+                    self.advance()
+                
+                # Check for '&' borrow marker
+                p_is_borrowed = False
+                if self.current_token and self.current_token.type == "AMPERSAND":
+                    p_is_borrowed = True
+                    self.advance()
+                
+                # Allow both built-in types and user-defined class types
+                if not (self.current_token and (self._is_type_token(self.current_token) or (
+                    self.current_token.type == "IDENTIFIER" and self.current_token.value in self.user_types
+                ))):
                     self.error("Expected parameter type", self.current_token)
                     return None
                 ptype_tok = self.current_token
@@ -2459,6 +2474,9 @@ class Parser:
                     p_is_array,
                     p_is_array,
                 )
+                # Mark parameter as borrowed or explicitly owned
+                setattr(param_node, "is_borrowed", p_is_borrowed)
+                setattr(param_node, "is_owned", p_is_owned)
                 params.append(param_node)
                 if self.current_token and self.current_token.type == "COMMA":
                     self.advance()
@@ -2593,8 +2611,8 @@ class Parser:
                 directive_node.parent = self.ast
                 self.ast.children.append(directive_node)
                 continue
-            # Class definition
-            if self.current_token.type == "CLASS":
+            # Class definition (with optional 'copyable' annotation)
+            if self.current_token.type == "CLASS" or self.current_token.type == "COPYABLE":
                 cls = self._parse_class_definition()
                 if cls:
                     cls.parent = self.ast
@@ -3083,7 +3101,13 @@ class Parser:
         return None
 
     def _parse_class_definition(self):
-        """Parse a class definition: class Name [from Base] { <type> <field>; ... }"""
+        """Parse a class definition: [copyable] class Name [from Base] { <type> <field>; ... }"""
+        # Check for optional 'copyable' annotation
+        is_copyable = False
+        if self.current_token and self.current_token.type == "COPYABLE":
+            is_copyable = True
+            self.advance()
+        
         class_tok = self.consume("CLASS")
         if class_tok is None:
             return None
@@ -3175,7 +3199,44 @@ class Parser:
                             setattr(recv, "is_receiver", True)
                             params.append(recv)
                             seen_receiver = True
+                        # Check for 'owned this' consuming receiver
+                        elif (not seen_receiver) and self.current_token and self.current_token.type == "OWNED":
+                            owned_tok = self.current_token
+                            self.advance()
+                            th_tok = self.consume("IDENTIFIER")
+                            if th_tok is None or th_tok.value != "this":
+                                self.error("Expected 'this' after 'owned' for receiver", th_tok or owned_tok)
+                                return None
+                            recv = ASTNode(
+                                NodeTypes.PARAMETER,
+                                th_tok,
+                                "this",
+                                [],
+                                th_tok.index,
+                                self._normalize_type_name(name_tok),
+                                False,
+                                False,
+                                None,
+                                False,
+                                False,
+                            )
+                            setattr(recv, "is_owned", True)
+                            setattr(recv, "is_receiver", True)
+                            params.append(recv)
+                            seen_receiver = True
                         else:
+                            # Check for 'owned' keyword
+                            p_is_owned = False
+                            if self.current_token and self.current_token.type == "OWNED":
+                                p_is_owned = True
+                                self.advance()
+                            
+                            # Check for '&' borrow marker
+                            p_is_borrowed = False
+                            if self.current_token and self.current_token.type == "AMPERSAND":
+                                p_is_borrowed = True
+                                self.advance()
+                            
                             # Parameter type: allow known types or current class name
                             if not (self.current_token and (self._is_type_token(self.current_token) or (
                                 self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
@@ -3191,10 +3252,6 @@ class Parser:
                                 while self.current_token and self.current_token.type != "CLOSE_PAREN":
                                     self.advance()
                                 break
-                            p_is_borrowed = False
-                            if self.current_token and self.current_token.type == "AMPERSAND":
-                                p_is_borrowed = True
-                                self.advance()
                             pname_tok = self.consume("IDENTIFIER")
                             if pname_tok is None:
                                 self.error("Expected parameter name in method", self.current_token)
@@ -3214,6 +3271,8 @@ class Parser:
                             )
                             if p_is_borrowed:
                                 setattr(param_node, "is_borrowed", True)
+                            if p_is_owned:
+                                setattr(param_node, "is_owned", True)
                             params.append(param_node)
                         if self.current_token and self.current_token.type == "COMMA":
                             self.advance()
@@ -3478,6 +3537,12 @@ class Parser:
 
         cls_node = ASTNode(NodeTypes.CLASS_DEFINITION, name_tok, name_tok.value, [*all_fields, *all_methods], name_tok.index)
         setattr(cls_node, "base_class", base_class)
+        setattr(cls_node, "is_copyable", is_copyable)
+        
+        # Register class with type_utils
+        from utils.type_utils import register_class
+        register_class(name_tok.value, is_copyable)
+        
         return cls_node
 
     def _skip_comment(self):

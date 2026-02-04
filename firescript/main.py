@@ -11,6 +11,7 @@ from lexer import Lexer
 from parser import Parser
 from log_formatter import LogFormatter
 from preprocessor import enable_and_insert_drops
+from semantic_analyzer import SemanticAnalyzer
 from enums import NodeTypes
 from imports import ModuleResolver, build_merged_ast
 from enums import NodeTypes
@@ -132,6 +133,20 @@ def compile_file(file_path, target, cc=None, output=None):
         logging.debug("Preprocessing (drop insertion) completed.")
     except Exception as e:
         logging.error(f"Preprocessing failed: {e}")
+        return False
+
+    # Semantic analysis: ownership and borrow checking
+    try:
+        analyzer = SemanticAnalyzer(ast, source_file=file_path)
+        if not analyzer.analyze():
+            analyzer.report_errors()
+            logging.error(f"Semantic analysis failed with {len(analyzer.errors)} errors")
+            return False
+        logging.debug("Semantic analysis completed.")
+    except Exception as e:
+        logging.error(f"Semantic analysis failed: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
     logging.debug("Starting code generation...")

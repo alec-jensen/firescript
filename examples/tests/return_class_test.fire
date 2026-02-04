@@ -1,0 +1,19 @@
+// Test returning a class from a function
+
+directive enable_drops;
+
+import @firescript/std.io.{println};
+
+class Point {
+    int32 x;
+    int32 y;
+}
+
+Point makePoint(int32 x, int32 y) {
+    Point p = Point(x, y);
+    return p;  // Return the point - what happens here?
+}
+
+Point p1 = makePoint(10i32, 20i32);
+println(p1.x);
+println(p1.y);

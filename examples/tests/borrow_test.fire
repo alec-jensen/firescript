@@ -1,0 +1,36 @@
+// Test borrowing syntax
+
+directive enable_drops;
+
+import @firescript/std.io.{println};
+
+class Point {
+    int32 x;
+    int32 y;
+}
+
+// Function with borrowed parameter - doesn't take ownership
+int32 getX(&Point p) {
+    return p.x;
+}
+
+// Function with owned parameter - takes ownership
+void consumePoint(owned Point p) {
+    println(p.x);
+}
+
+// Create a Point
+Point p1 = Point(10i32, 20i32);
+
+// Borrow it - p1 is still valid after this call
+int32 x = getX(p1);
+println(x);
+
+// Use p1 again - this should work because getX only borrowed it
+println(p1.y);
+
+// Now move ownership
+consumePoint(p1);  // p1 is moved here
+
+// This should cause an error:
+// println(p1.x);  // ERROR: use after move

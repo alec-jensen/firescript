@@ -19,6 +19,7 @@ This is a MAJOR rewrite and WILL be buggy and will not work correctly.
 - Remove type conversion functions in favor of future Java-style casting.
 - Removed built-in `print()` function in favor of `std.io.print()` and `std.io.println()`.
 - Arrays are now fixed-size. Future dynamic arrays will be in the standard library.
+- Beginning of memory management implementation. See [Memory Management](docs/memory_management.md) for details.
 
 ### New Language Features
 
