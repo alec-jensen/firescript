@@ -2627,7 +2627,9 @@ username = &quot;John&quot;;  // Can be assigned a non-null value later
 </code></pre>
 <h3 id="working-with-nullable-values">Working with Nullable Values<a class="headerlink" href="#working-with-nullable-values" title="Permanent link">&para;</a></h3>
 <p>When working with nullable variables, it's important to check for null before using them:</p>
-<pre><code class="language-firescript">nullable string data = null;
+<pre><code class="language-firescript">import @firescript/std.io.{print};
+
+nullable string data = null;
 
 // Safe pattern
 if (data != null) {
@@ -2835,7 +2837,9 @@ T process&lt;T: Point | Circle&gt;(T shape) {
 </code></pre>
 <p><strong>Multiple Constraints:</strong></p>
 <p>You can combine both interface constraints and type unions:</p>
-<pre><code class="language-firescript">// T must satisfy Comparable AND be in the union
+<pre><code class="language-firescript">import @firescript/std.io.{print};
+
+// T must satisfy Comparable AND be in the union
 T clamp&lt;T: Comparable &amp; (int32 | float64)&gt;(T value, T min, T max) {
     if (value &lt; min) return min;
     if (value &gt; max) return max;
@@ -3333,7 +3337,7 @@ interface Comparable from Equatable {
 </code></pre>
 <h4 id="implementing-interfaces-for-types">Implementing Interfaces for Types<a class="headerlink" href="#implementing-interfaces-for-types" title="Permanent link">&para;</a></h4>
 <p>Classes declare which interfaces they implement using the <code>implements</code> keyword:</p>
-<pre><code class="language-firescript">// Define a class that implements an interface
+<pre><code class="language-firescript">import @firescript/std.io.{print};\n\n// Define a class that implements an interface
 class Point implements Printable {
     float32 x;
     float32 y;
@@ -3389,7 +3393,9 @@ float64 fResult = max(3.14f64, 2.71f64);  // ✅ Works!
 // This is compiler magic - the compiler knows int32 satisfies Comparable
 </code></pre>
 <p><strong>For custom interfaces, you need wrappers:</strong></p>
-<pre><code class="language-firescript">// Custom interface
+<pre><code class="language-firescript">import @firescript/std.io.{print};
+
+// Custom interface
 interface Printable {
     string toString(&amp;this);
 }
@@ -3423,7 +3429,9 @@ printValue(PrintableInt(42));  // ✅ Works!
 - <strong>Custom interfaces with wrappers</strong>: Only when you need custom methods on primitives</p>
 <h4 id="using-interfaces-as-generic-constraints">Using Interfaces as Generic Constraints<a class="headerlink" href="#using-interfaces-as-generic-constraints" title="Permanent link">&para;</a></h4>
 <p>Interfaces are most commonly used to constrain generic type parameters:</p>
-<pre><code class="language-firescript">// Function that works with any Printable type
+<pre><code class="language-firescript">import @firescript/std.io.{print};
+
+// Function that works with any Printable type
 void printValue&lt;T: Printable&gt;(T value) {
     print(value.toString());
 }
@@ -3568,7 +3576,9 @@ impl Container for IntArray {
 </code></pre>
 <h4 id="interface-objects-planned">Interface Objects (Planned)<a class="headerlink" href="#interface-objects-planned" title="Permanent link">&para;</a></h4>
 <p>In the future, interfaces may be used as types themselves, allowing for dynamic dispatch:</p>
-<pre><code class="language-firescript">// Planned syntax
+<pre><code class="language-firescript">import @firescript/std.io.{print};
+
+// Planned syntax
 void printAll(Printable[] items) {  // Array of interface objects
     for (int32 i = 0; i &lt; items.length; i = i + 1) {
         print(items[i].toString());

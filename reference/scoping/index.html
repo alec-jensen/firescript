@@ -1421,7 +1421,9 @@
 <li><strong>Class Bodies:</strong> The body of a class defines a scope.</li>
 <li><strong>Bare Braces:</strong> You can create an explicit scope simply by using a pair of curly braces <code>{}</code> anywhere they are syntactically allowed.</li>
 </ul>
-<pre><code class="language-firescript">// Global scope
+<pre><code class="language-firescript">import @firescript/std.io.{print};
+
+// Global scope
 
 int globalVar = 10;
 
@@ -1461,7 +1463,9 @@ if (globalVar &gt; 5) {
 <h2 id="detailed-scoping-rules">Detailed Scoping Rules<a class="headerlink" href="#detailed-scoping-rules" title="Permanent link">&para;</a></h2>
 <h3 id="1-variable-declaration-and-initialization">1. Variable Declaration and Initialization<a class="headerlink" href="#1-variable-declaration-and-initialization" title="Permanent link">&para;</a></h3>
 <p>Variables in firescript must be declared with an explicit type and initialized in the same statement. They are only accessible within their scope:</p>
-<pre><code class="language-firescript">{
+<pre><code class="language-firescript">import @firescript/std.io.{print};
+
+{
     int x = 5;  // x is declared and initialized
 
     {

@@ -1140,7 +1140,7 @@ PI = 3.14159;  // Error: cannot reassign a constant
 string password = null;           // Invalid - non-nullable type cannot hold null
 </code></pre>
 <p>Attempting to use a nullable variable without checking for null may result in runtime errors:</p>
-<pre><code class="language-firescript">nullable string message = null;
+<pre><code class="language-firescript">import @firescript/std.io.{print};\n\nnullable string message = null;
 
 // Safe access pattern
 if (message != null) {
