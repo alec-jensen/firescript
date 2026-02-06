@@ -2,11 +2,10 @@
 
 firescript follows [Semantic Versioning](https://semver.org/). This makes it easier to understand the impact of changes in each release.
 
-## Currently in Development
+## 0.4.0 - Phoenix
+*February 2, 2026*
 
-These are unversioned changes living on the main branch. They will be included in the next release.
-
-This is a MAJOR rewrite and WILL be buggy and will not work correctly.
+Starting with 0.4.0, releases will now be named.
 
 ### Breaking Changes
 
@@ -42,12 +41,14 @@ This is a MAJOR rewrite and WILL be buggy and will not work correctly.
 - `std.math` library with basic math functions like `abs`, `min`, `max`, etc.
 - `std.io` library with `print` and `println` functions.
 - C-style for loops and for-in loops.
+- Added `--version` flag to the compiler for displaying version information.
 
 ### Compiler/Backend Improvements
 
 - Name mangling in generated C code to prevent name collisions between multiple source files and built-in C functions.
 
-## 0.3.0 (Sep 12 2025)
+## 0.3.0
+*September 12, 2025*
 
 ### Breaking Changes
 
@@ -83,7 +84,8 @@ int add(int a, int b) {
 - **Enhanced print function:**
     * The `print` function correctly prints all primitive types.
 
-## 0.2.0 (May 8 2025)
+## 0.2.0
+*May 8, 2025*
 
 ### New Features
 
@@ -135,7 +137,8 @@ int add(int a, int b) {
 - Improved documentation with examples for all supported language features
 - Enhanced test coverage with new test cases for core functionality
 
-## 0.1.1 (January 2025)
+## 0.1.1
+*January 2025*
 
 *There is not a version 0.1.0 because of a versioning mishap during initial release.*
 
@@ -170,7 +173,8 @@ int add(int a, int b) {
 - Fixed incorrect operator precedence in complex expressions
 - Addressed memory management issues in the runtime library
 
-## 0.0.1 (November 2024)
+## 0.0.1
+*November 2024*
 
 ### Initial Release
 

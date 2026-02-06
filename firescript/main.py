@@ -16,6 +16,10 @@ from enums import NodeTypes
 from imports import ModuleResolver, build_merged_ast
 from enums import NodeTypes
 
+FIRESCRIPT_VERSION = "0.4.0"
+FIRESCRIPT_RELEASE_DATE = "February 2, 2026"
+FIRESCRIPT_RELEASE_NAME = "Phoenix"
+
 
 def setup_logging(debug_mode=False):
     """Configure logging with custom formatter."""
@@ -287,9 +291,15 @@ def main():
     # Make the file argument optional and add a directory argument
     parser.add_argument("file", nargs="?", help="Input file")
     parser.add_argument("--dir", help="Compile all .fire files in directory")
+    parser.add_argument("-v", "--version", action="store_true", help="Show version information and exit")
 
 
     args = parser.parse_args()
+
+    if args.version:
+        print(f"firescript {FIRESCRIPT_VERSION} - {FIRESCRIPT_RELEASE_NAME}")
+        print(f"Released {FIRESCRIPT_RELEASE_DATE}")
+        sys.exit(0)
 
     # Configure logging
     setup_logging(args.debug)
