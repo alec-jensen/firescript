@@ -8,8 +8,10 @@
       
       
       
-        <link rel="canonical" href="https://firescript.alecj.com/firescript_philosophy/">
+        <link rel="canonical" href="https://firescript.alecj.com/benchmarks/">
       
+      
+        <link rel="prev" href="../changelog/">
       
       
       
@@ -21,7 +23,7 @@
     
     
       
-        <title>firescript Philosophy - firescript</title>
+        <title>Benchmarks - firescript</title>
       
     
     
@@ -72,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#firescript-philosophy" class="md-skip">
+        <a href="#benchmarks" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              firescript Philosophy
+              Benchmarks
             
           </span>
         </div>
@@ -294,9 +296,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../benchmarks/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -832,10 +836,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../benchmarks/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -851,6 +882,37 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#recursive-fibonacci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recursive Fibonacci
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -882,10 +944,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#key-principles" class="md-nav__link">
+  <a href="#recursive-fibonacci" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Key Principles
+        Recursive Fibonacci
       
     </span>
   </a>
@@ -917,7 +979,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/firescript_philosophy.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/benchmarks.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -925,18 +987,51 @@
   
 
 
-<h1 id="firescript-philosophy">firescript Philosophy<a class="headerlink" href="#firescript-philosophy" title="Permanent link">&para;</a></h1>
-<p>firescript is intended to be a simple but powerful and fast language with safety by design. This is accomplished through a strict type system, explicit design, and simple to learn but powerful compile-time memory management. It is intended to be usable in a variety of domains, from systems programming to web development, as it compiles to a C backend or JavaScript + WebAssembly in the future.</p>
-<h2 id="key-principles">Key Principles<a class="headerlink" href="#key-principles" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Simplicity:</strong> The language syntax and semantics are designed to be easy to learn and understand, minimizing complexity while maximizing expressiveness.</li>
-<li><strong>Safety:</strong> Strong static typing, null safety, and compile-time checks help prevent common programming errors.</li>
-<li>Null safety is enforced by default; nullable types must be explicitly declared.</li>
-<li>Memory safety is ensured through compile-time ownership and borrowing rules, preventing issues like dangling pointers</li>
-<li>There is no undefined behavior; all operations are well-defined.</li>
-<li><strong>Performance:</strong> Although the syntax is high-level, firescript is designed to compile to efficient low-level code, with no runtime overhead.</li>
-<li><strong>Explicitness:</strong> The language favors explicit declarations and operations over implicit behavior, making code easier to read and reason about.</li>
-</ul>
+<h1 id="benchmarks">Benchmarks<a class="headerlink" href="#benchmarks" title="Permanent link">&para;</a></h1>
+<h2 id="recursive-fibonacci">Recursive Fibonacci<a class="headerlink" href="#recursive-fibonacci" title="Permanent link">&para;</a></h2>
+<p>Algorithm pseudo‑code:</p>
+<pre><code>function fibonacci(n) {
+    if n &lt;= 1 {
+        return n
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2)
+}
+
+fibonacci(47)
+</code></pre>
+<p>Fibonacci of 47 is used to provide a reasonable runtime for comparison. Test is run 5 times and the average time is reported.
+Tests are run on an AMD Ryzen 7 5800H processor.
+These tests were run against the latest stable releases of each language's compiler/interpreter as of October 2025.</p>
+<table>
+<thead>
+<tr>
+<th>Language</th>
+<th>Time (seconds)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C</td>
+<td>3.5s (avg)</td>
+</tr>
+<tr>
+<td>firescript ⭐</td>
+<td>4.2s (avg)</td>
+</tr>
+<tr>
+<td>Rust</td>
+<td>5.8s (avg)</td>
+</tr>
+<tr>
+<td>Zig</td>
+<td>6.5s (avg)</td>
+</tr>
+<tr>
+<td>Go</td>
+<td>13.2s (avg)</td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -961,6 +1056,28 @@
       
         <footer class="md-footer">
   
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../changelog/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Changelog">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Changelog
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
     
   
   <div class="md-footer-meta md-typeset">
