@@ -1,0 +1,10 @@
+// Math utilities module
+int32 square(int32 x) {
+    return x * x;
+}
+
+int32 double_val(int32 x) {
+    return x + x;
+}
+
+int32 MAX = 100;

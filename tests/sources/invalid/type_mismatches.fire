@@ -1,0 +1,61 @@
+// Invalid tests: type mismatches
+// EXPECT: compiler errors about type mismatch
+
+print("-- invalid: assign string to int32 --");
+int32 a = "hello"; // error
+
+print("-- invalid: incompatible addition --");
+string s = "hi";
+int32 i = 5;
+int32 bad = s + i; // error (string + int32 not supported)
+
+print("-- invalid: array element wrong type --");
+int32[] nums = [1, 2, "three"]; // error mixed types
+
+print("-- invalid: initializer null to non-nullable --");
+int32 notNull = null; // error
+
+print("-- invalid: function call undefined --");
+foo(1,2,3); // undefined function
+
+print("-- invalid: array method wrong arg type --");
+int32[] arr = [1,2];
+arr.append("x"); // error wrong type
+arr.insert(0, "y"); // error wrong type
+arr.insert("z", 3); // error index must be int32
+
+print("-- invalid: pop with wrong arg count/type --");
+arr.pop(1,2); // too many args
+arr.pop("x"); // wrong type
+
+print("-- invalid: index non-array --");
+int32 b = 5;
+int32 c = b[0]; // cannot index non-array
+
+print("-- invalid: index not int --");
+int32[] z = [1];
+int32 d = z["zero"]; // index must be int32
+
+print("-- invalid: condition not boolean --");
+if (5) { // condition must be bool
+    print(5);
+}
+
+print("-- invalid: variable shadowing --");
+int32 outer = 1;
+{
+    int32 outer = 2; // shadowing not allowed
+}
+
+print("-- invalid: use before declaration --");
+print(beforeDecl); // variable not defined
+int beforeDecl = 10;
+
+print("-- invalid: mixed array literal nested --");
+int32[] nested = [[1],[2]]; // array of arrays not allowed currently
+
+print("-- invalid: assignment type mismatch --");
+int32 m = 1;
+m = "oops"; // mismatch
+
+print("-- invalid tests end --");

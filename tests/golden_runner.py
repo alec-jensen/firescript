@@ -8,11 +8,12 @@ captures stdout, and compares it against expected golden files.
 Golden files live under tests/expected/<basename>.out by default.
 
 Usage examples:
-  - Run all tests under examples/tests (excluding invalid):
+
+  - Run all tests under tests/sources (excluding invalid):
       python3 tests/golden_runner.py
 
   - Run a specific file:
-      python3 tests/golden_runner.py --cases examples/tests/functions.fire
+      python3 tests/golden_runner.py --cases tests/sources/functions.fire
 
   - Update goldens to match current output (review diffs in Git):
       python3 tests/golden_runner.py --update
@@ -25,6 +26,7 @@ from __future__ import annotations
 import argparse
 import subprocess
 import sys
+import concurrent.futures
 import os
 import glob
 import difflib
@@ -34,7 +36,7 @@ from typing import List, Tuple, Optional
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(REPO_ROOT, os.pardir))
 DEFAULT_SEARCH = [
-    os.path.join(REPO_ROOT, "examples", "tests", "*.fire"),
+    os.path.join(REPO_ROOT, "tests", "sources", "*.fire"),
 ]
 EXPECTED_DIR = os.path.join(REPO_ROOT, "tests", "expected")
 INPUTS_DIR = os.path.join(REPO_ROOT, "tests", "inputs")
@@ -166,12 +168,8 @@ def write_diff(tc: TestCase, expected_norm: str, actual_norm: str) -> str:
 
 
 def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bool, timeout: Optional[float]) -> int:
-    total = 0
-    passed = 0
-    failed: List[Tuple[TestCase, str, str]] = []
 
-    for tc in cases:
-        total += 1
+    def run_one(tc: TestCase):
         try:
             _log("CASE", tc.source, color_code="36")  # cyan
             if verbose:
@@ -186,34 +184,46 @@ def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bo
             if os.path.exists(tc.expected_path):
                 expected_norm = normalize(read_file(tc.expected_path))
                 if actual_norm == expected_norm:
-                    passed += 1
-                    _log("PASS", tc.source, color_code="32")  # green
+                    return (tc, "PASS", None, None)
                 else:
                     if update:
                         write_file(tc.expected_path, actual_norm)
-                        passed += 1
-                        _log("UPDATE", tc.expected_path, color_code="33")  # yellow
+                        return (tc, "UPDATE", None, None)
                     else:
-                        failed.append((tc, expected_norm, actual_norm))
                         diff_path = write_diff(tc, expected_norm, actual_norm)
-                        _log("FAIL", f"{tc.source} -> {diff_path}", color_code="31")  # red
-                        if fail_fast:
-                            break
+                        return (tc, "FAIL", expected_norm, actual_norm)
             else:
                 if update:
                     write_file(tc.expected_path, actual_norm)
-                    passed += 1
-                    _log("NEW", f"wrote golden {tc.expected_path}", color_code="33")  # yellow
+                    return (tc, "NEW", None, None)
                 else:
-                    failed.append((tc, "<missing>", actual_norm))
-                    _log("FAIL", f"missing golden for {tc.source}: {tc.expected_path}", color_code="31")
-                    if fail_fast:
-                        break
+                    return (tc, "FAIL_MISSING", "<missing>", actual_norm)
         except Exception as e:
-            failed.append((tc, "<exception>", str(e)))
-            _log("ERROR", f"{tc.source}: {e}", color_code="31")
-            if fail_fast:
-                break
+            return (tc, "ERROR", "<exception>", str(e))
+
+    results = []
+    max_workers = os.cpu_count() or 2
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        fut_to_tc = {executor.submit(run_one, tc): tc for tc in cases}
+        for fut in concurrent.futures.as_completed(fut_to_tc):
+            tc, status, exp, act = fut.result()
+            if status == "PASS":
+                _log("PASS", tc.source, color_code="32")
+            elif status == "UPDATE":
+                _log("UPDATE", tc.expected_path, color_code="33")
+            elif status == "NEW":
+                _log("NEW", f"wrote golden {tc.expected_path}", color_code="33")
+            elif status == "FAIL":
+                _log("FAIL", f"{tc.source}", color_code="31")
+            elif status == "FAIL_MISSING":
+                _log("FAIL", f"missing golden for {tc.source}: {tc.expected_path}", color_code="31")
+            elif status == "ERROR":
+                _log("ERROR", f"{tc.source}: {act}", color_code="31")
+            results.append((tc, status, exp, act))
+
+    total = len(results)
+    passed = sum(1 for _, status, _, _ in results if status in ("PASS", "UPDATE", "NEW"))
+    failed = [(tc, exp, act) for tc, status, exp, act in results if status in ("FAIL", "FAIL_MISSING", "ERROR")]
 
     summary_line = f"Summary: {passed}/{total} passed, {len(failed)}/{total} failed"
     if failed:
@@ -231,7 +241,7 @@ def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bo
 def main():
     ap = argparse.ArgumentParser(description="firescript golden test runner")
     ap.add_argument("--cases", nargs="*", help="Specific .fire sources to test")
-    ap.add_argument("--glob", action="append", help="Glob(s) to discover sources; defaults to examples/tests/*.fire")
+    ap.add_argument("--glob", action="append", help="Glob(s) to discover sources; defaults to tests/sources/*.fire")
     ap.add_argument("--update", action="store_true", help="Update or create golden files to match current output")
     ap.add_argument("--fail-fast", action="store_true", help="Stop on first failure")
     ap.add_argument("--verbose", action="store_true", help="Verbose output")

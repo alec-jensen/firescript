@@ -1,0 +1,16 @@
+// Invalid control flow tests
+// EXPECT: errors about conditions and misplaced statements
+
+print("-- invalid: break outside loop --");
+break; // should error (not inside loop)
+
+print("-- invalid: continue outside loop --");
+continue; // should error
+
+print("-- invalid: if condition type mismatch (already elsewhere) repeating with string) --");
+if ("hello") { print(1); }
+
+print("-- invalid: while condition non-bool --");
+while (1) { print(1); }
+
+print("-- invalid control flow tests end --");

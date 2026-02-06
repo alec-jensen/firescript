@@ -1,0 +1,28 @@
+// Test combining constraint aliases
+
+import @firescript/std.io.{println};
+
+constraint SmallInt = int8 | int16;
+constraint MediumInt = int32 | int64;
+constraint AllInt = SmallInt | MediumInt;  // Nested alias
+
+T triple<T: AllInt>(T value) {
+    return value + value + value;
+}
+
+int8 a = 10i8;
+int16 b = 100i16;
+int32 c = 1000i32;
+int64 d = 10000i64;
+
+int8 r1 = triple(a);
+int16 r2 = triple(b);
+int32 r3 = triple(c);
+int64 r4 = triple(d);
+
+println(r1);  // 30
+println(r2);  // 300
+println(r3);  // 3000
+println(r4);  // 30000
+
+return 0;

@@ -1,0 +1,32 @@
+// Nested classes test: Rect composed of Points
+
+import @firescript/std.io.{println};
+
+class Point {
+    int32 x;
+    int32 y;
+    Point(&this, int32 x, int32 y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+class Rect {
+    Point topLeft;
+    Point bottomRight;
+    Rect(&this, Point tl, Point br) {
+        this.topLeft = tl;
+        this.bottomRight = br;
+    }
+    
+    int32 width(&this) {
+        return this.bottomRight.x - this.topLeft.x;
+    }
+}
+
+Point p1 = new Point(1, 2);
+Point p2 = new Point(5, 7);
+Rect r = new Rect(p1, p2);
+println(r.topLeft.x);
+println(r.bottomRight.y);
+println(r.width());

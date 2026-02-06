@@ -1,0 +1,5 @@
+// Class syntax smoke test (no runtime output)
+class Point {
+    int32 x;
+    int32 y;
+}

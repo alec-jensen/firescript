@@ -1,0 +1,12 @@
+// Recursive Fibonacci test using functions
+
+import @firescript/std.io.{println};
+
+int64 fib(int64 n) {
+    if (n <= 1i64) {
+        return n;
+    }
+    return fib(n - 1i64) + fib(n - 2i64);
+}
+
+println(fib(20i64));

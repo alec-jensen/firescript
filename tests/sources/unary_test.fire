@@ -1,0 +1,11 @@
+import @firescript/std.io.{println};
+
+int32 x = -42;
+int32 y = -x;
+int32 z = +5;
+
+println(x);
+println(y);
+println(z);
+
+return 0;

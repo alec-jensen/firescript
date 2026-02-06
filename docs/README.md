@@ -33,7 +33,12 @@ Check the `/examples` directory for complete code samples:
 * Array manipulation
 * Scope and variable visibility demonstrations
 
-## 6. Changelog
+
+## 6. Benchmarks
+
+See the [Benchmarks](benchmarks.md) page for performance comparisons with other languages.
+
+## 7. Changelog
 
 For the latest updates and changes to the firescript language, see the [changelog](changelog.md).
 

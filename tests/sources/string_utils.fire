@@ -1,0 +1,4 @@
+// String utilities module
+string wrap(string s) {
+    return "[" + s + "]";
+}

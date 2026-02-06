@@ -1,0 +1,109 @@
+import @firescript/std.io.{println};
+
+class Person {
+    string name;
+    int32 age;
+
+    Person(&this, string name, int32 age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    string describe(&this) {
+        return this.name + " is " + toString(this.age);
+    }
+}
+
+class Student from Person {
+    string school;
+
+    Student(&this, string name, int32 age, string school) {
+        // Constructor chaining to parent
+        this.super(name, age);
+        this.school = school;
+    }
+
+    string describe(&this) {
+        return this.name + " is " + toString(this.age) + " at " + this.school;
+    }
+}
+
+Student s = new Student("Jane", 18, "School");
+println(s.describe());
+println(s.name);
+println(s.age);
+
+// Multi-level inheritance (double/triple/quad)
+
+class A {
+    string id;
+
+    A(&this, string id) {
+        this.id = id;
+    }
+
+    string root(&this) {
+        return this.id;
+    }
+
+    string chain(&this) {
+        return "A(" + this.id + ")";
+    }
+}
+
+class B from A {
+    string bid;
+
+    B(&this, string id, string bid) {
+        this.super(id);
+        this.bid = bid;
+    }
+
+    string onlyB(&this) {
+        return this.bid;
+    }
+
+    string chain(&this) {
+        return "A(" + this.id + ")->B(" + this.bid + ")";
+    }
+}
+
+class C from B {
+    string cid;
+
+    C(&this, string id, string bid, string cid) {
+        this.super(id, bid);
+        this.cid = cid;
+    }
+
+    string onlyC(&this) {
+        return this.cid;
+    }
+
+    string chain(&this) {
+        return "A(" + this.id + ")->B(" + this.bid + ")->C(" + this.cid + ")";
+    }
+}
+
+class D from C {
+    string did;
+
+    D(&this, string id, string bid, string cid, string did) {
+        this.super(id, bid, cid);
+        this.did = did;
+    }
+
+    string chain(&this) {
+        return "A(" + this.id + ")->B(" + this.bid + ")->C(" + this.cid + ")->D(" + this.did + ")";
+    }
+}
+
+D d = new D("a", "b", "c", "d");
+println(d.chain());
+println(d.id);
+println(d.bid);
+println(d.cid);
+println(d.did);
+println(d.root());
+println(d.onlyB());
+println(d.onlyC());

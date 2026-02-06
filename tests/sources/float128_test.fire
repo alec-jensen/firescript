@@ -1,0 +1,7 @@
+import @firescript/std.io.{println};
+
+println("-- float128 test --");
+float128 a = 1.25f128;
+float128 b = 2.75f128;
+float128 c = a + b;
+println(c);

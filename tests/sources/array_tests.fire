@@ -1,0 +1,36 @@
+// Fixed-size Array Test Suite
+
+import @firescript/std.io.{println};
+
+// Test 1: Array declaration and initialization
+println("Test 1: Array declaration and initialization");
+int32[] numbers = [10, 20, 30, 40, 50];
+println(numbers);
+
+// Test 2: Array indexing (access)
+println("\nTest 2: Array indexing");
+println(numbers[0]);  // First element
+println(numbers[2]);  // Middle element
+println(numbers[4]);  // Last element
+
+// Test 3: Array length property
+println("\nTest 3: Array length property");
+println(numbers.length()); // 5
+
+// Test 4: Iterate over array
+println("\nTest 4: Iterate over array");
+int32 i = 0;
+while (i < numbers.length()) {
+	println(numbers[i]);
+	i = i + 1;
+}
+
+// Test 5: Array of strings
+println("\nTest 5: Array of strings");
+string[] names = ["Alice", "Bob", "Charlie"];
+println(names);
+println(names.length()); // 3
+println(names[1]);       // Bob
+
+// End of tests
+println("\nAll array tests completed!");

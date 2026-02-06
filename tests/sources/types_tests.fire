@@ -1,0 +1,61 @@
+// Integer arithmetic
+
+import @firescript/std.io.{println};
+
+println("Integer arithmetic");
+int32 i1 = 5;
+int32 i2 = 10;
+int32 sum = i1 + i2;
+int32 diff = i2 - i1;
+int32 prod = i1 * i2;
+int32 quot = i2 / i1;
+int32 rem = i2 % 3;
+println(sum);     // 15
+println(diff);    // 5
+println(prod);    // 50
+println(quot);    // 2
+println(rem);     // 1
+
+// Floating point (float32)
+println("Floating point arithmetic");
+float32 f1 = 5.5f;
+float32 f2 = 10.0f;
+float32 fsum = f1 + f2;
+println(fsum);   // 15.5
+
+// Double precision (float64)
+println("Double precision arithmetic");
+float64 d1 = 5.5;
+float64 d2 = 10.0;
+float64 dsum = d1 + d2;
+println(dsum);   // 15.5
+
+// Booleans and comparisons
+println("Boolean and comparisons");
+bool t = true;
+bool f = false;
+println(t);       // true
+println(f);       // false
+println(i1 < i2); // true (int32 relational)
+println(i1 == 5); // true
+println(d1 > d2); // false (float64 relational)
+
+// Strings and concatenation
+println("String concatenation");
+string hello = "Hello, ";
+string world = "world!";
+string greeting = hello + world;
+println(greeting); // Hello, world!
+
+// Arrays of ints (fixed-size)
+println("Array of integers");
+int32[] a = [1, 2, 3, 4];
+println(a.length());   // 4
+println(a[0]);         // 1
+println(a[2]);         // 3
+
+// Array of strings
+println("Array of strings");
+string[] words = ["fire", "script", "rocks"];
+println(words.length());   // 3
+println(words[1]);         // script

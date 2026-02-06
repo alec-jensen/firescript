@@ -1,0 +1,36 @@
+import @firescript/std.io.{println};
+
+println("-- numeric casts --");
+
+int8 i8 = (127i16 as int8);
+println(i8);
+
+int16 i16 = ((0i32 - 12345i32) as int16);
+println(i16);
+
+int32 i32 = (123456i64 as int32);
+println(i32);
+
+int64 i64 = (123456789i64 as int64);
+println(i64);
+
+uint8 u8 = (255i16 as uint8);
+println(u8);
+
+uint16 u16 = (65000i32 as uint16);
+println(u16);
+
+uint32 u32 = (4000000000u64 as uint32);
+println(u32);
+
+uint64 u64 = (9000000000u64 as uint64);
+println(u64);
+
+float32 f32 = (3.25 as float32);
+println(f32);
+
+float64 f64 = (3.25 as float64);
+println(f64);
+
+float128 f128 = (3.25 as float128);
+println(f128);

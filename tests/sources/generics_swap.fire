@@ -1,0 +1,22 @@
+// Test generic function with multiple type parameters
+
+import @firescript/std.io.{println};
+
+// Generic pair swap function
+void swap<T>(T a, T b) {
+    T temp = a;
+    a = b;
+    b = temp;
+    println(a);
+    println(b);
+}
+
+// Test swapping int32 values
+int32 x = 5;
+int32 y = 10;
+swap(x, y);  // Should print 10, 5
+
+// Test swapping float64 values  
+float64 p = 1.5;
+float64 q = 2.5;
+swap(p, q);  // Should print 2.5, 1.5
