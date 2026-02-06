@@ -356,7 +356,7 @@ class SemanticAnalyzer:
             # TODO: Validate that borrowed returns don't escape
         
         # Control flow: analyze branches
-        elif node.node_type in (NodeTypes.IF_STATEMENT, NodeTypes.ELIF_STATEMENT, NodeTypes.ELSE_STATEMENT, NodeTypes.WHILE_STATEMENT):
+        elif node.node_type in (NodeTypes.IF_STATEMENT, NodeTypes.ELIF_STATEMENT, NodeTypes.ELSE_STATEMENT, NodeTypes.WHILE_STATEMENT, NodeTypes.FOR_STATEMENT, NodeTypes.FOR_IN_STATEMENT):
             for child in node.children:
                 self._analyze_node(child)
         

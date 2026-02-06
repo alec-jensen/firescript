@@ -691,6 +691,18 @@ class Parser:
                 ):
                     node = self._parse_postfix_cast(node)
                     continue
+                # Postfix increment/decrement: x++ or x--
+                elif self.current_token and self.current_token.type in ("INCREMENT", "DECREMENT"):
+                    op_token = self.current_token
+                    self.advance()
+                    node = ASTNode(
+                        NodeTypes.UNARY_EXPRESSION,
+                        node.token if node else op_token,
+                        op_token.value,  # "++" or "--"
+                        [],  # No children for postfix increment/decrement
+                        op_token.index,
+                    )
+                    continue
                 break
             return self._parse_postfix_cast(node)
         else:
@@ -893,7 +905,15 @@ class Parser:
         if else_branch_node:
             children.append(else_branch_node)
 
-        return ASTNode(NodeTypes.IF_STATEMENT, if_token, "if", children, if_token.index)
+        if_node = ASTNode(NodeTypes.IF_STATEMENT, if_token, "if", children, if_token.index)
+        # Set parent for all children
+        if condition:
+            condition.parent = if_node
+        if then_branch_node:
+            then_branch_node.parent = if_node
+        if else_branch_node:
+            else_branch_node.parent = if_node
+        return if_node
 
     def parse_variable_declaration(self):
         """Parse variable declarations like: [nullable] [const] type [ [] ] name = expr"""
@@ -1071,6 +1091,14 @@ class Parser:
         # New scope node: copy parent scope
         if node.node_type == NodeTypes.SCOPE:
             new_scope = current_scope.copy()
+            for child in node.children:
+                self.resolve_variable_types(child, new_scope)
+            return
+
+        # For loops: create new scope for init variables
+        if node.node_type in (NodeTypes.FOR_STATEMENT, NodeTypes.FOR_IN_STATEMENT):
+            new_scope = current_scope.copy()
+            # Process all children (init, condition, increment, body) in the new scope
             for child in node.children:
                 self.resolve_variable_types(child, new_scope)
             return
@@ -2074,7 +2102,7 @@ class Parser:
             cur = node.parent
             in_loop = False
             while cur is not None:
-                if cur.node_type == NodeTypes.WHILE_STATEMENT:
+                if cur.node_type == NodeTypes.WHILE_STATEMENT or cur.node_type == NodeTypes.FOR_STATEMENT or cur.node_type == NodeTypes.FOR_IN_STATEMENT:
                     in_loop = True
                     break
                 cur = cur.parent
@@ -2154,6 +2182,9 @@ class Parser:
         # Handle while loops
         if self.current_token and self.current_token.type == "WHILE":
             return self.parse_while_statement()
+        # Handle for loops
+        if self.current_token and self.current_token.type == "FOR":
+            return self.parse_for_statement()
         # Handle break / continue
         if self.current_token and self.current_token.type in ("BREAK", "CONTINUE"):
             tok = self.current_token
@@ -2732,6 +2763,8 @@ class Parser:
                     in (
                         NodeTypes.IF_STATEMENT,
                         NodeTypes.WHILE_STATEMENT,
+                        NodeTypes.FOR_STATEMENT,
+                        NodeTypes.FOR_IN_STATEMENT,
                         NodeTypes.SCOPE,
                         NodeTypes.FUNCTION_DEFINITION,
                     )
@@ -3673,10 +3706,209 @@ class Parser:
             )
             if stmt:
                 stmt.parent = body
-        return ASTNode(
+        while_node = ASTNode(
             NodeTypes.WHILE_STATEMENT,
             while_token,
             "while",
             [condition, body],
             while_token.index,
         )
+        # Set parent for all children
+        if condition:
+            condition.parent = while_node
+        if body:
+            body.parent = while_node
+        return while_node
+    def parse_for_statement(self):
+        """Parse a for loop: either C-style for (init; condition; increment) or for item in collection."""
+        for_token = self.consume("FOR")
+        if not for_token:
+            return None
+        
+        if not self.consume("OPEN_PAREN"):
+            self.error("Expected '(' after 'for'", self.current_token or for_token)
+            return None
+        
+        # Try to determine if this is a C-style for or for-in loop
+        # We need to look ahead to see if there's an 'in' keyword
+        # Check for pattern: type identifier in expression
+        is_for_in = False
+        if self.current_token and self.current_token.type in self.TYPE_TOKEN_NAMES:
+            # Check if there's IDENTIFIER then IN
+            next_token = self.peek(1)
+            next_next_token = self.peek(2)
+            if (next_token and next_token.type == "IDENTIFIER" and
+                next_next_token and next_next_token.type == "IN"):
+                is_for_in = True
+        
+        if is_for_in:
+            # Parse for-in loop: for (type item in collection)
+            # Expect a type declaration first
+            if not self.current_token or self.current_token.type not in self.TYPE_TOKEN_NAMES:
+                self.error("Expected type for loop variable", self.current_token or for_token)
+                return None
+            
+            var_type = self.current_token
+            self.advance()
+            
+            if not self.current_token or self.current_token.type != "IDENTIFIER":
+                self.error("Expected loop variable name after type", self.current_token or for_token)
+                return None
+            
+            loop_var = self.current_token
+            self.advance()
+            
+            if not self.consume("IN"):
+                self.error("Expected 'in' after loop variable", self.current_token or loop_var)
+                return None
+            
+            collection = self.parse_expression()
+            if collection is None:
+                self.error("Expected collection expression after 'in'", self.current_token or for_token)
+                return None
+            
+            if not self.consume("CLOSE_PAREN"):
+                self.error("Expected ')' after for-in header", self.current_token or for_token)
+                return None
+            
+            # Parse body
+            if self.current_token and self.current_token.type == "OPEN_BRACE":
+                body = self.parse_scope()
+                if body is None:
+                    return None
+            else:
+                stmt = self._parse_statement()
+                body = ASTNode(
+                    NodeTypes.SCOPE,
+                    stmt.token if stmt else None,
+                    "scope",
+                    [stmt] if stmt else [],
+                    stmt.index if stmt else for_token.index,
+                )
+                if stmt:
+                    stmt.parent = body
+            
+            # Create a variable declaration node for the loop variable
+            # Store type info as attributes, not as child nodes (following parse_variable_declaration pattern)
+            identifier_node = ASTNode(
+                NodeTypes.IDENTIFIER,
+                loop_var,
+                loop_var.value,
+                [],
+                loop_var.index,
+            )
+            
+            # Create a variable declaration for the loop variable
+            var_decl = ASTNode(
+                NodeTypes.VARIABLE_DECLARATION,
+                loop_var,
+                loop_var.value,
+                [identifier_node],  # The identifier is the child
+                var_type.index,
+                self._normalize_type_name(var_type),  # var_type as attribute
+                False,  # is_nullable
+                False,  # is_const
+                None,   # return_type
+                False,  # is_array
+                False,  # is_ref_counted
+            )
+            identifier_node.parent = var_decl
+            
+            for_in_node = ASTNode(
+                NodeTypes.FOR_IN_STATEMENT,
+                for_token,
+                "for_in",
+                [var_decl, collection, body],
+                for_token.index,
+            )
+            # Set parent for all children
+            var_decl.parent = for_in_node
+            if collection:
+                collection.parent = for_in_node
+            if body:
+                body.parent = for_in_node
+            return for_in_node
+        else:
+            # Parse C-style for loop: for (init; condition; increment)
+            # Parse init (can be variable declaration or expression statement)
+            init = None
+            if self.current_token and self.current_token.type != "SEMICOLON":
+                # Check if it's a variable declaration
+                if self.current_token.type in self.TYPE_TOKEN_NAMES:
+                    init = self.parse_variable_declaration()
+                else:
+                    init = self.parse_expression()
+            
+            if not self.consume("SEMICOLON"):
+                self.error("Expected ';' after for loop init", self.current_token or for_token)
+                return None
+            
+            # Parse condition
+            condition = None
+            if self.current_token and self.current_token.type != "SEMICOLON":
+                condition = self.parse_expression()
+            
+            if not self.consume("SEMICOLON"):
+                self.error("Expected ';' after for loop condition", self.current_token or for_token)
+                return None
+            
+            # Parse increment
+            increment = None
+            if self.current_token and self.current_token.type != "CLOSE_PAREN":
+                increment = self.parse_expression()
+            
+            if not self.consume("CLOSE_PAREN"):
+                self.error("Expected ')' after for loop header", self.current_token or for_token)
+                return None
+            
+            # Parse body
+            if self.current_token and self.current_token.type == "OPEN_BRACE":
+                body = self.parse_scope()
+                if body is None:
+                    return None
+            else:
+                stmt = self._parse_statement()
+                body = ASTNode(
+                    NodeTypes.SCOPE,
+                    stmt.token if stmt else None,
+                    "scope",
+                    [stmt] if stmt else [],
+                    stmt.index if stmt else for_token.index,
+                )
+                if stmt:
+                    stmt.parent = body
+            
+            # Build children list, filtering out None values
+            children = []
+            if init is not None:
+                children.append(init)
+            else:
+                # Add an empty placeholder for init if None
+                children.append(ASTNode(NodeTypes.LITERAL, None, "empty", [], for_token.index))
+            
+            if condition is not None:
+                children.append(condition)
+            else:
+                # Add an empty placeholder for condition if None
+                children.append(ASTNode(NodeTypes.LITERAL, None, "empty", [], for_token.index))
+            
+            if increment is not None:
+                children.append(increment)
+            else:
+                # Add an empty placeholder for increment if None
+                children.append(ASTNode(NodeTypes.LITERAL, None, "empty", [], for_token.index))
+            
+            children.append(body)
+            
+            for_node = ASTNode(
+                NodeTypes.FOR_STATEMENT,
+                for_token,
+                "for",
+                children,
+                for_token.index,
+            )
+            # Set parent for all children
+            for child in children:
+                if child:
+                    child.parent = for_node
+            return for_node

@@ -41,6 +41,7 @@ This is a MAJOR rewrite and WILL be buggy and will not work correctly.
 - Generic functions
 - `std.math` library with basic math functions like `abs`, `min`, `max`, etc.
 - `std.io` library with `print` and `println` functions.
+- C-style for loops and for-in loops.
 
 ### Compiler/Backend Improvements
 

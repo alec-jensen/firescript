@@ -9,6 +9,8 @@ class NodeTypes(Enum):
     ELIF_STATEMENT = "ElifStatement"
     ELSE_STATEMENT = "ElseStatement"
     WHILE_STATEMENT = "WhileStatement"
+    FOR_STATEMENT = "ForStatement"
+    FOR_IN_STATEMENT = "ForInStatement"
     BREAK_STATEMENT = "BreakStatement"
     CONTINUE_STATEMENT = "ContinueStatement"
     VARIABLE_DECLARATION = "VariableDeclaration"

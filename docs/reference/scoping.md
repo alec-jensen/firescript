@@ -14,6 +14,8 @@ A new scope is created by **any** set of curly braces `{}`. This includes:
 * **Bare Braces:** You can create an explicit scope simply by using a pair of curly braces `{}` anywhere they are syntactically allowed.
 
 ```firescript
+import @firescript/std.io.{print};
+
 // Global scope
 
 int globalVar = 10;
@@ -59,6 +61,8 @@ if (globalVar > 5) {
 Variables in firescript must be declared with an explicit type and initialized in the same statement. They are only accessible within their scope:
 
 ```firescript
+import @firescript/std.io.{print};
+
 {
     int x = 5;  // x is declared and initialized
     

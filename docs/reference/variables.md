@@ -53,7 +53,7 @@ string password = null;           // Invalid - non-nullable type cannot hold nul
 Attempting to use a nullable variable without checking for null may result in runtime errors:
 
 ```firescript
-nullable string message = null;
+import @firescript/std.io.{print};\n\nnullable string message = null;
 
 // Safe access pattern
 if (message != null) {

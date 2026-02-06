@@ -1,6 +1,6 @@
 # Control Flow
 
-> Only `if`/`else` chains and `while` loops are currently supported. C-style `for` loops, for-in loops, range loops, and the ternary operator are not supported by the compiler.
+firescript supports several control flow structures: conditional statements (`if`/`else`), while loops, C-style for loops, and for-in loops. Range loops and the ternary operator are not yet supported by the compiler.
 
 ## Introduction to Control Flow
 
@@ -23,6 +23,8 @@ if (condition) {
 Example:
 
 ```firescript
+import @firescript/std.io.{print};
+
 int8 age = 18;
 if (age >= 18) {
     print("You are eligible to vote");
@@ -44,6 +46,8 @@ if (condition) {
 Example:
 
 ```firescript
+import @firescript/std.io.{print};
+
 int8 score = 65;
 if (score >= 70) {
     print("Pass");
@@ -71,6 +75,8 @@ if (condition1) {
 Example:
 
 ```firescript
+import @firescript/std.io.{print};
+
 int8 grade = 85;
 
 if (grade >= 90) {
@@ -91,6 +97,8 @@ if (grade >= 90) {
 Conditional statements can be nested within other conditional statements:
 
 ```firescript
+import @firescript/std.io.{print};
+
 bool hasDiscount = true;
 int8 totalAmount = 120;
 
@@ -115,6 +123,8 @@ Conditions can use various boolean operators:
 Example:
 
 ```firescript
+import @firescript/std.io.{print};
+
 int8 age = 25;
 bool hasLicense = true;
 
@@ -144,6 +154,8 @@ while (condition) {
 Example:
 
 ```firescript
+import @firescript/std.io.{print};
+
 uint8 count = 0;
 while (count < 5) {
     print(count);
@@ -175,6 +187,8 @@ The following statements can control loop execution:
 Example:
 
 ```firescript
+import @firescript/std.io.{print};
+
 uint8 i = 0;
 while (i < 10) {
     i = i + 1;
@@ -197,6 +211,8 @@ while (i < 10) {
 Loops and conditional statements can be combined to create powerful control flows:
 
 ```firescript
+import @firescript/std.io.{print};
+
 int8[] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 int8 sum = 0;
 uint8 i = 0;
@@ -211,34 +227,122 @@ while (i < numbers.length) {
 print(sum); // Outputs: 30 (2 + 4 + 6 + 8 + 10)
 ```
 
-## Future Control Flow Features
+## For Loops
 
-The following control flow features are planned but not yet implemented in the current compiler:
+firescript supports two types of for loops: C-style for loops and for-in loops.
 
 ### C-style For Loops
 
+C-style for loops consist of three parts: initialization, condition, and increment. They are ideal for counting iterations.
+
 ```firescript
-// Future syntax
-for (uint8 i = 0; i < 5; i++) {
-    print(i);
+import @firescript/std.io.{println};
+
+for (int32 i = 0; i < 5; i++) {
+    println(i);
+}
+```
+
+Any or all parts can be omitted:
+
+```firescript
+import @firescript/std.io.{println};
+
+int32 i = 0;
+for (; i < 5; i++) {  // Init omitted
+    println(i);
+}
+
+for (int32 j = 0; j < 10;) {  // Increment omitted
+    println(j);
+    j++;
+}
+```
+
+Variables declared in the initialization section are scoped to the for loop:
+
+```firescript
+import @firescript/std.io.{println};
+
+for (int32 i = 0; i < 3; i++) {
+    println(i);
+}
+// i is not accessible here
+
+// This is valid - i is redeclared in a new scope
+for (int32 i = 0; i < 5; i++) {
+    println(i);
+}
+```
+
+Nested for loops:
+
+```firescript
+import @firescript/std.io.{println};
+
+for (int32 i = 0; i < 3; i++) {
+    for (int32 j = 0; j < 3; j++) {
+        println(i * 3 + j);
+    }
 }
 ```
 
 ### For-In Loops
 
+For-in loops iterate over elements in a collection (currently arrays). The loop variable must be declared with a type:
+
 ```firescript
-// Future syntax
-string[] fruits = ["apple", "banana", "cherry"];
-for (string fruit : fruits) {
-    print(fruit);
+import @firescript/std.io.{println};
+
+int32[] numbers = [1, 2, 3, 4, 5];
+for (int32 num in numbers) {
+    println(num);
 }
 ```
+
+For-in with array literals:
+
+```firescript
+import @firescript/std.io.{println};
+
+for (int32 value in [10, 20, 30, 40, 50]) {
+    println(value);
+}
+```
+
+### Break and Continue in For Loops
+
+Both `break` and `continue` work in for loops:
+
+```firescript
+import @firescript/std.io.{println};
+
+// Break: exit the loop early
+for (int32 i = 0; i < 10; i++) {
+    if (i == 5) {
+        break;  // Exit when i reaches 5
+    }
+    println(i);  // Prints 0, 1, 2, 3, 4
+}
+
+// Continue: skip to next iteration
+for (int32 i = 0; i < 5; i++) {
+    if (i == 2) {
+        continue;  // Skip when i is 2
+    }
+    println(i);  // Prints 0, 1, 3, 4
+}
+```
+
+## Future Control Flow Features
+
+The following control flow features are planned but not yet implemented in the current compiler:
 
 ### Range Loops
 
 ```firescript
 // Future syntax
-for (uint8 i : range(5)) {
+import @firescript/std.io.{print};\n\nfor (uint8 i : range(5)) {
     print(i); // 0, 1, 2, 3, 4
 }
 
@@ -297,12 +401,12 @@ The current firescript compiler supports:
 
 - ✅ `if`/`else`/`else if` conditional statements
 - ✅ `while` loops
+- ✅ C-style `for` loops
+- ✅ `for-in` loops (for arrays)
 - ✅ `break` and `continue` statements
 
 Not yet implemented:
 
-- ❌ C-style `for` loops
-- ❌ `for-in` loops
 - ❌ Range-based loops
 - ❌ Ternary operator
 - ❌ `switch`/`case` statements

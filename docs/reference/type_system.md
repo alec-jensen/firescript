@@ -299,6 +299,8 @@ username = "John";  // Can be assigned a non-null value later
 When working with nullable variables, it's important to check for null before using them:
 
 ```firescript
+import @firescript/std.io.{print};
+
 nullable string data = null;
 
 // Safe pattern
@@ -557,6 +559,8 @@ T process<T: Point | Circle>(T shape) {
 You can combine both interface constraints and type unions:
 
 ```firescript
+import @firescript/std.io.{print};
+
 // T must satisfy Comparable AND be in the union
 T clamp<T: Comparable & (int32 | float64)>(T value, T min, T max) {
     if (value < min) return min;
@@ -1127,7 +1131,7 @@ interface Comparable from Equatable {
 Classes declare which interfaces they implement using the `implements` keyword:
 
 ```firescript
-// Define a class that implements an interface
+import @firescript/std.io.{print};\n\n// Define a class that implements an interface
 class Point implements Printable {
     float32 x;
     float32 y;
@@ -1190,6 +1194,8 @@ float64 fResult = max(3.14f64, 2.71f64);  // ✅ Works!
 **For custom interfaces, you need wrappers:**
 
 ```firescript
+import @firescript/std.io.{print};
+
 // Custom interface
 interface Printable {
     string toString(&this);
@@ -1229,6 +1235,8 @@ printValue(PrintableInt(42));  // ✅ Works!
 Interfaces are most commonly used to constrain generic type parameters:
 
 ```firescript
+import @firescript/std.io.{print};
+
 // Function that works with any Printable type
 void printValue<T: Printable>(T value) {
     print(value.toString());
@@ -1402,6 +1410,8 @@ impl Container for IntArray {
 In the future, interfaces may be used as types themselves, allowing for dynamic dispatch:
 
 ```firescript
+import @firescript/std.io.{print};
+
 // Planned syntax
 void printAll(Printable[] items) {  // Array of interface objects
     for (int32 i = 0; i < items.length; i = i + 1) {

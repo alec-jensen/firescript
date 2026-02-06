@@ -25,6 +25,7 @@ class Lexer:
         "ELIF": r"elif\b",
         "WHILE": r"while\b",
         "FOR": r"for\b",
+        "IN": r"in\b",
         "BREAK": r"break\b",
         "CONTINUE": r"continue\b",
         "RETURN": r"return\b",

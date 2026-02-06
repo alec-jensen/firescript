@@ -793,8 +793,12 @@ class CCodeGenerator:
         ret_fs = node.return_type or "void"
         ret_c = self._map_type_to_c(ret_fs)
         
-        # Mangle the function name BEFORE pushing new scope so recursive calls can find it
-        mangled_func_name = self._mangle_name(node.name)
+        # Don't mangle the main function name - it needs to be "main" for the entry point
+        if node.name == "main":
+            mangled_func_name = "main"
+        else:
+            # Mangle the function name BEFORE pushing new scope so recursive calls can find it
+            mangled_func_name = self._mangle_name(node.name)
 
         # Parameters are all children except the last one, which is the body scope
         params = []
@@ -871,7 +875,7 @@ class CCodeGenerator:
             elif stripped.endswith("}"):
                 # Do not add semicolons after blocks, but ensure assignment statements
                 # that produce compound literals do get a semicolon.
-                if node.node_type in (NodeTypes.SCOPE, NodeTypes.IF_STATEMENT, NodeTypes.ELSE_STATEMENT, NodeTypes.ELIF_STATEMENT, NodeTypes.WHILE_STATEMENT):
+                if node.node_type in (NodeTypes.SCOPE, NodeTypes.IF_STATEMENT, NodeTypes.ELSE_STATEMENT, NodeTypes.ELIF_STATEMENT, NodeTypes.WHILE_STATEMENT, NodeTypes.FOR_STATEMENT, NodeTypes.FOR_IN_STATEMENT):
                     needs_semicolon = False
                 elif node.node_type in (NodeTypes.VARIABLE_ASSIGNMENT, NodeTypes.ASSIGNMENT, NodeTypes.RETURN_STATEMENT):
                     needs_semicolon = True
@@ -1454,6 +1458,132 @@ class CCodeGenerator:
             condition_code = self._visit(node.children[0])
             body_code = self._visit(node.children[1])
             return f"while ({condition_code}) {body_code}"
+        elif node.node_type == NodeTypes.FOR_STATEMENT:
+            # C-style for loop: for (init; condition; increment) body
+            # children[0] = init, children[1] = condition, children[2] = increment, children[3] = body
+            init_node = node.children[0]
+            condition_node = node.children[1]
+            increment_node = node.children[2]
+            body_node = node.children[3]
+            
+            # Generate code for each part, handling empty placeholders
+            init_code = "" if init_node.name == "empty" else self._visit(init_node)
+            condition_code = "" if condition_node.name == "empty" else self._visit(condition_node)
+            increment_code = "" if increment_node.name == "empty" else self._visit(increment_node)
+            body_code = self._visit(body_node)
+            
+            # Remove trailing semicolons from init and increment since for loop syntax adds them
+            if init_code.endswith(";"):
+                init_code = init_code[:-1]
+            if increment_code.endswith(";"):
+                increment_code = increment_code[:-1]
+            
+            # Remove wrapping parentheses from condition if present (expressions add them)
+            if condition_code.startswith("(") and condition_code.endswith(")"):
+                condition_code = condition_code[1:-1]
+            
+            return f"for ({init_code}; {condition_code}; {increment_code}) {body_code}"
+        elif node.node_type == NodeTypes.FOR_IN_STATEMENT:
+            # For-in loop: for (type item in collection) body
+            # children[0] = variable declaration node, children[1] = collection, children[2] = body
+            var_decl = node.children[0]
+            collection = node.children[1]
+            body = node.children[2]
+            
+            # Extract loop variable name and type from the variable declaration
+            # var_decl has var_type attribute and name attribute
+            loop_var = var_decl.name
+            var_type = var_decl.var_type
+            
+            # Convert firescript type to C type
+            c_type = self._map_type_to_c(var_type)
+            
+            # Generate a unique loop index variable
+            loop_idx = f"_i_{loop_var}"
+            mangled_loop_var = self._mangle_name(loop_var)
+            
+            # Add the loop variable to symbol table for the body
+            # Save current symbol table state to restore after loop
+            old_symbol_entry = self.symbol_table.get(loop_var)
+            self.symbol_table[loop_var] = (var_type, False)
+            
+            # Handle different collection types
+            if collection.node_type == NodeTypes.ARRAY_LITERAL:
+                # For array literals, we need to create a temporary array
+                elements = collection.children or []
+                collection_size = len(elements)
+                # Generate unique temp array name using counter
+                if not hasattr(self, '_temp_array_counter'):
+                    self._temp_array_counter = 0
+                temp_array_name = f"_temp_array_{self._temp_array_counter}"
+                self._temp_array_counter += 1
+                
+                # Generate code for temporary array
+                elem_codes = [self._visit(elem) for elem in elements]
+                temp_array_init = []
+                temp_array_init.append(f"{c_type} {temp_array_name}[{collection_size}] = {{{', '.join(elem_codes)}}};")
+                
+                # Generate body code
+                body_code = self._visit(body)
+                
+                # Generate the for-in loop
+                result = "\n".join(temp_array_init) + "\n"
+                result += f"for (int {loop_idx} = 0; {loop_idx} < {collection_size}; {loop_idx}++) {{\n"
+                result += f"{c_type} {mangled_loop_var} = {temp_array_name}[{loop_idx}];\n"
+                if body_code.startswith('{') and body_code.endswith('}'):
+                    result += body_code.strip()[1:-1]  # Remove outer braces from body
+                else:
+                    result += body_code
+                result += "\n}"
+            elif collection.node_type == NodeTypes.IDENTIFIER:
+                # It's a variable - check symbol table for size
+                collection_code = self._visit(collection)
+                collection_name = collection.name
+                
+                # Check if we have size information in symbol table
+                symbol_info = self.symbol_table.get(collection_name)
+                if symbol_info and len(symbol_info) >= 3:
+                    # Symbol table has (type, is_array, size) for arrays with known size
+                    collection_size_expr = str(symbol_info[2])
+                else:
+                    # Fall back to sizeof (works for stack arrays, not heap arrays)
+                    collection_size_expr = f"(sizeof({collection_code}) / sizeof({collection_code}[0]))"
+                
+                # Generate body code
+                body_code = self._visit(body)
+                
+                # Generate the for-in loop
+                result = f"for (int {loop_idx} = 0; {loop_idx} < {collection_size_expr}; {loop_idx}++) {{\n"
+                result += f"{c_type} {mangled_loop_var} = {collection_code}[{loop_idx}];\n"
+                if body_code.startswith('{') and body_code.endswith('}'):
+                    result += body_code.strip()[1:-1]  # Remove outer braces from body
+                else:
+                    result += body_code
+                result += "\n}"
+            else:
+                # Fallback for other collection types
+                collection_code = self._visit(collection)
+                collection_size_expr = f"(sizeof(({collection_code})) / sizeof((({collection_code}))[0]))"
+                
+                # Generate body code
+                body_code = self._visit(body)
+                
+                # Generate the for-in loop
+                result = f"for (int {loop_idx} = 0; {loop_idx} < {collection_size_expr}; {loop_idx}++) {{\n"
+                result += f"{c_type} {mangled_loop_var} = ({collection_code})[{loop_idx}];\n"
+                if body_code.startswith('{') and body_code.endswith('}'):
+                    result += body_code.strip()[1:-1]  # Remove outer braces from body
+                else:
+                    result += body_code
+                result += "\n}"
+            
+            # Restore symbol table
+            if old_symbol_entry is not None:
+                self.symbol_table[loop_var] = old_symbol_entry
+            elif loop_var in self.symbol_table:
+                del self.symbol_table[loop_var]
+            
+            return result
         elif node.node_type == NodeTypes.BREAK_STATEMENT:
             # On break, free arrays declared in current scope so far
             cleanup_lines = self._free_arrays_in_current_scope()
