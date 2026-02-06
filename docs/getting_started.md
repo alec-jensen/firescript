@@ -6,8 +6,10 @@
 - Python 3
 
 **Supported Platforms:**
-- Linux (development is primarily done on Fedora Linux)
+- Linux
 - Windows (via MSYS2, WSL is not officially supported but may work)
+
+**Note: The compiler is developed in Fedora Linux and Windows environments. As it is currently under active development, there may be platform-specific issues. If you encounter any problems on your platform, please report them in the issue tracker. Contributions to improve cross-platform compatibility are also welcome.**
 
 ## Installation
 

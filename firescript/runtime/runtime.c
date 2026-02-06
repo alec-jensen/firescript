@@ -66,13 +66,6 @@ void firescript_free(void *p) {
     // ignore frees of untracked pointers (e.g., string literals or already freed)
 }
 
-typedef struct RefCountedObject
-{
-    void *data;
-    size_t ref_count;
-    void (*destructor)(void *);
-} RefCountedObject;
-
 // Function to create a reference-counted object
 RefCountedObject *create_ref_counted_object(void *data, void (*destructor)(void *))
 {
