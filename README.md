@@ -1,5 +1,7 @@
 <img src="assets/firescript-logo.svg" alt="firescript logo" width="200"/>
 
+[![Tests](https://github.com/alec-jensen/firescript/actions/workflows/test.yml/badge.svg)](https://github.com/alec-jensen/firescript/actions/workflows/test.yml)
+
 # firescript
 
 firescript is a statically and strongly typed programming language that compiles natively or to JavaScript + Wasm. It is designed to be simple, powerful, and easy to learn while remaining expressive for advanced applications.
