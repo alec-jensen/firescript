@@ -1,0 +1,99 @@
+// Comprehensive arithmetic operator tests
+
+import @firescript/std.io.{println};
+
+println("=== Arithmetic Operators ===");
+
+// Addition
+println("--- Addition ---");
+int32 a = 10;
+int32 b = 5;
+println(a + b);  // 15
+
+float32 f1 = 3.5f;
+float32 f2 = 2.5f;
+println(f1 + f2);  // 6.0
+
+// Subtraction
+println("--- Subtraction ---");
+println(a - b);  // 5
+println(f1 - f2);  // 1.0
+
+// Multiplication
+println("--- Multiplication ---");
+println(a * b);  // 50
+println(f1 * f2);  // 8.75
+
+// Division
+println("--- Division ---");
+println(a / b);  // 2
+println(f1 / f2);  // 1.4
+
+// Modulo
+println("--- Modulo ---");
+println(a % b);  // 0
+int32 c = 13;
+int32 d = 5;
+println(c % d);  // 3
+
+// Power operator not yet implemented
+// println("--- Power ---");
+// int32 base = 2;
+// int32 exp = 3;
+// println(base ** exp);  // 8
+
+// Unary operators
+println("--- Unary Operations ---");
+int32 pos = 42;
+int32 neg = -pos;
+println(neg);  // -42
+println(-neg);  // 42
+
+// Compound assignment
+println("--- Compound Assignment ---");
+int32 x = 10;
+x += 5;
+println(x);  // 15
+x -= 3;
+println(x);  // 12
+x *= 2;
+println(x);  // 24
+x /= 4;
+println(x);  // 6
+x %= 4;
+println(x);  // 2
+
+// Increment/Decrement
+println("--- Increment/Decrement ---");
+int32 counter = 0;
+counter++;
+println(counter);  // 1
+counter++;
+println(counter);  // 2
+counter--;
+println(counter);  // 1
+
+// Various numeric types
+println("--- Different Numeric Types ---");
+int8 i8 = 10i8;
+int16 i16 = 20i16;
+int64 i64 = 30i64;
+println(i8 + 5i8);  // 15
+println(i16 + 10i16);  // 30
+println(i64 + 20i64);  // 50
+
+uint8 u8 = 10u8;
+uint16 u16 = 20u16;
+uint32 u32 = 30u32;
+uint64 u64 = 40u64;
+println(u8 + 5u8);  // 15
+println(u16 + 10u16);  // 30
+println(u32 + 20u32);  // 50
+println(u64 + 30u64);  // 70
+
+float64 d1 = 5.5;
+float64 d2 = 2.5;
+println(d1 + d2);  // 8.0
+println(d1 * d2);  // 13.75
+
+println("=== All arithmetic operator tests passed ===");

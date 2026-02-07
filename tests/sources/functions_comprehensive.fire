@@ -1,0 +1,153 @@
+// Comprehensive function tests
+
+import @firescript/std.io.{println};
+
+println("=== Function Tests ===");
+
+// Simple function with no parameters
+println("--- No Parameters ---");
+void greet() {
+    println("Hello from function!");
+}
+greet();
+
+// Function with return value, no parameters
+println("--- Return Value, No Parameters ---");
+int32 getConstant() {
+    return 42;
+}
+println(getConstant());
+
+// Function with single parameter
+println("--- Single Parameter ---");
+int32 double(int32 x) {
+    return x * 2;
+}
+println(double(5));
+println(double(10));
+
+// Function with multiple parameters
+println("--- Multiple Parameters ---");
+int32 add(int32 a, int32 b) {
+    return a + b;
+}
+println(add(3, 7));
+println(add(100, 200));
+
+int32 multiply(int32 x, int32 y) {
+    return x * y;
+}
+println(multiply(4, 5));
+
+// Function calling another function
+println("--- Function Calling Function ---");
+int32 addThenDouble(int32 a, int32 b) {
+    int32 sum = add(a, b);
+    return double(sum);
+}
+println(addThenDouble(2, 3));  // (2 + 3) * 2 = 10
+
+// Recursive function
+println("--- Recursion ---");
+int32 factorial(int32 n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+println(factorial(5));  // 120
+println(factorial(3));  // 6
+
+// Function with different return types
+println("--- Different Return Types ---");
+float32 divide(float32 a, float32 b) {
+    return a / b;
+}
+println(divide(10.0f, 4.0f));
+
+bool isEven(int32 n) {
+    return (n % 2) == 0;
+}
+println(isEven(4));
+println(isEven(7));
+
+string makeGreeting(string name) {
+    return "Hello, " + name + "!";
+}
+println(makeGreeting("Alice"));
+
+// Function with array parameter
+println("--- Array Parameters ---");
+int32 getFirst(int32[] arr) {
+    return arr[0];
+}
+
+int32[] nums = [99, 88, 77];
+println(getFirst(nums));
+
+int32 arraySum(int32[] values) {
+    int32 total = 0;
+    for (int32 v in values) {
+        total = total + v;
+    }
+    return total;
+}
+int32[] to_sum = [1, 2, 3, 4, 5];
+println(arraySum(to_sum));  // 15
+
+// Function returning array - not fully supported yet
+// println("--- Array Return ---");
+// int32[] makeArray() {
+//     return [10, 20, 30];
+// }
+// int32[] result = makeArray();
+// println(result[0]);
+
+// Function with early return
+println("--- Early Return ---");
+int32 findPositive(int32 x) {
+    if (x > 0) {
+        return x;
+    }
+    return 0;
+}
+println(findPositive(42));
+println(findPositive(-5));
+
+// Function with multiple returns
+println("--- Multiple Returns ---");
+string classify(int32 n) {
+    if (n < 0) {
+        return "negative";
+    } else if (n == 0) {
+        return "zero";
+    } else {
+        return "positive";
+    }
+}
+println(classify(-3));
+println(classify(0));
+println(classify(5));
+
+// Void function with side effects
+println("--- Void Functions ---");
+void printTwice(string msg) {
+    println(msg);
+    println(msg);
+}
+printTwice("repeat");
+
+// Function with complex logic
+println("--- Complex Function ---");
+int32 complexCalc(int32 a, int32 b, int32 c) {
+    int32 temp = a + b;
+    temp = temp * c;
+    if (temp > 100) {
+        return temp / 2;
+    }
+    return temp;
+}
+println(complexCalc(10, 20, 5));  // (10 + 20) * 5 = 150, 150 > 100, so 75
+println(complexCalc(2, 3, 4));    // (2 + 3) * 4 = 20
+
+println("=== All function tests passed ===");

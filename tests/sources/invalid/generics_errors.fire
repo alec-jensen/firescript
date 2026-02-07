@@ -1,0 +1,44 @@
+// Generic type errors
+
+// Using undefined type parameter
+fn void use_undefined_type() {
+    T x;  // T is not defined
+}
+
+// Generic function with wrong type argument
+fn T identity<T>(T value) {
+    return value;
+}
+
+fn void wrong_type_inference() {
+    int32 x = identity<string>(42);  // Type mismatch: expects string but got int
+}
+
+// Constraint violation
+fn T add<T: Numeric>(T a, T b) {
+    return a + b;
+}
+
+fn void violate_constraint() {
+    string result = add<string>("hello", "world");  // string doesn't satisfy Numeric
+}
+
+// Missing type parameter
+fn void missing_type_param() {
+    identity(5);  // May require explicit type parameter
+}
+
+// Too many type parameters
+fn void too_many_type_params() {
+    int32 x = identity<int32, string>(5);  // identity only takes one type parameter
+}
+
+// Generic class field type error
+class Box<T> {
+    T value;
+}
+
+fn void generic_class_error() {
+    Box<int32> box;
+    box.value = "string";  // Type mismatch: value is int32, not string
+}

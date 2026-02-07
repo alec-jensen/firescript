@@ -2,6 +2,11 @@
 
 firescript follows [Semantic Versioning](https://semver.org/). This makes it easier to understand the impact of changes in each release.
 
+## Currently in development
+
+### Compiler improvements
+- Bug fixes
+
 ## 0.4.0 - Phoenix
 *February 2, 2026*
 

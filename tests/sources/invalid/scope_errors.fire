@@ -1,0 +1,31 @@
+// Invalid scope and shadowing tests
+
+import @firescript/std.io.{println};
+
+// Variable shadowing (not allowed in firescript)
+int32 x = 10;
+{
+    int32 x = 20;  // Error: shadowing not allowed
+    println(x);
+}
+
+// Use of variable before declaration
+println(future_var);
+int32 future_var = 100;
+
+// Use of variable outside its scope
+{
+    int32 scoped = 42;
+}
+println(scoped);  // Error: scoped not in scope here
+
+// Access to loop variable outside loop
+for (int32 i = 0; i < 10; i++) {
+    println(i);
+}
+println(i);  // Error: i not in scope
+
+// Duplicate parameter names (if not caught)
+void duplicateParams(int32 x, int32 x) {
+    println(x);
+}

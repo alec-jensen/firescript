@@ -1,0 +1,77 @@
+// Comprehensive type error tests
+// These should all produce semantic/type checking errors
+
+import @firescript/std.io.{println};
+
+// Type mismatch in variable declaration
+int32 num = "string value";
+
+// Type mismatch in assignment
+int32 value = 10;
+value = "cannot assign string";
+
+// Incompatible types in arithmetic
+string text = "hello";
+int32 number = 42;
+int32 bad_add = text + number;
+
+// Incompatible types in array literal
+int32[] mixed = [1, 2, "three", 4];
+
+// Array element type mismatch
+int32[] numbers = [1, 2, 3];
+numbers[0] = "string";
+
+// Function argument type mismatch
+void takesInt(int32 x) {
+    println(x);
+}
+takesInt("wrong type");
+
+// Function return type mismatch
+int32 shouldReturnInt() {
+    return "string";
+}
+
+// Cannot index non-array
+int32 not_array = 5;
+int32 bad_index = not_array[0];
+
+// Cannot index with non-integer
+int32[] nums = [1, 2, 3];
+int32 elem = nums["string index"];
+
+// Undefined variable
+println(undefined_var);
+
+// Undefined function
+undefinedFunction(1, 2, 3);
+
+// Wrong number of function arguments
+void needsTwo(int32 a, int32 b) {
+    println(a);
+}
+needsTwo(1);  // Too few
+needsTwo(1, 2, 3);  // Too many
+
+// Non-boolean condition in if
+if (5) {
+    println("five is not a boolean");
+}
+
+// Non-boolean condition in while  
+while (42) {
+    println("loop");
+}
+
+// Cannot call non-function
+int32 not_func = 10;
+not_func(5);
+
+// Duplicate variable declaration
+int32 duplicate = 1;
+int32 duplicate = 2;
+
+// Assigning to const (if consts are implemented)
+// const int32 constant = 100;
+// constant = 200;

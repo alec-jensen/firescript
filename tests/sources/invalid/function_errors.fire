@@ -1,0 +1,54 @@
+// Function error tests - comprehensive
+
+// Missing return statement in non-void function
+fn int32 missing_return(int32 x) {
+    println("no return!");
+}
+
+// Function call with wrong number of arguments
+fn int32 takes_two(int32 a, int32 b) {
+    return a + b;
+}
+
+fn void wrong_args() {
+    int32 result = takes_two(5);  // Missing argument
+    int32 result2 = takes_two(5, 10, 15);  // Too many arguments
+}
+
+// Function call with wrong argument types
+fn int32 takes_int(int32 x) {
+    return x;
+}
+
+fn void wrong_types() {
+    int32 result = takes_int("string");  // Wrong type
+}
+
+// Calling undefined function
+fn void call_undefined() {
+    undefined_function(5);
+}
+
+// Trying to call a non-function
+fn void call_non_function() {
+    int32 x = 5;
+    int32 result = x(10);  // x is not a function
+}
+
+// Duplicate function definition
+fn int32 duplicate_func() {
+    return 1;
+}
+
+fn int32 duplicate_func() {  // Duplicate
+    return 2;
+}
+
+// Return type mismatch
+fn int32 wrong_return() {
+    return "string";  // Wrong return type
+}
+
+fn string another_wrong_return() {
+    return 42;  // Should return string, not int
+}

@@ -1,0 +1,28 @@
+// Memory/ownership error tests
+// Tests for use-after-move, invalid borrows, etc.
+
+import @firescript/std.io.{println};
+
+// Use after move (if ownership is enforced)
+string owned = "hello";
+string moved = owned;  // Move
+println(owned);  // Error: used after move
+
+// Multiple mutable borrows (if borrow checking is enforced)
+// &mut int32 borrow1 = &mut x;
+// &mut int32 borrow2 = &mut x;  // Error: already borrowed mutably
+
+// Use after free (if manual memory management)
+// This would be caught by the compiler in a safe language
+
+// Return reference to local variable
+// &int32 badReference() {
+//     int32 local = 42;
+//     return &local;  // Error: returns reference to local
+// }
+
+// Array out of bounds (compile-time if possible)
+int32[] small = [1, 2, 3];
+int32 bad = small[10];  // Runtime error, but could be compile-time in some cases
+
+println("memory error tests");

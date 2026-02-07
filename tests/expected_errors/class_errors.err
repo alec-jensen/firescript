@@ -1,0 +1,86 @@
+[    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\class_errors.fire...
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void use_undefined_class() {
+  ^
+(tests\sources\invalid\class_errors.fire:4:1)
+[   ERROR] --- Function 'use_undefined_class' is not defined
+> fn void use_undefined_class() {
+          ^
+(tests\sources\invalid\class_errors.fire:4:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> UndefinedClass obj;
+      ^
+(tests\sources\invalid\class_errors.fire:5:5)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void undefined_field() {
+  ^
+(tests\sources\invalid\class_errors.fire:14:1)
+[   ERROR] --- Function 'undefined_field' is not defined
+> fn void undefined_field() {
+          ^
+(tests\sources\invalid\class_errors.fire:14:9)
+[   ERROR] --- Expected '=' in variable declaration
+> Point p;
+             ^
+(tests\sources\invalid\class_errors.fire:15:12)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void field_type_mismatch() {
+  ^
+(tests\sources\invalid\class_errors.fire:20:1)
+[   ERROR] --- Function 'field_type_mismatch' is not defined
+> fn void field_type_mismatch() {
+          ^
+(tests\sources\invalid\class_errors.fire:20:9)
+[   ERROR] --- Expected '=' in variable declaration
+> Point p;
+             ^
+(tests\sources\invalid\class_errors.fire:21:12)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void undefined_method() {
+  ^
+(tests\sources\invalid\class_errors.fire:26:1)
+[   ERROR] --- Function 'undefined_method' is not defined
+> fn void undefined_method() {
+          ^
+(tests\sources\invalid\class_errors.fire:26:9)
+[   ERROR] --- Expected '=' in variable declaration
+> Point p;
+             ^
+(tests\sources\invalid\class_errors.fire:27:12)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void class_as_var() {
+  ^
+(tests\sources\invalid\class_errors.fire:52:1)
+[   ERROR] --- Function 'class_as_var' is not defined
+> fn void class_as_var() {
+          ^
+(tests\sources\invalid\class_errors.fire:52:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void missing_init() {
+  ^
+(tests\sources\invalid\class_errors.fire:61:1)
+[   ERROR] --- Function 'missing_init' is not defined
+> fn void missing_init() {
+          ^
+(tests\sources\invalid\class_errors.fire:61:9)
+[   ERROR] --- Expected '=' in variable declaration
+> MustInit obj;  // May need initialization
+                  ^
+(tests\sources\invalid\class_errors.fire:62:17)
+[   ERROR] --- Function 'println' is not defined
+> println(obj.required);
+      ^
+(tests\sources\invalid\class_errors.fire:63:5)
+[   ERROR] --- Variable 'p' not defined
+> int32 z = p.z;  // Field 'z' doesn't exist
+                ^
+(tests\sources\invalid\class_errors.fire:16:15)
+[   ERROR] --- Variable 'p' not defined
+> p.x = "string";  // x is int32, not string
+      ^
+(tests\sources\invalid\class_errors.fire:22:5)
+[   ERROR] --- Variable 'p' not defined
+> p.move(5, 10);  // Point has no 'move' method
+      ^
+(tests\sources\invalid\class_errors.fire:28:5)
+[   ERROR] --- Parsing failed with 21 errors

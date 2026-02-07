@@ -1,0 +1,63 @@
+=== Expression Tests ===
+--- Simple Expressions ---
+8
+6
+42
+5
+2
+--- Parentheses ---
+20
+14
+4
+--- Complex Arithmetic ---
+14
+20
+9
+5
+10
+2
+--- Mixed Operations ---
+10
+8
+21
+--- Comparisons ---
+true
+false
+true
+true
+true
+false
+--- Variables in Expressions ---
+17
+25
+30
+--- Function Calls ---
+8
+28
+10
+20
+--- Array Expressions ---
+3
+12
+5
+--- String Expressions ---
+Hello World
+Count: 5
+--- Conditional Values ---
+10
+--- Nested Calls ---
+18
+--- Expressions with Casts ---
+2.500000
+--- Unary ---
+-42
+42
+42
+--- Inc/Dec in Expressions ---
+6
+4
+--- Complex Nested ---
+8
+--- Mixed Type Expressions ---
+5.000000
+=== All expression tests passed ===

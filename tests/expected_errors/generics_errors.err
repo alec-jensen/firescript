@@ -1,0 +1,182 @@
+[    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\generics_errors.fire...
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void use_undefined_type() {
+  ^
+(tests\sources\invalid\generics_errors.fire:4:1)
+[   ERROR] --- Function 'use_undefined_type' is not defined
+> fn void use_undefined_type() {
+          ^
+(tests\sources\invalid\generics_errors.fire:4:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> T x;  // T is not defined
+      ^
+(tests\sources\invalid\generics_errors.fire:5:5)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn T identity<T>(T value) {
+  ^
+(tests\sources\invalid\generics_errors.fire:9:1)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn T identity<T>(T value) {
+       ^
+(tests\sources\invalid\generics_errors.fire:9:6)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn T identity<T>(T value) {
+                ^
+(tests\sources\invalid\generics_errors.fire:9:15)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn T identity<T>(T value) {
+                   ^
+(tests\sources\invalid\generics_errors.fire:9:18)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void wrong_type_inference() {
+  ^
+(tests\sources\invalid\generics_errors.fire:13:1)
+[   ERROR] --- Function 'wrong_type_inference' is not defined
+> fn void wrong_type_inference() {
+          ^
+(tests\sources\invalid\generics_errors.fire:13:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn T add<T: Numeric>(T a, T b) {
+  ^
+(tests\sources\invalid\generics_errors.fire:18:1)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn T add<T: Numeric>(T a, T b) {
+       ^
+(tests\sources\invalid\generics_errors.fire:18:6)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn T add<T: Numeric>(T a, T b) {
+           ^
+(tests\sources\invalid\generics_errors.fire:18:10)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn T add<T: Numeric>(T a, T b) {
+              ^
+(tests\sources\invalid\generics_errors.fire:18:13)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn T add<T: Numeric>(T a, T b) {
+                       ^
+(tests\sources\invalid\generics_errors.fire:18:22)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn T add<T: Numeric>(T a, T b) {
+                            ^
+(tests\sources\invalid\generics_errors.fire:18:27)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void violate_constraint() {
+  ^
+(tests\sources\invalid\generics_errors.fire:22:1)
+[   ERROR] --- Function 'violate_constraint' is not defined
+> fn void violate_constraint() {
+          ^
+(tests\sources\invalid\generics_errors.fire:22:9)
+[   ERROR] --- Expected closing parenthesis
+> string result = add<string>("hello", "world");  // string doesn't satisfy Numeric
+                                         ^
+(tests\sources\invalid\generics_errors.fire:23:40)
+[   ERROR] --- Expected semicolon after statement
+> string result = add<string>("hello", "world");  // string doesn't satisfy Numeric
+                                         ^
+(tests\sources\invalid\generics_errors.fire:23:40)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void missing_type_param() {
+  ^
+(tests\sources\invalid\generics_errors.fire:27:1)
+[   ERROR] --- Function 'missing_type_param' is not defined
+> fn void missing_type_param() {
+          ^
+(tests\sources\invalid\generics_errors.fire:27:9)
+[   ERROR] --- Function 'identity' is not defined
+> identity(5);  // May require explicit type parameter
+      ^
+(tests\sources\invalid\generics_errors.fire:28:5)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void too_many_type_params() {
+  ^
+(tests\sources\invalid\generics_errors.fire:32:1)
+[   ERROR] --- Function 'too_many_type_params' is not defined
+> fn void too_many_type_params() {
+          ^
+(tests\sources\invalid\generics_errors.fire:32:9)
+[   ERROR] --- Expected semicolon after statement
+> int32 x = identity<int32, string>(5);  // identity only takes one type parameter
+                              ^
+(tests\sources\invalid\generics_errors.fire:33:29)
+[   ERROR] --- Expected '{' to start class body
+> class Box<T> {
+           ^
+(tests\sources\invalid\generics_errors.fire:37:10)
+[   ERROR] --- Expected assignment, function call, or method call
+> class Box<T> {
+            ^
+(tests\sources\invalid\generics_errors.fire:37:11)
+[   ERROR] --- Expected assignment, function call, or method call
+> T value;
+      ^
+(tests\sources\invalid\generics_errors.fire:38:5)
+[   ERROR] --- Expected assignment, function call, or method call
+> T value;
+        ^
+(tests\sources\invalid\generics_errors.fire:38:7)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void generic_class_error() {
+  ^
+(tests\sources\invalid\generics_errors.fire:41:1)
+[   ERROR] --- Function 'generic_class_error' is not defined
+> fn void generic_class_error() {
+          ^
+(tests\sources\invalid\generics_errors.fire:41:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> Box<int32> box;
+      ^
+(tests\sources\invalid\generics_errors.fire:42:5)
+[   ERROR] --- Expected variable name after type
+> Box<int32> box;
+               ^
+(tests\sources\invalid\generics_errors.fire:42:14)
+[   ERROR] --- Expected assignment, function call, or method call
+> Box<int32> box;
+                 ^
+(tests\sources\invalid\generics_errors.fire:42:16)
+[   ERROR] --- Variable 'value' not defined
+> return value;
+             ^
+(tests\sources\invalid\generics_errors.fire:10:12)
+[   ERROR] --- Variable 'identity' not defined
+> int32 x = identity<string>(42);  // Type mismatch: expects string but got int
+                ^
+(tests\sources\invalid\generics_errors.fire:14:15)
+[   ERROR] --- Variable 'string' not defined
+> int32 x = identity<string>(42);  // Type mismatch: expects string but got int
+                         ^
+(tests\sources\invalid\generics_errors.fire:14:24)
+[   ERROR] --- Variable 'a' not defined
+> return a + b;
+             ^
+(tests\sources\invalid\generics_errors.fire:19:12)
+[   ERROR] --- Variable 'b' not defined
+> return a + b;
+                 ^
+(tests\sources\invalid\generics_errors.fire:19:16)
+[   ERROR] --- Variable 'add' not defined
+> string result = add<string>("hello", "world");  // string doesn't satisfy Numeric
+                      ^
+(tests\sources\invalid\generics_errors.fire:23:21)
+[   ERROR] --- Variable 'string' not defined
+> string result = add<string>("hello", "world");  // string doesn't satisfy Numeric
+                          ^
+(tests\sources\invalid\generics_errors.fire:23:25)
+[   ERROR] --- Variable 'x' already declared in an outer scope; shadowing not allowed
+> int32 x = identity<int32, string>(5);  // identity only takes one type parameter
+            ^
+(tests\sources\invalid\generics_errors.fire:33:11)
+[   ERROR] --- Variable 'identity' not defined
+> int32 x = identity<int32, string>(5);  // identity only takes one type parameter
+                ^
+(tests\sources\invalid\generics_errors.fire:33:15)
+[   ERROR] --- Variable 'int32' not defined
+> int32 x = identity<int32, string>(5);  // identity only takes one type parameter
+                         ^
+(tests\sources\invalid\generics_errors.fire:33:24)
+[   ERROR] --- Variable 'box' not defined
+> box.value = "string";  // Type mismatch: value is int32, not string
+      ^
+(tests\sources\invalid\generics_errors.fire:43:5)
+[   ERROR] --- Parsing failed with 45 errors

@@ -1,0 +1,129 @@
+// Comprehensive numeric type tests
+
+import @firescript/std.io.{println};
+
+println("=== Numeric Type Tests ===");
+
+// int8
+println("--- int8 ---");
+int8 i8_min = -128i8;
+int8 i8_max = 127i8;
+int8 i8_zero = 0i8;
+println(i8_min);
+println(i8_max);
+println(i8_zero);
+println(i8_max + 1i8);  // Overflow behavior
+println(i8_min - 1i8);  // Underflow behavior
+
+// int16
+println("--- int16 ---");
+int16 i16_min = -32768i16;
+int16 i16_max = 32767i16;
+int16 i16_test = 1000i16;
+println(i16_min);
+println(i16_max);
+println(i16_test);
+println(i16_test * 2i16);
+
+// int32
+println("--- int32 ---");
+int32 i32_min = -2147483648i32;
+int32 i32_max = 2147483647i32;
+int32 i32_test = 1000000;  // Default int literal is int32
+println(i32_min);
+println(i32_max);
+println(i32_test);
+println(i32_test + 500000);
+
+// int64
+println("--- int64 ---");
+int64 i64_test = 9223372036854775807i64;
+int64 i64_negative = -9223372036854775808i64;
+println(i64_test);
+println(i64_negative);
+println(i64_test / 1000i64);
+
+// uint8
+println("--- uint8 ---");
+uint8 u8_min = 0u8;
+uint8 u8_max = 255u8;
+uint8 u8_test = 128u8;
+println(u8_min);
+println(u8_max);
+println(u8_test);
+println(u8_max + 1u8);  // Overflow
+
+// uint16
+println("--- uint16 ---");
+uint16 u16_max = 65535u16;
+uint16 u16_test = 30000u16;
+println(u16_max);
+println(u16_test);
+println(u16_test + 1000u16);
+
+// uint32
+println("--- uint32 ---");
+uint32 u32_max = 4294967295u32;
+uint32 u32_test = 1000000u32;
+println(u32_max);
+println(u32_test);
+println(u32_test * 2u32);
+
+// uint64
+println("--- uint64 ---");
+uint64 u64_max = 18446744073709551615u64;
+uint64 u64_test = 1000000000u64;
+println(u64_max);
+println(u64_test);
+println(u64_test * 10u64);
+
+// float32
+println("--- float32 ---");
+float32 f32_pi = 3.14159f;
+float32 f32_e = 2.71828f;
+float32 f32_zero = 0.0f;
+float32 f32_negative = -42.5f;
+println(f32_pi);
+println(f32_e);
+println(f32_zero);
+println(f32_negative);
+println(f32_pi * 2.0f);
+println(f32_e + f32_pi);
+
+// float64
+println("--- float64 ---");
+float64 f64_pi = 3.141592653589793;
+float64 f64_e = 2.718281828459045;
+float64 f64_large = 1e100;
+float64 f64_small = 1e-100;
+println(f64_pi);
+println(f64_e);
+println(f64_large);
+println(f64_small);
+println(f64_pi * f64_e);
+
+// float128 (type exists but literal suffix not fully supported)
+// println("--- float128 ---");
+// float128 f128_test = 3.14159265358979323846;
+// println(f128_test);
+// println(f128_test * 2.0);
+
+// bool
+println("--- bool ---");
+bool b_true = true;
+bool b_false = false;
+println(b_true);
+println(b_false);
+// Logical operators (&&, ||, !) not yet implemented
+// println(b_true && b_false);
+// println(b_true || b_false);
+// println(!b_true);
+
+// char type with single quotes not yet implemented
+// println("--- char ---");
+// char ch1 = 'A';
+// char ch2 = 'Z';
+// println(ch1);
+// println(ch2);
+
+println("=== All numeric type tests passed ===");

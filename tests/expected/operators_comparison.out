@@ -1,0 +1,47 @@
+=== Comparison Operators ===
+--- Equality (==) ---
+true
+false
+true
+false
+true
+false
+--- Less Than (<) ---
+true
+false
+false
+true
+false
+--- Greater Than (>) ---
+true
+false
+false
+true
+false
+--- Less Than or Equal (<=) ---
+true
+false
+true
+true
+true
+false
+--- Greater Than or Equal (>=) ---
+true
+false
+true
+true
+true
+false
+--- Different Numeric Types ---
+true
+true
+true
+true
+true
+true
+true
+--- Comparisons in Conditionals ---
+a is greater than c
+a equals b
+fc1 is less than f2
+=== All comparison operator tests passed ===

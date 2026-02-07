@@ -1,0 +1,155 @@
+// Comprehensive scoping and variable visibility tests
+
+import @firescript/std.io.{println};
+
+println("=== Scoping Tests ===");
+
+// Global scope
+println("--- Global Scope ---");
+int32 global = 100;
+println(global);
+
+// Block scope
+println("--- Block Scope ---");
+int32 outer = 10;
+{
+    int32 inner = 20;
+    println(outer);  // Can access outer
+    println(inner);
+}
+// println(inner);  // Would error - inner not visible here
+
+// Nested blocks
+println("--- Nested Blocks ---");
+int32 level0 = 0;
+{
+    int32 level1 = 1;
+    {
+        int32 level2 = 2;
+        {
+            int32 level3 = 3;
+            println(level0);
+            println(level1);
+            println(level2);
+            println(level3);
+        }
+    }
+}
+
+// Variable shadowing - NOT ALLOWED in firescript
+// firescript does not allow shadowing (redeclaring variables with same name in nested scopes)
+println("--- Variable Shadowing (NOT SUPPORTED) ---");
+int32 x = 100;
+println(x);  // 100
+{
+    int32 x_inner = 200;
+    println(x_inner);  // 200
+    {
+        int32 x_deep = 300;
+        println(x_deep);  // 300
+    }
+    println(x_inner);  // 200
+}
+println(x);  // 100
+
+// If statement scope
+println("--- If Statement Scope ---");
+int32 condition = 1;
+if (condition > 0) {
+    int32 positive = 42;
+    println(positive);
+}
+// println(positive);  // Would error
+
+// Else scope
+if (condition < 0) {
+    int32 negative = -1;
+    println(negative);
+} else {
+    int32 non_negative = 0;
+    println(non_negative);
+}
+
+// While loop scope
+println("--- While Loop Scope ---");
+int32 counter = 0;
+while (counter < 3) {
+    int32 loop_var = counter * 10;
+    println(loop_var);
+    counter++;
+}
+// println(loop_var);  // Would error
+
+// For loop scope
+println("--- For Loop Scope ---");
+for (int32 i = 0; i < 3; i++) {
+    int32 loop_val = i * 100;
+    println(loop_val);
+}
+// println(i);  // Would error - i only visible in loop
+
+// For-in loop scope
+println("--- For-in Loop Scope ---");
+int32[] numbers = [1, 2, 3];
+for (int32 num in numbers) {
+    int32 doubled = num * 2;
+    println(doubled);
+}
+// println(num);  // Would error
+
+// Function scope (functions can't access outer scope variables in current implementation)
+println("--- Function Scope ---");
+
+int32 testFunction(int32 param) {
+    int32 local = 10;
+    println(param);
+    println(local);
+    return local + param;
+}
+
+println(testFunction(5));
+// println(local);  // Would error - local not visible here
+
+// Variables declared before use
+println("--- Variables Declared Before Use ---");
+int32 before = 1;
+int32 after = before + 1;
+println(before);
+println(after);
+
+// Scope with same variable names in different contexts - NOT ALLOWED (no shadowing)
+println("--- Same Names Different Scopes (separate variables) ---");
+int32 value = 1;
+{
+    int32 value2 = 2;
+    println(value2);
+}
+if (true) {
+    int32 value3 = 3;
+    println(value3);
+}
+for (int32 j = 0; j < 1; j++) {
+    int32 value4 = 4;
+    println(value4);
+}
+println(value);  // Still 1
+
+// Complex nested scoping
+println("--- Complex Nesting ---");
+int32 a = 1;
+{
+    int32 b = 2;
+    if (a > 0) {
+        int32 c = 3;
+        while (c > 0) {
+            int32 d = 4;
+            println(a);
+            println(b);
+            println(c);
+            println(d);
+            c--;
+        }
+    }
+}
+
+println("=== All scoping tests passed ===");

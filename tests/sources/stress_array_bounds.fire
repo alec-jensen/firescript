@@ -1,0 +1,50 @@
+// Stress test: Array boundary access
+// Likely to expose: off-by-one errors, buffer overflows, index validation bugs
+
+import @firescript/std.io.{println};
+
+println("=== Array Boundary Tests ===");
+
+// Test 1: Access all valid indices
+int32[] arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+println("First element:");
+println(arr[0]);
+
+println("Last element:");
+println(arr[9]);
+
+// Test 2: Loop to exactly the boundary
+println("Loop test:");
+int32 i = 0;
+while (i < 10) {
+    println(arr[i]);
+    i = i + 1;
+}
+
+// Test 3: Single element array
+int32[] single = [42];
+println("Single element:");
+println(single[0]);
+
+// Test 4: Index calculations
+int32 idx = 5;
+println("Calculated index:");
+println(arr[idx]);
+
+int32 idx2 = idx - 1;
+println(arr[idx2]);
+
+int32 idx3 = idx + 1;
+println(arr[idx3]);
+
+// Test 5: Zero index
+int32 zero = 0;
+println("Zero index:");
+println(arr[zero]);
+
+// Test 6: Array size minus one
+int32[] small = [10, 20, 30];
+println(small[0]);
+println(small[1]);
+println(small[2]);

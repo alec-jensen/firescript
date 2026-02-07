@@ -1,0 +1,58 @@
+=== Scoping Tests ===
+--- Global Scope ---
+100
+--- Block Scope ---
+10
+20
+--- Nested Blocks ---
+0
+1
+2
+3
+--- Variable Shadowing (NOT SUPPORTED) ---
+100
+200
+300
+200
+100
+--- If Statement Scope ---
+42
+0
+--- While Loop Scope ---
+0
+10
+20
+--- For Loop Scope ---
+0
+100
+200
+--- For-in Loop Scope ---
+2
+4
+6
+--- Function Scope ---
+5
+10
+15
+--- Variables Declared Before Use ---
+1
+2
+--- Same Names Different Scopes (separate variables) ---
+2
+3
+4
+1
+--- Complex Nesting ---
+1
+2
+3
+4
+1
+2
+2
+4
+1
+2
+1
+4
+=== All scoping tests passed ===

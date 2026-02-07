@@ -10,3 +10,5 @@ Whenever you add a file to examples/tests, make sure to create a corresponding g
 Veryify the docs (/docs) for language syntax, features, and examples are accurate and up to date with the current implementation of firescript.
 
 Compiler directives are only to be used in the standard library and should not be used in user source files except in specific scenarios (e.g., enabling syscalls). They are primarily for internal use by the compiler and standard library. Do not add directives to user source files without a clear justification. Do not add directives to tests unless necessary for testing specific compiler behavior.
+
+Any changes to the compiler's handling of language features should be documented in the changelog under "Currently in Development"

@@ -1,0 +1,64 @@
+// Class error tests - comprehensive
+
+// Undefined class
+fn void use_undefined_class() {
+    UndefinedClass obj;
+}
+
+// Accessing undefined field
+class Point {
+    int32 x;
+    int32 y;
+}
+
+fn void undefined_field() {
+    Point p;
+    int32 z = p.z;  // Field 'z' doesn't exist
+}
+
+// Field type mismatch
+fn void field_type_mismatch() {
+    Point p;
+    p.x = "string";  // x is int32, not string
+}
+
+// Calling undefined method
+fn void undefined_method() {
+    Point p;
+    p.move(5, 10);  // Point has no 'move' method
+}
+
+// Accessing private field (if privacy is implemented)
+class Private {
+    int32 secret;
+}
+
+// Duplicate class definition
+class DuplicateClass {
+    int32 x;
+}
+
+class DuplicateClass {  // Duplicate
+    int32 y;
+}
+
+// Duplicate field in class
+class DuplicateField {
+    int32 x;
+    int32 x;  // Duplicate field name
+}
+
+// Using class name as variable
+fn void class_as_var() {
+    int32 Point = 5;  // Point is already a class name
+}
+
+// Missing required initialization
+class MustInit {
+    int32 required;
+}
+
+fn void missing_init() {
+    MustInit obj;  // May need initialization
+    println(obj.required);
+}

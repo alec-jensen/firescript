@@ -1,0 +1,147 @@
+// Comprehensive control flow tests
+
+import @firescript/std.io.{println};
+
+println("=== Control Flow Tests ===");
+
+// Simple if
+println("--- Simple if ---");
+int32 x = 10;
+if (x > 5) {
+    println("x is greater than 5");
+}
+
+// if-else
+println("--- if-else ---");
+int32 score = 75;
+if (score >= 70) {
+    println("Pass");
+} else {
+    println("Fail");
+}
+
+// if-else if-else chain
+println("--- if-else if-else ---");
+int32 grade = 85;
+if (grade >= 90) {
+    println("A");
+} else if (grade >= 80) {
+    println("B");  // This should print
+} else if (grade >= 70) {
+    println("C");
+} else if (grade >= 60) {
+    println("D");
+} else {
+    println("F");
+}
+
+// Nested if statements
+println("--- Nested if ---");
+int32 age = 25;
+bool hasLicense = true;
+if (age >= 18) {
+    if (hasLicense) {
+        println("Can drive");  // This should print
+    } else {
+        println("Cannot drive - no license");
+    }
+} else {
+    println("Cannot drive - too young");
+}
+
+// While loop
+println("--- While loop ---");
+int32 count = 0;
+while (count < 5) {
+    println(count);
+    count++;
+}
+
+// While loop with break
+println("--- While with break ---");
+int32 i = 0;
+while (i < 10) {
+    if (i == 5) {
+        break;
+    }
+    println(i);
+    i++;
+}
+
+// While loop with continue
+println("--- While with continue ---");
+int32 j = 0;
+while (j < 5) {
+    j++;
+    if (j == 3) {
+        continue;
+    }
+    println(j);  // Should skip 3
+}
+
+// Nested while loops
+println("--- Nested while ---");
+int32 outer = 0;
+while (outer < 3) {
+    int32 inner = 0;
+    while (inner < 2) {
+        println(outer * 10 + inner);
+        inner++;
+    }
+    outer++;
+}
+
+// C-style for loop
+println("--- C-style for ---");
+for (int32 k = 0; k < 5; k++) {
+    println(k);
+}
+
+// For loop with break
+println("--- For with break ---");
+for (int32 m = 0; m < 10; m++) {
+    if (m == 5) {
+        break;
+    }
+    println(m);
+}
+
+// For loop with continue
+println("--- For with continue ---");
+for (int32 n = 0; n < 5; n++) {
+    if (n == 2) {
+        continue;
+    }
+    println(n);  // Should skip 2
+}
+
+// For-in loop with array
+println("--- For-in loop ---");
+int32[] numbers = [10, 20, 30, 40, 50];
+for (int32 num in numbers) {
+    println(num);
+}
+
+// Nested for loops
+println("--- Nested for ---");
+for (int32 row = 0; row < 3; row++) {
+    for (int32 col = 0; col < 3; col++) {
+        println(row * 10 + col);
+    }
+}
+
+// Mixed nested control flow
+println("--- Mixed nested control flow ---");
+for (int32 p = 0; p < 3; p++) {
+    if (p == 1) {
+        int32 q = 0;
+        while (q < 2) {
+            println(p * 100 + q);
+            q++;
+        }
+    } else {
+        println(p * 100);
+    }
+}
+
+println("=== All control flow tests passed ===");

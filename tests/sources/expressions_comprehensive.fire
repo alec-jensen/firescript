@@ -1,0 +1,148 @@
+// Comprehensive expression tests
+
+import @firescript/std.io.{println};
+
+println("=== Expression Tests ===");
+
+// Simple expressions
+println("--- Simple Expressions ---");
+println(5 + 3);
+println(10 - 4);
+println(6 * 7);
+println(20 / 4);
+println(17 % 5);
+
+// Parenthesized expressions
+println("--- Parentheses ---");
+println((2 + 3) * 4);
+println(2 + (3 * 4));
+println(((5 + 3) * 2) / 4);
+
+// Complex arithmetic expressions
+println("--- Complex Arithmetic ---");
+println(2 + 3 * 4);  // 14
+println((2 + 3) * 4);  // 20
+println(10 - 3 + 2);  // 9
+println(10 - (3 + 2));  // 5
+println(20 / 4 * 2);  // 10
+println(20 / (4 * 2));  // 2
+
+// Mixed operations
+println("--- Mixed Operations ---");
+println(5 + 3 * 2 - 1);  // 10
+println((5 + 3) * (2 - 1));  // 8
+println(10 * 2 + 5 / 5);  // 21
+
+// Comparison expressions
+println("--- Comparisons ---");
+println(5 > 3);
+println(3 > 5);
+println(5 >= 5);
+println(4 <= 10);
+println(7 == 7);
+println(7 == 8);  // false (== works, != not implemented)
+
+// Logical expressions (&&, ||, !) not yet implemented
+// println("--- Logical Expressions ---");
+// println(true && true);
+// println((5 > 3) && (10 < 20));
+
+// Expressions with variables
+println("--- Variables in Expressions ---");
+int32 x = 10;
+int32 y = 5;
+int32 z = 2;
+println(x + y + z);
+println(x * y / z);
+println((x + y) * z);
+// println(x > y && y > z);  // && not implemented
+
+// Function call expressions
+println("--- Function Calls ---");
+int32 add(int32 a, int32 b) {
+    return a + b;
+}
+
+int32 multiply(int32 a, int32 b) {
+    return a * b;
+}
+
+println(add(5, 3));
+println(multiply(4, 7));
+println(add(multiply(2, 3), 4));  // 2*3 + 4 = 10
+println(multiply(add(2, 3), 4));  // (2+3) * 4 = 20
+
+// Array expressions
+println("--- Array Expressions ---");
+int32[] arr = [1, 2, 3, 4, 5];
+println(arr[0] + arr[1]);
+println(arr[2] * arr[3]);
+println(arr[arr.length() - 1]);
+
+// String expressions
+println("--- String Expressions ---");
+string s1 = "Hello";
+string s2 = "World";
+println(s1 + " " + s2);
+println("Count: " + (5 as string));
+
+// Ternary (if supported) or conditional expressions
+println("--- Conditional Values ---");
+int32 max_val = 0;
+if (10 > 5) {
+    max_val = 10;
+} else {
+    max_val = 5;
+}
+println(max_val);
+
+// Nested function calls
+println("--- Nested Calls ---");
+int32 triple(int32 n) {
+    return n * 3;
+}
+
+println(triple(triple(2)));  // 18
+
+// Expression with casts
+println("--- Expressions with Casts ---");
+int32 int_val = 5;
+float32 float_val = 2.0f;
+println((int_val as float32) / float_val);
+
+// Unary expressions
+println("--- Unary ---");
+int32 pos = 42;
+int32 neg = -pos;
+println(neg);
+println(-neg);
+println(+pos);
+
+bool truth = true;
+// println(!truth);  // ! operator not implemented
+// println(!!truth);
+
+// Increment/decrement expressions
+println("--- Inc/Dec in Expressions ---");
+int32 count = 5;
+count++;
+println(count);
+count--;
+count--;
+println(count);
+
+// Complex nested expressions
+println("--- Complex Nested ---");
+int32 result = ((10 + 5) * 2 - 6) / 3;
+println(result);  // ((15 * 2) - 6) / 3 = (30 - 6) / 3 = 8
+
+// Logical operators not yet implemented
+// bool complex_bool = (((5 > 3) && (10 < 20)) || false) && true;
+// println(complex_bool);
+
+// Expression with multiple types
+println("--- Mixed Type Expressions ---");
+float32 f_result = (10 as float32) / 4.0f + 2.5f;
+println(f_result);
+
+println("=== All expression tests passed ===");

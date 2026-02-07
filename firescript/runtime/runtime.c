@@ -288,6 +288,39 @@ void firescript_print_string_ref(RefCountedObject *str_obj)
     }
 }
 
+// Type conversion functions  
+char *firescript_i32_to_str(int32_t value) {
+    // Allocate buffer (max int32 is -2147483648, which is 11 chars + null)
+    char *buf = firescript_malloc(12);
+    if (!buf) return NULL;
+    snprintf(buf, 12, "%d", (int)value);
+    return buf;
+}
+
+char *firescript_i64_to_str(int64_t value) {
+    // Allocate buffer (max int64 is -9223372036854775808, which is 20 chars + null)
+    char *buf = firescript_malloc(21);
+    if (!buf) return NULL;
+    snprintf(buf, 21, "%lld", (long long)value);
+    return buf;
+}
+
+char *firescript_f32_to_str(float value) {
+    // Float can need up to ~15 characters for representation
+    char *buf = firescript_malloc(32);
+    if (!buf) return NULL;
+    snprintf(buf, 32, "%g", value);
+    return buf;
+}
+
+char *firescript_f64_to_str(double value) {
+    // Double can need up to ~24 characters for representation
+    char *buf = firescript_malloc(32);
+    if (!buf) return NULL;
+    snprintf(buf, 32, "%g", value);
+    return buf;
+}
+
 void firescript_cleanup(void)
 {
     // Cleanup any leaked tracked pointers (best-effort)

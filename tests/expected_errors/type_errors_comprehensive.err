@@ -1,0 +1,38 @@
+[14:50:18] [    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\type_errors_comprehensive.fire...
+[14:50:18] [   ERROR] --- Variable 'duplicate' already declared in an outer scope; shadowing not allowed
+> int32 duplicate = 2;
+        ^
+(tests\sources\invalid\type_errors_comprehensive.fire:73:7)
+[14:50:18] [   ERROR] --- Type mismatch for variable 'num'. Expected int32, got string
+> int32 num = "string value";
+        ^
+(tests\sources\invalid\type_errors_comprehensive.fire:7:7)
+[14:50:18] [   ERROR] --- Type mismatch assigning to variable 'value'. Expected int32, got string
+> value = "cannot assign string";
+  ^
+(tests\sources\invalid\type_errors_comprehensive.fire:11:1)
+[14:50:18] [   ERROR] --- Type mismatch for variable 'bad_add'. Expected int32, got string
+> int32 bad_add = text + number;
+        ^
+(tests\sources\invalid\type_errors_comprehensive.fire:16:7)
+[14:50:18] [   ERROR] --- Cannot apply index operator [] to non-array type int32
+> int32 bad_index = not_array[0];
+                    ^
+(tests\sources\invalid\type_errors_comprehensive.fire:38:19)
+[14:50:18] [   ERROR] --- Array index must be an integer type, got string
+> int32 elem = nums["string index"];
+                    ^
+(tests\sources\invalid\type_errors_comprehensive.fire:42:19)
+[14:50:18] [   ERROR] --- Condition for 'if' statement must be a boolean, got int32
+> if (5) {
+      ^
+(tests\sources\invalid\type_errors_comprehensive.fire:58:5)
+[14:50:18] [   ERROR] --- Condition for 'while' statement must be a boolean, got int32
+> while (42) {
+         ^
+(tests\sources\invalid\type_errors_comprehensive.fire:63:8)
+[14:50:18] [   ERROR] --- Variable 'undefined_var' not defined
+> println(undefined_var);
+          ^
+(tests\sources\invalid\type_errors_comprehensive.fire:45:9)
+[14:50:18] [   ERROR] --- Parsing failed with 9 errors

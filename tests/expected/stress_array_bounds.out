@@ -1,0 +1,27 @@
+=== Array Boundary Tests ===
+First element:
+0
+Last element:
+9
+Loop test:
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+Single element:
+42
+Calculated index:
+5
+4
+6
+Zero index:
+0
+10
+20
+30

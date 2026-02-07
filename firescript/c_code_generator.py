@@ -626,6 +626,58 @@ class CCodeGenerator:
         # float64 (double) default: no suffix
         return s2
 
+    def _escape_string_literal(self, literal: str) -> str:
+        """
+        Escape a string literal for C.
+        The literal comes from the lexer with quotes included.
+        We need to escape ACTUAL special characters (like literal newlines/tabs)
+        but preserve escape sequences that are already in the source (like \\n).
+        """
+        if not literal:
+            return '""'
+        
+        # Remove outer quotes
+        if literal.startswith('"') and literal.endswith('"'):
+            content = literal[1:-1]
+        else:
+            content = literal
+        
+        # Replace actual special characters with their escape sequences
+        # Don't touch existing backslash sequences - only literal characters
+        result = []
+        i = 0
+        while i < len(content):
+            ch = content[i]
+            # If we see a backslash, it's part of an escape sequence - keep as-is
+            if ch == '\\':
+                result.append(ch)
+                i += 1
+                # Also keep the next character (part of escape sequence)
+                if i < len(content):
+                    result.append(content[i])
+                    i += 1
+            # Escape actual special characters
+            elif ch == '\n':
+                result.append('\\n')
+                i += 1
+            elif ch == '\r':
+                result.append('\\r')
+                i += 1
+            elif ch == '\t':
+                result.append('\\t')
+                i += 1
+            elif ch == '\0':
+                result.append('\\0')
+                i += 1
+            elif ch == '"':
+                result.append('\\"')
+                i += 1
+            else:
+                result.append(ch)
+                i += 1
+        
+        return f'"{"".join(result)}"'
+
     def _emit_class_typedef(self, node: ASTNode) -> str:
         """Emit a C typedef struct for a class definition."""
         lines = [f"typedef struct {node.name} {{"]
@@ -767,7 +819,8 @@ class CCodeGenerator:
         if t == "NULL_LITERAL":
             return "NULL"
         if t == "STRING_LITERAL":
-            return tok.value
+            # Escape the string literal for C
+            return self._escape_string_literal(tok.value)
         # Numbers
         if t == "INTEGER_LITERAL":
             return self._normalize_integer_literal(tok.value)
@@ -971,7 +1024,7 @@ class CCodeGenerator:
                 
                 if init_node and init_node.node_type == NodeTypes.LITERAL and init_node.token and init_node.token.type == "STRING_LITERAL":
                     # String literal - use strdup to allocate on heap
-                    literal_value = init_node.token.value
+                    literal_value = self._escape_string_literal(init_node.token.value)
                     return f"{var_type_c} {mangled_name} = strdup({literal_value});"
                 else:
                     # Expression result (already should be heap-allocated)
@@ -1321,6 +1374,32 @@ class CCodeGenerator:
                 return f"firescript_toChar({self._visit(node.children[0])})"
             elif node.name == "toBool":
                 return f"firescript_toBool({self._visit(node.children[0])})"
+            # Type conversion functions
+            elif node.name == "i32_to_f64":
+                arg_code = self._visit(node.children[0])
+                return f"((double)({arg_code}))"
+            elif node.name == "i32_to_f32":
+                arg_code = self._visit(node.children[0])
+                return f"((float)({arg_code}))"
+            elif node.name == "f64_to_i32":
+                arg_code = self._visit(node.children[0])
+                return f"((int32_t)({arg_code}))"
+            elif node.name == "f32_to_i32":
+                arg_code = self._visit(node.children[0])
+                return f"((int32_t)({arg_code}))"
+            elif node.name == "i32_to_str":
+                arg_code = self._visit(node.children[0])
+                # Allocate buffer and use sprintf
+                return f"firescript_i32_to_str({arg_code})"
+            elif node.name == "i64_to_str":
+                arg_code = self._visit(node.children[0])
+                return f"firescript_i64_to_str({arg_code})"
+            elif node.name == "f64_to_str":
+                arg_code = self._visit(node.children[0])
+                return f"firescript_f64_to_str({arg_code})"
+            elif node.name == "f32_to_str":
+                arg_code = self._visit(node.children[0])
+                return f"firescript_f32_to_str({arg_code})"
             else:
                 # Check if this is a generic function call
                 func_name = node.name

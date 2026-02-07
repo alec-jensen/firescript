@@ -1,0 +1,57 @@
+// Stress test: Recursion depth and stack usage
+// Likely to expose: stack overflow, function call bugs, return value handling
+
+import @firescript/std.io.{println};
+
+// Test 1: Simple recursion
+int32 factorial(int32 n) {
+    if (n < 2) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+// Test 2: Tail recursion (if optimized)
+int32 sum_to_n_helper(int32 n, int32 acc) {
+    if (n == 0) {
+        return acc;
+    }
+    return sum_to_n_helper(n - 1, acc + n);
+}
+
+int32 sum_to_n(int32 n) {
+    return sum_to_n_helper(n, 0);
+}
+
+// Test 3: Mutual recursion - simplified without forward declarations
+bool is_even_simple(int32 n) {
+    if (n == 0) {
+        return true;
+    }
+    if (n == 1) {
+        return false;
+    }
+    return is_even_simple(n - 2);
+}
+
+println("=== Recursion Tests ===");
+
+println("Factorial(5):");
+println(factorial(5)); // Should be 120
+
+println("Sum to 10:");
+println(sum_to_n(10)); // Should be 55
+
+println("Is 4 even?");
+if (is_even_simple(4)) {
+    println(1);
+} else {
+    println(0);
+}
+
+println("Is 7 even?");
+if (is_even_simple(7)) {
+    println(0);
+} else {
+    println(1);
+}

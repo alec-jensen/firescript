@@ -136,6 +136,15 @@ class Parser:
         "string": "string",
         "char": "char",
         "typeof": "string",
+        # Type conversion functions
+        "i32_to_f64": "float64",
+        "i32_to_f32": "float32",
+        "f64_to_i32": "int32",
+        "f32_to_i32": "int32",
+        "i32_to_str": "string",
+        "i64_to_str": "string",
+        "f64_to_str": "string",
+        "f32_to_str": "string",
     }
 
     # Register for user-defined methods (className -> methodName -> signature)

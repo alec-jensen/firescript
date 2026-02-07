@@ -1,0 +1,186 @@
+// Edge cases and boundary condition tests
+
+import @firescript/std.io.{println};
+
+println("=== Edge Cases and Boundary Tests ===");
+
+// Zero values
+println("--- Zero Values ---");
+int32 zero_int = 0;
+float32 zero_float = 0.0f;
+bool zero_bool = false;
+string empty_str = "";
+println(zero_int);
+println(zero_float);
+println(zero_bool);
+println(empty_str);
+// println(empty_str.length());  // .length() not implemented for strings
+
+// Minimum and maximum values
+println("--- Min/Max Values ---");
+int8 i8_min = -128i8;
+int8 i8_max = 127i8;
+println(i8_min);
+println(i8_max);
+
+int32 i32_min = -2147483648;
+int32 i32_max = 2147483647;
+println(i32_min);
+println(i32_max);
+
+uint8 u8_max = 255u8;
+println(u8_max);
+
+// Division by small numbers
+println("--- Division Edge Cases ---");
+int32 div_small = 1 / 1;
+println(div_small);
+
+float32 f_div = 1.0f / 2.0f;
+println(f_div);
+
+// Modulo edge cases
+println("--- Modulo Edge Cases ---");
+println(0 % 5);
+println(5 % 5);
+println(1 % 5);
+
+// Very large numbers
+println("--- Large Numbers ---");
+int64 large = 9223372036854775807i64;
+println(large);
+
+uint64 ularge = 18446744073709551615u64;
+println(ularge);
+
+// Very small float values
+println("--- Small Float Values ---");
+float32 small_f32 = 0.0001f;
+float64 small_f64 = 0.0000001;
+println(small_f32);
+println(small_f64);
+
+// Empty array edge cases
+println("--- Empty Array ---");
+int32[] empty_arr = [];
+println(empty_arr.length());
+
+// Single element array
+println("--- Single Element Array ---");
+int32[] single = [42];
+println(single[0]);
+println(single.length());
+
+// Array with identical elements
+println("--- Identical Elements ---");
+int32[] same = [5, 5, 5, 5];
+for (int32 val in same) {
+    println(val);
+}
+
+// String edge cases
+println("--- String Edge Cases ---");
+string single_char = "a";
+println(single_char);
+// println(single_char.length());  // .length() not implemented for strings
+
+string spaces = "   ";
+// println(spaces.length());  // .length() not implemented for strings
+
+// Comparison edge cases
+println("--- Comparison Edge Cases ---");
+println(0 == 0);
+// println(0 != 0);  // != not implemented
+println(1 > 0);
+println(0 > 0);
+println(0 >= 0);
+
+// Boolean edge cases (logical operators not yet implemented)
+println("--- Boolean Edge Cases ---");
+println(true == true);
+println(false == false);
+// println(true && true);  // && not implemented
+// println(!true);  // ! not implemented
+
+// Loop edge cases
+println("--- Loop Edge Cases ---");
+int32 no_iterations = 0;
+while (no_iterations > 0) {
+    println("Should not print");
+    no_iterations--;
+}
+
+for (int32 i = 0; i < 0; i++) {
+    println("Should not print");
+}
+
+int32[] empty_for_in = [];
+for (int32 x in empty_for_in) {
+    println("Should not print");
+}
+
+// Single iteration loops
+println("--- Single Iteration ---");
+int32 once = 1;
+while (once > 0) {
+    println("Once");
+    once--;
+}
+
+for (int32 j = 0; j < 1; j++) {
+    println("One iteration");
+}
+
+// Deeply nested blocks
+println("--- Deep Nesting ---");
+{
+    {
+        {
+            {
+                {
+                    println("Deep nested");
+                }
+            }
+        }
+    }
+}
+
+// Function with no body statements (just return)
+println("--- Minimal Function ---");
+int32 immediate_return() {
+    return 99;
+}
+println(immediate_return());
+
+// Arithmetic overflow (behavior may vary)
+println("--- Overflow Behavior ---");
+int8 overflow_test = 127i8;
+println(overflow_test);
+println(overflow_test + 1i8);
+
+uint8 uoverflow = 255u8;
+println(uoverflow);
+println(uoverflow + 1u8);
+
+// Underflow
+println("--- Underflow Behavior ---");
+int8 underflow = -128i8;
+println(underflow);
+println(underflow - 1i8);
+
+// Multiple returns in function (all paths)
+println("--- All Return Paths ---");
+string returnTest(int32 n) {
+    if (n < 0) {
+        return "negative";
+    } else if (n == 0) {
+        return "zero";
+    } else {
+        return "positive";
+    }
+}
+println(returnTest(-5));
+println(returnTest(0));
+println(returnTest(5));
+
+println("=== All edge case tests passed ===");

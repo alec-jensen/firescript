@@ -1,0 +1,39 @@
+=== Function Tests ===
+--- No Parameters ---
+Hello from function!
+--- Return Value, No Parameters ---
+42
+--- Single Parameter ---
+10
+20
+--- Multiple Parameters ---
+10
+300
+20
+--- Function Calling Function ---
+10
+--- Recursion ---
+120
+6
+--- Different Return Types ---
+2.500000
+true
+false
+Hello, Alice!
+--- Array Parameters ---
+99
+3
+--- Early Return ---
+42
+0
+--- Multiple Returns ---
+negative
+zero
+positive
+--- Void Functions ---
+repeat
+repeat
+--- Complex Function ---
+75
+20
+=== All function tests passed ===

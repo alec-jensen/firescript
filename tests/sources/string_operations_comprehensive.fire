@@ -1,0 +1,99 @@
+// Comprehensive string operation tests
+
+import @firescript/std.io.{println};
+
+println("=== String Operation Tests ===");
+
+// String declaration and initialization
+println("--- String Basics ---");
+string s1 = "Hello";
+string s2 = "World";
+string empty = "";
+println(s1);
+println(s2);
+println(empty);
+
+// String concatenation
+println("--- String Concatenation ---");
+string greeting = s1 + ", " + s2 + "!";
+println(greeting);
+
+string multi = "Line 1" + " " + "Line 2" + " " + "Line 3";
+println(multi);
+
+// String with special characters
+println("--- Special Characters ---");
+string newline = "Line1\nLine2";
+println(newline);
+
+string tab = "Col1\tCol2\tCol3";
+println(tab);
+
+string quote = "She said \"Hello\"";
+println(quote);
+
+string backslash = "Path\\to\\file";
+println(backslash);
+
+// String comparison
+println("--- String Comparison ---");
+string a = "apple";
+string b = "apple";
+string c = "banana";
+println(a == b);  // true
+println(a == c);  // false
+// println(a != c);  // != not yet implemented
+
+// String length method not yet implemented
+// println("--- String Length ---");
+// println(test.length());  // 10
+
+// String with numbers
+println("--- String with Numbers ---");
+string num_str = "12345";
+println(num_str);
+// println(num_str.length());  // length() not implemented
+
+// Unicode/special characters (if supported)
+println("--- Unicode Characters ---");
+string emoji = "🔥";
+println(emoji);
+
+string accents = "café";
+println(accents);
+
+// String concatenation in expressions
+println("--- String in Expressions ---");
+int32 count = 5;
+string result = "Count: " + (count as string);
+println(result);
+
+// String methods (if any are implemented)
+println("--- String Methods ---");
+string upper_test = "hello";
+string lower_test = "WORLD";
+// println(upper_test.toUpper());  // Uncomment if implemented
+// println(lower_test.toLower());  // Uncomment if implemented
+
+// Long strings
+println("--- Long Strings ---");
+string long_str = "This is a very long string that contains many words and characters to test how the compiler and runtime handle longer string values.";
+println(long_str);
+// println(long_str.length());  // length() not implemented
+
+// String interpolation (if supported)
+println("--- String Variables ---");
+string name = "Alice";
+string age_str = "30";
+string info = "Name: " + name + ", Age: " + age_str;
+println(info);
+
+// Repeated concatenation
+println("--- Repeated Concatenation ---");
+string build = "";
+build = build + "a";
+build = build + "b";
+build = build + "c";
+println(build);  // abc
+
+println("=== All string operation tests passed ===");

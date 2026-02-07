@@ -1,0 +1,73 @@
+// Stress test: Type conversions and precision loss
+// Likely to expose: conversion bugs, precision loss, truncation errors
+
+import @firescript/std.io.{println};
+
+println("=== Type Conversion Tests ===");
+
+// Test 1: Int to float and back
+int32 original = 100;
+float64 as_float = i32_to_f64(original);
+int32 back_to_int = f64_to_i32(as_float);
+
+println(original);
+println(as_float);
+println(back_to_int); // Should match original
+
+// Test 2: Float truncation
+float64 f1 = 3.14159;
+int32 truncated1 = f64_to_i32(f1);
+println(f1);
+println(truncated1); // Should be 3
+
+// Test 3: Negative float truncation
+float64 f2 = -2.71828;
+int32 truncated2 = f64_to_i32(f2);
+println(f2);
+println(truncated2); // Should be -2
+
+// Test 4: Small fractions
+float64 tiny = 0.001;
+int32 tiny_int = f64_to_i32(tiny);
+println(tiny);
+println(tiny_int); // Should be 0
+
+// Test 5: Float near integer boundary
+float64 almost_one = 0.999;
+int32 almost_one_int = f64_to_i32(almost_one);
+println(almost_one);
+println(almost_one_int); // Should be 0
+
+float64 just_over_one = 1.001;
+int32 just_over_one_int = f64_to_i32(just_over_one);
+println(just_over_one);
+println(just_over_one_int); // Should be 1
+
+// Test 6: Division precision
+int32 a = 10;
+int32 b = 3;
+
+// Integer division (truncated)
+int32 int_result = a / b;
+println(int_result); // Should be 3
+
+// Float division (precise)
+float64 float_result = i32_to_f64(a) / i32_to_f64(b);
+println(float_result); // Should be 3.333...
+
+// Test 7: Large float to int
+float64 large_float = 1000000.0;
+int32 large_int = f64_to_i32(large_float);
+println(large_float);
+println(large_int);
+
+// Test 8: Conversion chain
+int32 start = 42;
+float64 step1 = i32_to_f64(start);
+int32 step2 = f64_to_i32(step1);
+float64 step3 = i32_to_f64(step2);
+
+println(start);
+println(step1);
+println(step2);
+println(step3); // Should all be 42/42.0

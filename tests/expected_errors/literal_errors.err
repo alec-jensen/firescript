@@ -1,0 +1,94 @@
+[    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\literal_errors.fire...
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void overflow() {
+  ^
+(tests\sources\invalid\literal_errors.fire:4:1)
+[   ERROR] --- Function 'overflow' is not defined
+> fn void overflow() {
+          ^
+(tests\sources\invalid\literal_errors.fire:4:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void invalid_hex() {
+  ^
+(tests\sources\invalid\literal_errors.fire:9:1)
+[   ERROR] --- Function 'invalid_hex' is not defined
+> fn void invalid_hex() {
+          ^
+(tests\sources\invalid\literal_errors.fire:9:9)
+[   ERROR] --- Expected semicolon after statement
+> int32 bad_hex = 0xGHIJ;  // Invalid hex digits
+                       ^
+(tests\sources\invalid\literal_errors.fire:10:22)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void invalid_escape() {
+  ^
+(tests\sources\invalid\literal_errors.fire:14:1)
+[   ERROR] --- Function 'invalid_escape' is not defined
+> fn void invalid_escape() {
+          ^
+(tests\sources\invalid\literal_errors.fire:14:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void unclosed_string() {
+  ^
+(tests\sources\invalid\literal_errors.fire:19:1)
+[   ERROR] --- Function 'unclosed_string' is not defined
+> fn void unclosed_string() {
+          ^
+(tests\sources\invalid\literal_errors.fire:19:9)
+[   ERROR] --- Unexpected token "
+> string bad = "unclosed;
+                   ^
+(tests\sources\invalid\literal_errors.fire:20:18)
+[   ERROR] --- Expected initializer expression in variable declaration
+> string bad = "unclosed;
+                    ^
+(tests\sources\invalid\literal_errors.fire:20:19)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void invalid_number() {
+  ^
+(tests\sources\invalid\literal_errors.fire:24:1)
+[   ERROR] --- Function 'invalid_number' is not defined
+> fn void invalid_number() {
+          ^
+(tests\sources\invalid\literal_errors.fire:24:9)
+[   ERROR] --- Expected semicolon after statement
+> int32 bad = 123abc;  // Invalid number
+                     ^
+(tests\sources\invalid\literal_errors.fire:25:20)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void float_to_int_no_cast() {
+  ^
+(tests\sources\invalid\literal_errors.fire:29:1)
+[   ERROR] --- Function 'float_to_int_no_cast' is not defined
+> fn void float_to_int_no_cast() {
+          ^
+(tests\sources\invalid\literal_errors.fire:29:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void boolean_typo() {
+  ^
+(tests\sources\invalid\literal_errors.fire:34:1)
+[   ERROR] --- Function 'boolean_typo' is not defined
+> fn void boolean_typo() {
+          ^
+(tests\sources\invalid\literal_errors.fire:34:9)
+[   ERROR] --- Variable 'bad' already declared in an outer scope; shadowing not allowed
+> int32 bad = 123abc;  // Invalid number
+            ^
+(tests\sources\invalid\literal_errors.fire:25:11)
+[   ERROR] --- Variable 'x' already declared in an outer scope; shadowing not allowed
+> bool x = True;  // Should be 'true' (lowercase)
+           ^
+(tests\sources\invalid\literal_errors.fire:35:10)
+[   ERROR] --- Variable 'True' not defined
+> bool x = True;  // Should be 'true' (lowercase)
+               ^
+(tests\sources\invalid\literal_errors.fire:35:14)
+[   ERROR] --- Variable 'False' not defined
+> bool y = False;  // Should be 'false' (lowercase)
+               ^
+(tests\sources\invalid\literal_errors.fire:36:14)
+[   ERROR] --- Type mismatch for variable 'x'. Expected int32, got float64
+> int32 x = 3.14;  // Should require explicit cast
+            ^
+(tests\sources\invalid\literal_errors.fire:30:11)
+[   ERROR] --- Parsing failed with 23 errors

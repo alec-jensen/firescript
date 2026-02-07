@@ -1,0 +1,32 @@
+=== String Operation Tests ===
+--- String Basics ---
+Hello
+World
+
+--- String Concatenation ---
+Hello, World!
+Line 1 Line 2 Line 3
+--- Special Characters ---
+Line1
+Line2
+Col1	Col2	Col3
+She said "Hello"
+Path\to\file
+--- String Comparison ---
+true
+false
+--- String with Numbers ---
+12345
+--- Unicode Characters ---
+ðŸ”¥
+cafÃ©
+--- String in Expressions ---
+Count: 5
+--- String Methods ---
+--- Long Strings ---
+This is a very long string that contains many words and characters to test how the compiler and runtime handle longer string values.
+--- String Variables ---
+Name: Alice, Age: 30
+--- Repeated Concatenation ---
+abc
+=== All string operation tests passed ===

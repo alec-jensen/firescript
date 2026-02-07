@@ -1,0 +1,117 @@
+// Comprehensive array operation tests
+
+import @firescript/std.io.{println};
+
+println("=== Array Operation Tests ===");
+
+// Array declaration and initialization
+println("--- Array Basics ---");
+int32[] arr1 = [1, 2, 3, 4, 5];
+println(arr1[0]);
+println(arr1[4]);
+println(arr1.length());
+
+// Empty array
+println("--- Empty Array ---");
+int32[] empty = [];
+println(empty.length());
+
+// Array with different types
+println("--- Different Type Arrays ---");
+int8[] i8_arr = [1i8, 2i8, 3i8];
+println(i8_arr[0]);
+println(i8_arr.length());
+
+int64[] i64_arr = [100i64, 200i64, 300i64];
+println(i64_arr[1]);
+
+float32[] f32_arr = [1.1f, 2.2f, 3.3f];
+println(f32_arr[0]);
+println(f32_arr[2]);
+
+float64[] f64_arr = [1.111, 2.222, 3.333];
+println(f64_arr[1]);
+
+string[] str_arr = ["hello", "world", "firescript"];
+println(str_arr[0]);
+println(str_arr[2]);
+println(str_arr.length());
+
+bool[] bool_arr = [true, false, true, true];
+println(bool_arr[0]);
+println(bool_arr[1]);
+println(bool_arr.length());
+
+// Array modification
+println("--- Array Modification ---");
+int32[] mutable = [10, 20, 30];
+println(mutable[1]);
+mutable[1] = 99;
+println(mutable[1]);
+
+// Array iteration with for-in
+println("--- Array Iteration (for-in) ---");
+int32[] nums = [5, 10, 15, 20];
+for (int32 n in nums) {
+    println(n);
+}
+
+// Array iteration with C-style for
+println("--- Array Iteration (C-style for) ---");
+int32[] values = [100, 200, 300];
+for (int32 i = 0; i < values.length(); i++) {
+    println(values[i]);
+}
+
+// Array iteration with while
+println("--- Array Iteration (while) ---");
+int32[] data = [7, 14, 21, 28];
+int32 idx = 0;
+while (idx < data.length()) {
+    println(data[idx]);
+    idx++;
+}
+
+// Multi-dimensional arrays not yet supported
+// println("--- 2D Arrays ---");
+// int32[][] matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+// println(matrix[0][0]);
+// println(matrix.length());
+
+// Array as function parameter
+println("--- Array in Function ---");
+int32 sumArray(int32[] arr) {
+    int32 sum = 0;
+    for (int32 val in arr) {
+        sum = sum + val;
+    }
+    return sum;
+}
+
+int32[] to_sum = [1, 2, 3, 4, 5];
+int32 total = sumArray(to_sum);
+println(total);  // 15
+
+// Function returning array - not fully supported
+// println("--- Array from Function ---");
+// int32[] createArray() {
+//     int32[] result = [10, 20, 30];
+//     return result;
+// }
+// int32[] returned = createArray();
+// println(returned[0]);
+
+// Large array
+println("--- Large Array ---");
+int32[] large = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+println(large.length());
+println(large[0]);
+println(large[19]);
+
+// Array comparison
+println("--- Array Bounds ---");
+int32[] bounds_test = [99, 88, 77];
+println(bounds_test[0]);
+println(bounds_test[bounds_test.length() - 1]);
+
+println("=== All array operation tests passed ===");

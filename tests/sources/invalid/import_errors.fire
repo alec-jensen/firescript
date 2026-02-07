@@ -1,0 +1,18 @@
+// Import error tests
+
+// Importing non-existent file
+import "nonexistent_module";
+
+// Importing non-existent symbol
+import { undefined_symbol } from "std";
+
+// Circular import (if A imports B and B imports A)
+// This would need two files to test properly
+
+// Wildcard import conflict
+import * from "std";
+import * from "io";  // May cause naming conflicts
+
+// Importing after code
+int32 x = 5;
+import "io";  // Imports must be at the top

@@ -1,0 +1,55 @@
+// Stress test: Integer overflow and underflow
+// Likely to expose: overflow bugs, type conversion errors, arithmetic edge cases
+
+import @firescript/std.io.{println};
+
+println("=== Integer Overflow Tests ===");
+
+// Test 1: Large positive numbers
+int32 max_approach = 2147483647;
+println(max_approach);
+
+// Test 2: Large negative numbers  
+int32 min_approach = -2147483648;
+println(min_approach);
+
+// Test 3: Multiplication of large numbers
+int32 large1 = 10000;
+int32 large2 = 10000;
+int32 product = large1 * large2;
+println(product); // May overflow
+
+// Test 4: Addition near max
+int32 near_max = 2147483640;
+int32 added = near_max + 5;
+println(added);
+
+// Test 5: Subtraction near min
+int32 near_min = -2147483640;
+int32 subtracted = near_min - 5;
+println(subtracted);
+
+// Test 6: Division by powers of 2
+int32 val = 1024;
+println(val / 2);
+println(val / 4);
+println(val / 8);
+println(val / 16);
+
+// Test 7: Negative division
+println(-100 / 3);
+println(-100 / -3);
+println(100 / -3);
+
+// Test 8: Modulo with negatives
+println(10 % 3);
+println(-10 % 3);
+println(10 % -3);
+println(-10 % -3);
+
+// Test 9: Zero arithmetic
+int32 z = 0;
+println(z + 100);
+println(z - 100);
+println(z * 100);
+println(100 - z);

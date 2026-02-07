@@ -1,0 +1,108 @@
+// Comprehensive comparison operator tests
+
+import @firescript/std.io.{println};
+
+println("=== Comparison Operators ===");
+
+// Equality
+println("--- Equality (==) ---");
+int32 a = 10;
+int32 b = 10;
+int32 c = 5;
+println(a == b);  // true
+println(a == c);  // false
+
+string s1 = "hello";
+string s2 = "hello";
+string s3 = "world";
+println(s1 == s2);  // true
+println(s1 == s3);  // false
+
+bool t1 = true;
+bool t2 = true;
+bool f1 = false;
+println(t1 == t2);  // true
+println(t1 == f1);  // false
+
+// Inequality (!= operator not yet implemented)
+// println("--- Inequality (!=) ---");
+// println(a != b);  // false
+// println(a != c);  // true
+
+// Less than
+println("--- Less Than (<) ---");
+println(c < a);  // true
+println(a < c);  // false
+println(a < b);  // false
+
+float32 fc1 = 3.5f;
+float32 f2 = 7.2f;
+println(fc1 < f2);  // true
+println(f2 < fc1);  // false
+
+// Greater than
+println("--- Greater Than (>) ---");
+println(a > c);  // true
+println(c > a);  // false
+println(a > b);  // false
+
+println(f2 > fc1);  // true
+println(fc1 > f2);  // false
+
+// Less than or equal
+println("--- Less Than or Equal (<=) ---");
+println(c <= a);  // true
+println(a <= c);  // false
+println(a <= b);  // true
+
+println(fc1 <= f2);  // true
+println(fc1 <= fc1);  // true
+println(f2 <= fc1);  // false
+
+// Greater than or equal
+println("--- Greater Than or Equal (>=) ---");
+println(a >= c);  // true
+println(c >= a);  // false
+println(a >= b);  // true
+
+println(f2 >= fc1);  // true
+println(f2 >= f2);  // true
+println(fc1 >= f2);  // false
+
+// Comparisons with different numeric types
+println("--- Different Numeric Types ---");
+int8 i8a = 10i8;
+int8 i8b = 5i8;
+println(i8a > i8b);  // true
+println(i8a == 10i8);  // true
+
+int64 i64a = 100i64;
+int64 i64b = 50i64;
+println(i64a > i64b);  // true
+println(i64a <= 100i64);  // true
+
+uint32 u32a = 50u32;
+uint32 u32b = 30u32;
+println(u32a > u32b);  // true
+// println(u32a != u32b);  // != not implemented
+
+float64 d1 = 3.14;
+float64 d2 = 2.71;
+println(d1 > d2);  // true
+println(d1 >= 3.14);  // true
+
+// Chained comparisons in conditionals
+println("--- Comparisons in Conditionals ---");
+if (a > c) {
+    println("a is greater than c");  // This should print
+}
+
+if (a == b) {
+    println("a equals b");  // This should print
+}
+
+if (fc1 < f2) {
+    println("fc1 is less than f2");  // This should print
+}
+
+println("=== All comparison operator tests passed ===");

@@ -1,0 +1,38 @@
+[14:50:16] [    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\array_edge_invalid.fire...
+[14:50:16] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: array access out of bounds is runtime (may not be caught at compile) so skip actual index > length --");
+  ^
+(tests\sources\invalid\array_edge_invalid.fire:4:1)
+[14:50:16] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: array literal empty then inferred wrongly use as int --");
+  ^
+(tests\sources\invalid\array_edge_invalid.fire:6:1)
+[14:50:16] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: array method unknown --");
+  ^
+(tests\sources\invalid\array_edge_invalid.fire:10:1)
+[14:50:16] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: array literal with array element --");
+  ^
+(tests\sources\invalid\array_edge_invalid.fire:15:1)
+[14:50:16] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid array edge tests end --");
+  ^
+(tests\sources\invalid\array_edge_invalid.fire:18:1)
+[14:50:16] [   ERROR] --- Type mismatch for variable 'bad'. Expected int32, got int32[]
+> int32 bad = e; // error: assigning array to int32
+        ^
+(tests\sources\invalid\array_edge_invalid.fire:8:7)
+[14:50:16] [   ERROR] --- Unknown method 'remove' for array type int32[]
+> nums.remove(1); // remove not currently implemented in parser type check -> should error unknown method (or method unsupported)
+       ^
+(tests\sources\invalid\array_edge_invalid.fire:12:6)
+[14:50:16] [   ERROR] --- Unknown method 'sort' for array type int32[]
+> nums.sort(); // sort not implemented
+       ^
+(tests\sources\invalid\array_edge_invalid.fire:13:6)
+[14:50:16] [   ERROR] --- Array literals cannot directly contain arrays
+> int32[] bad2 = [[1,2]]; // nested array not allowed
+                 ^
+(tests\sources\invalid\array_edge_invalid.fire:16:16)
+[14:50:16] [   ERROR] --- Parsing failed with 9 errors

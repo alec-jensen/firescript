@@ -1,0 +1,37 @@
+// Literal and constant errors
+
+// Integer overflow
+fn void overflow() {
+    int32 too_big = 99999999999999999999;  // Exceeds int32 range
+}
+
+// Invalid hex literals
+fn void invalid_hex() {
+    int32 bad_hex = 0xGHIJ;  // Invalid hex digits
+}
+
+// Invalid escape sequences
+fn void invalid_escape() {
+    string bad = "hello\q";  // \q is not a valid escape
+}
+
+// Unclosed string literal
+fn void unclosed_string() {
+    string bad = "unclosed;
+}
+
+// Invalid number format
+fn void invalid_number() {
+    int32 bad = 123abc;  // Invalid number
+}
+
+// Float assigned to int without cast
+fn void float_to_int_no_cast() {
+    int32 x = 3.14;  // Should require explicit cast
+}
+
+// Boolean literal typo
+fn void boolean_typo() {
+    bool x = True;  // Should be 'true' (lowercase)
+    bool y = False;  // Should be 'false' (lowercase)
+}

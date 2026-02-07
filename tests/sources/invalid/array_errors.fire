@@ -1,0 +1,56 @@
+// Array error tests - comprehensive
+
+// Array size must be constant
+fn void non_constant_size() {
+    int32 size = 5;
+    int32[size] arr;  // Size must be a constant
+}
+
+// Array index out of bounds (static checking)
+fn void static_bounds() {
+    int32[5] arr = [1, 2, 3, 4, 5];
+    int32 val = arr[10];  // Out of bounds
+}
+
+// Wrong initializer size
+fn void wrong_init_size() {
+    int32[5] arr = [1, 2, 3];  // Too few initializers
+    int32[3] arr2 = [1, 2, 3, 4, 5];  // Too many initializers
+}
+
+// Array initializer type mismatch
+fn void init_type_mismatch() {
+    int32[3] arr = [1, "two", 3];  // Mixed types
+    int32[3] arr2 = ["one", "two", "three"];  // All wrong type
+}
+
+// Can't assign array to non-array
+fn void assign_to_non_array() {
+    int32 x = [1, 2, 3];  // Can't assign array literal to scalar
+}
+
+// Can't assign arrays of different sizes
+fn void different_sizes() {
+    int32[3] arr1 = [1, 2, 3];
+    int32[5] arr2 = [1, 2, 3, 4, 5];
+    arr1 = arr2;  // Size mismatch
+}
+
+// Can't assign arrays of different types
+fn void different_types() {
+    int32[3] arr1 = [1, 2, 3];
+    string[3] arr2 = ["a", "b", "c"];
+    arr1 = arr2;  // Type mismatch
+}
+
+// Index must be integer
+fn void index_type() {
+    int32[5] arr = [1, 2, 3, 4, 5];
+    int32 val = arr["two"];  // Index must be int
+}
+
+// Can't index non-array
+fn void index_non_array() {
+    int32 x = 5;
+    int32 val = x[0];  // x is not an array
+}

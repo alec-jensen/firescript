@@ -1,0 +1,118 @@
+// Comprehensive type conversion and casting tests
+
+import @firescript/std.io.{println};
+
+println("=== Type Conversion Tests ===");
+
+// Integer to integer conversions
+println("--- Integer to Integer ---");
+int8 i8 = 42i8;
+int16 i16 = (i8 as int16);
+int32 i32 = (i16 as int32);
+int64 i64 = (i32 as int64);
+println(i8);
+println(i16);
+println(i32);
+println(i64);
+
+// Downcast integers (potential data loss)
+println("--- Integer Downcast ---");
+int64 large = 1000i64;
+int32 medium = (large as int32);
+int16 small = (medium as int16);
+int8 tiny = (small as int8);
+println(large);
+println(medium);
+println(small);
+println(tiny);
+
+// Unsigned to signed
+println("--- Unsigned to Signed ---");
+uint8 u8 = 200u8;
+int8 i8_from_u8 = (u8 as int8);
+println(u8);
+println(i8_from_u8);  // May be negative due to overflow
+
+uint32 u32 = 3000000000u32;
+int32 i32_from_u32 = (u32 as int32);
+println(u32);
+println(i32_from_u32);
+
+// Signed to unsigned
+println("--- Signed to Unsigned ---");
+int32 negative = -42;
+uint32 u_from_negative = (negative as uint32);
+println(negative);
+println(u_from_negative);
+
+// Integer to float
+println("--- Integer to Float ---");
+int32 int_val = 100;
+float32 f32_from_int = (int_val as float32);
+float64 f64_from_int = (int_val as float64);
+println(int_val);
+println(f32_from_int);
+println(f64_from_int);
+
+// Float to integer (truncation)
+println("--- Float to Integer ---");
+float32 f32_val = 42.75f;
+int32 int_from_f32 = (f32_val as int32);
+println(f32_val);
+println(int_from_f32);  // Should be 42
+
+float64 f64_val = 99.99;
+int64 int_from_f64 = (f64_val as int64);
+println(f64_val);
+println(int_from_f64);  // Should be 99
+
+// Float32 to float64
+println("--- Float32 to Float64 ---");
+float32 f32 = 3.14159f;
+float64 f64 = (f32 as float64);
+println(f32);
+println(f64);
+
+// Float64 to float32 (precision loss)
+println("--- Float64 to Float32 ---");
+float64 precise = 3.141592653589793;
+float32 less_precise = (precise as float32);
+println(precise);
+println(less_precise);
+
+// Chained conversions
+println("--- Chained Conversions ---");
+int8 start = 100i8;
+int64 end = (((start as int16) as int32) as int64);
+println(start);
+println(end);
+
+// Conversions in expressions
+println("--- Conversions in Expressions ---");
+int8 a = 10i8;
+int16 b = 20i16;
+int32 result = (a as int32) + (b as int32);
+println(result);
+
+// Casts with operations
+println("--- Casts with Operations ---");
+int32 x = 5;
+float32 y = 2.0f;
+float32 div_result = (x as float32) / y;
+println(div_result);
+
+// String conversions (if supported)
+println("--- To String ---");
+int32 num = 42;
+string str_num = (num as string);
+println(str_num);
+
+float32 fnum = 3.14f;
+string str_fnum = (fnum as string);
+println(str_fnum);
+
+bool flag = true;
+string str_bool = (flag as string);
+println(str_bool);
+
+println("=== All type conversion tests passed ===");

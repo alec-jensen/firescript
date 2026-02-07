@@ -1,0 +1,11 @@
+=== Boolean Operations ===
+--- Boolean Basics ---
+true
+false
+true
+true
+false
+--- Conditional Logic ---
+a is between b and c
+a meets at least one condition
+=== Boolean operation tests passed ===

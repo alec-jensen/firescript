@@ -1,0 +1,26 @@
+[    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\import_errors.fire...
+[   ERROR] --- Expected module name after 'import'
+> import "nonexistent_module";
+         ^
+(tests\sources\invalid\import_errors.fire:4:8)
+[   ERROR] --- Expected module name after 'import'
+> import { undefined_symbol } from "std";
+         ^
+(tests\sources\invalid\import_errors.fire:7:8)
+[   ERROR] --- Expected assignment, function call, or method call
+> import { undefined_symbol } from "std";
+           ^
+(tests\sources\invalid\import_errors.fire:7:10)
+[   ERROR] --- Expected module name after 'import'
+> import * from "std";
+         ^
+(tests\sources\invalid\import_errors.fire:13:8)
+[   ERROR] --- Expected module name after 'import'
+> import * from "io";  // May cause naming conflicts
+         ^
+(tests\sources\invalid\import_errors.fire:14:8)
+[   ERROR] --- Expected module name after 'import'
+> import "io";  // Imports must be at the top
+         ^
+(tests\sources\invalid\import_errors.fire:18:8)
+[   ERROR] --- Parsing failed with 6 errors

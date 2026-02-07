@@ -74,4 +74,10 @@ char *firescript_strcat(const char *s1, const char *s2);
 bool firescript_strcmp(const char *s1, const char *s2);
 void firescript_cleanup(void);
 
+// Type conversion functions
+char *firescript_i32_to_str(int32_t value);
+char *firescript_i64_to_str(int64_t value);
+char *firescript_f32_to_str(float value);
+char *firescript_f64_to_str(double value);
+
 #endif

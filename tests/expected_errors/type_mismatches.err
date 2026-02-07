@@ -1,0 +1,134 @@
+[14:50:19] [    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\type_mismatches.fire...
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: assign string to int32 --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:4:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: incompatible addition --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:7:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: array element wrong type --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:12:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: initializer null to non-nullable --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:15:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: function call undefined --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:18:1)
+[14:50:19] [   ERROR] --- Function 'foo' is not defined
+> foo(1,2,3); // undefined function
+  ^
+(tests\sources\invalid\type_mismatches.fire:19:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: array method wrong arg type --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:21:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: pop with wrong arg count/type --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:27:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: index non-array --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:31:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: index not int --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:35:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: condition not boolean --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:39:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print(5);
+      ^
+(tests\sources\invalid\type_mismatches.fire:41:5)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: variable shadowing --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:44:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: use before declaration --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:50:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print(beforeDecl); // variable not defined
+  ^
+(tests\sources\invalid\type_mismatches.fire:51:1)
+[14:50:19] [   ERROR] --- Expected assignment, function call, or method call
+> int beforeDecl = 10;
+  ^
+(tests\sources\invalid\type_mismatches.fire:52:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: mixed array literal nested --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:54:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: assignment type mismatch --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:57:1)
+[14:50:19] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid tests end --");
+  ^
+(tests\sources\invalid\type_mismatches.fire:61:1)
+[14:50:19] [   ERROR] --- Variable 'outer' already declared in an outer scope; shadowing not allowed
+> int32 outer = 2; // shadowing not allowed
+            ^
+(tests\sources\invalid\type_mismatches.fire:47:11)
+[14:50:19] [   ERROR] --- Type mismatch for variable 'a'. Expected int32, got string
+> int32 a = "hello"; // error
+        ^
+(tests\sources\invalid\type_mismatches.fire:5:7)
+[14:50:19] [   ERROR] --- Type mismatch for variable 'bad'. Expected int32, got string
+> int32 bad = s + i; // error (string + int32 not supported)
+        ^
+(tests\sources\invalid\type_mismatches.fire:10:7)
+[14:50:19] [   ERROR] --- Cannot initialize non-nullable variable 'notNull' with null
+> int32 notNull = null; // error
+        ^
+(tests\sources\invalid\type_mismatches.fire:16:7)
+[14:50:19] [   ERROR] --- Method 'append' for int32[] expected element type int32, got string
+> arr.append("x"); // error wrong type
+             ^
+(tests\sources\invalid\type_mismatches.fire:23:12)
+[14:50:19] [   ERROR] --- Method 'insert' for int32[] expected element type int32, got string
+> arr.insert(0, "y"); // error wrong type
+                ^
+(tests\sources\invalid\type_mismatches.fire:24:15)
+[14:50:19] [   ERROR] --- Method 'insert' expected integer index as first argument, got string
+> arr.insert("z", 3); // error index must be int32
+             ^
+(tests\sources\invalid\type_mismatches.fire:25:12)
+[14:50:19] [   ERROR] --- Method 'pop' expected 0 or 1 argument, got 2
+> arr.pop(1,2); // too many args
+      ^
+(tests\sources\invalid\type_mismatches.fire:28:5)
+[14:50:19] [   ERROR] --- Method 'pop' expected integer index, got string
+> arr.pop("x"); // wrong type
+          ^
+(tests\sources\invalid\type_mismatches.fire:29:9)
+[14:50:19] [   ERROR] --- Cannot apply index operator [] to non-array type int32
+> int32 c = b[0]; // cannot index non-array
+            ^
+(tests\sources\invalid\type_mismatches.fire:33:11)
+[14:50:19] [   ERROR] --- Array index must be an integer type, got string
+> int32 d = z["zero"]; // index must be int32
+              ^
+(tests\sources\invalid\type_mismatches.fire:37:13)
+[14:50:19] [   ERROR] --- Condition for 'if' statement must be a boolean, got int32
+> if (5) { // condition must be bool
+      ^
+(tests\sources\invalid\type_mismatches.fire:40:5)
+[14:50:19] [   ERROR] --- Array literals cannot directly contain arrays
+> int32[] nested = [[1],[2]]; // array of arrays not allowed currently
+                   ^
+(tests\sources\invalid\type_mismatches.fire:55:18)
+[14:50:19] [   ERROR] --- Type mismatch assigning to variable 'm'. Expected int32, got string
+> m = "oops"; // mismatch
+  ^
+(tests\sources\invalid\type_mismatches.fire:59:1)
+[14:50:19] [   ERROR] --- Parsing failed with 33 errors

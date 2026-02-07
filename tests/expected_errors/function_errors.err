@@ -1,0 +1,102 @@
+[    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\function_errors.fire...
+[   ERROR] --- Expected assignment, function call, or method call
+> fn int32 missing_return(int32 x) {
+  ^
+(tests\sources\invalid\function_errors.fire:4:1)
+[   ERROR] --- Expected ')' after function arguments
+> fn int32 missing_return(int32 x) {
+                                ^
+(tests\sources\invalid\function_errors.fire:4:31)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn int32 takes_two(int32 a, int32 b) {
+  ^
+(tests\sources\invalid\function_errors.fire:9:1)
+[   ERROR] --- Expected ')' after function arguments
+> fn int32 takes_two(int32 a, int32 b) {
+                           ^
+(tests\sources\invalid\function_errors.fire:9:26)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void wrong_args() {
+  ^
+(tests\sources\invalid\function_errors.fire:13:1)
+[   ERROR] --- Function 'wrong_args' is not defined
+> fn void wrong_args() {
+          ^
+(tests\sources\invalid\function_errors.fire:13:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn int32 takes_int(int32 x) {
+  ^
+(tests\sources\invalid\function_errors.fire:19:1)
+[   ERROR] --- Expected ')' after function arguments
+> fn int32 takes_int(int32 x) {
+                           ^
+(tests\sources\invalid\function_errors.fire:19:26)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void wrong_types() {
+  ^
+(tests\sources\invalid\function_errors.fire:23:1)
+[   ERROR] --- Function 'wrong_types' is not defined
+> fn void wrong_types() {
+          ^
+(tests\sources\invalid\function_errors.fire:23:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void call_undefined() {
+  ^
+(tests\sources\invalid\function_errors.fire:28:1)
+[   ERROR] --- Function 'call_undefined' is not defined
+> fn void call_undefined() {
+          ^
+(tests\sources\invalid\function_errors.fire:28:9)
+[   ERROR] --- Function 'undefined_function' is not defined
+> undefined_function(5);
+      ^
+(tests\sources\invalid\function_errors.fire:29:5)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void call_non_function() {
+  ^
+(tests\sources\invalid\function_errors.fire:33:1)
+[   ERROR] --- Function 'call_non_function' is not defined
+> fn void call_non_function() {
+          ^
+(tests\sources\invalid\function_errors.fire:33:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn int32 duplicate_func() {
+  ^
+(tests\sources\invalid\function_errors.fire:39:1)
+[   ERROR] --- Function 'duplicate_func' is not defined
+> fn int32 duplicate_func() {
+           ^
+(tests\sources\invalid\function_errors.fire:39:10)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn int32 duplicate_func() {  // Duplicate
+  ^
+(tests\sources\invalid\function_errors.fire:43:1)
+[   ERROR] --- Function 'duplicate_func' is not defined
+> fn int32 duplicate_func() {  // Duplicate
+           ^
+(tests\sources\invalid\function_errors.fire:43:10)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn int32 wrong_return() {
+  ^
+(tests\sources\invalid\function_errors.fire:48:1)
+[   ERROR] --- Function 'wrong_return' is not defined
+> fn int32 wrong_return() {
+           ^
+(tests\sources\invalid\function_errors.fire:48:10)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn string another_wrong_return() {
+  ^
+(tests\sources\invalid\function_errors.fire:52:1)
+[   ERROR] --- Function 'another_wrong_return' is not defined
+> fn string another_wrong_return() {
+            ^
+(tests\sources\invalid\function_errors.fire:52:11)
+[   ERROR] --- Variable 'result' already declared in an outer scope; shadowing not allowed
+> int32 result = takes_int("string");  // Wrong type
+            ^
+(tests\sources\invalid\function_errors.fire:24:11)
+[   ERROR] --- Variable 'result' already declared in an outer scope; shadowing not allowed
+> int32 result = x(10);  // x is not a function
+            ^
+(tests\sources\invalid\function_errors.fire:35:11)
+[   ERROR] --- Parsing failed with 25 errors

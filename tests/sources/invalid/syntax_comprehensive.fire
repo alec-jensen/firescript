@@ -1,0 +1,52 @@
+// Comprehensive syntax error tests
+// These should all produce parser/lexer errors
+
+// Missing semicolons
+int32 a = 5
+int32 b = 10;
+
+// Unclosed parenthesis
+int32 x = (5 + 3;
+
+// Unclosed array literal
+int32[] arr = [1, 2, 3;
+
+// Missing condition parentheses in if
+if x > 5 {
+    println("test");
+}
+
+// Missing condition in while
+while {
+    println("test");
+}
+
+// Invalid tokens
+@#$%
+
+// Missing block braces
+if (true)
+    int32 y = 5;
+
+// Unclosed string literal
+string s = "hello;
+
+// Invalid array type syntax
+int32[ bad_arr = 5;
+
+// Dangling else
+else {
+    println("orphan else");
+}
+
+// Missing function body
+void test();
+
+// Invalid function syntax - missing parens
+void badFunc {
+    println("test");
+}
+
+// Missing closing brace
+void unclosed() {
+    int32 z = 10;

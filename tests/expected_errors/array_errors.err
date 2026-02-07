@@ -1,0 +1,150 @@
+[    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\array_errors.fire...
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void non_constant_size() {
+  ^
+(tests\sources\invalid\array_errors.fire:4:1)
+[   ERROR] --- Function 'non_constant_size' is not defined
+> fn void non_constant_size() {
+          ^
+(tests\sources\invalid\array_errors.fire:4:9)
+[   ERROR] --- Expected ']' after '[' in array type declaration
+> int32[size] arr;  // Size must be a constant
+            ^
+(tests\sources\invalid\array_errors.fire:6:11)
+[   ERROR] --- Expected assignment, function call, or method call
+> int32[size] arr;  // Size must be a constant
+                  ^
+(tests\sources\invalid\array_errors.fire:6:17)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void static_bounds() {
+  ^
+(tests\sources\invalid\array_errors.fire:10:1)
+[   ERROR] --- Function 'static_bounds' is not defined
+> fn void static_bounds() {
+          ^
+(tests\sources\invalid\array_errors.fire:10:9)
+[   ERROR] --- Expected ']' after '[' in array type declaration
+> int32[5] arr = [1, 2, 3, 4, 5];
+            ^
+(tests\sources\invalid\array_errors.fire:11:11)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void wrong_init_size() {
+  ^
+(tests\sources\invalid\array_errors.fire:16:1)
+[   ERROR] --- Function 'wrong_init_size' is not defined
+> fn void wrong_init_size() {
+          ^
+(tests\sources\invalid\array_errors.fire:16:9)
+[   ERROR] --- Expected ']' after '[' in array type declaration
+> int32[5] arr = [1, 2, 3];  // Too few initializers
+            ^
+(tests\sources\invalid\array_errors.fire:17:11)
+[   ERROR] --- Expected ']' after '[' in array type declaration
+> int32[3] arr2 = [1, 2, 3, 4, 5];  // Too many initializers
+            ^
+(tests\sources\invalid\array_errors.fire:18:11)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void init_type_mismatch() {
+  ^
+(tests\sources\invalid\array_errors.fire:22:1)
+[   ERROR] --- Function 'init_type_mismatch' is not defined
+> fn void init_type_mismatch() {
+          ^
+(tests\sources\invalid\array_errors.fire:22:9)
+[   ERROR] --- Expected ']' after '[' in array type declaration
+> int32[3] arr = [1, "two", 3];  // Mixed types
+            ^
+(tests\sources\invalid\array_errors.fire:23:11)
+[   ERROR] --- Expected ']' after '[' in array type declaration
+> int32[3] arr2 = ["one", "two", "three"];  // All wrong type
+            ^
+(tests\sources\invalid\array_errors.fire:24:11)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void assign_to_non_array() {
+  ^
+(tests\sources\invalid\array_errors.fire:28:1)
+[   ERROR] --- Function 'assign_to_non_array' is not defined
+> fn void assign_to_non_array() {
+          ^
+(tests\sources\invalid\array_errors.fire:28:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void different_sizes() {
+  ^
+(tests\sources\invalid\array_errors.fire:33:1)
+[   ERROR] --- Function 'different_sizes' is not defined
+> fn void different_sizes() {
+          ^
+(tests\sources\invalid\array_errors.fire:33:9)
+[   ERROR] --- Expected ']' after '[' in array type declaration
+> int32[3] arr1 = [1, 2, 3];
+            ^
+(tests\sources\invalid\array_errors.fire:34:11)
+[   ERROR] --- Expected ']' after '[' in array type declaration
+> int32[5] arr2 = [1, 2, 3, 4, 5];
+            ^
+(tests\sources\invalid\array_errors.fire:35:11)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void different_types() {
+  ^
+(tests\sources\invalid\array_errors.fire:40:1)
+[   ERROR] --- Function 'different_types' is not defined
+> fn void different_types() {
+          ^
+(tests\sources\invalid\array_errors.fire:40:9)
+[   ERROR] --- Expected ']' after '[' in array type declaration
+> int32[3] arr1 = [1, 2, 3];
+            ^
+(tests\sources\invalid\array_errors.fire:41:11)
+[   ERROR] --- Expected ']' after '[' in array type declaration
+> string[3] arr2 = ["a", "b", "c"];
+             ^
+(tests\sources\invalid\array_errors.fire:42:12)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void index_type() {
+  ^
+(tests\sources\invalid\array_errors.fire:47:1)
+[   ERROR] --- Function 'index_type' is not defined
+> fn void index_type() {
+          ^
+(tests\sources\invalid\array_errors.fire:47:9)
+[   ERROR] --- Expected ']' after '[' in array type declaration
+> int32[5] arr = [1, 2, 3, 4, 5];
+            ^
+(tests\sources\invalid\array_errors.fire:48:11)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void index_non_array() {
+  ^
+(tests\sources\invalid\array_errors.fire:53:1)
+[   ERROR] --- Function 'index_non_array' is not defined
+> fn void index_non_array() {
+          ^
+(tests\sources\invalid\array_errors.fire:53:9)
+[   ERROR] --- Variable 'val' already declared in an outer scope; shadowing not allowed
+> int32 val = arr["two"];  // Index must be int
+            ^
+(tests\sources\invalid\array_errors.fire:49:11)
+[   ERROR] --- Variable 'x' already declared in an outer scope; shadowing not allowed
+> int32 x = 5;
+            ^
+(tests\sources\invalid\array_errors.fire:54:11)
+[   ERROR] --- Variable 'val' already declared in an outer scope; shadowing not allowed
+> int32 val = x[0];  // x is not an array
+            ^
+(tests\sources\invalid\array_errors.fire:55:11)
+[   ERROR] --- Type mismatch assigning to variable 'arr2'. Expected int32[], got string[]
+> int32[3] arr2 = ["one", "two", "three"];  // All wrong type
+               ^
+(tests\sources\invalid\array_errors.fire:24:14)
+[   ERROR] --- Type mismatch for variable 'x'. Expected int32, got int32[]
+> int32 x = [1, 2, 3];  // Can't assign array literal to scalar
+            ^
+(tests\sources\invalid\array_errors.fire:29:11)
+[   ERROR] --- Type mismatch assigning to variable 'arr2'. Expected int32[], got string[]
+> string[3] arr2 = ["a", "b", "c"];
+                ^
+(tests\sources\invalid\array_errors.fire:42:15)
+[   ERROR] --- Cannot apply index operator [] to non-array type int32
+> int32 val = x[0];  // x is not an array
+                  ^
+(tests\sources\invalid\array_errors.fire:55:17)
+[   ERROR] --- Parsing failed with 37 errors

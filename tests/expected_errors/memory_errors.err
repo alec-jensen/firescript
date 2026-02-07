@@ -1,0 +1,3 @@
+[14:50:17] [    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\memory_errors.fire...
+[14:50:17] [   ERROR] --- Use-after-move error: variable 'owned' was moved, cannot use it here
+[14:50:17] [   ERROR] --- Semantic analysis failed with 1 errors

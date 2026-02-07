@@ -1,0 +1,42 @@
+[14:50:18] [    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\syntax_comprehensive.fire...
+[14:50:18] [   ERROR] --- Expected semicolon after statement
+> int32 b = 10;
+  ^
+(tests\sources\invalid\syntax_comprehensive.fire:6:1)
+[14:50:18] [   ERROR] --- Expected closing parenthesis
+> int32 x = (5 + 3;
+                  ^
+(tests\sources\invalid\syntax_comprehensive.fire:9:17)
+[14:50:18] [   ERROR] --- Expected ']' to end array literal
+> int32[] arr = [1, 2, 3;
+                        ^
+(tests\sources\invalid\syntax_comprehensive.fire:12:23)
+[14:50:18] [   ERROR] --- Expected initializer expression in variable declaration
+> int32[] arr = [1, 2, 3;
+                        ^
+(tests\sources\invalid\syntax_comprehensive.fire:12:23)
+[14:50:18] [   ERROR] --- Expected '(' after 'if'
+> if x > 5 {
+     ^
+(tests\sources\invalid\syntax_comprehensive.fire:15:4)
+[14:50:18] [   ERROR] --- Function 'println' is not defined
+> println("test");
+      ^
+(tests\sources\invalid\syntax_comprehensive.fire:16:5)
+[14:50:18] [   ERROR] --- Expected '(' after 'while'
+> while {
+        ^
+(tests\sources\invalid\syntax_comprehensive.fire:20:7)
+[14:50:18] [   ERROR] --- Function 'println' is not defined
+> println("test");
+      ^
+(tests\sources\invalid\syntax_comprehensive.fire:21:5)
+[14:50:18] [   ERROR] --- Unexpected character '#'
+> @#$%
+   ^
+(tests\sources\invalid\syntax_comprehensive.fire:25:2)
+[14:50:18] [   ERROR] --- Expected semicolon after statement
+> println("orphan else");
+               ^
+(tests\sources\invalid\syntax_comprehensive.fire:39:14)
+[14:50:18] [   ERROR] --- Parsing failed with 10 errors

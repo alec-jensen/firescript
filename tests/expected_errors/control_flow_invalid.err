@@ -1,0 +1,46 @@
+[14:50:16] [    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\control_flow_invalid.fire...
+[14:50:17] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: break outside loop --");
+  ^
+(tests\sources\invalid\control_flow_invalid.fire:4:1)
+[14:50:17] [   ERROR] --- Expected semicolon after statement
+> break; // should error (not inside loop)
+         ^
+(tests\sources\invalid\control_flow_invalid.fire:5:8)
+[14:50:17] [   ERROR] --- Expected semicolon after statement
+> continue; // should error
+            ^
+(tests\sources\invalid\control_flow_invalid.fire:8:11)
+[14:50:17] [   ERROR] --- Function 'print' is not defined
+> if ("hello") { print(1); }
+                 ^
+(tests\sources\invalid\control_flow_invalid.fire:11:16)
+[14:50:17] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid: while condition non-bool --");
+  ^
+(tests\sources\invalid\control_flow_invalid.fire:13:1)
+[14:50:17] [   ERROR] --- Function 'print' is not defined
+> while (1) { print(1); }
+              ^
+(tests\sources\invalid\control_flow_invalid.fire:14:13)
+[14:50:17] [   ERROR] --- Function 'print' is not defined
+> print("-- invalid control flow tests end --");
+  ^
+(tests\sources\invalid\control_flow_invalid.fire:16:1)
+[14:50:17] [   ERROR] --- 'break' statement not within a loop
+> break; // should error (not inside loop)
+  ^
+(tests\sources\invalid\control_flow_invalid.fire:5:1)
+[14:50:17] [   ERROR] --- 'continue' statement not within a loop
+> continue; // should error
+  ^
+(tests\sources\invalid\control_flow_invalid.fire:8:1)
+[14:50:17] [   ERROR] --- Condition for 'if' statement must be a boolean, got string
+> if ("hello") { print(1); }
+      ^
+(tests\sources\invalid\control_flow_invalid.fire:11:5)
+[14:50:17] [   ERROR] --- Condition for 'while' statement must be a boolean, got int32
+> while (1) { print(1); }
+         ^
+(tests\sources\invalid\control_flow_invalid.fire:14:8)
+[14:50:17] [   ERROR] --- Parsing failed with 11 errors

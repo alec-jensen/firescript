@@ -1,0 +1,22 @@
+[14:50:17] [    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\scope_errors.fire...
+[14:50:17] [   ERROR] --- Variable 'x' already declared in an outer scope; shadowing not allowed
+> int32 x = 20;  // Error: shadowing not allowed
+            ^
+(tests\sources\invalid\scope_errors.fire:8:11)
+[14:50:17] [   ERROR] --- Parameter 'x' already declared in an outer scope; shadowing not allowed
+> void duplicateParams(int32 x, int32 x) {
+                             ^
+(tests\sources\invalid\scope_errors.fire:29:28)
+[14:50:17] [   ERROR] --- Parameter 'x' already declared in an outer scope; shadowing not allowed
+> void duplicateParams(int32 x, int32 x) {
+                                      ^
+(tests\sources\invalid\scope_errors.fire:29:37)
+[14:50:17] [   ERROR] --- Variable 'scoped' not defined
+> println(scoped);  // Error: scoped not in scope here
+          ^
+(tests\sources\invalid\scope_errors.fire:20:9)
+[14:50:17] [   ERROR] --- Variable 'i' not defined
+> println(i);  // Error: i not in scope
+          ^
+(tests\sources\invalid\scope_errors.fire:26:9)
+[14:50:17] [   ERROR] --- Parsing failed with 5 errors

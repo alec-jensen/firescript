@@ -1,0 +1,46 @@
+=== Type Conversion Tests ===
+--- Integer to Integer ---
+42
+42
+42
+42
+--- Integer Downcast ---
+1000
+1000
+1000
+-24
+--- Unsigned to Signed ---
+200
+-56
+3000000000
+-1294967296
+--- Signed to Unsigned ---
+-42
+4294967254
+--- Integer to Float ---
+100
+100.000000
+100.000000
+--- Float to Integer ---
+42.750000
+42
+99.990000
+99
+--- Float32 to Float64 ---
+3.141590
+3.141590
+--- Float64 to Float32 ---
+3.141593
+3.141593
+--- Chained Conversions ---
+100
+100
+--- Conversions in Expressions ---
+30
+--- Casts with Operations ---
+2.500000
+--- To String ---
+42
+3.140000
+true
+=== All type conversion tests passed ===

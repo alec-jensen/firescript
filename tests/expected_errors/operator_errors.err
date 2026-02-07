@@ -1,0 +1,158 @@
+[    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\operator_errors.fire...
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void arithmetic_mismatches() {
+  ^
+(tests\sources\invalid\operator_errors.fire:4:1)
+[   ERROR] --- Function 'arithmetic_mismatches' is not defined
+> fn void arithmetic_mismatches() {
+          ^
+(tests\sources\invalid\operator_errors.fire:4:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void division_by_zero() {
+  ^
+(tests\sources\invalid\operator_errors.fire:18:1)
+[   ERROR] --- Function 'division_by_zero' is not defined
+> fn void division_by_zero() {
+          ^
+(tests\sources\invalid\operator_errors.fire:18:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void comparison_mismatches() {
+  ^
+(tests\sources\invalid\operator_errors.fire:24:1)
+[   ERROR] --- Function 'comparison_mismatches' is not defined
+> fn void comparison_mismatches() {
+          ^
+(tests\sources\invalid\operator_errors.fire:24:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void logical_on_non_bool() {
+  ^
+(tests\sources\invalid\operator_errors.fire:33:1)
+[   ERROR] --- Function 'logical_on_non_bool' is not defined
+> fn void logical_on_non_bool() {
+          ^
+(tests\sources\invalid\operator_errors.fire:33:9)
+[   ERROR] --- Expected semicolon after statement
+> bool result = a and b;  // 'and' requires boolean operands
+                      ^
+(tests\sources\invalid\operator_errors.fire:36:21)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void unary_mismatches() {
+  ^
+(tests\sources\invalid\operator_errors.fire:40:1)
+[   ERROR] --- Function 'unary_mismatches' is not defined
+> fn void unary_mismatches() {
+          ^
+(tests\sources\invalid\operator_errors.fire:40:9)
+[   ERROR] --- Expected semicolon after statement
+> bool b = not x;  // 'not' requires boolean
+                   ^
+(tests\sources\invalid\operator_errors.fire:45:18)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void assign_to_non_lvalue() {
+  ^
+(tests\sources\invalid\operator_errors.fire:49:1)
+[   ERROR] --- Function 'assign_to_non_lvalue' is not defined
+> fn void assign_to_non_lvalue() {
+          ^
+(tests\sources\invalid\operator_errors.fire:49:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void compound_assign_mismatch() {
+  ^
+(tests\sources\invalid\operator_errors.fire:55:1)
+[   ERROR] --- Function 'compound_assign_mismatch' is not defined
+> fn void compound_assign_mismatch() {
+          ^
+(tests\sources\invalid\operator_errors.fire:55:9)
+[   ERROR] --- Expected assignment, function call, or method call
+> fn void inc_dec_non_numeric() {
+  ^
+(tests\sources\invalid\operator_errors.fire:61:1)
+[   ERROR] --- Function 'inc_dec_non_numeric' is not defined
+> fn void inc_dec_non_numeric() {
+          ^
+(tests\sources\invalid\operator_errors.fire:61:9)
+[   ERROR] --- Variable 'x' already declared in an outer scope; shadowing not allowed
+> int32 x = 10 / 0;  // Division by zero
+            ^
+(tests\sources\invalid\operator_errors.fire:19:11)
+[   ERROR] --- Variable 'y' already declared in an outer scope; shadowing not allowed
+> int32 y = 15 % 0;  // Modulo by zero
+            ^
+(tests\sources\invalid\operator_errors.fire:20:11)
+[   ERROR] --- Variable 'a' already declared in an outer scope; shadowing not allowed
+> int32 a = 5;
+            ^
+(tests\sources\invalid\operator_errors.fire:25:11)
+[   ERROR] --- Variable 'b' already declared in an outer scope; shadowing not allowed
+> string b = "5";
+             ^
+(tests\sources\invalid\operator_errors.fire:26:12)
+[   ERROR] --- Variable 'result' already declared in an outer scope; shadowing not allowed
+> bool result = a < b;  // Can't compare int and string
+           ^
+(tests\sources\invalid\operator_errors.fire:27:10)
+[   ERROR] --- Variable 'a' already declared in an outer scope; shadowing not allowed
+> int32 a = 5;
+            ^
+(tests\sources\invalid\operator_errors.fire:34:11)
+[   ERROR] --- Variable 'b' already declared in an outer scope; shadowing not allowed
+> int32 b = 10;
+            ^
+(tests\sources\invalid\operator_errors.fire:35:11)
+[   ERROR] --- Variable 'result' already declared in an outer scope; shadowing not allowed
+> bool result = a and b;  // 'and' requires boolean operands
+           ^
+(tests\sources\invalid\operator_errors.fire:36:10)
+[   ERROR] --- Variable 'x' already declared in an outer scope; shadowing not allowed
+> int32 x = 5;
+            ^
+(tests\sources\invalid\operator_errors.fire:44:11)
+[   ERROR] --- Variable 'b' already declared in an outer scope; shadowing not allowed
+> bool b = not x;  // 'not' requires boolean
+           ^
+(tests\sources\invalid\operator_errors.fire:45:10)
+[   ERROR] --- Variable 'not' not defined
+> bool b = not x;  // 'not' requires boolean
+               ^
+(tests\sources\invalid\operator_errors.fire:45:14)
+[   ERROR] --- Variable 'x' already declared in an outer scope; shadowing not allowed
+> int32 x = 5;
+            ^
+(tests\sources\invalid\operator_errors.fire:56:11)
+[   ERROR] --- Variable 's' already declared in an outer scope; shadowing not allowed
+> string s = "hello";
+             ^
+(tests\sources\invalid\operator_errors.fire:62:12)
+[   ERROR] --- Type mismatch for variable 'result'. Expected int32, got string
+> int32 result = a + b;  // Can't add int and string
+            ^
+(tests\sources\invalid\operator_errors.fire:7:11)
+[   ERROR] --- Operator '-' not supported between types string and string
+> string s3 = s1 - s2;  // Can't subtract strings
+                     ^
+(tests\sources\invalid\operator_errors.fire:11:20)
+[   ERROR] --- Operator '*' not supported between types int32 and string
+> string y = x * "repeat";  // Can't multiply int and string
+                   ^
+(tests\sources\invalid\operator_errors.fire:14:18)
+[   ERROR] --- Operator '<' requires same-type numeric operands, got int32 and string
+> bool result = a < b;  // Can't compare int and string
+                      ^
+(tests\sources\invalid\operator_errors.fire:27:21)
+[   ERROR] --- Operator '>' requires same-type numeric operands, got string and string
+> bool c = "hello" > "world";  // May not support string comparison
+                       ^
+(tests\sources\invalid\operator_errors.fire:29:22)
+[   ERROR] --- Type mismatch for variable 'result'. Expected bool, got int32
+> bool result = a and b;  // 'and' requires boolean operands
+           ^
+(tests\sources\invalid\operator_errors.fire:36:10)
+[   ERROR] --- Unary operator '-' requires numeric operand, got string
+> string negated = -s;  // Can't negate a string
+                       ^
+(tests\sources\invalid\operator_errors.fire:42:22)
+[   ERROR] --- Operator '++' requires an integer variable, got string
+> s++;  // Can't increment string
+      ^
+(tests\sources\invalid\operator_errors.fire:63:5)
+[   ERROR] --- Parsing failed with 39 errors

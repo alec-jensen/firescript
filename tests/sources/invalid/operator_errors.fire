@@ -1,0 +1,64 @@
+// Operator error tests - comprehensive
+
+// Type mismatches in arithmetic
+fn void arithmetic_mismatches() {
+    int32 a = 5;
+    string b = "hello";
+    int32 result = a + b;  // Can't add int and string
+    
+    string s1 = "hello";
+    string s2 = "world";
+    string s3 = s1 - s2;  // Can't subtract strings
+    
+    int32 x = 10;
+    string y = x * "repeat";  // Can't multiply int and string
+}
+
+// Division by zero (if statically checked)
+fn void division_by_zero() {
+    int32 x = 10 / 0;  // Division by zero
+    int32 y = 15 % 0;  // Modulo by zero
+}
+
+// Comparison type mismatches
+fn void comparison_mismatches() {
+    int32 a = 5;
+    string b = "5";
+    bool result = a < b;  // Can't compare int and string
+    
+    bool c = "hello" > "world";  // May not support string comparison
+}
+
+// Logical operators on non-booleans
+fn void logical_on_non_bool() {
+    int32 a = 5;
+    int32 b = 10;
+    bool result = a and b;  // 'and' requires boolean operands
+}
+
+// Unary operator type mismatches
+fn void unary_mismatches() {
+    string s = "hello";
+    string negated = -s;  // Can't negate a string
+    
+    int32 x = 5;
+    bool b = not x;  // 'not' requires boolean
+}
+
+// Assignment to non-lvalue
+fn void assign_to_non_lvalue() {
+    5 = 10;  // Can't assign to literal
+    (5 + 3) = 10;  // Can't assign to expression
+}
+
+// Compound assignment type mismatch
+fn void compound_assign_mismatch() {
+    int32 x = 5;
+    x += "hello";  // Type mismatch
+}
+
+// Increment/decrement on non-numeric
+fn void inc_dec_non_numeric() {
+    string s = "hello";
+    s++;  // Can't increment string
+}

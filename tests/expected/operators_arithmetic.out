@@ -1,0 +1,40 @@
+=== Arithmetic Operators ===
+--- Addition ---
+15
+6.000000
+--- Subtraction ---
+5
+1.000000
+--- Multiplication ---
+50
+8.750000
+--- Division ---
+2
+1.400000
+--- Modulo ---
+0
+3
+--- Unary Operations ---
+-42
+42
+--- Compound Assignment ---
+15
+12
+24
+6
+2
+--- Increment/Decrement ---
+1
+2
+1
+--- Different Numeric Types ---
+15
+30
+50
+15
+30
+50
+70
+8.000000
+13.750000
+=== All arithmetic operator tests passed ===
