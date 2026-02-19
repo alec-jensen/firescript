@@ -139,41 +139,6 @@ RefCountedObject *firescript_create_string(const char *str)
     return create_ref_counted_object(copy, string_destructor);
 }
 
-// Updated input function that returns a reference counted string
-RefCountedObject *firescript_input_ref(const char *prompt)
-{
-    printf("%s", prompt);
-
-    char buffer[256];
-    if (scanf("%255s", buffer) != 1)
-    {
-        buffer[0] = '\0';
-    }
-
-    char *result = strdup(buffer);
-    if (!result)
-        return NULL;
-
-    return create_ref_counted_object(result, string_destructor);
-}
-
-// Legacy input function for backward compatibility
-char *firescript_input(char *prompt)
-{
-    RefCountedObject *ref_str = firescript_input_ref(prompt);
-    if (!ref_str)
-        return NULL;
-
-    // For the legacy function, we can't track this memory,
-    // but the caller is responsible for it
-    char *result = strdup((char *)ref_str->data);
-
-    // Clean up the ref counted object
-    decrement_ref_count(ref_str);
-
-    return result;
-}
-
 // String concatenation function that uses reference counting
 RefCountedObject *firescript_strcat_ref(RefCountedObject *s1_obj, RefCountedObject *s2_obj)
 {

@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - GCC (other compilers may work, but GCC is recommended)
-- Python 3
+- Python 3 (firescript generally targets the latest version of Python)
 
 **Supported Platforms:**
 - Linux

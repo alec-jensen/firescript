@@ -123,7 +123,6 @@ class Parser:
 
     builtin_functions: dict[str, str] = {
         "stdout": "void",
-        "input": "string",
         "drop": "void",
         # type constructor builtins (pending explicit cast design): keep names but map to canonical firescript types
         "int": "int32",
@@ -1797,9 +1796,6 @@ class Parser:
             if func_name == "print":
                 expected_arg_count = 1  # Simplified: assumes 1 arg for now
                 # Allow printing any basic type
-            elif func_name == "input":
-                expected_arg_count = 1
-                expected_arg_types = ["string"]
             elif func_name in ("toInt", "toBool", "toString", "toChar"):
                 expected_arg_count = 1
                 # Allow conversion from reasonable types (simplified check)

@@ -3,8 +3,6 @@
 // print(string value)
 // print(string value, char end)
 
-// input
-
 // range(int32 end)
 // start defaults to 0, step defaults to 1, inclusive defaults to false
 

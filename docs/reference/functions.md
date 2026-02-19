@@ -1,79 +1,8 @@
 # Functions & Methods
 
-> Status: This section includes planned semantics for the ownership-based memory model. See [Memory Management](./memory_management.md) for authoritative definitions.
-
 ## Built-in Functions
 
-firescript provides a set of built-in functions that are available for use without requiring any imports. These functions provide essential functionality for input/output, type conversion, and type introspection.
-
-### Input/Output Functions
-
-- **`print(value)`** – Outputs a value to the console
-
-```firescript
-print("Hello, world!");  // Prints: Hello, world!
-print(42);               // Prints: 42
-print(true);             // Prints: true
-```
-
-  This function accepts values of any type and converts them to strings for display.
-
-- **`input(prompt)`** – Reads a string from the console
-
-```firescript
-string name = input("Enter your name: ");
-print("Hello, " + name);
-```
-
-  The `prompt` parameter is displayed to the user before waiting for input.
-
-### Type Introspection
-
-- **`typeof(value)`** – Returns the type name of a value as a string
-
-```firescript
-string typeOfNumber = typeof(42);         // "int"
-string typeOfText = typeof("hello");      // "string"
-string typeOfArray = typeof([1, 2, 3]);   // "int[]"
-```
-
-  This can be useful for debugging and for implementing type-dependent behavior.
-
-### Testing
-
-- **`assert(condition, message)`** – Asserts that a condition is true, otherwise raises an error with the given message
-
-```firescript
-int x = 5;
-assert(x > 0, "x must be positive");  // Passes
-assert(x < 0, "x must be negative");  // Fails with error: "Assertion failed: x must be negative"
-```
-
-## Using Built-in Functions
-
-Functions are called by specifying the function name followed by parentheses containing the arguments:
-
-```firescript
-// Converting user input to a number
-string inputValue = input("Enter a number: ");
-int parsedValue = toInt(inputValue);
-print("You entered: " + toString(parsedValue));
-
-// Type checking
-int number = 42;
-string typeInfo = typeof(number);
-print("The type of " + toString(number) + " is " + typeInfo);
-```
-
-### Chain of Function Calls
-
-Built-in functions can be chained together:
-
-```firescript
-// Get input, convert to int, double it, and print
-int result = toInt(input("Enter a number: ")) * 2;
-print("Double of your number is: " + toString(result));
-```
+For the purposes of most code, firescript does not provide any built-in functions. Things like io and math are provided by the standard library.
 
 ## User-defined Functions
 
@@ -109,7 +38,6 @@ float calculateAverage(int[] numbers) {
 - Parameters of owned types (strings, arrays, user-defined objects) move into the function. After a call, an argument of an owned type is no longer valid unless the function returns it.
 - Future explicit borrow syntax (`&T`) will allow passing a read-only view without moving ownership. Borrowed arguments remain valid after the call.
  - For Copyable types (e.g., `intN`, `floatN`, `bool`, `char`), calls pass by value; borrowing is not defined for Copyable types.
- - `input()` returns a new `string` (Owned, heap-allocated).
  - `toString()` and string concatenation produce new `string` values. Strings are Owned and use move semantics.
  - Arrays are Owned and use move semantics.
  - Cloning is explicit for Owned values (needed for `string`, arrays, and user-defined objects).

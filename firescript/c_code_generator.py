@@ -76,7 +76,7 @@ class CCodeGenerator:
         # Stack of name scopes for nested functions/blocks
         self.name_scope_stack: list[dict[str, str]] = [{}]
         # Built-in functions that shouldn't be mangled
-        self.builtin_names = {"stdout", "input", "drop"}
+        self.builtin_names = {"stdout", "drop"}
         
         # Collect class names and metadata for constructors and methods
         self.class_names: set[str] = set()
@@ -1355,8 +1355,6 @@ class CCodeGenerator:
             elif node.name == "drop":
                 # Fixed-size arrays are copyable; drop is a no-op
                 return "/* drop noop */"
-            elif node.name == "input":
-                return f"firescript_input({self._visit(node.children[0])})"
             elif node.name == "int":
                 # Cast to a native C integer
                 arg_code = self._visit(node.children[0])

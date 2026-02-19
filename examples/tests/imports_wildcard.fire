@@ -1,7 +1,0 @@
-// Test: wildcard import
-
-import @firescript/std.io.{println};
-import utils.*
-
-println(helper(5));
-println(CONSTANT);

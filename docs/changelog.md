@@ -4,6 +4,9 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 
 ## Currently in development
 
+### Breaking Changes
+- Removed built-in `input()` function. User input functionality should be implemented via the standard library or external libraries.
+
 ### Compiler improvements
 - Bug fixes
 
@@ -167,8 +170,7 @@ int add(int a, int b) {
 
 - **Basic Standard Library:**
     * Implementation of essential built-in functions:
-      * `print()` for output
-      * `input()` for user input
+      * `print()` for output (note: later moved to standard library)
       * Type conversion functions (`toInt()`, `toFloat()`, `toString()`, etc.)
       * `typeof()` function for runtime type introspection
 

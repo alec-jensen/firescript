@@ -46,12 +46,12 @@ def _colorize(text: str, code: str) -> str:
     return f"\x1b[{code}m{text}\x1b[0m"
 
 
-def _tag(label: str, color_code: str = None) -> str:
+def _tag(label: str, color_code: str | None = None) -> str:
     padded = f"[{label:<6}]"
     return _colorize(padded, color_code) if color_code else padded
 
 
-def _log(label: str, message: str, color_code: str = None) -> None:
+def _log(label: str, message: str, color_code: str | None = None) -> None:
     print(f"{_tag(label, color_code)} {message}")
 
 

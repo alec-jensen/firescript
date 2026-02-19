@@ -32,7 +32,6 @@ void decrement_ref_count(RefCountedObject *obj);
 
 // Reference counted string operations
 RefCountedObject *firescript_create_string(const char *str);
-RefCountedObject *firescript_input_ref(const char *prompt);
 RefCountedObject *firescript_strcat_ref(RefCountedObject *s1_obj, RefCountedObject *s2_obj);
 bool firescript_strcmp_ref(RefCountedObject *s1_obj, RefCountedObject *s2_obj);
 void firescript_print_string_ref(RefCountedObject *str_obj);
@@ -69,7 +68,6 @@ void firescript_print_long_double(long double x);
 size_t firescript_format_long_double(char *buf, size_t size, long double x);
 
 // Legacy functions for backward compatibility
-char *firescript_input(char *prompt);
 char *firescript_strcat(const char *s1, const char *s2);
 bool firescript_strcmp(const char *s1, const char *s2);
 void firescript_cleanup(void);
