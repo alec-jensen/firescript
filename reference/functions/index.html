@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -629,73 +629,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Built-in Functions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#inputoutput-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Input/Output Functions
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#type-introspection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Type Introspection
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Testing
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#using-built-in-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using Built-in Functions
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Using Built-in Functions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#chain-of-function-calls" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Chain of Function Calls
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1098,73 +1031,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Built-in Functions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#inputoutput-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Input/Output Functions
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#type-introspection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Type Introspection
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Testing
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#using-built-in-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using Built-in Functions
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Using Built-in Functions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#chain-of-function-calls" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Chain of Function Calls
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1313,62 +1179,8 @@
 
 
 <h1 id="functions-methods">Functions &amp; Methods<a class="headerlink" href="#functions-methods" title="Permanent link">&para;</a></h1>
-<blockquote>
-<p>Status: This section includes planned semantics for the ownership-based memory model. See <a href="../memory_management/">Memory Management</a> for authoritative definitions.</p>
-</blockquote>
 <h2 id="built-in-functions">Built-in Functions<a class="headerlink" href="#built-in-functions" title="Permanent link">&para;</a></h2>
-<p>firescript provides a set of built-in functions that are available for use without requiring any imports. These functions provide essential functionality for input/output, type conversion, and type introspection.</p>
-<h3 id="inputoutput-functions">Input/Output Functions<a class="headerlink" href="#inputoutput-functions" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong><code>print(value)</code></strong> – Outputs a value to the console</li>
-</ul>
-<pre><code class="language-firescript">print(&quot;Hello, world!&quot;);  // Prints: Hello, world!
-print(42);               // Prints: 42
-print(true);             // Prints: true
-</code></pre>
-<p>This function accepts values of any type and converts them to strings for display.</p>
-<ul>
-<li><strong><code>input(prompt)</code></strong> – Reads a string from the console</li>
-</ul>
-<pre><code class="language-firescript">string name = input(&quot;Enter your name: &quot;);
-print(&quot;Hello, &quot; + name);
-</code></pre>
-<p>The <code>prompt</code> parameter is displayed to the user before waiting for input.</p>
-<h3 id="type-introspection">Type Introspection<a class="headerlink" href="#type-introspection" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong><code>typeof(value)</code></strong> – Returns the type name of a value as a string</li>
-</ul>
-<pre><code class="language-firescript">string typeOfNumber = typeof(42);         // &quot;int&quot;
-string typeOfText = typeof(&quot;hello&quot;);      // &quot;string&quot;
-string typeOfArray = typeof([1, 2, 3]);   // &quot;int[]&quot;
-</code></pre>
-<p>This can be useful for debugging and for implementing type-dependent behavior.</p>
-<h3 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong><code>assert(condition, message)</code></strong> – Asserts that a condition is true, otherwise raises an error with the given message</li>
-</ul>
-<pre><code class="language-firescript">int x = 5;
-assert(x &gt; 0, &quot;x must be positive&quot;);  // Passes
-assert(x &lt; 0, &quot;x must be negative&quot;);  // Fails with error: &quot;Assertion failed: x must be negative&quot;
-</code></pre>
-<h2 id="using-built-in-functions">Using Built-in Functions<a class="headerlink" href="#using-built-in-functions" title="Permanent link">&para;</a></h2>
-<p>Functions are called by specifying the function name followed by parentheses containing the arguments:</p>
-<pre><code class="language-firescript">// Converting user input to a number
-string inputValue = input(&quot;Enter a number: &quot;);
-int parsedValue = toInt(inputValue);
-print(&quot;You entered: &quot; + toString(parsedValue));
-
-// Type checking
-int number = 42;
-string typeInfo = typeof(number);
-print(&quot;The type of &quot; + toString(number) + &quot; is &quot; + typeInfo);
-</code></pre>
-<h3 id="chain-of-function-calls">Chain of Function Calls<a class="headerlink" href="#chain-of-function-calls" title="Permanent link">&para;</a></h3>
-<p>Built-in functions can be chained together:</p>
-<pre><code class="language-firescript">// Get input, convert to int, double it, and print
-int result = toInt(input(&quot;Enter a number: &quot;)) * 2;
-print(&quot;Double of your number is: &quot; + toString(result));
-</code></pre>
+<p>For the purposes of most code, firescript does not provide any built-in functions. Things like io and math are provided by the standard library.</p>
 <h2 id="user-defined-functions">User-defined Functions<a class="headerlink" href="#user-defined-functions" title="Permanent link">&para;</a></h2>
 <pre><code class="language-firescript">// Basic function definition
 returnType functionName(paramType1 param1, paramType2 param2) {
@@ -1400,7 +1212,6 @@ float calculateAverage(int[] numbers) {
 <li>Parameters of owned types (strings, arrays, user-defined objects) move into the function. After a call, an argument of an owned type is no longer valid unless the function returns it.</li>
 <li>Future explicit borrow syntax (<code>&amp;T</code>) will allow passing a read-only view without moving ownership. Borrowed arguments remain valid after the call.</li>
 <li>For Copyable types (e.g., <code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>), calls pass by value; borrowing is not defined for Copyable types.</li>
-<li><code>input()</code> returns a new <code>string</code> (Owned, heap-allocated).</li>
 <li><code>toString()</code> and string concatenation produce new <code>string</code> values. Strings are Owned and use move semantics.</li>
 <li>Arrays are Owned and use move semantics.</li>
 <li>Cloning is explicit for Owned values (needed for <code>string</code>, arrays, and user-defined objects).</li>

@@ -17,7 +17,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -978,9 +978,10 @@
 </code></pre>
 <h2 id="available-directives">Available Directives<a class="headerlink" href="#available-directives" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>enable_syscalls</code>: Allows the use of syscalls in the file. This is required for files in the standard library that need syscall access.</li>
+<li><code>enable_syscalls</code>: Allows the use of syscalls in the file. This is required for files in the standard library that need syscall access (e.g. std.io).</li>
 <li><code>enable_drops</code>: Enables the preprocessor to insert deterministic drop() calls for Owned values (e.g., arrays) at scope boundaries and early exits.</li>
 <li><code>enable_lowlevel_stdout</code>: Allows the use of low-level stdout function.</li>
+<li><code>enable_lowlevel_stdin</code>: Allows the use of low-level stdin function.</li>
 </ul>
 
 

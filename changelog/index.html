@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -886,6 +886,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#compiler-improvements" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -914,7 +925,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#breaking-changes" class="md-nav__link">
+  <a href="#breaking-changes_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Breaking Changes
@@ -964,7 +975,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#breaking-changes_1" class="md-nav__link">
+  <a href="#breaking-changes_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Breaking Changes
@@ -1192,6 +1203,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#compiler-improvements" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1220,7 +1242,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#breaking-changes" class="md-nav__link">
+  <a href="#breaking-changes_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Breaking Changes
@@ -1270,7 +1292,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#breaking-changes_1" class="md-nav__link">
+  <a href="#breaking-changes_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Breaking Changes
@@ -1460,6 +1482,10 @@
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
 <p>firescript follows <a href="https://semver.org/">Semantic Versioning</a>. This makes it easier to understand the impact of changes in each release.</p>
 <h2 id="currently-in-development">Currently in development<a class="headerlink" href="#currently-in-development" title="Permanent link">&para;</a></h2>
+<h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Removed built-in <code>input()</code> function. User input functionality should be implemented via the standard library or external libraries.</li>
+</ul>
 <h3 id="compiler-improvements">Compiler improvements<a class="headerlink" href="#compiler-improvements" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Bug fixes</li>
@@ -1467,7 +1493,7 @@
 <h2 id="040-phoenix">0.4.0 - Phoenix<a class="headerlink" href="#040-phoenix" title="Permanent link">&para;</a></h2>
 <p><em>February 2, 2026</em></p>
 <p>Starting with 0.4.0, releases will now be named.</p>
-<h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
+<h3 id="breaking-changes_1">Breaking Changes<a class="headerlink" href="#breaking-changes_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Removed legacy numeric aliases: <code>int</code>, <code>float</code>, and <code>double</code>.<ul>
 <li>Use explicit-width types instead: <code>int8|16|32|64</code>, <code>uint8|16|32|64</code>, and <code>float32|64|128</code>.</li>
@@ -1519,7 +1545,7 @@
 </ul>
 <h2 id="030">0.3.0<a class="headerlink" href="#030" title="Permanent link">&para;</a></h2>
 <p><em>September 12, 2025</em></p>
-<h3 id="breaking-changes_1">Breaking Changes<a class="headerlink" href="#breaking-changes_1" title="Permanent link">&para;</a></h3>
+<h3 id="breaking-changes_2">Breaking Changes<a class="headerlink" href="#breaking-changes_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong><code>int</code> type is a native int again.</strong><ul>
 <li>The <code>int</code> type is now a native <code>int64_t</code> type in the generated C code.</li>
@@ -1668,8 +1694,7 @@
 <p><strong>Basic Standard Library:</strong></p>
 <ul>
 <li>Implementation of essential built-in functions:</li>
-<li><code>print()</code> for output</li>
-<li><code>input()</code> for user input</li>
+<li><code>print()</code> for output (note: later moved to standard library)</li>
 <li>Type conversion functions (<code>toInt()</code>, <code>toFloat()</code>, <code>toString()</code>, etc.)</li>
 <li><code>typeof()</code> function for runtime type introspection</li>
 </ul>
