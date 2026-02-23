@@ -46,6 +46,7 @@ jobs:
           update: true
           install: mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp mingw-w64-x86_64-mpfr
           path-type: inherit
+          location: 'C:\'
 
       - name: Add MinGW64 to PATH (Windows)
         if: runner.os == 'Windows'
