@@ -102,6 +102,7 @@ def run_cmd(cmd: List[str], cwd: str | None = None, check: bool = True, input_te
         cmd,
         cwd=cwd,
         text=True,
+        encoding="utf-8",
         input=input_text,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

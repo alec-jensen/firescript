@@ -12,3 +12,5 @@ Veryify the docs (/docs) for language syntax, features, and examples are accurat
 Compiler directives are only to be used in the standard library and should not be used in user source files except in specific scenarios (e.g., enabling syscalls). They are primarily for internal use by the compiler and standard library. Do not add directives to user source files without a clear justification. Do not add directives to tests unless necessary for testing specific compiler behavior.
 
 Any changes to the compiler's handling of language features should be documented in the changelog under "Currently in Development"
+
+If a test fails, do not change the test case to make it pass. Instead, investigate the failure and fix the underlying issue in the compiler or standard library. Tests should only be modified if there is a change in expected behavior that is intentional and documented in the changelog.

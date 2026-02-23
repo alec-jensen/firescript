@@ -46,7 +46,11 @@ jobs:
           update: true
           install: mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp mingw-w64-x86_64-mpfr
           path-type: inherit
-      
+
+      - name: Add MinGW64 to PATH (Windows)
+        if: runner.os == 'Windows'
+        run: echo "C:\msys64\mingw64\bin" >> $env:GITHUB_PATH
+
       - name: Verify GCC installation
         run: gcc --version
       
