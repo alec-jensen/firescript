@@ -18,7 +18,11 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     
     steps:
       - uses: actions/checkout@v4
@@ -28,10 +32,20 @@ jobs:
         with:
           python-version: '3.x'
       
-      - name: Install GCC and dependencies
+      - name: Install GCC and dependencies (Linux)
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc build-essential libgmp-dev libmpfr-dev
+      
+      - name: Set up MSYS2 with GCC and dependencies (Windows)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp mingw-w64-x86_64-mpfr
+          path-type: inherit
       
       - name: Verify GCC installation
         run: gcc --version

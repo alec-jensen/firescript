@@ -117,8 +117,16 @@ def compile_fire(src: str) -> None:
     cmd = [sys.executable, os.path.join(REPO_ROOT, "firescript", "main.py"), src]
     code, out, err = run_cmd(cmd, cwd=REPO_ROOT, check=False)
     if code != 0:
-        print(f"[FAIL] compile {src}\nstdout:\n{out}\nstderr:\n{err}")
+        _log("FAIL", f"compile {src}", color_code="31")
+        if out.strip():
+            print(f"  --- compiler stdout ---\n{_indent(out)}")
+        if err.strip():
+            print(f"  --- compiler stderr ---\n{_indent(err)}")
         raise SystemExit(1)
+
+
+def _indent(text: str, prefix: str = "  ") -> str:
+    return "\n".join(prefix + line for line in text.rstrip("\n").splitlines())
 
 
 def run_binary(path: str, input_text: Optional[str], timeout: Optional[float]) -> str:
@@ -131,7 +139,11 @@ def run_binary(path: str, input_text: Optional[str], timeout: Optional[float]) -
     cmd = [resolved_path]
     code, out, err = run_cmd(cmd, cwd=REPO_ROOT, check=False, input_text=input_text, timeout=timeout)
     if code != 0:
-        print(f"[FAIL] run {path}\nstdout:\n{out}\nstderr:\n{err}")
+        _log("FAIL", f"run {path} (exit {code})", color_code="31")
+        if out.strip():
+            print(f"  --- stdout ---\n{_indent(out)}")
+        if err.strip():
+            print(f"  --- stderr ---\n{_indent(err)}")
         raise SystemExit(1)
     return out
 
@@ -215,8 +227,18 @@ def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bo
                 _log("NEW", f"wrote golden {tc.expected_path}", color_code="33")
             elif status == "FAIL":
                 _log("FAIL", f"{tc.source}", color_code="31")
+                diff_lines = list(difflib.unified_diff(
+                    exp.splitlines(keepends=True),
+                    act.splitlines(keepends=True),
+                    fromfile="expected",
+                    tofile="actual",
+                ))
+                if diff_lines:
+                    print(_colorize("".join(diff_lines), "33"))
             elif status == "FAIL_MISSING":
                 _log("FAIL", f"missing golden for {tc.source}: {tc.expected_path}", color_code="31")
+                print(f"  --- actual output ---")
+                print(_indent(act))
             elif status == "ERROR":
                 _log("ERROR", f"{tc.source}: {act}", color_code="31")
             results.append((tc, status, exp, act))
@@ -231,10 +253,9 @@ def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bo
     else:
         print(_colorize("\n" + summary_line, "32"))
     if failed and verbose:
+        print("\nFailed cases summary:")
         for tc, exp, act in failed:
-            print("\nCase:", tc.source)
-            print("Expected (normalized):\n", exp)
-            print("Actual (normalized):\n", act)
+            print(f"  {tc.source}")
     return 0 if not failed else 1
 
 
