@@ -1,6 +1,6 @@
 # Arrays
 
-> Only arrays with literal initialization and methods `length` are supported by the compiler. Array slicing, negative indices, and other utility methods are not implemented.
+> Only arrays with literal initialization and method `length()` are supported by the compiler. Array slicing, negative indices, and other utility methods are not implemented.
 
 ## Array Basics
 
@@ -40,11 +40,11 @@ scores[1] = 95;                // Array becomes [85, 95, 78, 90, 88]
 
 firescript provides several built-in methods for manipulating arrays:
 
-- **`length`** – Property that returns the current size of the array
+- **`length()`** – Method that returns the current size of the array
 
 ```firescript
 int8[] data = [5, 10, 15, 20, 25];
-int8 size = data.length;      // size = 5
+int8 size = data.length();      // size = 5
 ```
 
 ## Working with Arrays
@@ -56,7 +56,7 @@ Use a `while` loop with an index variable to iterate over array elements:
 ```firescript
 string[] cities = ["New York", "London", "Tokyo", "Paris", "Sydney"];
 uint8 i = 0;
-while (i < cities.length) {
+while (i < cities.length()) {
     print(cities[i]);
     i = i + 1;
 }
@@ -71,7 +71,7 @@ Arrays can be passed to functions:
 int32 sum(int8[] numbers) {
     int32 total = 0;
     uint8 i = 0;
-    while (i < numbers.length) {
+    while (i < numbers.length()) {
         total = total + numbers[i];
         i = i + 1;
     }
@@ -109,7 +109,7 @@ int8 target = 30;
 int8 index = -1;
 uint8 i = 0;
 
-while (i < numbers.length) {
+while (i < numbers.length()) {
     if (numbers[i] == target) {
         index = i;
         break;
@@ -188,7 +188,8 @@ Arrays are functional but with limited operations in the current compiler:
 
 - ✅ Array declaration and initialization
 - ✅ Element access with positive indices
-- ✅ Length property
+- ✅ `length()` method (including on array function parameters)
+- ✅ `for-in` loop over arrays (including array function parameters)
 - ❌ Array slicing
 - ❌ Negative indices
 - ❌ Advanced utility methods

@@ -9,6 +9,12 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 
 ### Compiler improvements
 - Bug fixes
+- Fixed `for-in` loops and `length()` method calls on array function parameters. Arrays passed to functions now carry their size as an implicit companion argument, enabling `arr.length()` and `for (T x in arr)` to work correctly inside function bodies.
+- Fixed error caret positions for indented code. Previously, `line.strip()` was applied to the displayed source line before computing the caret offset, causing the `^` to point to the wrong column for any code inside functions or blocks. Source lines are now right-stripped only, preserving leading whitespace.
+- Semantic analysis errors (use-after-move, invalid borrow) now report exact source location (file, line, column) with a caret, matching the style of parser and code-generator errors.
+- Added `lint_text(source_text, file_path)` API to the compiler: runs the full front-end (lex → parse → import-merge → preprocess → semantic analysis) on in-memory text and returns structured `(message, line, col)` diagnostics without triggering code generation or writing to disk.
+- Added Language Server Protocol implementation (`firescript/lsp_server.py`) via `pygls`. The server publishes diagnostics on `textDocument/didOpen` and `textDocument/didChange` using the new `lint_text` API.
+- Added VS Code extension (`editors/vscode/`) providing syntax highlighting (TextMate grammar), bracket matching, comment toggling, and LSP-backed diagnostics.
 
 ## 0.4.0 - Phoenix
 *February 2, 2026*

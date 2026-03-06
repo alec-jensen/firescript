@@ -153,7 +153,7 @@ class Lexer:
         index = 0
 
         while index < len(self.file):
-            token = Token("", "", index + 1)
+            token = Token("", "", index)
             # First, attempt matching any of the specific tokens.
             for token_type, regex in self.all_token_types.items():
                 match = re.match(regex, self.file[index:])

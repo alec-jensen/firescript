@@ -16,7 +16,7 @@
           ^
 (tests\sources\invalid\literal_errors.fire:9:9)
 [   ERROR] --- Expected semicolon after statement
-> int32 bad_hex = 0xGHIJ;  // Invalid hex digits
+>     int32 bad_hex = 0xGHIJ;  // Invalid hex digits
                        ^
 (tests\sources\invalid\literal_errors.fire:10:22)
 [   ERROR] --- Expected assignment, function call, or method call
@@ -36,11 +36,11 @@
           ^
 (tests\sources\invalid\literal_errors.fire:19:9)
 [   ERROR] --- Unexpected token "
-> string bad = "unclosed;
+>     string bad = "unclosed;
                    ^
 (tests\sources\invalid\literal_errors.fire:20:18)
 [   ERROR] --- Expected initializer expression in variable declaration
-> string bad = "unclosed;
+>     string bad = "unclosed;
                     ^
 (tests\sources\invalid\literal_errors.fire:20:19)
 [   ERROR] --- Expected assignment, function call, or method call
@@ -52,7 +52,7 @@
           ^
 (tests\sources\invalid\literal_errors.fire:24:9)
 [   ERROR] --- Expected semicolon after statement
-> int32 bad = 123abc;  // Invalid number
+>     int32 bad = 123abc;  // Invalid number
                      ^
 (tests\sources\invalid\literal_errors.fire:25:20)
 [   ERROR] --- Expected assignment, function call, or method call
@@ -72,23 +72,23 @@
           ^
 (tests\sources\invalid\literal_errors.fire:34:9)
 [   ERROR] --- Variable 'bad' already declared in an outer scope; shadowing not allowed
-> int32 bad = 123abc;  // Invalid number
+>     int32 bad = 123abc;  // Invalid number
             ^
 (tests\sources\invalid\literal_errors.fire:25:11)
 [   ERROR] --- Variable 'x' already declared in an outer scope; shadowing not allowed
-> bool x = True;  // Should be 'true' (lowercase)
+>     bool x = True;  // Should be 'true' (lowercase)
            ^
 (tests\sources\invalid\literal_errors.fire:35:10)
 [   ERROR] --- Variable 'True' not defined
-> bool x = True;  // Should be 'true' (lowercase)
+>     bool x = True;  // Should be 'true' (lowercase)
                ^
 (tests\sources\invalid\literal_errors.fire:35:14)
 [   ERROR] --- Variable 'False' not defined
-> bool y = False;  // Should be 'false' (lowercase)
+>     bool y = False;  // Should be 'false' (lowercase)
                ^
 (tests\sources\invalid\literal_errors.fire:36:14)
 [   ERROR] --- Type mismatch for variable 'x'. Expected int32, got float64
-> int32 x = 3.14;  // Should require explicit cast
+>     int32 x = 3.14;  // Should require explicit cast
             ^
 (tests\sources\invalid\literal_errors.fire:30:11)
 [   ERROR] --- Parsing failed with 23 errors

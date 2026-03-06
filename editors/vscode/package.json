@@ -1,0 +1,76 @@
+{
+  "name": "firescript",
+  "displayName": "firescript",
+  "description": "Language support for firescript (.fire files)",
+  "version": "0.1.0",
+  "publisher": "alec-jensen",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alec-jensen/firescript"
+  },
+  "activationEvents": [],
+  "main": "./out/extension",
+  "icon": "media/firescript-logo.png",
+  "contributes": {
+    "languages": [
+      {
+        "id": "firescript",
+        "aliases": [
+          "firescript",
+          "fire"
+        ],
+        "extensions": [
+          ".fire"
+        ],
+        "configuration": "./language/language-configuration.json",
+        "icon": {
+          "light": "./media/firescript-logo.png",
+          "dark": "./media/firescript-logo.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "firescript",
+        "scopeName": "source.fire",
+        "path": "./language/firescript.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "firescript",
+      "properties": {
+        "firescript.useUv": {
+          "type": "boolean",
+          "default": true,
+          "description": "Launch the language server via 'uv run python'. Disable to use 'python' directly."
+        },
+        "firescript.serverPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to lsp_server.py. Leave empty to use the server bundled in the firescript workspace."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run bundle",
+    "bundle": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --sourcemap",
+    "compile": "tsc -p ./",
+    "watch": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --sourcemap --watch"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.27.3",
+    "typescript": "^5.3.0"
+  }
+}

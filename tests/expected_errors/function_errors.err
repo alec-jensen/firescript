@@ -48,7 +48,7 @@
           ^
 (tests\sources\invalid\function_errors.fire:28:9)
 [   ERROR] --- Function 'undefined_function' is not defined
-> undefined_function(5);
+>     undefined_function(5);
       ^
 (tests\sources\invalid\function_errors.fire:29:5)
 [   ERROR] --- Expected assignment, function call, or method call
@@ -92,11 +92,11 @@
             ^
 (tests\sources\invalid\function_errors.fire:52:11)
 [   ERROR] --- Variable 'result' already declared in an outer scope; shadowing not allowed
-> int32 result = takes_int("string");  // Wrong type
+>     int32 result = takes_int("string");  // Wrong type
             ^
 (tests\sources\invalid\function_errors.fire:24:11)
 [   ERROR] --- Variable 'result' already declared in an outer scope; shadowing not allowed
-> int32 result = x(10);  // x is not a function
+>     int32 result = x(10);  // x is not a function
             ^
 (tests\sources\invalid\function_errors.fire:35:11)
 [   ERROR] --- Parsing failed with 25 errors

@@ -141,7 +141,7 @@ def compile_file(file_path, target, cc=None, output=None):
 
     # Semantic analysis: ownership and borrow checking
     try:
-        analyzer = SemanticAnalyzer(ast, source_file=file_path)
+        analyzer = SemanticAnalyzer(ast, source_file=file_path, source_code=file_content)
         if not analyzer.analyze():
             analyzer.report_errors()
             logging.error(f"Semantic analysis failed with {len(analyzer.errors)} errors")
@@ -270,6 +270,100 @@ def compile_file(file_path, target, cc=None, output=None):
     else:
         logging.error(f"Unsupported target: {target}")
         return False
+
+
+def lint_text(source_text: str, file_path: str = "<stdin>"):
+    """
+    Lint firescript source text without generating any output code.
+
+    Runs the full compiler front-end (lex → parse → import-merge → preprocess →
+    semantic-analysis) against the given in-memory text and returns all collected
+    diagnostics as a list of ``(message, line, col)`` tuples (1-based line/col).
+    Line and col are both 0 when no position is available.
+
+    This function never writes to disk and never writes to logging — errors are
+    returned purely as structured data so callers (e.g. the LSP server) can
+    display them without polluting stdio.
+    """
+    import logging as _logging
+
+    errors: list[tuple[str, int, int]] = []
+
+    # Silence the root logger while linting so that error() calls inside the
+    # parser / semantic-analyser don't write to stderr and corrupt JSON-RPC I/O.
+    root = _logging.getLogger()
+    prev_level = root.level
+    root.setLevel(_logging.CRITICAL + 1)
+
+    try:
+        lexer = Lexer(source_text)
+        tokens = lexer.tokenize()
+
+        has_import_tokens = any(getattr(t, "type", None) == "IMPORT" for t in tokens)
+        parser_instance = Parser(
+            tokens,
+            source_text,
+            file_path,
+            defer_undefined_identifiers=has_import_tokens,
+        )
+        ast = parser_instance.parse()
+        errors.extend(parser_instance.errors)
+
+        # Bail early if the AST is too broken to continue.
+        if parser_instance.errors and not has_import_tokens:
+            return errors
+
+        has_imports = any(c.node_type == NodeTypes.IMPORT_STATEMENT for c in ast.children)
+        if has_imports:
+            try:
+                import_root = os.path.dirname(os.path.abspath(file_path))
+                resolver = ModuleResolver(import_root)
+                entry_abs = os.path.abspath(file_path)
+                dotted = resolver.path_to_dotted(entry_abs)
+                from imports import Module
+                entry_mod_obj = Module(dotted, entry_abs, ast)
+                resolver.modules[dotted] = entry_mod_obj
+                for imp in entry_mod_obj.imports:
+                    if imp.kind != "external":
+                        resolver._load_module(imp.module_path, [dotted])
+                entry_mod, topo = resolver.resolve_for_entry(file_path)
+                ast = build_merged_ast(entry_mod, topo)
+            except Exception:
+                return errors
+
+            deferred = getattr(parser_instance, "deferred_undefined_identifiers", [])
+            if deferred:
+                merged_symbols = getattr(ast, "_merged_symbols", {}) or {}
+                for name, tok in deferred:
+                    if name in merged_symbols:
+                        continue
+                    if any(
+                        c.node_type == NodeTypes.CLASS_DEFINITION and getattr(c, "name", None) == name
+                        for c in (ast.children or [])
+                    ):
+                        continue
+                    parser_instance.error(f"Variable '{name}' not defined", tok)
+
+            errors = list(parser_instance.errors)
+            if errors:
+                return errors
+
+        try:
+            ast = enable_and_insert_drops(ast)
+        except Exception:
+            return errors
+
+        try:
+            analyzer = SemanticAnalyzer(ast, source_file=file_path, source_code=source_text)
+            analyzer.analyze()
+            errors.extend(analyzer.errors)
+        except Exception:
+            pass
+
+    finally:
+        root.setLevel(prev_level)
+
+    return errors
 
 
 def main():

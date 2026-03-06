@@ -292,7 +292,7 @@ class Parser:
         line_text = get_line(self.file, line_num)
         logging.error(
             text
-            + f"\n> {line_text.strip()}\n"
+            + f"\n> {line_text.rstrip()}\n"
             + " " * (column_num + 1)
             + "^"
             + f"\n({self.filename}:{line_num}:{column_num})"

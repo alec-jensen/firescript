@@ -10,6 +10,7 @@ from enum import Enum, auto
 from enums import NodeTypes
 from parser import ASTNode
 from utils.type_utils import is_owned, is_copyable, is_user_class
+from utils.file_utils import get_line_and_coumn_from_index, get_line
 
 
 class OwnershipState(Enum):
@@ -63,10 +64,11 @@ class SemanticAnalyzer:
     - Validate parameter passing semantics (owned vs borrowed)
     """
     
-    def __init__(self, ast: ASTNode, source_file: Optional[str] = None):
+    def __init__(self, ast: ASTNode, source_file: Optional[str] = None, source_code: Optional[str] = None):
         self.ast = ast
         self.source_file = source_file
-        self.errors: List[str] = []
+        self.source_code = source_code
+        self.errors: List[Tuple[str, int, int]] = []
         
         # Stack of scopes; each scope maps variable name -> BindingInfo
         self.scope_stack: List[Dict[str, BindingInfo]] = [{}]
@@ -79,12 +81,33 @@ class SemanticAnalyzer:
         
         # Track last uses for drop insertion
         self.last_uses: Dict[str, ASTNode] = {}
-        
+
         # Track if we're currently in a move context (to skip use-after-move check on RHS)
         self._in_move_rhs: bool = False
-        
+
         # Track function signatures: func_name -> list of (param_name, param_type, is_array, is_borrowed)
         self.function_signatures: Dict[str, List[Tuple[str, str, bool, bool]]] = {}
+
+    def error(self, text: str, node: Optional[ASTNode] = None) -> None:
+        """Record a semantic error with source location, mirroring Parser.error()."""
+        if node is None or self.source_code is None:
+            logging.error(text)
+            self.errors.append((text, 0, 0))
+            return
+        try:
+            line_num, column_num = get_line_and_coumn_from_index(self.source_code, node.index)
+            line_text = get_line(self.source_code, line_num)
+            logging.error(
+                text
+                + f"\n> {line_text.rstrip()}\n"
+                + " " * (column_num + 1)
+                + "^"
+                + f"\n({self.source_file}:{line_num}:{column_num})"
+            )
+            self.errors.append((text, line_num, column_num))
+        except (IndexError, ValueError):
+            logging.error(text)
+            self.errors.append((text, 0, 0))
     
     def analyze(self) -> bool:
         """
@@ -171,10 +194,10 @@ class SemanticAnalyzer:
         """Check if a use occurs after ownership was moved."""
         binding = self._lookup_binding(name)
         if binding and binding.state == OwnershipState.MOVED:
-            import logging
             logging.debug(f"Use-after-move detected: {name} in node type {use_node.node_type}")
-            self.errors.append(
-                f"Use-after-move error: variable '{name}' was moved, cannot use it here"
+            self.error(
+                f"Use-after-move error: variable '{name}' was moved, cannot use it here",
+                use_node,
             )
     
     def _validate_borrow(
@@ -195,9 +218,10 @@ class SemanticAnalyzer:
             
         if not is_owned(var_type, is_array):
             type_str = f"{var_type}[]" if is_array else var_type
-            self.errors.append(
+            self.error(
                 f"Cannot borrow Copyable type '{type_str}'; pass by value instead. "
-                f"Borrowing is only allowed for Owned types. Location: {node}"
+                f"Borrowing is only allowed for Owned types.",
+                node,
             )
     
     def _analyze_node(self, node: ASTNode) -> None:
@@ -366,6 +390,5 @@ class SemanticAnalyzer:
                 self._analyze_node(child)
     
     def report_errors(self) -> None:
-        """Print all collected errors."""
-        for error in self.errors:
-            logging.error(error)
+        """Print all collected errors. Errors are already logged by self.error(); this is a no-op."""
+        pass

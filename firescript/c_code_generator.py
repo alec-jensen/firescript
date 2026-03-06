@@ -103,12 +103,22 @@ class CCodeGenerator:
         self.monomorphized_funcs: dict[tuple[str, tuple[str, ...]], str] = {}
         # Track which generic functions need to be instantiated
         self.generic_templates: dict[str, ASTNode] = {}
-        # Collect generic function templates
+        # Track which user-defined (non-generic) functions have at least one explicit [] array param.
+        # Only these functions receive the implicit _len companion parameter, and only calls to
+        # them should inject sizes.
+        self._explicit_array_param_funcs: set[str] = set()
+        # Collect generic function templates and pre-scan for explicit array-param functions
         for c in (self.ast.children or []):
             if c.node_type == NodeTypes.FUNCTION_DEFINITION:
                 if hasattr(c, 'type_params') and c.type_params:
                     self.generic_templates[c.name] = c
                     logging.debug(f"Found generic template: {c.name} with type params {c.type_params}")
+                else:
+                    # Non-generic: check for explicit [] array parameters
+                    for ch in (c.children or []):
+                        if ch.node_type == NodeTypes.PARAMETER and ch.is_array:
+                            self._explicit_array_param_funcs.add(c.name)
+                            break
 
     def error(self, text: str, node: Optional[ASTNode] = None):
         """Report a compilation error with source location"""
@@ -135,7 +145,7 @@ class CCodeGenerator:
             line_text = get_line(node_source_code, line_num)
             logging.error(
                 text
-                + f"\n> {line_text.strip()}\n"
+                + f"\n> {line_text.rstrip()}\n"
                 + " " * (column_num + 1)
                 + "^"
                 + f"\n({node_source_file}:{line_num}:{column_num})"
@@ -181,6 +191,32 @@ class CCodeGenerator:
         """Helper function to properly handle array indices in C"""
         # After removing big number support, just return the expression string
         return str(index_expr)
+
+    def _build_call_args(self, arg_nodes, func_name: str = None) -> str:
+        """Build a comma-separated argument string, injecting implicit size args for explicit
+        array parameters of user-defined functions (those in _explicit_array_param_funcs)."""
+        inject_sizes = func_name is not None and func_name in self._explicit_array_param_funcs
+        parts = []
+        for arg in arg_nodes:
+            parts.append(self._visit(arg))
+            if inject_sizes:
+                # If the argument is an array, pass its size as the implicit companion argument
+                is_array_arg = getattr(arg, 'is_array', False)
+                if not is_array_arg and arg.node_type == NodeTypes.IDENTIFIER:
+                    sym = self.symbol_table.get(arg.name)
+                    if sym and len(sym) >= 2 and sym[1]:
+                        is_array_arg = True
+                if is_array_arg:
+                    size_val = None
+                    if arg.node_type == NodeTypes.IDENTIFIER:
+                        sym_info = self.symbol_table.get(arg.name)
+                        if sym_info and len(sym_info) >= 3 and sym_info[2] is not None:
+                            size_val = sym_info[2]
+                    if size_val is not None:
+                        parts.append(str(size_val))
+                    else:
+                        parts.append("0")
+        return ", ".join(parts)
     
     def _mangle_name(self, name: str) -> str:
         """Generate a unique mangled name for a user symbol to avoid C collisions."""
@@ -404,7 +440,11 @@ class CCodeGenerator:
                 is_array_param = child.is_array
                 # For arrays, pass pointer to first element
                 ctype = f"{self._map_type_to_c(base_type)}*" if is_array_param else self._map_type_to_c(base_type)
-                params.append(f"{ctype} {self._mangle_name(child.name)}")
+                mangled_param = self._mangle_name(child.name)
+                params.append(f"{ctype} {mangled_param}")
+                # Array parameters get an implicit companion size parameter
+                if is_array_param:
+                    params.append(f"int32_t {mangled_param}_len")
             elif child.node_type == NodeTypes.SCOPE:
                 body_node = child
         
@@ -419,14 +459,19 @@ class CCodeGenerator:
                 base_type = substitute_type(child.var_type or "int32")
                 # Check if the substituted type is an array
                 param_is_array = base_type.endswith("[]")
-                if param_is_array:
-                    # Remove [] from base_type for element type
-                    elem_type = base_type[:-2]
-                    # For now, we can't know the size of array parameters
-                    # Store with no size (None)
-                    self.symbol_table[child.name] = (elem_type, True, None)
+                actual_is_array = child.is_array or param_is_array
+                if actual_is_array:
+                    elem_type = base_type[:-2] if param_is_array else base_type
+                    mangled_param = self._mangle_name(child.name)
+                    # Only store _len var name when the param was explicitly declared as T[]
+                    # (child.is_array=True). When T itself resolves to an array type, the
+                    # monomorphized function has no _len param and _len is unavailable.
+                    if child.is_array:
+                        self.symbol_table[child.name] = (elem_type, True, f"{mangled_param}_len")
+                    else:
+                        self.symbol_table[child.name] = (elem_type, True, None)
                 else:
-                    self.symbol_table[child.name] = (base_type, child.is_array)
+                    self.symbol_table[child.name] = (base_type, False)
         
         # Save current type substitution context
         prev_type_map = getattr(self, '_current_type_map', {})
@@ -866,7 +911,11 @@ class CCodeGenerator:
                 is_array_param = child.is_array
                 # For arrays, pass pointer to first element
                 ctype = f"{self._map_type_to_c(base_type)}*" if is_array_param else self._map_type_to_c(base_type)
-                params.append(f"{ctype} {self._mangle_name(child.name)}")
+                mangled_param = self._mangle_name(child.name)
+                params.append(f"{ctype} {mangled_param}")
+                # Array parameters get an implicit companion size parameter
+                if is_array_param:
+                    params.append(f"int32_t {mangled_param}_len")
             elif child.node_type == NodeTypes.SCOPE:
                 body_node = child
 
@@ -876,10 +925,18 @@ class CCodeGenerator:
         prev_symbols = self.symbol_table.copy()
         for child in node.children:
             if child.node_type == NodeTypes.PARAMETER:
-                self.symbol_table[child.name] = (
-                    child.var_type or "int32",
-                    child.is_array,
-                )
+                if child.is_array:
+                    mangled_param = self._mangle_name(child.name)
+                    self.symbol_table[child.name] = (
+                        child.var_type or "int32",
+                        True,
+                        f"{mangled_param}_len",
+                    )
+                else:
+                    self.symbol_table[child.name] = (
+                        child.var_type or "int32",
+                        False,
+                    )
 
         # Mark we are in a function for return cleanup logic
         prev_in_fn = self._in_function
@@ -1416,11 +1473,11 @@ class CCodeGenerator:
                     key = (func_name, tuple(type_args))
                     if key in self.monomorphized_funcs:
                         mangled_name = self.monomorphized_funcs[key]
-                        args = ", ".join(self._visit(arg) for arg in node.children)
+                        args = self._build_call_args(node.children)  # no size injection for generics
                         return f"{mangled_name}({args})"
                 
-                # Regular function call
-                args = ", ".join(self._visit(arg) for arg in node.children)
+                # Regular function call - inject size args for functions with explicit array params
+                args = self._build_call_args(node.children, func_name=node.name)
                 return f"{self._mangle_name(node.name)}({args})"
         elif node.node_type == NodeTypes.TYPE_METHOD_CALL:
             # Dispatch to generated constructor/static function: Class_method(args)

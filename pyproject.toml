@@ -13,7 +13,9 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "pygls>=2.0.1",
+]
 
 [project.urls]
 "Homepage" = "https://firescript.alecj.com"
