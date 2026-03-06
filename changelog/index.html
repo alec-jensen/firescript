@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
     
     
       
@@ -1489,6 +1489,12 @@
 <h3 id="compiler-improvements">Compiler improvements<a class="headerlink" href="#compiler-improvements" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Bug fixes</li>
+<li>Fixed <code>for-in</code> loops and <code>length()</code> method calls on array function parameters. Arrays passed to functions now carry their size as an implicit companion argument, enabling <code>arr.length()</code> and <code>for (T x in arr)</code> to work correctly inside function bodies.</li>
+<li>Fixed error caret positions for indented code. Previously, <code>line.strip()</code> was applied to the displayed source line before computing the caret offset, causing the <code>^</code> to point to the wrong column for any code inside functions or blocks. Source lines are now right-stripped only, preserving leading whitespace.</li>
+<li>Semantic analysis errors (use-after-move, invalid borrow) now report exact source location (file, line, column) with a caret, matching the style of parser and code-generator errors.</li>
+<li>Added <code>lint_text(source_text, file_path)</code> API to the compiler: runs the full front-end (lex → parse → import-merge → preprocess → semantic analysis) on in-memory text and returns structured <code>(message, line, col)</code> diagnostics without triggering code generation or writing to disk.</li>
+<li>Added Language Server Protocol implementation (<code>firescript/lsp_server.py</code>) via <code>pygls</code>. The server publishes diagnostics on <code>textDocument/didOpen</code> and <code>textDocument/didChange</code> using the new <code>lint_text</code> API.</li>
+<li>Added VS Code extension (<code>editors/vscode/</code>) providing syntax highlighting (TextMate grammar), bracket matching, comment toggling, and LSP-backed diagnostics.</li>
 </ul>
 <h2 id="040-phoenix">0.4.0 - Phoenix<a class="headerlink" href="#040-phoenix" title="Permanent link">&para;</a></h2>
 <p><em>February 2, 2026</em></p>
