@@ -699,6 +699,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#naming-rules-for-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming Rules for Classes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#defining-a-class" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1234,6 +1245,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#naming-rules-for-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming Rules for Classes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#defining-a-class" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1548,6 +1570,10 @@ process(&amp;hb);  // borrow
 <li>No implicit deep copies: cloning is explicit.</li>
 <li>Inheritance does not introduce implicit sharing or reference counting.</li>
 </ul>
+<h2 id="naming-rules-for-classes">Naming Rules for Classes<a class="headerlink" href="#naming-rules-for-classes" title="Permanent link">&para;</a></h2>
+<p>Class names follow the same lexer rule as all other identifiers (see <a href="../variables/#naming-rules">Variables — Naming Rules</a>): they must start with a letter or underscore and may contain letters, digits, and underscores.</p>
+<p>By convention, class names use <strong>PascalCase</strong> (e.g., <code>Person</code>, <code>HttpClient</code>, <code>Vec2</code>). This is a convention only — the compiler does not enforce it.</p>
+<p>Class field and method names follow the exact same rules as variable names.</p>
 <h2 id="defining-a-class">Defining a Class<a class="headerlink" href="#defining-a-class" title="Permanent link">&para;</a></h2>
 <p>A class in firescript is defined using the <code>class</code> keyword, followed by the class name and a block containing fields and methods:</p>
 <pre><code class="language-firescript">class Person {

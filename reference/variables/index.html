@@ -548,6 +548,56 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#naming-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming Rules
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Naming Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#valid-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Valid examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#invalid-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Invalid examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reserved-keywords-and-type-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reserved keywords and type names
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#declaration-and-initialization" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1023,6 +1073,56 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#naming-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming Rules
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Naming Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#valid-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Valid examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#invalid-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Invalid examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reserved-keywords-and-type-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reserved keywords and type names
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#declaration-and-initialization" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1160,6 +1260,67 @@
 <p><strong>Note:</strong> Tuple types, the generic placeholder <code>T</code>, and declarations without an initializer are not supported by the compiler. Built-in Copyable types (<code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>) are stack-allocated. Owned types (<code>string</code>, arrays) are heap-allocated with move semantics.</p>
 <h2 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h2>
 <p>Types are defined in the <a href="../type_system/">Type System</a> documentation.</p>
+<h2 id="naming-rules">Naming Rules<a class="headerlink" href="#naming-rules" title="Permanent link">&para;</a></h2>
+<p>All names in firescript — variables, function parameters, functions, and constraints — follow the same rule:</p>
+<ul>
+<li>Must begin with a letter (<code>a</code>–<code>z</code>, <code>A</code>–<code>Z</code>) or an underscore (<code>_</code>).</li>
+<li>After the first character, any combination of letters, digits (<code>0</code>–<code>9</code>), and underscores is allowed.</li>
+<li>Case-sensitive: <code>score</code>, <code>Score</code>, and <code>SCORE</code> are three distinct names.</li>
+<li>Length is not restricted.</li>
+<li>Must not be a reserved keyword or type name (see table below).</li>
+</ul>
+<p>In regex form: <code>[a-zA-Z_][a-zA-Z0-9_]*</code></p>
+<h3 id="valid-examples">Valid examples<a class="headerlink" href="#valid-examples" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">int32 x = 0;
+int32 _private = 1;
+int32 camelCase = 2;
+int32 SCREAMING_SNAKE = 3;
+int32 value42 = 4;
+int32 __double_under = 5;
+</code></pre>
+<h3 id="invalid-examples">Invalid examples<a class="headerlink" href="#invalid-examples" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">int32 42value = 0;   // cannot start with a digit
+int32 my-var = 0;    // hyphens are not allowed
+int32 my var = 0;    // spaces are not allowed
+int32 return = 0;    // reserved keyword
+int32 int32 = 0;     // reserved type name
+</code></pre>
+<h3 id="reserved-keywords-and-type-names">Reserved keywords and type names<a class="headerlink" href="#reserved-keywords-and-type-names" title="Permanent link">&para;</a></h3>
+<p>The following words are reserved and cannot be used as identifiers:</p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Words</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Control flow</td>
+<td><code>if</code> <code>elif</code> <code>else</code> <code>while</code> <code>for</code> <code>in</code> <code>break</code> <code>continue</code> <code>return</code> <code>ternary</code></td>
+</tr>
+<tr>
+<td>Declarations</td>
+<td><code>class</code> <code>constraint</code> <code>directive</code> <code>generator</code></td>
+</tr>
+<tr>
+<td>Modifiers</td>
+<td><code>const</code> <code>nullable</code> <code>copyable</code> <code>static</code></td>
+</tr>
+<tr>
+<td>Other keywords</td>
+<td><code>import</code> <code>from</code> <code>as</code> <code>new</code></td>
+</tr>
+<tr>
+<td>Primitive types</td>
+<td><code>int8</code> <code>int16</code> <code>int32</code> <code>int64</code> <code>uint8</code> <code>uint16</code> <code>uint32</code> <code>uint64</code> <code>float32</code> <code>float64</code> <code>float128</code> <code>bool</code> <code>string</code> <code>tuple</code> <code>void</code></td>
+</tr>
+<tr>
+<td>Literals</td>
+<td><code>true</code> <code>false</code> <code>null</code></td>
+</tr>
+</tbody>
+</table>
 <h2 id="declaration-and-initialization">Declaration and Initialization<a class="headerlink" href="#declaration-and-initialization" title="Permanent link">&para;</a></h2>
 <p>Variables in firescript must be declared with an explicit type and initialized in the same statement:</p>
 <pre><code class="language-firescript">int8 age = 30;

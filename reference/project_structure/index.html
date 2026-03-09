@@ -882,6 +882,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#file-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File Names
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#initfire" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -926,6 +937,36 @@
 
 
 <h1 id="project-structure">Project Structure<a class="headerlink" href="#project-structure" title="Permanent link">&para;</a></h1>
+<h2 id="file-names">File Names<a class="headerlink" href="#file-names" title="Permanent link">&para;</a></h2>
+<p>firescript source files use the <code>.fire</code> extension.</p>
+<p>File and directory names become the dotted module path used in <code>import</code> statements, so they must be valid identifiers: start with a letter (<code>a</code>–<code>z</code>, <code>A</code>–<code>Z</code>) or underscore, and contain only letters, digits, and underscores thereafter. Hyphens, spaces, dots, and other special characters are not supported.</p>
+<p>Dots are the module path separator — <code>import http.utils</code> resolves to the file <code>http/utils.fire</code>. A file literally named <code>http.utils.fire</code> cannot be referenced by any import statement.</p>
+<table>
+<thead>
+<tr>
+<th>Valid</th>
+<th>Invalid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>math.fire</code></td>
+<td><code>my-math.fire</code></td>
+</tr>
+<tr>
+<td><code>http_client.fire</code></td>
+<td><code>http client.fire</code></td>
+</tr>
+<tr>
+<td><code>utils2.fire</code></td>
+<td><code>2utils.fire</code></td>
+</tr>
+<tr>
+<td></td>
+<td><code>http.utils.fire</code> (dot in stem)</td>
+</tr>
+</tbody>
+</table>
 <h2 id="initfire">init.fire<a class="headerlink" href="#initfire" title="Permanent link">&para;</a></h2>
 <p>say you have the following project structure:</p>
 <pre><code>my_project/
