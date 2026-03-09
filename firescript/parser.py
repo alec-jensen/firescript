@@ -121,29 +121,12 @@ class Parser:
         "uint64",
     }
 
+    # Directive-gated intrinsics: available only when the corresponding directive is active.
+    # The parser accepts calls to these names without erroring; the code generator enforces
+    # the directive requirement at emit time.
     builtin_functions: dict[str, str] = {
-        "stdout": "void",
-        "drop": "void",
-        # type constructor builtins (pending explicit cast design): keep names but map to canonical firescript types
-        "int": "int32",
-        "int32": "int32",
-        # remove legacy float/double constructors; require explicit float32/64/128
-        "float32": "float32",
-        "float64": "float64",
-        "float128": "float128",
-        "bool": "bool",
-        "string": "string",
-        "char": "char",
-        "typeof": "string",
-        # Type conversion functions
-        "i32_to_f64": "float64",
-        "i32_to_f32": "float32",
-        "f64_to_i32": "int32",
-        "f32_to_i32": "int32",
-        "i32_to_str": "string",
-        "i64_to_str": "string",
-        "f64_to_str": "string",
-        "f32_to_str": "string",
+        "stdout": "void",   # requires directive enable_lowlevel_stdout
+        "drop": "void",     # requires directive enable_drops
     }
 
     # Register for user-defined methods (className -> methodName -> signature)

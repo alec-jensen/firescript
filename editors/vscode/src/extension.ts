@@ -10,12 +10,9 @@ import {
 
 let client: LanguageClient | undefined;
 let outputChannel: vscode.OutputChannel;
+let extensionContext: vscode.ExtensionContext;
 
-export function activate(context: vscode.ExtensionContext): void {
-  outputChannel = vscode.window.createOutputChannel("firescript Language Server");
-  context.subscriptions.push(outputChannel);
-  outputChannel.appendLine("firescript extension activating...");
-
+function startClient(): void {
   const config = vscode.workspace.getConfiguration("firescript");
   const useUv: boolean = config.get("useUv", true);
 
@@ -30,7 +27,7 @@ export function activate(context: vscode.ExtensionContext): void {
     // Search in order: workspace root, then relative to the extension install dir.
     const candidates = [
       path.join(workspaceRoot, "firescript", "lsp_server.py"),
-      path.join(context.extensionPath, "..", "..", "firescript", "lsp_server.py"),
+      path.join(extensionContext.extensionPath, "..", "..", "firescript", "lsp_server.py"),
     ];
     for (const candidate of candidates) {
       if (fs.existsSync(candidate)) {
@@ -97,6 +94,25 @@ export function activate(context: vscode.ExtensionContext): void {
     outputChannel.appendLine(msg);
     vscode.window.showErrorMessage(msg);
   });
+}
+
+export function activate(context: vscode.ExtensionContext): void {
+  extensionContext = context;
+  outputChannel = vscode.window.createOutputChannel("firescript Language Server");
+  context.subscriptions.push(outputChannel);
+  outputChannel.appendLine("firescript extension activating...");
+
+  const restartCommand = vscode.commands.registerCommand("firescript.restartLanguageServer", async () => {
+    outputChannel.appendLine("Restarting language server...");
+    if (client) {
+      await client.stop();
+      client = undefined;
+    }
+    startClient();
+  });
+  context.subscriptions.push(restartCommand);
+
+  startClient();
 
   context.subscriptions.push({ dispose: () => client?.stop() });
 }

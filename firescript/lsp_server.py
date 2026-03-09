@@ -5,6 +5,7 @@ Implements the Language Server Protocol using pygls.
 
 Provides:
   - Diagnostics (error squiggles) on open / change / save
+  - Completion items for variables, functions, classes, keywords, and built-ins
 
 Launch via stdio (used by the VS Code extension):
   uv run python firescript/lsp_server.py --stdio
@@ -15,6 +16,7 @@ import os
 import re
 import sys
 import urllib.request
+from typing import Optional
 from urllib.parse import urlparse, unquote
 
 # Keep sys.path correct when run directly (i.e. not as a module).
@@ -33,9 +35,15 @@ logging.basicConfig(
 
 from pygls.lsp.server import LanguageServer
 from lsprotocol.types import (
+    TEXT_DOCUMENT_COMPLETION,
     TEXT_DOCUMENT_DID_CHANGE,
     TEXT_DOCUMENT_DID_OPEN,
     TEXT_DOCUMENT_DID_SAVE,
+    CompletionItem,
+    CompletionItemKind,
+    CompletionList,
+    CompletionOptions,
+    CompletionParams,
     Diagnostic,
     DiagnosticSeverity,
     DidChangeTextDocumentParams,
@@ -46,12 +54,80 @@ from lsprotocol.types import (
     Range,
 )
 
+from enums import NodeTypes
+from lexer import Lexer
+from parser import ASTNode, Parser
 from main import FIRESCRIPT_VERSION, lint_text
 
 server = LanguageServer(
     name="firescript-language-server",
     version=FIRESCRIPT_VERSION,
 )
+
+# Per-document AST cache; updated whenever a document is opened or changed.
+_ast_cache: dict[str, Optional[ASTNode]] = {}
+
+# Keywords and type keywords used for static completion items.
+# Note: builtin functions (stdout, drop, etc.) are intentionally excluded —
+# they are either directive-gated or stdlib-imported and will appear in the
+# AST when actually available in the current file.
+_KEYWORDS = [
+    "if", "else", "elif", "while", "for", "in", "break", "continue", "return",
+    "import", "from", "new", "class", "constraint", "nullable", "generator",
+    "const", "ternary", "copyable",
+]
+_TYPE_KEYWORDS = [
+    "int8", "int16", "int32", "int64",
+    "uint8", "uint16", "uint32", "uint64",
+    "float32", "float64", "float128",
+    "bool", "string", "tuple", "void",
+]
+
+
+def _try_parse(text: str, file_path: str) -> Optional[ASTNode]:
+    """Lex and parse *text*; return the AST root, or None on hard failure.
+
+    Errors emitted by the parser are intentionally swallowed here — we only
+    need a best-effort AST for completion purposes.  If the post-parse
+    analysis steps (resolve_variable_types, type_check) throw, we still
+    return the partial AST that was built so symbols are available.
+    Returns None when the text is empty or produces no tokens.
+    """
+    root_logger = logging.getLogger()
+    prev_level = root_logger.level
+    root_logger.setLevel(logging.CRITICAL + 1)
+    try:
+        lexer = Lexer(text)
+        tokens = lexer.tokenize()
+        if not tokens:
+            return None
+        parser_instance = Parser(tokens, text, file_path)
+        try:
+            return parser_instance.parse()
+        except Exception:
+            # parse() may have thrown after building part of the AST (e.g.
+            # during resolve_variable_types).  Return whatever was collected.
+            return parser_instance.ast
+    except Exception:
+        return None
+    finally:
+        root_logger.setLevel(prev_level)
+
+
+def _walk_ast(node: ASTNode, out: list[tuple[str, CompletionItemKind, str]]) -> None:
+    """Recursively collect (name, kind, detail) from all binding nodes in *node*."""
+    for child in (node.children or []):
+        if child is None:
+            continue
+        if child.node_type == NodeTypes.VARIABLE_DECLARATION and child.name:
+            out.append((child.name, CompletionItemKind.Variable, child.var_type or ""))
+        elif child.node_type == NodeTypes.FUNCTION_DEFINITION and child.name:
+            out.append((child.name, CompletionItemKind.Function, child.var_type or ""))
+        elif child.node_type == NodeTypes.CLASS_DEFINITION and child.name:
+            out.append((child.name, CompletionItemKind.Class, ""))
+        elif child.node_type == NodeTypes.PARAMETER and child.name:
+            out.append((child.name, CompletionItemKind.Variable, child.var_type or ""))
+        _walk_ast(child, out)
 
 
 def _uri_to_path(uri: str) -> str:
@@ -65,6 +141,13 @@ def _uri_to_path(uri: str) -> str:
 def _publish_diagnostics(ls: LanguageServer, uri: str, text: str) -> None:
     """Run the firescript front-end on *text* and push diagnostics to the client."""
     file_path = _uri_to_path(uri)
+
+    # Update the AST cache for completion use.
+    # Only replace the cached AST when the parse succeeds so that the last
+    # good result is preserved while the user is mid-edit.
+    _parsed = _try_parse(text, file_path)
+    if _parsed is not None:
+        _ast_cache[uri] = _parsed
 
     try:
         raw_errors = lint_text(text, file_path)
@@ -116,6 +199,52 @@ def did_change(ls: LanguageServer, params: DidChangeTextDocumentParams) -> None:
 def did_save(ls: LanguageServer, params: DidSaveTextDocumentParams) -> None:
     # Diagnostics were already published on the last didChange; nothing to do.
     pass
+
+
+@server.feature(TEXT_DOCUMENT_COMPLETION, CompletionOptions())
+def completion(ls: LanguageServer, params: CompletionParams) -> CompletionList:
+    """Return completion items for variables, functions, classes, and keywords."""
+    items: list[CompletionItem] = []
+    seen: set[str] = set()
+
+    def _add(name: str, kind: CompletionItemKind, detail: str = "") -> None:
+        if name and name not in seen:
+            seen.add(name)
+            items.append(CompletionItem(label=name, kind=kind, detail=detail or None))
+
+    uri = params.text_document.uri
+
+    # Always parse the current workspace text so symbols are up-to-date.
+    # Fall back to the cached AST only when the workspace document is unavailable.
+    try:
+        doc = ls.workspace.get_text_document(uri)
+        current_text = doc.source
+    except Exception:
+        current_text = None
+
+    file_path = _uri_to_path(uri)
+    if current_text:
+        ast = _try_parse(current_text, file_path)
+        if ast is not None:
+            _ast_cache[uri] = ast
+    else:
+        ast = _ast_cache.get(uri)
+
+    if ast is not None:
+        symbol_entries: list[tuple[str, CompletionItemKind, str]] = []
+        _walk_ast(ast, symbol_entries)
+        for name, kind, detail in symbol_entries:
+            _add(name, kind, detail)
+
+    # Type keywords.
+    for kw in _TYPE_KEYWORDS:
+        _add(kw, CompletionItemKind.Keyword)
+
+    # Control-flow and other keywords.
+    for kw in _KEYWORDS:
+        _add(kw, CompletionItemKind.Keyword)
+
+    return CompletionList(is_incomplete=False, items=items)
 
 
 if __name__ == "__main__":

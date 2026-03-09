@@ -42,6 +42,12 @@
         "path": "./language/firescript.tmLanguage.json"
       }
     ],
+    "commands": [
+      {
+        "command": "firescript.restartLanguageServer",
+        "title": "firescript: Restart Language Server"
+      }
+    ],
     "configuration": {
       "title": "firescript",
       "properties": {
