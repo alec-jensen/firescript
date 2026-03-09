@@ -1,5 +1,20 @@
 # Project Structure
 
+## File Names
+
+firescript source files use the `.fire` extension.
+
+File and directory names become the dotted module path used in `import` statements, so they must be valid identifiers: start with a letter (`a`–`z`, `A`–`Z`) or underscore, and contain only letters, digits, and underscores thereafter. Hyphens, spaces, dots, and other special characters are not supported.
+
+Dots are the module path separator — `import http.utils` resolves to the file `http/utils.fire`. A file literally named `http.utils.fire` cannot be referenced by any import statement.
+
+| Valid | Invalid |
+|---|---|
+| `math.fire` | `my-math.fire` |
+| `http_client.fire` | `http client.fire` |
+| `utils2.fire` | `2utils.fire` |
+| | `http.utils.fire` (dot in stem) |
+
 ## init.fire
 
 say you have the following project structure:

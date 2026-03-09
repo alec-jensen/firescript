@@ -180,23 +180,23 @@
       "patterns": [
         {
           "name": "constant.numeric.hex.fire",
-          "match": "-?0[xX][0-9a-fA-F_]+"
+          "match": "(?<![A-Za-z_0-9])-?0[xX][0-9a-fA-F_]+"
         },
         {
           "name": "constant.numeric.binary.fire",
-          "match": "-?0[bB][01_]+"
+          "match": "(?<![A-Za-z_0-9])-?0[bB][01_]+"
         },
         {
           "name": "constant.numeric.octal.fire",
-          "match": "-?0[oO][0-7_]+"
+          "match": "(?<![A-Za-z_0-9])-?0[oO][0-7_]+"
         },
         {
           "name": "constant.numeric.float.fire",
-          "match": "-?[0-9][0-9_]*\\.[0-9][0-9_]*(?:[eE][+-]?[0-9]+)?(?:f128|f64|f32|f)?"
+          "match": "(?<![A-Za-z_0-9])-?[0-9][0-9_]*\\.[0-9][0-9_]*(?:[eE][+-]?[0-9]+)?(?:f128|f64|f32|f)?"
         },
         {
           "name": "constant.numeric.integer.fire",
-          "match": "-?[0-9][0-9_]*(?:i8|i16|i32|i64|u8|u16|u32|u64)?"
+          "match": "(?<![A-Za-z_0-9])-?[0-9][0-9_]*(?:i8|i16|i32|i64|u8|u16|u32|u64)?"
         }
       ]
     },

@@ -55,6 +55,14 @@ process(&hb);  // borrow
 - No implicit deep copies: cloning is explicit.
 - Inheritance does not introduce implicit sharing or reference counting.
 
+## Naming Rules for Classes
+
+Class names follow the same lexer rule as all other identifiers (see [Variables — Naming Rules](variables.md#naming-rules)): they must start with a letter or underscore and may contain letters, digits, and underscores.
+
+By convention, class names use **PascalCase** (e.g., `Person`, `HttpClient`, `Vec2`). This is a convention only — the compiler does not enforce it.
+
+Class field and method names follow the exact same rules as variable names.
+
 ## Defining a Class
 
 A class in firescript is defined using the `class` keyword, followed by the class name and a block containing fields and methods:
