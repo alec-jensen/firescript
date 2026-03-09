@@ -85,7 +85,7 @@
       "comment": "Matches: [modifier] return_type name(  — the main function definition pattern",
       "patterns": [
         {
-          "match": "(?:^|(?<=\\s))(?:(static)\\s+)?((?:nullable\\s+)?(?:int8|int16|int32|int64|uint8|uint16|uint32|uint64|float32|float64|float128|bool|string|tuple|void|[A-Z][A-Za-z0-9_]*))(?:\\[\\])*\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()",
+          "match": "(?:^|(?<=\\s))(?:(static)\\s+)?((?:nullable\\s+)?(?:int8|int16|int32|int64|uint8|uint16|uint32|uint64|float32|float64|float128|bool|string|tuple|void|[A-Z][A-Za-z0-9_]*))(?:\\[\\])*\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?:<[^>]*>)?\\s*(?=\\()",
           "captures": {
             "1": { "name": "storage.modifier.fire" },
             "2": { "name": "storage.type.fire" },
@@ -154,14 +154,14 @@
       "patterns": [
         {
           "comment": "Method calls: obj.method(",
-          "match": "(?<=[.])([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()",
+          "match": "(?<=[.])([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?:<[^>]*>)?\\s*(?=\\()",
           "captures": {
             "1": { "name": "entity.name.function.fire" }
           }
         },
         {
           "comment": "Regular function and constructor calls",
-          "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()",
+          "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?:<[^>]*>)?\\s*(?=\\()",
           "captures": {
             "1": { "name": "entity.name.function.fire" }
           }
