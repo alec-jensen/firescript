@@ -182,8 +182,11 @@ class Parser:
         self.generic_constraints: dict[str, dict[str, str]] = {}
         # Track monomorphized instances: (func_name, tuple of concrete types) -> mangled name
         self.monomorphized_functions: dict[tuple[str, tuple[str, ...]], str] = {}
-        # Track type parameters in current scope (for parsing inside generic functions)
+        # Track type parameters in current scope (for parsing inside generic functions/classes)
         self._current_type_params: list[str] = []
+        # Generic class tracking: template name -> AST node / type param list
+        self.generic_class_templates: dict[str, ASTNode] = {}
+        self.generic_class_params: dict[str, list[str]] = {}
         
         # Custom type constraint aliases: constraint_name -> type_union_string
         self.constraint_aliases: dict[str, str] = {}
@@ -202,8 +205,11 @@ class Parser:
         # Allow user-defined class names as types
         if tok.type == "IDENTIFIER" and tok.value in self.user_types:
             return True
-        # Allow type parameters in current generic function scope
+        # Allow type parameters in current generic function/class scope
         if tok.type == "IDENTIFIER" and tok.value in self._current_type_params:
+            return True
+        # Allow generic class names (used as ClassName<T1, T2> in declarations)
+        if tok.type == "IDENTIFIER" and tok.value in self.generic_class_templates:
             return True
         return False
 
@@ -243,6 +249,87 @@ class Parser:
             if count == offset:
                 return token
         return None
+
+    def _current_token_index(self) -> int:
+        """Return the index of current_token in self.tokens, or -1 if not found."""
+        if self.current_token is None:
+            return -1
+        try:
+            return self.tokens.index(self.current_token)
+        except ValueError:
+            return -1
+
+    def _skip_ws_from(self, i: int) -> int:
+        """Skip whitespace-placeholder IDENTIFIER tokens starting at index i."""
+        n = len(self.tokens)
+        while i < n and self.tokens[i].type == "IDENTIFIER" and not self.tokens[i].value.strip():
+            i += 1
+        return i
+
+    def _scan_matching_gt(self, lt_index: int) -> int:
+        """From index lt_index (a LESS_THAN token), find the matching GREATER_THAN.
+
+        Returns the index of the matching GREATER_THAN, or -1 if not found before a
+        statement boundary (;, {, }).
+        """
+        depth = 0
+        n = len(self.tokens)
+        i = lt_index
+        while i < n:
+            tt = self.tokens[i].type
+            if tt == "LESS_THAN":
+                depth += 1
+            elif tt == "GREATER_THAN":
+                depth -= 1
+                if depth == 0:
+                    return i
+            elif tt in ("SEMICOLON", "OPEN_BRACE", "CLOSE_BRACE"):
+                return -1  # hit a statement boundary — can't be a type param list
+            i += 1
+        return -1
+
+    def _looks_like_generic_var_decl(self) -> bool:
+        """Lookahead: current token is IDENTIFIER, next should be '<'.
+
+        Returns True when the token stream from the current position matches
+        the pattern ``IDENT < TYPE_ARGS > IDENT =`` (a generic variable
+        declaration), False otherwise.  Used in deferred-import mode to route
+        ``TypeName<T1, T2> varName = ...`` to ``parse_variable_declaration``
+        even when TypeName is not yet registered as a generic class template.
+        """
+        idx = self._current_token_index()
+        if idx < 0:
+            return False
+        n = len(self.tokens)
+        i = self._skip_ws_from(idx + 1)
+        if i >= n or self.tokens[i].type != "LESS_THAN":
+            return False
+        gt_idx = self._scan_matching_gt(i)
+        if gt_idx < 0:
+            return False
+        i = self._skip_ws_from(gt_idx + 1)
+        # Expect an IDENTIFIER (the variable name)
+        if i >= n or self.tokens[i].type != "IDENTIFIER" or not self.tokens[i].value.strip():
+            return False
+        i = self._skip_ws_from(i + 1)
+        return i < n and self.tokens[i].type == "ASSIGN"
+
+    def _looks_like_generic_constructor_call(self) -> bool:
+        """Lookahead: current token is '<'.
+
+        Returns True when the token stream from the current position matches
+        ``< TYPE_ARGS > (`` (a generic class constructor argument list), as
+        opposed to a plain less-than comparison.  Used in deferred-import mode.
+        """
+        idx = self._current_token_index()
+        if idx < 0 or self.tokens[idx].type != "LESS_THAN":
+            return False
+        gt_idx = self._scan_matching_gt(idx)
+        if gt_idx < 0:
+            return False
+        i = self._skip_ws_from(gt_idx + 1)
+        n = len(self.tokens)
+        return i < n and self.tokens[i].type == "OPEN_PAREN"
 
     def consume(self, token_type: str) -> Optional[Token]:
         """Consume the current token if it is of the given type."""
@@ -439,15 +526,41 @@ class Parser:
         token = self.current_token
         if token is None:
             return None
-        # Java-like constructor: new ClassName(args)
+        # Java-like constructor: new ClassName(args)  or  new Generic<T1,T2>(args)
         if token.type == "NEW":
             self.advance()
             cls_tok = self.consume("IDENTIFIER")
             if cls_tok is None:
                 self.error("Expected class name after 'new'", self.current_token)
                 return None
-            if cls_tok.value not in self.user_types:
-                self.error(f"Unknown type '{cls_tok.value}' in constructor", cls_tok)
+            # Generic class constructor: new Pair<int32, string>(args)
+            composite_class_name: Optional[str] = None
+            if (
+                cls_tok.value in self.generic_class_templates
+                and self.current_token
+                and self.current_token.type == "LESS_THAN"
+            ):
+                self.advance()  # consume <
+                type_args: list[str] = []
+                while True:
+                    if not (self.current_token and self._is_type_token(self.current_token)):
+                        self.error("Expected type argument", self.current_token)
+                        return None
+                    targ_tok = self.current_token
+                    self.advance()
+                    type_args.append(self._normalize_type_name(targ_tok))
+                    if self.current_token and self.current_token.type == "COMMA":
+                        self.advance()
+                        continue
+                    break
+                if not (self.current_token and self.current_token.type == "GREATER_THAN"):
+                    self.error("Expected '>' after generic type arguments", self.current_token)
+                    return None
+                self.advance()  # consume >
+                composite_class_name = self._register_generic_class_instance(cls_tok.value, type_args)
+            else:
+                if cls_tok.value not in self.user_types:
+                    self.error(f"Unknown type '{cls_tok.value}' in constructor", cls_tok)
             if not self.consume("OPEN_PAREN"):
                 self.error("Expected '(' after constructor type", self.current_token)
                 return None
@@ -464,7 +577,10 @@ class Parser:
             if not self.consume("CLOSE_PAREN"):
                 self.error("Expected ')' after constructor arguments", self.current_token)
                 return None
-            return ASTNode(NodeTypes.CONSTRUCTOR_CALL, cls_tok, cls_tok.value, args, cls_tok.index)
+            used_name = composite_class_name if composite_class_name else cls_tok.value
+            node = ASTNode(NodeTypes.CONSTRUCTOR_CALL, cls_tok, used_name, args, cls_tok.index)
+            node.return_type = used_name
+            return node
         if token.type == "OPEN_PAREN":
             self.advance()  # skip '('
             expr = self.parse_expression()
@@ -623,10 +739,51 @@ class Parser:
                         pass
                     continue
                 
-                # Explicit generic type arguments: func<T1, T2>(...)
+                # Explicit generic type arguments: func<T1, T2>(...)  or  GenericClass<T1,T2>(args)
                 elif self.current_token and self.current_token.type == "LESS_THAN":
+                    # Check if this is a generic class positional constructor
+                    if token.value in self.generic_class_templates:
+                        self.advance()  # consume <
+                        type_args = []
+                        while True:
+                            if not (self.current_token and self._is_type_token(self.current_token)):
+                                self.error("Expected type argument in generic class constructor", self.current_token)
+                                break
+                            targ_tok = self.current_token
+                            self.advance()
+                            type_args.append(self._normalize_type_name(targ_tok))
+                            if self.current_token and self.current_token.type == "COMMA":
+                                self.advance()
+                                continue
+                            break
+                        if not (self.current_token and self.current_token.type == "GREATER_THAN"):
+                            self.error("Expected '>' to close generic type arguments", self.current_token)
+                        else:
+                            self.advance()  # consume >
+                        
+                        composite_name = self._register_generic_class_instance(token.value, type_args)
+                        
+                        # Now parse constructor argument list
+                        if not (self.current_token and self.current_token.type == "OPEN_PAREN"):
+                            self.error("Expected '(' after generic class type arguments", self.current_token)
+                            break
+                        self.consume("OPEN_PAREN")
+                        arguments = []
+                        if self.current_token and self.current_token.type != "CLOSE_PAREN":
+                            while True:
+                                arg = self.parse_expression()
+                                if arg:
+                                    arguments.append(arg)
+                                if self.current_token and self.current_token.type == "COMMA":
+                                    self.consume("COMMA")
+                                    continue
+                                break
+                        self.consume("CLOSE_PAREN")
+                        node = ASTNode(NodeTypes.FUNCTION_CALL, token, composite_name, arguments, token.index)
+                        node.return_type = composite_name
+                        continue
                     # Check if this is a generic function call
-                    if token.value in self.generic_functions:
+                    elif token.value in self.generic_functions:
                         self.advance()  # consume <
                         type_args = []
                         while True:
@@ -673,8 +830,48 @@ class Parser:
                         node.type_args = type_args
                         node.return_type = self.user_functions.get(token.value, "void")
                         continue
+                    elif self.defer_undefined_identifiers and self._looks_like_generic_constructor_call():
+                        # Deferred-import mode: the identifier is not yet known as a generic class
+                        # or function (it comes from an imported module).  Parse it as a generic
+                        # class constructor call so parsing can succeed; the semantic checks will
+                        # be completed after imports are merged.
+                        self.advance()  # consume <
+                        type_args = []
+                        while True:
+                            if not (self.current_token and self._is_type_token(self.current_token)):
+                                break
+                            targ_tok = self.current_token
+                            self.advance()
+                            type_args.append(self._normalize_type_name(targ_tok))
+                            if self.current_token and self.current_token.type == "COMMA":
+                                self.advance()
+                                continue
+                            break
+                        if not (self.current_token and self.current_token.type == "GREATER_THAN"):
+                            self.error("Expected '>' to close generic type arguments", self.current_token)
+                        else:
+                            self.advance()  # consume >
+                        composite_name = self._register_generic_class_instance(token.value, type_args)
+                        if not (self.current_token and self.current_token.type == "OPEN_PAREN"):
+                            self.error("Expected '(' after generic type arguments", self.current_token)
+                            break
+                        self.consume("OPEN_PAREN")
+                        arguments = []
+                        if self.current_token and self.current_token.type != "CLOSE_PAREN":
+                            while True:
+                                arg = self.parse_expression()
+                                if arg:
+                                    arguments.append(arg)
+                                if self.current_token and self.current_token.type == "COMMA":
+                                    self.consume("COMMA")
+                                    continue
+                                break
+                        self.consume("CLOSE_PAREN")
+                        node = ASTNode(NodeTypes.FUNCTION_CALL, token, composite_name, arguments, token.index)
+                        node.return_type = composite_name
+                        continue
                     else:
-                        # Not a generic function, this is a comparison operator
+                        # Not a generic function or class, this is a comparison operator
                         break
 
                 # Postfix cast: <expr> as <type>
@@ -923,11 +1120,80 @@ class Parser:
             self.advance()
 
         # Type
-        if not (self.current_token and self._is_type_token(self.current_token)):
+        is_deferred_generic = (
+            self.defer_undefined_identifiers
+            and self.current_token is not None
+            and self.current_token.type == "IDENTIFIER"
+            and bool(self.current_token.value.strip())
+            and self.peek() is not None
+            and self.peek().type == "LESS_THAN"
+        )
+        if not (self.current_token and (self._is_type_token(self.current_token) or is_deferred_generic)):
             self.error("Expected type in variable declaration", self.current_token)
             return None
         type_token = self.current_token
         self.advance()
+
+        # Check for generic class instantiation: TypeName<T1, T2>
+        composite_type: Optional[str] = None
+        if (
+            type_token.type == "IDENTIFIER"
+            and (
+                type_token.value in self.generic_class_templates
+                or (
+                    self.defer_undefined_identifiers
+                    and self.current_token
+                    and self.current_token.type == "LESS_THAN"
+                )
+            )
+            and self.current_token
+            and self.current_token.type == "LESS_THAN"
+        ):
+            # Parse type arguments
+            self.advance()  # consume <
+            type_args: list[str] = []
+            while True:
+                if not (self.current_token and self._is_type_token(self.current_token)):
+                    self.error("Expected type argument in generic class instantiation", self.current_token)
+                    return None
+                targ_tok = self.current_token
+                self.advance()
+                type_arg_name = self._normalize_type_name(targ_tok)
+                # Recursively handle nested generic type args: e.g. Pair<Pair<int32,int32>, string>
+                if (
+                    targ_tok.type == "IDENTIFIER"
+                    and targ_tok.value in self.generic_class_templates
+                    and self.current_token
+                    and self.current_token.type == "LESS_THAN"
+                ):
+                    self.advance()  # consume nested <
+                    nested_args: list[str] = []
+                    while True:
+                        if not (self.current_token and self._is_type_token(self.current_token)):
+                            self.error("Expected type argument in nested generic class instantiation", self.current_token)
+                            return None
+                        ntarg_tok = self.current_token
+                        self.advance()
+                        nested_args.append(self._normalize_type_name(ntarg_tok))
+                        if self.current_token and self.current_token.type == "COMMA":
+                            self.advance()
+                            continue
+                        break
+                    if not (self.current_token and self.current_token.type == "GREATER_THAN"):
+                        self.error("Expected '>' to close nested generic type arguments", self.current_token)
+                        return None
+                    self.advance()  # consume >
+                    type_arg_name = self._register_generic_class_instance(targ_tok.value, nested_args)
+                type_args.append(type_arg_name)
+                if self.current_token and self.current_token.type == "COMMA":
+                    self.advance()
+                    continue
+                break
+            if not (self.current_token and self.current_token.type == "GREATER_THAN"):
+                self.error("Expected '>' to close generic type arguments", self.current_token)
+                return None
+            self.advance()  # consume >
+            composite_type = self._register_generic_class_instance(type_token.value, type_args)
 
         # Optional array suffix []
         is_array = False
@@ -962,13 +1228,14 @@ class Parser:
             )
             return None
 
+        effective_type = composite_type if composite_type is not None else self._normalize_type_name(type_token)
         node = ASTNode(
             NodeTypes.VARIABLE_DECLARATION,
             identifier,
             identifier.value,
             [value],
             identifier.index,
-            self._normalize_type_name(type_token),
+            effective_type,
             is_nullable,
             is_const,
             None,  # return_type
@@ -1433,6 +1700,59 @@ class Parser:
             inferred_types.append(type_map[tp])
         
         return inferred_types
+
+    def _register_generic_class_instance(self, class_name: str, type_args: list[str]) -> str:
+        """Register a monomorphized generic class instance for type checking.
+
+        Substitutes the template's type parameters with the concrete type arguments
+        and registers the result in user_types, user_classes, and user_methods so that
+        the type-checker and downstream codegen can treat it like a normal class.
+
+        Returns the composite type name, e.g. ``'Pair<int32, string>'``.
+        """
+        composite = f"{class_name}<{', '.join(type_args)}>"
+        if composite in self.user_types:
+            return composite  # Already registered
+
+        template = self.generic_class_templates.get(class_name)
+        if template is None:
+            return composite
+
+        type_params = getattr(template, "type_params", [])
+        type_map = dict(zip(type_params, type_args))
+        is_copyable_class = getattr(template, "is_copyable", False)
+
+        def substitute(t: str) -> str:
+            return type_map.get(t, t) if t else t
+
+        # Build concrete field types from stored template field nodes
+        field_types: dict[str, str] = {}
+        for child in self._class_field_nodes.get(class_name, []):
+            if child.node_type == NodeTypes.CLASS_FIELD:
+                field_types[child.name] = substitute(child.var_type or "int32")
+
+        # Register composite type for type-checking
+        self.user_types.add(composite)
+        self.user_classes[composite] = field_types
+        self.user_class_bases[composite] = None
+
+        # Build concrete method signatures
+        self.user_methods[composite] = {}
+        for m in self._class_method_nodes.get(class_name, []):
+            param_nodes = [p for p in m.children[:-1] if p.node_type == NodeTypes.PARAMETER]
+            # Exclude receiver 'this' from the external parameter list
+            effective_params = (
+                param_nodes[1:] if (param_nodes and param_nodes[0].name == "this") else param_nodes
+            )
+            params_types = [substitute(p.var_type or "int32") for p in effective_params]
+            ret_type = substitute(m.return_type or "void")
+            self.user_methods[composite][m.name] = {"return": ret_type, "params": params_types}
+
+        # Register ownership category in type_utils
+        from utils.type_utils import register_class
+        register_class(composite, is_copyable_class)
+
+        return composite
 
     def _type_check_node(self, node: ASTNode, symbol_table: dict) -> Optional[str]:
         """Recursively checks types in the AST node and returns the node's expression type."""
@@ -2046,9 +2366,27 @@ class Parser:
                 else:
                     self.error(f"Type '{obj_type}' has no field '{field_name}'", node.token)
                     node_type_str = None
+            elif obj_type in self.generic_class_templates:
+                # Inside a generic class template body: look up field from template nodes
+                template_fields: dict[str, str] = {}
+                for ch in (self._class_field_nodes.get(obj_type) or []):
+                    if ch.node_type == NodeTypes.CLASS_FIELD:
+                        template_fields[ch.name] = ch.var_type or "int32"
+                if field_name in template_fields:
+                    node.return_type = template_fields[field_name]
+                    node_type_str = template_fields[field_name]
+                else:
+                    self.error(f"Type '{obj_type}' has no field '{field_name}'", node.token)
+                    node_type_str = None
             else:
-                self.error(f"Field access on non-class type '{obj_type}'", node.token)
-                node_type_str = None
+                # In deferred-import mode a composite generic type like "Tuple<int32, string>"
+                # may not be registered until imports are fully merged.  Suppress the error so
+                # parsing can complete; the real check happens after merging.
+                if self.defer_undefined_identifiers and obj_type and "<" in obj_type:
+                    node_type_str = None
+                else:
+                    self.error(f"Field access on non-class type '{obj_type}'", node.token)
+                    node_type_str = None
 
         elif node.node_type == NodeTypes.ARRAY_ACCESS:
             array_type = child_types[0]
@@ -2250,6 +2588,17 @@ class Parser:
 
         # Variable Declaration: type tokens or nullable/const modifiers can start a declaration
         if self._is_type_token(self.current_token) or token_type in ("NULLABLE", "CONST"):
+            return self.parse_variable_declaration()
+
+        # Deferred-import mode: IDENT<TYPE_ARGS> var_name = ...  is a generic class var declaration
+        # even when the class is not yet known (it comes from an imported module).
+        elif (
+            self.defer_undefined_identifiers
+            and token_type == "IDENTIFIER"
+            and next_token
+            and next_token.type == "LESS_THAN"
+            and self._looks_like_generic_var_decl()
+        ):
             return self.parse_variable_declaration()
 
         # Compound Assignment (e.g., x += y)
@@ -3135,7 +3484,7 @@ class Parser:
         return None
 
     def _parse_class_definition(self):
-        """Parse a class definition: [copyable] class Name [from Base] { <type> <field>; ... }"""
+        """Parse a class definition: [copyable] class Name[<T, U>] [from Base] { <type> <field>; ... }"""
         # Check for optional 'copyable' annotation
         is_copyable = False
         if self.current_token and self.current_token.type == "COPYABLE":
@@ -3149,6 +3498,30 @@ class Parser:
         if name_tok is None:
             self.error("Expected class name after 'class'", self.current_token)
             return None
+
+        # Parse optional generic type parameters: <T, U, ...>
+        class_type_params: list[str] = []
+        prev_class_type_params = self._current_type_params
+        if self.current_token and self.current_token.type == "LESS_THAN":
+            self.advance()  # consume <
+            while True:
+                if not (self.current_token and self.current_token.type == "IDENTIFIER"):
+                    self.error("Expected type parameter name", self.current_token)
+                    return None
+                tparam_tok = self.consume("IDENTIFIER")
+                if tparam_tok is None:
+                    return None
+                class_type_params.append(tparam_tok.value)
+                if self.current_token and self.current_token.type == "COMMA":
+                    self.advance()
+                    continue
+                break
+            if not (self.current_token and self.current_token.type == "GREATER_THAN"):
+                self.error("Expected '>' to close generic type parameters", self.current_token)
+                return None
+            self.advance()  # consume >
+            # Make type params visible while parsing the class body
+            self._current_type_params = class_type_params.copy()
 
         base_class: Optional[str] = None
         if self.current_token and self.current_token.type == "FROM":
@@ -3572,11 +3945,28 @@ class Parser:
         cls_node = ASTNode(NodeTypes.CLASS_DEFINITION, name_tok, name_tok.value, [*all_fields, *all_methods], name_tok.index)
         setattr(cls_node, "base_class", base_class)
         setattr(cls_node, "is_copyable", is_copyable)
-        
-        # Register class with type_utils
-        from utils.type_utils import register_class
-        register_class(name_tok.value, is_copyable)
-        
+        setattr(cls_node, "type_params", class_type_params)
+
+        # Restore previous type parameter context
+        self._current_type_params = prev_class_type_params
+
+        if class_type_params:
+            # Generic class: store as a template, do NOT register as a concrete type yet.
+            # Concrete monomorphized instances will be registered on-demand when the type is
+            # first used (e.g. in a variable declaration or constructor call).
+            self.generic_class_templates[name_tok.value] = cls_node
+            self.generic_class_params[name_tok.value] = class_type_params
+            # Remove any spurious registration that may have happened inside the body parse above
+            self.user_types.discard(name_tok.value)
+            self.user_classes.pop(name_tok.value, None)
+            self.user_class_bases.pop(name_tok.value, None)
+            self.user_methods.pop(name_tok.value, None)
+        else:
+            # Regular (non-generic) class
+            # Register class with type_utils
+            from utils.type_utils import register_class
+            register_class(name_tok.value, is_copyable)
+
         return cls_node
 
     def _skip_comment(self):

@@ -1,0 +1,22 @@
+// Tuple types: immutable, copyable product types.
+// A Tuple holds two values of potentially different types.
+
+class Tuple<T, U> {
+    T first;
+    U second;
+
+    Tuple(T first, U second) {
+        this.first = first;
+        this.second = second;
+    }
+}
+
+copyable class CopyableTuple<T, U> {
+    T first;
+    U second;
+
+    CopyableTuple(T first, U second) {
+        this.first = first;
+        this.second = second;
+    }
+}

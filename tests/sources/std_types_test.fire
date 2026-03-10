@@ -1,0 +1,7 @@
+import @firescript/std.io.{println};
+import @firescript/std.types.Tuple;
+
+// Test basic usage of the Tuple type
+Tuple<int32, string> t1 = Tuple<int32, string>(42, "hello");
+println(t1.first);  // Should print: 42
+println(t1.second); // Should print: hello

@@ -375,6 +375,148 @@ def _format_hover(node: ASTNode) -> str:
     return ""
 
 
+def _find_field_access_at_offset(node: ASTNode, cursor_off: int) -> Optional["ASTNode"]:
+    """Walk the AST and return the FIELD_ACCESS node whose field-name token covers cursor_off."""
+    if node.node_type == NodeTypes.FIELD_ACCESS:
+        tok = node.token
+        if tok is not None:
+            start = tok.index
+            end = start + len(node.name)
+            if start <= cursor_off <= end:
+                return node
+    for child in (node.children or []):
+        if child is None:
+            continue
+        result = _find_field_access_at_offset(child, cursor_off)
+        if result is not None:
+            return result
+    return None
+
+
+def _find_class_node(
+    ast: ASTNode,
+    class_name: str,
+    file_path: str,
+) -> Optional["ASTNode"]:
+    """Find the CLASS_DEFINITION ASTNode for *class_name*.
+
+    Searches in order:
+    1. The local (entry-file) AST
+    2. Symbol-kind imports  (``import @.../mod.{ClassName}``)
+    3. Module-kind imports  (``import @.../ClassName``)
+    """
+    # 1. Local AST
+    for child in (ast.children or []):
+        if child is None:
+            continue
+        if child.node_type == NodeTypes.CLASS_DEFINITION and getattr(child, "name", None) == class_name:
+            return child
+
+    # 2. Symbol-kind imports
+    result = _resolve_imported_symbol(ast, class_name, file_path)
+    if result is not None:
+        _mod_file, _mod_text, def_node = result
+        if def_node.node_type == NodeTypes.CLASS_DEFINITION:
+            return def_node
+
+    # 3. Module-kind imports  (import @firescript/std.types.Tuple  → module_path ends with .Tuple)
+    import_root = os.path.dirname(os.path.abspath(file_path)) if file_path else None
+    try:
+        resolver = ModuleResolver(import_root)
+    except Exception:
+        return None
+
+    for child in (ast.children or []):
+        if child is None or child.node_type != NodeTypes.IMPORT_STATEMENT:
+            continue
+        if getattr(child, "kind", "") != "module":
+            continue
+        module_path: str = getattr(child, "module_path", "") or ""
+        if not module_path:
+            continue
+        last_component = module_path.rsplit(".", 1)[-1]
+        if last_component != class_name:
+            continue
+        try:
+            mod_file = resolver.dotted_to_path(module_path)
+            if not os.path.isfile(mod_file):
+                continue
+            with open(mod_file, "r", encoding="utf-8") as f:
+                mod_text = f.read()
+            mod_ast = _try_parse(mod_text, mod_file)
+            if mod_ast is None:
+                continue
+            for mchild in (mod_ast.children or []):
+                if (
+                    mchild is not None
+                    and mchild.node_type == NodeTypes.CLASS_DEFINITION
+                    and mchild.name == class_name
+                ):
+                    return mchild
+        except Exception:
+            pass
+
+    return None
+
+
+def _hover_field_access(
+    fa_node: ASTNode,
+    ast: ASTNode,
+    sym_map: dict,
+    file_path: str,
+) -> Optional[str]:
+    """Return a hover string for a field-access node with concrete generic types resolved.
+
+    Given ``t1.first`` where ``t1 : Tuple<int32, string>``, emits a firescript
+    code block showing the concrete field type (e.g. "int32 first").
+    """
+    obj_node = fa_node.children[0] if fa_node.children else None
+    if obj_node is None:
+        return None
+
+    # Get the object's declared type from the symbol table
+    obj_type: Optional[str] = None
+    if obj_node.node_type == NodeTypes.IDENTIFIER:
+        var_decl = sym_map.get(obj_node.name)
+        if var_decl is not None:
+            obj_type = getattr(var_decl, "var_type", None)
+    if obj_type is None:
+        return None
+
+    field_name: str = fa_node.name
+
+    # Split  "Pair<int32, int32>"  into template name and type-argument list
+    if "<" in obj_type:
+        bracket = obj_type.index("<")
+        template_name = obj_type[:bracket]
+        args_raw = obj_type[bracket + 1:]
+        if args_raw.endswith(">"):
+            args_raw = args_raw[:-1]
+        type_args = [a.strip() for a in args_raw.split(",")]
+    else:
+        template_name = obj_type
+        type_args = []
+
+    # Find the class definition
+    class_node = _find_class_node(ast, template_name, file_path)
+    if class_node is None:
+        return None
+
+    type_params: list = getattr(class_node, "type_params", []) or []
+    type_map = dict(zip(type_params, type_args))
+
+    # Find the field and resolve its type
+    for ch in (class_node.children or []):
+        if ch is None:
+            continue
+        if ch.node_type == NodeTypes.CLASS_FIELD and ch.name == field_name:
+            raw_type: str = ch.var_type or "?"
+            concrete_type = type_map.get(raw_type, raw_type)
+            return f"```firescript\n{concrete_type} {field_name}\n```"
+
+    return None
+
+
 def _resolve_imported_symbol(
     ast_root: ASTNode,
     word: str,
@@ -539,6 +681,22 @@ def hover(ls: LanguageServer, params: HoverParams) -> Optional[Hover]:
 
     sym_map: dict[str, ASTNode] = {}
     _build_symbol_map(ast, sym_map)
+
+    # Try field-access hover first: resolve concrete type for  t1.field
+    fa_node = _find_field_access_at_offset(ast, cursor_off)
+    if fa_node is not None:
+        fa_content = _hover_field_access(fa_node, ast, sym_map, file_path)
+        if fa_content:
+            word_start = _word_start_offset(source, cursor_off)
+            fa_range = Range(
+                start=_offset_to_position(source, word_start),
+                end=_offset_to_position(source, word_start + len(word)),
+            )
+            return Hover(
+                contents=MarkupContent(kind=MarkupKind.Markdown, value=fa_content),
+                range=fa_range,
+            )
+
     node = sym_map.get(word)
 
     # Fall back to imported modules if the symbol isn't defined locally.

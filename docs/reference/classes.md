@@ -367,28 +367,26 @@ class Square implements Drawable, Movable {
 
 ### Generics on Classes
 
-```firescript
-// Future syntax
-class Box<T> {
-    nullable T value;
-    
-    Box(&this) {
-        this.value = null;
-    }
-    
-    void set(&this, T newValue) { // if T is Owned this is a borrow; if T is copyable it's just a copy
-        this.value = newValue;
-    }
+Classes support one or more type parameters declared with angle-bracket syntax. The compiler monomorphizes each unique instantiation automatically.
 
-    nullable T get(&this) {
-        return this.value;
+```firescript
+copyable class Pair<T, U> {
+    T first;
+    U second;
+
+    Pair(T first, U second) {
+        this.first = first;
+        this.second = second;
     }
 }
 
 // Usage
-Box<int> intBox = Box<int>();
-intBox.set(42);
+Pair<int32, string> p = Pair<int32, string>(42, "hello");
+println(p.first);   // 42
+println(p.second);  // hello
 ```
+
+Both `copyable` and owned (heap-allocated) generic classes are supported. `firescript/std/types/tuple.fire` provides a ready-made `Tuple2<T, U>` type.
 
 ### Abstract Classes and Methods
 
@@ -461,4 +459,4 @@ Classes in firescript are planned but not yet implemented in the current compile
 - ❌ Access modifiers
 - ❌ Abstract classes
 - ❌ Meta-attributes/annotations
-- ❌ Generics on classes
+- ✅ Generics on classes

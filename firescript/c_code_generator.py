@@ -85,6 +85,9 @@ class CCodeGenerator:
         self.class_methods: dict[str, list[ASTNode]] = {}
         for c in (self.ast.children or []):
             if c.node_type == NodeTypes.CLASS_DEFINITION:
+                # Skip generic class templates — they'll be instantiated on demand
+                if getattr(c, 'type_params', []):
+                    continue
                 self.class_names.add(c.name)
                 # Register class with type_utils
                 is_copyable_class = getattr(c, "is_copyable", False)
@@ -104,11 +107,15 @@ class CCodeGenerator:
         self.monomorphized_funcs: dict[tuple[str, tuple[str, ...]], str] = {}
         # Track which generic functions need to be instantiated
         self.generic_templates: dict[str, ASTNode] = {}
+        # Generic class templates: template_name -> ASTNode
+        self.generic_class_templates: dict[str, ASTNode] = {}
+        # Monomorphized generic class instances: composite_name -> True (just tracking what's been emitted)
+        self.monomorphized_classes: set[str] = set()
         # Track which user-defined (non-generic) functions have at least one explicit [] array param.
         # Only these functions receive the implicit _len companion parameter, and only calls to
         # them should inject sizes.
         self._explicit_array_param_funcs: set[str] = set()
-        # Collect generic function templates and pre-scan for explicit array-param functions
+        # Collect generic function templates, generic class templates, and pre-scan for explicit array-param functions
         for c in (self.ast.children or []):
             if c.node_type == NodeTypes.FUNCTION_DEFINITION:
                 if hasattr(c, 'type_params') and c.type_params:
@@ -120,6 +127,10 @@ class CCodeGenerator:
                         if ch.node_type == NodeTypes.PARAMETER and ch.is_array:
                             self._explicit_array_param_funcs.add(c.name)
                             break
+            elif c.node_type == NodeTypes.CLASS_DEFINITION:
+                if getattr(c, 'type_params', []):
+                    self.generic_class_templates[c.name] = c
+                    logging.debug(f"Found generic class template: {c.name} with type params {c.type_params}")
 
     def error(self, text: str, node: Optional[ASTNode] = None):
         """Report a compilation error with source location"""
@@ -333,6 +344,28 @@ class CCodeGenerator:
                             arg_types.append(base_type)
                     else:
                         return None
+                elif arg.node_type == NodeTypes.FIELD_ACCESS:
+                    # e.g. t1.first — look up object type then find the field type
+                    field_type = getattr(arg, 'return_type', None)
+                    if field_type is None:
+                        # return_type not set yet; resolve from class_fields
+                        obj_node = arg.children[0] if arg.children else None
+                        if obj_node and obj_node.node_type == NodeTypes.IDENTIFIER:
+                            obj_sym = self.symbol_table.get(obj_node.name)
+                            if obj_sym:
+                                obj_type = obj_sym[0]
+                                for fname, ftype in self.class_fields.get(obj_type, []):
+                                    if fname == arg.name:
+                                        field_type = ftype
+                                        arg.return_type = ftype  # cache for later
+                                        break
+                    if field_type:
+                        type_map_ctx = getattr(self, '_current_type_map', {})
+                        if type_map_ctx and field_type in type_map_ctx:
+                            field_type = type_map_ctx[field_type]
+                        arg_types.append(field_type)
+                    else:
+                        return None
                 else:
                     return None
         
@@ -516,15 +549,57 @@ class CCodeGenerator:
         
         return f"{ret_c} {mangled_name}({params_sig}) {body_code}"
 
+    def _collect_generic_class_instances(self, node: ASTNode) -> None:
+        """Recursively collect all composite generic class type usages for monomorphization.
+
+        Looks for:
+        - VARIABLE_DECLARATION with var_type containing '<'
+        - CONSTRUCTOR_CALL with name containing '<'
+        - FUNCTION_CALL with name matching a generic class template (or containing '<')
+        """
+        if node.node_type == NodeTypes.VARIABLE_DECLARATION:
+            vt = getattr(node, "var_type", None)
+            if vt and "<" in vt:
+                self._ensure_mono_class(vt)
+        elif node.node_type == NodeTypes.CONSTRUCTOR_CALL:
+            name = getattr(node, "name", "")
+            if name and "<" in name:
+                self._ensure_mono_class(name)
+        elif node.node_type == NodeTypes.FUNCTION_CALL:
+            name = getattr(node, "name", "")
+            if name and "<" in name:
+                self._ensure_mono_class(name)
+
+        for child in (node.children or []):
+            if child:
+                self._collect_generic_class_instances(child)
+
+    def _ensure_mono_class(self, composite: str) -> None:
+        """Parse composite name and call _register_mono_class if not already done."""
+        if composite in self.monomorphized_classes:
+            return
+        if "<" not in composite:
+            return
+        bracket = composite.index("<")
+        template_name = composite[:bracket]
+        if template_name not in self.generic_class_templates:
+            return
+        args_str = composite[bracket + 1:]
+        if args_str.endswith(">"):
+            args_str = args_str[:-1]
+        type_args = [a.strip() for a in args_str.split(",")]
+        self._register_mono_class(composite, template_name, type_args)
+
     def generate(self) -> str:
         """Generate C code from the AST"""
         header = "#include <stdio.h>\n#include <stdbool.h>\n#include <stdint.h>\n#include <inttypes.h>\n#include <string.h>\n"
         header += '#include "firescript/runtime/runtime.h"\n'
         header += '#include "firescript/runtime/conversions.h"\n'
         
-        # First pass: collect all generic function instantiations needed
+        # First pass: collect all generic function and class instantiations needed
         for child in self.ast.children:
             self._collect_generic_instances(child)
+            self._collect_generic_class_instances(child)
         
         # Emit class typedefs, then constant declarations, then function definitions, then the main body statements
         typedefs: list[str] = []
@@ -550,6 +625,9 @@ class CCodeGenerator:
                     if func_code:
                         function_defs.append(func_code)
             elif child.node_type == NodeTypes.CLASS_DEFINITION:
+                # Skip generic class templates — concrete instances are emitted via monomorphization
+                if getattr(child, 'type_params', []):
+                    continue
                 typedefs.append(self._emit_class_typedef(child))
                 # Emit method functions for this class
                 for m in self.class_methods.get(child.name, []):
@@ -565,7 +643,16 @@ class CCodeGenerator:
                 stmt_code = self.emit_statement(child)
                 if stmt_code:
                     main_lines.append(stmt_code)
-        
+
+        # Emit monomorphized generic class instances BEFORE regular class typedefs
+        for composite in list(self.monomorphized_classes):
+            td, methods = self._emit_generic_class_instance(composite)
+            if td:
+                typedefs.insert(0, td)
+            for mcode in methods:
+                if mcode:
+                    function_defs.insert(0, mcode)
+
         # Emit monomorphized generic function instances BEFORE regular functions
         # Keep instantiating until no new instances are discovered
         instantiated_keys = set()
@@ -637,6 +724,12 @@ class CCodeGenerator:
             # Arrays map to pointer to element type
             elem_type = t[:-2]
             return f"{FIRETYPE_TO_C.get(elem_type, elem_type)}*"
+        # Handle composite generic class types like "Pair<int32, string>"
+        if "<" in t:
+            c_name = self._mangle_class_composite_name(t)
+            if t in self.class_names and is_owned(t, False):
+                return f"{c_name}*"
+            return c_name
         # Check if this is an owned (non-copyable) class
         if t in self.class_names and is_owned(t, False):
             # Owned classes are heap-allocated and use pointers
@@ -724,6 +817,96 @@ class CCodeGenerator:
         
         return f'"{"".join(result)}"'
 
+    def _mangle_class_composite_name(self, composite: str) -> str:
+        """Convert a composite generic class name like 'Pair<int32, string>' into a C-safe identifier."""
+        # Pair<int32, string> -> Pair__int32__string
+        import re
+        # Remove angle brackets and commas, replace with __
+        safe = re.sub(r'[<> ,]+', '__', composite).strip('_')
+        return safe
+
+    def _register_mono_class(self, composite: str, template_name: str, type_args: list[str]) -> None:
+        """Register a monomorphized generic class instance so it gets typedef+method emission."""
+        if composite in self.monomorphized_classes:
+            return
+        self.monomorphized_classes.add(composite)
+
+        template = self.generic_class_templates.get(template_name)
+        if template is None:
+            return
+
+        type_params = getattr(template, 'type_params', [])
+        type_map = dict(zip(type_params, type_args))
+        is_copyable_class = getattr(template, 'is_copyable', False)
+
+        def substitute(t: str) -> str:
+            if t is None:
+                return "int32"
+            return type_map.get(t, t)
+
+        c_name = self._mangle_class_composite_name(composite)
+
+        # Register in class_names, class_fields, class_methods
+        self.class_names.add(composite)
+        register_class(composite, is_copyable_class)
+
+        concrete_fields: list[tuple[str, str]] = []
+        for ch in template.children:
+            if ch.node_type == NodeTypes.CLASS_FIELD:
+                concrete_fields.append((ch.name, substitute(ch.var_type or "int32")))
+        self.class_fields[composite] = concrete_fields
+
+        # Build concrete method nodes (deep copy with substituted types)
+        import copy as _copy
+        concrete_methods: list[ASTNode] = []
+        for m in template.children:
+            if m.node_type != NodeTypes.CLASS_METHOD_DEFINITION:
+                continue
+            dm = _copy.deepcopy(m)
+            # Substitute type parameters in parameter types and return type
+            for ch in dm.children:
+                if ch.node_type == NodeTypes.PARAMETER:
+                    ch.var_type = substitute(ch.var_type or "int32")
+            # Substitute return type (constructors use the template name as return type;
+            # replace it with the composite name so codegen emits the right C struct type)
+            if dm.return_type:
+                rt = substitute(dm.return_type)
+                # If the return type is still the template class name, replace with composite
+                if rt == template_name:
+                    rt = composite
+                dm.return_type = rt
+            # Tag with the composite class name so _emit_method_definition uses the right C struct name
+            setattr(dm, "class_name", composite)
+            setattr(dm, "_composite_c_name", c_name)
+            concrete_methods.append(dm)
+        self.class_methods[composite] = concrete_methods
+
+    def _emit_generic_class_instance(self, composite: str) -> tuple[str, list[str]]:
+        """Emit the C typedef struct and method functions for a monomorphized generic class.
+
+        Returns (typedef_str, [method_code, ...]).
+        """
+        c_name = self._mangle_class_composite_name(composite)
+        is_copyable_class = is_copyable(composite, False)
+
+        # Build typedef
+        fields = self.class_fields.get(composite, [])
+        td_lines = [f"typedef struct {c_name} {{"]
+        for fname, ftype in fields:
+            ctype = self._map_type_to_c(ftype)
+            td_lines.append(f"    {ctype} {fname};")
+        td_lines.append(f"}} {c_name};")
+        typedef_str = "\n".join(td_lines)
+
+        # Build method functions
+        method_codes = []
+        for m in self.class_methods.get(composite, []):
+            mcode = self._emit_method_definition(composite, m)
+            if mcode:
+                method_codes.append(mcode)
+
+        return typedef_str, method_codes
+
     def _emit_class_typedef(self, node: ASTNode) -> str:
         """Emit a C typedef struct for a class definition."""
         lines = [f"typedef struct {node.name} {{"]
@@ -750,6 +933,10 @@ class CCodeGenerator:
         # Push a new name scope for this method BEFORE building params
         self.name_scope_stack.append({})
 
+        # For constructors: always pre-register 'this' so references in the body aren't mangled.
+        if is_constructor:
+            self.name_scope_stack[-1]["this"] = "this"
+
         params = []
         body_node = None
         for child in node.children:
@@ -759,9 +946,7 @@ class CCodeGenerator:
                     raise NotImplementedError("Array parameters are not supported in methods")
                 ctype = self._map_type_to_c(base_type)
                 if is_constructor and child.name == "this":
-                    # Constructors synthesize a local `this` instance rather than taking it as a parameter.
-                    # Register 'this' in the name scope without mangling since it will be a local variable
-                    self.name_scope_stack[-1]["this"] = "this"
+                    # Skip any explicit 'this' param (already registered above)
                     continue
                 params.append(f"{ctype} {self._mangle_name(child.name)}")
             elif child.node_type == NodeTypes.SCOPE:
@@ -777,6 +962,10 @@ class CCodeGenerator:
                     child.var_type or "int32",
                     child.is_array,
                 )
+        # Register 'this' in the symbol table so that FIELD_ACCESS nodes inside the
+        # constructor body can correctly determine ownership (-> vs .) for this class.
+        if is_constructor:
+            self.symbol_table["this"] = (class_name, False)
 
         prev_in_fn = self._in_function
         self._in_function = True
@@ -787,14 +976,16 @@ class CCodeGenerator:
         if is_constructor:
             # Check if this is an owned (non-copyable) class
             class_is_owned = is_owned(class_name, False)
-            
+            # Get C-safe struct name (composite classes have angle brackets in their name)
+            c_class_name = self._mangle_class_composite_name(class_name) if "<" in class_name else class_name
+
             if class_is_owned:
                 # Owned classes: allocate on heap with malloc, return pointer
-                init_line = f"    {class_name}* this = malloc(sizeof({class_name}));"
-                zero_init = f"    *this = ({class_name}){{0}};"
+                init_line = f"    {c_class_name}* this = malloc(sizeof({c_class_name}));"
+                zero_init = f"    *this = ({c_class_name}){{0}};"
             else:
                 # Copyable classes: stack allocation
-                init_line = f"    {class_name} this = ({class_name}){{0}};"
+                init_line = f"    {c_class_name} this = ({c_class_name}){{0}};"
                 zero_init = ""
 
             def _contains_return(n: ASTNode | None) -> bool:
@@ -849,9 +1040,10 @@ class CCodeGenerator:
         # Pop the name scope for this method
         self.name_scope_stack.pop()
 
-        cname = class_name
+        # Use C-safe name for composite generic class types
+        c_class_name = self._mangle_class_composite_name(class_name) if "<" in class_name else class_name
         mname = node.name
-        return f"{ret_c} {cname}_{mname}({params_sig}) {body_code}"
+        return f"{ret_c} {c_class_name}_{mname}({params_sig}) {body_code}"
 
     def _literal_to_c(self, node: ASTNode) -> str:
         """Turn a LITERAL node into a valid C expression string."""
@@ -1299,7 +1491,17 @@ class CCodeGenerator:
                 obj_type = self.symbol_table.get(obj_node.name, (None, False))[0]
             elif obj_node:
                 obj_type = getattr(obj_node, "return_type", None) or getattr(obj_node, "var_type", None)
-            
+
+            # If the node's return_type was not set during parsing (deferred-import case),
+            # resolve it now from class_fields so that callers (like type inference for
+            # generic println) can determine the concrete field type.
+            if getattr(node, "return_type", None) is None and obj_type:
+                fields_for_type = self.class_fields.get(obj_type, [])
+                for fname, ftype in fields_for_type:
+                    if fname == node.name:
+                        node.return_type = ftype
+                        break
+
             # Use -> for owned classes, . for copyable classes and primitives
             if obj_type and obj_type in self.class_names and is_owned(obj_type, False):
                 return f"{obj_code}->{node.name}"
@@ -1379,17 +1581,19 @@ class CCodeGenerator:
                 for (fname, _ftype), val in zip(fields, args):
                     inits.append(f".{fname} = {val}")
                 init_str = ", ".join(inits)
-                
+                # Get C-safe struct name (composite classes have angle brackets in their name)
+                c_class_name = self._mangle_class_composite_name(node.name) if "<" in node.name else node.name
+
                 # Check if this is an owned (non-copyable) class
                 if is_owned(node.name, False):
                     # Owned classes need heap allocation
                     # Generate inline compound statement that allocates and initializes
                     tmp_var = f"__tmp_class_{self.array_temp_counter}"
                     self.array_temp_counter += 1
-                    return f"({{ {node.name}* {tmp_var} = malloc(sizeof({node.name})); *{tmp_var} = ({node.name}){{ {init_str} }}; {tmp_var}; }})"
+                    return f"({{ {c_class_name}* {tmp_var} = malloc(sizeof({c_class_name})); *{tmp_var} = ({c_class_name}){{ {init_str} }}; {tmp_var}; }})"
                 else:
                     # Copyable classes use stack allocation with compound literal
-                    return f"({node.name}){{ {init_str} }}"
+                    return f"({c_class_name}){{ {init_str} }}"
             if node.name == "stdout":
                 # Check if stdout is enabled in the file where this call is made
                 node_source_file = getattr(node, 'source_file', self.source_file)
@@ -1486,10 +1690,15 @@ class CCodeGenerator:
                 if type_args and func_name in self.generic_templates:
                     # Use the mangled name for generic function
                     key = (func_name, tuple(type_args))
-                    if key in self.monomorphized_funcs:
-                        mangled_name = self.monomorphized_funcs[key]
-                        args = self._build_call_args(node.children)  # no size injection for generics
-                        return f"{mangled_name}({args})"
+                    if key not in self.monomorphized_funcs:
+                        # Late discovery (e.g. FIELD_ACCESS arg type only known after symbol_table
+                        # is populated during _visit). Register now so the monomorphization loop
+                        # (which runs after all emit_statement calls) will instantiate it.
+                        mangled = self._mangle_generic_name(func_name, tuple(type_args))
+                        self.monomorphized_funcs[key] = mangled
+                    mangled_name = self.monomorphized_funcs[key]
+                    args = self._build_call_args(node.children)  # no size injection for generics
+                    return f"{mangled_name}({args})"
                 
                 # Regular function call - inject size args for functions with explicit array params
                 args = self._build_call_args(node.children, func_name=node.name)
@@ -1503,8 +1712,10 @@ class CCodeGenerator:
             # new Class(args) -> call generated function Class_Class(args)
             args = [self._visit(arg) for arg in node.children]
             cname = node.name
+            # Use C-safe name for composite generic class types like "Pair<int32, string>"
+            c_cname = self._mangle_class_composite_name(cname) if "<" in cname else cname
             arglist = ", ".join(args)
-            return f"{cname}_{cname}({arglist})"
+            return f"{c_cname}_{c_cname}({arglist})"
         elif node.node_type == NodeTypes.SUPER_CALL:
             super_class = getattr(node, "super_class", None)
             if not super_class:

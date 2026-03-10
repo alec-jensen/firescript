@@ -8,3 +8,4 @@ editors/vscode/node_modules/
 editors/vscode/out/
 editors/vscode/*.vsix
 test/
+.venv/

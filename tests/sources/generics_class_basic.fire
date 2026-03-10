@@ -1,0 +1,19 @@
+import @firescript/std.io.{println};
+
+copyable class Pair<T, U> {
+    T first;
+    U second;
+
+    Pair(T first, U second) {
+        this.first = first;
+        this.second = second;
+    }
+}
+
+Pair<int32, int32> p1 = Pair<int32, int32>(10, 20);
+Pair<int32, string> p2 = Pair<int32, string>(42, "hello");
+
+println(p1.first);
+println(p1.second);
+println(p2.first);
+println(p2.second);
