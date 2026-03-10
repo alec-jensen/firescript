@@ -6,6 +6,8 @@
 #include <gmp.h>
 #include <mpfr.h>
 #include <float.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "runtime.h"
 
 // Internal registry to track heap pointers allocated via firescript_malloc/strdup
@@ -297,4 +299,63 @@ void firescript_cleanup(void)
         cur = n;
     }
     g_ptrs = NULL;
+}
+
+/* ---- POSIX syscall helpers (directive enable_syscalls) ---- */
+
+SyscallResult firescript_syscall_open(const char *path, const char *mode)
+{
+    if (!path || !mode)
+        return (SyscallResult){ .status = -1, .data = firescript_strdup("") };
+
+    int flags = 0;
+    mode_t perm = 0644;
+    if (strcmp(mode, "r") == 0)
+        flags = O_RDONLY;
+    else if (strcmp(mode, "w") == 0)
+        flags = O_WRONLY | O_CREAT | O_TRUNC;
+    else if (strcmp(mode, "a") == 0)
+        flags = O_WRONLY | O_CREAT | O_APPEND;
+    else if (strcmp(mode, "r+") == 0)
+        flags = O_RDWR;
+    else if (strcmp(mode, "w+") == 0)
+        flags = O_RDWR | O_CREAT | O_TRUNC;
+    else
+        return (SyscallResult){ .status = -22, .data = firescript_strdup("") }; /* -EINVAL */
+
+    int fd = open(path, flags, perm);
+    return (SyscallResult){ .status = (int32_t)fd, .data = firescript_strdup("") };
+}
+
+SyscallResult firescript_syscall_read(int fd, int32_t n)
+{
+    if (n <= 0)
+        return (SyscallResult){ .status = -22, .data = firescript_strdup("") };
+
+    char *buf = firescript_malloc((size_t)n + 1);
+    if (!buf)
+        return (SyscallResult){ .status = -12, .data = firescript_strdup("") }; /* -ENOMEM */
+
+    ssize_t bytes = read(fd, buf, (size_t)n);
+    if (bytes < 0) {
+        firescript_free(buf);
+        return (SyscallResult){ .status = (int32_t)bytes, .data = firescript_strdup("") };
+    }
+    buf[bytes] = '\0';
+    return (SyscallResult){ .status = (int32_t)bytes, .data = buf };
+}
+
+SyscallResult firescript_syscall_write(int fd, const char *buf)
+{
+    if (!buf)
+        return (SyscallResult){ .status = -22, .data = firescript_strdup("") };
+
+    ssize_t written = write(fd, buf, strlen(buf));
+    return (SyscallResult){ .status = (int32_t)written, .data = firescript_strdup("") };
+}
+
+SyscallResult firescript_syscall_close(int fd)
+{
+    int result = close(fd);
+    return (SyscallResult){ .status = result, .data = firescript_strdup("") };
 }

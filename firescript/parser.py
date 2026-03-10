@@ -125,8 +125,12 @@ class Parser:
     # The parser accepts calls to these names without erroring; the code generator enforces
     # the directive requirement at emit time.
     builtin_functions: dict[str, str] = {
-        "stdout": "void",   # requires directive enable_lowlevel_stdout
-        "drop": "void",     # requires directive enable_drops
+        "stdout": "void",          # requires directive enable_lowlevel_stdout
+        "drop": "void",            # requires directive enable_drops
+        "syscall_open": "SyscallResult",   # requires directive enable_syscalls
+        "syscall_read": "SyscallResult",   # requires directive enable_syscalls
+        "syscall_write": "SyscallResult",  # requires directive enable_syscalls
+        "syscall_close": "SyscallResult",  # requires directive enable_syscalls
     }
 
     # Register for user-defined methods (className -> methodName -> signature)
@@ -2155,6 +2159,10 @@ class Parser:
             if directive_enum is not None:
                 self.directives.add(directive_enum.value)
                 node_name = directive_enum.value
+                # Inject built-in types unlocked by this directive
+                if directive_enum == CompilerDirective.ENABLE_SYSCALLS:
+                    self.user_types.add("SyscallResult")
+                    self.user_classes["SyscallResult"] = {"status": "int32", "data": "string"}
             else:
                 node_name = directive_value
             directive_node = ASTNode(NodeTypes.DIRECTIVE, dir_tok, node_name, [], dir_tok.index)
@@ -2623,6 +2631,10 @@ class Parser:
                 if directive_enum is not None:
                     self.directives.add(directive_enum.value)
                     node_name = directive_enum.value
+                    # Inject built-in types unlocked by this directive
+                    if directive_enum == CompilerDirective.ENABLE_SYSCALLS:
+                        self.user_types.add("SyscallResult")
+                        self.user_classes["SyscallResult"] = {"status": "int32", "data": "string"}
                 else:
                     node_name = directive_value
                 directive_node = ASTNode(NodeTypes.DIRECTIVE, dir_tok, node_name, [], dir_tok.index)

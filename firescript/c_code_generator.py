@@ -69,6 +69,7 @@ class CCodeGenerator:
         entry_directives = self.file_directives.get(normalized_entry, set()) if normalized_entry else set()
         self.drops_enabled: bool = "enable_drops" in entry_directives
         self.stdout_enabled: bool = "enable_lowlevel_stdout" in entry_directives
+        self.syscall_enabled: bool = "enable_syscalls" in entry_directives
         
         # Name mangling support: map original names to mangled names
         self.name_counter = 0
@@ -76,7 +77,7 @@ class CCodeGenerator:
         # Stack of name scopes for nested functions/blocks
         self.name_scope_stack: list[dict[str, str]] = [{}]
         # Built-in functions that shouldn't be mangled
-        self.builtin_names = {"stdout", "drop"}
+        self.builtin_names = {"stdout", "drop", "syscall_open", "syscall_read", "syscall_write", "syscall_close"}
         
         # Collect class names and metadata for constructors and methods
         self.class_names: set[str] = set()
@@ -1412,6 +1413,20 @@ class CCodeGenerator:
             elif node.name == "drop":
                 # Fixed-size arrays are copyable; drop is a no-op
                 return "/* drop noop */"
+            elif node.name in ("syscall_open", "syscall_read", "syscall_write", "syscall_close"):
+                # Check if syscalls are enabled in the file where this call is made
+                node_source_file = getattr(node, 'source_file', self.source_file)
+                normalized_source = os.path.abspath(node_source_file) if node_source_file else node_source_file
+                node_file_directives = self.file_directives.get(normalized_source, set())
+                if "enable_syscalls" not in node_file_directives:
+                    self.error(
+                        f"{node.name}() is not available. Use 'directive enable_syscalls;' "
+                        "in this file to enable it.",
+                        node
+                    )
+                    sys.exit(1)
+                args = ", ".join(self._visit(arg) for arg in node.children)
+                return f"firescript_{node.name}({args})"
             elif node.name == "int":
                 # Cast to a native C integer
                 arg_code = self._visit(node.children[0])

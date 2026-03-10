@@ -1,0 +1,19 @@
+directive enable_syscalls;
+
+import @firescript/std.io.{println};
+
+// Write a string to a temp file, then read it back
+SyscallResult open_w = syscall_open("build/temp/syscall_test_data.txt", "w");
+if (open_w.status >= 0) {
+    syscall_write(open_w.status, "hello syscall");
+    syscall_close(open_w.status);
+
+    SyscallResult open_r = syscall_open("build/temp/syscall_test_data.txt", "r");
+    if (open_r.status >= 0) {
+        SyscallResult read_result = syscall_read(open_r.status, 64);
+        syscall_close(open_r.status);
+        if (read_result.status >= 0) {
+            println(read_result.data);
+        }
+    }
+}

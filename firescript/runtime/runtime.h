@@ -78,4 +78,18 @@ char *firescript_i64_to_str(int64_t value);
 char *firescript_f32_to_str(float value);
 char *firescript_f64_to_str(double value);
 
+// SyscallResult: returned by all syscall_* intrinsics (requires directive enable_syscalls).
+// status: non-negative = success / bytes transferred; negative = negated errno.
+// data:   heap-allocated string output (always valid; empty string when not applicable).
+typedef struct SyscallResult {
+    int32_t status;
+    char *data;
+} SyscallResult;
+
+// Low-level POSIX-backed syscall helpers
+SyscallResult firescript_syscall_open(const char *path, const char *mode);
+SyscallResult firescript_syscall_read(int fd, int32_t n);
+SyscallResult firescript_syscall_write(int fd, const char *buf);
+SyscallResult firescript_syscall_close(int fd);
+
 #endif

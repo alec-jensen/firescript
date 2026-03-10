@@ -6,54 +6,71 @@ Syscalls are only intended to be used in the standard library. When we need them
 directive enable_syscalls;
 ```
 
+## Return Type: `SyscallResult`
+
+All syscalls return a `SyscallResult` copyable class defined in the standard library:
+
+```firescript
+copyable class SyscallResult {
+    int32 status;
+    string data;
+}
+```
+
+- `status` — An integer status code. `0` or a positive value (e.g. bytes read/written) indicates success. A negative value indicates an error.
+- `data` — A string containing any output produced by the syscall (e.g. bytes read, environment variable value). **Not guaranteed to have a meaningful value** — for syscalls that do not produce output (e.g. `syscall_write`, `syscall_close`), `data` will be an empty string.
+
+> **Note:** A tuple return type would be more natural here, but tuples are not yet implemented in firescript. `SyscallResult` serves as the interim solution.
+
 ## Available Syscalls
 
-Enabling syscalls gives you access to the following functions:
+Enabling syscalls gives you access to the following functions. Only the basic I/O syscalls are currently implemented; the remaining ones are planned.
 
-| Syscall                   | Description                                                          |
-|---------------------------|----------------------------------------------------------------------|
-| syscall_open(path, mode)  | Opens a file at `path` with the given `mode` ("r", "w", "a", etc.). Returns a file descriptor or file object referencing the open file. |
-| syscall_read(fd, buf, n)  | Reads up to `n` bytes from file descriptor or file object `fd` into buffer `buf`. Returns number of bytes read or error code. |
-| syscall_write(fd, buf, n) | Writes up to `n` bytes from buffer `buf` to file descriptor or file object `fd`. Returns number of bytes written or error code. |
-| syscall_close(fd)         | Closes file descriptor or file object `fd`. Returns 0 on success or error code. |
-| syscall_remove(path)      | Removes (deletes) the file at the given `path`.                      |
-| syscall_rename(old, new)  | Renames file `old` to `new`.                                         |
-| syscall_stat(path, stat)  | Gets metadata for file at `path` into `stat` struct.                 |
-| syscall_exec(cmd, args)   | Executes shell command `cmd` with arguments `args`.                  |
-| syscall_getenv(name, buf) | Gets the value of the environment variable `name` into `buf`.        |
-| syscall_system(cmd)       | Executes shell command `cmd` via the system shell.                   |
-| syscall_exit(code)        | Exits the process with exit code `code`.                             |
-| syscall_time()            | Returns the current system time (seconds since epoch).               |
-| syscall_sleep(ms)         | Sleeps for `ms` milliseconds.                                        |
+| Syscall                    | Description                                                                                                   | `status`                        | `data`                        |
+|----------------------------|---------------------------------------------------------------------------------------------------------------|---------------------------------|-------------------------------|
+| `syscall_open(path, mode)` | Opens the file at `path` with the given `mode` (`"r"`, `"w"`, `"a"`, etc.). Returns a file descriptor.       | fd (≥ 0) or negative error code | empty                         |
+| `syscall_read(fd, n)`      | Reads up to `n` bytes from file descriptor `fd`.                                                              | bytes read or negative error code | the bytes read as a string  |
+| `syscall_write(fd, buf)`   | Writes string `buf` to file descriptor `fd`.                                                                  | bytes written or negative error code | empty                    |
+| `syscall_close(fd)`        | Closes file descriptor `fd`.                                                                                  | 0 on success or negative error code | empty                    |
+| `syscall_remove(path)`     | *(planned)* Removes the file at `path`.                                                                       | 0 on success or negative error code | empty                    |
+| `syscall_rename(old, new)` | *(planned)* Renames file `old` to `new`.                                                                      | 0 on success or negative error code | empty                    |
+| `syscall_exec(cmd, args)`  | *(planned)* Executes command `cmd` with `string[]` arguments `args`.                                          | exit code or negative error code | empty                    |
+| `syscall_getenv(name)`     | *(planned)* Gets the value of environment variable `name`.                                                    | 0 on success or negative error code | the variable's value     |
+| `syscall_system(cmd)`      | *(planned)* Executes shell command `cmd` via the system shell.                                                | exit code or negative error code | empty                    |
+| `syscall_exit(code)`       | *(planned)* Exits the process with exit code `code`.                                                          | does not return               | does not return               |
+| `syscall_time()`           | *(planned)* Returns the current system time as seconds since the Unix epoch.                                  | seconds since epoch           | empty                         |
+| `syscall_sleep(ms)`        | *(planned)* Sleeps for `ms` milliseconds.                                                                     | 0 on success or negative error code | empty                   |
 
-## How File and Descriptor Objects Work
+## How File Descriptors Work
 
-- **File handles/descriptors are returned by `syscall_open` and uniquely identify an open file.**
-- **Parallel I/O:** You can open multiple files at once. Each operation (`read`, `write`, `close`) targets a specific file via its descriptor/object, allowing independent and parallel operations on multiple files.
-- **Lifetime:** The file descriptor/object remains valid until explicitly closed via `syscall_close`. After closing, further operations on that handle are invalid.
-- **Threading/Concurrency:** If the firescript runtime or standard library supports threading, syscalls are designed so that concurrent threads can operate on different file descriptors in parallel, with OS-level guarantees of isolation and safety.
-- **Error Handling:** Functions typically return 0 or a positive value on success, and a negative error code on failure (e.g., invalid descriptor, permission denied).
+- **File descriptors are integers returned in `status` by `syscall_open`.** Pass them to subsequent `read`, `write`, and `close` calls.
+- **Parallel I/O:** You can open multiple files at once. Each operation targets a specific file via its descriptor, allowing independent operations on multiple files.
+- **Lifetime:** The file descriptor remains valid until explicitly closed via `syscall_close`. After closing, further operations on that descriptor are invalid.
+- **Error Handling:** `status` is `0` or positive on success and negative on error.
 
 ### Example Usage
 
 ```firescript
 directive enable_syscalls;
 
-// Open two files for parallel access
-int fd1 = syscall_open("output1.txt", "w");
-int fd2 = syscall_open("output2.txt", "w");
+SyscallResult open1 = syscall_open("output1.txt", "w");
+SyscallResult open2 = syscall_open("output2.txt", "w");
 
-if fd1 >= 0 and fd2 >= 0 {
-    // Write to both files independently
-    syscall_write(fd1, "foo", 3);
-    syscall_write(fd2, "bar", 3);
+if open1.status >= 0 and open2.status >= 0 {
+    syscall_write(open1.status, "foo");
+    syscall_write(open2.status, "bar");
 
-    syscall_close(fd1);
-    syscall_close(fd2);
+    syscall_close(open1.status);
+    syscall_close(open2.status);
+}
+
+SyscallResult r = syscall_read(open1.status, 64);
+if r.status >= 0 {
+    // r.data contains the bytes read
 }
 ```
 
 ### Notes
 
-- Syscalls are low-level; errors are returned as negative numbers where applicable.
-- Buffer types and argument conventions are subject to firescript's standard library conventions.
+- Syscalls are low-level and intended to be wrapped by higher-level standard library functions (e.g. `std.io`). Avoid using them directly in user code.
+- `syscall_open` returns the file descriptor in `status`, not in `data`, to keep the integer value directly usable.

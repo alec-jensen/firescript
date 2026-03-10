@@ -4,6 +4,9 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 
 ## Currently in development
 
+### New Language Features
+- Added `syscall_*` intrinsics behind `directive enable_syscalls`. Implemented: `syscall_open`, `syscall_read`, `syscall_write`, `syscall_close`. All return a `SyscallResult` copyable class (`status: int32`, `data: string`). Intended for standard library use only.
+
 ### Breaking Changes
 - Removed built-in `input()` function. User input functionality should be implemented via the standard library or external libraries.
 
