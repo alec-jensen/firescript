@@ -886,6 +886,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#new-language-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New Language Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#breaking-changes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -936,7 +947,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#new-language-features" class="md-nav__link">
+  <a href="#new-language-features_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         New Language Features
@@ -1203,6 +1214,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#new-language-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New Language Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#breaking-changes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1253,7 +1275,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#new-language-features" class="md-nav__link">
+  <a href="#new-language-features_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         New Language Features
@@ -1482,6 +1504,10 @@
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
 <p>firescript follows <a href="https://semver.org/">Semantic Versioning</a>. This makes it easier to understand the impact of changes in each release.</p>
 <h2 id="currently-in-development">Currently in development<a class="headerlink" href="#currently-in-development" title="Permanent link">&para;</a></h2>
+<h3 id="new-language-features">New Language Features<a class="headerlink" href="#new-language-features" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added <code>syscall_*</code> intrinsics behind <code>directive enable_syscalls</code>. Implemented: <code>syscall_open</code>, <code>syscall_read</code>, <code>syscall_write</code>, <code>syscall_close</code>. All return a <code>SyscallResult</code> copyable class (<code>status: int32</code>, <code>data: string</code>). Intended for standard library use only.</li>
+</ul>
 <h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Removed built-in <code>input()</code> function. User input functionality should be implemented via the standard library or external libraries.</li>
@@ -1514,7 +1540,7 @@
 <li>Arrays are now fixed-size. Future dynamic arrays will be in the standard library.</li>
 <li>Beginning of memory management implementation. See <a href="docs/memory_management.md">Memory Management</a> for details.</li>
 </ul>
-<h3 id="new-language-features">New Language Features<a class="headerlink" href="#new-language-features" title="Permanent link">&para;</a></h3>
+<h3 id="new-language-features_1">New Language Features<a class="headerlink" href="#new-language-features_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Fixed-width numeric types across the board:<ul>
 <li>Integers: <code>int8</code>, <code>int16</code>, <code>int32</code>, <code>int64</code>, <code>uint8</code>, <code>uint16</code>, <code>uint32</code>, <code>uint64</code>.</li>

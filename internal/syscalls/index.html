@@ -882,6 +882,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#return-type-syscallresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Return Type: SyscallResult
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#available-syscalls" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -893,15 +904,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#how-file-and-descriptor-objects-work" class="md-nav__link">
+  <a href="#how-file-descriptors-work" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How File and Descriptor Objects Work
+        How File Descriptors Work
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="How File and Descriptor Objects Work">
+    <nav class="md-nav" aria-label="How File Descriptors Work">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -968,98 +979,136 @@
 <p>Syscalls are only intended to be used in the standard library. When we need them in the standard library, you add this directive at the top of the file:</p>
 <pre><code class="language-firescript">directive enable_syscalls;
 </code></pre>
+<h2 id="return-type-syscallresult">Return Type: <code>SyscallResult</code><a class="headerlink" href="#return-type-syscallresult" title="Permanent link">&para;</a></h2>
+<p>All syscalls return a <code>SyscallResult</code> copyable class defined in the standard library:</p>
+<pre><code class="language-firescript">copyable class SyscallResult {
+    int32 status;
+    string data;
+}
+</code></pre>
+<ul>
+<li><code>status</code> — An integer status code. <code>0</code> or a positive value (e.g. bytes read/written) indicates success. A negative value indicates an error.</li>
+<li><code>data</code> — A string containing any output produced by the syscall (e.g. bytes read, environment variable value). <strong>Not guaranteed to have a meaningful value</strong> — for syscalls that do not produce output (e.g. <code>syscall_write</code>, <code>syscall_close</code>), <code>data</code> will be an empty string.</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> A tuple return type would be more natural here, but tuples are not yet implemented in firescript. <code>SyscallResult</code> serves as the interim solution.</p>
+</blockquote>
 <h2 id="available-syscalls">Available Syscalls<a class="headerlink" href="#available-syscalls" title="Permanent link">&para;</a></h2>
-<p>Enabling syscalls gives you access to the following functions:</p>
+<p>Enabling syscalls gives you access to the following functions. Only the basic I/O syscalls are currently implemented; the remaining ones are planned.</p>
 <table>
 <thead>
 <tr>
 <th>Syscall</th>
 <th>Description</th>
+<th><code>status</code></th>
+<th><code>data</code></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>syscall_open(path, mode)</td>
-<td>Opens a file at <code>path</code> with the given <code>mode</code> ("r", "w", "a", etc.). Returns a file descriptor or file object referencing the open file.</td>
+<td><code>syscall_open(path, mode)</code></td>
+<td>Opens the file at <code>path</code> with the given <code>mode</code> (<code>"r"</code>, <code>"w"</code>, <code>"a"</code>, etc.). Returns a file descriptor.</td>
+<td>fd (≥ 0) or negative error code</td>
+<td>empty</td>
 </tr>
 <tr>
-<td>syscall_read(fd, buf, n)</td>
-<td>Reads up to <code>n</code> bytes from file descriptor or file object <code>fd</code> into buffer <code>buf</code>. Returns number of bytes read or error code.</td>
+<td><code>syscall_read(fd, n)</code></td>
+<td>Reads up to <code>n</code> bytes from file descriptor <code>fd</code>.</td>
+<td>bytes read or negative error code</td>
+<td>the bytes read as a string</td>
 </tr>
 <tr>
-<td>syscall_write(fd, buf, n)</td>
-<td>Writes up to <code>n</code> bytes from buffer <code>buf</code> to file descriptor or file object <code>fd</code>. Returns number of bytes written or error code.</td>
+<td><code>syscall_write(fd, buf)</code></td>
+<td>Writes string <code>buf</code> to file descriptor <code>fd</code>.</td>
+<td>bytes written or negative error code</td>
+<td>empty</td>
 </tr>
 <tr>
-<td>syscall_close(fd)</td>
-<td>Closes file descriptor or file object <code>fd</code>. Returns 0 on success or error code.</td>
+<td><code>syscall_close(fd)</code></td>
+<td>Closes file descriptor <code>fd</code>.</td>
+<td>0 on success or negative error code</td>
+<td>empty</td>
 </tr>
 <tr>
-<td>syscall_remove(path)</td>
-<td>Removes (deletes) the file at the given <code>path</code>.</td>
+<td><code>syscall_remove(path)</code></td>
+<td><em>(planned)</em> Removes the file at <code>path</code>.</td>
+<td>0 on success or negative error code</td>
+<td>empty</td>
 </tr>
 <tr>
-<td>syscall_rename(old, new)</td>
-<td>Renames file <code>old</code> to <code>new</code>.</td>
+<td><code>syscall_rename(old, new)</code></td>
+<td><em>(planned)</em> Renames file <code>old</code> to <code>new</code>.</td>
+<td>0 on success or negative error code</td>
+<td>empty</td>
 </tr>
 <tr>
-<td>syscall_stat(path, stat)</td>
-<td>Gets metadata for file at <code>path</code> into <code>stat</code> struct.</td>
+<td><code>syscall_exec(cmd, args)</code></td>
+<td><em>(planned)</em> Executes command <code>cmd</code> with <code>string[]</code> arguments <code>args</code>.</td>
+<td>exit code or negative error code</td>
+<td>empty</td>
 </tr>
 <tr>
-<td>syscall_exec(cmd, args)</td>
-<td>Executes shell command <code>cmd</code> with arguments <code>args</code>.</td>
+<td><code>syscall_getenv(name)</code></td>
+<td><em>(planned)</em> Gets the value of environment variable <code>name</code>.</td>
+<td>0 on success or negative error code</td>
+<td>the variable's value</td>
 </tr>
 <tr>
-<td>syscall_getenv(name, buf)</td>
-<td>Gets the value of the environment variable <code>name</code> into <code>buf</code>.</td>
+<td><code>syscall_system(cmd)</code></td>
+<td><em>(planned)</em> Executes shell command <code>cmd</code> via the system shell.</td>
+<td>exit code or negative error code</td>
+<td>empty</td>
 </tr>
 <tr>
-<td>syscall_system(cmd)</td>
-<td>Executes shell command <code>cmd</code> via the system shell.</td>
+<td><code>syscall_exit(code)</code></td>
+<td><em>(planned)</em> Exits the process with exit code <code>code</code>.</td>
+<td>does not return</td>
+<td>does not return</td>
 </tr>
 <tr>
-<td>syscall_exit(code)</td>
-<td>Exits the process with exit code <code>code</code>.</td>
+<td><code>syscall_time()</code></td>
+<td><em>(planned)</em> Returns the current system time as seconds since the Unix epoch.</td>
+<td>seconds since epoch</td>
+<td>empty</td>
 </tr>
 <tr>
-<td>syscall_time()</td>
-<td>Returns the current system time (seconds since epoch).</td>
-</tr>
-<tr>
-<td>syscall_sleep(ms)</td>
-<td>Sleeps for <code>ms</code> milliseconds.</td>
+<td><code>syscall_sleep(ms)</code></td>
+<td><em>(planned)</em> Sleeps for <code>ms</code> milliseconds.</td>
+<td>0 on success or negative error code</td>
+<td>empty</td>
 </tr>
 </tbody>
 </table>
-<h2 id="how-file-and-descriptor-objects-work">How File and Descriptor Objects Work<a class="headerlink" href="#how-file-and-descriptor-objects-work" title="Permanent link">&para;</a></h2>
+<h2 id="how-file-descriptors-work">How File Descriptors Work<a class="headerlink" href="#how-file-descriptors-work" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>File handles/descriptors are returned by <code>syscall_open</code> and uniquely identify an open file.</strong></li>
-<li><strong>Parallel I/O:</strong> You can open multiple files at once. Each operation (<code>read</code>, <code>write</code>, <code>close</code>) targets a specific file via its descriptor/object, allowing independent and parallel operations on multiple files.</li>
-<li><strong>Lifetime:</strong> The file descriptor/object remains valid until explicitly closed via <code>syscall_close</code>. After closing, further operations on that handle are invalid.</li>
-<li><strong>Threading/Concurrency:</strong> If the firescript runtime or standard library supports threading, syscalls are designed so that concurrent threads can operate on different file descriptors in parallel, with OS-level guarantees of isolation and safety.</li>
-<li><strong>Error Handling:</strong> Functions typically return 0 or a positive value on success, and a negative error code on failure (e.g., invalid descriptor, permission denied).</li>
+<li><strong>File descriptors are integers returned in <code>status</code> by <code>syscall_open</code>.</strong> Pass them to subsequent <code>read</code>, <code>write</code>, and <code>close</code> calls.</li>
+<li><strong>Parallel I/O:</strong> You can open multiple files at once. Each operation targets a specific file via its descriptor, allowing independent operations on multiple files.</li>
+<li><strong>Lifetime:</strong> The file descriptor remains valid until explicitly closed via <code>syscall_close</code>. After closing, further operations on that descriptor are invalid.</li>
+<li><strong>Error Handling:</strong> <code>status</code> is <code>0</code> or positive on success and negative on error.</li>
 </ul>
 <h3 id="example-usage">Example Usage<a class="headerlink" href="#example-usage" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">directive enable_syscalls;
 
-// Open two files for parallel access
-int fd1 = syscall_open(&quot;output1.txt&quot;, &quot;w&quot;);
-int fd2 = syscall_open(&quot;output2.txt&quot;, &quot;w&quot;);
+SyscallResult open1 = syscall_open(&quot;output1.txt&quot;, &quot;w&quot;);
+SyscallResult open2 = syscall_open(&quot;output2.txt&quot;, &quot;w&quot;);
 
-if fd1 &gt;= 0 and fd2 &gt;= 0 {
-    // Write to both files independently
-    syscall_write(fd1, &quot;foo&quot;, 3);
-    syscall_write(fd2, &quot;bar&quot;, 3);
+if open1.status &gt;= 0 and open2.status &gt;= 0 {
+    syscall_write(open1.status, &quot;foo&quot;);
+    syscall_write(open2.status, &quot;bar&quot;);
 
-    syscall_close(fd1);
-    syscall_close(fd2);
+    syscall_close(open1.status);
+    syscall_close(open2.status);
+}
+
+SyscallResult r = syscall_read(open1.status, 64);
+if r.status &gt;= 0 {
+    // r.data contains the bytes read
 }
 </code></pre>
 <h3 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Syscalls are low-level; errors are returned as negative numbers where applicable.</li>
-<li>Buffer types and argument conventions are subject to firescript's standard library conventions.</li>
+<li>Syscalls are low-level and intended to be wrapped by higher-level standard library functions (e.g. <code>std.io</code>). Avoid using them directly in user code.</li>
+<li><code>syscall_open</code> returns the file descriptor in <code>status</code>, not in <code>data</code>, to keep the integer value directly usable.</li>
 </ul>
 
 
