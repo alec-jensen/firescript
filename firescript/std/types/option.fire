@@ -1,0 +1,31 @@
+class Option<nullable T> {
+    nullable T value;
+
+    Option(nullable T value) {
+        this.value = value;
+    }
+
+    bool isSome() {
+        return this.value != null;
+    }
+
+    bool isNone() {
+        return this.value == null;
+    }
+}
+
+copyable class CopyableOption<nullable T> {
+    nullable T value;
+
+    CopyableOption(nullable T value) {
+        this.value = value;
+    }
+
+    bool isSome() {
+        return this.value != null;
+    }
+
+    bool isNone() {
+        return this.value == null;
+    }
+}

@@ -15,6 +15,7 @@ Path\to\file
 --- String Comparison ---
 true
 false
+false
 --- String with Numbers ---
 12345
 --- Unicode Characters ---

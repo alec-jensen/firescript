@@ -1,0 +1,38 @@
+// Tests for nullable variables
+import @firescript/std.io.{println};
+
+println("=== Nullable Variables ===");
+
+// Nullable string initialized to null
+nullable string a = null;
+if (a == null) {
+    println("a is null");
+} else {
+    println("a is not null");
+}
+
+// Nullable string initialized to a value
+nullable string b = "hello";
+if (b != null) {
+    println(b);
+} else {
+    println("b is null");
+}
+
+// Nullable string reassigned from null to a value
+nullable string c = null;
+c = "world";
+if (c != null) {
+    println(c);
+} else {
+    println("c is null");
+}
+
+// Nullable string reassigned from value to null
+nullable string d = "foo";
+d = null;
+if (d == null) {
+    println("d is null");
+} else {
+    println("d is not null");
+}

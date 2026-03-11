@@ -20,8 +20,6 @@ copyable class SyscallResult {
 - `status` — An integer status code. `0` or a positive value (e.g. bytes read/written) indicates success. A negative value indicates an error.
 - `data` — A string containing any output produced by the syscall (e.g. bytes read, environment variable value). **Not guaranteed to have a meaningful value** — for syscalls that do not produce output (e.g. `syscall_write`, `syscall_close`), `data` will be an empty string.
 
-> **Note:** A tuple return type would be more natural here, but tuples are not yet implemented in firescript. `SyscallResult` serves as the interim solution.
-
 ## Available Syscalls
 
 Enabling syscalls gives you access to the following functions. Only the basic I/O syscalls are currently implemented; the remaining ones are planned.

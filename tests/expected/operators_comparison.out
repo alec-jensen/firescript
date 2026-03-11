@@ -6,6 +6,9 @@ true
 false
 true
 false
+--- Inequality (!=) ---
+false
+true
 --- Less Than (<) ---
 true
 false
@@ -33,6 +36,7 @@ true
 true
 false
 --- Different Numeric Types ---
+true
 true
 true
 true

@@ -90,7 +90,8 @@ string spaces = "   ";
 // Comparison edge cases
 println("--- Comparison Edge Cases ---");
 println(0 == 0);
-// println(0 != 0);  // != not implemented
+println(0 != 0);  // false
+println(1 != 0);  // true
 println(1 > 0);
 println(0 > 0);
 println(0 >= 0);

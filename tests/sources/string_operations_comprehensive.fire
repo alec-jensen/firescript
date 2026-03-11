@@ -42,7 +42,7 @@ string b = "apple";
 string c = "banana";
 println(a == b);  // true
 println(a == c);  // false
-// println(a != c);  // != not yet implemented
+println(a != c);  // true
 
 // String length method not yet implemented
 // println("--- String Length ---");

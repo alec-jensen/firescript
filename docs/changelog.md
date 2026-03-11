@@ -6,7 +6,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 
 ### New Language Features
 - Added generic classes with multiple type parameters. Syntax: `class Pair<T, U> { T first; U second; ... }`. Monomorphization is performed automatically at each use site (e.g., `Pair<int32, string> p = Pair<int32, string>(1, "a");`). Both `copyable` and owned (heap-allocated) generic classes are supported.
-- Implemented `Tuple2<T, U>` in `firescript/std/types/tuple.fire` using the new generic class infrastructure.
+- Implemented `Tuple<T, U>` and `CopyableTuple<T, U>` in `firescript/std/types/tuple.fire` using the new generic class infrastructure. Tuples are no longer a built-in language feature; they are provided by the standard library.
 - Added `syscall_*` intrinsics behind `directive enable_syscalls`. Implemented: `syscall_open`, `syscall_read`, `syscall_write`, `syscall_close`. All return a `SyscallResult` copyable class (`status: int32`, `data: string`). Intended for standard library use only.
 
 ### Breaking Changes

@@ -24,10 +24,10 @@ bool f1 = false;
 println(t1 == t2);  // true
 println(t1 == f1);  // false
 
-// Inequality (!= operator not yet implemented)
-// println("--- Inequality (!=) ---");
-// println(a != b);  // false
-// println(a != c);  // true
+// Inequality
+println("--- Inequality (!=) ---");
+println(a != b);  // false
+println(a != c);  // true
 
 // Less than
 println("--- Less Than (<) ---");
@@ -84,7 +84,7 @@ println(i64a <= 100i64);  // true
 uint32 u32a = 50u32;
 uint32 u32b = 30u32;
 println(u32a > u32b);  // true
-// println(u32a != u32b);  // != not implemented
+println(u32a != u32b);  // true
 
 float64 d1 = 3.14;
 float64 d2 = 2.71;

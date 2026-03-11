@@ -56,7 +56,6 @@ class Lexer:
         "FLOAT128": r"float128\b",
         "BOOL": r"bool\b",
         "STRING": r"string\b",
-        "TUPLE": r"tuple\b",
         "VOID": r"void\b",
     }
 

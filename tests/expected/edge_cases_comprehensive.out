@@ -37,6 +37,8 @@ false
 a
 --- Comparison Edge Cases ---
 true
+false
+true
 true
 false
 true

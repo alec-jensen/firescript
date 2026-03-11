@@ -1,0 +1,14 @@
+[    INFO] --- Starting compilation of tests/sources/invalid/nullable_errors.fire...
+[   ERROR] --- Cannot initialize non-nullable variable 'a' with null
+> int32 a = null; // error
+       ^
+(tests\sources\invalid\nullable_errors.fire:5:6)
+[   ERROR] --- Cannot initialize non-nullable variable 'b' with null
+> string b = null; // error
+        ^
+(tests\sources\invalid\nullable_errors.fire:8:7)
+[   ERROR] --- Cannot assign null to non-nullable variable 'c'
+> c = null; // error
+ ^
+(tests\sources\invalid\nullable_errors.fire:12:0)
+[   ERROR] --- Parsing failed with 3 errors

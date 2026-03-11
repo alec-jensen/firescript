@@ -475,17 +475,6 @@ The following standard library types are planned but not yet implemented:
 
 The following advanced type features are planned but not yet implemented:
 
-### Tuples
-
-Tuples will allow grouping of values with different types. They will be immutable and can be accessed by index:
-
-```firescript
-// Future syntax
-tuple<int8, string> person = (30, "John");
-int8 age = person[0];  // 30
-string name = person[1];  // "John"
-```
-
 ### Generics
 
 Generics allow you to write flexible, reusable code that works with multiple types while maintaining type safety. Instead of writing separate functions for each type, you write one generic function that works with any compatible type.
@@ -1509,7 +1498,6 @@ Not yet implemented:
 
 * ❌ Type inference on variable declarations
 * ❌ Type introspection with `typeof`
-* ❌ Tuples
 * ❌ Interfaces (syntax and semantics documented, implementation pending)
   * ❌ Interface definitions (`interface Name { }`)
   * ❌ Interface inheritance (`interface Child from Parent { }`)

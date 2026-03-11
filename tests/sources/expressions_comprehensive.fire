@@ -40,7 +40,9 @@ println(3 > 5);
 println(5 >= 5);
 println(4 <= 10);
 println(7 == 7);
-println(7 == 8);  // false (== works, != not implemented)
+println(7 == 8);  // false
+println(7 != 8);  // true
+println(7 != 7);  // false
 
 // Logical expressions (&&, ||, !) not yet implemented
 // println("--- Logical Expressions ---");

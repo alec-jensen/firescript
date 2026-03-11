@@ -26,7 +26,6 @@ FIRETYPE_TO_C: dict[str, str] = {
     # others
     "bool": "bool",
     "string": "char*",
-    "tuple": "struct tuple",
 }
 
 
@@ -81,6 +80,8 @@ class CCodeGenerator:
         
         # Collect class names and metadata for constructors and methods
         self.class_names: set[str] = set()
+        # Maps firescript class name -> mangled C struct name (e.g. "MyClass" -> "MyClass_0")
+        self.class_name_map: dict[str, str] = {}
         self.class_fields: dict[str, list[tuple[str, str]]] = {}
         self.class_methods: dict[str, list[ASTNode]] = {}
         for c in (self.ast.children or []):
@@ -89,6 +90,10 @@ class CCodeGenerator:
                 if getattr(c, 'type_params', []):
                     continue
                 self.class_names.add(c.name)
+                # Register mangled C identifier for this class
+                mangled_c = f"{c.name}_{self.name_counter}"
+                self.name_counter += 1
+                self.class_name_map[c.name] = mangled_c
                 # Register class with type_utils
                 is_copyable_class = getattr(c, "is_copyable", False)
                 register_class(c.name, is_copyable_class)
@@ -247,6 +252,12 @@ class CCodeGenerator:
         self.name_scope_stack[-1][name] = mangled
         return mangled
     
+    def _get_c_class_name(self, fs_name: str) -> str:
+        """Return the C-safe mangled struct name for a firescript class."""
+        if "<" in fs_name:
+            return self._mangle_class_composite_name(fs_name)
+        return self.class_name_map.get(fs_name, fs_name)
+
     def _mangle_generic_name(self, func_name: str, type_args: tuple[str, ...]) -> str:
         """Generate a mangled name for a monomorphized generic function."""
         # Simple mangling: func_name$type1$type2$...
@@ -364,6 +375,34 @@ class CCodeGenerator:
                         if type_map_ctx and field_type in type_map_ctx:
                             field_type = type_map_ctx[field_type]
                         arg_types.append(field_type)
+                    else:
+                        return None
+                elif arg.node_type == NodeTypes.METHOD_CALL:
+                    # Look up return type from registered class methods (handles deferred
+                    # generic composite types like Option<string>.isSome())
+                    method_ret = getattr(arg, 'return_type', None)
+                    if method_ret is None:
+                        method_name_lookup = arg.name
+                        obj_recv = arg.children[0] if arg.children else None
+                        recv_type = None
+                        if obj_recv is not None:
+                            if obj_recv.node_type == NodeTypes.IDENTIFIER:
+                                sym = self.symbol_table.get(obj_recv.name)
+                                if sym:
+                                    recv_type = sym[0]
+                            if recv_type is None:
+                                recv_type = getattr(obj_recv, 'return_type', None) or getattr(obj_recv, 'var_type', None)
+                        if recv_type:
+                            for m in self.class_methods.get(recv_type, []):
+                                if m.name == method_name_lookup and not getattr(m, 'is_constructor', False):
+                                    method_ret = m.return_type
+                                    arg.return_type = method_ret  # cache for later
+                                    break
+                    if method_ret:
+                        type_map_ctx = getattr(self, '_current_type_map', {})
+                        if type_map_ctx and method_ret in type_map_ctx:
+                            method_ret = type_map_ctx[method_ret]
+                        arg_types.append(method_ret)
                     else:
                         return None
                 else:
@@ -730,10 +769,11 @@ class CCodeGenerator:
             if t in self.class_names and is_owned(t, False):
                 return f"{c_name}*"
             return c_name
-        # Check if this is an owned (non-copyable) class
+        # Check if this is a user-defined class
         if t in self.class_names and is_owned(t, False):
-            # Owned classes are heap-allocated and use pointers
-            return f"{t}*"
+            return f"{self._get_c_class_name(t)}*"
+        if t in self.class_names:
+            return self._get_c_class_name(t)
         return FIRETYPE_TO_C.get(t, t)
 
     def _normalize_integer_literal(self, s: str) -> str:
@@ -818,12 +858,16 @@ class CCodeGenerator:
         return f'"{"".join(result)}"'
 
     def _mangle_class_composite_name(self, composite: str) -> str:
-        """Convert a composite generic class name like 'Pair<int32, string>' into a C-safe identifier."""
-        # Pair<int32, string> -> Pair__int32__string
+        """Convert 'Pair<int32, string>' into 'Pair_N__int32__string' (base class name mangled)."""
         import re
-        # Remove angle brackets and commas, replace with __
-        safe = re.sub(r'[<> ,]+', '__', composite).strip('_')
-        return safe
+        bracket = composite.index("<")
+        base = composite[:bracket]
+        rest = composite[bracket:]  # "<int32, string>"
+        # Mangle the base class name if registered
+        mangled_base = self.class_name_map.get(base, base)
+        # Convert type args portion to C-safe suffix
+        safe_rest = re.sub(r'[<> ,]+', '__', rest).strip('_')
+        return f"{mangled_base}__{safe_rest}"
 
     def _register_mono_class(self, composite: str, template_name: str, type_args: list[str]) -> None:
         """Register a monomorphized generic class instance so it gets typedef+method emission."""
@@ -867,6 +911,12 @@ class CCodeGenerator:
             for ch in dm.children:
                 if ch.node_type == NodeTypes.PARAMETER:
                     ch.var_type = substitute(ch.var_type or "int32")
+                    # The synthetic 'this' receiver has var_type equal to the template class
+                    # name which is not a type parameter itself, so substitute() leaves it
+                    # unchanged.  Replace it with the composite name so the emitted C
+                    # signature uses the correct monomorphized struct type.
+                    if ch.name == "this" and ch.var_type == template_name:
+                        ch.var_type = composite
             # Substitute return type (constructors use the template name as return type;
             # replace it with the composite name so codegen emits the right C struct type)
             if dm.return_type:
@@ -909,12 +959,13 @@ class CCodeGenerator:
 
     def _emit_class_typedef(self, node: ASTNode) -> str:
         """Emit a C typedef struct for a class definition."""
-        lines = [f"typedef struct {node.name} {{"]
+        c_name = self._get_c_class_name(node.name)
+        lines = [f"typedef struct {c_name} {{"]
         for field in node.children:
             if field.node_type == NodeTypes.CLASS_FIELD:
                 ctype = self._map_type_to_c(field.var_type or "int32")
                 lines.append(f"    {ctype} {field.name};")
-        lines.append(f"}} {node.name};")
+        lines.append(f"}} {c_name};")
         return "\n".join(lines)
 
     def _emit_method_definition(self, class_name: str, node: ASTNode) -> str:
@@ -976,8 +1027,7 @@ class CCodeGenerator:
         if is_constructor:
             # Check if this is an owned (non-copyable) class
             class_is_owned = is_owned(class_name, False)
-            # Get C-safe struct name (composite classes have angle brackets in their name)
-            c_class_name = self._mangle_class_composite_name(class_name) if "<" in class_name else class_name
+            c_class_name = self._get_c_class_name(class_name)
 
             if class_is_owned:
                 # Owned classes: allocate on heap with malloc, return pointer
@@ -1040,8 +1090,7 @@ class CCodeGenerator:
         # Pop the name scope for this method
         self.name_scope_stack.pop()
 
-        # Use C-safe name for composite generic class types
-        c_class_name = self._mangle_class_composite_name(class_name) if "<" in class_name else class_name
+        c_class_name = self._get_c_class_name(class_name)
         mname = node.name
         return f"{ret_c} {c_class_name}_{mname}({params_sig}) {body_code}"
 
@@ -1475,8 +1524,9 @@ class CCodeGenerator:
                 or getattr(object_node, "return_type", None)
             )
             if obj_type in self.class_names:
+                c_obj_type = self._get_c_class_name(obj_type)
                 args_code = [self._visit(child) for child in node.children[1:]]
-                return f"{obj_type}_{method_name}({object_code}{(', ' + ', '.join(args_code)) if args_code else ''})"
+                return f"{c_obj_type}_{method_name}({object_code}{(', ' + ', '.join(args_code)) if args_code else ''})"
             # Fallback (shouldn't happen if type checking is correct)
             args_code = [self._visit(child) for child in node.children[1:]]
             return f"{object_code}.{method_name}({', '.join(args_code)})"
@@ -1581,8 +1631,7 @@ class CCodeGenerator:
                 for (fname, _ftype), val in zip(fields, args):
                     inits.append(f".{fname} = {val}")
                 init_str = ", ".join(inits)
-                # Get C-safe struct name (composite classes have angle brackets in their name)
-                c_class_name = self._mangle_class_composite_name(node.name) if "<" in node.name else node.name
+                c_class_name = self._get_c_class_name(node.name)
 
                 # Check if this is an owned (non-copyable) class
                 if is_owned(node.name, False):
@@ -1706,16 +1755,17 @@ class CCodeGenerator:
         elif node.node_type == NodeTypes.TYPE_METHOD_CALL:
             # Dispatch to generated constructor/static function: Class_method(args)
             class_name = getattr(node, "class_name", "")
+            c_class_name_tmc = self._get_c_class_name(class_name) if class_name else class_name
             args = ", ".join(self._visit(arg) for arg in node.children)
-            return f"{class_name}_{node.name}({args})"
+            return f"{c_class_name_tmc}_{node.name}({args})"
         elif node.node_type == NodeTypes.CONSTRUCTOR_CALL:
-            # new Class(args) -> call generated function Class_Class(args)
+            # new Class(args) -> call generated function C_Class(args)
+            # Constructor is defined as {mangled_class}_{original_class}(...)
             args = [self._visit(arg) for arg in node.children]
             cname = node.name
-            # Use C-safe name for composite generic class types like "Pair<int32, string>"
-            c_cname = self._mangle_class_composite_name(cname) if "<" in cname else cname
+            c_cname = self._get_c_class_name(cname)
             arglist = ", ".join(args)
-            return f"{c_cname}_{c_cname}({arglist})"
+            return f"{c_cname}_{cname}({arglist})"
         elif node.node_type == NodeTypes.SUPER_CALL:
             super_class = getattr(node, "super_class", None)
             if not super_class:
@@ -1726,7 +1776,9 @@ class CCodeGenerator:
             tmp = f"__super_tmp_{self.array_temp_counter}"
             self.array_temp_counter += 1
             fields = self.class_fields.get(super_class, [])
-            call = f"{super_class}_{super_class}({', '.join(args_code)})"
+            c_super_class = self._get_c_class_name(super_class)
+            call = f"{c_super_class}_{super_class}({', '.join(args_code)})"
+            # Super constructor is defined as {mangled_class}_{original_class}(...)
             lines: list[str] = []
             
             # Check if parent class is owned (returns pointer) or copyable (returns value)
@@ -1734,7 +1786,7 @@ class CCodeGenerator:
             
             if parent_is_owned:
                 # Parent constructor returns a pointer - dereference to copy fields
-                lines.append(f"{super_class}* {tmp} = {call};")
+                lines.append(f"{c_super_class}* {tmp} = {call};")
                 for fname, _ftype in fields:
                     # this is also a pointer for owned classes, use ->
                     lines.append(f"this->{fname} = {tmp}->{fname};")
@@ -1742,7 +1794,7 @@ class CCodeGenerator:
                 lines.append(f"firescript_free({tmp});")
             else:
                 # Parent constructor returns a value - copy directly
-                lines.append(f"{super_class} {tmp} = {call};")
+                lines.append(f"{c_super_class} {tmp} = {call};")
                 for fname, _ftype in fields:
                     # this is a value for copyable classes, use .
                     lines.append(f"this.{fname} = {tmp}.{fname};")
@@ -1794,7 +1846,19 @@ class CCodeGenerator:
                 op = node.name
                 return f"({left} {op} {right})"
 
-            # String comparison unchanged
+            # Null pointer comparison - skip strcmp when either side is null
+            is_right_null = rightNode.return_type == "null" or (
+                rightNode.token and rightNode.token.type == "NULL_LITERAL"
+            )
+            is_left_null = leftNode.return_type == "null" or (
+                leftNode.token and leftNode.token.type == "NULL_LITERAL"
+            )
+            if is_left_null or is_right_null:
+                op = node.name
+                node.return_type = "bool"
+                return f"({left} {op} {right})"
+
+            # String comparison
             if (
                 leftNode.token
                 and leftNode.token.type == "STRING_LITERAL"

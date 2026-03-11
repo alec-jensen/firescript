@@ -103,7 +103,7 @@ class Parser:
         "INT8", "INT16", "INT32", "INT64",
         "UINT8", "UINT16", "UINT32", "UINT64",
         "FLOAT32", "FLOAT64", "FLOAT128",
-        "BOOL", "STRING", "TUPLE", "VOID",
+        "BOOL", "STRING", "VOID",
     }
 
     # No legacy type aliases: require explicit widths like 'float32' and 'float64'.
@@ -418,9 +418,10 @@ class Parser:
         if node is None:  # If LHS is not parsable
             return None
 
-        # Handle ==, >, <, >=, <=
+        # Handle ==, !=, >, <, >=, <=
         while self.current_token and self.current_token.type in (
             "EQUALS",
+            "NOT_EQUALS",
             "GREATER_THAN",
             "LESS_THAN",
             "GREATER_THAN_OR_EQUAL",
@@ -434,7 +435,7 @@ class Parser:
                 return None  # Propagate failure.
 
             # Both node and right are valid ASTNodes here.
-            if op_token.type == "EQUALS":
+            if op_token.type in ("EQUALS", "NOT_EQUALS"):
                 node = ASTNode(
                     NodeTypes.EQUALITY_EXPRESSION,
                     op_token,
@@ -1797,7 +1798,7 @@ class Parser:
                         node.token,
                     )
             # Add variable to symbol table for current scope (if not already done by resolve)
-            symbol_table[node.name] = (node.var_type, node.is_array)
+            symbol_table[node.name] = (node.var_type, node.is_array, node.is_nullable)
 
         elif node.node_type == NodeTypes.VARIABLE_ASSIGNMENT:
             var_info = symbol_table.get(node.name)
@@ -1808,17 +1809,21 @@ class Parser:
                     # assigned_type may be 'Type[]'; identify array-ness
                     is_arr = assigned_type.endswith("[]")
                     base_t = assigned_type[:-2] if is_arr else assigned_type
-                    symbol_table[node.name] = (base_t, is_arr)
+                    symbol_table[node.name] = (base_t, is_arr, False)
                 else:
                     self.error(f"Variable '{node.name}' not defined", node.token)
                     return None
             else:
-                var_type, is_array = var_info
+                var_type, is_array = var_info[0], var_info[1]
+                is_nullable = var_info[2] if len(var_info) > 2 else False
                 expected_type = f"{var_type}[]" if is_array else var_type
                 if assigned_type:
                     if assigned_type == "null":
-                        # TODO: enforce nullability on existing variable types
-                        pass
+                        if not is_nullable:
+                            self.error(
+                                f"Cannot assign null to non-nullable variable '{node.name}'",
+                                node.token,
+                            )
                     elif expected_type != assigned_type:
                         # TODO: Implement type coercion rules
                         self.error(
@@ -1899,7 +1904,7 @@ class Parser:
                 if var_name:
                     var_info = symbol_table.get(var_name)
                     if var_info:
-                        var_type, is_array = var_info
+                        var_type, is_array = var_info[0], var_info[1]
                         # Increment/decrement only work on integer types
                         if var_type in self.INTEGER_TYPES:
                             node_type_str = var_type
@@ -2257,10 +2262,15 @@ class Parser:
                                 )
                     node.return_type = sig.get("return")
                 else:
-                    self.error(
-                        f"Methods not supported for type {object_type}",
-                        node.children[0].token,
-                    )
+                    # When imports are pending, defer method lookup for composite generic
+                    # types (e.g. Option<string>) that come from imported modules.
+                    if self.defer_undefined_identifiers and object_type and "<" in object_type:
+                        pass  # Will be resolved after import merge
+                    else:
+                        self.error(
+                            f"Methods not supported for type {object_type}",
+                            node.children[0].token,
+                        )
 
         elif node.node_type == NodeTypes.SUPER_CALL:
             enclosing_class = getattr(node, "enclosing_class", None)
@@ -3505,6 +3515,9 @@ class Parser:
         if self.current_token and self.current_token.type == "LESS_THAN":
             self.advance()  # consume <
             while True:
+                # Skip optional 'nullable' constraint annotation on type parameters
+                if self.current_token and self.current_token.type == "NULLABLE":
+                    self.advance()
                 if not (self.current_token and self.current_token.type == "IDENTIFIER"):
                     self.error("Expected type parameter name", self.current_token)
                     return None
@@ -3551,6 +3564,11 @@ class Parser:
             if self.current_token.type == "SEMICOLON":
                 self.advance()
                 continue
+            # Accept optional nullable modifier on field type or method return type
+            local_is_nullable = False
+            if self.current_token and self.current_token.type == "NULLABLE":
+                local_is_nullable = True
+                self.advance()
             # Accept types that are either known types or the current class name (for methods/fields/constructors)
             if not (self._is_type_token(self.current_token) or (
                 self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
@@ -3644,6 +3662,12 @@ class Parser:
                                 p_is_borrowed = True
                                 self.advance()
                             
+                            # Check for nullable modifier on parameter type
+                            p_is_nullable = False
+                            if self.current_token and self.current_token.type == "NULLABLE":
+                                p_is_nullable = True
+                                self.advance()
+                            
                             # Parameter type: allow known types or current class name
                             if not (self.current_token and (self._is_type_token(self.current_token) or (
                                 self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
@@ -3670,7 +3694,7 @@ class Parser:
                                 [],
                                 pname_tok.index,
                                 self._normalize_type_name(ptype_tok),
-                                False,
+                                p_is_nullable,
                                 False,
                                 None,
                                 p_is_array,
@@ -3758,6 +3782,11 @@ class Parser:
                             params.append(recv)
                             seen_receiver = True
                         else:
+                            # Check for nullable modifier on parameter type
+                            p_is_nullable = False
+                            if self.current_token and self.current_token.type == "NULLABLE":
+                                p_is_nullable = True
+                                self.advance()
                             # Parameter type: allow known types or current class name
                             if not (self.current_token and (self._is_type_token(self.current_token) or (
                                 self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
@@ -3788,7 +3817,7 @@ class Parser:
                                 [],
                                 pname_tok.index,
                                 self._normalize_type_name(ptype_tok),
-                                False,
+                                p_is_nullable,
                                 False,
                                 None,
                                 p_is_array,
@@ -3860,7 +3889,7 @@ class Parser:
                     if self.current_token and self.current_token.type == "SEMICOLON":
                         self.advance()
                 field_type = self._normalize_type_name(ftype_tok)
-                field_node = ASTNode(NodeTypes.CLASS_FIELD, name_tok2, name_tok2.value, [], name_tok2.index, var_type=field_type)
+                field_node = ASTNode(NodeTypes.CLASS_FIELD, name_tok2, name_tok2.value, [], name_tok2.index, var_type=field_type, is_nullable=local_is_nullable)
                 fields.append(field_node)
                 field_types[name_tok2.value] = field_type
         # consume closing brace if present

@@ -1,6 +1,6 @@
 # Types & Variables
 
-**Note:** Tuple types, the generic placeholder `T`, and declarations without an initializer are not supported by the compiler. Built-in Copyable types (`intN`, `floatN`, `bool`, `char`) are stack-allocated. Owned types (`string`, arrays) are heap-allocated with move semantics.
+**Note:** The generic placeholder `T` and declarations without an initializer are not supported by the compiler. Built-in Copyable types (`intN`, `floatN`, `bool`, `char`) are stack-allocated. Owned types (`string`, arrays, user-defined classes) are heap-allocated with move semantics.
 
 ## Types
 
@@ -49,7 +49,7 @@ The following words are reserved and cannot be used as identifiers:
 | Declarations | `class` `constraint` `directive` `generator` |
 | Modifiers | `const` `nullable` `copyable` `static` |
 | Other keywords | `import` `from` `as` `new` |
-| Primitive types | `int8` `int16` `int32` `int64` `uint8` `uint16` `uint32` `uint64` `float32` `float64` `float128` `bool` `string` `tuple` `void` |
+| Primitive types | `int8` `int16` `int32` `int64` `uint8` `uint16` `uint32` `uint64` `float32` `float64` `float128` `bool` `string` `void` |
 | Literals | `true` `false` `null` |
 
 ## Declaration and Initialization
@@ -109,4 +109,4 @@ if (message != null) {
 
 ## Implementation Status
 
-Variable declaration and initialization is fully supported for some built-in Copyable types. User-defined types and tuples are planned for future versions. Constants and nullability are also planned features.
+Variable declaration and initialization is fully supported for all primitive types and user-defined classes (including generic classes from the standard library such as `Tuple<T, U>`). Constants and nullability are supported.

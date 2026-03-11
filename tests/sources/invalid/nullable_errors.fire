@@ -1,0 +1,12 @@
+// Invalid tests: nullable errors
+// EXPECT: compiler errors about invalid null usage
+
+// Non-nullable variable initialized with null
+int32 a = null; // error
+
+// Non-nullable string initialized with null
+string b = null; // error
+
+// Non-nullable variable reassigned to null
+int32 c = 5;
+c = null; // error

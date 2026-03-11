@@ -63,5 +63,3 @@ while (count > 0) {
     count = count - 1;
 }
 ```
-
-For the complete language specification, see the [Language Specification](../language_specification.md) document.
