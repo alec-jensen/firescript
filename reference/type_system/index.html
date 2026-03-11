@@ -1106,17 +1106,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tuples" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tuples
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#generics" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2067,17 +2056,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tuples" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tuples
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#generics" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2821,13 +2799,6 @@ string type5 = typeof([1, 2, 3]); // &quot;int8[]&quot;
 * <strong><code>list&lt;T&gt;</code></strong>: A dynamic array type that can grow and shrink, unlike fixed-size arrays.</p>
 <h2 id="advanced-type-features-planned">Advanced Type Features (Planned)<a class="headerlink" href="#advanced-type-features-planned" title="Permanent link">&para;</a></h2>
 <p>The following advanced type features are planned but not yet implemented:</p>
-<h3 id="tuples">Tuples<a class="headerlink" href="#tuples" title="Permanent link">&para;</a></h3>
-<p>Tuples will allow grouping of values with different types. They will be immutable and can be accessed by index:</p>
-<pre><code class="language-firescript">// Future syntax
-tuple&lt;int8, string&gt; person = (30, &quot;John&quot;);
-int8 age = person[0];  // 30
-string name = person[1];  // &quot;John&quot;
-</code></pre>
 <h3 id="generics">Generics<a class="headerlink" href="#generics" title="Permanent link">&para;</a></h3>
 <p>Generics allow you to write flexible, reusable code that works with multiple types while maintaining type safety. Instead of writing separate functions for each type, you write one generic function that works with any compatible type.</p>
 <h4 id="basic-generic-functions">Basic Generic Functions<a class="headerlink" href="#basic-generic-functions" title="Permanent link">&para;</a></h4>
@@ -3712,7 +3683,6 @@ class Point {
 <ul>
 <li>❌ Type inference on variable declarations</li>
 <li>❌ Type introspection with <code>typeof</code></li>
-<li>❌ Tuples</li>
 <li>❌ Interfaces (syntax and semantics documented, implementation pending)</li>
 <li>❌ Interface definitions (<code>interface Name { }</code>)</li>
 <li>❌ Interface inheritance (<code>interface Child from Parent { }</code>)</li>

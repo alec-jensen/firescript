@@ -990,9 +990,6 @@
 <li><code>status</code> — An integer status code. <code>0</code> or a positive value (e.g. bytes read/written) indicates success. A negative value indicates an error.</li>
 <li><code>data</code> — A string containing any output produced by the syscall (e.g. bytes read, environment variable value). <strong>Not guaranteed to have a meaningful value</strong> — for syscalls that do not produce output (e.g. <code>syscall_write</code>, <code>syscall_close</code>), <code>data</code> will be an empty string.</li>
 </ul>
-<blockquote>
-<p><strong>Note:</strong> A tuple return type would be more natural here, but tuples are not yet implemented in firescript. <code>SyscallResult</code> serves as the interim solution.</p>
-</blockquote>
 <h2 id="available-syscalls">Available Syscalls<a class="headerlink" href="#available-syscalls" title="Permanent link">&para;</a></h2>
 <p>Enabling syscalls gives you access to the following functions. Only the basic I/O syscalls are currently implemented; the remaining ones are planned.</p>
 <table>

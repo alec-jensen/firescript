@@ -1257,7 +1257,7 @@
 
 
 <h1 id="types-variables">Types &amp; Variables<a class="headerlink" href="#types-variables" title="Permanent link">&para;</a></h1>
-<p><strong>Note:</strong> Tuple types, the generic placeholder <code>T</code>, and declarations without an initializer are not supported by the compiler. Built-in Copyable types (<code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>) are stack-allocated. Owned types (<code>string</code>, arrays) are heap-allocated with move semantics.</p>
+<p><strong>Note:</strong> The generic placeholder <code>T</code> and declarations without an initializer are not supported by the compiler. Built-in Copyable types (<code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>) are stack-allocated. Owned types (<code>string</code>, arrays, user-defined classes) are heap-allocated with move semantics.</p>
 <h2 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h2>
 <p>Types are defined in the <a href="../type_system/">Type System</a> documentation.</p>
 <h2 id="naming-rules">Naming Rules<a class="headerlink" href="#naming-rules" title="Permanent link">&para;</a></h2>
@@ -1313,7 +1313,7 @@ int32 int32 = 0;     // reserved type name
 </tr>
 <tr>
 <td>Primitive types</td>
-<td><code>int8</code> <code>int16</code> <code>int32</code> <code>int64</code> <code>uint8</code> <code>uint16</code> <code>uint32</code> <code>uint64</code> <code>float32</code> <code>float64</code> <code>float128</code> <code>bool</code> <code>string</code> <code>tuple</code> <code>void</code></td>
+<td><code>int8</code> <code>int16</code> <code>int32</code> <code>int64</code> <code>uint8</code> <code>uint16</code> <code>uint32</code> <code>uint64</code> <code>float32</code> <code>float64</code> <code>float128</code> <code>bool</code> <code>string</code> <code>void</code></td>
 </tr>
 <tr>
 <td>Literals</td>
@@ -1355,7 +1355,7 @@ if (message != null) {
 }
 </code></pre>
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
-<p>Variable declaration and initialization is fully supported for some built-in Copyable types. User-defined types and tuples are planned for future versions. Constants and nullability are also planned features.</p>
+<p>Variable declaration and initialization is fully supported for all primitive types and user-defined classes (including generic classes from the standard library such as <code>Tuple&lt;T, U&gt;</code>). Constants and nullability are supported.</p>
 
 
 
