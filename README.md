@@ -20,7 +20,7 @@ firescript is a statically and strongly typed programming language that compiles
 ## Example
 
 ```firescript
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 // Define a function that returns the nth Fibonacci number
 int8 fibonacci(int8 n) {

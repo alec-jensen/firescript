@@ -1,0 +1,388 @@
+import logging
+from typing import Optional
+
+from lexer import Token
+from utils.file_utils import get_line_and_coumn_from_index, get_line
+from enums import NodeTypes, CompilerDirective
+from .ast_node import ASTNode
+
+
+class ParserBase:
+    # Recognized type token names emitted by the lexer
+    TYPE_TOKEN_NAMES = {
+        "INT8", "INT16", "INT32", "INT64",
+        "UINT8", "UINT16", "UINT32", "UINT64",
+        "FLOAT32", "FLOAT64", "FLOAT128",
+        "BOOL", "STRING", "VOID",
+    }
+
+    # No legacy type aliases: require explicit widths like 'float32' and 'float64'.
+    LEGACY_TYPE_ALIASES = {}
+
+    # Integer family types accepted for indices and similar contexts
+    INTEGER_TYPES = {
+        "int8",
+        "int16",
+        "int32",
+        "int64",
+        "uint8",
+        "uint16",
+        "uint32",
+        "uint64",
+    }
+
+    # Directive-gated intrinsics: available only when the corresponding directive is active.
+    # The parser accepts calls to these names without erroring; the code generator enforces
+    # the directive requirement at emit time.
+    builtin_functions: dict[str, str] = {
+        "stdout": "void",          # requires directive enable_lowlevel_stdout
+        "drop": "void",            # requires directive enable_drops
+        "syscall_open": "SyscallResult",   # requires directive enable_syscalls
+        "syscall_read": "SyscallResult",   # requires directive enable_syscalls
+        "syscall_write": "SyscallResult",  # requires directive enable_syscalls
+        "syscall_close": "SyscallResult",  # requires directive enable_syscalls
+    }
+
+    # Register for user-defined methods (className -> methodName -> signature)
+    user_methods = {}
+
+    def __init__(
+        self,
+        tokens: list[Token],
+        file: str,
+        filename: str,
+        defer_undefined_identifiers: Optional[bool] = None,
+    ):
+        self.tokens: list[Token] = tokens
+        self.current_token: Optional[Token] = self.tokens[0]
+        self.ast = ASTNode(NodeTypes.ROOT, None, "program", [], 0)
+        self.file = file
+        self.filename = filename
+        self.errors = []
+        if defer_undefined_identifiers is None:
+            self.defer_undefined_identifiers = any(t.type == "IMPORT" for t in tokens)
+        else:
+            self.defer_undefined_identifiers = defer_undefined_identifiers
+        # Track identifier uses we deferred checking (typically because imports are present).
+        self.deferred_undefined_identifiers: list[tuple[str, Optional[Token]]] = []
+        # Registry for user-defined functions discovered during parsing
+        # Maps function name -> return type string (e.g., "int", "void")
+        self.user_functions = {}
+        # Collected compiler directives in this file
+        self.directives: set[str] = set()
+        # User-defined class registry and type names
+        self.user_classes: dict[str, dict[str, str]] = {}
+        self.user_types: set[str] = set()
+        # className -> methodName -> {"return": str, "params": [str, ...]}
+        self.user_methods = {}
+
+        # Inheritance metadata: class -> base class (single inheritance)
+        self.user_class_bases: dict[str, Optional[str]] = {}
+        # Keep parsed class field/method nodes around so we can synthesize inherited members.
+        self._class_field_nodes: dict[str, list[ASTNode]] = {}
+        self._class_method_nodes: dict[str, list[ASTNode]] = {}
+
+        # Parsing context for class bodies (used for `super.*` parsing)
+        self._class_context_stack: list[tuple[str, bool, Optional[str]]] = []  # (class_name, in_constructor, base_class)
+        
+        # Generic function tracking
+        # Maps function name -> list of type parameter names
+        self.generic_functions: dict[str, list[str]] = {}
+        # Maps function name -> dict of type param -> constraint
+        self.generic_constraints: dict[str, dict[str, str]] = {}
+        # Track monomorphized instances: (func_name, tuple of concrete types) -> mangled name
+        self.monomorphized_functions: dict[tuple[str, tuple[str, ...]], str] = {}
+        # Track type parameters in current scope (for parsing inside generic functions/classes)
+        self._current_type_params: list[str] = []
+        # Generic class tracking: template name -> AST node / type param list
+        self.generic_class_templates: dict[str, ASTNode] = {}
+        self.generic_class_params: dict[str, list[str]] = {}
+        
+        # Custom type constraint aliases: constraint_name -> type_union_string
+        self.constraint_aliases: dict[str, str] = {}
+
+    def _current_class_context(self) -> tuple[Optional[str], bool, Optional[str]]:
+        if not self._class_context_stack:
+            return (None, False, None)
+        return self._class_context_stack[-1]
+
+    def _is_type_token(self, tok: Optional[Token]) -> bool:
+        """Return True if the token denotes a type keyword."""
+        if tok is None:
+            return False
+        if tok.type in self.TYPE_TOKEN_NAMES:
+            return True
+        # Allow user-defined class names as types
+        if tok.type == "IDENTIFIER" and tok.value in self.user_types:
+            return True
+        # Allow type parameters in current generic function/class scope
+        if tok.type == "IDENTIFIER" and tok.value in self._current_type_params:
+            return True
+        # Allow generic class names (used as ClassName<T1, T2> in declarations)
+        if tok.type == "IDENTIFIER" and tok.value in self.generic_class_templates:
+            return True
+        return False
+
+    def _normalize_type_name(self, tok: Token) -> str:
+        """Normalize token.value to canonical firescript type name (handles legacy aliases)."""
+        val = tok.value
+        return self.LEGACY_TYPE_ALIASES.get(val, val)
+
+    def advance(self):
+        """Advance the current token to the next non-whitespace token."""
+        if self.current_token is None:
+            return
+
+        current_index = self.tokens.index(self.current_token)
+        new_index = current_index + 1
+        while (
+            new_index < len(self.tokens)
+            and self.tokens[new_index].type == "IDENTIFIER"
+            and self.tokens[new_index].value.strip() == ""
+        ):
+            new_index += 1
+        self.current_token = (
+            self.tokens[new_index] if new_index < len(self.tokens) else None
+        )
+
+    def peek(self, offset: int = 1) -> Optional[Token]:
+        """Peek at the non-whitespace token at the given offset."""
+        if self.current_token is None:
+            return None
+
+        count = 0
+        start_index = self.tokens.index(self.current_token) + 1
+        for token in self.tokens[start_index:]:
+            if token.type == "IDENTIFIER" and token.value.strip() == "":
+                continue
+            count += 1
+            if count == offset:
+                return token
+        return None
+
+    def _current_token_index(self) -> int:
+        """Return the index of current_token in self.tokens, or -1 if not found."""
+        if self.current_token is None:
+            return -1
+        try:
+            return self.tokens.index(self.current_token)
+        except ValueError:
+            return -1
+
+    def _skip_ws_from(self, i: int) -> int:
+        """Skip whitespace-placeholder IDENTIFIER tokens starting at index i."""
+        n = len(self.tokens)
+        while i < n and self.tokens[i].type == "IDENTIFIER" and not self.tokens[i].value.strip():
+            i += 1
+        return i
+
+    def _scan_matching_gt(self, lt_index: int) -> int:
+        """From index lt_index (a LESS_THAN token), find the matching GREATER_THAN.
+
+        Returns the index of the matching GREATER_THAN, or -1 if not found before a
+        statement boundary (;, {, }).
+        """
+        depth = 0
+        n = len(self.tokens)
+        i = lt_index
+        while i < n:
+            tt = self.tokens[i].type
+            if tt == "LESS_THAN":
+                depth += 1
+            elif tt == "GREATER_THAN":
+                depth -= 1
+                if depth == 0:
+                    return i
+            elif tt in ("SEMICOLON", "OPEN_BRACE", "CLOSE_BRACE"):
+                return -1  # hit a statement boundary — can't be a type param list
+            i += 1
+        return -1
+
+    def _looks_like_generic_var_decl(self) -> bool:
+        """Lookahead: current token is IDENTIFIER, next should be '<'.
+
+        Returns True when the token stream from the current position matches
+        the pattern ``IDENT < TYPE_ARGS > IDENT =`` (a generic variable
+        declaration), False otherwise.  Used in deferred-import mode to route
+        ``TypeName<T1, T2> varName = ...`` to ``parse_variable_declaration``
+        even when TypeName is not yet registered as a generic class template.
+        """
+        idx = self._current_token_index()
+        if idx < 0:
+            return False
+        n = len(self.tokens)
+        i = self._skip_ws_from(idx + 1)
+        if i >= n or self.tokens[i].type != "LESS_THAN":
+            return False
+        gt_idx = self._scan_matching_gt(i)
+        if gt_idx < 0:
+            return False
+        i = self._skip_ws_from(gt_idx + 1)
+        # Expect an IDENTIFIER (the variable name)
+        if i >= n or self.tokens[i].type != "IDENTIFIER" or not self.tokens[i].value.strip():
+            return False
+        i = self._skip_ws_from(i + 1)
+        return i < n and self.tokens[i].type == "ASSIGN"
+
+    def _looks_like_generic_constructor_call(self) -> bool:
+        """Lookahead: current token is '<'.
+
+        Returns True when the token stream from the current position matches
+        ``< TYPE_ARGS > (`` (a generic class constructor argument list), as
+        opposed to a plain less-than comparison.  Used in deferred-import mode.
+        """
+        idx = self._current_token_index()
+        if idx < 0 or self.tokens[idx].type != "LESS_THAN":
+            return False
+        gt_idx = self._scan_matching_gt(idx)
+        if gt_idx < 0:
+            return False
+        i = self._skip_ws_from(gt_idx + 1)
+        n = len(self.tokens)
+        return i < n and self.tokens[i].type == "OPEN_PAREN"
+
+    def consume(self, token_type: str) -> Optional[Token]:
+        """Consume the current token if it is of the given type."""
+        if self.current_token is None:
+            return None
+
+        if self.current_token.type == token_type:
+            token = self.current_token
+            self.advance()
+            return token
+        return None
+
+    def expect(self, token_type: str) -> Optional[Token]:
+        """Expect the current token to be of the given type."""
+        if self.current_token is None:
+            return None
+
+        if self.current_token.type == token_type:
+            token = self.current_token
+            self.advance()
+            return token
+        self.error(
+            f"Expected {token_type} but got {self.current_token.type}",
+            self.current_token,
+        )
+        return None
+
+    def error(self, text: str, token: Optional[Token] = None):
+        if self.file is None or token is None:
+            logging.error(text)
+            return
+
+        line_num, column_num = get_line_and_coumn_from_index(self.file, token.index)
+        line_text = get_line(self.file, line_num)
+        logging.error(
+            text
+            + f"\n> {line_text.rstrip()}\n"
+            + " " * (column_num + 1)
+            + "^"
+            + f"\n({self.filename}:{line_num}:{column_num})"
+        )
+        self.errors.append((text, line_num, column_num))
+
+    def _skip_comment(self):
+        """Advances past single or multi-line comments."""
+        if self.current_token is None:
+            return
+
+        if self.current_token.type == "SINGLE_LINE_COMMENT":
+            self.advance()
+        elif self.current_token.type == "MULTI_LINE_COMMENT_START":
+            while (
+                self.current_token
+                and self.current_token.type != "MULTI_LINE_COMMENT_END"
+            ):
+                self.advance()
+            if (
+                self.current_token
+                and self.current_token.type == "MULTI_LINE_COMMENT_END"
+            ):
+                self.advance()  # Consume the end comment token
+
+    def _sync_to_semicolon(self):
+        """Advance tokens until we reach a semicolon or run out of tokens."""
+        while self.current_token and self.current_token.type != "SEMICOLON":
+            self.advance()
+        self.consume("SEMICOLON")
+
+    def _register_generic_class_instance(self, class_name: str, type_args: list[str]) -> str:
+        """Register a monomorphized generic class instance for type checking.
+
+        Substitutes the template's type parameters with the concrete type arguments
+        and registers the result in user_types, user_classes, and user_methods so that
+        the type-checker and downstream codegen can treat it like a normal class.
+
+        Returns the composite type name, e.g. ``'Pair<int32, string>'``.
+        """
+        composite = f"{class_name}<{', '.join(type_args)}>"
+        if composite in self.user_types:
+            return composite  # Already registered
+
+        template = self.generic_class_templates.get(class_name)
+        if template is None:
+            return composite
+
+        type_params = getattr(template, "type_params", [])
+        type_map = dict(zip(type_params, type_args))
+        is_copyable_class = getattr(template, "is_copyable", False)
+
+        def substitute(t: str) -> str:
+            return type_map.get(t, t) if t else t
+
+        # Build concrete field types from stored template field nodes
+        field_types: dict[str, str] = {}
+        for child in self._class_field_nodes.get(class_name, []):
+            if child.node_type == NodeTypes.CLASS_FIELD:
+                field_types[child.name] = substitute(child.var_type or "int32")
+
+        # Register composite type for type-checking
+        self.user_types.add(composite)
+        self.user_classes[composite] = field_types
+        self.user_class_bases[composite] = None
+
+        # Build concrete method signatures
+        self.user_methods[composite] = {}
+        for m in self._class_method_nodes.get(class_name, []):
+            param_nodes = [p for p in m.children[:-1] if p.node_type == NodeTypes.PARAMETER]
+            # Exclude receiver 'this' from the external parameter list
+            effective_params = (
+                param_nodes[1:] if (param_nodes and param_nodes[0].name == "this") else param_nodes
+            )
+            params_types = [substitute(p.var_type or "int32") for p in effective_params]
+            ret_type = substitute(m.return_type or "void")
+            self.user_methods[composite][m.name] = {"return": ret_type, "params": params_types}
+
+        # Register ownership category in type_utils
+        from utils.type_utils import register_class
+        register_class(composite, is_copyable_class)
+
+        return composite
+
+    def _infer_literal_type(self, token: Token) -> str:
+        """Infer type for numeric literal based on suffix and defaults.
+        INTEGER_LITERAL default: int32. Supports i8/i16/i32/i64/u8/u16/u32/u64 suffixes.
+        FLOAT_LITERAL supports f|f32|f64|f128; DOUBLE_LITERAL default: float64.
+        """
+        val = token.value
+        if token.type == "INTEGER_LITERAL":
+            for suf, tname in (
+                ("i8", "int8"), ("i16", "int16"), ("i32", "int32"), ("i64", "int64"),
+                ("u8", "uint8"), ("u16", "uint16"), ("u32", "uint32"), ("u64", "uint64"),
+            ):
+                if val.endswith(suf):
+                    return tname
+            return "int32"
+        if token.type == "FLOAT_LITERAL":
+            if val.endswith("f128"):
+                return "float128"
+            if val.endswith("f64"):
+                return "float64"
+            if val.endswith("f32") or val.endswith("f"):
+                return "float32"
+            return "float32"
+        if token.type == "DOUBLE_LITERAL":
+            return "float64"
+        return ""
