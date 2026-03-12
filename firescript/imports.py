@@ -107,6 +107,21 @@ class ModuleResolver:
                 exports[c.name] = c
         return exports
 
+    def _stdlib_package_for(self, dotted: str) -> Optional[str]:
+        """Return the stdlib package prefix used for relative resolution.
+
+        For an init.fire module (the module IS the package), return dotted unchanged.
+        For a regular stdlib file, strip the last component to get the parent package.
+        Returns None if dotted is not a stdlib module.
+        """
+        if not dotted.startswith("firescript.std"):
+            return None
+        path = self.dotted_to_path(dotted)
+        if os.path.basename(path) == "init.fire":
+            return dotted
+        parts = dotted.rsplit(".", 1)
+        return parts[0] if len(parts) > 1 else dotted
+
     def _load_module(self, dotted: str, load_stack: List[str]) -> Module:
         if dotted in self.modules:
             return self.modules[dotted]
@@ -131,7 +146,15 @@ class ModuleResolver:
             base = imp.module_path
             if not base or base.startswith("."):
                 raise RuntimeError(f"Relative imports are not supported: {base}")
+            # For stdlib modules, try resolving the import relative to the module's
+            # own package before falling back to an absolute lookup.
             dep_dotted = base
+            pkg = self._stdlib_package_for(dotted)
+            if pkg is not None and not base.startswith("firescript."):
+                candidate = pkg + "." + base
+                candidate_path = self.dotted_to_path(candidate)
+                if os.path.isfile(candidate_path):
+                    dep_dotted = candidate
             self._load_module(dep_dotted, load_stack)
         load_stack.pop()
 

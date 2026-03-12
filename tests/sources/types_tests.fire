@@ -1,6 +1,6 @@
 // Integer arithmetic
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("Integer arithmetic");
 int32 i1 = 5;

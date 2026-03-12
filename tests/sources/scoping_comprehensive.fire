@@ -1,6 +1,6 @@
 // Comprehensive scoping and variable visibility tests
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Scoping Tests ===");
 

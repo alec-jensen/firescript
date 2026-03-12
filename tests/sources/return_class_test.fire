@@ -1,6 +1,6 @@
 // Test returning a class from a function
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 class Point {
     int32 x;

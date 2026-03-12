@@ -1,4 +1,4 @@
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 int32[] a = [1, 2];
 int32 cond = 1i32;

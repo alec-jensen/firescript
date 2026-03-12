@@ -1,6 +1,6 @@
 // Comprehensive control flow tests
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Control Flow Tests ===");
 

@@ -211,6 +211,9 @@ def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bo
                     return (tc, "NEW", None, None)
                 else:
                     return (tc, "FAIL_MISSING", "<missing>", actual_norm)
+        except SystemExit:
+            # compile_fire already printed the FAIL message; just record it
+            return (tc, "ERROR", None, None)
         except Exception as e:
             return (tc, "ERROR", "<exception>", str(e))
 
@@ -241,7 +244,8 @@ def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bo
                 print(f"  --- actual output ---")
                 print(_indent(act))
             elif status == "ERROR":
-                _log("ERROR", f"{tc.source}: {act}", color_code="31")
+                if act:
+                    _log("ERROR", f"{tc.source}: {act}", color_code="31")
             results.append((tc, status, exp, act))
 
     total = len(results)

@@ -1,7 +1,7 @@
 // Stress test: Type conversions and precision loss
 // Likely to expose: conversion bugs, precision loss, truncation errors
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Type Conversion Tests ===");
 

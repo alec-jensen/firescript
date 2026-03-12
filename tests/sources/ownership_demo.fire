@@ -1,6 +1,6 @@
 // Comprehensive ownership and borrowing demonstration
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 // =============================================================================
 // 1. COPYABLE CLASS - annotated with 'copyable'

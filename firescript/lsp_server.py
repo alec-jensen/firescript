@@ -517,6 +517,87 @@ def _hover_field_access(
     return None
 
 
+def _find_method_call_at_offset(node: ASTNode, cursor_off: int) -> Optional["ASTNode"]:
+    """Walk the AST and return the METHOD_CALL node whose method-name token covers cursor_off."""
+    if node.node_type == NodeTypes.METHOD_CALL:
+        tok = node.token
+        if tok is not None:
+            start = tok.index
+            end = start + len(node.name)
+            if start <= cursor_off <= end:
+                return node
+    for child in (node.children or []):
+        if child is None:
+            continue
+        result = _find_method_call_at_offset(child, cursor_off)
+        if result is not None:
+            return result
+    return None
+
+
+def _hover_method_call(
+    mc_node: ASTNode,
+    ast: ASTNode,
+    sym_map: dict,
+    file_path: str,
+) -> Optional[str]:
+    """Return a hover string for a method call, showing the concrete method signature."""
+    obj_node = mc_node.children[0] if mc_node.children else None
+    if obj_node is None:
+        return None
+
+    obj_type: Optional[str] = None
+    if obj_node.node_type == NodeTypes.IDENTIFIER:
+        var_decl = sym_map.get(obj_node.name)
+        if var_decl is not None:
+            obj_type = getattr(var_decl, "var_type", None)
+    if obj_type is None:
+        return None
+
+    method_name: str = mc_node.name
+
+    if "<" in obj_type:
+        bracket = obj_type.index("<")
+        template_name = obj_type[:bracket]
+        args_raw = obj_type[bracket + 1:]
+        if args_raw.endswith(">"):
+            args_raw = args_raw[:-1]
+        type_args = [a.strip() for a in args_raw.split(",")]
+    else:
+        template_name = obj_type
+        type_args = []
+
+    class_node = _find_class_node(ast, template_name, file_path)
+    if class_node is None:
+        return None
+
+    type_params: list = getattr(class_node, "type_params", []) or []
+    type_map = dict(zip(type_params, type_args))
+
+    for ch in (class_node.children or []):
+        if ch is None:
+            continue
+        if ch.node_type == NodeTypes.CLASS_METHOD_DEFINITION and ch.name == method_name:
+            if getattr(ch, "is_constructor", False):
+                continue
+            params = [
+                c for c in (ch.children or [])
+                if c is not None
+                and c.node_type == NodeTypes.PARAMETER
+                and c.name != "this"
+            ]
+            param_strs = []
+            for p in params:
+                t = type_map.get(p.var_type or "?", p.var_type or "?")
+                arr = "[]" if getattr(p, "is_array", False) else ""
+                param_strs.append(f"{t}{arr} {p.name}")
+            ret = ch.return_type or "void"
+            ret = type_map.get(ret, ret)
+            return f"```firescript\n{ret} {method_name}({', '.join(param_strs)})\n```"
+
+    return None
+
+
 def _resolve_imported_symbol(
     ast_root: ASTNode,
     word: str,
@@ -541,7 +622,33 @@ def _resolve_imported_symbol(
         kind: str = getattr(child, "kind", "module") or "module"
         symbols: list[dict] = getattr(child, "symbols", []) or []
 
-        if kind == "external" or not module_path or kind == "module":
+        if kind == "external" or not module_path:
+            continue
+
+        # For module-kind imports: if the last segment of the module_path matches the
+        # hovered word, attempt to resolve it as a symbol from the parent module.
+        # This handles  `import @firescript/std.io.println`  (no braces).
+        if kind == "module":
+            last_seg = module_path.rsplit(".", 1)[-1]
+            parent_path = module_path.rsplit(".", 1)[0] if "." in module_path else ""
+            if last_seg != word or not parent_path:
+                continue
+            try:
+                mod_file = resolver.dotted_to_path(parent_path)
+                if not os.path.isfile(mod_file):
+                    continue
+                with open(mod_file, "r", encoding="utf-8") as f:
+                    mod_text = f.read()
+                mod_ast = _try_parse(mod_text, mod_file)
+                if mod_ast is None:
+                    continue
+                msym: dict[str, ASTNode] = {}
+                _build_symbol_map(mod_ast, msym)
+                def_node = msym.get(word)
+                if def_node is not None:
+                    return (mod_file, mod_text, def_node)
+            except Exception:
+                pass
             continue
 
         target_name: Optional[str] = None
@@ -695,6 +802,21 @@ def hover(ls: LanguageServer, params: HoverParams) -> Optional[Hover]:
             return Hover(
                 contents=MarkupContent(kind=MarkupKind.Markdown, value=fa_content),
                 range=fa_range,
+            )
+
+    # Try method-call hover: show concrete method signature for  obj.method()
+    mc_node = _find_method_call_at_offset(ast, cursor_off)
+    if mc_node is not None:
+        mc_content = _hover_method_call(mc_node, ast, sym_map, file_path)
+        if mc_content:
+            word_start = _word_start_offset(source, cursor_off)
+            mc_range = Range(
+                start=_offset_to_position(source, word_start),
+                end=_offset_to_position(source, word_start + len(word)),
+            )
+            return Hover(
+                contents=MarkupContent(kind=MarkupKind.Markdown, value=mc_content),
+                range=mc_range,
             )
 
     node = sym_map.get(word)

@@ -1,6 +1,6 @@
 // Nested classes test: Rect composed of Points
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 class Point {
     int32 x;
@@ -19,6 +19,10 @@ class Rect {
         this.bottomRight = br;
     }
     
+    // TODO: lsp says `this` is a point, doesnt show info for bottomRight or topLeft,
+    // but does show info for their x and y fields. which are probably both the same issue,
+    // it is picking up types from the first class, Point, and not recognizing that this is a Rect with Point fields.
+    // so it sees `this` in Rect as a point, and it sees the x and y fields of the Rect's points as the x and y of Point
     int32 width(&this) {
         return this.bottomRight.x - this.topLeft.x;
     }

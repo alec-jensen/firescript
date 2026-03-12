@@ -1,7 +1,7 @@
 // Stress test: Integer overflow and underflow
 // Likely to expose: overflow bugs, type conversion errors, arithmetic edge cases
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Integer Overflow Tests ===");
 

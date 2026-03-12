@@ -1,6 +1,6 @@
 // Test basic ownership semantics
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 // Test 1: Basic class as Owned type
 class Point {

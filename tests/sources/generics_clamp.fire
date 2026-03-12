@@ -1,6 +1,6 @@
 // Test generic clamp function
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 T clamp<T: int32 | int64 | float32 | float64>(T value, T min, T max) {
     if (value < min) {

@@ -1,6 +1,6 @@
 // Test generic function with multiple type parameters
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 // Generic pair swap function
 void swap<T>(T a, T b) {

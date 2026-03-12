@@ -1,5 +1,5 @@
 // Tests for nullable variables
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Nullable Variables ===");
 

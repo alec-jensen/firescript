@@ -1,6 +1,6 @@
 // Comprehensive function tests
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Function Tests ===");
 

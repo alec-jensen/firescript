@@ -1,4 +1,4 @@
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 int32 x = -42;
 int32 y = -x;

@@ -1,6 +1,6 @@
 // Test borrowing syntax
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 class Point {
     int32 x;

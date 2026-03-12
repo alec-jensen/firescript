@@ -1,4 +1,4 @@
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("-- float128 test --");
 float128 a = 1.25f128;

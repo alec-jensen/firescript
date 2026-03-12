@@ -1,6 +1,6 @@
 // Test basic generic functions with type inference and explicit type arguments
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 // Generic max function with type union constraint
 T max<T: int32 | int64 | float32 | float64>(T a, T b) {

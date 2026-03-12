@@ -1,6 +1,6 @@
 // Simplest generic function test - just max
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 T max<T>(T a, T b) {
     if (a > b) {

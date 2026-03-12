@@ -1,6 +1,6 @@
 // Comprehensive arithmetic operator tests
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Arithmetic Operators ===");
 

@@ -1,6 +1,6 @@
 // Test for-in loops
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 // Basic for-in with array literal
 for (int32 num in [1, 2, 3, 4, 5]) {

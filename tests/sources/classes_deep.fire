@@ -1,4 +1,4 @@
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 class Vec2 {
     int32 x;

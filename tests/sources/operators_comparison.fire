@@ -1,6 +1,6 @@
 // Comprehensive comparison operator tests
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Comparison Operators ===");
 

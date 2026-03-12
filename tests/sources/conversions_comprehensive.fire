@@ -1,6 +1,6 @@
 // Comprehensive type conversion and casting tests
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Type Conversion Tests ===");
 

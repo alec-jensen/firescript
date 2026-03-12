@@ -2,7 +2,7 @@
 // Covers: empty arrays, nested scopes, mixed numeric promotions, compound assignments, increment/decrement,
 // while loops with zero iterations, if without else, function returning array, function with array params
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("-- edge: fixed-size array basics --");
 int32[] simple = [1, 2];

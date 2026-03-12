@@ -1,6 +1,6 @@
 // Comprehensive string operation tests
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== String Operation Tests ===");
 

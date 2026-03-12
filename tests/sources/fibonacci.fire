@@ -1,6 +1,6 @@
 // Recursive Fibonacci test using functions
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 int64 fib(int64 n) {
     if (n <= 1i64) {

@@ -1,6 +1,6 @@
 // Constructors and instance methods test
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 class Point {
     int32 x;

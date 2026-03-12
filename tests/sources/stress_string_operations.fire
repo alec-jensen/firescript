@@ -1,7 +1,7 @@
 // Stress test: String operations and memory
 // Likely to expose: memory leaks, move semantics bugs, string handling errors
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== String Operation Tests ===");
 

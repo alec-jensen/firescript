@@ -1,4 +1,4 @@
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 T max<T: int32 | int64>(T a, T b) {
     if (a > b) {

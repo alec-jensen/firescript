@@ -1,6 +1,6 @@
 // Global scope
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 int32 globalVar = 10;
 

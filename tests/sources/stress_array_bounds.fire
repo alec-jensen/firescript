@@ -1,7 +1,7 @@
 // Stress test: Array boundary access
 // Likely to expose: off-by-one errors, buffer overflows, index validation bugs
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Array Boundary Tests ===");
 

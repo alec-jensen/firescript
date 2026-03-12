@@ -1,6 +1,6 @@
 // Comprehensive array operation tests
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Array Operation Tests ===");
 

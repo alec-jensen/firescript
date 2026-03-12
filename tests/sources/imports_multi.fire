@@ -1,6 +1,6 @@
 // Demo: importing from multiple modules
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 import math_utils.{square, MAX}
 import string_utils.*
 

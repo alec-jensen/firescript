@@ -1,6 +1,6 @@
 // Test custom type constraint aliases
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 // Define some constraint aliases
 constraint NumericPrimitive = int32 | int64 | float32 | float64;

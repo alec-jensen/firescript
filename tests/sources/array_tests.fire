@@ -1,6 +1,6 @@
 // Fixed-size Array Test Suite
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 // Test 1: Array declaration and initialization
 println("Test 1: Array declaration and initialization");

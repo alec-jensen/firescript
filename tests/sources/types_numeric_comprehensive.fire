@@ -1,6 +1,6 @@
 // Comprehensive numeric type tests
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Numeric Type Tests ===");
 

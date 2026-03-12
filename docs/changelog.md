@@ -5,21 +5,22 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 ## Currently in development
 
 ### New Language Features
-- Added generic classes with multiple type parameters. Syntax: `class Pair<T, U> { T first; U second; ... }`. Monomorphization is performed automatically at each use site (e.g., `Pair<int32, string> p = Pair<int32, string>(1, "a");`). Both `copyable` and owned (heap-allocated) generic classes are supported.
-- Implemented `Tuple<T, U>` and `CopyableTuple<T, U>` in `firescript/std/types/tuple.fire` using the new generic class infrastructure. Tuples are no longer a built-in language feature; they are provided by the standard library.
-- Added `syscall_*` intrinsics behind `directive enable_syscalls`. Implemented: `syscall_open`, `syscall_read`, `syscall_write`, `syscall_close`. All return a `SyscallResult` copyable class (`status: int32`, `data: string`). Intended for standard library use only.
+- Added generic classes with multiple type parameters (e.g., `class Pair<T, U> { ... }`). Monomorphization is performed automatically at each use site.
+- `Tuple<T, U>`, `CopyableTuple<T, U>`, `Option<T>`, and `CopyableOption<T>` are now provided by the standard library (`@firescript/std.types`).
+- Added `syscall_*` intrinsics (`syscall_open`, `syscall_read`, `syscall_write`, `syscall_close`) behind `directive enable_syscalls`. For standard library use only.
 
 ### Breaking Changes
-- Removed built-in `input()` function. User input functionality should be implemented via the standard library or external libraries.
+- Removed built-in `input()` function.
 
 ### Compiler improvements
+- Standard library modules can now import sibling modules using short relative paths (e.g., `import tuple.Tuple;`).
 - Bug fixes
-- Fixed `for-in` loops and `length()` method calls on array function parameters. Arrays passed to functions now carry their size as an implicit companion argument, enabling `arr.length()` and `for (T x in arr)` to work correctly inside function bodies.
-- Fixed error caret positions for indented code. Previously, `line.strip()` was applied to the displayed source line before computing the caret offset, causing the `^` to point to the wrong column for any code inside functions or blocks. Source lines are now right-stripped only, preserving leading whitespace.
-- Semantic analysis errors (use-after-move, invalid borrow) now report exact source location (file, line, column) with a caret, matching the style of parser and code-generator errors.
-- Added `lint_text(source_text, file_path)` API to the compiler: runs the full front-end (lex → parse → import-merge → preprocess → semantic analysis) on in-memory text and returns structured `(message, line, col)` diagnostics without triggering code generation or writing to disk.
-- Added Language Server Protocol implementation (`firescript/lsp_server.py`) via `pygls`. The server publishes diagnostics on `textDocument/didOpen` and `textDocument/didChange` using the new `lint_text` API.
-- Added VS Code extension (`editors/vscode/`) providing syntax highlighting (TextMate grammar), bracket matching, comment toggling, and LSP-backed diagnostics.
+- Fixed `for-in` loops and `length()` calls on array function parameters.
+- Fixed error caret positions for indented code.
+- Semantic analysis errors now report exact source location with a caret.
+- Added `lint_text(source_text, file_path)` API for in-memory diagnostics without code generation.
+- Added LSP implementation (`firescript/lsp_server.py`) via `pygls`.
+- Added VS Code extension with syntax highlighting, bracket matching, comment toggling, and LSP diagnostics.
 
 ## 0.4.0 - Phoenix
 *February 2, 2026*

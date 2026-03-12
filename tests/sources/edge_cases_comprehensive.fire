@@ -1,6 +1,6 @@
 // Edge cases and boundary condition tests
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Edge Cases and Boundary Tests ===");
 

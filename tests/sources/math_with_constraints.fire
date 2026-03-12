@@ -1,4 +1,4 @@
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 import @firescript/std.math.{max, min, abs, clamp}
 
 // Test with int32

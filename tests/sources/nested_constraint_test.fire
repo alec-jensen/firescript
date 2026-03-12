@@ -1,6 +1,6 @@
 // Test combining constraint aliases
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 constraint SmallInt = int8 | int16;
 constraint MediumInt = int32 | int64;

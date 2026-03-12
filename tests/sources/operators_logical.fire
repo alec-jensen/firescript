@@ -1,7 +1,7 @@
 // Logical operators (&&, ||, !) are not yet implemented in firescript
 // This test covers boolean operations that ARE supported
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Boolean Operations ===");
 

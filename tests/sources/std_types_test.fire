@@ -1,4 +1,4 @@
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 import @firescript/std.types.Tuple;
 
 // Test basic usage of the Tuple type

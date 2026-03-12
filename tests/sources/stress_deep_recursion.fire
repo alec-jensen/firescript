@@ -1,7 +1,7 @@
 // Stress test: Recursion depth and stack usage
 // Likely to expose: stack overflow, function call bugs, return value handling
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 // Test 1: Simple recursion
 int32 factorial(int32 n) {

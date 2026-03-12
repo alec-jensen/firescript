@@ -1,7 +1,7 @@
 // Comprehensive type error tests
 // These should all produce semantic/type checking errors
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 // Type mismatch in variable declaration
 int32 num = "string value";

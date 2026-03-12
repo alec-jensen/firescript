@@ -3229,16 +3229,17 @@ class Parser:
                     if nxt.type == "IDENTIFIER" or self._is_type_token(nxt):
                         # Check what comes after the identifier
                         nxt2 = self.peek(2)
-                        # If followed by {, *, or end of tokens, this is symbol syntax
-                        if nxt2 and nxt2.type in ("OPEN_BRACE", "MULTIPLY"):
-                            # The identifier after DOT is part of symbol syntax, stop here
+                        # Only continue adding to module path if another DOT follows
+                        # (same logic as regular imports: last segment before non-DOT is the symbol)
+                        if nxt2 and nxt2.type == "DOT":
+                            self.advance()  # consume '.'
+                            id_tok = self.current_token
+                            self.advance()  # consume identifier
+                            module_segs.append(id_tok.value)
+                            # Continue to check if there's more path
+                        else:
+                            # No DOT after next identifier, so it is a symbol — stop here
                             break
-                        # Otherwise, this identifier is part of module path
-                        self.advance()  # consume '.'
-                        id_tok = self.current_token
-                        self.advance()  # consume identifier
-                        module_segs.append(id_tok.value)
-                        # Continue to check if there's more path
                     else:
                         # Unknown token after DOT, stop
                         break

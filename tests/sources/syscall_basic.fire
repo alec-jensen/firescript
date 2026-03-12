@@ -1,6 +1,6 @@
 directive enable_syscalls;
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 // Write a string to a temp file, then read it back
 SyscallResult open_w = syscall_open("build/temp/syscall_test_data.txt", "w");

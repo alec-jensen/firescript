@@ -1,7 +1,7 @@
 // Memory/ownership error tests
 // Tests for use-after-move, invalid borrows, etc.
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 // Use after move (if ownership is enforced)
 string owned = "hello";

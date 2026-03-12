@@ -1,6 +1,6 @@
 // Invalid scope and shadowing tests
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 // Variable shadowing (not allowed in firescript)
 int32 x = 10;

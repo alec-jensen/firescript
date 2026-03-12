@@ -1,6 +1,6 @@
 // Comprehensive expression tests
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("=== Expression Tests ===");
 

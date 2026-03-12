@@ -1,6 +1,6 @@
 // Comprehensive type coverage and operations
 
-import @firescript/std.io.{println};
+import @firescript/std.io.println;
 
 println("-- INTS: widths and ops --");
 int8 i8a = 120i8; 
