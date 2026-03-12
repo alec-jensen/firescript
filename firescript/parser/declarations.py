@@ -8,6 +8,36 @@ from .type_system import TypeSystemMixin
 
 
 class DeclarationsMixin(TypeSystemMixin):
+    def _parse_directive(self) -> Optional[ASTNode]:
+        """Parse a compiler directive statement: directive <name> ;"""
+        dir_tok = self.current_token
+        self.advance()  # consume 'directive'
+        name_tok = self.consume("IDENTIFIER")
+        if name_tok is None:
+            self.error("Expected directive name after 'directive'", self.current_token or dir_tok)
+            return None
+        directive_value = name_tok.value
+        try:
+            directive_enum = CompilerDirective(directive_value)
+        except Exception:
+            self.error(f"Unknown directive '{directive_value}'", name_tok)
+            directive_enum = None
+        if self.current_token and self.current_token.type == "SEMICOLON":
+            self.consume("SEMICOLON")
+        else:
+            self.error("Expected semicolon after directive", self.current_token or name_tok)
+        if directive_enum is not None:
+            self.directives.add(directive_enum.value)
+            node_name = directive_enum.value
+            if directive_enum == CompilerDirective.ENABLE_SYSCALLS:
+                self.user_types.add("SyscallResult")
+                self.user_classes["SyscallResult"] = {"status": "int32", "data": "string"}
+        else:
+            node_name = directive_value
+        node = ASTNode(NodeTypes.DIRECTIVE, dir_tok, node_name, [], dir_tok.index)
+        node.source_file = self.filename
+        return node
+
     def _parse_function_definition(self):
         """Parse a function definition with optional array types: <type>[[]] <name>(<type>[[]] name, ...) { ... }"""
         # Return type - can be a known type OR an IDENTIFIER (for generic type parameters)
@@ -258,39 +288,10 @@ class DeclarationsMixin(TypeSystemMixin):
                 continue
             # Compiler directives
             if self.current_token.type == "DIRECTIVE":
-                dir_tok = self.current_token
-                self.advance()
-                name_tok = self.consume("IDENTIFIER")
-                if name_tok is None:
-                    self.error("Expected directive name after 'directive'", self.current_token or dir_tok)
-                    continue
-                # Validate directive name against known directives
-                directive_value = name_tok.value
-                try:
-                    directive_enum = CompilerDirective(directive_value)
-                except Exception:
-                    self.error(f"Unknown directive '{directive_value}'", name_tok)
-                    directive_enum = None
-                # Consume semicolon
-                if self.current_token and self.current_token.type == "SEMICOLON":
-                    self.consume("SEMICOLON")
-                else:
-                    self.error("Expected semicolon after directive", self.current_token or name_tok)
-                # Record directive name and emit a node
-                if directive_enum is not None:
-                    self.directives.add(directive_enum.value)
-                    node_name = directive_enum.value
-                    # Inject built-in types unlocked by this directive
-                    if directive_enum == CompilerDirective.ENABLE_SYSCALLS:
-                        self.user_types.add("SyscallResult")
-                        self.user_classes["SyscallResult"] = {"status": "int32", "data": "string"}
-                else:
-                    node_name = directive_value
-                directive_node = ASTNode(NodeTypes.DIRECTIVE, dir_tok, node_name, [], dir_tok.index)
-                # Mark the directive with the source file so we can filter by file later
-                directive_node.source_file = self.filename
-                directive_node.parent = self.ast
-                self.ast.children.append(directive_node)
+                directive_node = self._parse_directive()
+                if directive_node is not None:
+                    directive_node.parent = self.ast
+                    self.ast.children.append(directive_node)
                 continue
             # Class definition (with optional 'copyable' annotation)
             if self.current_token.type == "CLASS" or self.current_token.type == "COPYABLE":
@@ -317,7 +318,7 @@ class DeclarationsMixin(TypeSystemMixin):
                 # Could be a generic function with type parameter as return type
                 # Look for pattern: IDENTIFIER IDENTIFIER '<' ...
                 # Need to peek ahead more carefully to handle constraints with PIPE tokens
-                idx_cur = self.tokens.index(self.current_token)
+                idx_cur = self._current_token_index()
                 if idx_cur + 2 < len(self.tokens):
                     next1 = self.tokens[idx_cur + 1]
                     next2 = self.tokens[idx_cur + 2]
@@ -325,7 +326,7 @@ class DeclarationsMixin(TypeSystemMixin):
                         can_be_func = True  # Likely a generic function
             
             if can_be_func:
-                idx_cur = self.tokens.index(self.current_token)
+                idx_cur = self._current_token_index()
                 # Gather next few meaningful tokens to detect patterns
                 look = []
                 m = idx_cur + 1
@@ -395,13 +396,7 @@ class DeclarationsMixin(TypeSystemMixin):
                     self.advance()  # Simplest: just advance one token
                 continue
 
-            # Flatten if a list of statements is returned (shouldn't happen with current structure).
-            if isinstance(stmt, list):
-                for s in stmt:
-                    if s:  # Ensure statement is not None
-                        s.parent = self.ast
-                        self.ast.children.append(s)
-            elif isinstance(stmt, ASTNode):  # Ensure it's a valid node
+            if isinstance(stmt, ASTNode):
                 stmt.parent = self.ast
                 self.ast.children.append(stmt)
 
@@ -447,6 +442,50 @@ class DeclarationsMixin(TypeSystemMixin):
         self.type_check()
 
         return self.ast
+
+    def _parse_optional_alias(self) -> Optional[str]:
+        """Parse an optional 'as <identifier>' alias clause.
+
+        Returns the alias string if present, None if no 'as' keyword follows.
+        Logs an error and returns None if 'as' is found but no identifier follows.
+        """
+        if not (self.current_token and (
+            self.current_token.type == "AS"
+            or (self.current_token.type == "IDENTIFIER" and self.current_token.value == "as")
+        )):
+            return None
+        self.advance()  # consume 'as'
+        al = self.consume("IDENTIFIER")
+        if al is None:
+            self.error("Expected alias name after 'as'", self.current_token)
+            return None
+        return al.value
+
+    def _parse_import_symbol_group(self, symbols: list) -> bool:
+        """Parse a '{sym [as x], sym2 [as y]}' import symbol group.
+
+        Assumes current_token is '{' on entry. Appends parsed entries to symbols.
+        Returns True on success, False if a parse error was encountered.
+        """
+        self.advance()  # consume '{'
+        while self.current_token and self.current_token.type != "CLOSE_BRACE":
+            if not (self.current_token and self.current_token.type == "IDENTIFIER"):
+                self.error("Expected identifier in import symbol list", self.current_token)
+                return False
+            sname_tok = self.consume("IDENTIFIER")
+            if sname_tok is None:
+                self.error("Expected identifier in import symbol list", self.current_token)
+                return False
+            salias = self._parse_optional_alias()
+            symbols.append({"name": sname_tok.value, "alias": salias})
+            if self.current_token and self.current_token.type == "COMMA":
+                self.advance()
+                continue
+            break
+        if not self.consume("CLOSE_BRACE"):
+            self.error("Expected '}' to close import symbol list", self.current_token)
+            return False
+        return True
 
     def _parse_import(self) -> Optional[ASTNode]:
         """Parse an import statement in one of the accepted forms.
@@ -541,36 +580,7 @@ class DeclarationsMixin(TypeSystemMixin):
                 if self.current_token and self.current_token.type == "DOT":
                     self.advance()
                     if self.current_token and self.current_token.type == "OPEN_BRACE":
-                        # Group of symbols: {a [as x]?, b [as y]?}
-                        self.advance()
-                        while self.current_token and self.current_token.type != "CLOSE_BRACE":
-                            if not (self.current_token and self.current_token.type == "IDENTIFIER"):
-                                self.error("Expected identifier in import symbol list", self.current_token)
-                                break
-                            sname_tok = self.consume("IDENTIFIER")
-                            salias = None
-                            # Support contextual 'as' even if it's lexed as IDENTIFIER
-                            if self.current_token and (
-                                self.current_token.type == "AS"
-                                or (self.current_token.type == "IDENTIFIER" and self.current_token.value == "as")
-                            ):
-                                self.advance()  # consume 'as'
-                                al = self.consume("IDENTIFIER")
-                                if al is None:
-                                    self.error("Expected alias name after 'as'", self.current_token)
-                                    return None
-                                salias = al.value
-                            if sname_tok is None:
-                                self.error("Expected identifier in import symbol list", self.current_token)
-                                break
-                            symbols.append({"name": sname_tok.value, "alias": salias})
-                            if self.current_token and self.current_token.type == "COMMA":
-                                self.advance()
-                                continue
-                            else:
-                                break
-                        if not self.consume("CLOSE_BRACE"):
-                            self.error("Expected '}' to close import symbol list", self.current_token)
+                        if not self._parse_import_symbol_group(symbols):
                             return None
                         kind = "symbols"
                     elif self.current_token and self.current_token.type == "MULTIPLY":
@@ -578,23 +588,11 @@ class DeclarationsMixin(TypeSystemMixin):
                         self.advance()
                         kind = "wildcard"
                     elif self.current_token and self.current_token.type == "IDENTIFIER":
-                        # Single symbol
                         sname_tok = self.consume("IDENTIFIER")
                         if sname_tok is None:
                             self.error("Expected symbol name after '.' in import", self.current_token)
                             return None
-                        salias = None
-                        if self.current_token and (
-                            self.current_token.type == "AS"
-                            or (self.current_token.type == "IDENTIFIER" and self.current_token.value == "as")
-                        ):
-                            self.advance()  # consume 'as'
-                            al = self.consume("IDENTIFIER")
-                            if al is None:
-                                self.error("Expected alias name after 'as'", self.current_token)
-                                return None
-                            salias = al.value
-                        symbols.append({"name": sname_tok.value, "alias": salias})
+                        symbols.append({"name": sname_tok.value, "alias": self._parse_optional_alias()})
                         kind = "symbols"
                     else:
                         self.error("Expected symbol name, '*', or '{' after '.' in import", self.current_token)
@@ -641,36 +639,7 @@ class DeclarationsMixin(TypeSystemMixin):
             if kind != "external" and self.current_token and self.current_token.type == "DOT":
                 self.advance()
                 if self.current_token and self.current_token.type == "OPEN_BRACE":
-                    # Group of symbols: {a [as x]?, b [as y]?}
-                    self.advance()
-                    while self.current_token and self.current_token.type != "CLOSE_BRACE":
-                        if not (self.current_token and self.current_token.type == "IDENTIFIER"):
-                            self.error("Expected identifier in import symbol list", self.current_token)
-                            break
-                        sname_tok = self.consume("IDENTIFIER")
-                        salias = None
-                        # Support contextual 'as' even if it's lexed as IDENTIFIER
-                        if self.current_token and (
-                            self.current_token.type == "AS"
-                            or (self.current_token.type == "IDENTIFIER" and self.current_token.value == "as")
-                        ):
-                            self.advance()  # consume 'as'
-                            al = self.consume("IDENTIFIER")
-                            if al is None:
-                                self.error("Expected alias name after 'as'", self.current_token)
-                                return None
-                            salias = al.value
-                        if sname_tok is None:
-                            self.error("Expected identifier in import symbol list", self.current_token)
-                            break
-                        symbols.append({"name": sname_tok.value, "alias": salias})
-                        if self.current_token and self.current_token.type == "COMMA":
-                            self.advance()
-                            continue
-                        else:
-                            break
-                    if not self.consume("CLOSE_BRACE"):
-                        self.error("Expected '}' to close import symbol list", self.current_token)
+                    if not self._parse_import_symbol_group(symbols):
                         return None
                     kind = "symbols"
                 elif self.current_token and self.current_token.type == "MULTIPLY":
@@ -678,39 +647,18 @@ class DeclarationsMixin(TypeSystemMixin):
                     self.advance()
                     kind = "wildcard"
                 elif self.current_token and self.current_token.type == "IDENTIFIER":
-                    # Single symbol
                     sname_tok = self.consume("IDENTIFIER")
                     if sname_tok is None:
                         self.error("Expected symbol name after '.' in import", self.current_token)
                         return None
-                    salias = None
-                    if self.current_token and (
-                        self.current_token.type == "AS"
-                        or (self.current_token.type == "IDENTIFIER" and self.current_token.value == "as")
-                    ):
-                        self.advance()  # consume 'as'
-                        al = self.consume("IDENTIFIER")
-                        if al is None:
-                            self.error("Expected alias name after 'as'", self.current_token)
-                            return None
-                        salias = al.value
-                    symbols.append({"name": sname_tok.value, "alias": salias})
+                    symbols.append({"name": sname_tok.value, "alias": self._parse_optional_alias()})
                     kind = "symbols"
                 else:
                     self.error("Expected symbol name, '*', or '{' after '.' in import", self.current_token)
                     return None
             else:
                 # Module import with optional alias: import module.path [as Alias]
-                if self.current_token and (
-                    self.current_token.type == "AS"
-                    or (self.current_token.type == "IDENTIFIER" and self.current_token.value == "as")
-                ):
-                    self.advance()  # consume 'as'
-                    al = self.consume("IDENTIFIER")
-                    if al is None:
-                        self.error("Expected alias name after 'as'", self.current_token)
-                        return None
-                    alias = al.value
+                alias = self._parse_optional_alias()
                 kind = "module"
 
         # Build node

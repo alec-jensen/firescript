@@ -54,7 +54,8 @@ class ParserBase:
         defer_undefined_identifiers: Optional[bool] = None,
     ):
         self.tokens: list[Token] = tokens
-        self.current_token: Optional[Token] = self.tokens[0]
+        self._token_idx: int = 0
+        self.current_token: Optional[Token] = self.tokens[0] if tokens else None
         self.ast = ASTNode(NodeTypes.ROOT, None, "program", [], 0)
         self.file = file
         self.filename = filename
@@ -112,15 +113,12 @@ class ParserBase:
             return False
         if tok.type in self.TYPE_TOKEN_NAMES:
             return True
-        # Allow user-defined class names as types
-        if tok.type == "IDENTIFIER" and tok.value in self.user_types:
-            return True
-        # Allow type parameters in current generic function/class scope
-        if tok.type == "IDENTIFIER" and tok.value in self._current_type_params:
-            return True
-        # Allow generic class names (used as ClassName<T1, T2> in declarations)
-        if tok.type == "IDENTIFIER" and tok.value in self.generic_class_templates:
-            return True
+        if tok.type == "IDENTIFIER":
+            return (
+                tok.value in self.user_types
+                or tok.value in self._current_type_params
+                or tok.value in self.generic_class_templates
+            )
         return False
 
     def _normalize_type_name(self, tok: Token) -> str:
@@ -133,14 +131,14 @@ class ParserBase:
         if self.current_token is None:
             return
 
-        current_index = self.tokens.index(self.current_token)
-        new_index = current_index + 1
+        new_index = self._token_idx + 1
         while (
             new_index < len(self.tokens)
             and self.tokens[new_index].type == "IDENTIFIER"
             and self.tokens[new_index].value.strip() == ""
         ):
             new_index += 1
+        self._token_idx = new_index
         self.current_token = (
             self.tokens[new_index] if new_index < len(self.tokens) else None
         )
@@ -151,8 +149,7 @@ class ParserBase:
             return None
 
         count = 0
-        start_index = self.tokens.index(self.current_token) + 1
-        for token in self.tokens[start_index:]:
+        for token in self.tokens[self._token_idx + 1:]:
             if token.type == "IDENTIFIER" and token.value.strip() == "":
                 continue
             count += 1
@@ -161,13 +158,10 @@ class ParserBase:
         return None
 
     def _current_token_index(self) -> int:
-        """Return the index of current_token in self.tokens, or -1 if not found."""
+        """Return the index of current_token in self.tokens, or -1 if not present."""
         if self.current_token is None:
             return -1
-        try:
-            return self.tokens.index(self.current_token)
-        except ValueError:
-            return -1
+        return self._token_idx
 
     def _skip_ws_from(self, i: int) -> int:
         """Skip whitespace-placeholder IDENTIFIER tokens starting at index i."""
@@ -307,6 +301,51 @@ class ParserBase:
         while self.current_token and self.current_token.type != "SEMICOLON":
             self.advance()
         self.consume("SEMICOLON")
+
+    def _parse_argument_list(self) -> list:
+        """Parse a comma-separated list of expressions inside already-consumed '('.
+
+        Consumes tokens up to and including ')'. Returns the list of argument nodes.
+        Any argument that parses to None is skipped silently (error already logged).
+        """
+        args = []
+        if self.current_token and self.current_token.type != "CLOSE_PAREN":
+            while True:
+                arg = self.parse_expression()
+                if arg:
+                    args.append(arg)
+                if self.current_token and self.current_token.type == "COMMA":
+                    self.consume("COMMA")
+                    continue
+                break
+        if not self.consume("CLOSE_PAREN"):
+            self.error("Expected ')' after argument list", self.current_token)
+        return args
+
+    def _parse_type_arg_list(self) -> Optional[list[str]]:
+        """Parse a comma-separated list of type arguments inside '<' ... '>'.
+
+        Assumes current_token is '<' on entry. Consumes '<', the type arguments,
+        and '>'. Returns the list of canonical type-name strings, or None on error.
+        """
+        self.advance()  # consume '<'
+        type_args: list[str] = []
+        while True:
+            if not (self.current_token and self._is_type_token(self.current_token)):
+                self.error("Expected type argument", self.current_token)
+                return None
+            targ_tok = self.current_token
+            self.advance()
+            type_args.append(self._normalize_type_name(targ_tok))
+            if self.current_token and self.current_token.type == "COMMA":
+                self.advance()
+                continue
+            break
+        if not (self.current_token and self.current_token.type == "GREATER_THAN"):
+            self.error("Expected '>' after type arguments", self.current_token)
+            return None
+        self.advance()  # consume '>'
+        return type_args
 
     def _register_generic_class_instance(self, class_name: str, type_args: list[str]) -> str:
         """Register a monomorphized generic class instance for type checking.

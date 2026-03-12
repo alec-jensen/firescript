@@ -174,23 +174,9 @@ class ExpressionsMixin(ParserBase):
                 and self.current_token
                 and self.current_token.type == "LESS_THAN"
             ):
-                self.advance()  # consume <
-                type_args: list[str] = []
-                while True:
-                    if not (self.current_token and self._is_type_token(self.current_token)):
-                        self.error("Expected type argument", self.current_token)
-                        return None
-                    targ_tok = self.current_token
-                    self.advance()
-                    type_args.append(self._normalize_type_name(targ_tok))
-                    if self.current_token and self.current_token.type == "COMMA":
-                        self.advance()
-                        continue
-                    break
-                if not (self.current_token and self.current_token.type == "GREATER_THAN"):
-                    self.error("Expected '>' after generic type arguments", self.current_token)
+                type_args = self._parse_type_arg_list()
+                if type_args is None:
                     return None
-                self.advance()  # consume >
                 composite_class_name = self._register_generic_class_instance(cls_tok.value, type_args)
             else:
                 if cls_tok.value not in self.user_types:
@@ -198,19 +184,7 @@ class ExpressionsMixin(ParserBase):
             if not self.consume("OPEN_PAREN"):
                 self.error("Expected '(' after constructor type", self.current_token)
                 return None
-            args = []
-            if self.current_token and self.current_token.type != "CLOSE_PAREN":
-                while True:
-                    arg = self.parse_expression()
-                    if arg:
-                        args.append(arg)
-                    if self.current_token and self.current_token.type == "COMMA":
-                        self.consume("COMMA")
-                        continue
-                    break
-            if not self.consume("CLOSE_PAREN"):
-                self.error("Expected ')' after constructor arguments", self.current_token)
-                return None
+            args = self._parse_argument_list()
             used_name = composite_class_name if composite_class_name else cls_tok.value
             node = ASTNode(NodeTypes.CONSTRUCTOR_CALL, cls_tok, used_name, args, cls_tok.index)
             node.return_type = used_name
@@ -258,19 +232,7 @@ class ExpressionsMixin(ParserBase):
                 if not self.consume("OPEN_PAREN"):
                     self.error("Expected '(' after type method name", self.current_token)
                     return None
-                args = []
-                if self.current_token and self.current_token.type != "CLOSE_PAREN":
-                    while True:
-                        arg = self.parse_expression()
-                        if arg:
-                            args.append(arg)
-                        if self.current_token and self.current_token.type == "COMMA":
-                            self.consume("COMMA")
-                            continue
-                        break
-                if not self.consume("CLOSE_PAREN"):
-                    self.error("Expected ')' after arguments", self.current_token)
-                    return None
+                args = self._parse_argument_list()
                 node = ASTNode(NodeTypes.TYPE_METHOD_CALL, method_name, method_name.value, args, method_name.index)
                 setattr(node, "class_name", token.value)
                 return node
@@ -298,18 +260,7 @@ class ExpressionsMixin(ParserBase):
                     if self.current_token and self.current_token.type == "OPEN_PAREN":
                         # Parse arguments
                         self.consume("OPEN_PAREN")
-                        arguments = []
-                        if self.current_token and self.current_token.type != "CLOSE_PAREN":
-                            while True:
-                                arg = self.parse_expression()
-                                if arg:
-                                    arguments.append(arg)
-                                if self.current_token and self.current_token.type == "COMMA":
-                                    self.consume("COMMA")
-                                    continue
-                                break
-                        if not self.consume("CLOSE_PAREN"):
-                            self.error("Expected ')' after method arguments", self.current_token)
+                        arguments = self._parse_argument_list()
 
                         # Special-case: `this.super(...)` inside constructors.
                         cls_name, in_ctor, super_class = self._current_class_context()
@@ -346,20 +297,8 @@ class ExpressionsMixin(ParserBase):
                         continue
                 # Function call (identifier followed by '(')
                 elif self.current_token and self.current_token.type == "OPEN_PAREN":
-                    open_paren = self.consume("OPEN_PAREN")
-                    arguments = []
-                    if self.current_token and self.current_token.type != "CLOSE_PAREN":
-                        while True:
-                            arg = self.parse_expression()
-                            if arg:
-                                arguments.append(arg)
-                            if self.current_token and self.current_token.type == "COMMA":
-                                self.consume("COMMA")
-                                continue
-                            break
-                    close_paren = self.consume("CLOSE_PAREN")
-                    if not close_paren:
-                        self.error("Expected ')' after function arguments", token)
+                    self.consume("OPEN_PAREN")
+                    arguments = self._parse_argument_list()
                     node = ASTNode(
                         NodeTypes.FUNCTION_CALL, token, token.value, arguments, token.index
                     )
@@ -377,23 +316,9 @@ class ExpressionsMixin(ParserBase):
                 elif self.current_token and self.current_token.type == "LESS_THAN":
                     # Check if this is a generic class positional constructor
                     if token.value in self.generic_class_templates:
-                        self.advance()  # consume <
-                        type_args = []
-                        while True:
-                            if not (self.current_token and self._is_type_token(self.current_token)):
-                                self.error("Expected type argument in generic class constructor", self.current_token)
-                                break
-                            targ_tok = self.current_token
-                            self.advance()
-                            type_args.append(self._normalize_type_name(targ_tok))
-                            if self.current_token and self.current_token.type == "COMMA":
-                                self.advance()
-                                continue
+                        type_args = self._parse_type_arg_list()
+                        if type_args is None:
                             break
-                        if not (self.current_token and self.current_token.type == "GREATER_THAN"):
-                            self.error("Expected '>' to close generic type arguments", self.current_token)
-                        else:
-                            self.advance()  # consume >
                         
                         composite_name = self._register_generic_class_instance(token.value, type_args)
                         
@@ -402,61 +327,23 @@ class ExpressionsMixin(ParserBase):
                             self.error("Expected '(' after generic class type arguments", self.current_token)
                             break
                         self.consume("OPEN_PAREN")
-                        arguments = []
-                        if self.current_token and self.current_token.type != "CLOSE_PAREN":
-                            while True:
-                                arg = self.parse_expression()
-                                if arg:
-                                    arguments.append(arg)
-                                if self.current_token and self.current_token.type == "COMMA":
-                                    self.consume("COMMA")
-                                    continue
-                                break
-                        self.consume("CLOSE_PAREN")
+                        arguments = self._parse_argument_list()
                         node = ASTNode(NodeTypes.FUNCTION_CALL, token, composite_name, arguments, token.index)
                         node.return_type = composite_name
                         continue
                     # Check if this is a generic function call
                     elif token.value in self.generic_functions:
-                        self.advance()  # consume <
-                        type_args = []
-                        while True:
-                            if not (self.current_token and self._is_type_token(self.current_token)):
-                                self.error("Expected type argument", self.current_token)
-                                break
-                            targ_tok = self.current_token
-                            self.advance()
-                            type_args.append(self._normalize_type_name(targ_tok))
-                            
-                            if self.current_token and self.current_token.type == "COMMA":
-                                self.advance()
-                                continue
+                        type_args = self._parse_type_arg_list()
+                        if type_args is None:
                             break
-                        
-                        if not (self.current_token and self.current_token.type == "GREATER_THAN"):
-                            self.error("Expected '>' to close type arguments", self.current_token)
-                        else:
-                            self.advance()  # consume >
                         
                         # Now parse the function call
                         if not (self.current_token and self.current_token.type == "OPEN_PAREN"):
                             self.error("Expected '(' after generic type arguments", self.current_token)
                             break
                         
-                        open_paren = self.consume("OPEN_PAREN")
-                        arguments = []
-                        if self.current_token and self.current_token.type != "CLOSE_PAREN":
-                            while True:
-                                arg = self.parse_expression()
-                                if arg:
-                                    arguments.append(arg)
-                                if self.current_token and self.current_token.type == "COMMA":
-                                    self.consume("COMMA")
-                                    continue
-                                break
-                        close_paren = self.consume("CLOSE_PAREN")
-                        if not close_paren:
-                            self.error("Expected ')' after function arguments", token)
+                        self.consume("OPEN_PAREN")
+                        arguments = self._parse_argument_list()
                         
                         node = ASTNode(
                             NodeTypes.FUNCTION_CALL, token, token.value, arguments, token.index
@@ -490,17 +377,7 @@ class ExpressionsMixin(ParserBase):
                             self.error("Expected '(' after generic type arguments", self.current_token)
                             break
                         self.consume("OPEN_PAREN")
-                        arguments = []
-                        if self.current_token and self.current_token.type != "CLOSE_PAREN":
-                            while True:
-                                arg = self.parse_expression()
-                                if arg:
-                                    arguments.append(arg)
-                                if self.current_token and self.current_token.type == "COMMA":
-                                    self.consume("COMMA")
-                                    continue
-                                break
-                        self.consume("CLOSE_PAREN")
+                        arguments = self._parse_argument_list()
                         node = ASTNode(NodeTypes.FUNCTION_CALL, token, composite_name, arguments, token.index)
                         node.return_type = composite_name
                         continue
@@ -589,59 +466,6 @@ class ExpressionsMixin(ParserBase):
             [array_node, index_expr],
             open_bracket.index,
         )
-
-    def parse_method_call(self, object_node):
-        """Parse method call expression like arr.pop()"""
-        dot_token = self.consume("DOT")
-        if not dot_token:
-            self.error("Expected '.' for method call", self.current_token)
-            return None
-
-        method_name = self.consume("IDENTIFIER")
-        if not method_name:
-            self.error("Expected method name after '.'", self.current_token)
-            return None
-
-        open_paren = self.consume("OPEN_PAREN")
-        if not open_paren:
-            self.error("Expected '(' after method name", self.current_token)
-            return None
-
-        arguments = []
-        if self.current_token and self.current_token.type != "CLOSE_PAREN":
-            while True:
-                arg = self.parse_expression()
-                if arg:
-                    arguments.append(arg)
-                if self.current_token and self.current_token.type == "COMMA":
-                    self.consume("COMMA")
-                    continue
-                break
-
-        close_paren = self.consume("CLOSE_PAREN")
-        if not close_paren:
-            self.error("Expected ')' after method arguments", self.current_token)
-            return None
-
-        # Create a node for the method call with the object as the first child
-        node = ASTNode(
-            NodeTypes.METHOD_CALL,
-            method_name,
-            method_name.value,
-            [object_node] + arguments,
-            method_name.index,
-        )
-        # Set return type for array methods (fixed-size: only length/size allowed)
-        if object_node.is_array:
-            if method_name.value in ("length", "size"):
-                node.return_type = "int"
-            else:
-                self.error(
-                    f"Unsupported array method '{method_name.value}' for fixed-size arrays",
-                    method_name,
-                )
-                node.return_type = None
-        return node
 
     def parse_compound_assignment(self):
         """Parse compound assignment statements like x += y, x -= y, etc."""

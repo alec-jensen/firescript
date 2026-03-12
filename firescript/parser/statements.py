@@ -7,6 +7,20 @@ from .expressions import ExpressionsMixin
 
 
 class StatementsMixin(ExpressionsMixin):
+    def _parse_braceless_body(self, fallback_tok, scope_name="scope") -> ASTNode:
+        """Parse a single statement and wrap it in a SCOPE node.
+
+        Used for braceless single-statement bodies in if/while/for.
+        fallback_tok is used for token/index when the statement is absent.
+        """
+        stmt = self._parse_statement()
+        tok = stmt.token if stmt else fallback_tok
+        idx = stmt.index if stmt else (fallback_tok.index if fallback_tok else 0)
+        body = ASTNode(NodeTypes.SCOPE, tok, scope_name, [stmt] if stmt else [], idx)
+        if stmt:
+            stmt.parent = body
+        return body
+
     def parse_if_statement(self):
         """Parse an if (...) { ... } statement, including optional else or elif."""
         if_token = self.consume("IF")
@@ -44,28 +58,8 @@ class StatementsMixin(ExpressionsMixin):
                 )
                 return None
         else:
-            then_stmt = self._parse_statement()
-            then_children = [then_stmt] if then_stmt else []
-
-            scope_token_for_then = (
-                then_stmt.token if then_stmt else expected_then_body_token
-            )
-            scope_index_for_then = (
-                then_stmt.index
-                if then_stmt
-                else (
-                    expected_then_body_token.index
-                    if expected_then_body_token
-                    else if_token.index
-                )
-            )
-
-            then_branch_node = ASTNode(
-                NodeTypes.SCOPE,
-                scope_token_for_then,
-                "scope_then",
-                then_children,
-                scope_index_for_then,
+            then_branch_node = self._parse_braceless_body(
+                expected_then_body_token, scope_name="scope_then"
             )
 
         # Optional else branch (single level)
@@ -75,20 +69,8 @@ class StatementsMixin(ExpressionsMixin):
             if self.current_token and self.current_token.type == "OPEN_BRACE":
                 else_branch_node = self.parse_scope()
             else:
-                else_stmt = self._parse_statement()
-                else_children = [else_stmt] if else_stmt else []
-                else_token = else_stmt.token if else_stmt else expected_then_body_token
-                else_index = (
-                    else_stmt.index
-                    if else_stmt
-                    else (
-                        expected_then_body_token.index
-                        if expected_then_body_token
-                        else if_token.index
-                    )
-                )
-                else_branch_node = ASTNode(
-                    NodeTypes.SCOPE, else_token, "scope_else", else_children, else_index
+                else_branch_node = self._parse_braceless_body(
+                    expected_then_body_token, scope_name="scope_else"
                 )
 
         children = [condition, then_branch_node]
@@ -289,22 +271,7 @@ class StatementsMixin(ExpressionsMixin):
             self._sync_to_semicolon()
             return None
 
-        arguments = []
-        if self.current_token and self.current_token.type != "CLOSE_PAREN":
-            while True:
-                arg = self.parse_expression()
-                if arg is not None:
-                    arguments.append(arg)
-                if self.current_token and self.current_token.type == "COMMA":
-                    self.consume("COMMA")
-                    continue
-                break
-
-        close_paren = self.consume("CLOSE_PAREN")
-        if close_paren is None:
-            self.error("Expected ')' after function arguments", self.current_token)
-            self._sync_to_semicolon()
-            return None
+        arguments = self._parse_argument_list()
 
         # Allow built-in functions and user-defined functions.
         # If imports are present, defer undefined-function checks until after import merge.
@@ -359,16 +326,7 @@ class StatementsMixin(ExpressionsMixin):
             if body is None:
                 return None
         else:
-            stmt = self._parse_statement()
-            body = ASTNode(
-                NodeTypes.SCOPE,
-                stmt.token if stmt else None,
-                "scope",
-                [stmt] if stmt else [],
-                stmt.index if stmt else while_token.index,
-            )
-            if stmt:
-                stmt.parent = body
+            body = self._parse_braceless_body(while_token)
         while_node = ASTNode(
             NodeTypes.WHILE_STATEMENT,
             while_token,
@@ -441,16 +399,7 @@ class StatementsMixin(ExpressionsMixin):
                 if body is None:
                     return None
             else:
-                stmt = self._parse_statement()
-                body = ASTNode(
-                    NodeTypes.SCOPE,
-                    stmt.token if stmt else None,
-                    "scope",
-                    [stmt] if stmt else [],
-                    stmt.index if stmt else for_token.index,
-                )
-                if stmt:
-                    stmt.parent = body
+                body = self._parse_braceless_body(for_token)
             
             # Create a variable declaration node for the loop variable
             # Store type info as attributes, not as child nodes (following parse_variable_declaration pattern)
@@ -531,38 +480,16 @@ class StatementsMixin(ExpressionsMixin):
                 if body is None:
                     return None
             else:
-                stmt = self._parse_statement()
-                body = ASTNode(
-                    NodeTypes.SCOPE,
-                    stmt.token if stmt else None,
-                    "scope",
-                    [stmt] if stmt else [],
-                    stmt.index if stmt else for_token.index,
-                )
-                if stmt:
-                    stmt.parent = body
+                body = self._parse_braceless_body(for_token)
             
-            # Build children list, filtering out None values
-            children = []
-            if init is not None:
-                children.append(init)
-            else:
-                # Add an empty placeholder for init if None
-                children.append(ASTNode(NodeTypes.LITERAL, None, "empty", [], for_token.index))
-            
-            if condition is not None:
-                children.append(condition)
-            else:
-                # Add an empty placeholder for condition if None
-                children.append(ASTNode(NodeTypes.LITERAL, None, "empty", [], for_token.index))
-            
-            if increment is not None:
-                children.append(increment)
-            else:
-                # Add an empty placeholder for increment if None
-                children.append(ASTNode(NodeTypes.LITERAL, None, "empty", [], for_token.index))
-            
-            children.append(body)
+            # Build children list, using empty LITERAL nodes as placeholders for omitted parts
+            empty = lambda: ASTNode(NodeTypes.LITERAL, None, "empty", [], for_token.index)
+            children = [
+                init if init is not None else empty(),
+                condition if condition is not None else empty(),
+                increment if increment is not None else empty(),
+                body,
+            ]
             
             for_node = ASTNode(
                 NodeTypes.FOR_STATEMENT,
@@ -589,56 +516,9 @@ class StatementsMixin(ExpressionsMixin):
             if self.current_token and self.current_token.type == "SEMICOLON":
                 self.consume("SEMICOLON")
             return None
-        # Handle compiler directives: directive <name> [<arg1>, ...];
+        # Handle compiler directives: directive <name>;
         if self.current_token and self.current_token.type == "DIRECTIVE":
-            from enums import CompilerDirective
-            dir_tok = self.current_token
-            self.advance()
-            name_tok = self.consume("IDENTIFIER")
-            if name_tok is None:
-                self.error("Expected directive name after 'directive'", self.current_token or dir_tok)
-                return None
-            # Validate directive name against known directives
-            directive_value = name_tok.value
-            try:
-                directive_enum = CompilerDirective(directive_value)
-            except Exception:
-                self.error(f"Unknown directive '{directive_value}'", name_tok)
-                directive_enum = None
-            # Consume optional simple comma-separated arguments until semicolon (currently ignored)
-            while self.current_token and self.current_token.type not in ("SEMICOLON",):
-                if self.current_token.type == "COMMA":
-                    self.advance()
-                    # Optionally accept IDENTIFIER or literals as args but ignore their values
-                    if self.current_token and self.current_token.type in (
-                        "IDENTIFIER",
-                        "INTEGER_LITERAL",
-                        "FLOAT_LITERAL",
-                        "DOUBLE_LITERAL",
-                        "STRING_LITERAL",
-                        "BOOLEAN_LITERAL",
-                    ):
-                        self.advance()
-                    continue
-                # Any unexpected token before semicolon: bail and sync
-                self.error("Unexpected token in directive arguments", self.current_token)
-                break
-            if self.current_token and self.current_token.type == "SEMICOLON":
-                self.consume("SEMICOLON")
-            # Record directive name and emit a node
-            if directive_enum is not None:
-                self.directives.add(directive_enum.value)
-                node_name = directive_enum.value
-                # Inject built-in types unlocked by this directive
-                if directive_enum == CompilerDirective.ENABLE_SYSCALLS:
-                    self.user_types.add("SyscallResult")
-                    self.user_classes["SyscallResult"] = {"status": "int32", "data": "string"}
-            else:
-                node_name = directive_value
-            directive_node = ASTNode(NodeTypes.DIRECTIVE, dir_tok, node_name, [], dir_tok.index)
-            # Mark the directive with the source file so we can filter by file later
-            directive_node.source_file = self.filename
-            return directive_node
+            return self._parse_directive()
         # Unknown token recovery: emit error and advance
         if self.current_token and self.current_token.type == "UNKNOWN":
             bad_tok = self.current_token

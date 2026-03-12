@@ -8,6 +8,17 @@ from .statements import StatementsMixin
 
 
 class TypeSystemMixin(StatementsMixin):
+    def _annotate_value_category(self, node: ASTNode, var_type: Optional[str], is_array: bool):
+        """Annotate node.value_category based on ownership/copyability of var_type."""
+        try:
+            node.value_category = (
+                "Owned" if is_owned(var_type, is_array) else (
+                    "Copyable" if is_copyable(var_type, is_array) else None
+                )
+            )
+        except Exception:
+            pass
+
     def resolve_variable_types(self, node: ASTNode, current_scope=None):
         """
         Recursively traverse the AST to annotate Identifier nodes with the variable type,
@@ -50,15 +61,7 @@ class TypeSystemMixin(StatementsMixin):
                             child.token,
                         )
                     new_scope[param_name] = (param_type, is_array)
-                    # Annotate parameter node with value category
-                    try:
-                        child.value_category = (
-                            "Owned" if is_owned(param_type, is_array) else (
-                                "Copyable" if is_copyable(param_type, is_array) else None
-                            )
-                        )
-                    except Exception:
-                        pass
+                    self._annotate_value_category(child, param_type, is_array)
             # Traverse body with parameter scope
             body = node.children[-1] if node.children else None
             if body:
@@ -79,14 +82,7 @@ class TypeSystemMixin(StatementsMixin):
                             child.token,
                         )
                     new_scope[param_name] = (param_type, is_array)
-                    try:
-                        child.value_category = (
-                            "Owned" if is_owned(param_type, is_array) else (
-                                "Copyable" if is_copyable(param_type, is_array) else None
-                            )
-                        )
-                    except Exception:
-                        pass
+                    self._annotate_value_category(child, param_type, is_array)
             # Inject implicit alias 'this' to the class type for method/constructor bodies,
             # so 'this.x' resolves even if receiver param was named differently or synthetic.
             cls_name = getattr(node, "class_name", None)
@@ -105,15 +101,7 @@ class TypeSystemMixin(StatementsMixin):
                     node.token,
                 )
             current_scope[node.name] = (node.var_type, node.is_array)
-            # Annotate declaration with value category
-            try:
-                node.value_category = (
-                    "Owned" if is_owned(node.var_type, node.is_array) else (
-                        "Copyable" if is_copyable(node.var_type, node.is_array) else None
-                    )
-                )
-            except Exception:
-                pass
+            self._annotate_value_category(node, node.var_type, node.is_array)
             # Resolve initializer expression
             for child in node.children:
                 self.resolve_variable_types(child, current_scope)
@@ -151,15 +139,7 @@ class TypeSystemMixin(StatementsMixin):
                     self.error(f"Variable '{node.name}' not defined", node.token)
             else:
                 node.var_type, node.is_array = current_scope[node.name]
-                # Annotate identifier with value category
-                try:
-                    node.value_category = (
-                        "Owned" if is_owned(node.var_type, node.is_array) else (
-                            "Copyable" if is_copyable(node.var_type, node.is_array) else None
-                        )
-                    )
-                except Exception:
-                    pass
+                self._annotate_value_category(node, node.var_type, node.is_array)
             return
 
         # Recurse into children for all other nodes
