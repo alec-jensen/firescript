@@ -156,7 +156,7 @@ def compile_file(file_path, target, cc=None, output=None):
     logging.debug("Starting code generation...")
 
     if target == "native":
-        from c_code_generator import CCodeGenerator
+        from codegen import CCodeGenerator
 
         # Generate C code
         generator = CCodeGenerator(ast, source_file=file_path)
