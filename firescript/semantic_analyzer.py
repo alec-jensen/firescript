@@ -9,7 +9,7 @@ from enum import Enum, auto
 
 from enums import NodeTypes
 from parser import ASTNode
-from utils.type_utils import is_owned, is_copyable, is_user_class
+from utils.type_utils import is_owned
 from utils.file_utils import get_line_and_coumn_from_index, get_line
 
 
@@ -223,6 +223,19 @@ class SemanticAnalyzer:
                 f"Borrowing is only allowed for Owned types.",
                 node,
             )
+
+    def _analyze_callable_definition(self, node: ASTNode) -> None:
+        """Analyze a function-like definition with parameters and body scope."""
+        self._enter_scope()
+        for child in node.children:
+            if child.node_type == NodeTypes.PARAMETER:
+                is_borrowed = getattr(child, "is_borrowed", False)
+                if is_borrowed:
+                    self._validate_borrow(child.var_type, child.is_array, child)
+                self._register_binding(child.name, child.var_type, child.is_array, child)
+            elif child.node_type == NodeTypes.SCOPE:
+                self._analyze_node(child)
+        self._exit_scope()
     
     def _analyze_node(self, node: ASTNode) -> None:
         """Recursively analyze a node and its children."""
@@ -337,23 +350,10 @@ class SemanticAnalyzer:
         
         # Function definition: enter new scope for parameters and body
         elif node.node_type == NodeTypes.FUNCTION_DEFINITION:
-            self._enter_scope()
-            # Register parameters as bindings
-            for child in node.children:
-                if child.node_type == NodeTypes.PARAMETER:
-                    is_borrowed = getattr(child, "is_borrowed", False)
-                    if is_borrowed:
-                        # Validate that borrowed parameters are Owned types
-                        self._validate_borrow(child.var_type, child.is_array, child)
-                    self._register_binding(child.name, child.var_type, child.is_array, child)
-                elif child.node_type == NodeTypes.SCOPE:
-                    # Function body
-                    self._analyze_node(child)
-            self._exit_scope()
+            self._analyze_callable_definition(node)
         
         # Class definition: register class, analyze methods
         elif node.node_type == NodeTypes.CLASS_DEFINITION:
-            is_copyable_class = getattr(node, "is_copyable", False)
             # Class name is already registered by parser in user_classes
             # Analyze methods
             for child in node.children:
@@ -362,16 +362,7 @@ class SemanticAnalyzer:
         
         # Class method: similar to function
         elif node.node_type == NodeTypes.CLASS_METHOD_DEFINITION:
-            self._enter_scope()
-            for child in node.children:
-                if child.node_type == NodeTypes.PARAMETER:
-                    is_borrowed = getattr(child, "is_borrowed", False)
-                    if is_borrowed:
-                        self._validate_borrow(child.var_type, child.is_array, child)
-                    self._register_binding(child.name, child.var_type, child.is_array, child)
-                elif child.node_type == NodeTypes.SCOPE:
-                    self._analyze_node(child)
-            self._exit_scope()
+            self._analyze_callable_definition(node)
         
         # Return statement: check that returned Owned values transfer ownership
         elif node.node_type == NodeTypes.RETURN_STATEMENT:

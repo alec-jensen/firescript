@@ -6,6 +6,8 @@ import logging
 import os
 import re
 
+from compiler_types import DirectiveNameSet, FileDirectiveMap, SourceMap, SymbolTable
+
 
 # A simple type mapping from firescript types to C types.
 FIRETYPE_TO_C: dict[str, str] = {
@@ -33,7 +35,7 @@ class CCodeGeneratorBase:
         self.ast = ast
         self.source_file = source_file
         self.source_code: Optional[str] = None
-        self.symbol_table: dict[str, tuple[str, bool]] = {}  # (type, is_array)
+        self.symbol_table: SymbolTable = {}
         # Fixed-size array lengths by variable name
         self.array_lengths: dict[str, int] = {}
         self.array_temp_counter = (
@@ -51,20 +53,21 @@ class CCodeGeneratorBase:
         # Build per-file directive maps
         # Map: file_path -> set of enabled directive names
         # Normalize paths to ensure consistent lookups regardless of how the file was specified
-        self.file_directives: dict[str, set[str]] = {}
+        self.file_directives: FileDirectiveMap = {}
         for c in (self.ast.children or []):
             if c.node_type == NodeTypes.DIRECTIVE:
                 directive_name = getattr(c, "name", "")
-                source_file = getattr(c, "source_file", entry_file or source_file)
-                # Normalize the path for consistent lookup (use abspath to handle relative vs absolute)
-                normalized_source = os.path.abspath(source_file) if source_file else source_file
+                directive_source = getattr(c, "source_file", entry_file or source_file)
+                normalized_source = self._normalize_source_path(directive_source)
+                if normalized_source is None:
+                    continue
                 if normalized_source not in self.file_directives:
                     self.file_directives[normalized_source] = set()
                 self.file_directives[normalized_source].add(directive_name)
         
         # For backward compatibility, check entry file directives
-        normalized_entry = os.path.abspath(entry_file or source_file) if (entry_file or source_file) else None
-        entry_directives = self.file_directives.get(normalized_entry, set()) if normalized_entry else set()
+        entry_source = entry_file if isinstance(entry_file, str) else source_file
+        entry_directives = self._directives_for_source(entry_source)
         self.drops_enabled: bool = "enable_drops" in entry_directives
         self.stdout_enabled: bool = "enable_lowlevel_stdout" in entry_directives
         self.syscall_enabled: bool = "enable_syscalls" in entry_directives
@@ -144,8 +147,12 @@ class CCodeGeneratorBase:
         
         # Get source file and source code for this node
         node_source_file = getattr(node, 'source_file', self.source_file)
-        source_map = getattr(self.ast, 'source_map', {})
-        node_source_code = source_map.get(node_source_file) if source_map else None
+        source_map: SourceMap = getattr(self.ast, 'source_map', {})
+        node_source_code = (
+            source_map.get(node_source_file)
+            if source_map and isinstance(node_source_file, str)
+            else None
+        )
         
         # Fall back to main source if not in map
         if node_source_code is None:
@@ -170,6 +177,20 @@ class CCodeGeneratorBase:
             # Node index is out of range - just show the error without source location
             logging.error(text)
 
+    def _normalize_source_path(self, source_path: Optional[str]) -> Optional[str]:
+        """Normalize a source path for directive/source-map lookups."""
+        return os.path.abspath(source_path) if source_path else None
+
+    def _directives_for_source(self, source_path: Optional[str]) -> DirectiveNameSet:
+        """Return enabled directives for a given source file."""
+        normalized_source = self._normalize_source_path(source_path)
+        return self.file_directives.get(normalized_source, set()) if normalized_source else set()
+
+    def _directives_for_node(self, node: ASTNode) -> DirectiveNameSet:
+        """Return enabled directives for the file that produced a node."""
+        node_source_file = getattr(node, 'source_file', self.source_file)
+        return self._directives_for_source(node_source_file)
+
     def _free_arrays_in_current_scope(self) -> list[str]:
         """Return lines to free owned values declared in the current scope (no pop)."""
         if not self.scope_stack:
@@ -183,7 +204,7 @@ class CCodeGeneratorBase:
         
         return cleanup_lines
 
-    def _free_arrays_in_all_active_scopes(self, exclude_var: str = None) -> list[str]:
+    def _free_arrays_in_all_active_scopes(self, exclude_var: Optional[str] = None) -> list[str]:
         """Return lines to free owned values declared in all active scopes (for early returns).
         
         Args:
@@ -208,7 +229,7 @@ class CCodeGeneratorBase:
         # After removing big number support, just return the expression string
         return str(index_expr)
 
-    def _build_call_args(self, arg_nodes, func_name: str = None) -> str:
+    def _build_call_args(self, arg_nodes, func_name: Optional[str] = None) -> str:
         """Build a comma-separated argument string, injecting implicit size args for explicit
         array parameters of user-defined functions (those in _explicit_array_param_funcs)."""
         inject_sizes = func_name is not None and func_name in self._explicit_array_param_funcs
@@ -233,6 +254,14 @@ class CCodeGeneratorBase:
                     else:
                         parts.append("0")
         return ", ".join(parts)
+
+    def _visit(self, node: ASTNode) -> str:
+        """Implemented by statement mixins; declared here for static type checking."""
+        raise NotImplementedError("_visit must be implemented by codegen mixins")
+
+    def _emit_method_definition(self, class_name: str, node: ASTNode) -> str:
+        """Implemented by class mixins; declared here for static type checking."""
+        raise NotImplementedError("_emit_method_definition must be implemented by codegen mixins")
 
     def _mangle_name(self, name: str) -> str:
         """Generate a unique mangled name for a user symbol to avoid C collisions."""

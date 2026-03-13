@@ -231,9 +231,11 @@ def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bo
                 _log("NEW", f"wrote golden {tc.expected_path}", color_code="33")
             elif status == "FAIL":
                 _log("FAIL", f"{tc.source}", color_code="31")
+                exp_text = exp or ""
+                act_text = act or ""
                 diff_lines = list(difflib.unified_diff(
-                    exp.splitlines(keepends=True),
-                    act.splitlines(keepends=True),
+                    exp_text.splitlines(keepends=True),
+                    act_text.splitlines(keepends=True),
                     fromfile="expected",
                     tofile="actual",
                 ))
@@ -242,7 +244,7 @@ def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bo
             elif status == "FAIL_MISSING":
                 _log("FAIL", f"missing golden for {tc.source}: {tc.expected_path}", color_code="31")
                 print(f"  --- actual output ---")
-                print(_indent(act))
+                print(_indent(act or ""))
             elif status == "ERROR":
                 if act:
                     _log("ERROR", f"{tc.source}: {act}", color_code="31")

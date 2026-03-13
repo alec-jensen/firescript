@@ -1,19 +1,20 @@
 import logging
-from typing import Optional
+from typing import Optional, Callable, cast
 
+from lexer import Token
 from enums import NodeTypes
 from .ast_node import ASTNode
 from .expressions import ExpressionsMixin
 
 
 class StatementsMixin(ExpressionsMixin):
-    def _parse_braceless_body(self, fallback_tok, scope_name="scope") -> ASTNode:
+    def _parse_braceless_body(self, fallback_tok: Optional[Token], scope_name="scope") -> ASTNode:
         """Parse a single statement and wrap it in a SCOPE node.
 
         Used for braceless single-statement bodies in if/while/for.
         fallback_tok is used for token/index when the statement is absent.
         """
-        stmt = self._parse_statement()
+        stmt: Optional[ASTNode] = self._parse_statement()
         tok = stmt.token if stmt else fallback_tok
         idx = stmt.index if stmt else (fallback_tok.index if fallback_tok else 0)
         body = ASTNode(NodeTypes.SCOPE, tok, scope_name, [stmt] if stmt else [], idx)
@@ -100,13 +101,14 @@ class StatementsMixin(ExpressionsMixin):
             self.advance()
 
         # Type
+        next_tok = self.peek()
         is_deferred_generic = (
             self.defer_undefined_identifiers
             and self.current_token is not None
             and self.current_token.type == "IDENTIFIER"
             and bool(self.current_token.value.strip())
-            and self.peek() is not None
-            and self.peek().type == "LESS_THAN"
+            and next_tok is not None
+            and next_tok.type == "LESS_THAN"
         )
         if not (self.current_token and (self._is_type_token(self.current_token) or is_deferred_generic)):
             self.error("Expected type in variable declaration", self.current_token)
@@ -504,7 +506,7 @@ class StatementsMixin(ExpressionsMixin):
                     child.parent = for_node
             return for_node
 
-    def _parse_statement(self):
+    def _parse_statement(self) -> Optional[ASTNode]:
         """Determine the kind of statement and parse it."""
         # Imports are top-level only; error if seen in a statement context (inside scopes)
         if self.current_token and self.current_token.type == "IMPORT":
@@ -518,7 +520,12 @@ class StatementsMixin(ExpressionsMixin):
             return None
         # Handle compiler directives: directive <name>;
         if self.current_token and self.current_token.type == "DIRECTIVE":
-            return self._parse_directive()
+            parse_directive_any = getattr(self, "_parse_directive", None)
+            if callable(parse_directive_any):
+                parse_directive = cast(Callable[[], Optional[ASTNode]], parse_directive_any)
+                return parse_directive()
+            self.error("Directive parsing is not available in this parser configuration", self.current_token)
+            return None
         # Unknown token recovery: emit error and advance
         if self.current_token and self.current_token.type == "UNKNOWN":
             bad_tok = self.current_token

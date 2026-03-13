@@ -24,9 +24,11 @@ function startClient(): void {
   // Resolve the path to lsp_server.py.
   let serverScript: string = config.get("serverPath", "");
   if (!serverScript) {
-    // Search in order: workspace root, then relative to the extension install dir.
+    // Search in order: packaged location, compatibility shim, then relative to the extension install dir.
     const candidates = [
+      path.join(workspaceRoot, "firescript", "lsp", "lsp_server.py"),
       path.join(workspaceRoot, "firescript", "lsp_server.py"),
+      path.join(extensionContext.extensionPath, "..", "..", "firescript", "lsp", "lsp_server.py"),
       path.join(extensionContext.extensionPath, "..", "..", "firescript", "lsp_server.py"),
     ];
     for (const candidate of candidates) {
@@ -39,7 +41,7 @@ function startClient(): void {
   }
 
   if (!serverScript || !fs.existsSync(serverScript)) {
-    const msg = `firescript: could not find lsp_server.py. Set "firescript.serverPath" in settings to point to it.`;
+    const msg = `firescript: could not find firescript/lsp/lsp_server.py. Set "firescript.serverPath" in settings to point to it.`;
     outputChannel.appendLine(msg);
     vscode.window.showErrorMessage(msg);
     return;

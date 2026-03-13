@@ -34,8 +34,9 @@ class DeclarationsMixin(TypeSystemMixin):
                 self.user_classes["SyscallResult"] = {"status": "int32", "data": "string"}
         else:
             node_name = directive_value
-        node = ASTNode(NodeTypes.DIRECTIVE, dir_tok, node_name, [], dir_tok.index)
-        node.source_file = self.filename
+        node_index = dir_tok.index if dir_tok is not None else 0
+        node = ASTNode(NodeTypes.DIRECTIVE, dir_tok, node_name, [], node_index)
+        setattr(node, "source_file", self.filename)
         return node
 
     def _parse_function_definition(self):

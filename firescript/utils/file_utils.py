@@ -1,6 +1,6 @@
 def get_line_and_coumn_from_index(file: str, index: int) -> tuple[int, int]:
     line = 1
-    column = 0
+    column = 1
 
     for i, char in enumerate(file):
         if i == index:
@@ -8,7 +8,7 @@ def get_line_and_coumn_from_index(file: str, index: int) -> tuple[int, int]:
 
         if char == "\n":
             line += 1
-            column = 0
+            column = 1
         else:
             column += 1
 

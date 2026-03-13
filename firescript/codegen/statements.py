@@ -3,7 +3,6 @@ from parser import ASTNode, get_line_and_coumn_from_index, get_line
 from utils.type_utils import is_copyable, is_owned, register_class
 from typing import Optional
 import logging
-import os
 import sys
 
 from .declarations import DeclarationsMixin
@@ -373,7 +372,7 @@ class StatementsMixin(DeclarationsMixin):
                 if isinstance(rhs_type_fs, str) and rhs_type_fs.endswith("[]"):
                     elem_fs = rhs_type_fs[:-2]
                     self.symbol_table[name] = (elem_fs, True)
-                    self.scope_stack[-1].append(name)
+                    self.scope_stack[-1].append((mangled_name, elem_fs))
                     return f"VArray* {mangled_name} = {value_code}"
                 # If still unknown, fall back to int32
                 fs_type = rhs_type_fs or "int32"
@@ -445,12 +444,9 @@ class StatementsMixin(DeclarationsMixin):
                     return f"({c_class_name}){{ {init_str} }}"
             if node.name == "stdout":
                 # Check if stdout is enabled in the file where this call is made
-                node_source_file = getattr(node, 'source_file', self.source_file)
-                # Normalize path for consistent lookup (use abspath to handle relative vs absolute)
-                normalized_source = os.path.abspath(node_source_file) if node_source_file else node_source_file
-                node_file_directives = self.file_directives.get(normalized_source, set())
+                node_file_directives = self._directives_for_node(node)
                 
-                logging.debug(f"stdout() call: node_source_file={node_source_file}, normalized={normalized_source}, file_directives={self.file_directives}, node_directives={node_file_directives}")
+                logging.debug(f"stdout() call: file_directives={self.file_directives}, node_directives={node_file_directives}")
                 
                 if "enable_lowlevel_stdout" not in node_file_directives:
                     self.error(
@@ -468,9 +464,7 @@ class StatementsMixin(DeclarationsMixin):
                 return "/* drop noop */"
             elif node.name in ("syscall_open", "syscall_read", "syscall_write", "syscall_close"):
                 # Check if syscalls are enabled in the file where this call is made
-                node_source_file = getattr(node, 'source_file', self.source_file)
-                normalized_source = os.path.abspath(node_source_file) if node_source_file else node_source_file
-                node_file_directives = self.file_directives.get(normalized_source, set())
+                node_file_directives = self._directives_for_node(node)
                 if "enable_syscalls" not in node_file_directives:
                     self.error(
                         f"{node.name}() is not available. Use 'directive enable_syscalls;' "
@@ -717,7 +711,7 @@ class StatementsMixin(DeclarationsMixin):
             # Extract loop variable name and type from the variable declaration
             # var_decl has var_type attribute and name attribute
             loop_var = var_decl.name
-            var_type = var_decl.var_type
+            var_type = var_decl.var_type or "int32"
             
             # Convert firescript type to C type
             c_type = self._map_type_to_c(var_type)

@@ -322,6 +322,10 @@ class ParserBase:
             self.error("Expected ')' after argument list", self.current_token)
         return args
 
+    def parse_expression(self) -> Optional[ASTNode]:
+        """Implemented by expression mixins; declared here for static type checking."""
+        raise NotImplementedError("parse_expression must be implemented by parser mixins")
+
     def _parse_type_arg_list(self) -> Optional[list[str]]:
         """Parse a comma-separated list of type arguments inside '<' ... '>'.
 

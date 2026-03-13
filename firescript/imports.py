@@ -1,19 +1,21 @@
 import os
 import logging
 from typing import Dict, List, Optional, Tuple, Iterable
+from dataclasses import dataclass, field
 
 from lexer import Lexer
 from parser import Parser, ASTNode
 from enums import NodeTypes
+from compiler_types import SourceMap, MergedSymbolTable
 
 
+@dataclass
 class ImportSpec:
-    def __init__(self, module_path: str, kind: str, symbols: List[dict], alias: Optional[str], span: Tuple[int, int]):
-        self.module_path = module_path
-        self.kind = kind  # "module" | "symbols" | "wildcard" | "external"
-        self.symbols = symbols
-        self.alias = alias
-        self.span = span
+    module_path: str
+    kind: str  # "module" | "symbols" | "wildcard" | "external"
+    symbols: List[dict]
+    alias: Optional[str]
+    span: Tuple[int, int]
 
 
 def iter_imports(ast: ASTNode) -> Iterable[ImportSpec]:
@@ -27,13 +29,17 @@ def iter_imports(ast: ASTNode) -> Iterable[ImportSpec]:
             yield ImportSpec(module_path, kind, symbols, alias, span)
 
 
+@dataclass
 class Module:
-    def __init__(self, dotted: str, path: str, ast: ASTNode):
-        self.dotted = dotted
-        self.path = path
-        self.ast = ast
-        self.imports: List[ImportSpec] = list(iter_imports(ast))
-        self.exports: Dict[str, ASTNode] = {}
+    dotted: str
+    path: str
+    ast: ASTNode
+    source_text: str = ""
+    imports: List[ImportSpec] = field(init=False)
+    exports: Dict[str, ASTNode] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        self.imports = list(iter_imports(self.ast))
 
 
 class ModuleResolver:
@@ -81,7 +87,7 @@ class ModuleResolver:
         no_ext = os.path.splitext(rel)[0]
         return no_ext.replace(os.sep, ".")
 
-    def parse_file(self, file_path: str) -> ASTNode:
+    def parse_file(self, file_path: str) -> tuple[ASTNode, str]:
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 file_content = f.read()
@@ -95,7 +101,7 @@ class ModuleResolver:
             # Surface the first parser error to the caller
             msg, line, col = parser.errors[0]
             raise RuntimeError(f"Parse error in {file_path}: {msg} at {line}:{col}")
-        return ast
+        return ast, file_content
 
     def collect_exports(self, mod: Module) -> Dict[str, ASTNode]:
         exports: Dict[str, ASTNode] = {}
@@ -134,8 +140,8 @@ class ModuleResolver:
         if not os.path.isfile(path):
             raise FileNotFoundError(f"Module not found: {dotted} (looked in {path})")
 
-        ast = self.parse_file(path)
-        mod = Module(dotted, path, ast)
+        ast, source_text = self.parse_file(path)
+        mod = Module(dotted, path, ast, source_text)
         self.modules[dotted] = mod
 
         # Resolve dependencies (DFS)
@@ -210,10 +216,21 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
     root = ASTNode(NodeTypes.ROOT, None, "root", [], 0)
     
     # Store the entry file path on the root for directive filtering
-    root.entry_file = entry.path
+    setattr(root, "entry_file", entry.path)
     
     # Store source code map for error reporting
-    root.source_map = {}  # file_path -> source_code
+    setattr(root, "source_map", SourceMap())  # file_path -> source_code
+
+    def cache_source_text(path: str, source_text: str = "") -> None:
+        source_map: SourceMap = getattr(root, "source_map")
+        if source_text:
+            source_map[path] = source_text
+            return
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                source_map[path] = f.read()
+        except Exception:
+            pass
 
     logging.debug(f"Merging {len(ordered)} modules: {[m.dotted for m in ordered]}")
     
@@ -221,7 +238,7 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
 
     def annotate_source_file(node: ASTNode, source_file: str):
         """Recursively annotate all nodes in a tree with their source file"""
-        node.source_file = source_file
+        setattr(node, "source_file", source_file)
         for child in getattr(node, "children", []) or []:
             annotate_source_file(child, source_file)
 
@@ -248,11 +265,7 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
             continue
         logging.debug(f"Adding exports from module {mod.dotted}: {list(mod.exports.keys())}")
         # Read source code for this module for error reporting
-        try:
-            with open(mod.path, 'r', encoding='utf-8') as f:
-                root.source_map[mod.path] = f.read()
-        except Exception:
-            pass  # If we can't read it, just skip
+        cache_source_text(mod.path, mod.source_text)
         # Include directives from this module (for file-scoped directive tracking)
         for child in mod.ast.children:
             if child.node_type == NodeTypes.DIRECTIVE:
@@ -265,11 +278,7 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
                 append_export(node, mod.path)
 
     # Read entry module source for error reporting
-    try:
-        with open(entry.path, 'r', encoding='utf-8') as f:
-            root.source_map[entry.path] = f.read()
-    except Exception:
-        pass
+    cache_source_text(entry.path, entry.source_text)
 
     # Finally, include entry module's non-import top-level statements in order
     for c in entry.ast.children:
@@ -301,7 +310,7 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
     # Also build a symbol table for the merged scope to help with later type resolution.
     func_types: Dict[str, str] = {}
     var_types: Dict[str, str] = {}
-    symbol_table: Dict[str, tuple[str, bool]] = {}
+    symbol_table: MergedSymbolTable = {}
     
     for node in root.children:
         if node.node_type == NodeTypes.FUNCTION_DEFINITION:

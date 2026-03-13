@@ -59,7 +59,7 @@
         "firescript.serverPath": {
           "type": "string",
           "default": "",
-          "description": "Absolute path to lsp_server.py. Leave empty to use the server bundled in the firescript workspace."
+          "description": "Absolute path to the firescript language server script, typically firescript/lsp/lsp_server.py. Leave empty to use the server bundled in the firescript workspace."
         }
       }
     }

@@ -7,18 +7,19 @@ import shutil
 import glob
 import time
 
-from lexer import Lexer
-from parser import Parser
 from log_formatter import LogFormatter
-from preprocessor import enable_and_insert_drops
-from semantic_analyzer import SemanticAnalyzer
-from enums import NodeTypes
-from imports import ModuleResolver, build_merged_ast
-from enums import NodeTypes
+from compiler_pipeline import CompilerPipeline
 
 FIRESCRIPT_VERSION = "0.4.0"
 FIRESCRIPT_RELEASE_DATE = "February 2, 2026"
 FIRESCRIPT_RELEASE_NAME = "Phoenix"
+
+
+def _log_stage_duration(stage_name: str, start_time_ns: int) -> int:
+    """Log a debug timing line for a compiler stage and return a new start time."""
+    end_time_ns = time.perf_counter_ns()
+    logging.debug(f"{stage_name} completed in {(end_time_ns - start_time_ns) / 1_000_000:.2f} ms")
+    return end_time_ns
 
 
 def setup_logging(debug_mode=False):
@@ -60,89 +61,54 @@ def compile_file(file_path, target, cc=None, output=None):
         logging.error(f"Error reading file {file_path}: {e}")
         return False
 
-    # Lexical analysis
-    lexer = Lexer(file_content)
-    tokens = lexer.tokenize()
-    logging.debug(f"tokens:\n{'\n'.join([str(token) for token in tokens])}")
+    stage_start = time.perf_counter_ns()
 
-    # Parsing
-    # If imports are present, defer some undefined-name checks until after import merge.
-    has_import_tokens = any(getattr(t, "type", None) == "IMPORT" for t in tokens)
-    parser_instance = Parser(
-        tokens,
+    pipeline = CompilerPipeline(
         file_content,
         os.path.relpath(file_path),
-        defer_undefined_identifiers=has_import_tokens,
+        file_path,
     )
-    ast = parser_instance.parse()
+    ast = pipeline.parse()
+    tokens = pipeline.tokens
+    logging.debug(f"tokens:\n{'\n'.join([str(token) for token in tokens])}")
     logging.debug(f"ast:\n{ast}")
+    stage_start = _log_stage_duration("Lex/parse", stage_start)
 
     # Resolve imports if present
-    has_imports = any(c.node_type == NodeTypes.IMPORT_STATEMENT for c in ast.children)
+    has_imports = pipeline.has_imports()
     if has_imports:
-        # Resolve module graph and merge ASTs
         try:
-            # Import root defaults to directory containing the entry file
-            import_root = os.path.dirname(os.path.abspath(file_path))
-            resolver = ModuleResolver(import_root)
-            # Prime resolver with already-parsed entry AST to avoid re-parsing errors on undefined imported symbols
-            entry_abs = os.path.abspath(file_path)
-            dotted = resolver.path_to_dotted(entry_abs)
-            from imports import Module  # local import to avoid circular typing
-            entry_mod_obj = Module(dotted, entry_abs, ast)
-            resolver.modules[dotted] = entry_mod_obj
-            # Load dependencies of entry
-            for imp in entry_mod_obj.imports:
-                if imp.kind != "external":
-                    resolver._load_module(imp.module_path, [dotted])
-            # Now build full order including entry
-            entry_mod, topo = resolver.resolve_for_entry(file_path)
+            ast = pipeline.resolve_imports()
             logging.debug("Import resolution completed successfully.")
-            # Build merged AST for single-file codegen
-            ast = build_merged_ast(entry_mod, topo)
             logging.debug("Import merge completed successfully.")
         except Exception as e:
             logging.error(f"Import resolution failed: {e}")
             return False
 
-        # If we deferred undefined-identifier checks while parsing (because imports existed),
-        # validate them now against the merged symbol table.
-        deferred = getattr(parser_instance, "deferred_undefined_identifiers", [])
-        if deferred:
-            merged_symbols = getattr(ast, "_merged_symbols", {}) or {}
-            for name, tok in deferred:
-                if name in merged_symbols:
-                    continue
-                # Also allow class names imported via merge.
-                if any(
-                    c.node_type == NodeTypes.CLASS_DEFINITION and getattr(c, "name", None) == name
-                    for c in (ast.children or [])
-                ):
-                    continue
-                parser_instance.error(f"Variable '{name}' not defined", tok)
-
-        if parser_instance.errors:
-            logging.error(f"Parsing failed with {len(parser_instance.errors)} errors")
+        if pipeline.parser_errors:
+            logging.error(f"Parsing failed with {len(pipeline.parser_errors)} errors")
             return False
+        stage_start = _log_stage_duration("Import resolution", stage_start)
 
     # If there were parser errors and no imports, fail now.
     # If imports were present, some 'undefined symbol' errors may be resolved by the merge above.
-    if parser_instance.errors and not has_imports:
-        logging.error(f"Parsing failed with {len(parser_instance.errors)} errors")
+    if pipeline.parser_errors and not has_imports:
+        logging.error(f"Parsing failed with {len(pipeline.parser_errors)} errors")
         return False
 
     # Preprocess: enable and insert drop() calls if needed (ownership cleanup)
     try:
-        ast = enable_and_insert_drops(ast)
+        ast = pipeline.preprocess()
         logging.debug("Preprocessing (drop insertion) completed.")
     except Exception as e:
         logging.error(f"Preprocessing failed: {e}")
         return False
+    stage_start = _log_stage_duration("Preprocessing", stage_start)
 
     # Semantic analysis: ownership and borrow checking
     try:
-        analyzer = SemanticAnalyzer(ast, source_file=file_path, source_code=file_content)
-        if not analyzer.analyze():
+        analyzer = pipeline.analyze_semantics()
+        if analyzer.errors:
             analyzer.report_errors()
             logging.error(f"Semantic analysis failed with {len(analyzer.errors)} errors")
             return False
@@ -152,6 +118,7 @@ def compile_file(file_path, target, cc=None, output=None):
         import traceback
         traceback.print_exc()
         return False
+    stage_start = _log_stage_duration("Semantic analysis", stage_start)
 
     logging.debug("Starting code generation...")
 
@@ -167,6 +134,7 @@ def compile_file(file_path, target, cc=None, output=None):
         output = output.replace(" free(", " firescript_free(")
         output = output.replace("\tfree(", "\tfirescript_free(")
         output = output.replace("\nfree(", "\nfirescript_free(")
+        stage_start = _log_stage_duration("Code generation", stage_start)
 
         # Create temp folder if it doesn't exist
         os.makedirs("build/temp", exist_ok=True)
@@ -182,6 +150,7 @@ def compile_file(file_path, target, cc=None, output=None):
         except Exception as e:
             logging.error(f"Failed to write C code to {temp_c_file}: {e}")
             return False
+        stage_start = _log_stage_duration("Write transpiled C", stage_start)
 
         logging.debug(f"Transpiled code written to {temp_c_file}")
         logging.debug("Starting compilation of transpiled code...")
@@ -242,6 +211,7 @@ def compile_file(file_path, target, cc=None, output=None):
         except Exception as e:
             logging.error(f"Failed to execute compiler: {e}")
             return False
+        stage_start = _log_stage_duration("C compilation", stage_start)
 
         end_time = time.perf_counter_ns()
 
@@ -296,66 +266,31 @@ def lint_text(source_text: str, file_path: str = "<stdin>"):
     root.setLevel(_logging.CRITICAL + 1)
 
     try:
-        lexer = Lexer(source_text)
-        tokens = lexer.tokenize()
-
-        has_import_tokens = any(getattr(t, "type", None) == "IMPORT" for t in tokens)
-        parser_instance = Parser(
-            tokens,
-            source_text,
-            file_path,
-            defer_undefined_identifiers=has_import_tokens,
-        )
-        ast = parser_instance.parse()
-        errors.extend(parser_instance.errors)
+        pipeline = CompilerPipeline(source_text, file_path, file_path)
+        ast = pipeline.parse()
+        errors.extend(pipeline.parser_errors)
 
         # Bail early if the AST is too broken to continue.
-        if parser_instance.errors and not has_import_tokens:
+        if pipeline.parser_errors and not pipeline.has_imports():
             return errors
 
-        has_imports = any(c.node_type == NodeTypes.IMPORT_STATEMENT for c in ast.children)
-        if has_imports:
+        if pipeline.has_imports():
             try:
-                import_root = os.path.dirname(os.path.abspath(file_path))
-                resolver = ModuleResolver(import_root)
-                entry_abs = os.path.abspath(file_path)
-                dotted = resolver.path_to_dotted(entry_abs)
-                from imports import Module
-                entry_mod_obj = Module(dotted, entry_abs, ast)
-                resolver.modules[dotted] = entry_mod_obj
-                for imp in entry_mod_obj.imports:
-                    if imp.kind != "external":
-                        resolver._load_module(imp.module_path, [dotted])
-                entry_mod, topo = resolver.resolve_for_entry(file_path)
-                ast = build_merged_ast(entry_mod, topo)
+                ast = pipeline.resolve_imports()
             except Exception:
                 return errors
 
-            deferred = getattr(parser_instance, "deferred_undefined_identifiers", [])
-            if deferred:
-                merged_symbols = getattr(ast, "_merged_symbols", {}) or {}
-                for name, tok in deferred:
-                    if name in merged_symbols:
-                        continue
-                    if any(
-                        c.node_type == NodeTypes.CLASS_DEFINITION and getattr(c, "name", None) == name
-                        for c in (ast.children or [])
-                    ):
-                        continue
-                    parser_instance.error(f"Variable '{name}' not defined", tok)
-
-            errors = list(parser_instance.errors)
+            errors = list(pipeline.parser_errors)
             if errors:
                 return errors
 
         try:
-            ast = enable_and_insert_drops(ast)
+            ast = pipeline.preprocess()
         except Exception:
             return errors
 
         try:
-            analyzer = SemanticAnalyzer(ast, source_file=file_path, source_code=source_text)
-            analyzer.analyze()
+            analyzer = pipeline.analyze_semantics()
             errors.extend(analyzer.errors)
         except Exception:
             pass
