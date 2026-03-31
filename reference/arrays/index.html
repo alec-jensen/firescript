@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -1302,7 +1302,7 @@
 
 <h1 id="arrays">Arrays<a class="headerlink" href="#arrays" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>Only arrays with literal initialization and method <code>length()</code> are supported by the compiler. Array slicing, negative indices, and other utility methods are not implemented.</p>
+<p>Core arrays are fixed-size. The compiler supports <code>length()</code>, negative indexing, <code>index(value)</code>, and <code>count(value)</code>. Array slicing and core <code>sort()</code> are not implemented; sorting should come from standard library containers/utilities.</p>
 </blockquote>
 <h2 id="array-basics">Array Basics<a class="headerlink" href="#array-basics" title="Permanent link">&para;</a></h2>
 <p>In firescript, arrays are fixed-size, ordered collections of elements that all share the same type. Arrays are Owned types—they are stored on the heap with pointers on the stack and use move semantics. Arrays are declared using square brackets and the size after the type.</p>
@@ -1400,18 +1400,11 @@ int8[] numbers = [10, 20, 30, 40, 50];
 int8[] subset = numbers[1:4];  // Would be [20, 30, 40]
 </code></pre>
 <ul>
-<li><strong>Negative indices</strong> – Access elements from the end of the array</li>
-</ul>
-<pre><code class="language-firescript">// Future syntax
-string[] words = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;];
-string last = words[-1];     // Would be &quot;cherry&quot;
-</code></pre>
-<ul>
-<li><strong>Additional utility methods</strong>:</li>
-<li><code>index(value)</code> – Find the index of the first occurrence of a value</li>
-<li><code>count(value)</code> – Count occurrences of a value</li>
 <li>
-<p><code>sort()</code> – Sort the array elements</p>
+<p><strong>Additional utility methods</strong>:</p>
+<ul>
+<li><code>sort()</code> – Sorting is not a core fixed-size array method; use standard library containers/utilities for sorting behavior</li>
+</ul>
 </li>
 <li>
 <p><strong>Array arithmetic</strong> – Element-wise operations between arrays</p>
@@ -1454,11 +1447,12 @@ int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
 <ul>
 <li>✅ Array declaration and initialization</li>
 <li>✅ Element access with positive indices</li>
+<li>✅ Negative index access for fixed-size arrays (<code>arr[-1]</code>)</li>
 <li>✅ <code>length()</code> method (including on array function parameters)</li>
+<li>✅ <code>index(value)</code> and <code>count(value)</code> on fixed-size arrays</li>
 <li>✅ <code>for-in</code> loop over arrays (including array function parameters)</li>
 <li>❌ Array slicing</li>
-<li>❌ Negative indices</li>
-<li>❌ Advanced utility methods</li>
+<li>❌ Core fixed-size array <code>sort()</code> method (use standard library)</li>
 <li>❌ Multi-dimensional array operations</li>
 </ul>
 

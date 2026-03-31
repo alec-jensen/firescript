@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -1521,6 +1521,16 @@
 <li>Fixed <code>for-in</code> loops and <code>length()</code> calls on array function parameters.</li>
 <li>Fixed error caret positions for indented code.</li>
 <li>Semantic analysis errors now report exact source location with a caret.</li>
+<li>Semantic analysis now enforces ownership moves when passing Owned identifiers to class method parameters that are not borrowed.</li>
+<li>Semantic analysis now reports post-branch uses of Owned values that may have moved on another control-flow path.</li>
+<li>Semantic analysis now reports post-loop uses of Owned values that may have moved in <code>while</code>/<code>for</code>/<code>for-in</code> loop bodies.</li>
+<li>Semantic flow analysis now treats definitely terminating branches (<code>return</code>, <code>break</code>, <code>continue</code>) as non-continuing paths to reduce false-positive move diagnostics after <code>if</code> statements.</li>
+<li>Semantic analysis now rejects attempts to move borrowed values into owned variables or owned parameters.</li>
+<li>Semantic analysis now rejects returning direct borrowed projections (for example borrowed identifiers, field projections, and array projections) when they would escape callable scope as Owned values.</li>
+<li>Semantic analysis now enforces ownership moves for class constructor arguments in both <code>Type(args)</code> and <code>new Type(args)</code> forms.</li>
+<li>Added negative array indexing support for fixed-size arrays (currently for array literals and explicit array parameters) so <code>arr[-1]</code> resolves to the last element.</li>
+<li>Added fixed-size array utility methods <code>index(value)</code> and <code>count(value)</code>.</li>
+<li>Added class static methods via <code>static</code> declarations and <code>Type.method(...)</code> calls.</li>
 <li>Added <code>lint_text(source_text, file_path)</code> API for in-memory diagnostics without code generation.</li>
 <li>Added LSP implementation (<code>firescript/lsp_server.py</code>) via <code>pygls</code>.</li>
 <li>Added VS Code extension with syntax highlighting, bracket matching, comment toggling, and LSP diagnostics.</li>
