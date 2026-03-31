@@ -1,0 +1,10 @@
+[    INFO] --- Starting compilation of tests/sources/invalid/borrow_move_errors.fire...
+[   ERROR] --- Cannot move borrowed value 's'; borrowed values cannot transfer ownership
+>     string copy = s; // Error: cannot move borrowed value into owned binding
+                    ^
+(tests/sources/invalid/borrow_move_errors.fire:10:19)
+[   ERROR] --- Cannot move borrowed value 's'; borrowed values cannot transfer ownership
+>     takeOwned(s); // Error: cannot move borrowed value into owned parameter
+                ^
+(tests/sources/invalid/borrow_move_errors.fire:15:15)
+[   ERROR] --- Semantic analysis failed with 2 errors

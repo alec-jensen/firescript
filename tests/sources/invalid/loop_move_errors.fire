@@ -1,0 +1,21 @@
+// Loop-sensitive ownership error tests
+
+import @firescript/std.io.println;
+
+void consume(string s) {
+    println(s);
+}
+
+string a = "while";
+int32 i = 0i32;
+while (i < 1i32) {
+    consume(a);  // a may move in loop body
+    i = i + 1i32;
+}
+println(a);  // Error: a may have moved on loop path
+
+string b = "for";
+for (int32 j = 0i32; j < 1i32; j++) {
+    consume(b);  // b may move in loop body
+}
+println(b);  // Error: b may have moved on loop path

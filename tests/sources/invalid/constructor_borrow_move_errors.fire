@@ -1,0 +1,21 @@
+// Borrowed constructor argument move errors
+
+import @firescript/std.io.println;
+
+class Wrapper {
+    string text;
+
+    Wrapper(&this, string text) {
+        this.text = text;
+    }
+}
+
+void badMoves(&string s) {
+    Wrapper a = Wrapper(s);      // Error: cannot move borrowed value into constructor param
+    Wrapper b = new Wrapper(s);  // Error: cannot move borrowed value into constructor param
+    println(a.text);
+    println(b.text);
+}
+
+string src = "borrowed";
+badMoves(src);

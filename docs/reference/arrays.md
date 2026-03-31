@@ -1,6 +1,6 @@
 # Arrays
 
-> Only arrays with literal initialization and method `length()` are supported by the compiler. Array slicing, negative indices, and other utility methods are not implemented.
+> Core arrays are fixed-size. The compiler supports `length()`, negative indexing, `index(value)`, and `count(value)`. Array slicing and core `sort()` are not implemented; sorting should come from standard library containers/utilities.
 
 ## Array Basics
 
@@ -132,18 +132,8 @@ int8[] numbers = [10, 20, 30, 40, 50];
 int8[] subset = numbers[1:4];  // Would be [20, 30, 40]
 ```
 
-- **Negative indices** – Access elements from the end of the array
-
-```firescript
-// Future syntax
-string[] words = ["apple", "banana", "cherry"];
-string last = words[-1];     // Would be "cherry"
-```
-
 - **Additional utility methods**:
-  - `index(value)` – Find the index of the first occurrence of a value
-  - `count(value)` – Count occurrences of a value
-  - `sort()` – Sort the array elements
+    - `sort()` – Sorting is not a core fixed-size array method; use standard library containers/utilities for sorting behavior
 
 - **Array arithmetic** – Element-wise operations between arrays
 
@@ -188,9 +178,10 @@ Arrays are functional but with limited operations in the current compiler:
 
 - ✅ Array declaration and initialization
 - ✅ Element access with positive indices
+- ✅ Negative index access for fixed-size arrays (`arr[-1]`)
 - ✅ `length()` method (including on array function parameters)
+- ✅ `index(value)` and `count(value)` on fixed-size arrays
 - ✅ `for-in` loop over arrays (including array function parameters)
 - ❌ Array slicing
-- ❌ Negative indices
-- ❌ Advanced utility methods
+- ❌ Core fixed-size array `sort()` method (use standard library)
 - ❌ Multi-dimensional array operations

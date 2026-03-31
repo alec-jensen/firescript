@@ -1,0 +1,6 @@
+[    INFO] --- Starting compilation of tests/sources/invalid/method_move_errors.fire...
+[   ERROR] --- Use-after-move error: variable 'owned' was moved, cannot use it here
+> println(owned);   // Error: used after move
+          ^
+(tests/sources/invalid/method_move_errors.fire:21:9)
+[   ERROR] --- Semantic analysis failed with 1 errors

@@ -449,9 +449,17 @@ class ExpressionsMixin(ParserBase):
             self.error("Expected '[' for array access", self.current_token)
             return None
 
-        index_expr = self.parse_expression()
-        if not index_expr:
+        start_or_index_expr = self.parse_expression()
+        if not start_or_index_expr:
             self.error("Expected expression for array index", self.current_token)
+            return None
+
+        # Slicing is intentionally unsupported in core arrays.
+        if self.current_token and self.current_token.type == "COLON":
+            self.error(
+                "Array slicing is not supported in core arrays; use fixed-size indexing",
+                self.current_token,
+            )
             return None
 
         close_bracket = self.consume("CLOSE_BRACKET")
@@ -463,7 +471,7 @@ class ExpressionsMixin(ParserBase):
             NodeTypes.ARRAY_ACCESS,
             open_bracket,
             "arrayAccess",
-            [array_node, index_expr],
+            [array_node, start_or_index_expr],
             open_bracket.index,
         )
 

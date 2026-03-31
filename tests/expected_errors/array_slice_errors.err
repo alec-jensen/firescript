@@ -1,0 +1,26 @@
+[    INFO] --- Starting compilation of tests/sources/invalid/array_slice_errors.fire...
+[   ERROR] --- Array slicing is not supported in core arrays; use fixed-size indexing
+> int32[] badStart = nums["1":2i32]; // Error: start must be integer
+                             ^
+(tests\sources\invalid\array_slice_errors.fire:7:28)
+[   ERROR] --- Expected initializer expression in variable declaration
+> int32[] badStart = nums["1":2i32]; // Error: start must be integer
+                             ^
+(tests\sources\invalid\array_slice_errors.fire:7:28)
+[   ERROR] --- Array slicing is not supported in core arrays; use fixed-size indexing
+> int32[] badEnd = nums[1i32:true];    // Error: end must be integer
+                            ^
+(tests\sources\invalid\array_slice_errors.fire:8:27)
+[   ERROR] --- Expected initializer expression in variable declaration
+> int32[] badEnd = nums[1i32:true];    // Error: end must be integer
+                            ^
+(tests\sources\invalid\array_slice_errors.fire:8:27)
+[   ERROR] --- Variable 'badStart' not defined
+> println(badStart.length());
+          ^
+(tests\sources\invalid\array_slice_errors.fire:10:9)
+[   ERROR] --- Variable 'badEnd' not defined
+> println(badEnd.length());
+          ^
+(tests\sources\invalid\array_slice_errors.fire:11:9)
+[   ERROR] --- Parsing failed with 6 errors

@@ -1,0 +1,17 @@
+// for-in ownership move errors
+
+import @firescript/std.io.println;
+
+void consume(string s) {
+    println(s);
+}
+
+string msg = "loop-move";
+int32[] nums = [1, 2, 3];
+
+for (int32 n in nums) {
+    consume(msg); // msg may move during loop iterations
+    println(n);
+}
+
+println(msg); // Error: msg may have moved on loop path

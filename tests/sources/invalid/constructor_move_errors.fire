@@ -1,0 +1,19 @@
+// Constructor argument move errors
+
+import @firescript/std.io.println;
+
+class Wrapper {
+    string text;
+
+    Wrapper(&this, string text) {
+        this.text = text;
+    }
+}
+
+string s1 = "first";
+Wrapper w1 = Wrapper(s1); // move into constructor parameter
+println(s1); // Error: used after move
+
+string s2 = "second";
+Wrapper w2 = new Wrapper(s2); // move into constructor parameter
+println(s2); // Error: used after move

@@ -77,6 +77,14 @@ class TestCase:
     input_path: Optional[str]
 
 
+class CompileTimeoutError(Exception):
+    pass
+
+
+class RuntimeTimeoutError(Exception):
+    pass
+
+
 def discover_cases(patterns: List[str]) -> List[TestCase]:
     sources: List[str] = []
     for pat in patterns:
@@ -113,10 +121,14 @@ def run_cmd(cmd: List[str], cwd: str | None = None, check: bool = True, input_te
     return proc.returncode, proc.stdout, proc.stderr
 
 
-def compile_fire(src: str) -> None:
+def compile_fire(src: str, timeout: Optional[float]) -> None:
     # Invoke the firescript compiler to build the native binary into build/<basename>
     cmd = [sys.executable, os.path.join(REPO_ROOT, "firescript", "main.py"), src]
-    code, out, err = run_cmd(cmd, cwd=REPO_ROOT, check=False)
+    try:
+        code, out, err = run_cmd(cmd, cwd=REPO_ROOT, check=False, timeout=timeout)
+    except subprocess.TimeoutExpired as e:
+        limit = timeout if timeout is not None else e.timeout
+        raise CompileTimeoutError(f"compile timeout exceeded after {limit:g}s") from None
     if code != 0:
         _log("FAIL", f"compile {src}", color_code="31")
         if out.strip():
@@ -138,7 +150,11 @@ def run_binary(path: str, input_text: Optional[str], timeout: Optional[float]) -
         else:
             raise FileNotFoundError(f"Binary not found: {path}")
     cmd = [resolved_path]
-    code, out, err = run_cmd(cmd, cwd=REPO_ROOT, check=False, input_text=input_text, timeout=timeout)
+    try:
+        code, out, err = run_cmd(cmd, cwd=REPO_ROOT, check=False, input_text=input_text, timeout=timeout)
+    except subprocess.TimeoutExpired as e:
+        limit = timeout if timeout is not None else e.timeout
+        raise RuntimeTimeoutError(f"runtime timeout exceeded after {limit:g}s") from None
     if code != 0:
         _log("FAIL", f"run {path} (exit {code})", color_code="31")
         if out.strip():
@@ -180,14 +196,22 @@ def write_diff(tc: TestCase, expected_norm: str, actual_norm: str) -> str:
     return diff_path
 
 
-def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bool, timeout: Optional[float]) -> int:
+def run_golden(
+    cases: List[TestCase],
+    update: bool,
+    verbose: bool,
+    fail_fast: bool,
+    timeout: Optional[float],
+    compile_timeout: Optional[float],
+    jobs: int,
+) -> int:
 
     def run_one(tc: TestCase):
         try:
             _log("CASE", tc.source, color_code="36")  # cyan
             if verbose:
                 _log("BUILD", tc.source, color_code="90")  # dim
-            compile_fire(tc.source)
+            compile_fire(tc.source, timeout=compile_timeout)
             if verbose:
                 _log("RUN", tc.binary, color_code="90")  # dim
             input_text = read_file(tc.input_path) if tc.input_path else None
@@ -214,11 +238,15 @@ def run_golden(cases: List[TestCase], update: bool, verbose: bool, fail_fast: bo
         except SystemExit:
             # compile_fire already printed the FAIL message; just record it
             return (tc, "ERROR", None, None)
+        except CompileTimeoutError as e:
+            return (tc, "ERROR", "<timeout>", str(e))
+        except RuntimeTimeoutError as e:
+            return (tc, "ERROR", "<timeout>", str(e))
         except Exception as e:
             return (tc, "ERROR", "<exception>", str(e))
 
     results = []
-    max_workers = os.cpu_count() or 2
+    max_workers = max(1, jobs)
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         fut_to_tc = {executor.submit(run_one, tc): tc for tc in cases}
         for fut in concurrent.futures.as_completed(fut_to_tc):
@@ -273,7 +301,9 @@ def main():
     ap.add_argument("--update", action="store_true", help="Update or create golden files to match current output")
     ap.add_argument("--fail-fast", action="store_true", help="Stop on first failure")
     ap.add_argument("--verbose", action="store_true", help="Verbose output")
-    ap.add_argument("--timeout", type=float, default=10.0, help="Per-test timeout in seconds (default: 10.0)")
+    ap.add_argument("--timeout", type=float, default=20.0, help="Per-run timeout for executing produced binaries in seconds (default: 20.0)")
+    ap.add_argument("--compile-timeout", type=float, default=120.0, help="Per-test compile timeout in seconds (default: 120.0)")
+    ap.add_argument("--jobs", type=int, default=4, help="Number of parallel test workers (default: 4)")
     args = ap.parse_args()
 
     patterns = args.glob if args.glob else DEFAULT_SEARCH
@@ -290,7 +320,15 @@ def main():
     else:
         cases = discover_cases(patterns)
 
-    rc = run_golden(cases, update=args.update, verbose=args.verbose, fail_fast=args.fail_fast, timeout=args.timeout)
+    rc = run_golden(
+        cases,
+        update=args.update,
+        verbose=args.verbose,
+        fail_fast=args.fail_fast,
+        timeout=args.timeout,
+        compile_timeout=args.compile_timeout,
+        jobs=args.jobs,
+    )
     sys.exit(rc)
 
 

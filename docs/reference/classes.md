@@ -446,12 +446,12 @@ copyable class Point {
 
 ## Implementation Status
 
-Classes in firescript are planned but not yet implemented in the current compiler:
+Classes in firescript have partial support in the current compiler:
 
 - ✅ Class definitions
 - ✅ Instance fields and methods
 - ✅ Constructors
-- ❌ Static methods
+- ✅ Static methods
 - ✅ Inheritance
 - ❌ Method overriding
 - ❌ Polymorphism

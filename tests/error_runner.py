@@ -101,6 +101,12 @@ def normalize_errors(error_output: str) -> str:
     for line in lines:
         # Remove timestamps at the start of lines (e.g., [14:50:18])
         line = re.sub(r'^\[\d{2}:\d{2}:\d{2}\]\s*', '', line)
+
+        # Normalize path separators and strip absolute prefixes before tests/sources
+        # so outputs are stable across absolute/relative invocation styles.
+        line = line.replace("\\", "/")
+        line = re.sub(r'(?i)([A-Za-z]:/[^)]*?)(tests/sources/)', r'\2', line)
+
         normalized_lines.append(line.rstrip())
     
     normalized = "\n".join(normalized_lines).strip()

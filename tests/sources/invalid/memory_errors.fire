@@ -8,6 +8,14 @@ string owned = "hello";
 string moved = owned;  // Move
 println(owned);  // Error: used after move
 
+string badBorrowReturn(&string s) {
+	return s;  // Error: borrowed value escapes callable scope
+}
+
+string source = "borrow";
+string escaped = badBorrowReturn(source);
+println(escaped);
+
 // Multiple mutable borrows (if borrow checking is enforced)
 // &mut int32 borrow1 = &mut x;
 // &mut int32 borrow2 = &mut x;  // Error: already borrowed mutably

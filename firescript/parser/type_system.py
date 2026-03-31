@@ -86,7 +86,7 @@ class TypeSystemMixin(StatementsMixin):
             # Inject implicit alias 'this' to the class type for method/constructor bodies,
             # so 'this.x' resolves even if receiver param was named differently or synthetic.
             cls_name = getattr(node, "class_name", None)
-            if cls_name and "this" not in new_scope:
+            if cls_name and "this" not in new_scope and not bool(getattr(node, "is_static", False)):
                 new_scope["this"] = (cls_name, False)
             body = node.children[-1] if node.children else None
             if body:
@@ -804,6 +804,20 @@ class TypeSystemMixin(StatementsMixin):
                             f"Method '{method_name}' expected 0 arguments, got {len(arg_types)}",
                             node.token,
                         )
+                elif method_name in ("index", "count"):
+                    if len(arg_types) == 1:
+                        if arg_types[0] == elem_type:
+                            node.return_type = "int32"
+                        else:
+                            self.error(
+                                f"Method '{method_name}' for {object_type} expected element type {elem_type}, got {arg_types[0]}",
+                                node.children[1].token,
+                            )
+                    else:
+                        self.error(
+                            f"Method '{method_name}' expected 1 argument, got {len(arg_types)}",
+                            node.token,
+                        )
                 else:
                     self.error(
                         f"Unknown method '{method_name}' for array type {object_type}",
@@ -813,6 +827,12 @@ class TypeSystemMixin(StatementsMixin):
                 # Class instance methods
                 if object_type in self.user_methods and method_name in self.user_methods[object_type]:
                     sig = self.user_methods[object_type][method_name]
+                    if bool(sig.get("is_static", False)):
+                        self.error(
+                            f"Static method '{method_name}' must be called on type '{object_type}', not an instance",
+                            node.token,
+                        )
+                        return None
                     expected_params = sig.get("params", [])
                     if len(arg_types) != len(expected_params):
                         self.error(
@@ -882,26 +902,31 @@ class TypeSystemMixin(StatementsMixin):
                 self.error(f"Unknown constructor or static method '{method_name}' for type '{class_name}'", node.token)
                 return None
             sig = self.user_methods[class_name][method_name]
-            # Require constructor to return the class type
-            if sig.get("return") != class_name:
-                self.error(f"'{method_name}' is not a constructor for type '{class_name}'", node.token)
+            is_static = bool(sig.get("is_static", False))
+            is_constructor = sig.get("return") == class_name
+            if not is_static and not is_constructor:
+                self.error(f"'{method_name}' is neither a static method nor a constructor for type '{class_name}'", node.token)
                 return None
             # Validate args
             expected_params = sig.get("params", [])
             if len(child_types) != len(expected_params):
                 self.error(
-                    f"Constructor '{class_name}.{method_name}' expected {len(expected_params)} args, got {len(child_types)}",
+                    f"Call '{class_name}.{method_name}' expected {len(expected_params)} args, got {len(child_types)}",
                     node.token,
                 )
             else:
                 for i, (arg_t, exp_t) in enumerate(zip(child_types, expected_params)):
                     if arg_t != exp_t:
                         self.error(
-                            f"Constructor '{class_name}.{method_name}' arg {i+1} expected {exp_t}, got {arg_t}",
+                            f"Call '{class_name}.{method_name}' arg {i+1} expected {exp_t}, got {arg_t}",
                             node.children[i].token if i < len(node.children) else node.token,
                         )
-            node.return_type = class_name
-            node_type_str = class_name
+            if is_static:
+                node.return_type = sig.get("return")
+                node_type_str = sig.get("return")
+            else:
+                node.return_type = class_name
+                node_type_str = class_name
 
             node_type_str = node.return_type
         elif node.node_type == NodeTypes.CONSTRUCTOR_CALL:

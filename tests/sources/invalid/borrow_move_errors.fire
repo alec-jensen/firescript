@@ -1,0 +1,20 @@
+// Borrowed value move errors
+
+import @firescript/std.io.println;
+
+void takeOwned(string s) {
+    println(s);
+}
+
+string illegalAssign(&string s) {
+    string copy = s; // Error: cannot move borrowed value into owned binding
+    return copy;
+}
+
+void illegalPass(&string s) {
+    takeOwned(s); // Error: cannot move borrowed value into owned parameter
+}
+
+string source = "borrowed";
+println(illegalAssign(source));
+illegalPass(source);

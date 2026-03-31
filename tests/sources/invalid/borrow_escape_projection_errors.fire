@@ -1,0 +1,20 @@
+// Borrow-escape through direct projections
+
+import @firescript/std.io.println;
+
+class Box {
+    string name;
+}
+
+string badFieldReturn(&Box b) {
+    return b.name; // Error: direct borrowed projection escapes
+}
+
+string[] badArrayReturn(&string[] arr) {
+    return arr; // Error: returning borrowed array escapes
+}
+
+string[] values = ["a", "b"];
+Box bx = Box("fire");
+println(badFieldReturn(bx));
+println(badArrayReturn(values).length());

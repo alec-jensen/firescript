@@ -162,8 +162,21 @@ class StatementsMixin(DeclarationsMixin):
             index_node = node.children[1]
             array_code = self._visit(array_node)
             index_code = self._visit(index_node)
-            # Direct array indexing
-            return f"{array_code}[{index_code}]"  
+            # Negative indexing support when array length metadata is available.
+            # For arrays declared from literals and explicit array params, symbol table
+            # stores a third tuple slot with either constant size or <name>_len variable.
+            size_expr = None
+            if array_node and array_node.node_type == NodeTypes.IDENTIFIER:
+                sym = self.symbol_table.get(array_node.name)
+                if sym and len(sym) >= 3 and sym[2] is not None:
+                    size_expr = str(sym[2])
+
+            if size_expr is not None:
+                normalized_index = f"(({index_code}) < 0 ? ({size_expr} + ({index_code})) : ({index_code}))"
+                return f"{array_code}[{normalized_index}]"
+
+            # Fallback when length metadata is unavailable.
+            return f"{array_code}[{index_code}]"
         elif node.node_type == NodeTypes.LITERAL:
             return self._literal_to_c(node)
         elif node.node_type == NodeTypes.CAST_EXPRESSION:
@@ -312,6 +325,36 @@ class StatementsMixin(DeclarationsMixin):
                         if sym_info and len(sym_info) >= 3:
                             array_size = sym_info[2]
                             return f"(int32_t){array_size}"
+                    self.error("Cannot determine array size at compile time", node.token)
+                    return "0"
+                if method_name in ("index", "count"):
+                    if object_node.node_type == NodeTypes.IDENTIFIER:
+                        sym_info = self.symbol_table.get(object_node.name)
+                        if sym_info and len(sym_info) >= 3 and len(node.children) >= 2:
+                            array_size = sym_info[2]
+                            needle_code = self._visit(node.children[1])
+                            elem_type = obj_type[:-2]
+                            temp_id = self.array_temp_counter
+                            self.array_temp_counter += 1
+                            if elem_type == "string":
+                                pred = f"strcmp({object_code}[__i_{temp_id}], __needle_{temp_id}) == 0"
+                            else:
+                                pred = f"{object_code}[__i_{temp_id}] == __needle_{temp_id}"
+                            if method_name == "index":
+                                return (
+                                    f"({{ int32_t __result_{temp_id} = -1; "
+                                    f"{self._map_type_to_c(elem_type)} __needle_{temp_id} = {needle_code}; "
+                                    f"for (int32_t __i_{temp_id} = 0; __i_{temp_id} < (int32_t)({array_size}); __i_{temp_id}++) {{ "
+                                    f"if ({pred}) {{ __result_{temp_id} = __i_{temp_id}; break; }} "
+                                    f"}} __result_{temp_id}; }})"
+                                )
+                            return (
+                                f"({{ int32_t __count_{temp_id} = 0; "
+                                f"{self._map_type_to_c(elem_type)} __needle_{temp_id} = {needle_code}; "
+                                f"for (int32_t __i_{temp_id} = 0; __i_{temp_id} < (int32_t)({array_size}); __i_{temp_id}++) {{ "
+                                f"if ({pred}) {{ __count_{temp_id}++; }} "
+                                f"}} __count_{temp_id}; }})"
+                            )
                     self.error("Cannot determine array size at compile time", node.token)
                     return "0"
                 # Fixed-size arrays don't support mutation methods

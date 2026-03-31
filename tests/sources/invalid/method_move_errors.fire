@@ -1,0 +1,25 @@
+// Method call ownership error tests
+
+import @firescript/std.io.println;
+
+class Sink {
+    string label;
+
+    void take(string value) {
+        this.label = value;
+    }
+
+    void keep(string &value) {
+        println(value);
+    }
+}
+
+Sink s = Sink("init");
+
+string owned = "moved";
+s.take(owned);    // Move into method parameter
+println(owned);   // Error: used after move
+
+string borrowed = "still-here";
+s.keep(borrowed); // Borrow only
+println(borrowed); // Should remain valid

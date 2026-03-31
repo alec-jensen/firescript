@@ -1,0 +1,18 @@
+import @firescript/std.io.println;
+
+int32 last(int32[] values) {
+    return values[-1i32];
+}
+
+int32[] nums = [10i32, 20i32, 30i32, 40i32];
+
+println(nums[-1i32]);
+println(nums[-2i32]);
+
+int32 idx = -3i32;
+println(nums[idx]);
+
+nums[-1i32] = 99i32;
+println(nums[3i32]);
+
+println(last(nums));

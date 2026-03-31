@@ -1,0 +1,10 @@
+// Invalid index/count array method cases
+
+import @firescript/std.io.println;
+
+int32[] nums = [1i32, 2i32, 3i32];
+
+println(nums.index());        // Error: expected 1 argument
+println(nums.count());        // Error: expected 1 argument
+println(nums.index("1"));    // Error: wrong argument type
+println(nums.count(true));    // Error: wrong argument type

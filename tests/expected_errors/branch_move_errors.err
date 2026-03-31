@@ -1,0 +1,6 @@
+[    INFO] --- Starting compilation of tests/sources/invalid/branch_move_errors.fire...
+[   ERROR] --- Use-after-move error: variable 'value' may have been moved on another control-flow path
+> println(value); // Error: value may have moved in the if branch
+          ^
+(tests/sources/invalid/branch_move_errors.fire:16:9)
+[   ERROR] --- Semantic analysis failed with 1 errors

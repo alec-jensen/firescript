@@ -1,0 +1,24 @@
+import @firescript/std.io.println;
+
+class Math {
+    static int32 max(int32 a, int32 b) {
+        if (a > b) {
+            return a;
+        }
+        return b;
+    }
+
+    static int32 add(int32 a, int32 b) {
+        return a + b;
+    }
+
+    int32 twice(int32 x) {
+        return x * 2i32;
+    }
+}
+
+println(Math.max(3i32, 7i32));
+println(Math.add(8i32, 5i32));
+
+Math m = Math();
+println(m.twice(6i32));

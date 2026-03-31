@@ -18,6 +18,16 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - Fixed `for-in` loops and `length()` calls on array function parameters.
 - Fixed error caret positions for indented code.
 - Semantic analysis errors now report exact source location with a caret.
+- Semantic analysis now enforces ownership moves when passing Owned identifiers to class method parameters that are not borrowed.
+- Semantic analysis now reports post-branch uses of Owned values that may have moved on another control-flow path.
+- Semantic analysis now reports post-loop uses of Owned values that may have moved in `while`/`for`/`for-in` loop bodies.
+- Semantic flow analysis now treats definitely terminating branches (`return`, `break`, `continue`) as non-continuing paths to reduce false-positive move diagnostics after `if` statements.
+- Semantic analysis now rejects attempts to move borrowed values into owned variables or owned parameters.
+- Semantic analysis now rejects returning direct borrowed projections (for example borrowed identifiers, field projections, and array projections) when they would escape callable scope as Owned values.
+- Semantic analysis now enforces ownership moves for class constructor arguments in both `Type(args)` and `new Type(args)` forms.
+- Added negative array indexing support for fixed-size arrays (currently for array literals and explicit array parameters) so `arr[-1]` resolves to the last element.
+- Added fixed-size array utility methods `index(value)` and `count(value)`.
+- Added class static methods via `static` declarations and `Type.method(...)` calls.
 - Added `lint_text(source_text, file_path)` API for in-memory diagnostics without code generation.
 - Added LSP implementation (`firescript/lsp_server.py`) via `pygls`.
 - Added VS Code extension with syntax highlighting, bracket matching, comment toggling, and LSP diagnostics.

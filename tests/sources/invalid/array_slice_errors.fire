@@ -1,0 +1,11 @@
+// Invalid array slicing cases
+
+import @firescript/std.io.println;
+
+int32[] nums = [1i32, 2i32, 3i32, 4i32];
+
+int32[] badStart = nums["1":2i32]; // Error: start must be integer
+int32[] badEnd = nums[1i32:true];    // Error: end must be integer
+
+println(badStart.length());
+println(badEnd.length());

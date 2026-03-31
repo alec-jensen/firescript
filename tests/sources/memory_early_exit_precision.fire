@@ -1,0 +1,20 @@
+import @firescript/std.io.println;
+
+void consume(string s) {
+    println("consume:" + s);
+}
+
+string demo(bool flag) {
+    string value = "x";
+
+    if (flag) {
+        consume(value); // moved on this path
+        return "moved";
+    }
+
+    println("after:" + value); // should be valid: return-path move does not continue
+    return value;
+}
+
+println(demo(true));
+println(demo(false));

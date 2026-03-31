@@ -33,6 +33,7 @@ class Lexer:
             "FROM": r"from\b",
         "NEW": r"new\b",
         "CLASS": r"class\b",
+        "STATIC": r"static\b",
         "CONSTRAINT": r"constraint\b",
         "DIRECTIVE": r"directive\b",
         "NULLABLE": r"nullable\b",

@@ -1,0 +1,17 @@
+// Invalid static/instance method call patterns
+
+import @firescript/std.io.println;
+
+class Tool {
+    static int32 id(int32 x) {
+        return x;
+    }
+
+    int32 twice(int32 x) {
+        return x * 2i32;
+    }
+}
+
+Tool t = Tool();
+println(t.id(1i32));      // Error: static method called on instance
+println(Tool.twice(2i32)); // Error: instance method called on type

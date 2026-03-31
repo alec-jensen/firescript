@@ -1,0 +1,6 @@
+[    INFO] --- Starting compilation of tests/sources/invalid/for_in_move_errors.fire...
+[   ERROR] --- Use-after-move error: variable 'msg' may have been moved on another control-flow path
+> println(msg); // Error: msg may have moved on loop path
+          ^
+(tests/sources/invalid/for_in_move_errors.fire:17:9)
+[   ERROR] --- Semantic analysis failed with 1 errors

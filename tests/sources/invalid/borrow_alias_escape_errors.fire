@@ -1,0 +1,24 @@
+// Borrowed projection alias/move escape errors
+
+import @firescript/std.io.println;
+
+class Box {
+    string name;
+}
+
+void takeOwned(string s) {
+    println(s);
+}
+
+string badAliasReturn(&Box b) {
+    string alias = b.name; // Error: cannot move borrowed projection into owned local
+    return alias;
+}
+
+void badAliasPass(&Box b) {
+    takeOwned(b.name); // Error: cannot move borrowed projection into owned parameter
+}
+
+Box bx = Box("fire");
+println(badAliasReturn(bx));
+badAliasPass(bx);

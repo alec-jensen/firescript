@@ -1,0 +1,10 @@
+[    INFO] --- Starting compilation of tests/sources/invalid/constructor_borrow_move_errors.fire...
+[   ERROR] --- Cannot move borrowed value 's'; borrowed values cannot transfer ownership
+>     Wrapper a = Wrapper(s);      // Error: cannot move borrowed value into constructor param
+                          ^
+(tests/sources/invalid/constructor_borrow_move_errors.fire:14:25)
+[   ERROR] --- Cannot move borrowed value 's'; borrowed values cannot transfer ownership
+>     Wrapper b = new Wrapper(s);  // Error: cannot move borrowed value into constructor param
+                              ^
+(tests/sources/invalid/constructor_borrow_move_errors.fire:15:29)
+[   ERROR] --- Semantic analysis failed with 2 errors

@@ -1,6 +1,10 @@
-[    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\memory_errors.fire...
+[    INFO] --- Starting compilation of tests/sources/invalid/memory_errors.fire...
 [   ERROR] --- Use-after-move error: variable 'owned' was moved, cannot use it here
 > println(owned);  // Error: used after move
           ^
-(C:\Users\alecb\Programming\firescript\tests\sources\invalid\memory_errors.fire:9:9)
-[   ERROR] --- Semantic analysis failed with 1 errors
+(tests/sources/invalid/memory_errors.fire:9:9)
+[   ERROR] --- Cannot return borrowed value; borrowed values cannot escape callable scope
+> 	return s;  // Error: borrowed value escapes callable scope
+          ^
+(tests/sources/invalid/memory_errors.fire:12:9)
+[   ERROR] --- Semantic analysis failed with 2 errors

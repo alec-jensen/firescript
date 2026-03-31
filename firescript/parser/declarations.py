@@ -804,6 +804,10 @@ class DeclarationsMixin(TypeSystemMixin):
             if self.current_token.type == "SEMICOLON":
                 self.advance()
                 continue
+            local_is_static = False
+            if self.current_token and self.current_token.type == "STATIC":
+                local_is_static = True
+                self.advance()
             # Accept optional nullable modifier on field type or method return type
             local_is_nullable = False
             if self.current_token and self.current_token.type == "NULLABLE":
@@ -831,6 +835,8 @@ class DeclarationsMixin(TypeSystemMixin):
                 and self.current_token
                 and self.current_token.type == "OPEN_PAREN"
             ):
+                if local_is_static:
+                    self.error("Constructors cannot be declared static", ftype_tok)
                 # Treat ftype_tok as the method name (constructor) and set return type to class name
                 method_name_tok = ftype_tok
                 # Parse parameters
@@ -846,6 +852,9 @@ class DeclarationsMixin(TypeSystemMixin):
                             th_tok = self.consume("IDENTIFIER")
                             if th_tok is None or th_tok.value != "this":
                                 self.error("Expected 'this' after '&' for receiver", th_tok or amp_tok)
+                                return None
+                            if local_is_static:
+                                self.error("Static methods cannot declare receiver parameter 'this'", th_tok)
                                 return None
                             recv = ASTNode(
                                 NodeTypes.PARAMETER,
@@ -979,6 +988,7 @@ class DeclarationsMixin(TypeSystemMixin):
                 )
                 setattr(method_node, "class_name", name_tok.value)
                 setattr(method_node, "is_constructor", True)
+                setattr(method_node, "is_static", False)
                 methods.append(method_node)
                 continue
             # Look ahead: IDENTIFIER then '(' => method; IDENTIFIER then ';' => field
@@ -1003,6 +1013,9 @@ class DeclarationsMixin(TypeSystemMixin):
                             th_tok = self.consume("IDENTIFIER")
                             if th_tok is None or th_tok.value != "this":
                                 self.error("Expected 'this' after '&' for receiver", th_tok or amp_tok)
+                                return None
+                            if local_is_static:
+                                self.error("Static methods cannot declare receiver parameter 'this'", th_tok)
                                 return None
                             recv = ASTNode(
                                 NodeTypes.PARAMETER,
@@ -1085,7 +1098,7 @@ class DeclarationsMixin(TypeSystemMixin):
                 if body_node is None:
                     return None
                 param_nodes = params
-                if not is_constructor and not (params and params[0].name == "this"):
+                if not is_constructor and not local_is_static and not (params and params[0].name == "this"):
                     # Inject synthetic receiver named 'this' if not explicitly provided
                     self_param = ASTNode(
                         NodeTypes.PARAMETER,
@@ -1119,6 +1132,7 @@ class DeclarationsMixin(TypeSystemMixin):
                 # Tag class name on node for downstream passes
                 setattr(method_node, "class_name", name_tok.value)
                 setattr(method_node, "is_constructor", is_constructor)
+                setattr(method_node, "is_static", local_is_static)
                 methods.append(method_node)
             else:
                 # Field declaration path
@@ -1209,7 +1223,11 @@ class DeclarationsMixin(TypeSystemMixin):
                     param_nodes[1:] if (param_nodes and param_nodes[0].name == "this") else param_nodes
                 )
             params_types = [p.var_type for p in effective_params]
-            self.user_methods[name_tok.value][m.name] = {"return": m.return_type, "params": params_types}
+            self.user_methods[name_tok.value][m.name] = {
+                "return": m.return_type,
+                "params": params_types,
+                "is_static": bool(getattr(m, "is_static", False)),
+            }
 
         cls_node = ASTNode(NodeTypes.CLASS_DEFINITION, name_tok, name_tok.value, [*all_fields, *all_methods], name_tok.index)
         setattr(cls_node, "base_class", base_class)
