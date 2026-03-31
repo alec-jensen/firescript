@@ -14,18 +14,18 @@ class DeclarationsMixin(TypeSystemMixin):
         self.advance()  # consume 'directive'
         name_tok = self.consume("IDENTIFIER")
         if name_tok is None:
-            self.error("Expected directive name after 'directive'", self.current_token or dir_tok)
+            self.expected_token_error("directive name after 'directive'", self.current_token or dir_tok)
             return None
         directive_value = name_tok.value
         try:
             directive_enum = CompilerDirective(directive_value)
         except Exception:
-            self.error(f"Unknown directive '{directive_value}'", name_tok)
+            self.invalid_expression_error(f"Unknown directive '{directive_value}'", name_tok)
             directive_enum = None
         if self.current_token and self.current_token.type == "SEMICOLON":
             self.consume("SEMICOLON")
         else:
-            self.error("Expected semicolon after directive", self.current_token or name_tok)
+            self.expected_token_error("semicolon after directive", self.current_token or name_tok)
         if directive_enum is not None:
             self.directives.add(directive_enum.value)
             node_name = directive_enum.value
@@ -54,7 +54,7 @@ class DeclarationsMixin(TypeSystemMixin):
                 is_valid_return_type = True
         
         if not is_valid_return_type:
-            self.error("Expected return type at function definition", self.current_token)
+            self.expected_token_error("return type at function definition", self.current_token)
             return None
         ret_type_token = self.current_token
         self.advance()
@@ -64,15 +64,15 @@ class DeclarationsMixin(TypeSystemMixin):
         if self.current_token and self.current_token.type == "OPEN_BRACKET":
             self.advance()
             if not self.consume("CLOSE_BRACKET"):
-                self.error(
-                    "Expected ']' after '[' in array return type", self.current_token
+                self.expected_token_error(
+                    "']' after '[' in array return type", self.current_token
                 )
                 return None
             ret_is_array = True
 
         name_token = self.consume("IDENTIFIER")
         if name_token is None:
-            self.error("Expected function name after return type", self.current_token)
+            self.expected_token_error("function name after return type", self.current_token)
             return None
         
         # Parse optional generic type parameters: <T, U, ...>
@@ -84,7 +84,7 @@ class DeclarationsMixin(TypeSystemMixin):
             # Parse type parameters
             while True:
                 if not (self.current_token and self.current_token.type == "IDENTIFIER"):
-                    self.error("Expected type parameter name", self.current_token)
+                    self.expected_token_error("type parameter name", self.current_token)
                     return None
                 tparam_tok = self.consume("IDENTIFIER")
                 if tparam_tok is None:
@@ -100,7 +100,7 @@ class DeclarationsMixin(TypeSystemMixin):
                         # or constraint aliases (NumericPrimitive)
                         # Type names come as TYPE tokens, interface names as IDENTIFIER tokens
                         if not (self.current_token and (self._is_type_token(self.current_token) or self.current_token.type == "IDENTIFIER")):
-                            self.error("Expected constraint type or interface", self.current_token)
+                            self.expected_token_error("constraint type or interface", self.current_token)
                             return None
                         
                         constraint_tok = self.current_token
@@ -135,7 +135,7 @@ class DeclarationsMixin(TypeSystemMixin):
                 break
             
             if not (self.current_token and self.current_token.type == "GREATER_THAN"):
-                self.error("Expected '>' to close type parameters", self.current_token)
+                self.expected_token_error("'>' to close type parameters", self.current_token)
                 return None
             self.advance()  # consume >
         
@@ -145,11 +145,11 @@ class DeclarationsMixin(TypeSystemMixin):
             is_type_param = ret_type_token.value in type_params
             is_user_class = ret_type_token.value in self.user_types
             if not is_type_param and not is_user_class:
-                self.error(f"Return type '{ret_type_token.value}' is not a declared type parameter", ret_type_token)
+                self.invalid_expression_error(f"Return type '{ret_type_token.value}' is not a declared type parameter", ret_type_token)
                 return None
         
         if not self.consume("OPEN_PAREN"):
-            self.error("Expected '(' after function name", self.current_token)
+            self.expected_token_error("'(' after function name", self.current_token)
             return None
 
         # Set current type parameters for parsing function body
@@ -175,7 +175,7 @@ class DeclarationsMixin(TypeSystemMixin):
                 if not (self.current_token and (self._is_type_token(self.current_token) or (
                     self.current_token.type == "IDENTIFIER" and self.current_token.value in self.user_types
                 ))):
-                    self.error("Expected parameter type", self.current_token)
+                    self.expected_token_error("parameter type", self.current_token)
                     return None
                 ptype_tok = self.current_token
                 self.advance()
@@ -184,15 +184,15 @@ class DeclarationsMixin(TypeSystemMixin):
                 if self.current_token and self.current_token.type == "OPEN_BRACKET":
                     self.advance()
                     if not self.consume("CLOSE_BRACKET"):
-                        self.error(
-                            "Expected ']' after '[' in array parameter type",
+                        self.expected_token_error(
+                            "']' after '[' in array parameter type",
                             self.current_token,
                         )
                         return None
                     p_is_array = True
                 pname_tok = self.consume("IDENTIFIER")
                 if pname_tok is None:
-                    self.error("Expected parameter name", self.current_token)
+                    self.expected_token_error("parameter name", self.current_token)
                     return None
                 param_node = ASTNode(
                     NodeTypes.PARAMETER,
@@ -215,10 +215,10 @@ class DeclarationsMixin(TypeSystemMixin):
                     continue
                 break
         if not self.consume("CLOSE_PAREN"):
-            self.error("Expected ')' after parameters", self.current_token)
+            self.expected_token_error("')' after parameters", self.current_token)
             return None
         if not (self.current_token and self.current_token.type == "OPEN_BRACE"):
-            self.error("Expected '{' to start function body", self.current_token)
+            self.expected_token_error("'{' to start function body", self.current_token)
             return None
         body_node = self.parse_scope()
         if body_node is None:
@@ -417,8 +417,7 @@ class DeclarationsMixin(TypeSystemMixin):
                     if self.current_token and self.current_token.type == "SEMICOLON":
                         self.consume("SEMICOLON")
                     else:
-                        self.error(
-                            "Expected semicolon after statement",
+                        self.expected_token_error("semicolon after statement",
                             self.current_token
                             or (stmt.token if isinstance(stmt, ASTNode) else None),
                         )
@@ -458,7 +457,7 @@ class DeclarationsMixin(TypeSystemMixin):
         self.advance()  # consume 'as'
         al = self.consume("IDENTIFIER")
         if al is None:
-            self.error("Expected alias name after 'as'", self.current_token)
+            self.expected_token_error("alias name after 'as'", self.current_token)
             return None
         return al.value
 
@@ -471,11 +470,11 @@ class DeclarationsMixin(TypeSystemMixin):
         self.advance()  # consume '{'
         while self.current_token and self.current_token.type != "CLOSE_BRACE":
             if not (self.current_token and self.current_token.type == "IDENTIFIER"):
-                self.error("Expected identifier in import symbol list", self.current_token)
+                self.expected_token_error("identifier in import symbol list", self.current_token)
                 return False
             sname_tok = self.consume("IDENTIFIER")
             if sname_tok is None:
-                self.error("Expected identifier in import symbol list", self.current_token)
+                self.expected_token_error("identifier in import symbol list", self.current_token)
                 return False
             salias = self._parse_optional_alias()
             symbols.append({"name": sname_tok.value, "alias": salias})
@@ -484,7 +483,7 @@ class DeclarationsMixin(TypeSystemMixin):
                 continue
             break
         if not self.consume("CLOSE_BRACE"):
-            self.error("Expected '}' to close import symbol list", self.current_token)
+            self.expected_token_error("'}' to close import symbol list", self.current_token)
             return False
         return True
 
@@ -513,22 +512,22 @@ class DeclarationsMixin(TypeSystemMixin):
             segs: list[str] = []
             at_tok = self.consume("AT")
             if not (self.current_token and self.current_token.type == "IDENTIFIER"):
-                self.error("Expected package name after '@'", self.current_token or at_tok)
+                self.expected_token_error("package name after '@'", self.current_token or at_tok)
                 return None
             idtok = self.consume("IDENTIFIER")
             if idtok is None:
-                self.error("Expected identifier after '@'", self.current_token or at_tok)
+                self.expected_token_error("identifier after '@'", self.current_token or at_tok)
                 return None
             segs.append(idtok.value)
             # Accept sequence of '/' IDENTIFIER (slash tokenized as DIVIDE)
             while self.current_token and self.current_token.type == "DIVIDE":
                 self.advance()
                 if not (self.current_token and self.current_token.type == "IDENTIFIER"):
-                    self.error("Expected identifier after '/' in external package name", self.current_token)
+                    self.expected_token_error("identifier after '/' in external package name", self.current_token)
                     break
                 nxtok = self.consume("IDENTIFIER")
                 if nxtok is None:
-                    self.error("Expected identifier after '/' in external package name", self.current_token)
+                    self.expected_token_error("identifier after '/' in external package name", self.current_token)
                     break
                 segs.append(nxtok.value)
             
@@ -544,7 +543,7 @@ class DeclarationsMixin(TypeSystemMixin):
                 while self.current_token and self.current_token.type == "DOT":
                     iteration += 1
                     if iteration > 20:
-                        self.error(f"Too many iterations parsing dotted path. Current token: {self.current_token}, module_segs: {module_segs}", self.current_token)
+                        self.invalid_expression_error(f"Too many iterations parsing dotted path. Current token: {self.current_token}, module_segs: {module_segs}", self.current_token)
                         break
                     # Lookahead to see if this is part of module path or symbol syntax
                     nxt = self.peek(1)
@@ -591,12 +590,12 @@ class DeclarationsMixin(TypeSystemMixin):
                     elif self.current_token and self.current_token.type == "IDENTIFIER":
                         sname_tok = self.consume("IDENTIFIER")
                         if sname_tok is None:
-                            self.error("Expected symbol name after '.' in import", self.current_token)
+                            self.expected_token_error("symbol name after '.' in import", self.current_token)
                             return None
                         symbols.append({"name": sname_tok.value, "alias": self._parse_optional_alias()})
                         kind = "symbols"
                     else:
-                        self.error("Expected symbol name, '*', or '{' after '.' in import", self.current_token)
+                        self.expected_token_error("symbol name, '*', or '{' after '.' in import", self.current_token)
                         return None
                 else:
                     # No symbol syntax, just module import
@@ -610,7 +609,7 @@ class DeclarationsMixin(TypeSystemMixin):
             # Note: type keywords (like 'string') can appear in module names
             segs: list[str] = []
             if not (self.current_token and (self.current_token.type == "IDENTIFIER" or self._is_type_token(self.current_token))):
-                self.error("Expected module name after 'import'", self.current_token or start_tok)
+                self.expected_token_error("module name after 'import'", self.current_token or start_tok)
                 return None
             idtok = self.current_token
             self.advance()
@@ -650,12 +649,12 @@ class DeclarationsMixin(TypeSystemMixin):
                 elif self.current_token and self.current_token.type == "IDENTIFIER":
                     sname_tok = self.consume("IDENTIFIER")
                     if sname_tok is None:
-                        self.error("Expected symbol name after '.' in import", self.current_token)
+                        self.expected_token_error("symbol name after '.' in import", self.current_token)
                         return None
                     symbols.append({"name": sname_tok.value, "alias": self._parse_optional_alias()})
                     kind = "symbols"
                 else:
-                    self.error("Expected symbol name, '*', or '{' after '.' in import", self.current_token)
+                    self.expected_token_error("symbol name, '*', or '{' after '.' in import", self.current_token)
                     return None
             else:
                 # Module import with optional alias: import module.path [as Alias]
@@ -673,7 +672,7 @@ class DeclarationsMixin(TypeSystemMixin):
 
         # For external imports, produce an error now
         if kind == "external":
-            self.error("External packages are not supported", start_tok)
+            self.invalid_expression_error("External packages are not supported", start_tok)
 
         return node
 
@@ -685,11 +684,11 @@ class DeclarationsMixin(TypeSystemMixin):
         
         name_tok = self.consume("IDENTIFIER")
         if name_tok is None:
-            self.error("Expected constraint name after 'constraint'", self.current_token)
+            self.expected_token_error("constraint name after 'constraint'", self.current_token)
             return None
         
         if not self.consume("ASSIGN"):
-            self.error("Expected '=' after constraint name", self.current_token)
+            self.expected_token_error("'=' after constraint name", self.current_token)
             return None
         
         # Parse the type union: type1 | type2 | type3 | ...
@@ -697,7 +696,7 @@ class DeclarationsMixin(TypeSystemMixin):
         while True:
             # Accept IDENTIFIER (for interface names or aliases) or type tokens (int32, float64, etc.)
             if not (self.current_token and (self.current_token.type == "IDENTIFIER" or self._is_type_token(self.current_token))):
-                self.error("Expected type name in constraint definition", self.current_token)
+                self.expected_token_error("type name in constraint definition", self.current_token)
                 return None
             
             type_tok = self.current_token
@@ -746,7 +745,7 @@ class DeclarationsMixin(TypeSystemMixin):
             return None
         name_tok = self.consume("IDENTIFIER")
         if name_tok is None:
-            self.error("Expected class name after 'class'", self.current_token)
+            self.expected_token_error("class name after 'class'", self.current_token)
             return None
 
         # Parse optional generic type parameters: <T, U, ...>
@@ -759,7 +758,7 @@ class DeclarationsMixin(TypeSystemMixin):
                 if self.current_token and self.current_token.type == "NULLABLE":
                     self.advance()
                 if not (self.current_token and self.current_token.type == "IDENTIFIER"):
-                    self.error("Expected type parameter name", self.current_token)
+                    self.expected_token_error("type parameter name", self.current_token)
                     return None
                 tparam_tok = self.consume("IDENTIFIER")
                 if tparam_tok is None:
@@ -770,7 +769,7 @@ class DeclarationsMixin(TypeSystemMixin):
                     continue
                 break
             if not (self.current_token and self.current_token.type == "GREATER_THAN"):
-                self.error("Expected '>' to close generic type parameters", self.current_token)
+                self.expected_token_error("'>' to close generic type parameters", self.current_token)
                 return None
             self.advance()  # consume >
             # Make type params visible while parsing the class body
@@ -781,14 +780,14 @@ class DeclarationsMixin(TypeSystemMixin):
             self.advance()  # consume 'from'
             base_tok = self.consume("IDENTIFIER")
             if base_tok is None:
-                self.error("Expected base class name after 'from'", self.current_token)
+                self.expected_token_error("base class name after 'from'", self.current_token)
                 return None
             base_class = base_tok.value
             if base_class == name_tok.value:
-                self.error("A class cannot inherit from itself", base_tok)
+                self.invalid_expression_error("A class cannot inherit from itself", base_tok)
 
         if not self.consume("OPEN_BRACE"):
-            self.error("Expected '{' to start class body", self.current_token)
+            self.expected_token_error("'{' to start class body", self.current_token)
             return None
         fields: list[ASTNode] = []
         methods: list[ASTNode] = []
@@ -817,7 +816,7 @@ class DeclarationsMixin(TypeSystemMixin):
             if not (self._is_type_token(self.current_token) or (
                 self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
             )):
-                self.error("Expected field or method return type in class body", self.current_token)
+                self.expected_token_error("field or method return type in class body", self.current_token)
                 # recover to ';' or '}'
                 while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
                     self.advance()
@@ -836,7 +835,7 @@ class DeclarationsMixin(TypeSystemMixin):
                 and self.current_token.type == "OPEN_PAREN"
             ):
                 if local_is_static:
-                    self.error("Constructors cannot be declared static", ftype_tok)
+                    self.invalid_expression_error("Constructors cannot be declared static", ftype_tok)
                 # Treat ftype_tok as the method name (constructor) and set return type to class name
                 method_name_tok = ftype_tok
                 # Parse parameters
@@ -851,10 +850,10 @@ class DeclarationsMixin(TypeSystemMixin):
                             self.advance()
                             th_tok = self.consume("IDENTIFIER")
                             if th_tok is None or th_tok.value != "this":
-                                self.error("Expected 'this' after '&' for receiver", th_tok or amp_tok)
+                                self.expected_token_error("'this' after '&' for receiver", th_tok or amp_tok)
                                 return None
                             if local_is_static:
-                                self.error("Static methods cannot declare receiver parameter 'this'", th_tok)
+                                self.invalid_expression_error("Static methods cannot declare receiver parameter 'this'", th_tok)
                                 return None
                             recv = ASTNode(
                                 NodeTypes.PARAMETER,
@@ -879,7 +878,7 @@ class DeclarationsMixin(TypeSystemMixin):
                             self.advance()
                             th_tok = self.consume("IDENTIFIER")
                             if th_tok is None or th_tok.value != "this":
-                                self.error("Expected 'this' after 'owned' for receiver", th_tok or owned_tok)
+                                self.expected_token_error("'this' after 'owned' for receiver", th_tok or owned_tok)
                                 return None
                             recv = ASTNode(
                                 NodeTypes.PARAMETER,
@@ -921,20 +920,20 @@ class DeclarationsMixin(TypeSystemMixin):
                             if not (self.current_token and (self._is_type_token(self.current_token) or (
                                 self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
                             ))):
-                                self.error("Expected parameter type in method", self.current_token)
+                                self.expected_token_error("parameter type in method", self.current_token)
                                 return None
                             ptype_tok = self.current_token
                             self.advance()
                             p_is_array = False
                             if self.current_token and self.current_token.type == "OPEN_BRACKET":
-                                self.error("Array parameters are not supported for methods", self.current_token)
+                                self.invalid_expression_error("Array parameters are not supported for methods", self.current_token)
                                 # try to recover
                                 while self.current_token and self.current_token.type != "CLOSE_PAREN":
                                     self.advance()
                                 break
                             pname_tok = self.consume("IDENTIFIER")
                             if pname_tok is None:
-                                self.error("Expected parameter name in method", self.current_token)
+                                self.expected_token_error("parameter name in method", self.current_token)
                                 return None
                             param_node = ASTNode(
                                 NodeTypes.PARAMETER,
@@ -959,10 +958,10 @@ class DeclarationsMixin(TypeSystemMixin):
                             continue
                         break
                 if not self.consume("CLOSE_PAREN"):
-                    self.error("Expected ')' after method parameters", self.current_token)
+                    self.expected_token_error("')' after method parameters", self.current_token)
                     return None
                 if not (self.current_token and self.current_token.type == "OPEN_BRACE"):
-                    self.error("Expected '{' to start method body", self.current_token)
+                    self.expected_token_error("'{' to start method body", self.current_token)
                     return None
 
                 self._class_context_stack.append((name_tok.value, True, base_class))
@@ -994,7 +993,7 @@ class DeclarationsMixin(TypeSystemMixin):
             # Look ahead: IDENTIFIER then '(' => method; IDENTIFIER then ';' => field
             name_tok2 = self.consume("IDENTIFIER")
             if name_tok2 is None:
-                self.error("Expected identifier after type in class body", self.current_token)
+                self.expected_token_error("identifier after type in class body", self.current_token)
                 break
             # Method definition
             if self.current_token and self.current_token.type == "OPEN_PAREN":
@@ -1012,10 +1011,10 @@ class DeclarationsMixin(TypeSystemMixin):
                             self.advance()
                             th_tok = self.consume("IDENTIFIER")
                             if th_tok is None or th_tok.value != "this":
-                                self.error("Expected 'this' after '&' for receiver", th_tok or amp_tok)
+                                self.expected_token_error("'this' after '&' for receiver", th_tok or amp_tok)
                                 return None
                             if local_is_static:
-                                self.error("Static methods cannot declare receiver parameter 'this'", th_tok)
+                                self.invalid_expression_error("Static methods cannot declare receiver parameter 'this'", th_tok)
                                 return None
                             recv = ASTNode(
                                 NodeTypes.PARAMETER,
@@ -1044,13 +1043,13 @@ class DeclarationsMixin(TypeSystemMixin):
                             if not (self.current_token and (self._is_type_token(self.current_token) or (
                                 self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
                             ))):
-                                self.error("Expected parameter type in method", self.current_token)
+                                self.expected_token_error("parameter type in method", self.current_token)
                                 return None
                             ptype_tok = self.current_token
                             self.advance()
                             p_is_array = False
                             if self.current_token and self.current_token.type == "OPEN_BRACKET":
-                                self.error("Array parameters are not supported for methods", self.current_token)
+                                self.invalid_expression_error("Array parameters are not supported for methods", self.current_token)
                                 # try to recover
                                 while self.current_token and self.current_token.type != "CLOSE_PAREN":
                                     self.advance()
@@ -1061,7 +1060,7 @@ class DeclarationsMixin(TypeSystemMixin):
                                 self.advance()
                             pname_tok = self.consume("IDENTIFIER")
                             if pname_tok is None:
-                                self.error("Expected parameter name in method", self.current_token)
+                                self.expected_token_error("parameter name in method", self.current_token)
                                 return None
                             param_node = ASTNode(
                                 NodeTypes.PARAMETER,
@@ -1084,10 +1083,10 @@ class DeclarationsMixin(TypeSystemMixin):
                             continue
                         break
                 if not self.consume("CLOSE_PAREN"):
-                    self.error("Expected ')' after method parameters", self.current_token)
+                    self.expected_token_error("')' after method parameters", self.current_token)
                     return None
                 if not (self.current_token and self.current_token.type == "OPEN_BRACE"):
-                    self.error("Expected '{' to start method body", self.current_token)
+                    self.expected_token_error("'{' to start method body", self.current_token)
                     return None
 
                 self._class_context_stack.append((name_tok.value, bool(is_constructor), base_class))
@@ -1137,7 +1136,7 @@ class DeclarationsMixin(TypeSystemMixin):
             else:
                 # Field declaration path
                 if not self.consume("SEMICOLON"):
-                    self.error("Expected ';' after field declaration", self.current_token)
+                    self.expected_token_error("';' after field declaration", self.current_token)
                     while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
                         self.advance()
                     if self.current_token and self.current_token.type == "SEMICOLON":
@@ -1158,7 +1157,7 @@ class DeclarationsMixin(TypeSystemMixin):
             if base_fields_map is not None:
                 for fname, ftype in base_fields_map.items():
                     if fname in field_types:
-                        self.error(
+                        self.invalid_expression_error(
                             f"Field '{fname}' in '{name_tok.value}' conflicts with inherited field from '{base_class}'",
                             name_tok,
                         )

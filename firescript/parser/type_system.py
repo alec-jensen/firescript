@@ -56,7 +56,7 @@ class TypeSystemMixin(StatementsMixin):
                     param_name = child.name
                     is_array = child.is_array
                     if param_name in new_scope:
-                        self.error(
+                        self.invalid_type_error(
                             f"Parameter '{param_name}' already declared in an outer scope; shadowing not allowed",
                             child.token,
                         )
@@ -77,7 +77,7 @@ class TypeSystemMixin(StatementsMixin):
                     param_name = child.name
                     is_array = child.is_array
                     if param_name in new_scope:
-                        self.error(
+                        self.invalid_type_error(
                             f"Parameter '{param_name}' already declared in an outer scope; shadowing not allowed",
                             child.token,
                         )
@@ -96,7 +96,7 @@ class TypeSystemMixin(StatementsMixin):
         # Variable declaration: enforce no shadowing
         if node.node_type == NodeTypes.VARIABLE_DECLARATION:
             if node.name in current_scope:
-                self.error(
+                self.invalid_type_error(
                     f"Variable '{node.name}' already declared in an outer scope; shadowing not allowed",
                     node.token,
                 )
@@ -136,7 +136,7 @@ class TypeSystemMixin(StatementsMixin):
                 if self.defer_undefined_identifiers:
                     self.deferred_undefined_identifiers.append((node.name, node.token))
                 else:
-                    self.error(f"Variable '{node.name}' not defined", node.token)
+                    self.undefined_identifier_error(node.name, node.token)
             else:
                 node.var_type, node.is_array = current_scope[node.name]
                 self._annotate_value_category(node, node.var_type, node.is_array)
@@ -189,7 +189,7 @@ class TypeSystemMixin(StatementsMixin):
             # Determine type from elements, assume consistent type for now
             if not node.children:
                 # Cannot determine type of empty array literal yet
-                # self.error("Cannot determine type of empty array literal", node.token)
+                # self.invalid_type_error("Cannot determine type of empty array literal", node.token)
                 return None  # Or a special "empty_array" type?
             # Check the type of the first element to infer array type
             first_elem_type_node = node.children[0]
@@ -201,7 +201,7 @@ class TypeSystemMixin(StatementsMixin):
                 if first_elem_type is None:
                     return None  # Error in element
                 if first_elem_type.endswith("[]"):
-                    self.error(
+                    self.invalid_type_error(
                         "Array literals cannot directly contain arrays", node.token
                     )
                     return None
@@ -352,14 +352,14 @@ class TypeSystemMixin(StatementsMixin):
                 # Special case: initializing with null
                 if initializer_type == "null":
                     if not node.is_nullable:
-                        self.error(
+                        self.invalid_type_error(
                             f"Cannot initialize non-nullable variable '{node.name}' with null",
                             node.token,
                         )
                 # General case: types must match
                 elif declared_type != initializer_type:
                     # Strict: no implicit coercions between numeric families
-                    self.error(
+                    self.type_error(
                         f"Type mismatch for variable '{node.name}'. Expected {declared_type}, got {initializer_type}",
                         node.token,
                     )
@@ -377,7 +377,7 @@ class TypeSystemMixin(StatementsMixin):
                     base_t = assigned_type[:-2] if is_arr else assigned_type
                     symbol_table[node.name] = (base_t, is_arr, False)
                 else:
-                    self.error(f"Variable '{node.name}' not defined", node.token)
+                    self.undefined_identifier_error(node.name, node.token)
                     return None
             else:
                 var_type, is_array = var_info[0], var_info[1]
@@ -386,13 +386,13 @@ class TypeSystemMixin(StatementsMixin):
                 if assigned_type:
                     if assigned_type == "null":
                         if not is_nullable:
-                            self.error(
+                            self.invalid_type_error(
                                 f"Cannot assign null to non-nullable variable '{node.name}'",
                                 node.token,
                             )
                     elif expected_type != assigned_type:
                         # TODO: Implement type coercion rules
-                        self.error(
+                        self.type_error(
                             f"Type mismatch assigning to variable '{node.name}'. Expected {expected_type}, got {assigned_type}",
                             node.token,
                         )
@@ -427,7 +427,7 @@ class TypeSystemMixin(StatementsMixin):
                 elif left_type == right_type and is_left_type_param:
                     node_type_str = left_type
                 else:
-                    self.error(
+                    self.invalid_type_error(
                         f"Operator '{op}' not supported between types {left_type} and {right_type}",
                         node.token,
                     )
@@ -440,7 +440,7 @@ class TypeSystemMixin(StatementsMixin):
                 elif left_type == right_type and is_left_type_param:
                     node_type_str = left_type
                 else:
-                    self.error(
+                    self.invalid_type_error(
                         f"Operator '{op}' not supported between types {left_type} and {right_type}",
                         node.token,
                     )
@@ -451,12 +451,12 @@ class TypeSystemMixin(StatementsMixin):
                 elif left_type == right_type and is_left_type_param:
                     node_type_str = left_type
                 else:
-                    self.error(
+                    self.invalid_type_error(
                         f"Operator '{op}' requires integer operands of the same type, got {left_type} and {right_type}",
                         node.token,
                     )
             else:
-                self.error(f"Unsupported binary operator '{op}'", node.token)
+                self.invalid_type_error(f"Unsupported binary operator '{op}'", node.token)
 
             node.return_type = node_type_str
 
@@ -475,14 +475,14 @@ class TypeSystemMixin(StatementsMixin):
                         if var_type in self.INTEGER_TYPES:
                             node_type_str = var_type
                         else:
-                            self.error(f"Operator '{op}' requires an integer variable, got {var_type}", node.token)
+                            self.type_error(f"Operator '{op}' requires an integer variable, got {var_type}", node.token)
                     else:
-                        self.error(f"Variable '{var_name}' not defined", node.token)
+                        self.undefined_identifier_error(var_name, node.token)
                 return node_type_str
             
             # Unary +/- operators have a child operand
             if not child_types:
-                self.error(f"Unary operator '{op}' missing operand", node.token)
+                self.invalid_type_error(f"Unary operator '{op}' missing operand", node.token)
                 return None
                 
             operand_type = child_types[0]
@@ -501,13 +501,13 @@ class TypeSystemMixin(StatementsMixin):
                 if is_numeric or is_type_param:
                     node_type_str = operand_type  # Same type as operand
                 else:
-                    self.error(
+                    self.invalid_type_error(
                         f"Unary operator '{op}' requires numeric operand, got {operand_type}",
                         node.token,
                     )
                     node_type_str = None
             else:
-                self.error(f"Unsupported unary operator '{op}'", node.token)
+                self.invalid_type_error(f"Unsupported unary operator '{op}'", node.token)
                 node_type_str = None
 
             node.return_type = node_type_str
@@ -530,7 +530,7 @@ class TypeSystemMixin(StatementsMixin):
             ):
                 node_type_str = "bool"
             else:
-                self.error(
+                self.invalid_type_error(
                     f"Cannot compare types {left_type} and {right_type} with '{op}'",
                     node.token,
                 )
@@ -557,7 +557,7 @@ class TypeSystemMixin(StatementsMixin):
             if left_type == right_type and (is_numeric or is_type_param):
                 node_type_str = "bool"
             else:
-                self.error(
+                self.invalid_type_error(
                     f"Operator '{op}' requires same-type numeric operands, got {left_type} and {right_type}",
                     node.token,
                 )
@@ -578,13 +578,13 @@ class TypeSystemMixin(StatementsMixin):
                     node_type_str = "string"
                     node.return_type = "string"
                 else:
-                    self.error(
+                    self.invalid_type_error(
                         f"Cannot cast array type {expr_type} to {target_type}",
                         node.token,
                     )
                     return None
             elif isinstance(target_type, str) and target_type.endswith("[]"):
-                self.error(
+                self.invalid_type_error(
                     f"Cannot cast to array type {target_type}",
                     node.token,
                 )
@@ -598,13 +598,13 @@ class TypeSystemMixin(StatementsMixin):
                 node_type_str = "string"
                 node.return_type = "string"
             elif target_type not in integer_types and target_type not in float_types:
-                self.error(
+                self.invalid_type_error(
                     f"Cannot cast to unknown or non-numeric type {target_type}",
                     node.token,
                 )
                 return None
             elif expr_type not in integer_types and expr_type not in float_types and expr_type != "bool" and expr_type != "string":
-                self.error(
+                self.invalid_type_error(
                     f"Cannot cast non-numeric type {expr_type} to {target_type}",
                     node.token,
                 )
@@ -624,7 +624,7 @@ class TypeSystemMixin(StatementsMixin):
                     # Explicit type arguments provided
                     type_params = self.generic_functions[func_name]
                     if len(node.type_args) != len(type_params):
-                        self.error(
+                        self.invalid_type_error(
                             f"Generic function '{func_name}' expects {len(type_params)} type arguments, got {len(node.type_args)}",
                             node.token,
                         )
@@ -632,7 +632,7 @@ class TypeSystemMixin(StatementsMixin):
                     # Infer type arguments from call arguments
                     inferred = self._infer_generic_type_args(func_name, [t for t in child_types if t is not None])
                     if inferred is None:
-                        self.error(
+                        self.invalid_type_error(
                             f"Could not infer type arguments for generic function '{func_name}'",
                             node.token,
                         )
@@ -650,7 +650,7 @@ class TypeSystemMixin(StatementsMixin):
                             # Parse constraint (simple version: just check if type is in union)
                             allowed_types = [t.strip() for t in constraint.split("|")]
                             if concrete_type not in allowed_types and constraint not in ["Numeric", "Comparable", "SignedInt", "UnsignedInt", "Float", "Integer"]:
-                                self.error(
+                                self.invalid_type_error(
                                     f"Type '{concrete_type}' does not satisfy constraint '{constraint}' for type parameter '{tp}'",
                                     node.token,
                                 )
@@ -681,7 +681,7 @@ class TypeSystemMixin(StatementsMixin):
                 expected_arg_count = 1
 
             if expected_arg_count != -1 and len(child_types) != expected_arg_count:
-                self.error(
+                self.invalid_type_error(
                     f"Function '{func_name}' expected {expected_arg_count} arguments, got {len(child_types)}",
                     node.token,
                 )
@@ -693,7 +693,7 @@ class TypeSystemMixin(StatementsMixin):
                         and arg_type != expected_arg_types[i]
                     ):
                         # TODO: Add coercion checks for conversions
-                        self.error(
+                        self.invalid_type_error(
                             f"Argument {i+1} for function '{func_name}' expected type {expected_arg_types[i]}, got {arg_type}",
                             node.children[i].token,
                         )
@@ -705,14 +705,14 @@ class TypeSystemMixin(StatementsMixin):
                 fields_map = self.user_classes.get(func_name, {})
                 field_order = list(fields_map.items())  # [(name, type), ...] insertion order preserved
                 if len(child_types) != len(field_order):
-                    self.error(
+                    self.invalid_type_error(
                         f"Constructor '{func_name}' expected {len(field_order)} args, got {len(child_types)}",
                         node.token,
                     )
                 else:
                     for i, (arg_t, (_, exp_t)) in enumerate(zip(child_types, field_order)):
                         if arg_t != exp_t:
-                            self.error(
+                            self.invalid_type_error(
                                 f"Constructor '{func_name}' arg {i+1} expected {exp_t}, got {arg_t}",
                                 node.children[i].token if i < len(node.children) else node.token,
                             )
@@ -741,12 +741,12 @@ class TypeSystemMixin(StatementsMixin):
                         if arg_types[0] == elem_type:
                             node.return_type = object_type  # append returns the array itself (or void?) - let's say array type for chaining
                         else:
-                            self.error(
+                            self.invalid_type_error(
                                 f"Method 'append' for {object_type} expected element type {elem_type}, got {arg_types[0]}",
                                 node.children[1].token,
                             )
                     else:
-                        self.error(
+                        self.invalid_type_error(
                             f"Method 'append' expected 1 argument, got {len(arg_types)}",
                             node.token,
                         )
@@ -756,17 +756,17 @@ class TypeSystemMixin(StatementsMixin):
                             if arg_types[1] == elem_type:
                                 node.return_type = object_type
                             else:
-                                self.error(
+                                self.invalid_type_error(
                                     f"Method 'insert' for {object_type} expected element type {elem_type}, got {arg_types[1]}",
                                     node.children[2].token,
                                 )
                         else:
-                            self.error(
+                            self.invalid_type_error(
                                 f"Method 'insert' expected integer index as first argument, got {arg_types[0]}",
                                 node.children[1].token,
                             )
                     else:
-                        self.error(
+                        self.invalid_type_error(
                             f"Method 'insert' expected 2 arguments (index, element), got {len(arg_types)}",
                             node.token,
                         )
@@ -777,12 +777,12 @@ class TypeSystemMixin(StatementsMixin):
                         if arg_types[0] in self.INTEGER_TYPES:
                             node.return_type = elem_type
                         else:
-                            self.error(
+                            self.invalid_type_error(
                                 f"Method 'pop' expected integer index, got {arg_types[0]}",
                                 node.children[1].token,
                             )
                     else:
-                        self.error(
+                        self.invalid_type_error(
                             f"Method 'pop' expected 0 or 1 argument, got {len(arg_types)}",
                             node.token,
                         )
@@ -792,7 +792,7 @@ class TypeSystemMixin(StatementsMixin):
                             "void"  # Or None? Let's use void consistently
                         )
                     else:
-                        self.error(
+                        self.invalid_type_error(
                             f"Method 'clear' expected 0 arguments, got {len(arg_types)}",
                             node.token,
                         )
@@ -800,7 +800,7 @@ class TypeSystemMixin(StatementsMixin):
                     if len(arg_types) == 0:
                         node.return_type = "int32"
                     else:
-                        self.error(
+                        self.invalid_type_error(
                             f"Method '{method_name}' expected 0 arguments, got {len(arg_types)}",
                             node.token,
                         )
@@ -809,17 +809,17 @@ class TypeSystemMixin(StatementsMixin):
                         if arg_types[0] == elem_type:
                             node.return_type = "int32"
                         else:
-                            self.error(
+                            self.invalid_type_error(
                                 f"Method '{method_name}' for {object_type} expected element type {elem_type}, got {arg_types[0]}",
                                 node.children[1].token,
                             )
                     else:
-                        self.error(
+                        self.invalid_type_error(
                             f"Method '{method_name}' expected 1 argument, got {len(arg_types)}",
                             node.token,
                         )
                 else:
-                    self.error(
+                    self.invalid_type_error(
                         f"Unknown method '{method_name}' for array type {object_type}",
                         node.token,
                     )
@@ -828,21 +828,21 @@ class TypeSystemMixin(StatementsMixin):
                 if object_type in self.user_methods and method_name in self.user_methods[object_type]:
                     sig = self.user_methods[object_type][method_name]
                     if bool(sig.get("is_static", False)):
-                        self.error(
+                        self.invalid_type_error(
                             f"Static method '{method_name}' must be called on type '{object_type}', not an instance",
                             node.token,
                         )
                         return None
                     expected_params = sig.get("params", [])
                     if len(arg_types) != len(expected_params):
-                        self.error(
+                        self.invalid_type_error(
                             f"Method '{method_name}' for '{object_type}' expected {len(expected_params)} args, got {len(arg_types)}",
                             node.token,
                         )
                     else:
                         for i, (arg_t, exp_t) in enumerate(zip(arg_types, expected_params)):
                             if arg_t != exp_t:
-                                self.error(
+                                self.invalid_type_error(
                                     f"Argument {i+1} for method '{method_name}' expected type {exp_t}, got {arg_t}",
                                     node.children[i+1].token if len(node.children) > i+1 else node.token,
                                 )
@@ -853,7 +853,7 @@ class TypeSystemMixin(StatementsMixin):
                     if self.defer_undefined_identifiers and object_type and "<" in object_type:
                         pass  # Will be resolved after import merge
                     else:
-                        self.error(
+                        self.invalid_type_error(
                             f"Methods not supported for type {object_type}",
                             node.children[0].token,
                         )
@@ -864,31 +864,31 @@ class TypeSystemMixin(StatementsMixin):
             in_ctor = bool(getattr(node, "in_constructor", False))
 
             if not enclosing_class:
-                self.error("'super' can only be used inside a class method", node.token)
+                self.invalid_type_error("'super' can only be used inside a class method", node.token)
                 return None
             if not super_class:
-                self.error(f"Class '{enclosing_class}' has no base class; cannot use 'super'", node.token)
+                self.invalid_type_error(f"Class '{enclosing_class}' has no base class; cannot use 'super'", node.token)
                 return None
 
             if not in_ctor:
-                self.error("'this.super(...)' is only valid inside a constructor", node.token)
+                self.invalid_type_error("'this.super(...)' is only valid inside a constructor", node.token)
                 return None
 
             # Validate constructor exists on base
             if super_class not in self.user_methods or super_class not in self.user_methods[super_class]:
-                self.error(f"No constructor defined for base type '{super_class}'", node.token)
+                self.invalid_type_error(f"No constructor defined for base type '{super_class}'", node.token)
                 return None
             sig = self.user_methods[super_class][super_class]
             expected_params = sig.get("params", [])
             if len(child_types) != len(expected_params):
-                self.error(
+                self.invalid_type_error(
                     f"Super constructor '{super_class}' expected {len(expected_params)} args, got {len(child_types)}",
                     node.token,
                 )
             else:
                 for i, (arg_t, exp_t) in enumerate(zip(child_types, expected_params)):
                     if arg_t != exp_t:
-                        self.error(
+                        self.invalid_type_error(
                             f"Super constructor '{super_class}' arg {i+1} expected {exp_t}, got {arg_t}",
                             node.children[i].token if i < len(node.children) else node.token,
                         )
@@ -899,25 +899,25 @@ class TypeSystemMixin(StatementsMixin):
             class_name = getattr(node, "class_name", None)
             method_name = node.name
             if not class_name or class_name not in self.user_methods or method_name not in self.user_methods[class_name]:
-                self.error(f"Unknown constructor or static method '{method_name}' for type '{class_name}'", node.token)
+                self.invalid_type_error(f"Unknown constructor or static method '{method_name}' for type '{class_name}'", node.token)
                 return None
             sig = self.user_methods[class_name][method_name]
             is_static = bool(sig.get("is_static", False))
             is_constructor = sig.get("return") == class_name
             if not is_static and not is_constructor:
-                self.error(f"'{method_name}' is neither a static method nor a constructor for type '{class_name}'", node.token)
+                self.invalid_type_error(f"'{method_name}' is neither a static method nor a constructor for type '{class_name}'", node.token)
                 return None
             # Validate args
             expected_params = sig.get("params", [])
             if len(child_types) != len(expected_params):
-                self.error(
+                self.invalid_type_error(
                     f"Call '{class_name}.{method_name}' expected {len(expected_params)} args, got {len(child_types)}",
                     node.token,
                 )
             else:
                 for i, (arg_t, exp_t) in enumerate(zip(child_types, expected_params)):
                     if arg_t != exp_t:
-                        self.error(
+                        self.invalid_type_error(
                             f"Call '{class_name}.{method_name}' arg {i+1} expected {exp_t}, got {arg_t}",
                             node.children[i].token if i < len(node.children) else node.token,
                         )
@@ -933,19 +933,19 @@ class TypeSystemMixin(StatementsMixin):
             class_name = node.name
             # Look up a constructor method whose name equals the class name
             if class_name not in self.user_methods or class_name not in self.user_methods[class_name]:
-                self.error(f"No constructor defined for type '{class_name}'", node.token)
+                self.invalid_type_error(f"No constructor defined for type '{class_name}'", node.token)
                 return None
             sig = self.user_methods[class_name][class_name]
             expected_params = sig.get("params", [])
             if len(child_types) != len(expected_params):
-                self.error(
+                self.invalid_type_error(
                     f"Constructor '{class_name}' expected {len(expected_params)} args, got {len(child_types)}",
                     node.token,
                 )
             else:
                 for i, (arg_t, exp_t) in enumerate(zip(child_types, expected_params)):
                     if arg_t != exp_t:
-                        self.error(
+                        self.invalid_type_error(
                             f"Constructor '{class_name}' arg {i+1} expected {exp_t}, got {arg_t}",
                             node.children[i].token if i < len(node.children) else node.token,
                         )
@@ -965,7 +965,7 @@ class TypeSystemMixin(StatementsMixin):
                     node.return_type = fields[field_name]
                     node_type_str = fields[field_name]
                 else:
-                    self.error(f"Type '{obj_type}' has no field '{field_name}'", node.token)
+                    self.invalid_type_error(f"Type '{obj_type}' has no field '{field_name}'", node.token)
                     node_type_str = None
             elif obj_type in self.generic_class_templates:
                 # Inside a generic class template body: look up field from template nodes
@@ -977,7 +977,7 @@ class TypeSystemMixin(StatementsMixin):
                     node.return_type = template_fields[field_name]
                     node_type_str = template_fields[field_name]
                 else:
-                    self.error(f"Type '{obj_type}' has no field '{field_name}'", node.token)
+                    self.invalid_type_error(f"Type '{obj_type}' has no field '{field_name}'", node.token)
                     node_type_str = None
             else:
                 # In deferred-import mode a composite generic type like "Tuple<int32, string>"
@@ -986,7 +986,7 @@ class TypeSystemMixin(StatementsMixin):
                 if self.defer_undefined_identifiers and obj_type and "<" in obj_type:
                     node_type_str = None
                 else:
-                    self.error(f"Field access on non-class type '{obj_type}'", node.token)
+                    self.invalid_type_error(f"Field access on non-class type '{obj_type}'", node.token)
                     node_type_str = None
 
         elif node.node_type == NodeTypes.ARRAY_ACCESS:
@@ -997,12 +997,12 @@ class TypeSystemMixin(StatementsMixin):
                 return None
 
             if not array_type.endswith("[]"):
-                self.error(
+                self.invalid_type_error(
                     f"Cannot apply index operator [] to non-array type {array_type}",
                     node.children[0].token,
                 )
             elif index_type not in self.INTEGER_TYPES:
-                self.error(
+                self.invalid_type_error(
                     f"Array index must be an integer type, got {index_type}",
                     node.children[1].token,
                 )
@@ -1019,7 +1019,7 @@ class TypeSystemMixin(StatementsMixin):
             if condition_type is None:
                 return None
             if condition_type != "bool":
-                self.error(
+                self.invalid_type_error(
                     f"Condition for '{node.name}' statement must be a boolean, got {condition_type}",
                     node.children[0].token,
                 )
@@ -1038,7 +1038,7 @@ class TypeSystemMixin(StatementsMixin):
                     break
                 cur = cur.parent
             if not in_loop:
-                self.error(f"'{node.name}' statement not within a loop", node.token)
+                self.invalid_type_error(f"'{node.name}' statement not within a loop", node.token)
 
         # --- Determine node's type string based on checks ---
         # If node_type_str wasn't set explicitly, try getting it generally

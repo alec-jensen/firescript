@@ -29,7 +29,7 @@ class StatementsMixin(ExpressionsMixin):
             return None
 
         if not self.consume("OPEN_PAREN"):
-            self.error("Expected '(' after 'if'", self.current_token or if_token)
+            self.expected_token_error("'(' after 'if'", self.current_token or if_token)
             return None
 
         condition = self.parse_expression()
@@ -40,9 +40,7 @@ class StatementsMixin(ExpressionsMixin):
             return None  # IF statement parsing failed due to invalid condition.
 
         if not self.consume("CLOSE_PAREN"):
-            self.error(
-                "Expected ')' after if condition", self.current_token or condition.token
-            )
+            self.expected_token_error("')' after if condition", self.current_token or condition.token)
             return None
 
         # 'condition' is a valid ASTNode here.
@@ -53,10 +51,7 @@ class StatementsMixin(ExpressionsMixin):
         if self.current_token and self.current_token.type == "OPEN_BRACE":
             then_branch_node = self.parse_scope()
             if then_branch_node is None:
-                self.error(
-                    "Invalid 'then' block (scope) for if statement",
-                    expected_then_body_token,
-                )
+                self.invalid_expression_error("Invalid 'then' block (scope) for if statement", expected_then_body_token)
                 return None
         else:
             then_branch_node = self._parse_braceless_body(
@@ -111,7 +106,7 @@ class StatementsMixin(ExpressionsMixin):
             and next_tok.type == "LESS_THAN"
         )
         if not (self.current_token and (self._is_type_token(self.current_token) or is_deferred_generic)):
-            self.error("Expected type in variable declaration", self.current_token)
+            self.expected_token_error("type in variable declaration", self.current_token)
             return None
         type_token = self.current_token
         self.advance()
@@ -136,7 +131,7 @@ class StatementsMixin(ExpressionsMixin):
             type_args: list[str] = []
             while True:
                 if not (self.current_token and self._is_type_token(self.current_token)):
-                    self.error("Expected type argument in generic class instantiation", self.current_token)
+                    self.expected_token_error("type argument in generic class instantiation", self.current_token)
                     return None
                 targ_tok = self.current_token
                 self.advance()
@@ -152,7 +147,7 @@ class StatementsMixin(ExpressionsMixin):
                     nested_args: list[str] = []
                     while True:
                         if not (self.current_token and self._is_type_token(self.current_token)):
-                            self.error("Expected type argument in nested generic class instantiation", self.current_token)
+                            self.expected_token_error("type argument in nested generic class instantiation", self.current_token)
                             return None
                         ntarg_tok = self.current_token
                         self.advance()
@@ -162,7 +157,7 @@ class StatementsMixin(ExpressionsMixin):
                             continue
                         break
                     if not (self.current_token and self.current_token.type == "GREATER_THAN"):
-                        self.error("Expected '>' to close nested generic type arguments", self.current_token)
+                        self.expected_token_error("'>' to close nested generic type arguments", self.current_token)
                         return None
                     self.advance()  # consume >
                     type_arg_name = self._register_generic_class_instance(targ_tok.value, nested_args)
@@ -172,7 +167,7 @@ class StatementsMixin(ExpressionsMixin):
                     continue
                 break
             if not (self.current_token and self.current_token.type == "GREATER_THAN"):
-                self.error("Expected '>' to close generic type arguments", self.current_token)
+                self.expected_token_error("'>' to close generic type arguments", self.current_token)
                 return None
             self.advance()  # consume >
             composite_type = self._register_generic_class_instance(type_token.value, type_args)
@@ -183,8 +178,8 @@ class StatementsMixin(ExpressionsMixin):
             # Expect a matching CLOSE_BRACKET
             self.advance()
             if not self.consume("CLOSE_BRACKET"):
-                self.error(
-                    "Expected ']' after '[' in array type declaration",
+                self.expected_token_error(
+                    "']' after '[' in array type declaration",
                     self.current_token,
                 )
                 return None
@@ -193,19 +188,19 @@ class StatementsMixin(ExpressionsMixin):
         # Identifier
         identifier = self.consume("IDENTIFIER")
         if identifier is None:
-            self.error("Expected variable name after type", self.current_token)
+            self.expected_token_error("variable name after type", self.current_token)
             return None
 
         # Assignment
         if not self.consume("ASSIGN"):
-            self.error("Expected '=' in variable declaration", self.current_token)
+            self.expected_token_error("'=' in variable declaration", self.current_token)
             return None
 
         # Initializer expression
         value = self.parse_expression()
         if value is None:
-            self.error(
-                "Expected initializer expression in variable declaration",
+            self.expected_token_error(
+                "initializer expression in variable declaration",
                 self.current_token,
             )
             return None
@@ -231,20 +226,20 @@ class StatementsMixin(ExpressionsMixin):
     def parse_variable_assignment(self):
         identifier = self.consume("IDENTIFIER")
         if identifier is None:
-            self.error("Expected identifier", self.current_token)
+            self.expected_token_error("identifier", self.current_token)
             self._sync_to_semicolon()
             return None
 
         assign_token = self.consume("ASSIGN")
         if assign_token is None:
-            self.error("Expected assignment operator", self.current_token)
+            self.expected_token_error("assignment operator", self.current_token)
             self._sync_to_semicolon()
             return None
 
         value = self.parse_expression()
         if value is None:
-            self.error(
-                "Expected expression after assignment operator", self.current_token
+            self.expected_token_error(
+                "expression after assignment operator", self.current_token
             )
             self._sync_to_semicolon()
             return None
@@ -263,13 +258,13 @@ class StatementsMixin(ExpressionsMixin):
         """Parse a function call: functionName(argument, ...)."""
         function_name_token = self.consume("IDENTIFIER")
         if function_name_token is None:
-            self.error("Expected function name for function call", self.current_token)
+            self.expected_token_error("function name for function call", self.current_token)
             self._sync_to_semicolon()
             return None
 
         open_paren = self.consume("OPEN_PAREN")
         if open_paren is None:
-            self.error("Expected '(' after function name", self.current_token)
+            self.expected_token_error("'(' after function name", self.current_token)
             self._sync_to_semicolon()
             return None
 
@@ -282,7 +277,7 @@ class StatementsMixin(ExpressionsMixin):
             and function_name_token.value not in getattr(self, "user_functions", {})
         ):
             if not self.defer_undefined_identifiers:
-                self.error(
+                self.invalid_expression_error(
                     f"Function '{function_name_token.value}' is not defined",
                     function_name_token,
                 )
@@ -309,7 +304,7 @@ class StatementsMixin(ExpressionsMixin):
         if not while_token:
             return None
         if not self.consume("OPEN_PAREN"):
-            self.error("Expected '(' after 'while'", self.current_token or while_token)
+            self.expected_token_error("'(' after 'while'", self.current_token or while_token)
             return None
         condition = self.parse_expression()
         if condition is None:
@@ -317,8 +312,8 @@ class StatementsMixin(ExpressionsMixin):
                 self.consume("CLOSE_PAREN")
             return None
         if not self.consume("CLOSE_PAREN"):
-            self.error(
-                "Expected ')' after while condition",
+            self.expected_token_error(
+                "')' after while condition",
                 self.current_token or condition.token,
             )
             return None
@@ -350,7 +345,7 @@ class StatementsMixin(ExpressionsMixin):
             return None
         
         if not self.consume("OPEN_PAREN"):
-            self.error("Expected '(' after 'for'", self.current_token or for_token)
+            self.expected_token_error("'(' after 'for'", self.current_token or for_token)
             return None
         
         # Try to determine if this is a C-style for or for-in loop
@@ -369,30 +364,30 @@ class StatementsMixin(ExpressionsMixin):
             # Parse for-in loop: for (type item in collection)
             # Expect a type declaration first
             if not self.current_token or self.current_token.type not in self.TYPE_TOKEN_NAMES:
-                self.error("Expected type for loop variable", self.current_token or for_token)
+                self.expected_token_error("type for loop variable", self.current_token or for_token)
                 return None
             
             var_type = self.current_token
             self.advance()
             
             if not self.current_token or self.current_token.type != "IDENTIFIER":
-                self.error("Expected loop variable name after type", self.current_token or for_token)
+                self.expected_token_error("loop variable name after type", self.current_token or for_token)
                 return None
             
             loop_var = self.current_token
             self.advance()
             
             if not self.consume("IN"):
-                self.error("Expected 'in' after loop variable", self.current_token or loop_var)
+                self.expected_token_error("'in' after loop variable", self.current_token or loop_var)
                 return None
             
             collection = self.parse_expression()
             if collection is None:
-                self.error("Expected collection expression after 'in'", self.current_token or for_token)
+                self.expected_token_error("collection expression after 'in'", self.current_token or for_token)
                 return None
             
             if not self.consume("CLOSE_PAREN"):
-                self.error("Expected ')' after for-in header", self.current_token or for_token)
+                self.expected_token_error("')' after for-in header", self.current_token or for_token)
                 return None
             
             # Parse body
@@ -455,7 +450,7 @@ class StatementsMixin(ExpressionsMixin):
                     init = self.parse_expression()
             
             if not self.consume("SEMICOLON"):
-                self.error("Expected ';' after for loop init", self.current_token or for_token)
+                self.expected_token_error("';' after for loop init", self.current_token or for_token)
                 return None
             
             # Parse condition
@@ -464,7 +459,7 @@ class StatementsMixin(ExpressionsMixin):
                 condition = self.parse_expression()
             
             if not self.consume("SEMICOLON"):
-                self.error("Expected ';' after for loop condition", self.current_token or for_token)
+                self.expected_token_error("';' after for loop condition", self.current_token or for_token)
                 return None
             
             # Parse increment
@@ -473,7 +468,7 @@ class StatementsMixin(ExpressionsMixin):
                 increment = self.parse_expression()
             
             if not self.consume("CLOSE_PAREN"):
-                self.error("Expected ')' after for loop header", self.current_token or for_token)
+                self.expected_token_error("')' after for loop header", self.current_token or for_token)
                 return None
             
             # Parse body
@@ -511,7 +506,7 @@ class StatementsMixin(ExpressionsMixin):
         # Imports are top-level only; error if seen in a statement context (inside scopes)
         if self.current_token and self.current_token.type == "IMPORT":
             tok = self.current_token
-            self.error("Imports must appear at top level", tok)
+            self.invalid_expression_error("Imports must appear at top level", tok)
             # Simple recovery: consume until semicolon or brace
             while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE", "OPEN_BRACE"):
                 self.advance()
@@ -524,13 +519,13 @@ class StatementsMixin(ExpressionsMixin):
             if callable(parse_directive_any):
                 parse_directive = cast(Callable[[], Optional[ASTNode]], parse_directive_any)
                 return parse_directive()
-            self.error("Directive parsing is not available in this parser configuration", self.current_token)
+            self.invalid_expression_error("Directive parsing is not available in this parser configuration", self.current_token)
             return None
         # Unknown token recovery: emit error and advance
         if self.current_token and self.current_token.type == "UNKNOWN":
             bad_tok = self.current_token
             self.advance()
-            self.error(f"Unexpected character '{bad_tok.value}'", bad_tok)
+            self.invalid_expression_error(f"Unexpected character '{bad_tok.value}'", bad_tok)
             return None
         # Handle while loops
         if self.current_token and self.current_token.type == "WHILE":
@@ -552,8 +547,8 @@ class StatementsMixin(ExpressionsMixin):
             if self.current_token and self.current_token.type == "SEMICOLON":
                 self.consume("SEMICOLON")
             else:
-                self.error(
-                    "Expected semicolon after statement", self.current_token or tok
+                self.expected_token_error(
+                    "semicolon after statement", self.current_token or tok
                 )
             return ast
         # Handle return statements
@@ -592,7 +587,7 @@ class StatementsMixin(ExpressionsMixin):
         if self.current_token.type == "ELSE":
             tok = self.current_token
             self.advance()
-            self.error("Unexpected 'else' without matching 'if'", tok)
+            self.invalid_expression_error("Unexpected 'else' without matching 'if'", tok)
             # Attempt to parse its following statement/block to continue
             if self.current_token and self.current_token.type == "OPEN_BRACE":
                 self.parse_scope()
@@ -663,14 +658,14 @@ class StatementsMixin(ExpressionsMixin):
                     assign_tok = self.consume("ASSIGN")
                     rhs = self.parse_expression()
                     if rhs is None:
-                        self.error("Expected expression after '='", self.current_token)
+                        self.expected_token_error("expression after '='", self.current_token)
                         self._sync_to_semicolon()
                         return None
                     # Safe token index fallback for typing
                     idx = assign_tok.index if assign_tok else (lhs.token.index if lhs and lhs.token else 0)
                     return ASTNode(NodeTypes.ASSIGNMENT, assign_tok, "=", [lhs, rhs], idx)
                 # Otherwise, field access alone is not a valid statement
-                self.error("Expected assignment after field access", self.current_token)
+                self.expected_token_error("assignment after field access", self.current_token)
                 self._sync_to_semicolon()
                 return None
             elif next_token and next_token.type == "OPEN_BRACKET":
@@ -683,11 +678,11 @@ class StatementsMixin(ExpressionsMixin):
                     assign_tok = self.consume("ASSIGN")
                     rhs = self.parse_expression()
                     if rhs is None:
-                        self.error("Expected expression after '='", self.current_token)
+                        self.expected_token_error("expression after '='", self.current_token)
                         self._sync_to_semicolon()
                         return None
                     if expr is None:
-                        self.error("Invalid assignment target", assign_tok)
+                        self.invalid_expression_error("Invalid assignment target", assign_tok)
                         self._sync_to_semicolon()
                         return None
                     idx = assign_tok.index if assign_tok else (expr.token.index if expr and expr.token else 0)
@@ -696,8 +691,8 @@ class StatementsMixin(ExpressionsMixin):
             else:
                 # If it's just an identifier without assignment, function call, etc.
                 # it's not a valid statement
-                self.error(
-                    "Expected assignment, function call, or method call",
+                self.expected_token_error(
+                    "assignment, function call, or method call",
                     self.current_token,
                 )
                 self.advance()  # Advance to avoid loops
@@ -710,7 +705,7 @@ class StatementsMixin(ExpressionsMixin):
         open_brace = self.consume("OPEN_BRACE")
         if open_brace is None:
             # Error if no opening brace
-            self.error("Expected '{' to start scope", self.current_token)
+            self.expected_token_error("'{' to start scope", self.current_token)
             return None
         scope_node = ASTNode(NodeTypes.SCOPE, open_brace, "scope", [], open_brace.index)
         # Parse statements until closing brace
@@ -722,7 +717,10 @@ class StatementsMixin(ExpressionsMixin):
             if stmt:
                 stmt.parent = scope_node
                 scope_node.children.append(stmt)
+
             if self.current_token and self.current_token.type == "SEMICOLON":
                 self.consume("SEMICOLON")
-        self.consume("CLOSE_BRACE")
+
+        if not self.consume("CLOSE_BRACE"):
+            self.expected_token_error("'}' to close scope", self.current_token or open_brace)
         return scope_node

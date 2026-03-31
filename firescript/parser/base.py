@@ -4,6 +4,25 @@ from typing import Optional
 from lexer import Token
 from utils.file_utils import get_line_and_coumn_from_index, get_line
 from enums import NodeTypes, CompilerDirective
+from errors import (
+    CompileTimeError,
+    ParserError,
+    UnexpectedTokenError,
+    TypeError,
+    UndefinedIdentifierError,
+    ExpectedTokenError,
+    MissingIdentifierError,
+    InvalidExpressionError,
+    InvalidArrayAccessError,
+    InvalidFieldAccessError,
+    InvalidTypeError,
+    FieldNotFoundError,
+    MethodNotFoundError,
+    ConstructorNotFoundError,
+    InvalidOperatorError,
+    ControlFlowError,
+    InvalidSuperError,
+)
 from .ast_node import ASTNode
 
 
@@ -59,7 +78,7 @@ class ParserBase:
         self.ast = ASTNode(NodeTypes.ROOT, None, "program", [], 0)
         self.file = file
         self.filename = filename
-        self.errors = []
+        self.errors: list[CompileTimeError] = []
         if defer_undefined_identifiers is None:
             self.defer_undefined_identifiers = any(t.type == "IMPORT" for t in tokens)
         else:
@@ -255,27 +274,80 @@ class ParserBase:
             token = self.current_token
             self.advance()
             return token
-        self.error(
-            f"Expected {token_type} but got {self.current_token.type}",
-            self.current_token,
+        self.report_error(
+            UnexpectedTokenError(
+                expected=token_type,
+                actual=self.current_token.type,
+                source_file=self.filename,
+                line=0,
+                column=0,
+            ),
+            token=self.current_token,
         )
         return None
 
-    def error(self, text: str, token: Optional[Token] = None):
-        if self.file is None or token is None:
-            logging.error(text)
-            return
+    def report_error(self, err: CompileTimeError, token: Optional[Token] = None) -> None:
+        if token is not None and self.file is not None:
+            try:
+                line_num, column_num = get_line_and_coumn_from_index(self.file, token.index)
+                line_text = get_line(self.file, line_num)
+                err.line = line_num
+                err.column = column_num
+                err.snippet = line_text
+            except Exception:
+                pass
+        if not err.source_file:
+            err.source_file = self.filename
+        logging.error(err.to_log_string())
+        self.errors.append(err)
 
-        line_num, column_num = get_line_and_coumn_from_index(self.file, token.index)
-        line_text = get_line(self.file, line_num)
-        logging.error(
-            text
-            + f"\n> {line_text.rstrip()}\n"
-            + " " * (column_num + 1)
-            + "^"
-            + f"\n({self.filename}:{line_num}:{column_num})"
+    def error(self, text: str, token: Optional[Token] = None):
+        self.report_error(ParserError(message=text, source_file=self.filename), token=token)
+
+    def expected_token_error(self, expected: str, token: Optional[Token] = None) -> None:
+        self.report_error(ExpectedTokenError(expected=expected, source_file=self.filename), token=token)
+
+    def missing_identifier_error(self, token: Optional[Token] = None) -> None:
+        self.report_error(MissingIdentifierError(source_file=self.filename), token=token)
+
+    def invalid_expression_error(self, detail: str, token: Optional[Token] = None) -> None:
+        self.report_error(InvalidExpressionError(detail=detail, source_file=self.filename), token=token)
+
+    def invalid_array_access_error(self, detail: str, token: Optional[Token] = None) -> None:
+        self.report_error(InvalidArrayAccessError(detail=detail, source_file=self.filename), token=token)
+
+    def invalid_field_access_error(self, detail: str, token: Optional[Token] = None) -> None:
+        self.report_error(InvalidFieldAccessError(detail=detail, source_file=self.filename), token=token)
+
+    def type_error(self, detail: str, token: Optional[Token] = None) -> None:
+        self.report_error(TypeError(detail=detail, source_file=self.filename), token=token)
+
+    def invalid_type_error(self, detail: str, token: Optional[Token] = None) -> None:
+        self.report_error(InvalidTypeError(detail=detail, source_file=self.filename), token=token)
+
+    def field_not_found_error(self, type_name: str, field_name: str, token: Optional[Token] = None) -> None:
+        self.report_error(FieldNotFoundError(type_name=type_name, field_name=field_name, source_file=self.filename), token=token)
+
+    def method_not_found_error(self, type_name: str, method_name: str, token: Optional[Token] = None) -> None:
+        self.report_error(MethodNotFoundError(type_name=type_name, method_name=method_name, source_file=self.filename), token=token)
+
+    def constructor_not_found_error(self, type_name: str, token: Optional[Token] = None) -> None:
+        self.report_error(ConstructorNotFoundError(type_name=type_name,source_file=self.filename), token=token)
+
+    def invalid_operator_error(self, operator: str, type_name: str, token: Optional[Token] = None) -> None:
+        self.report_error(InvalidOperatorError(operator=operator, type_name=type_name, source_file=self.filename), token=token)
+
+    def control_flow_error(self, statement: str, token: Optional[Token] = None) -> None:
+        self.report_error(ControlFlowError(statement=statement, source_file=self.filename), token=token)
+
+    def invalid_super_error(self, detail: str, token: Optional[Token] = None) -> None:
+        self.report_error(InvalidSuperError(detail=detail, source_file=self.filename), token=token)
+
+    def undefined_identifier_error(self, identifier: str, token: Optional[Token] = None) -> None:
+        self.report_error(
+            UndefinedIdentifierError(identifier=identifier, source_file=self.filename),
+            token=token,
         )
-        self.errors.append((text, line_num, column_num))
 
     def _skip_comment(self):
         """Advances past single or multi-line comments."""
@@ -302,6 +374,45 @@ class ParserBase:
             self.advance()
         self.consume("SEMICOLON")
 
+    def _recover_to_statement_boundary(self):
+        """Panic-mode recovery to the next likely statement boundary.
+
+        Always advances at least one token, then skips until a semicolon,
+        closing brace, or a strong statement starter token is found.
+        """
+        strong_starters = {
+            "IF",
+            "ELSE",
+            "WHILE",
+            "FOR",
+            "RETURN",
+            "BREAK",
+            "CONTINUE",
+            "IMPORT",
+            "DIRECTIVE",
+            "CLASS",
+            "COPYABLE",
+            "CONSTRAINT",
+        }
+
+        start_idx = self._token_idx
+        if self.current_token is not None:
+            self.advance()
+
+        while self.current_token is not None:
+            t = self.current_token.type
+            if t == "SEMICOLON":
+                self.advance()
+                break
+            if t == "CLOSE_BRACE":
+                break
+            if t in strong_starters:
+                break
+            self.advance()
+
+        if self._token_idx == start_idx and self.current_token is not None:
+            self.advance()
+
     def _parse_argument_list(self) -> list:
         """Parse a comma-separated list of expressions inside already-consumed '('.
 
@@ -319,7 +430,7 @@ class ParserBase:
                     continue
                 break
         if not self.consume("CLOSE_PAREN"):
-            self.error("Expected ')' after argument list", self.current_token)
+                self.expected_token_error("')' after argument list", self.current_token)
         return args
 
     def parse_expression(self) -> Optional[ASTNode]:
@@ -336,7 +447,7 @@ class ParserBase:
         type_args: list[str] = []
         while True:
             if not (self.current_token and self._is_type_token(self.current_token)):
-                self.error("Expected type argument", self.current_token)
+                self.expected_token_error("type argument", self.current_token)
                 return None
             targ_tok = self.current_token
             self.advance()
@@ -346,7 +457,7 @@ class ParserBase:
                 continue
             break
         if not (self.current_token and self.current_token.type == "GREATER_THAN"):
-            self.error("Expected '>' after type arguments", self.current_token)
+            self.expected_token_error("'>' after type arguments", self.current_token)
             return None
         self.advance()  # consume '>'
         return type_args

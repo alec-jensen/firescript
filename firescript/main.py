@@ -9,6 +9,7 @@ import time
 
 from log_formatter import LogFormatter
 from compiler_pipeline import CompilerPipeline
+from errors import CompileTimeError
 
 FIRESCRIPT_VERSION = "0.4.0"
 FIRESCRIPT_RELEASE_DATE = "February 2, 2026"
@@ -129,6 +130,9 @@ def compile_file(file_path, target, cc=None, output=None):
         generator = CCodeGenerator(ast, source_file=file_path)
         generator.source_code = file_content
         output = generator.generate()
+        if generator.errors:
+            logging.error(f"Code generation failed with {len(generator.errors)} errors")
+            return False
         # Safety: wrap any raw free() calls emitted by codegen into firescript_free()
         # This prevents double-free and freeing static literals.
         output = output.replace(" free(", " firescript_free(")
@@ -248,8 +252,8 @@ def lint_text(source_text: str, file_path: str = "<stdin>"):
 
     Runs the full compiler front-end (lex → parse → import-merge → preprocess →
     semantic-analysis) against the given in-memory text and returns all collected
-    diagnostics as a list of ``(message, line, col)`` tuples (1-based line/col).
-    Line and col are both 0 when no position is available.
+    diagnostics as a list of CompileTimeError objects. Line and column are
+    1-based when available, otherwise 0.
 
     This function never writes to disk and never writes to logging — errors are
     returned purely as structured data so callers (e.g. the LSP server) can
@@ -257,7 +261,7 @@ def lint_text(source_text: str, file_path: str = "<stdin>"):
     """
     import logging as _logging
 
-    errors: list[tuple[str, int, int]] = []
+    errors: list[CompileTimeError] = []
 
     # Silence the root logger while linting so that error() calls inside the
     # parser / semantic-analyser don't write to stderr and corrupt JSON-RPC I/O.

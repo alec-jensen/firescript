@@ -9,6 +9,7 @@ from enum import Enum, auto
 
 from enums import NodeTypes
 from parser import ASTNode
+from errors import CompileTimeError, SemanticError
 from utils.type_utils import is_owned
 from utils.file_utils import get_line_and_coumn_from_index, get_line
 
@@ -71,7 +72,7 @@ class SemanticAnalyzer:
         self.ast = ast
         self.source_file = source_file
         self.source_code = source_code
-        self.errors: List[Tuple[str, int, int]] = []
+        self.errors: List[CompileTimeError] = []
         
         # Stack of scopes; each scope maps variable name -> BindingInfo
         self.scope_stack: List[Dict[str, BindingInfo]] = [{}]
@@ -102,23 +103,32 @@ class SemanticAnalyzer:
     def error(self, text: str, node: Optional[ASTNode] = None) -> None:
         """Record a semantic error with source location, mirroring Parser.error()."""
         if node is None or self.source_code is None:
-            logging.error(text)
-            self.errors.append((text, 0, 0))
+            err = SemanticError(
+                message=text,
+                source_file=self.source_file,
+            )
+            logging.error(err.to_log_string())
+            self.errors.append(err)
             return
         try:
             line_num, column_num = get_line_and_coumn_from_index(self.source_code, node.index)
             line_text = get_line(self.source_code, line_num)
-            logging.error(
-                text
-                + f"\n> {line_text.rstrip()}\n"
-                + " " * (column_num + 1)
-                + "^"
-                + f"\n({self.source_file}:{line_num}:{column_num})"
+            err = SemanticError(
+                message=text,
+                source_file=self.source_file,
+                line=line_num,
+                column=column_num,
+                snippet=line_text,
             )
-            self.errors.append((text, line_num, column_num))
+            logging.error(err.to_log_string())
+            self.errors.append(err)
         except (IndexError, ValueError):
-            logging.error(text)
-            self.errors.append((text, 0, 0))
+            err = SemanticError(
+                message=text,
+                source_file=self.source_file,
+            )
+            logging.error(err.to_log_string())
+            self.errors.append(err)
     
     def analyze(self) -> bool:
         """

@@ -21,10 +21,10 @@ class ExpressionsMixin(ParserBase):
             self.advance()  # consume 'as'
             t_tok = self.current_token
             if t_tok is None:
-                self.error("Expected type after 'as'", node.token)
+                self.expected_token_error("type after 'as'", node.token)
                 break
             if not (self._is_type_token(t_tok) or t_tok.type == "IDENTIFIER"):
-                self.error("Expected type after 'as'", t_tok)
+                self.expected_token_error("type after 'as'", t_tok)
                 break
             self.advance()
 
@@ -145,7 +145,7 @@ class ExpressionsMixin(ParserBase):
             self.advance()
             operand = self.parse_unary()  # Right-associative for chained unary ops
             if operand is None:
-                self.error(f"Expected expression after unary '{op_token.value}'", op_token)
+                self.expected_token_error(f"expression after unary '{op_token.value}'", op_token)
                 return None
             return ASTNode(
                 NodeTypes.UNARY_EXPRESSION,
@@ -165,7 +165,7 @@ class ExpressionsMixin(ParserBase):
             self.advance()
             cls_tok = self.consume("IDENTIFIER")
             if cls_tok is None:
-                self.error("Expected class name after 'new'", self.current_token)
+                self.expected_token_error("class name after 'new'", self.current_token)
                 return None
             # Generic class constructor: new Pair<int32, string>(args)
             composite_class_name: Optional[str] = None
@@ -180,9 +180,9 @@ class ExpressionsMixin(ParserBase):
                 composite_class_name = self._register_generic_class_instance(cls_tok.value, type_args)
             else:
                 if cls_tok.value not in self.user_types:
-                    self.error(f"Unknown type '{cls_tok.value}' in constructor", cls_tok)
+                    self.invalid_expression_error(f"Unknown type '{cls_tok.value}' in constructor", cls_tok)
             if not self.consume("OPEN_PAREN"):
-                self.error("Expected '(' after constructor type", self.current_token)
+                self.expected_token_error("'(' after constructor type", self.current_token)
                 return None
             args = self._parse_argument_list()
             used_name = composite_class_name if composite_class_name else cls_tok.value
@@ -193,7 +193,7 @@ class ExpressionsMixin(ParserBase):
             self.advance()  # skip '('
             expr = self.parse_expression()
             if not self.current_token or self.current_token.type != "CLOSE_PAREN":
-                self.error("Expected closing parenthesis", self.current_token)
+                self.expected_token_error("closing parenthesis", self.current_token)
                 return self._parse_postfix_cast(expr)
             self.advance()  # skip ')'
             return self._parse_postfix_cast(expr)
@@ -227,10 +227,10 @@ class ExpressionsMixin(ParserBase):
                 self.consume("DOT")
                 method_name = self.consume("IDENTIFIER")
                 if not method_name:
-                    self.error("Expected method name after type '.'", self.current_token)
+                    self.expected_token_error("method name after type '.'", self.current_token)
                     return None
                 if not self.consume("OPEN_PAREN"):
-                    self.error("Expected '(' after type method name", self.current_token)
+                    self.expected_token_error("'(' after type method name", self.current_token)
                     return None
                 args = self._parse_argument_list()
                 node = ASTNode(NodeTypes.TYPE_METHOD_CALL, method_name, method_name.value, args, method_name.index)
@@ -254,7 +254,7 @@ class ExpressionsMixin(ParserBase):
                     dot_tok = self.consume("DOT")
                     ident_tok = self.consume("IDENTIFIER")
                     if not ident_tok:
-                        self.error("Expected identifier after '.'", self.current_token or dot_tok)
+                        self.expected_token_error("identifier after '.'", self.current_token or dot_tok)
                         break
                     # Method call if next is '('
                     if self.current_token and self.current_token.type == "OPEN_PAREN":
@@ -324,7 +324,7 @@ class ExpressionsMixin(ParserBase):
                         
                         # Now parse constructor argument list
                         if not (self.current_token and self.current_token.type == "OPEN_PAREN"):
-                            self.error("Expected '(' after generic class type arguments", self.current_token)
+                            self.expected_token_error("'(' after generic class type arguments", self.current_token)
                             break
                         self.consume("OPEN_PAREN")
                         arguments = self._parse_argument_list()
@@ -339,7 +339,7 @@ class ExpressionsMixin(ParserBase):
                         
                         # Now parse the function call
                         if not (self.current_token and self.current_token.type == "OPEN_PAREN"):
-                            self.error("Expected '(' after generic type arguments", self.current_token)
+                            self.expected_token_error("'(' after generic type arguments", self.current_token)
                             break
                         
                         self.consume("OPEN_PAREN")
@@ -369,12 +369,12 @@ class ExpressionsMixin(ParserBase):
                                 continue
                             break
                         if not (self.current_token and self.current_token.type == "GREATER_THAN"):
-                            self.error("Expected '>' to close generic type arguments", self.current_token)
+                            self.expected_token_error("'>' to close generic type arguments", self.current_token)
                         else:
                             self.advance()  # consume >
                         composite_name = self._register_generic_class_instance(token.value, type_args)
                         if not (self.current_token and self.current_token.type == "OPEN_PAREN"):
-                            self.error("Expected '(' after generic type arguments", self.current_token)
+                            self.expected_token_error("'(' after generic type arguments", self.current_token)
                             break
                         self.consume("OPEN_PAREN")
                         arguments = self._parse_argument_list()
@@ -409,7 +409,7 @@ class ExpressionsMixin(ParserBase):
                 break
             return self._parse_postfix_cast(node)
         else:
-            self.error(f"Unexpected token {token.value}", token)
+            self.invalid_expression_error(f"Unexpected token {token.value}", token)
             self.advance()
             return None
 
@@ -417,7 +417,7 @@ class ExpressionsMixin(ParserBase):
         """Parse an array literal expression like [1, 2, 3]"""
         open_bracket = self.consume("OPEN_BRACKET")
         if not open_bracket:
-            self.error("Expected '[' to start array literal", self.current_token)
+            self.expected_token_error("'[' to start array literal", self.current_token)
             return None
 
         elements = []
@@ -435,7 +435,7 @@ class ExpressionsMixin(ParserBase):
 
         close_bracket = self.consume("CLOSE_BRACKET")
         if not close_bracket:
-            self.error("Expected ']' to end array literal", self.current_token)
+            self.expected_token_error("']' to end array literal", self.current_token)
             return None
 
         return ASTNode(
@@ -446,17 +446,17 @@ class ExpressionsMixin(ParserBase):
         """Parse array access expression like arr[0]"""
         open_bracket = self.consume("OPEN_BRACKET")
         if not open_bracket:
-            self.error("Expected '[' for array access", self.current_token)
+            self.expected_token_error("'[' for array access", self.current_token)
             return None
 
         start_or_index_expr = self.parse_expression()
         if not start_or_index_expr:
-            self.error("Expected expression for array index", self.current_token)
+            self.expected_token_error("expression for array index", self.current_token)
             return None
 
         # Slicing is intentionally unsupported in core arrays.
         if self.current_token and self.current_token.type == "COLON":
-            self.error(
+            self.invalid_array_access_error(
                 "Array slicing is not supported in core arrays; use fixed-size indexing",
                 self.current_token,
             )
@@ -464,7 +464,7 @@ class ExpressionsMixin(ParserBase):
 
         close_bracket = self.consume("CLOSE_BRACKET")
         if not close_bracket:
-            self.error("Expected ']' to close array access", self.current_token)
+            self.expected_token_error("']' to close array access", self.current_token)
             return None
 
         return ASTNode(
@@ -479,7 +479,7 @@ class ExpressionsMixin(ParserBase):
         """Parse compound assignment statements like x += y, x -= y, etc."""
         identifier = self.consume("IDENTIFIER")
         if identifier is None:
-            self.error("Expected identifier", self.current_token)
+            self.expected_token_error("identifier", self.current_token)
             self._sync_to_semicolon()
             return None
 
@@ -495,8 +495,7 @@ class ExpressionsMixin(ParserBase):
             self.advance()
             value = self.parse_expression()
             if value is None:
-                self.error(
-                    "Expected expression after compound assignment operator",
+                self.expected_token_error("expression after compound assignment operator",
                     self.current_token,
                 )
                 self._sync_to_semicolon()
@@ -513,7 +512,7 @@ class ExpressionsMixin(ParserBase):
             node.token = op_token  # Store the operator token for code generation
             return node
         else:
-            self.error(
+            self.invalid_expression_error(
                 f"Expected compound assignment operator, got {self.current_token.type if self.current_token else 'None'}",
                 self.current_token or identifier,
             )
@@ -523,7 +522,7 @@ class ExpressionsMixin(ParserBase):
         """Parse increment (x++) or decrement (x--) operations."""
         identifier = self.consume("IDENTIFIER")
         if identifier is None:
-            self.error("Expected identifier", self.current_token)
+            self.expected_token_error("identifier", self.current_token)
             self._sync_to_semicolon()
             return None
 
@@ -542,7 +541,7 @@ class ExpressionsMixin(ParserBase):
             )
             return node
         else:
-            self.error(
+            self.invalid_expression_error(
                 f"Expected increment or decrement operator, got {self.current_token.type if self.current_token else 'None'}",
                 self.current_token or identifier,
             )

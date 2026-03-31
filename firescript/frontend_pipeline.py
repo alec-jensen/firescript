@@ -10,6 +10,7 @@ from typing import Tuple
 from lexer import Lexer
 from parser import Parser, ASTNode
 from enums import NodeTypes
+from errors import UndefinedIdentifierError
 from imports import ModuleResolver, Module, build_merged_ast
 
 
@@ -69,6 +70,9 @@ def resolve_imports_and_deferred_identifiers(
                 for c in (merged_ast.children or [])
             ):
                 continue
-            parser_instance.error(f"Variable '{name}' not defined", tok)
+            parser_instance.report_error(
+                UndefinedIdentifierError(identifier=name, source_file=file_path),
+                token=tok,
+            )
 
     return merged_ast

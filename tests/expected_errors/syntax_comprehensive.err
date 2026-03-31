@@ -1,42 +1,46 @@
-[    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\syntax_comprehensive.fire...
+[    INFO] --- Starting compilation of tests/sources/invalid/syntax_comprehensive.fire...
 [   ERROR] --- Expected semicolon after statement
 > int32 b = 10;
   ^
-(tests\sources\invalid\syntax_comprehensive.fire:6:1)
+(tests/sources/invalid/syntax_comprehensive.fire:6:1)
 [   ERROR] --- Expected closing parenthesis
 > int32 x = (5 + 3;
                   ^
-(tests\sources\invalid\syntax_comprehensive.fire:9:17)
+(tests/sources/invalid/syntax_comprehensive.fire:9:17)
 [   ERROR] --- Expected ']' to end array literal
 > int32[] arr = [1, 2, 3;
                         ^
-(tests\sources\invalid\syntax_comprehensive.fire:12:23)
+(tests/sources/invalid/syntax_comprehensive.fire:12:23)
 [   ERROR] --- Expected initializer expression in variable declaration
 > int32[] arr = [1, 2, 3;
                         ^
-(tests\sources\invalid\syntax_comprehensive.fire:12:23)
+(tests/sources/invalid/syntax_comprehensive.fire:12:23)
 [   ERROR] --- Expected '(' after 'if'
 > if x > 5 {
      ^
-(tests\sources\invalid\syntax_comprehensive.fire:15:4)
+(tests/sources/invalid/syntax_comprehensive.fire:15:4)
 [   ERROR] --- Function 'println' is not defined
 >     println("test");
       ^
-(tests\sources\invalid\syntax_comprehensive.fire:16:5)
+(tests/sources/invalid/syntax_comprehensive.fire:16:5)
 [   ERROR] --- Expected '(' after 'while'
 > while {
         ^
-(tests\sources\invalid\syntax_comprehensive.fire:20:7)
+(tests/sources/invalid/syntax_comprehensive.fire:20:7)
 [   ERROR] --- Function 'println' is not defined
 >     println("test");
       ^
-(tests\sources\invalid\syntax_comprehensive.fire:21:5)
+(tests/sources/invalid/syntax_comprehensive.fire:21:5)
 [   ERROR] --- Unexpected character '#'
 > @#$%
    ^
-(tests\sources\invalid\syntax_comprehensive.fire:25:2)
+(tests/sources/invalid/syntax_comprehensive.fire:25:2)
 [   ERROR] --- Expected semicolon after statement
 >     println("orphan else");
                ^
-(tests\sources\invalid\syntax_comprehensive.fire:39:14)
-[   ERROR] --- Parsing failed with 10 errors
+(tests/sources/invalid/syntax_comprehensive.fire:39:14)
+[   ERROR] --- Expected '}' to close scope
+> void unclosed() {
+                  ^
+(tests/sources/invalid/syntax_comprehensive.fire:51:17)
+[   ERROR] --- Parsing failed with 11 errors

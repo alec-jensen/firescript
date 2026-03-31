@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from lexer import Lexer
 from parser import Parser, ASTNode
 from enums import NodeTypes
+from errors import ImportNotFoundError, CyclicImportError
 from compiler_types import SourceMap, MergedSymbolTable
 
 
@@ -99,8 +100,10 @@ class ModuleResolver:
         ast = parser.parse()
         if parser.errors:
             # Surface the first parser error to the caller
-            msg, line, col = parser.errors[0]
-            raise RuntimeError(f"Parse error in {file_path}: {msg} at {line}:{col}")
+            err = parser.errors[0]
+            raise RuntimeError(
+                f"Parse error in {file_path}: {err.message} at {err.line}:{err.column}"
+            )
         return ast, file_content
 
     def collect_exports(self, mod: Module) -> Dict[str, ASTNode]:
@@ -134,11 +137,13 @@ class ModuleResolver:
         # Cycle detection
         if dotted in load_stack:
             cycle = load_stack + [dotted]
-            raise RuntimeError("Cyclic import detected: " + " -> ".join(cycle))
+            err = CyclicImportError(cycle=" -> ".join(cycle))
+            raise RuntimeError(err.to_log_string())
 
         path = self.dotted_to_path(dotted)
         if not os.path.isfile(path):
-            raise FileNotFoundError(f"Module not found: {dotted} (looked in {path})")
+            err = ImportNotFoundError(module=f"{dotted} (looked in {path})")
+            raise FileNotFoundError(err.to_log_string())
 
         ast, source_text = self.parse_file(path)
         mod = Module(dotted, path, ast, source_text)

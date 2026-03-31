@@ -1,5 +1,6 @@
 from enums import NodeTypes
 from parser import ASTNode, get_line_and_coumn_from_index, get_line
+from errors import CompileTimeError, CodegenError
 from utils.type_utils import is_copyable, is_owned, register_class
 from typing import Optional
 import logging
@@ -35,6 +36,7 @@ class CCodeGeneratorBase:
         self.ast = ast
         self.source_file = source_file
         self.source_code: Optional[str] = None
+        self.errors: list[CompileTimeError] = []
         self.symbol_table: SymbolTable = {}
         # Fixed-size array lengths by variable name
         self.array_lengths: dict[str, int] = {}
@@ -142,7 +144,12 @@ class CCodeGeneratorBase:
     def error(self, text: str, node: Optional[ASTNode] = None):
         """Report a compilation error with source location"""
         if node is None:
-            logging.error(text)
+            err = CodegenError(
+                message=text,
+                source_file=self.source_file,
+            )
+            self.errors.append(err)
+            logging.error(err.to_log_string())
             return
         
         # Get source file and source code for this node
@@ -160,22 +167,34 @@ class CCodeGeneratorBase:
             node_source_file = self.source_file
         
         if node_source_file is None or node_source_code is None:
-            logging.error(text)
+            err = CodegenError(
+                message=text,
+                source_file=self.source_file,
+            )
+            self.errors.append(err)
+            logging.error(err.to_log_string())
             return
 
         try:
             line_num, column_num = get_line_and_coumn_from_index(node_source_code, node.index)
             line_text = get_line(node_source_code, line_num)
-            logging.error(
-                text
-                + f"\n> {line_text.rstrip()}\n"
-                + " " * (column_num + 1)
-                + "^"
-                + f"\n({node_source_file}:{line_num}:{column_num})"
+            err = CodegenError(
+                message=text,
+                source_file=node_source_file,
+                line=line_num,
+                column=column_num,
+                snippet=line_text,
             )
+            self.errors.append(err)
+            logging.error(err.to_log_string())
         except (IndexError, ValueError):
             # Node index is out of range - just show the error without source location
-            logging.error(text)
+            err = CodegenError(
+                message=text,
+                source_file=node_source_file,
+            )
+            self.errors.append(err)
+            logging.error(err.to_log_string())
 
     def _normalize_source_path(self, source_path: Optional[str]) -> Optional[str]:
         """Normalize a source path for directive/source-map lookups."""

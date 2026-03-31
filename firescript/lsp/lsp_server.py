@@ -135,7 +135,10 @@ def _publish_diagnostics(ls: LanguageServer, uri: str, text: str, version: Optio
 
     source_lines = text.split("\n")
     diagnostics: list[Diagnostic] = []
-    for message, line, col in raw_errors:
+    for err in raw_errors:
+        message = err.message
+        line = err.line
+        col = err.column
         # lint_text returns 1-based line/col; LSP is 0-based.
         # When position is unavailable both are 0 — keep them at 0:0.
         lsp_line = max(0, line - 1) if line > 0 else 0
