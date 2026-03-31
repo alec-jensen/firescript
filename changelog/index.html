@@ -1517,6 +1517,7 @@
 <h3 id="compiler-improvements">Compiler improvements<a class="headerlink" href="#compiler-improvements" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Standard library modules can now import sibling modules using short relative paths (e.g., <code>import tuple.Tuple;</code>).</li>
+<li>Compiler diagnostics are now unified under structured compile-time error objects across parser, semantic analysis, code generation, and <code>lint_text(...)</code>; this improves consistency of reported locations and diagnostics integrations (for example LSP).</li>
 <li>Bug fixes</li>
 <li>Fixed <code>for-in</code> loops and <code>length()</code> calls on array function parameters.</li>
 <li>Fixed error caret positions for indented code.</li>
