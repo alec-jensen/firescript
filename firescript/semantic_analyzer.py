@@ -100,35 +100,32 @@ class SemanticAnalyzer:
         # Each frame stores: (return_type, borrowed_parameter_names).
         self.callable_stack: List[Tuple[Optional[str], Set[str]]] = []
 
-    def error(self, text: str, node: Optional[ASTNode] = None) -> None:
-        """Record a semantic error with source location, mirroring Parser.error()."""
+    def report_error(self, err: CompileTimeError, node: Optional[ASTNode] = None) -> None:
+        """Record a semantic error object with source location, mirroring Parser.report_error()."""
         if node is None or self.source_code is None:
-            err = SemanticError(
-                message=text,
-                source_file=self.source_file,
-            )
+            if not err.source_file:
+                err.source_file = self.source_file
             logging.error(err.to_log_string())
             self.errors.append(err)
             return
         try:
             line_num, column_num = get_line_and_coumn_from_index(self.source_code, node.index)
             line_text = get_line(self.source_code, line_num)
-            err = SemanticError(
-                message=text,
-                source_file=self.source_file,
-                line=line_num,
-                column=column_num,
-                snippet=line_text,
-            )
+            err.line = line_num
+            err.column = column_num
+            err.snippet = line_text
+            if not err.source_file:
+                err.source_file = self.source_file
             logging.error(err.to_log_string())
             self.errors.append(err)
         except (IndexError, ValueError):
-            err = SemanticError(
-                message=text,
-                source_file=self.source_file,
-            )
+            if not err.source_file:
+                err.source_file = self.source_file
             logging.error(err.to_log_string())
             self.errors.append(err)
+
+    def error(self, text: str, node: Optional[ASTNode] = None) -> None:
+        self.report_error(SemanticError(message=text, source_file=self.source_file), node=node)
     
     def analyze(self) -> bool:
         """
@@ -231,8 +228,8 @@ class SemanticAnalyzer:
     def _is_illegal_borrow_move(self, binding: BindingInfo, use_node: ASTNode) -> bool:
         """Return True if this binding cannot be moved because it is borrowed."""
         if binding.is_borrowed and is_owned(binding.var_type, binding.is_array):
-            self.error(
-                f"Cannot move borrowed value '{binding.name}'; borrowed values cannot transfer ownership",
+            self.report_error(
+                SemanticError(message=f"Cannot move borrowed value '{binding.name}'; borrowed values cannot transfer ownership"),
                 use_node,
             )
             return True
@@ -273,8 +270,8 @@ class SemanticAnalyzer:
             return False
 
         if self._is_direct_borrow_view(expr, borrowed_params) and self._expr_is_owned_value(expr):
-            self.error(
-                "Cannot move borrowed value; borrowed values cannot transfer ownership",
+            self.report_error(
+                SemanticError(message="Cannot move borrowed value; borrowed values cannot transfer ownership"),
                 use_node,
             )
             return True
@@ -338,13 +335,13 @@ class SemanticAnalyzer:
         binding = self._lookup_binding(name)
         if binding and binding.state == OwnershipState.MOVED:
             logging.debug(f"Use-after-move detected: {name} in node type {use_node.node_type}")
-            self.error(
-                f"Use-after-move error: variable '{name}' was moved, cannot use it here",
+            self.report_error(
+                SemanticError(message=f"Use-after-move error: variable '{name}' was moved, cannot use it here"),
                 use_node,
             )
         elif binding and binding.state == OwnershipState.MAYBE_MOVED:
-            self.error(
-                f"Use-after-move error: variable '{name}' may have been moved on another control-flow path",
+            self.report_error(
+                SemanticError(message=f"Use-after-move error: variable '{name}' may have been moved on another control-flow path"),
                 use_node,
             )
 
@@ -418,9 +415,13 @@ class SemanticAnalyzer:
             
         if not is_owned(var_type, is_array):
             type_str = f"{var_type}[]" if is_array else var_type
-            self.error(
-                f"Cannot borrow Copyable type '{type_str}'; pass by value instead. "
-                f"Borrowing is only allowed for Owned types.",
+            self.report_error(
+                SemanticError(
+                    message=(
+                        f"Cannot borrow Copyable type '{type_str}'; pass by value instead. "
+                        f"Borrowing is only allowed for Owned types."
+                    )
+                ),
                 node,
             )
 
@@ -614,8 +615,8 @@ class SemanticAnalyzer:
                 ret_expr = node.children[0]
                 _, borrowed_params = self.callable_stack[-1]
                 if self._is_direct_borrow_view(ret_expr, borrowed_params) and self._expr_is_owned_value(ret_expr):
-                    self.error(
-                        "Cannot return borrowed value; borrowed values cannot escape callable scope",
+                    self.report_error(
+                        SemanticError(message="Cannot return borrowed value; borrowed values cannot escape callable scope"),
                         ret_expr,
                     )
         

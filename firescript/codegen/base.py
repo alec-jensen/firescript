@@ -141,13 +141,11 @@ class CCodeGeneratorBase:
                     self.generic_class_templates[c.name] = c
                     logging.debug(f"Found generic class template: {c.name} with type params {c.type_params}")
 
-    def error(self, text: str, node: Optional[ASTNode] = None):
-        """Report a compilation error with source location"""
+    def report_error(self, err: CompileTimeError, node: Optional[ASTNode] = None):
+        """Report a compilation error object with source location."""
         if node is None:
-            err = CodegenError(
-                message=text,
-                source_file=self.source_file,
-            )
+            if not err.source_file:
+                err.source_file = self.source_file
             self.errors.append(err)
             logging.error(err.to_log_string())
             return
@@ -167,10 +165,8 @@ class CCodeGeneratorBase:
             node_source_file = self.source_file
         
         if node_source_file is None or node_source_code is None:
-            err = CodegenError(
-                message=text,
-                source_file=self.source_file,
-            )
+            if not err.source_file:
+                err.source_file = self.source_file
             self.errors.append(err)
             logging.error(err.to_log_string())
             return
@@ -178,23 +174,22 @@ class CCodeGeneratorBase:
         try:
             line_num, column_num = get_line_and_coumn_from_index(node_source_code, node.index)
             line_text = get_line(node_source_code, line_num)
-            err = CodegenError(
-                message=text,
-                source_file=node_source_file,
-                line=line_num,
-                column=column_num,
-                snippet=line_text,
-            )
+            err.line = line_num
+            err.column = column_num
+            err.snippet = line_text
+            if not err.source_file:
+                err.source_file = node_source_file
             self.errors.append(err)
             logging.error(err.to_log_string())
         except (IndexError, ValueError):
             # Node index is out of range - just show the error without source location
-            err = CodegenError(
-                message=text,
-                source_file=node_source_file,
-            )
+            if not err.source_file:
+                err.source_file = node_source_file
             self.errors.append(err)
             logging.error(err.to_log_string())
+
+    def error(self, text: str, node: Optional[ASTNode] = None):
+        self.report_error(CodegenError(message=text, source_file=self.source_file), node=node)
 
     def _normalize_source_path(self, source_path: Optional[str]) -> Optional[str]:
         """Normalize a source path for directive/source-map lookups."""

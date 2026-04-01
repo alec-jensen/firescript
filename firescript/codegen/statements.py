@@ -1,9 +1,9 @@
 from enums import NodeTypes
 from parser import ASTNode, get_line_and_coumn_from_index, get_line
+from errors import CodegenError
 from utils.type_utils import is_copyable, is_owned, register_class
 from typing import Optional
 import logging
-import sys
 
 from .declarations import DeclarationsMixin
 
@@ -102,7 +102,7 @@ class StatementsMixin(DeclarationsMixin):
                         lines.append(f"{mangled_name}[{i}] = {elem_code};")
                     return "\n".join(lines)
                 # Allow initializing from an expression (would need additional handling)
-                self.error("Array initialization from expressions not yet supported for fixed-size arrays", node.token)
+                self.report_error(CodegenError(message="Array initialization from expressions not yet supported for fixed-size arrays"), node)
                 return ""
             elif var_type_fs == "string":
                 # Strings are Owned (heap-allocated)
@@ -325,7 +325,7 @@ class StatementsMixin(DeclarationsMixin):
                         if sym_info and len(sym_info) >= 3:
                             array_size = sym_info[2]
                             return f"(int32_t){array_size}"
-                    self.error("Cannot determine array size at compile time", node.token)
+                    self.report_error(CodegenError(message="Cannot determine array size at compile time"), node)
                     return "0"
                 if method_name in ("index", "count"):
                     if object_node.node_type == NodeTypes.IDENTIFIER:
@@ -355,10 +355,10 @@ class StatementsMixin(DeclarationsMixin):
                                 f"if ({pred}) {{ __count_{temp_id}++; }} "
                                 f"}} __count_{temp_id}; }})"
                             )
-                    self.error("Cannot determine array size at compile time", node.token)
+                    self.report_error(CodegenError(message="Cannot determine array size at compile time"), node)
                     return "0"
                 # Fixed-size arrays don't support mutation methods
-                self.error(f"Fixed-size arrays don't support method '{method_name}'. Arrays are immutable.", node.token)
+                self.report_error(CodegenError(message=f"Fixed-size arrays don't support method '{method_name}'. Arrays are immutable."), node)
             # Class instance method call -> dispatch to free function Class_method(self, ...)
             # Determine class name from object expression type
             obj_type = (
@@ -492,12 +492,16 @@ class StatementsMixin(DeclarationsMixin):
                 logging.debug(f"stdout() call: file_directives={self.file_directives}, node_directives={node_file_directives}")
                 
                 if "enable_lowlevel_stdout" not in node_file_directives:
-                    self.error(
-                        "stdout() is not available. Use 'directive enable_lowlevel_stdout;' "
-                        "in this file to enable it.",
+                    self.report_error(
+                        CodegenError(
+                            message=(
+                                "stdout() is not available. Use 'directive enable_lowlevel_stdout;' "
+                                "in this file to enable it."
+                            )
+                        ),
                         node
                     )
-                    sys.exit(1)
+                    return ""
                 # stdout only accepts strings - no special formatting
                 arg = node.children[0]
                 arg_code = self._visit(arg)
@@ -509,12 +513,16 @@ class StatementsMixin(DeclarationsMixin):
                 # Check if syscalls are enabled in the file where this call is made
                 node_file_directives = self._directives_for_node(node)
                 if "enable_syscalls" not in node_file_directives:
-                    self.error(
-                        f"{node.name}() is not available. Use 'directive enable_syscalls;' "
-                        "in this file to enable it.",
+                    self.report_error(
+                        CodegenError(
+                            message=(
+                                f"{node.name}() is not available. Use 'directive enable_syscalls;' "
+                                "in this file to enable it."
+                            )
+                        ),
                         node
                     )
-                    sys.exit(1)
+                    return ""
                 args = ", ".join(self._visit(arg) for arg in node.children)
                 return f"firescript_{node.name}({args})"
             elif node.name == "int":
@@ -711,7 +719,8 @@ class StatementsMixin(DeclarationsMixin):
                     node.return_type = "bool"
                     return f"firescript_strcmp({left}, {right})"
                 else:
-                    raise ValueError("temp: Cannot compare string with non-string type")
+                    self.report_error(CodegenError(message="Cannot compare string with non-string type"), node)
+                    return "(0)"
             # Default comparison for Copyables
             op = node.name
             return f"({left} {op} {right})"
@@ -899,7 +908,8 @@ class StatementsMixin(DeclarationsMixin):
 
         elif node.node_type == NodeTypes.UNARY_EXPRESSION:
             if not node.token or not hasattr(node.token, "value"):
-                raise ValueError("Missing token value in unary expression")
+                self.report_error(CodegenError(message="Missing token value in unary expression"), node)
+                return ""
             identifier = node.token.value
             mangled_identifier = self._mangle_name(identifier)
             op = node.name
@@ -909,7 +919,8 @@ class StatementsMixin(DeclarationsMixin):
             elif op == "--":
                 return f"{mangled_identifier}--"
             else:
-                raise ValueError(f"Unrecognized unary operator '{op}' for {identifier}")
+                self.report_error(CodegenError(message=f"Unrecognized unary operator '{op}' for {identifier}"), node)
+                return ""
         else:
             return ""
 
