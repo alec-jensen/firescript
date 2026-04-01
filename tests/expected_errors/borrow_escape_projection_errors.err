@@ -1,10 +1,4 @@
-[    INFO] --- Starting compilation of tests/sources/invalid/borrow_escape_projection_errors.fire...
-[   ERROR] --- Cannot return borrowed value; borrowed values cannot escape callable scope
->     return b.name; // Error: direct borrowed projection escapes
-               ^
-(tests/sources/invalid/borrow_escape_projection_errors.fire:10:14)
-[   ERROR] --- Cannot return borrowed value; borrowed values cannot escape callable scope
->     return arr; // Error: returning borrowed array escapes
-             ^
-(tests/sources/invalid/borrow_escape_projection_errors.fire:14:12)
-[   ERROR] --- Semantic analysis failed with 2 errors
+# firescript expected diagnostics v2
+# format: <ERROR_CODE>@<line>:<column>
+FS-SEM-0001@10:14
+FS-SEM-0001@14:12

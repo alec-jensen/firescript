@@ -1,14 +1,5 @@
-[    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\nullable_errors.fire...
-[   ERROR] --- Cannot initialize non-nullable variable 'a' with null
-> int32 a = null; // error
-        ^
-(tests\sources\invalid\nullable_errors.fire:5:7)
-[   ERROR] --- Cannot initialize non-nullable variable 'b' with null
-> string b = null; // error
-         ^
-(tests\sources\invalid\nullable_errors.fire:8:8)
-[   ERROR] --- Cannot assign null to non-nullable variable 'c'
-> c = null; // error
-  ^
-(tests\sources\invalid\nullable_errors.fire:12:1)
-[   ERROR] --- Parsing failed with 3 errors
+# firescript expected diagnostics v2
+# format: <ERROR_CODE>@<line>:<column>
+FS-SEM-0010@5:7
+FS-SEM-0010@8:8
+FS-SEM-0010@12:1

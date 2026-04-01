@@ -1,18 +1,6 @@
-[    INFO] --- Starting compilation of tests/sources/invalid/array_index_count_errors.fire...
-[   ERROR] --- Method 'index' expected 1 argument, got 0
-> println(nums.index());        // Error: expected 1 argument
-               ^
-(tests\sources\invalid\array_index_count_errors.fire:7:14)
-[   ERROR] --- Method 'count' expected 1 argument, got 0
-> println(nums.count());        // Error: expected 1 argument
-               ^
-(tests\sources\invalid\array_index_count_errors.fire:8:14)
-[   ERROR] --- Method 'index' for int32[] expected element type int32, got string
-> println(nums.index("1"));    // Error: wrong argument type
-                     ^
-(tests\sources\invalid\array_index_count_errors.fire:9:20)
-[   ERROR] --- Method 'count' for int32[] expected element type int32, got bool
-> println(nums.count(true));    // Error: wrong argument type
-                     ^
-(tests\sources\invalid\array_index_count_errors.fire:10:20)
-[   ERROR] --- Parsing failed with 4 errors
+# firescript expected diagnostics v2
+# format: <ERROR_CODE>@<line>:<column>
+FS-SEM-0010@7:14
+FS-SEM-0010@8:14
+FS-SEM-0010@9:20
+FS-SEM-0010@10:20

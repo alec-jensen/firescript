@@ -1,82 +1,22 @@
-[14:50:18] [    INFO] --- Starting compilation of C:\Users\alecb\Programming\firescript\tests\sources\invalid\syntax_errors.fire...
-[14:50:18] [   ERROR] --- Function 'print' is not defined
-> print("-- invalid syntax: missing semicolons --")
-  ^
-(tests\sources\invalid\syntax_errors.fire:4:1)
-[14:50:18] [   ERROR] --- Expected semicolon after statement
-> int32 a = 5 // missing semicolon
-              ^
-(tests\sources\invalid\syntax_errors.fire:5:13)
-[14:50:18] [   ERROR] --- Expected semicolon after statement
-> int32 b = 6; int32 c = 7 // missing semicolon after chained declaration style (unsupported)
-                           ^
-(tests\sources\invalid\syntax_errors.fire:6:26)
-[14:50:18] [   ERROR] --- Expected closing parenthesis
-> int32 x = (1 + 2; // unclosed paren
-                  ^
-(tests\sources\invalid\syntax_errors.fire:9:17)
-[14:50:18] [   ERROR] --- Function 'print' is not defined
-> print("-- invalid syntax: unclosed array literal --");
-  ^
-(tests\sources\invalid\syntax_errors.fire:11:1)
-[14:50:18] [   ERROR] --- Expected ']' to end array literal
-> int32[] arr = [1,2,3; // missing closing bracket
-                      ^
-(tests\sources\invalid\syntax_errors.fire:12:21)
-[14:50:18] [   ERROR] --- Expected initializer expression in variable declaration
-> int32[] arr = [1,2,3; // missing closing bracket
-                      ^
-(tests\sources\invalid\syntax_errors.fire:12:21)
-[14:50:18] [   ERROR] --- Function 'print' is not defined
-> print("-- invalid syntax: stray tokens --");
-  ^
-(tests\sources\invalid\syntax_errors.fire:14:1)
-[14:50:18] [   ERROR] --- Unexpected character '#'
-> @ # $ // unexpected symbols (if lexer produces tokens)
-    ^
-(tests\sources\invalid\syntax_errors.fire:15:3)
-[14:50:18] [   ERROR] --- Function 'print' is not defined
-> print("-- invalid syntax: malformed if --");
-  ^
-(tests\sources\invalid\syntax_errors.fire:17:1)
-[14:50:18] [   ERROR] --- Expected '(' after 'if'
-> if 1) { print(1); }
-     ^
-(tests\sources\invalid\syntax_errors.fire:18:4)
-[14:50:18] [   ERROR] --- Function 'print' is not defined
-> if 1) { print(1); }
-          ^
-(tests\sources\invalid\syntax_errors.fire:18:9)
-[14:50:18] [   ERROR] --- Function 'print' is not defined
-> print("-- invalid syntax: while missing condition parens --");
-  ^
-(tests\sources\invalid\syntax_errors.fire:20:1)
-[14:50:18] [   ERROR] --- Expected '(' after 'while'
-> while 1 < 2 { print(1); }
-        ^
-(tests\sources\invalid\syntax_errors.fire:21:7)
-[14:50:18] [   ERROR] --- Function 'print' is not defined
-> while 1 < 2 { print(1); }
-                ^
-(tests\sources\invalid\syntax_errors.fire:21:15)
-[14:50:18] [   ERROR] --- Function 'print' is not defined
-> print("-- invalid syntax: dangling else --");
-  ^
-(tests\sources\invalid\syntax_errors.fire:23:1)
-[14:50:18] [   ERROR] --- Unexpected 'else' without matching 'if'
-> else { print(1); }
-  ^
-(tests\sources\invalid\syntax_errors.fire:24:1)
-[14:50:18] [   ERROR] --- Function 'print' is not defined
-> else { print(1); }
-         ^
-(tests\sources\invalid\syntax_errors.fire:24:8)
-[14:50:18] [   ERROR] --- Expected ']' after '[' in array type declaration
-> int32[ x = 4;
-         ^
-(tests\sources\invalid\syntax_errors.fire:27:8)
-[14:50:18] [   ERROR] --- Function 'print' is not defined
-> print("-- invalid syntax tests end --");
-  ^
-(tests\sources\invalid\syntax_errors.fire:29:1)
-[14:50:18] [   ERROR] --- Parsing failed with 20 errors
+# firescript expected diagnostics v2
+# format: <ERROR_CODE>@<line>:<column>
+FS-PARSE-0012@4:1
+FS-PARSE-0010@5:13
+FS-PARSE-0010@6:26
+FS-PARSE-0010@9:17
+FS-PARSE-0012@11:1
+FS-PARSE-0010@12:21
+FS-PARSE-0010@12:21
+FS-PARSE-0012@14:1
+FS-PARSE-0012@15:3
+FS-PARSE-0012@17:1
+FS-PARSE-0010@18:4
+FS-PARSE-0012@18:9
+FS-PARSE-0012@20:1
+FS-PARSE-0010@21:7
+FS-PARSE-0012@21:15
+FS-PARSE-0012@23:1
+FS-PARSE-0012@24:1
+FS-PARSE-0012@24:8
+FS-PARSE-0010@27:8
+FS-PARSE-0012@29:1

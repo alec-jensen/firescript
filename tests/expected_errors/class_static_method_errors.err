@@ -1,10 +1,4 @@
-[    INFO] --- Starting compilation of tests/sources/invalid/class_static_method_errors.fire...
-[   ERROR] --- Static method 'id' must be called on type 'Tool', not an instance
-> println(t.id(1i32));      // Error: static method called on instance
-            ^
-(tests\sources\invalid\class_static_method_errors.fire:16:11)
-[   ERROR] --- 'twice' is neither a static method nor a constructor for type 'Tool'
-> println(Tool.twice(2i32)); // Error: instance method called on type
-               ^
-(tests\sources\invalid\class_static_method_errors.fire:17:14)
-[   ERROR] --- Parsing failed with 2 errors
+# firescript expected diagnostics v2
+# format: <ERROR_CODE>@<line>:<column>
+FS-SEM-0010@16:11
+FS-SEM-0010@17:14

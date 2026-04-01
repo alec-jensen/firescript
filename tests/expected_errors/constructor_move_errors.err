@@ -1,10 +1,4 @@
-[    INFO] --- Starting compilation of tests/sources/invalid/constructor_move_errors.fire...
-[   ERROR] --- Use-after-move error: variable 's1' was moved, cannot use it here
-> println(s1); // Error: used after move
-          ^
-(tests/sources/invalid/constructor_move_errors.fire:15:9)
-[   ERROR] --- Use-after-move error: variable 's2' was moved, cannot use it here
-> println(s2); // Error: used after move
-          ^
-(tests/sources/invalid/constructor_move_errors.fire:19:9)
-[   ERROR] --- Semantic analysis failed with 2 errors
+# firescript expected diagnostics v2
+# format: <ERROR_CODE>@<line>:<column>
+FS-SEM-0001@15:9
+FS-SEM-0001@19:9

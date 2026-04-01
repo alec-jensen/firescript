@@ -47,10 +47,10 @@ python tests/error_runner.py --fail-fast
 ```
 
 The error test runner verifies that:
-- Invalid code fails compilation (returns non-zero exit code)
-- Error messages match expected output exactly
-- Error line numbers are correct
-- No unexpected errors or warnings appear
+- Invalid code produces structured diagnostics
+- Diagnostic error codes match expected values
+- Diagnostic locations (line/column) match expected values
+- Message wording can change without breaking tests
 
 Expected error files are stored in `tests/expected_errors/` with `.err` extension.
 
@@ -190,9 +190,9 @@ Tests in `tests/sources/invalid/` are expected to fail compilation and test erro
 **Control Flow Errors**
 - **control_flow_invalid.fire** - Invalid control flow constructs
 
-**AError Testing
+### Error Testing
 
-The firescript test suite includes comprehensive error testing to ensure the compiler produces correct error messages for invalid code.
+The firescript test suite includes comprehensive error testing to ensure diagnostics are stable and precise for invalid code.
 
 ### Error Test System
 
@@ -202,43 +202,16 @@ The firescript test suite includes comprehensive error testing to ensure the com
 
 ### How It Works
 
-1. Invalid source files are compiled (expected to fail)
-2. Compiler error output (stderr) is captured
-3. Output is normalized (timestamps removed, whitespace normalized)
-4. Compared against golden error files
-5. Test passes if error output matches exactly
+1. Invalid source files are linted through the compiler front-end.
+2. Structured diagnostics are collected as error objects.
+3. Diagnostics are compared to golden signatures in this format: `<ERROR_CODE>@<line>:<column>`.
+4. Test passes when all expected signatures match.
 
 ### Benefits
 
-- **Regression Prevention**: Changes to error messages are detected
-- **Error Quality**: Ensures error messages are helpful and accurate
-- **Line Number Accuracy**: Verifies errors point to the right location
-- **No False Positives**: Catches unexpected errors or warnings
-### Adding Valid Code Tests
-
-1. Create a new `.fire` source file in `tests/sources/`
-2. Add comprehensive test cases with expected output via `println()`
-3. Run `python tests/golden_runner.py --update` to generate the golden file
-4. Review the generated `tests/expected/<testname>.out` file
-5. Commit both the source and golden files
-6. Update this manifest
-
-### Adding Error Tests
-
-1. Create a new `.fire` source file in `tests/sources/invalid/`
-2. Add code that should produce compilation errors
-3. Run `python tests/error_runner.py --update` to generate the expected error file
-4. Review the generated `tests/expected_errors/<testname>.err` file
-5. Verify the errors are correct, at the right line numbers, and have clear messages
-6. Commit both the source and expected error files
-7   ERROR] --- Type mismatch for variable 'num'. Expected int32, got string
-> int32 num = "string value";
-        ^
-(tests\sources\invalid\type_errors_comprehensive.fire:7:7)
-```
-
-## rray Errors**
-- **array_edge_invalid.fire** - Invalid array operations
+- **Message-Independent**: Error message text can evolve without brittle test churn.
+- **Regression Prevention**: Error code and location regressions are caught immediately.
+- **Location Accuracy**: Ensures diagnostics point to the right source coordinates.
 
 ## Test Coverage Summary
 

@@ -1,10 +1,4 @@
-[    INFO] --- Starting compilation of tests/sources/invalid/memory_errors.fire...
-[   ERROR] --- Use-after-move error: variable 'owned' was moved, cannot use it here
-> println(owned);  // Error: used after move
-          ^
-(tests/sources/invalid/memory_errors.fire:9:9)
-[   ERROR] --- Cannot return borrowed value; borrowed values cannot escape callable scope
-> 	return s;  // Error: borrowed value escapes callable scope
-          ^
-(tests/sources/invalid/memory_errors.fire:12:9)
-[   ERROR] --- Semantic analysis failed with 2 errors
+# firescript expected diagnostics v2
+# format: <ERROR_CODE>@<line>:<column>
+FS-SEM-0001@9:9
+FS-SEM-0001@12:9

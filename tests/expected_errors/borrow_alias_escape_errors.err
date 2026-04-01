@@ -1,10 +1,4 @@
-[    INFO] --- Starting compilation of tests/sources/invalid/borrow_alias_escape_errors.fire...
-[   ERROR] --- Cannot move borrowed value; borrowed values cannot transfer ownership
->     string alias = b.name; // Error: cannot move borrowed projection into owned local
-                       ^
-(tests/sources/invalid/borrow_alias_escape_errors.fire:14:22)
-[   ERROR] --- Cannot move borrowed value; borrowed values cannot transfer ownership
->     takeOwned(b.name); // Error: cannot move borrowed projection into owned parameter
-                  ^
-(tests/sources/invalid/borrow_alias_escape_errors.fire:19:17)
-[   ERROR] --- Semantic analysis failed with 2 errors
+# firescript expected diagnostics v2
+# format: <ERROR_CODE>@<line>:<column>
+FS-SEM-0001@14:22
+FS-SEM-0001@19:17

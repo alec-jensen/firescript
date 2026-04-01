@@ -3,7 +3,7 @@
 Error test runner for firescript.
 
 Tests that invalid code produces the expected compilation errors.
-Uses golden error files to verify error messages, line numbers, and error types.
+Uses golden error signatures to verify error codes at specific source locations.
 
 Usage:
   python tests/error_runner.py                    # Run all error tests
@@ -11,10 +11,10 @@ Usage:
   python tests/error_runner.py --cases file.fire  # Test specific file
 """
 import argparse
-import subprocess
 import sys
 import os
 import glob
+import threading
 from typing import List, Tuple
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
@@ -24,11 +24,27 @@ REPO_ROOT = os.path.abspath(os.path.join(REPO_ROOT, os.pardir))
 INVALID_DIR = os.path.join(REPO_ROOT, "tests", "sources", "invalid")
 EXPECTED_ERRORS_DIR = os.path.join(REPO_ROOT, "tests", "expected_errors")
 
+FIRESCRIPT_DIR = os.path.join(REPO_ROOT, "firescript")
+if FIRESCRIPT_DIR not in sys.path:
+    sys.path.insert(0, FIRESCRIPT_DIR)
+
+from main import lint_text  # noqa: E402  # type: ignore[import-not-found]
+from errors import CompileTimeError  # noqa: E402  # type: ignore[import-not-found]
+
+_LINT_LOCK = threading.Lock()
+
 
 @dataclass
 class ErrorTestCase:
     source: str
     expected_errors: str
+
+
+@dataclass(frozen=True)
+class ErrorSignature:
+    code: str
+    line: int
+    column: int
 
 
 def _supports_color() -> bool:
@@ -69,48 +85,50 @@ def discover_error_tests() -> List[ErrorTestCase]:
     return cases
 
 
-def compile_and_capture_errors(source: str) -> Tuple[int, str]:
-    """
-    Attempt to compile a firescript source file and capture stderr.
-    Returns (exit_code, stderr_output)
-    """
-    cmd = [sys.executable, os.path.join(REPO_ROOT, "firescript", "main.py"), source]
-    proc = subprocess.run(
-        cmd,
-        cwd=REPO_ROOT,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=30.0,
-    )
-    return proc.returncode, proc.stderr
+def collect_errors(source: str) -> List[CompileTimeError]:
+    """Run front-end linting and return structured compile-time diagnostics."""
+    with open(source, "r", encoding="utf-8") as f:
+        source_text = f.read()
+
+    display_path = os.path.relpath(source, REPO_ROOT)
+    # lint_text temporarily mutates global logging level; serialize calls so
+    # parallel test execution does not leak diagnostics to stderr.
+    with _LINT_LOCK:
+        return lint_text(source_text, display_path)
 
 
-def normalize_errors(error_output: str) -> str:
-    """
-    Normalize error output for comparison.
-    - Strips timestamps like [14:50:18]
-    - Normalizes line endings
-    - Strips trailing whitespace
-    """
-    import re
-    
-    lines = error_output.replace("\r\n", "\n").replace("\r", "\n").split("\n")
-    normalized_lines = []
-    
-    for line in lines:
-        # Remove timestamps at the start of lines (e.g., [14:50:18])
-        line = re.sub(r'^\[\d{2}:\d{2}:\d{2}\]\s*', '', line)
+def _parse_expected_signatures(content: str) -> List[ErrorSignature]:
+    signatures: List[ErrorSignature] = []
+    for raw in content.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "@" not in line or ":" not in line:
+            continue
+        code, location = line.split("@", 1)
+        line_num, col_num = location.split(":", 1)
+        signatures.append(ErrorSignature(code=code, line=int(line_num), column=int(col_num)))
+    return signatures
 
-        # Normalize path separators and strip absolute prefixes before tests/sources
-        # so outputs are stable across absolute/relative invocation styles.
-        line = line.replace("\\", "/")
-        line = re.sub(r'(?i)([A-Za-z]:/[^)]*?)(tests/sources/)', r'\2', line)
 
-        normalized_lines.append(line.rstrip())
-    
-    normalized = "\n".join(normalized_lines).strip()
-    return normalized + "\n" if normalized else ""
+def _serialize_expected_signatures(signatures: List[ErrorSignature]) -> str:
+    lines = ["# firescript expected diagnostics v2", "# format: <ERROR_CODE>@<line>:<column>"]
+    for sig in signatures:
+        lines.append(f"{sig.code}@{sig.line}:{sig.column}")
+    return "\n".join(lines) + "\n"
+
+
+def _extract_signatures(errors: List[CompileTimeError]) -> List[ErrorSignature]:
+    signatures: List[ErrorSignature] = []
+    for err in errors:
+        signatures.append(
+            ErrorSignature(
+                code=getattr(err, "code", "FS-COMP-0000"),
+                line=getattr(err, "line", 0),
+                column=getattr(err, "column", 0),
+            )
+        )
+    return sorted(signatures, key=lambda s: (s.line, s.column, s.code))
 
 
 def read_file(path: str) -> str:
@@ -136,25 +154,35 @@ def run_one_error_test(tc: ErrorTestCase, update: bool, verbose: bool) -> Tuple[
     if verbose:
         _log("COMPILE", tc.source, "90")  # dim
     
-    exit_code, stderr = compile_and_capture_errors(tc.source)
-    
-    # Compilation should FAIL for error tests
-    if exit_code == 0:
+    errors = collect_errors(tc.source)
+
+    # Invalid tests must produce at least one diagnostic
+    if not errors:
         return (False, tc.source, "UNEXPECTED SUCCESS", "")
-    
-    actual_errors = normalize_errors(stderr)
+
+    actual_signatures = _extract_signatures(errors)
+    actual_errors = _serialize_expected_signatures(actual_signatures)
     
     if os.path.exists(tc.expected_errors):
-        expected_errors = normalize_errors(read_file(tc.expected_errors))
-        
-        if actual_errors == expected_errors:
+        expected_errors = read_file(tc.expected_errors)
+        expected_signatures = sorted(
+            _parse_expected_signatures(expected_errors),
+            key=lambda s: (s.line, s.column, s.code),
+        )
+
+        if expected_signatures == actual_signatures:
             return (True, tc.source, "", "")
         else:
             if update:
                 write_file(tc.expected_errors, actual_errors)
                 return (True, tc.source, "", "")
             else:
-                return (False, tc.source, expected_errors, actual_errors)
+                return (
+                    False,
+                    tc.source,
+                    _serialize_expected_signatures(expected_signatures),
+                    actual_errors,
+                )
     else:
         # No golden file exists
         if update:
@@ -188,7 +216,7 @@ def run_error_tests(cases: List[ErrorTestCase], update: bool, verbose: bool, fai
                 elif expected == "<missing golden>":
                     _log("FAIL", f"{source} - No golden error file", "31")
                 else:
-                    _log("FAIL", f"{source} - Error output mismatch", "31")  # red
+                    _log("FAIL", f"{source} - Error signature mismatch", "31")  # red
                 break
     else:
         # Parallel execution
@@ -214,7 +242,7 @@ def run_error_tests(cases: List[ErrorTestCase], update: bool, verbose: bool, fai
                     elif expected == "<missing golden>":
                         _log("FAIL", f"{source} - No golden error file", "31")
                     else:
-                        _log("FAIL", f"{source} - Error output mismatch", "31")  # red
+                        _log("FAIL", f"{source} - Error signature mismatch", "31")  # red
 
     # Summary
     summary = f"Summary: {passed}/{total} passed, {len(failed)}/{total} failed"
