@@ -1509,6 +1509,7 @@
 <li>Added generic classes with multiple type parameters (e.g., <code>class Pair&lt;T, U&gt; { ... }</code>). Monomorphization is performed automatically at each use site.</li>
 <li><code>Tuple&lt;T, U&gt;</code>, <code>CopyableTuple&lt;T, U&gt;</code>, <code>Option&lt;T&gt;</code>, and <code>CopyableOption&lt;T&gt;</code> are now provided by the standard library (<code>@firescript/std.types</code>).</li>
 <li>Added <code>syscall_*</code> intrinsics (<code>syscall_open</code>, <code>syscall_read</code>, <code>syscall_write</code>, <code>syscall_close</code>) behind <code>directive enable_syscalls</code>. For standard library use only.</li>
+<li>Expanded <code>@firescript/std.cli.args</code> parsing helpers to support grouped short flags (for example <code>-abc</code>), <code>--name=value</code> / <code>-n=value</code> option forms, <code>--</code> terminator handling, and parsed positional value lookup.</li>
 </ul>
 <h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1517,6 +1518,7 @@
 <h3 id="compiler-improvements">Compiler improvements<a class="headerlink" href="#compiler-improvements" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Standard library modules can now import sibling modules using short relative paths (e.g., <code>import tuple.Tuple;</code>).</li>
+<li>Golden runner now supports per-test command-line argument sidecars placed next to each source file (<code>tests/sources/&lt;name&gt;.args</code>).</li>
 <li>Compiler diagnostics are now unified under structured compile-time error objects across parser, semantic analysis, code generation, and <code>lint_text(...)</code>; this improves consistency of reported locations and diagnostics integrations (for example LSP).</li>
 <li>Bug fixes</li>
 <li>Fixed <code>for-in</code> loops and <code>length()</code> calls on array function parameters.</li>
