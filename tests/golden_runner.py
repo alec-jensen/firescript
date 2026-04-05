@@ -75,6 +75,7 @@ class TestCase:
     binary: str
     expected_path: str
     input_path: Optional[str]
+    args_path: Optional[str]
 
 
 class CompileTimeoutError(Exception):
@@ -101,7 +102,16 @@ def discover_cases(patterns: List[str]) -> List[TestCase]:
         input_path = os.path.join(INPUTS_DIR, f"{base}.in")
         if not os.path.exists(input_path):
             input_path = None
-        cases.append(TestCase(source=src, binary=binary, expected_path=expected, input_path=input_path))
+        args_path = resolve_args_path(src)
+        cases.append(
+            TestCase(
+                source=src,
+                binary=binary,
+                expected_path=expected,
+                input_path=input_path,
+                args_path=args_path,
+            )
+        )
     return cases
 
 
@@ -119,6 +129,25 @@ def run_cmd(cmd: List[str], cwd: str | None = None, check: bool = True, input_te
     if check and proc.returncode != 0:
         raise subprocess.CalledProcessError(proc.returncode, cmd, output=proc.stdout, stderr=proc.stderr)
     return proc.returncode, proc.stdout, proc.stderr
+
+
+def resolve_args_path(source_path: str) -> Optional[str]:
+    """Resolve command-line args sidecar for a test source file.
+
+    Preferred layout: same directory and same basename as source, with `.args` extension.
+    Example: tests/sources/foo.fire -> tests/sources/foo.args
+
+    Backward compatibility: fall back to tests/inputs/<basename>.args if present.
+    """
+    sidecar = os.path.splitext(source_path)[0] + ".args"
+    if os.path.exists(sidecar):
+        return sidecar
+
+    base = os.path.splitext(os.path.basename(source_path))[0]
+    legacy = os.path.join(INPUTS_DIR, f"{base}.args")
+    if os.path.exists(legacy):
+        return legacy
+    return None
 
 
 def compile_fire(src: str, timeout: Optional[float]) -> None:
@@ -142,7 +171,22 @@ def _indent(text: str, prefix: str = "  ") -> str:
     return "\n".join(prefix + line for line in text.rstrip("\n").splitlines())
 
 
-def run_binary(path: str, input_text: Optional[str], timeout: Optional[float]) -> str:
+def read_args_file(path: str) -> List[str]:
+    """Read argv test inputs from a .args file.
+
+    Each non-empty line is treated as one command-line argument token.
+    """
+    tokens: List[str] = []
+    with open(path, "r", encoding="utf-8") as f:
+        for raw in f:
+            arg = raw.rstrip("\r\n")
+            if arg.strip() == "":
+                continue
+            tokens.append(arg)
+    return tokens
+
+
+def run_binary(path: str, input_text: Optional[str], args: Optional[List[str]], timeout: Optional[float]) -> str:
     resolved_path = path
     if not os.path.exists(resolved_path):
         if os.name == "nt" and os.path.exists(resolved_path + ".exe"):
@@ -150,6 +194,8 @@ def run_binary(path: str, input_text: Optional[str], timeout: Optional[float]) -
         else:
             raise FileNotFoundError(f"Binary not found: {path}")
     cmd = [resolved_path]
+    if args:
+        cmd.extend(args)
     try:
         code, out, err = run_cmd(cmd, cwd=REPO_ROOT, check=False, input_text=input_text, timeout=timeout)
     except subprocess.TimeoutExpired as e:
@@ -215,7 +261,8 @@ def run_golden(
             if verbose:
                 _log("RUN", tc.binary, color_code="90")  # dim
             input_text = read_file(tc.input_path) if tc.input_path else None
-            actual = run_binary(tc.binary, input_text=input_text, timeout=timeout)
+            args = read_args_file(tc.args_path) if tc.args_path else None
+            actual = run_binary(tc.binary, input_text=input_text, args=args, timeout=timeout)
             actual_norm = normalize(actual)
 
             if os.path.exists(tc.expected_path):
@@ -316,7 +363,8 @@ def main():
             input_path = os.path.join(INPUTS_DIR, f"{base}.in")
             if not os.path.exists(input_path):
                 input_path = None
-            cases.append(TestCase(src, binary, expected, input_path))
+            args_path = resolve_args_path(src)
+            cases.append(TestCase(src, binary, expected, input_path, args_path))
     else:
         cases = discover_cases(patterns)
 

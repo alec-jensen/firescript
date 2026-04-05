@@ -30,9 +30,16 @@ Should ONLY be used internally by the preprocessor.
 directive enable_drops;
 ```
 
+- Enable process argument intrinsics (`process_argc` / `process_argv_at`):
+
+```firescript
+directive enable_process_args;
+```
+
 ## Available Directives
 
 - `enable_syscalls`: Allows the use of syscalls in the file. This is required for files in the standard library that need syscall access (e.g. std.io).
 - `enable_drops`: Enables the preprocessor to insert deterministic drop() calls for Owned values (e.g., arrays) at scope boundaries and early exits.
 - `enable_lowlevel_stdout`: Allows the use of low-level stdout function.
 - `enable_lowlevel_stdin`: Allows the use of low-level stdin function.
+- `enable_process_args`: Allows use of process argument intrinsics (`process_argc()` and `process_argv_at(index)`) and low-level string helper intrinsics (`str_length`, `str_char_at`, `str_index_of`, `str_slice`) in the file. This is intended for standard library internals (for example, `std.cli.args`).

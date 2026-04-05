@@ -58,6 +58,10 @@ class ParserBase:
         "drop": "void",            # requires directive enable_drops
         "process_argc": "int32",   # requires directive enable_process_args
         "process_argv_at": "string",  # requires directive enable_process_args
+        "str_length": "int32",     # requires directive enable_process_args
+        "str_char_at": "string",   # requires directive enable_process_args
+        "str_index_of": "int32",   # requires directive enable_process_args
+        "str_slice": "string",     # requires directive enable_process_args
         "syscall_open": "SyscallResult",   # requires directive enable_syscalls
         "syscall_read": "SyscallResult",   # requires directive enable_syscalls
         "syscall_write": "SyscallResult",  # requires directive enable_syscalls

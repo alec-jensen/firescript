@@ -1,0 +1,12 @@
+import @firescript/std.io.println;
+import @firescript/std.cli.args.{argc, argv_at, has_flag, has_flag_alias, option_value, option_value_alias, positional};
+
+println(argc() >= 1);
+println(argv_at(0) != "");
+println(has_flag("verbose") == false);
+println(has_flag_alias("verbose", "v") == false);
+println(option_value("output", "none") == "none");
+println(option_value_alias("output", "o", "none") == "none");
+println(positional(0, "none") == "none");
+println(positional(1, "none") == "none");
+println(positional(-1, "none") == "none");

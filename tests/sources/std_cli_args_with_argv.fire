@@ -1,0 +1,17 @@
+import @firescript/std.io.println;
+import @firescript/std.cli.args.{argc, argv_at, has_flag, has_flag_alias, option_value, option_value_alias, positional, positional_value};
+
+println(argc() == 10);
+println(argv_at(1) == "-vg");
+println(has_flag_alias("verbose", "v") == true);
+println(has_flag_alias("global", "g") == true);
+println(has_flag_alias("help", "h") == false);
+println(has_flag("verbose") == true);
+println(option_value_alias("output", "o", "none") == "build.exe");
+println(option_value("output", "none") == "build.exe");
+println(option_value_alias("path", "p", "none") == "src");
+println(option_value_alias("missing", "m", "none") == "none");
+println(positional(0, "none") == "-vg");
+println(positional_value(0, "none") == "build");
+println(positional_value(1, "none") == "-h");
+println(positional(99, "none") == "none");

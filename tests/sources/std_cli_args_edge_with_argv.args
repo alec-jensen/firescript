@@ -1,0 +1,8 @@
+--output
+--debug
+--output=final.bin
+-de
+--empty=
+pos0
+--
+--debug

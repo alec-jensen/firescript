@@ -524,6 +524,35 @@ class StatementsMixin(DeclarationsMixin):
                     return "firescript_argc()"
                 arg_code = self._visit(node.children[0])
                 return f"firescript_argv_at({arg_code})"
+            elif node.name in ("str_length", "str_char_at", "str_index_of", "str_slice"):
+                # String helpers are low-level intrinsics intended for std internals.
+                node_file_directives = self._directives_for_node(node)
+                if "enable_process_args" not in node_file_directives:
+                    self.report_error(
+                        CodegenError(
+                            message=(
+                                f"{node.name}() is not available. Use 'directive enable_process_args;' "
+                                "in this file to enable it."
+                            )
+                        ),
+                        node
+                    )
+                    return ""
+                if node.name == "str_length":
+                    arg_code = self._visit(node.children[0])
+                    return f"firescript_str_length({arg_code})"
+                if node.name == "str_char_at":
+                    s_code = self._visit(node.children[0])
+                    i_code = self._visit(node.children[1])
+                    return f"firescript_str_char_at({s_code}, {i_code})"
+                if node.name == "str_index_of":
+                    h_code = self._visit(node.children[0])
+                    n_code = self._visit(node.children[1])
+                    return f"firescript_str_index_of({h_code}, {n_code})"
+                s_code = self._visit(node.children[0])
+                start_code = self._visit(node.children[1])
+                end_code = self._visit(node.children[2])
+                return f"firescript_str_slice({s_code}, {start_code}, {end_code})"
             elif node.name == "drop":
                 # Fixed-size arrays are copyable; drop is a no-op
                 return "/* drop noop */"

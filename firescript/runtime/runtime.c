@@ -123,6 +123,93 @@ char *firescript_argv_at(int32_t index)
     return firescript_strdup(g_process_argv[index] ? g_process_argv[index] : "");
 }
 
+int32_t firescript_str_length(const char *s)
+{
+    if (s == NULL)
+    {
+        return 0;
+    }
+    return (int32_t)strlen(s);
+}
+
+char *firescript_str_char_at(const char *s, int32_t index)
+{
+    if (s == NULL)
+    {
+        return firescript_strdup("");
+    }
+    int32_t len = (int32_t)strlen(s);
+    if (index < 0 || index >= len)
+    {
+        return firescript_strdup("");
+    }
+    char *out = (char *)firescript_malloc(2);
+    if (out == NULL)
+    {
+        return firescript_strdup("");
+    }
+    out[0] = s[index];
+    out[1] = '\0';
+    return out;
+}
+
+int32_t firescript_str_index_of(const char *haystack, const char *needle)
+{
+    if (haystack == NULL || needle == NULL)
+    {
+        return -1;
+    }
+    const char *pos = strstr(haystack, needle);
+    if (pos == NULL)
+    {
+        return -1;
+    }
+    return (int32_t)(pos - haystack);
+}
+
+char *firescript_str_slice(const char *s, int32_t start, int32_t end)
+{
+    if (s == NULL)
+    {
+        return firescript_strdup("");
+    }
+
+    int32_t len = (int32_t)strlen(s);
+    if (start < 0)
+    {
+        start = 0;
+    }
+    if (end < 0)
+    {
+        end = 0;
+    }
+    if (start > len)
+    {
+        start = len;
+    }
+    if (end > len)
+    {
+        end = len;
+    }
+    if (end < start)
+    {
+        end = start;
+    }
+
+    int32_t out_len = end - start;
+    char *out = (char *)firescript_malloc((size_t)out_len + 1);
+    if (out == NULL)
+    {
+        return firescript_strdup("");
+    }
+    if (out_len > 0)
+    {
+        memcpy(out, s + start, (size_t)out_len);
+    }
+    out[out_len] = '\0';
+    return out;
+}
+
 // Function to create a reference-counted object
 RefCountedObject *create_ref_counted_object(void *data, void (*destructor)(void *))
 {

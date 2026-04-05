@@ -77,6 +77,12 @@ void firescript_set_process_args(int argc, char **argv);
 int32_t firescript_argc(void);
 char *firescript_argv_at(int32_t index);
 
+// Low-level string helpers used by std internals
+int32_t firescript_str_length(const char *s);
+char *firescript_str_char_at(const char *s, int32_t index);
+int32_t firescript_str_index_of(const char *haystack, const char *needle);
+char *firescript_str_slice(const char *s, int32_t start, int32_t end);
+
 // Type conversion functions
 char *firescript_i32_to_str(int32_t value);
 char *firescript_i64_to_str(int64_t value);

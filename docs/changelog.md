@@ -8,12 +8,14 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - Added generic classes with multiple type parameters (e.g., `class Pair<T, U> { ... }`). Monomorphization is performed automatically at each use site.
 - `Tuple<T, U>`, `CopyableTuple<T, U>`, `Option<T>`, and `CopyableOption<T>` are now provided by the standard library (`@firescript/std.types`).
 - Added `syscall_*` intrinsics (`syscall_open`, `syscall_read`, `syscall_write`, `syscall_close`) behind `directive enable_syscalls`. For standard library use only.
+- Expanded `@firescript/std.cli.args` parsing helpers to support grouped short flags (for example `-abc`), `--name=value` / `-n=value` option forms, `--` terminator handling, and parsed positional value lookup.
 
 ### Breaking Changes
 - Removed built-in `input()` function.
 
 ### Compiler improvements
 - Standard library modules can now import sibling modules using short relative paths (e.g., `import tuple.Tuple;`).
+- Golden runner now supports per-test command-line argument sidecars placed next to each source file (`tests/sources/<name>.args`).
 - Compiler diagnostics are now unified under structured compile-time error objects across parser, semantic analysis, code generation, and `lint_text(...)`; this improves consistency of reported locations and diagnostics integrations (for example LSP).
 - Bug fixes
 - Fixed `for-in` loops and `length()` calls on array function parameters.

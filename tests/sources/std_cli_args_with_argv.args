@@ -1,0 +1,9 @@
+-vg
+--verbose
+--output=build.exe
+--path
+src
+build
+--
+-h
+--output=ignored.exe

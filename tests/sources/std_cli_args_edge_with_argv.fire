@@ -1,0 +1,10 @@
+import @firescript/std.io.println;
+import @firescript/std.cli.args.{has_flag_alias, option_value_alias, positional_value};
+
+println(has_flag_alias("debug", "d") == true);
+println(option_value_alias("output", "o", "none") == "final.bin");
+println(option_value_alias("empty", "e", "fallback") == "");
+println(option_value_alias("missing", "m", "fallback") == "fallback");
+println(positional_value(0, "none") == "pos0");
+println(positional_value(1, "none") == "--debug");
+println(positional_value(2, "none") == "none");

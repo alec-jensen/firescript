@@ -9,3 +9,294 @@ int32 argc() {
 string argv_at(int32 index) {
     return process_argv_at(index);
 }
+
+int32 _str_len(&string value) {
+    return str_length(value);
+}
+
+bool _starts_with(&string value, &string prefix) {
+    return str_index_of(value, prefix) == 0;
+}
+
+bool _looks_like_option_token(&string value) {
+    if (value == "-") {
+        return false;
+    }
+    return _starts_with(value, "-") == true;
+}
+
+bool _is_grouped_short_token(&string value) {
+    if (_starts_with(value, "-") == false) {
+        return false;
+    }
+    if (_starts_with(value, "--")) {
+        return false;
+    }
+    if (_str_len(value) <= 2) {
+        return false;
+    }
+    if (str_index_of(value, "=") >= 0) {
+        return false;
+    }
+    return true;
+}
+
+bool _group_has_short(&string token, &string short_name) {
+    if (_str_len(short_name) != 1) {
+        return false;
+    }
+    int32 i = 1;
+    while (i < _str_len(token)) {
+        string ch = str_char_at(token, i);
+        if (ch == short_name) {
+            return true;
+        }
+        i = i + 1;
+    }
+    return false;
+}
+
+string _value_after_equals(&string token) {
+    int32 eq = str_index_of(token, "=");
+    if (eq < 0) {
+        return "";
+    }
+    int32 start = eq + 1;
+    return str_slice(token, start, _str_len(token));
+}
+
+bool has_flag(string name) {
+    string short_flag = "-" + name;
+    string long_flag = "--" + name;
+    int32 i = 1;
+    while (i < argc()) {
+        string arg = argv_at(i);
+        if (arg == "--") {
+            return false;
+        }
+        if (arg == short_flag) {
+            return true;
+        }
+        if (arg == long_flag) {
+            return true;
+        }
+        if (_is_grouped_short_token(arg)) {
+            if (_group_has_short(arg, name)) {
+                return true;
+            }
+        }
+        i = i + 1;
+    }
+    return false;
+}
+
+bool has_flag_alias(string long_name, string short_name) {
+    string short_flag = "-" + short_name;
+    string long_flag = "--" + long_name;
+    int32 i = 1;
+    while (i < argc()) {
+        string arg = argv_at(i);
+        if (arg == "--") {
+            return false;
+        }
+        if (arg == short_flag) {
+            return true;
+        }
+        if (arg == long_flag) {
+            return true;
+        }
+        if (_is_grouped_short_token(arg)) {
+            if (_group_has_short(arg, short_name)) {
+                return true;
+            }
+        }
+        i = i + 1;
+    }
+    return false;
+}
+
+string option_value(string name, string fallback) {
+    string short_flag = "-" + name;
+    string long_flag = "--" + name;
+    string short_eq = short_flag + "=";
+    string long_eq = long_flag + "=";
+    int32 i = 1;
+    while (i < argc()) {
+        string arg = argv_at(i);
+        if (arg == "--") {
+            return fallback;
+        }
+        if (arg == short_flag) {
+            int32 next = i + 1;
+            if (next < argc()) {
+                string next_value = argv_at(next);
+                if (_looks_like_option_token(next_value) == false) {
+                    return next_value;
+                }
+            }
+            i = i + 1;
+            continue;
+        }
+        if (arg == long_flag) {
+            int32 next = i + 1;
+            if (next < argc()) {
+                string next_value = argv_at(next);
+                if (_looks_like_option_token(next_value) == false) {
+                    return next_value;
+                }
+            }
+            i = i + 1;
+            continue;
+        }
+        if (_starts_with(arg, short_eq)) {
+            return _value_after_equals(arg);
+        }
+        if (_starts_with(arg, long_eq)) {
+            return _value_after_equals(arg);
+        }
+        i = i + 1;
+    }
+    return fallback;
+}
+
+string option_value_alias(string long_name, string short_name, string fallback) {
+    string short_flag = "-" + short_name;
+    string long_flag = "--" + long_name;
+    string short_eq = short_flag + "=";
+    string long_eq = long_flag + "=";
+    int32 i = 1;
+    while (i < argc()) {
+        string arg = argv_at(i);
+        if (arg == "--") {
+            return fallback;
+        }
+        if (arg == short_flag) {
+            int32 next = i + 1;
+            if (next < argc()) {
+                string next_value = argv_at(next);
+                if (_looks_like_option_token(next_value) == false) {
+                    return next_value;
+                }
+            }
+            i = i + 1;
+            continue;
+        }
+        if (arg == long_flag) {
+            int32 next = i + 1;
+            if (next < argc()) {
+                string next_value = argv_at(next);
+                if (_looks_like_option_token(next_value) == false) {
+                    return next_value;
+                }
+            }
+            i = i + 1;
+            continue;
+        }
+        if (_starts_with(arg, short_eq)) {
+            return _value_after_equals(arg);
+        }
+        if (_starts_with(arg, long_eq)) {
+            return _value_after_equals(arg);
+        }
+        if (_str_len(short_name) == 1) {
+            if (_starts_with(arg, short_flag)) {
+                if (_str_len(arg) > 2) {
+                    return str_slice(arg, 2, _str_len(arg));
+                }
+            }
+        }
+        i = i + 1;
+    }
+    return fallback;
+}
+
+string positional(int32 index, string fallback) {
+    int32 raw_index = index + 1;
+    if (raw_index < 1) {
+        return fallback;
+    }
+    if (raw_index >= argc()) {
+        return fallback;
+    }
+    return argv_at(raw_index);
+}
+
+string positional_value(int32 index, string fallback) {
+    if (index < 0) {
+        return fallback;
+    }
+
+    int32 logical_pos = 0;
+    int32 i = 1;
+    bool parsing_options = true;
+
+    while (i < argc()) {
+        string arg = argv_at(i);
+
+        if (parsing_options) {
+            if (arg == "--") {
+                parsing_options = false;
+                i = i + 1;
+                continue;
+            }
+
+            if (_starts_with(arg, "--")) {
+                if (str_index_of(arg, "=") >= 0) {
+                    i = i + 1;
+                    continue;
+                }
+                int32 next = i + 1;
+                if (next < argc()) {
+                    string next_value = argv_at(next);
+                    if (_looks_like_option_token(next_value) == false) {
+                        i = i + 2;
+                        continue;
+                    }
+                }
+                i = i + 1;
+                continue;
+            }
+
+            if (_starts_with(arg, "-")) {
+                int32 n = _str_len(arg);
+                if (n == 1) {
+                    if (logical_pos == index) {
+                        return arg;
+                    }
+                    logical_pos = logical_pos + 1;
+                    i = i + 1;
+                    continue;
+                }
+
+                if (str_index_of(arg, "=") >= 0) {
+                    i = i + 1;
+                    continue;
+                }
+
+                if (n == 2) {
+                    int32 next = i + 1;
+                    if (next < argc()) {
+                        string next_value = argv_at(next);
+                        if (_looks_like_option_token(next_value) == false) {
+                            i = i + 2;
+                            continue;
+                        }
+                    }
+                    i = i + 1;
+                    continue;
+                }
+
+                i = i + 1;
+                continue;
+            }
+        }
+
+        if (logical_pos == index) {
+            return arg;
+        }
+        logical_pos = logical_pos + 1;
+        i = i + 1;
+    }
+
+    return fallback;
+}
