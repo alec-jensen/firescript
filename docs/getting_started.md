@@ -34,6 +34,8 @@ cd firescript
 
 Install python
 
+You will need some sort of C compiler, either GCC or Clang. We recommend GCC via MSYS2 for Windows users.
+
 Install [GCC via MSYS2](https://www.msys2.org/):
 
 Open the MSYS2 UCRT64 terminal and run:

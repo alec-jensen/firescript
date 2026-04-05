@@ -506,6 +506,24 @@ class StatementsMixin(DeclarationsMixin):
                 arg = node.children[0]
                 arg_code = self._visit(arg)
                 return f'printf("%s", {arg_code})'
+            elif node.name in ("process_argc", "process_argv_at"):
+                # Check if process args intrinsics are enabled in the file where this call is made
+                node_file_directives = self._directives_for_node(node)
+                if "enable_process_args" not in node_file_directives:
+                    self.report_error(
+                        CodegenError(
+                            message=(
+                                f"{node.name}() is not available. Use 'directive enable_process_args;' "
+                                "in this file to enable it."
+                            )
+                        ),
+                        node
+                    )
+                    return ""
+                if node.name == "process_argc":
+                    return "firescript_argc()"
+                arg_code = self._visit(node.children[0])
+                return f"firescript_argv_at({arg_code})"
             elif node.name == "drop":
                 # Fixed-size arrays are copyable; drop is a no-op
                 return "/* drop noop */"
@@ -717,6 +735,8 @@ class StatementsMixin(DeclarationsMixin):
                     or rightNode.var_type == "string"
                 ):
                     node.return_type = "bool"
+                    if node.name == "!=":
+                        return f"(!firescript_strcmp({left}, {right}))"
                     return f"firescript_strcmp({left}, {right})"
                 else:
                     self.report_error(CodegenError(message="Cannot compare string with non-string type"), node)

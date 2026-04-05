@@ -80,7 +80,16 @@ class CCodeGeneratorBase:
         # Stack of name scopes for nested functions/blocks
         self.name_scope_stack: list[dict[str, str]] = [{}]
         # Built-in functions that shouldn't be mangled
-        self.builtin_names = {"stdout", "drop", "syscall_open", "syscall_read", "syscall_write", "syscall_close"}
+        self.builtin_names = {
+            "stdout",
+            "drop",
+            "process_argc",
+            "process_argv_at",
+            "syscall_open",
+            "syscall_read",
+            "syscall_write",
+            "syscall_close",
+        }
         
         # Collect class names and metadata for constructors and methods
         self.class_names: set[str] = set()

@@ -32,6 +32,13 @@ class GenericsMixin(CCodeGeneratorBase):
             logging.debug(f"Processing arg: {arg.node_type}, name={getattr(arg, 'name', None)}, is_array={getattr(arg, 'is_array', None)}")
             # Try to get the type from the argument node
             arg_type = getattr(arg, 'return_type', None) or getattr(arg, 'var_type', None)
+            if not arg_type and arg.node_type in (NodeTypes.EQUALITY_EXPRESSION, NodeTypes.RELATIONAL_EXPRESSION):
+                arg_type = "bool"
+            if not arg_type:
+                try:
+                    arg_type = self._type_check_node(arg, self.symbol_table)
+                except Exception:
+                    arg_type = None
             # Check if it's an array identifier
             if arg.node_type == NodeTypes.IDENTIFIER and getattr(arg, 'is_array', False):
                 # It's an array - append []

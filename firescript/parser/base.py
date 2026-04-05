@@ -56,6 +56,8 @@ class ParserBase:
     builtin_functions: dict[str, str] = {
         "stdout": "void",          # requires directive enable_lowlevel_stdout
         "drop": "void",            # requires directive enable_drops
+        "process_argc": "int32",   # requires directive enable_process_args
+        "process_argv_at": "string",  # requires directive enable_process_args
         "syscall_open": "SyscallResult",   # requires directive enable_syscalls
         "syscall_read": "SyscallResult",   # requires directive enable_syscalls
         "syscall_write": "SyscallResult",  # requires directive enable_syscalls

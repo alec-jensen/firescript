@@ -1,0 +1,8 @@
+import @firescript/std.io.println;
+import @firescript/std.cli.args.{argc, argv_at};
+
+int32 count = argc();
+println(count >= 1);
+println(argv_at(0) != "");
+println(argv_at(-1) == "");
+println(argv_at(9999) == "");

@@ -1,0 +1,11 @@
+// firescript std.cli.args library
+
+directive enable_process_args;
+
+int32 argc() {
+    return process_argc();
+}
+
+string argv_at(int32 index) {
+    return process_argv_at(index);
+}

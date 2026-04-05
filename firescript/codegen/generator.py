@@ -115,7 +115,8 @@ class GeneratorMixin(StatementsMixin):
 
         # Only generate wrapper main() if user didn't define one
         if not main_function_code:
-            main_code = "int main(void) {\n"
+            main_code = "int main(int argc, char **argv) {\n"
+            main_code += "    firescript_set_process_args(argc, argv);\n"
             if main_lines:
                 indented_body = "\n".join(
                     "    " + line for line in "\n".join(main_lines).split("\n")

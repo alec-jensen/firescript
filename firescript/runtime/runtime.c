@@ -17,6 +17,8 @@ typedef struct PtrNode {
 } PtrNode;
 
 static PtrNode *g_ptrs = NULL;
+static int32_t g_process_argc = 0;
+static char **g_process_argv = NULL;
 
 // Use the real libc functions inside our wrappers
 #undef malloc
@@ -66,6 +68,59 @@ void firescript_free(void *p) {
         free(p);
     }
     // ignore frees of untracked pointers (e.g., string literals or already freed)
+}
+
+void firescript_set_process_args(int argc, char **argv)
+{
+    if (g_process_argv != NULL)
+    {
+        for (int32_t i = 0; i < g_process_argc; i++)
+        {
+            if (g_process_argv[i] != NULL)
+            {
+                firescript_free(g_process_argv[i]);
+            }
+        }
+        firescript_free(g_process_argv);
+        g_process_argv = NULL;
+        g_process_argc = 0;
+    }
+
+    if (argc <= 0 || argv == NULL)
+    {
+        return;
+    }
+
+    g_process_argv = (char **)firescript_malloc((size_t)argc * sizeof(char *));
+    if (g_process_argv == NULL)
+    {
+        return;
+    }
+
+    g_process_argc = (int32_t)argc;
+    for (int32_t i = 0; i < g_process_argc; i++)
+    {
+        const char *src = argv[i] ? argv[i] : "";
+        g_process_argv[i] = firescript_strdup(src);
+        if (g_process_argv[i] == NULL)
+        {
+            g_process_argv[i] = firescript_strdup("");
+        }
+    }
+}
+
+int32_t firescript_argc(void)
+{
+    return g_process_argc;
+}
+
+char *firescript_argv_at(int32_t index)
+{
+    if (index < 0 || index >= g_process_argc || g_process_argv == NULL)
+    {
+        return firescript_strdup("");
+    }
+    return firescript_strdup(g_process_argv[index] ? g_process_argv[index] : "");
 }
 
 // Function to create a reference-counted object

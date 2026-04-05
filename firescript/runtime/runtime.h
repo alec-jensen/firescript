@@ -72,6 +72,11 @@ char *firescript_strcat(const char *s1, const char *s2);
 bool firescript_strcmp(const char *s1, const char *s2);
 void firescript_cleanup(void);
 
+// Process argument support (argv)
+void firescript_set_process_args(int argc, char **argv);
+int32_t firescript_argc(void);
+char *firescript_argv_at(int32_t index);
+
 // Type conversion functions
 char *firescript_i32_to_str(int32_t value);
 char *firescript_i64_to_str(int64_t value);
