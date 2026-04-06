@@ -9,6 +9,16 @@ A **package** is something you can install from the package manager. Packages ar
 
 A **library** is a package included with the Firescript installation.
 
+## Module Exports
+
+A module's top-level declarations are private by default. Other files can only import symbols that the module explicitly exports.
+
+That means module scope is the API boundary:
+
+- Keep helper functions, internal constants, and implementation details unexported.
+- Export only the symbols you want other modules to use directly.
+- Wildcard imports still only bring in exported symbols.
+
 ## Directory Modules and init.fire
 
 If a directory contains an `init.fire` file, that file defines the module for the directory name.

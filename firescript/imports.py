@@ -109,10 +109,7 @@ class ModuleResolver:
     def collect_exports(self, mod: Module) -> Dict[str, ASTNode]:
         exports: Dict[str, ASTNode] = {}
         for c in mod.ast.children:
-            if c.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.CLASS_DEFINITION):
-                exports[c.name] = c
-            # Optionally, expose top-level variable declarations as well
-            if c.node_type == NodeTypes.VARIABLE_DECLARATION:
+            if c.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION) and bool(getattr(c, "is_exported", False)):
                 exports[c.name] = c
         return exports
 

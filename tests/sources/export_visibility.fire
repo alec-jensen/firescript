@@ -1,0 +1,6 @@
+// Exported module symbol should be importable.
+
+import @firescript/std.io.println;
+import visibility_provider.addOne;
+
+println(addOne(41));

@@ -1,4 +1,4 @@
 // String utilities module
-string wrap(string s) {
+export string wrap(string s) {
     return "[" + s + "]";
 }

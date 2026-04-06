@@ -30,6 +30,7 @@ class Lexer:
         "CONTINUE": r"continue\b",
         "RETURN": r"return\b",
         "IMPORT": r"import\b",
+        "EXPORT": r"export\b",
             "FROM": r"from\b",
         "NEW": r"new\b",
         "CLASS": r"class\b",
@@ -170,8 +171,13 @@ class Lexer:
             match = self._master_token_regex.match(file_text, index)
             if match:
                 token_type = match.lastgroup
-                token_value = match.group(token_type)
-                index += len(token_value)
+                if token_type is None:
+                    token_type = "UNKNOWN"
+                    token_value = ch
+                    index += 1
+                else:
+                    token_value = match.group(token_type)
+                    index += len(token_value)
             else:
                 # Emit UNKNOWN token for any other unexpected single character.
                 token_type = "UNKNOWN"

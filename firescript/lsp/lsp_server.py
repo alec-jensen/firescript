@@ -103,7 +103,7 @@ _ast_version_cache: dict[str, int] = {}
 # AST when actually available in the current file.
 _KEYWORDS = [
     "if", "else", "elif", "while", "for", "in", "break", "continue", "return",
-    "import", "from", "new", "class", "constraint", "nullable", "generator",
+    "import", "export", "from", "new", "class", "constraint", "nullable", "generator",
     "const", "ternary", "copyable",
 ]
 _TYPE_KEYWORDS = [

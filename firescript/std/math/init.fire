@@ -1,33 +1,35 @@
 // firescript std.math library
 // Simple math utilities and basic trig
 
-import @firescript/std.constraints.{Numeric}
-import @firescript/std.math.constants.{PI64, PI_2_64}
+constraint Numeric = int8 | int16 | int32 | int64 | uint8 | uint16 | uint32 | uint64 | float32 | float64 | float128;
+
+const float64 PI64 = 3.141592653589793f64;
+const float64 PI_2_64 = 1.5707963267948966f64;
 
 const float64 TWO_PI = PI64 * 2.0;
 
-T abs<T: Numeric>(T x, T zero) {
+export T abs<T: Numeric>(T x, T zero) {
 	if (x < zero) {
 		return -x;
 	}
 	return x;
 }
 
-T min<T: Numeric>(T a, T b) {
+export T min<T: Numeric>(T a, T b) {
 	if (a < b) {
 		return a;
 	}
 	return b;
 }
 
-T max<T: Numeric>(T a, T b) {
+export T max<T: Numeric>(T a, T b) {
 	if (a > b) {
 		return a;
 	}
 	return b;
 }
 
-T clamp<T: Numeric>(T x, T lo, T hi) {
+export T clamp<T: Numeric>(T x, T lo, T hi) {
 	if (x < lo) {
 		return lo;
 	}

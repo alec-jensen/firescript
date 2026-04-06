@@ -7,7 +7,7 @@ stay in sync.
 import os
 from typing import Tuple
 
-from lexer import Lexer
+from lexer import Lexer, Token
 from parser import Parser, ASTNode
 from enums import NodeTypes
 from errors import UndefinedIdentifierError
@@ -49,7 +49,7 @@ def resolve_imports_and_deferred_identifiers(
     # Reuse already-parsed entry AST to avoid reparsing entry failures.
     entry_abs = os.path.abspath(file_path)
     dotted = resolver.path_to_dotted(entry_abs)
-    entry_mod_obj = Module(dotted, entry_abs, ast)
+    entry_mod_obj = Module(dotted=dotted, path=entry_abs, ast=ast)
     resolver.modules[dotted] = entry_mod_obj
 
     for imp in entry_mod_obj.imports:
@@ -57,8 +57,25 @@ def resolve_imports_and_deferred_identifiers(
             resolver._load_module(imp.module_path, [dotted])
 
     entry_mod, topo = resolver.resolve_for_entry(file_path)
+
+    for mod in topo:
+        for imp in getattr(mod, "imports", []) or []:
+            if imp.kind != "symbols":
+                continue
+            source_mod = resolver.modules.get(imp.module_path)
+            if source_mod is None:
+                continue
+            source_exports = source_mod.exports or {}
+            for symbol in imp.symbols:
+                symbol_name = symbol.get("name")
+                if symbol_name and symbol_name not in source_exports:
+                    parser_instance.report_error(
+                        UndefinedIdentifierError(identifier=symbol_name, source_file=mod.path),
+                        token=Token("IDENTIFIER", symbol_name, int(symbol.get("index", 0))),
+                    )
+
     merged_ast = build_merged_ast(entry_mod, topo)
-    merged_ast._resolver = resolver
+    setattr(merged_ast, "_resolver", resolver)
 
     deferred = getattr(parser_instance, "deferred_undefined_identifiers", [])
     if deferred:

@@ -395,6 +395,7 @@ class ParserBase:
             "BREAK",
             "CONTINUE",
             "IMPORT",
+            "EXPORT",
             "DIRECTIVE",
             "CLASS",
             "COPYABLE",

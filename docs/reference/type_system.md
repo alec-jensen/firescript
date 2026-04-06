@@ -1032,22 +1032,26 @@ T print<T: Printable>(T value) { /* ... */ }
 
 **Scope and Visibility:**
 
+firescript uses two different visibility boundaries:
+
+- **Class scope** controls access to class members.
+- **Module scope** controls what other files can import.
+
+At module scope, symbols are private by default and must be explicitly exported to be imported from another file. That keeps a file's implementation details local while making its public API obvious.
+
 Constraint aliases follow the same scoping rules as other declarations:
 
 ```firescript
 // Module-level constraint (usable throughout the file)
 constraint ModuleNumeric = int32 | float32;
 
-// Within a namespace (planned)
-namespace Math {
-    constraint PreciseFloat = float64 | float128;
-    
-    T compute<T: PreciseFloat>(T value) {
-        return value;
-    }
+// Exported module API (planned syntax)
+export constraint PublicNumeric = int32 | float64;
+export T compute<T: PublicNumeric>(T value) {
+    return value;
 }
 
-// Import constraints from other modules (planned)
+// Importing another module can only access its exported symbols.
 import std.types.{NumericPrimitive, SignedInteger};
 ```
 

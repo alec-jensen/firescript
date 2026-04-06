@@ -279,6 +279,9 @@ class DeclarationsMixin(TypeSystemMixin):
                 continue
             # Top-level import statements
             if self.current_token.type == "IMPORT":
+                if getattr(self, "_pending_export", False):
+                    self.invalid_expression_error("export can only be applied to top-level declarations", self.current_token)
+                    self._pending_export = False
                 imp = self._parse_import()
                 if imp:
                     imp.parent = self.ast
@@ -289,20 +292,41 @@ class DeclarationsMixin(TypeSystemMixin):
                 continue
             # Compiler directives
             if self.current_token.type == "DIRECTIVE":
+                if getattr(self, "_pending_export", False):
+                    self.invalid_expression_error("export can only be applied to top-level declarations", self.current_token)
+                    self._pending_export = False
                 directive_node = self._parse_directive()
                 if directive_node is not None:
                     directive_node.parent = self.ast
                     self.ast.children.append(directive_node)
                 continue
+            if self.current_token.type == "EXPORT":
+                self.advance()
+                if not self.current_token:
+                    self.expected_token_error("declaration after 'export'", self.current_token)
+                    self._pending_export = False
+                    continue
+                if self.current_token.type == "CONSTRAINT":
+                    self.invalid_expression_error("Constraint exports are not supported yet", self.current_token)
+                    self._pending_export = False
+                    continue
+                self._pending_export = True
+                continue
             # Class definition (with optional 'copyable' annotation)
             if self.current_token.type == "CLASS" or self.current_token.type == "COPYABLE":
                 cls = self._parse_class_definition()
                 if cls:
+                    if getattr(self, "_pending_export", False):
+                        setattr(cls, "is_exported", True)
+                        self._pending_export = False
                     cls.parent = self.ast
                     self.ast.children.append(cls)
                 continue
             # Constraint declaration
             if self.current_token.type == "CONSTRAINT":
+                if getattr(self, "_pending_export", False):
+                    self.invalid_expression_error("Constraint exports are not supported yet", self.current_token)
+                    self._pending_export = False
                 self._parse_constraint_declaration()
                 # Optional semicolon
                 if self.current_token and self.current_token.type == "SEMICOLON":
@@ -398,6 +422,12 @@ class DeclarationsMixin(TypeSystemMixin):
                 continue
 
             if isinstance(stmt, ASTNode):
+                if getattr(self, "_pending_export", False):
+                    if stmt.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.VARIABLE_DECLARATION):
+                        setattr(stmt, "is_exported", True)
+                    else:
+                        self.invalid_expression_error("export can only be applied to top-level declarations", stmt.token)
+                    self._pending_export = False
                 stmt.parent = self.ast
                 self.ast.children.append(stmt)
 
@@ -592,7 +622,7 @@ class DeclarationsMixin(TypeSystemMixin):
                         if sname_tok is None:
                             self.expected_token_error("symbol name after '.' in import", self.current_token)
                             return None
-                        symbols.append({"name": sname_tok.value, "alias": self._parse_optional_alias()})
+                        symbols.append({"name": sname_tok.value, "alias": self._parse_optional_alias(), "index": sname_tok.index})
                         kind = "symbols"
                     else:
                         self.expected_token_error("symbol name, '*', or '{' after '.' in import", self.current_token)
@@ -651,7 +681,7 @@ class DeclarationsMixin(TypeSystemMixin):
                     if sname_tok is None:
                         self.expected_token_error("symbol name after '.' in import", self.current_token)
                         return None
-                    symbols.append({"name": sname_tok.value, "alias": self._parse_optional_alias()})
+                    symbols.append({"name": sname_tok.value, "alias": self._parse_optional_alias(), "index": sname_tok.index})
                     kind = "symbols"
                 else:
                     self.expected_token_error("symbol name, '*', or '{' after '.' in import", self.current_token)

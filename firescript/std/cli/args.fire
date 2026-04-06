@@ -2,11 +2,11 @@
 
 directive enable_process_args;
 
-int32 argc() {
+export int32 argc() {
     return process_argc();
 }
 
-string argv_at(int32 index) {
+export string argv_at(int32 index) {
     return process_argv_at(index);
 }
 
@@ -65,7 +65,7 @@ string _value_after_equals(&string token) {
     return str_slice(token, start, _str_len(token));
 }
 
-bool has_flag(string name) {
+export bool has_flag(string name) {
     string short_flag = "-" + name;
     string long_flag = "--" + name;
     int32 i = 1;
@@ -90,7 +90,7 @@ bool has_flag(string name) {
     return false;
 }
 
-bool has_flag_alias(string long_name, string short_name) {
+export bool has_flag_alias(string long_name, string short_name) {
     string short_flag = "-" + short_name;
     string long_flag = "--" + long_name;
     int32 i = 1;
@@ -115,7 +115,7 @@ bool has_flag_alias(string long_name, string short_name) {
     return false;
 }
 
-string option_value(string name, string fallback) {
+export string option_value(string name, string fallback) {
     string short_flag = "-" + name;
     string long_flag = "--" + name;
     string short_eq = short_flag + "=";
@@ -159,7 +159,7 @@ string option_value(string name, string fallback) {
     return fallback;
 }
 
-string option_value_alias(string long_name, string short_name, string fallback) {
+export string option_value_alias(string long_name, string short_name, string fallback) {
     string short_flag = "-" + short_name;
     string long_flag = "--" + long_name;
     string short_eq = short_flag + "=";
@@ -210,7 +210,7 @@ string option_value_alias(string long_name, string short_name, string fallback) 
     return fallback;
 }
 
-string positional(int32 index, string fallback) {
+export string positional(int32 index, string fallback) {
     int32 raw_index = index + 1;
     if (raw_index < 1) {
         return fallback;
@@ -221,7 +221,7 @@ string positional(int32 index, string fallback) {
     return argv_at(raw_index);
 }
 
-string positional_value(int32 index, string fallback) {
+export string positional_value(int32 index, string fallback) {
     if (index < 0) {
         return fallback;
     }

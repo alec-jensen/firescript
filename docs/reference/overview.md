@@ -24,7 +24,7 @@ The firescript compiler is under active development. Current status:
 | Control Flow | ⚠️ Partial | `if/else` and `while` loops work; `for` loops planned |
 | Functions | ⚠️ Partial | Functions can be defined and used but lack some planned features |
 | Classes | ❌ Planned | Object-oriented features planned for future versions |
-| Modules | ❌ Planned | Code organization across files planned for future versions |
+| Modules | ⚠️ Partial | Import/module organization exists; explicit export visibility is documented as the module boundary |
 
 ## Getting Started
 

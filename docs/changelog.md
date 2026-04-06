@@ -5,6 +5,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 ## Currently in development
 
 ### New Language Features
+- Added explicit module exports with top-level `export` declarations. Module symbols are private by default and imports can only access exported symbols.
 - Added generic classes with multiple type parameters (e.g., `class Pair<T, U> { ... }`). Monomorphization is performed automatically at each use site.
 - `Tuple<T, U>`, `CopyableTuple<T, U>`, `Option<T>`, and `CopyableOption<T>` are now provided by the standard library (`@firescript/std.types`).
 - Added `syscall_*` intrinsics (`syscall_open`, `syscall_read`, `syscall_write`, `syscall_close`) behind `directive enable_syscalls`. For standard library use only.

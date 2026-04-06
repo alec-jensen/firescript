@@ -1,0 +1,6 @@
+// Private module symbol should not be importable.
+
+import @firescript/std.io.println;
+import visibility_provider.hiddenValue;
+
+println(hiddenValue);

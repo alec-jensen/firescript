@@ -1,6 +1,6 @@
 # Imports
 
-firescript uses an explicit, Java-inspired import system for organizing code across files and (in the future) external packages. All imports must specify full paths; there is no implicit or relative import behavior.
+firescript uses an explicit, Java-inspired import system for organizing code across files and (in the future) external packages. All imports must specify full paths; there is no implicit or relative import behavior. A module only exposes symbols that it explicitly exports.
 
 ## Import Syntax
 
@@ -29,6 +29,8 @@ import src.utils.utils.{helper, CONSTANT}
 ```firescript
 import src.utils.utils.*
 ```
+
+Only exported symbols are eligible for import, including wildcard imports. Module-private top-level declarations remain visible only inside the defining file.
 
 - Aliasing imports (optional):
 
@@ -65,6 +67,7 @@ import @firescript/std.math.sqrt as squareRoot
 - Import paths are absolute from the project root. For example, `src.utils.utils` maps to `{project-root}/src/utils/utils.fire`.
 - Relative imports (e.g., `import ../utils`) are not permitted.
 - There are no default or magic imports—every symbol must be explicitly imported.
+- Files do not automatically expose their top-level declarations; export them first if they should be imported elsewhere.
 - The `.fire` extension is omitted in import statements but always resolves to a file with that extension.
 - A configurable import root may be supported in the future; the default is the project root.
 
