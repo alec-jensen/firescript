@@ -1,6 +1,79 @@
 import @firescript/std.io.println;
+import @firescript/std.cli.args.{argc, argv_at, has_flag, has_flag_alias, option_value, option_value_alias, positional, positional_value};
 
-int32 main(int32 argc, string[] argv) {
+void print_help() {
     println("kiln package manager (bootstrap version)");
+    println("");
+    println("Usage:");
+    println("  kiln <command> [options]");
+    println("");
+    println("Commands:");
+    println("  new <name>   Create a new kiln project");
+    println("  build        Compile the current project");
+    println("  run          Compile and execute the current project");
+    println("  check        Analyze the current project to check for errors");
+    println("  test         Run tests for the current project");
+    println("  clean        Remove the build/ directory");
+    println("");
+    println("Options:");
+    println("  -h, --help   Print this help message");
+    println("  --release    Build artifacts in release mode, with optimizations");
+}
+
+if (has_flag_alias("help", "h")) {
+    print_help();
     return 0;
 }
+
+if (argc() < 2) {
+    print_help();
+    return 1;
+}
+
+string command = positional_value(0, "none");
+
+if (command == "none") {
+    print_help();
+    return 1;
+}
+if (command == "") {
+    print_help();
+    return 1;
+}
+
+if (command == "new") {
+    string name = positional_value(1, "none");
+    if (name == "none") {
+        println("Usage: kiln new <name> [--lib]");
+        return 1;
+    }
+    if (name == "") {
+        println("Usage: kiln new <name> [--lib]");
+        return 1;
+    }
+    bool is_lib = has_flag("lib");
+    println("kiln: Creating new project " + name);
+    if (is_lib) {
+        println("kiln: (Library project)");
+    }
+} else if (command == "build") {
+    bool is_release = has_flag("release");
+    println("kiln: Building project...");
+    if (is_release) {
+        println("kiln: (Release mode)");
+    }
+} else if (command == "run") {
+    bool is_release = has_flag("release");
+    println("kiln: Running project...");
+} else if (command == "check") {
+    println("kiln: Checking project...");
+} else if (command == "test") {
+    println("kiln: Testing project...");
+} else if (command == "clean") {
+    println("kiln: Cleaning project...");
+} else {
+    println("kiln: Unknown command '" + command + "'");
+    return 1;
+}
+
+return 0;

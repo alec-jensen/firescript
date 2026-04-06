@@ -713,6 +713,10 @@ class StatementsMixin(ExpressionsMixin):
             if self.current_token.type == "SEMICOLON":
                 self.advance()
                 continue
+            
+            # Keep track of token position to detect infinite loops
+            start_index = self.current_token.index
+            
             stmt = self._parse_statement()
             if stmt:
                 stmt.parent = scope_node
@@ -720,6 +724,10 @@ class StatementsMixin(ExpressionsMixin):
 
             if self.current_token and self.current_token.type == "SEMICOLON":
                 self.consume("SEMICOLON")
+            # If the parser couldn't make progress (returned None and didn't consume tokens)
+            # force advance to prevent infinite loop
+            elif self.current_token and self.current_token.index == start_index:
+                self.advance()
 
         if not self.consume("CLOSE_BRACE"):
             self.expected_token_error("'}' to close scope", self.current_token or open_brace)
