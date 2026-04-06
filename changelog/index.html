@@ -1624,6 +1624,8 @@
 <li><code>Tuple&lt;T, U&gt;</code>, <code>CopyableTuple&lt;T, U&gt;</code>, <code>Option&lt;T&gt;</code>, and <code>CopyableOption&lt;T&gt;</code> are now provided by the standard library (<code>@firescript/std.types</code>).</li>
 <li>Added <code>syscall_*</code> intrinsics (<code>syscall_open</code>, <code>syscall_read</code>, <code>syscall_write</code>, <code>syscall_close</code>) behind <code>directive enable_syscalls</code>. For standard library use only.</li>
 <li>Expanded <code>@firescript/std.cli.args</code> parsing helpers to support grouped short flags (for example <code>-abc</code>), <code>--name=value</code> / <code>-n=value</code> option forms, <code>--</code> terminator handling, and parsed positional value lookup.</li>
+<li>Added support for logical operators <code>&amp;&amp;</code>, <code>||</code>, and unary <code>!</code> in expressions and conditions.</li>
+<li>Added support for exponentiation operator <code>**</code>.</li>
 </ul>
 <h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
 <ul>

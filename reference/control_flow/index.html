@@ -1760,6 +1760,12 @@ if (totalAmount &gt; 100) {
 <li>Comparison operators: <code>==</code>, <code>!=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code></li>
 <li>Logical operators: <code>&amp;&amp;</code> (AND), <code>||</code> (OR), <code>!</code> (NOT)</li>
 </ul>
+<p>Operator precedence for boolean expressions follows standard rules:</p>
+<ul>
+<li><code>!</code> (highest)</li>
+<li><code>&amp;&amp;</code></li>
+<li><code>||</code> (lowest)</li>
+</ul>
 <p>Example:</p>
 <pre><code class="language-firescript">import @firescript/std.io.print;
 
