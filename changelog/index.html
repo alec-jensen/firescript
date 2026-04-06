@@ -1620,6 +1620,7 @@
 <h2 id="currently-in-development">Currently in development<a class="headerlink" href="#currently-in-development" title="Permanent link">&para;</a></h2>
 <h3 id="new-language-features">New Language Features<a class="headerlink" href="#new-language-features" title="Permanent link">&para;</a></h3>
 <ul>
+<li>Added explicit module exports with top-level <code>export</code> declarations. Module symbols are private by default and imports can only access exported symbols.</li>
 <li>Added generic classes with multiple type parameters (e.g., <code>class Pair&lt;T, U&gt; { ... }</code>). Monomorphization is performed automatically at each use site.</li>
 <li><code>Tuple&lt;T, U&gt;</code>, <code>CopyableTuple&lt;T, U&gt;</code>, <code>Option&lt;T&gt;</code>, and <code>CopyableOption&lt;T&gt;</code> are now provided by the standard library (<code>@firescript/std.types</code>).</li>
 <li>Added <code>syscall_*</code> intrinsics (<code>syscall_open</code>, <code>syscall_read</code>, <code>syscall_write</code>, <code>syscall_close</code>) behind <code>directive enable_syscalls</code>. For standard library use only.</li>

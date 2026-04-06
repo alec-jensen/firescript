@@ -789,6 +789,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#module-exports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Exports
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#directory-modules-and-initfire" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1087,6 +1098,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#module-exports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Exports
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#directory-modules-and-initfire" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1200,6 +1222,14 @@
 </ul>
 <p>A <strong>package</strong> is something you can install from the package manager. Packages are modules, but not all modules are packages.</p>
 <p>A <strong>library</strong> is a package included with the Firescript installation.</p>
+<h2 id="module-exports">Module Exports<a class="headerlink" href="#module-exports" title="Permanent link">&para;</a></h2>
+<p>A module's top-level declarations are private by default. Other files can only import symbols that the module explicitly exports.</p>
+<p>That means module scope is the API boundary:</p>
+<ul>
+<li>Keep helper functions, internal constants, and implementation details unexported.</li>
+<li>Export only the symbols you want other modules to use directly.</li>
+<li>Wildcard imports still only bring in exported symbols.</li>
+</ul>
 <h2 id="directory-modules-and-initfire">Directory Modules and init.fire<a class="headerlink" href="#directory-modules-and-initfire" title="Permanent link">&para;</a></h2>
 <p>If a directory contains an <code>init.fire</code> file, that file defines the module for the directory name.</p>
 <p>Example layout:</p>

@@ -1403,7 +1403,7 @@
 
 
 <h1 id="imports">Imports<a class="headerlink" href="#imports" title="Permanent link">&para;</a></h1>
-<p>firescript uses an explicit, Java-inspired import system for organizing code across files and (in the future) external packages. All imports must specify full paths; there is no implicit or relative import behavior.</p>
+<p>firescript uses an explicit, Java-inspired import system for organizing code across files and (in the future) external packages. All imports must specify full paths; there is no implicit or relative import behavior. A module only exposes symbols that it explicitly exports.</p>
 <h2 id="import-syntax">Import Syntax<a class="headerlink" href="#import-syntax" title="Permanent link">&para;</a></h2>
 <h3 id="importing-local-modules">Importing local modules<a class="headerlink" href="#importing-local-modules" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1426,6 +1426,7 @@
 </ul>
 <pre><code class="language-firescript">import src.utils.utils.*
 </code></pre>
+<p>Only exported symbols are eligible for import, including wildcard imports. Module-private top-level declarations remain visible only inside the defining file.</p>
 <ul>
 <li>Aliasing imports (optional):</li>
 </ul>
@@ -1453,6 +1454,7 @@ import @firescript/std.math.sqrt as squareRoot
 <li>Import paths are absolute from the project root. For example, <code>src.utils.utils</code> maps to <code>{project-root}/src/utils/utils.fire</code>.</li>
 <li>Relative imports (e.g., <code>import ../utils</code>) are not permitted.</li>
 <li>There are no default or magic imports—every symbol must be explicitly imported.</li>
+<li>Files do not automatically expose their top-level declarations; export them first if they should be imported elsewhere.</li>
 <li>The <code>.fire</code> extension is omitted in import statements but always resolves to a file with that extension.</li>
 <li>A configurable import root may be supported in the future; the default is the project root.</li>
 </ul>

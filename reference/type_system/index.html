@@ -3398,20 +3398,23 @@ T print&lt;T: Printable&gt;(T value) { /* ... */ }
 // Requires T to have a toString() method
 </code></pre>
 <p><strong>Scope and Visibility:</strong></p>
+<p>firescript uses two different visibility boundaries:</p>
+<ul>
+<li><strong>Class scope</strong> controls access to class members.</li>
+<li><strong>Module scope</strong> controls what other files can import.</li>
+</ul>
+<p>At module scope, symbols are private by default and must be explicitly exported to be imported from another file. That keeps a file's implementation details local while making its public API obvious.</p>
 <p>Constraint aliases follow the same scoping rules as other declarations:</p>
 <pre><code class="language-firescript">// Module-level constraint (usable throughout the file)
 constraint ModuleNumeric = int32 | float32;
 
-// Within a namespace (planned)
-namespace Math {
-    constraint PreciseFloat = float64 | float128;
-
-    T compute&lt;T: PreciseFloat&gt;(T value) {
-        return value;
-    }
+// Exported module API (planned syntax)
+export constraint PublicNumeric = int32 | float64;
+export T compute&lt;T: PublicNumeric&gt;(T value) {
+    return value;
 }
 
-// Import constraints from other modules (planned)
+// Importing another module can only access its exported symbols.
 import std.types.{NumericPrimitive, SignedInteger};
 </code></pre>
 <h3 id="interfaces">Interfaces<a class="headerlink" href="#interfaces" title="Permanent link">&para;</a></h3>
