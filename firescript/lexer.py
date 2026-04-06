@@ -145,42 +145,52 @@ class Lexer:
             | self.seperators
             | self.literals
         )
+        # Precompile token patterns once to avoid repeated regex compilation.
+        self._compiled_token_patterns = [
+            (token_type, re.compile(regex)) for token_type, regex in self.all_token_types.items()
+        ]
+        self._compiled_identifier = re.compile(self.identifier)
 
     def tokenize(self):
         logging.debug(f"tokenizing file")
 
         tokens: list[Token] = []
         index = 0
+        file_text = self.file
+        file_len = len(file_text)
 
-        while index < len(self.file):
-            token = Token("", "", index)
+        while index < file_len:
+            # Fast path for whitespace to avoid regex work on the most common separators.
+            ch = file_text[index]
+            if ch in (" ", "\t", "\n", "\r"):
+                index += 1
+                continue
+
+            token_type = ""
+            token_value = ""
             # First, attempt matching any of the specific tokens.
-            for token_type, regex in self.all_token_types.items():
-                match = re.match(regex, self.file[index:])
+            for current_token_type, compiled_regex in self._compiled_token_patterns:
+                match = compiled_regex.match(file_text, index)
                 if match:
-                    token.type = token_type
-                    token.value = match.group()
-                    index += len(token.value)
+                    token_type = current_token_type
+                    token_value = match.group()
+                    index += len(token_value)
                     break
 
             # If no specific token matched, fallback to identifier matching or single-character token.
-            if not token.type:
-                match = re.match(self.identifier, self.file[index:])
+            if not token_type:
+                match = self._compiled_identifier.match(file_text, index)
                 if match:
-                    token.type = "IDENTIFIER"
-                    token.value = match.group()
-                    index += len(token.value)
+                    token_type = "IDENTIFIER"
+                    token_value = match.group()
+                    index += len(token_value)
                 else:
-                    ch = self.file[index]
-                    # Skip whitespace silently (space, tab, newline, carriage return)
-                    if ch in (" ", "\t", "\n", "\r"):
-                        index += 1
-                        continue
                     # Emit UNKNOWN token for any other unexpected single character
-                    token.type = "UNKNOWN"
-                    token.value = ch
+                    token_type = "UNKNOWN"
+                    token_value = ch
                     index += 1
 
-            tokens.append(token)
+            # TODO: Replace per-pattern loop with one master named-group regex to reduce match calls.
+            tokens.append(Token(token_type, token_value, index - len(token_value)))
 
         return tokens
