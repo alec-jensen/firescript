@@ -145,11 +145,12 @@ class Lexer:
             | self.seperators
             | self.literals
         )
-        # Precompile token patterns once to avoid repeated regex compilation.
-        self._compiled_token_patterns = [
-            (token_type, re.compile(regex)) for token_type, regex in self.all_token_types.items()
-        ]
-        self._compiled_identifier = re.compile(self.identifier)
+        # Build one master scanner regex with named groups while preserving precedence.
+        ordered_token_items = list(self.all_token_types.items()) + [("IDENTIFIER", self.identifier)]
+        master_pattern = "|".join(
+            f"(?P<{token_type}>{token_regex})" for token_type, token_regex in ordered_token_items
+        )
+        self._master_token_regex = re.compile(master_pattern)
 
     def tokenize(self):
         logging.debug(f"tokenizing file")
@@ -166,31 +167,17 @@ class Lexer:
                 index += 1
                 continue
 
-            token_type = ""
-            token_value = ""
-            # First, attempt matching any of the specific tokens.
-            for current_token_type, compiled_regex in self._compiled_token_patterns:
-                match = compiled_regex.match(file_text, index)
-                if match:
-                    token_type = current_token_type
-                    token_value = match.group()
-                    index += len(token_value)
-                    break
+            match = self._master_token_regex.match(file_text, index)
+            if match:
+                token_type = match.lastgroup
+                token_value = match.group(token_type)
+                index += len(token_value)
+            else:
+                # Emit UNKNOWN token for any other unexpected single character.
+                token_type = "UNKNOWN"
+                token_value = ch
+                index += 1
 
-            # If no specific token matched, fallback to identifier matching or single-character token.
-            if not token_type:
-                match = self._compiled_identifier.match(file_text, index)
-                if match:
-                    token_type = "IDENTIFIER"
-                    token_value = match.group()
-                    index += len(token_value)
-                else:
-                    # Emit UNKNOWN token for any other unexpected single character
-                    token_type = "UNKNOWN"
-                    token_value = ch
-                    index += 1
-
-            # TODO: Replace per-pattern loop with one master named-group regex to reduce match calls.
             tokens.append(Token(token_type, token_value, index - len(token_value)))
 
         return tokens
