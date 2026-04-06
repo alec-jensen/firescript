@@ -120,6 +120,12 @@ Conditions can use various boolean operators:
 - Comparison operators: `==`, `!=`, `>`, `<`, `>=`, `<=`
 - Logical operators: `&&` (AND), `||` (OR), `!` (NOT)
 
+Operator precedence for boolean expressions follows standard rules:
+
+- `!` (highest)
+- `&&`
+- `||` (lowest)
+
 Example:
 
 ```firescript

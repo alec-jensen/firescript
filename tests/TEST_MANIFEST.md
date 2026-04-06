@@ -61,8 +61,8 @@ Expected error files are stored in `tests/expected_errors/` with `.err` extensio
 #### Operators
 - **operators_arithmetic.fire** - All arithmetic operators (+, -, *, /, %, **), compound assignment (+=, -=, etc.), increment/decrement
 - **operators_comparison.fire** - Equality (==, !=), relational (<, >, <=, >=) for all numeric types and strings
-- **operators_logical.fire** - Logical AND (&&), OR (||), NOT (!), short-circuit evaluation, complex boolean expressions
-- **unary_test.fire** - Unary operators (-, +, !)
+- **operators_logical.fire** - Logical operators (`&&`, `||`, `!`) including nested and combined conditions
+- **unary_test.fire** - Unary numeric operators (-, +)
 
 #### Control Flow
 - **control_flow_comprehensive.fire** - if/else/else-if chains, while loops, C-style for loops, for-in loops, break/continue, nested control structures

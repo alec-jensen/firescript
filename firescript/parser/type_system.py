@@ -431,7 +431,7 @@ class TypeSystemMixin(StatementsMixin):
                         f"Operator '{op}' not supported between types {left_type} and {right_type}",
                         node.token,
                     )
-            elif op in ("-", "*", "/"):
+            elif op in ("-", "*", "/", "**"):
                 if left_type == right_type and left_type in integer_types:
                     node_type_str = left_type
                 elif left_type == right_type and left_type in float_types:
@@ -442,6 +442,14 @@ class TypeSystemMixin(StatementsMixin):
                 else:
                     self.invalid_type_error(
                         f"Operator '{op}' not supported between types {left_type} and {right_type}",
+                        node.token,
+                    )
+            elif op in ("&&", "||"):
+                if left_type == "bool" and right_type == "bool":
+                    node_type_str = "bool"
+                else:
+                    self.invalid_type_error(
+                        f"Operator '{op}' requires bool operands, got {left_type} and {right_type}",
                         node.token,
                     )
             elif op == "%":
@@ -503,6 +511,15 @@ class TypeSystemMixin(StatementsMixin):
                 else:
                     self.invalid_type_error(
                         f"Unary operator '{op}' requires numeric operand, got {operand_type}",
+                        node.token,
+                    )
+                    node_type_str = None
+            elif op == "!":
+                if operand_type == "bool":
+                    node_type_str = "bool"
+                else:
+                    self.invalid_type_error(
+                        f"Unary operator '{op}' requires bool operand, got {operand_type}",
                         node.token,
                     )
                     node_type_str = None

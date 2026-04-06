@@ -1,9 +1,8 @@
-// Logical operators (&&, ||, !) are not yet implemented in firescript
-// This test covers boolean operations that ARE supported
+// Comprehensive logical operator tests (&&, ||, !)
 
 import @firescript/std.io.println;
 
-println("=== Boolean Operations ===");
+println("=== Logical Operators ===");
 
 // Boolean basics
 println("--- Boolean Basics ---");
@@ -16,29 +15,26 @@ println(t == true);  // true
 println(f == false);  // true
 println(t == f);  // false
 
-// Conditional logic using if statements
-println("--- Conditional Logic ---");
+// Conditional logic using logical operators
+println("--- Logical Conditions ---");
 int32 a = 10;
 int32 b = 5;
 int32 c = 15;
 
-// Simulate AND: both conditions must be true
-if (a > b) {
-    if (a < c) {
-        println("a is between b and c");
-    }
+if (a > b && a < c) {
+    println("a is between b and c");
 }
 
-// Simulate OR using boolean flag
-bool condition_met = false;
-if (a < b) {
-    condition_met = true;
-}
-if (a > 0) {
-    condition_met = true;
-}
-if (condition_met == true) {
+if (a < b || a > 0) {
     println("a meets at least one condition");
 }
 
-println("=== Boolean operation tests passed ===");
+if (!(a < b || !t)) {
+    println("not/or combination works");
+}
+
+if (t && !f) {
+    println("and/not combination works");
+}
+
+println("=== All logical operator tests passed ===");

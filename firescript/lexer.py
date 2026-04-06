@@ -80,6 +80,8 @@ class Lexer:
     }
 
     operators: dict[str, str] = {
+        "POWER_ASSIGN": r"\*\*=",
+        "POWER": r"\*\*",
         "ADD_ASSIGN": r"\+=",
         "INCREMENT": r"\+\+",
         "ADD": r"\+",
@@ -92,8 +94,6 @@ class Lexer:
         "DIVIDE": r"\/",
         "MODULO_ASSIGN": r"\%=",
         "MODULO": r"\%",
-        "POWER_ASSIGN": r"\*\*=",
-        "POWER": r"\*\*",
         "EQUALS": r"\=\=",
         "NOT_EQUALS": r"\!\=",
         "GREATER_THAN_OR_EQUAL": r"\>\=",

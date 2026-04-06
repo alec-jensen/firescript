@@ -258,6 +258,36 @@ class StatementsMixin(DeclarationsMixin):
             left = self._visit(left_node)
             right = self._visit(right_node)
             op = node.name
+
+            # Power operator
+            if op == "**":
+                # Integer exponentiation path for integer operands
+                left_t = (
+                    getattr(left_node, "return_type", None)
+                    or getattr(left_node, "var_type", None)
+                    or (self.symbol_table.get(getattr(left_node, "name", ""), (None, False))[0]
+                       if left_node.node_type == NodeTypes.IDENTIFIER else None)
+                )
+                right_t = (
+                    getattr(right_node, "return_type", None)
+                    or getattr(right_node, "var_type", None)
+                    or (self.symbol_table.get(getattr(right_node, "name", ""), (None, False))[0]
+                       if right_node.node_type == NodeTypes.IDENTIFIER else None)
+                )
+                int_types = {"int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64"}
+                if left_t in int_types and right_t in int_types:
+                    return (
+                        f"({{ int64_t __base = (int64_t)({left}); int64_t __exp = (int64_t)({right}); "
+                        f"int64_t __pow = 1; while (__exp > 0) {{ __pow *= __base; __exp--; }} __pow; }})"
+                    )
+                # Fallback for non-integer operands
+                return (
+                    f"({{ double __base = (double)({left}); double __exp = (double)({right}); "
+                    f"double __pow = 1.0; if (__exp < 0.0) {{ __pow = 1.0 / ("
+                    f"{{ double __acc = 1.0; int64_t __e = (int64_t)(-__exp); while (__e > 0) {{ __acc *= __base; __e--; }} __acc; }}"
+                    f"); }} else {{ int64_t __e = (int64_t)(__exp); while (__e > 0) {{ __pow *= __base; __e--; }} }} __pow; }})"
+                )
+
             # String concatenation with '+'
             left_t = (
                 getattr(left_node, "return_type", None)
@@ -302,6 +332,8 @@ class StatementsMixin(DeclarationsMixin):
                 return f"(-{operand})"
             elif op == "+":
                 return f"(+{operand})"
+            elif op == "!":
+                return f"(!{operand})"
             else:
                 return operand  # Fallback
         

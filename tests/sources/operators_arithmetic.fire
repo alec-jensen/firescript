@@ -36,11 +36,11 @@ int32 c = 13;
 int32 d = 5;
 println(c % d);  // 3
 
-// Power operator not yet implemented
-// println("--- Power ---");
-// int32 base = 2;
-// int32 exp = 3;
-// println(base ** exp);  // 8
+// Power
+println("--- Power ---");
+int32 base = 2;
+int32 exp = 3;
+println(base ** exp);  // 8
 
 // Unary operators
 println("--- Unary Operations ---");

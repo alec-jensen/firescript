@@ -7,8 +7,50 @@ from .base import ParserBase
 
 class ExpressionsMixin(ParserBase):
     def parse_expression(self):
-        """Parse an expression using equality and additive operators."""
-        return self.parse_equality()
+        """Parse an expression with full operator precedence."""
+        return self.parse_logical_or()
+
+    def parse_logical_or(self):
+        """Parse logical OR expressions (handles ||)."""
+        node = self.parse_logical_and()
+        if node is None:
+            return None
+
+        while self.current_token and self.current_token.type == "OR":
+            op_token = self.current_token
+            self.advance()
+            right = self.parse_logical_and()
+            if right is None:
+                return None
+            node = ASTNode(
+                NodeTypes.BINARY_EXPRESSION,
+                op_token,
+                op_token.value,
+                [node, right],
+                op_token.index,
+            )
+        return node
+
+    def parse_logical_and(self):
+        """Parse logical AND expressions (handles &&)."""
+        node = self.parse_equality()
+        if node is None:
+            return None
+
+        while self.current_token and self.current_token.type == "AND":
+            op_token = self.current_token
+            self.advance()
+            right = self.parse_equality()
+            if right is None:
+                return None
+            node = ASTNode(
+                NodeTypes.BINARY_EXPRESSION,
+                op_token,
+                op_token.value,
+                [node, right],
+                op_token.index,
+            )
+        return node
 
     def _parse_postfix_cast(self, node: Optional[ASTNode]) -> Optional[ASTNode]:
         """Parse Rust-style postfix cast: <expr> as <type>."""
@@ -112,7 +154,7 @@ class ExpressionsMixin(ParserBase):
 
     def parse_multiplicative(self):
         """Parse multiplicative expressions (handles *, /, and %)."""
-        node = self.parse_unary()
+        node = self.parse_power()
         if node is None:  # If LHS is not parsable
             return None
 
@@ -123,7 +165,7 @@ class ExpressionsMixin(ParserBase):
         ):
             op_token = self.current_token
             self.advance()
-            right = self.parse_unary()
+            right = self.parse_power()
             if right is None:  # If RHS is not parsable
                 # Error already logged by parse_unary.
                 return None  # Propagate failure.
@@ -138,9 +180,30 @@ class ExpressionsMixin(ParserBase):
             )
         return node
 
+    def parse_power(self):
+        """Parse power expressions (handles **, right-associative)."""
+        node = self.parse_unary()
+        if node is None:
+            return None
+
+        if self.current_token and self.current_token.type == "POWER":
+            op_token = self.current_token
+            self.advance()
+            right = self.parse_power()
+            if right is None:
+                return None
+            node = ASTNode(
+                NodeTypes.BINARY_EXPRESSION,
+                op_token,
+                op_token.value,
+                [node, right],
+                op_token.index,
+            )
+        return node
+
     def parse_unary(self):
-        """Parse unary expressions (handles unary - and +).""" 
-        if self.current_token and self.current_token.type in ("SUBTRACT", "ADD"):
+        """Parse unary expressions (handles unary -, +, and !)."""
+        if self.current_token and self.current_token.type in ("SUBTRACT", "ADD", "NOT"):
             op_token = self.current_token
             self.advance()
             operand = self.parse_unary()  # Right-associative for chained unary ops
