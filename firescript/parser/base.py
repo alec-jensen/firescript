@@ -304,7 +304,7 @@ class ParserBase:
                 pass
         if not err.source_file:
             err.source_file = self.filename
-        logging.error(err.to_log_string())
+        logging.error(err)
         self.errors.append(err)
 
     def error(self, text: str, token: Optional[Token] = None):

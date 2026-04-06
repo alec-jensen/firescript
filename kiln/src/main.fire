@@ -1,0 +1,6 @@
+import @firescript/std.io.println;
+
+int32 main(int32 argc, string[] argv) {
+    println("kiln package manager (bootstrap version)");
+    return 0;
+}

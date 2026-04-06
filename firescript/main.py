@@ -23,14 +23,20 @@ def _log_stage_duration(stage_name: str, start_time_ns: int) -> int:
     return end_time_ns
 
 
-def setup_logging(debug_mode=False):
+def setup_logging(debug_mode=False, message_format="text"):
     """Configure logging with custom formatter."""
     root_logger = logging.getLogger()
+    if root_logger.hasHandlers():
+        root_logger.handlers.clear()
     root_logger.setLevel(logging.DEBUG if debug_mode else logging.INFO)
 
     console_handler = logging.StreamHandler()
-    log_formatter = LogFormatter()
-    console_handler.setFormatter(log_formatter)
+    if message_format == "json":
+        from log_formatter import JsonFormatter
+        formatter = JsonFormatter()
+    else:
+        formatter = LogFormatter()
+    console_handler.setFormatter(formatter)
     root_logger.addHandler(console_handler)
 
 
@@ -45,8 +51,11 @@ def detect_c_compiler():
     return compiler
 
 
-def compile_file(file_path, target, cc=None, output=None):
+def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=False, emit_deps=False, no_link=False, link_args=None):
     """Compile a single firescript file"""
+    if link_args is None:
+        link_args = []
+
     logging.info(f"Starting compilation of {file_path}...")
 
     start_time = time.perf_counter_ns()
@@ -121,6 +130,40 @@ def compile_file(file_path, target, cc=None, output=None):
         return False
     stage_start = _log_stage_duration("Semantic analysis", stage_start)
 
+    # Output deps if requested
+    if emit_deps:
+        if has_imports and getattr(ast, "_resolver", None):
+            base_name = os.path.splitext(os.path.basename(file_path))[0]
+            os.makedirs("build", exist_ok=True)
+            deps_file = os.path.join("build", f"{base_name}.d")
+            try:
+                with open(deps_file, "w", encoding="utf-8") as f:
+                    f.write(f"build/{base_name}.o: {os.path.abspath(file_path)}")
+                    for k, m in ast._resolver.modules.items():
+                        if m.path != os.path.abspath(file_path):
+                            f.write(f" \\\n  {m.path}")
+                    f.write("\n")
+            except Exception as e:
+                logging.error(f"Failed to write dependencies to {deps_file}: {e}")
+
+    # Emit ast if requested
+    if emit == "ast":
+        base_name = os.path.splitext(os.path.basename(file_path))[0]
+        os.makedirs("build", exist_ok=True)
+        ast_out = os.path.join("build", f"{base_name}.ast")
+        try:
+            with open(ast_out, "w", encoding="utf-8") as f:
+                f.write(str(ast))
+            logging.info(f"AST written to {ast_out}")
+            return ast_out
+        except Exception as e:
+            logging.error(f"Failed to write AST to {ast_out}: {e}")
+            return False
+
+    if check:
+        logging.info(f"Check completed for {file_path}")
+        return True
+
     logging.debug("Starting code generation...")
 
     if target == "native":
@@ -157,6 +200,14 @@ def compile_file(file_path, target, cc=None, output=None):
         stage_start = _log_stage_duration("Write transpiled C", stage_start)
 
         logging.debug(f"Transpiled code written to {temp_c_file}")
+
+        if emit == "c":
+            out_c = out_path if out_path else temp_c_file
+            if out_path:
+                shutil.copy(temp_c_file, out_path)
+            logging.info(f"C source written to {out_c}")
+            return out_c
+
         logging.debug("Starting compilation of transpiled code...")
 
         # Determine C compiler to use
@@ -185,15 +236,27 @@ def compile_file(file_path, target, cc=None, output=None):
             "-I",
             ".",
             temp_c_file,
-            "firescript/runtime/runtime.c",
-            "-Wl,-O2",
-            "-Wl,--as-needed",
-            "-Wl,--gc-sections",
-            "-lgmp",
-            "-lmpfr",
-            "-o",
-            temp_c_file[:-2],
         ]
+        
+        if emit == "obj" or no_link:
+            out_obj = out_path if out_path else temp_c_file[:-2] + ".o"
+            compile_command.extend(["-c", "-o", out_obj])
+        else:
+            compile_command.extend([
+                "firescript/runtime/runtime.c",
+                "-Wl,-O2",
+                "-Wl,--as-needed",
+                "-Wl,--gc-sections",
+                "-lgmp",
+                "-lmpfr",
+            ])
+            for la in link_args:
+                compile_command.append(la)
+            
+            compile_command.extend([
+                "-o",
+                temp_c_file[:-2],
+            ])
 
         try:
             process = subprocess.run(
@@ -220,24 +283,29 @@ def compile_file(file_path, target, cc=None, output=None):
         end_time = time.perf_counter_ns()
 
         logging.info(f"Compilation of {file_path} completed successfully in {(end_time - start_time) / 1_000_000:.2f} ms")
+        
+        if emit == "obj" or no_link:
+            logging.info(f"Object file written to {out_obj}")
+            return out_obj
 
         # Handle output file location
         compiled_binary = os.path.splitext(temp_c_file)[0]
         os.makedirs("build", exist_ok=True)
 
         # Default output location
-        output_path = os.path.join("build", base_name)
+        final_out_path = out_path if out_path else os.path.join("build", base_name)
 
         # Windows toolchains typically emit .exe even if -o omits extension
         if os.name == "nt":
             if os.path.exists(compiled_binary + ".exe"):
                 compiled_binary = compiled_binary + ".exe"
-                output_path = output_path + ".exe"
+                if not out_path or not final_out_path.endswith(".exe"):
+                    final_out_path = final_out_path + ".exe"
 
         try:
-            shutil.move(compiled_binary, output_path)
-            logging.info(f"Binary written to {output_path}")
-            return output_path
+            shutil.move(compiled_binary, final_out_path)
+            logging.info(f"Binary written to {final_out_path}")
+            return final_out_path
         except Exception as e:
             logging.error(f"Failed to move compiled binary: {e}")
             return False
@@ -321,6 +389,13 @@ def main():
     parser.add_argument(
         "--cc", help="C compiler to use (default: auto-detect)", default=None
     )
+    parser.add_argument("--message-format", choices=["text", "json"], default="text", help="Format for diagnostic messages")
+    parser.add_argument("--emit", choices=["ast", "c", "obj", "bin"], default="bin", help="Type of output to generate")
+    parser.add_argument("--check", action="store_true", help="Run checks only, do not emit code")
+    parser.add_argument("--emit-deps", action="store_true", help="Emit dependency information (.d file)")
+    parser.add_argument("--no-link", action="store_true", help="Compile only, do not link")
+    parser.add_argument("--link-arg", action="append", default=[], help="Additional argument to pass to the linker")
+    
     # Make the file argument optional and add a directory argument
     parser.add_argument("file", nargs="?", help="Input file")
     parser.add_argument("--dir", help="Compile all .fire files in directory")
@@ -335,7 +410,7 @@ def main():
         sys.exit(0)
 
     # Configure logging
-    setup_logging(args.debug)
+    setup_logging(args.debug, args.message_format)
 
     if args.debug:
         logging.debug(args)
@@ -360,18 +435,25 @@ def main():
             args.file,
             args.target,
             args.cc,
+            out_path=args.output,
+            emit=args.emit,
+            check=args.check,
+            emit_deps=args.emit_deps,
+            no_link=args.no_link,
+            link_args=args.link_arg,
         )
 
         if not output_path:
             sys.exit(1)
 
         # Handle output file renaming for single file case
-        if output_path and args.output:
+        # (if compile_file didn't already write it directly to output_path)
+        if output_path and args.output and output_path != args.output:
             try:
                 shutil.move(output_path, args.output)
-                logging.info(f"Binary moved to {args.output}")
+                logging.info(f"Output moved to {args.output}")
             except Exception as e:
-                logging.error(f"Failed to move binary to {args.output}: {e}")
+                logging.error(f"Failed to move output to {args.output}: {e}")
                 sys.exit(1)
 
     # Compile directory if specified
@@ -394,6 +476,11 @@ def main():
                 file_path,
                 args.target,
                 args.cc,
+                emit=args.emit,
+                check=args.check,
+                emit_deps=args.emit_deps,
+                no_link=args.no_link,
+                link_args=args.link_arg,
             ):
                 successful += 1
             else:

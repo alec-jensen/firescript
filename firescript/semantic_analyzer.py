@@ -105,7 +105,7 @@ class SemanticAnalyzer:
         if node is None or self.source_code is None:
             if not err.source_file:
                 err.source_file = self.source_file
-            logging.error(err.to_log_string())
+            logging.error(err)
             self.errors.append(err)
             return
         try:
@@ -116,12 +116,12 @@ class SemanticAnalyzer:
             err.snippet = line_text
             if not err.source_file:
                 err.source_file = self.source_file
-            logging.error(err.to_log_string())
+            logging.error(err)
             self.errors.append(err)
         except (IndexError, ValueError):
             if not err.source_file:
                 err.source_file = self.source_file
-            logging.error(err.to_log_string())
+            logging.error(err)
             self.errors.append(err)
 
     def error(self, text: str, node: Optional[ASTNode] = None) -> None:

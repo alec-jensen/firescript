@@ -58,6 +58,7 @@ def resolve_imports_and_deferred_identifiers(
 
     entry_mod, topo = resolver.resolve_for_entry(file_path)
     merged_ast = build_merged_ast(entry_mod, topo)
+    merged_ast._resolver = resolver
 
     deferred = getattr(parser_instance, "deferred_undefined_identifiers", [])
     if deferred:

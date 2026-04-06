@@ -160,7 +160,7 @@ class CCodeGeneratorBase:
             if not err.source_file:
                 err.source_file = self.source_file
             self.errors.append(err)
-            logging.error(err.to_log_string())
+            logging.error(err)
             return
         
         # Get source file and source code for this node
@@ -181,7 +181,7 @@ class CCodeGeneratorBase:
             if not err.source_file:
                 err.source_file = self.source_file
             self.errors.append(err)
-            logging.error(err.to_log_string())
+            logging.error(err)
             return
 
         try:
@@ -193,13 +193,13 @@ class CCodeGeneratorBase:
             if not err.source_file:
                 err.source_file = node_source_file
             self.errors.append(err)
-            logging.error(err.to_log_string())
+            logging.error(err)
         except (IndexError, ValueError):
             # Node index is out of range - just show the error without source location
             if not err.source_file:
                 err.source_file = node_source_file
             self.errors.append(err)
-            logging.error(err.to_log_string())
+            logging.error(err)
 
     def error(self, text: str, node: Optional[ASTNode] = None):
         self.report_error(CodegenError(message=text, source_file=self.source_file), node=node)

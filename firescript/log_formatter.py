@@ -63,3 +63,41 @@ class LogFormatter(logging.Formatter):
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt, "%H:%M:%S")
         return formatter.format(record)
+
+
+class JsonFormatter(logging.Formatter):
+    def format(self, record):
+        import json
+        
+        # Determine if the message is a CompileTimeError instance
+        # Try to import here to avoid circular imports if needed
+        try:
+            from errors import CompileTimeError
+            is_compile_error = isinstance(record.msg, CompileTimeError)
+            compile_err = record.msg if is_compile_error else None
+        except ImportError:
+            is_compile_error = False
+            compile_err = None
+
+        if is_compile_error and compile_err is not None:
+            # Output full structured data
+            event = {
+                "type": "diagnostic",
+                "level": record.levelname.lower(),
+                "code": compile_err.code,
+                "category": compile_err.category.value,
+                "message": compile_err.message,
+                "file": compile_err.source_file,
+                "line": compile_err.line,
+                "column": compile_err.column,
+                "snippet": compile_err.snippet,
+            }
+        else:
+            # Plain log event
+            event = {
+                "type": "log",
+                "level": record.levelname.lower(),
+                "message": record.getMessage()
+            }
+            
+        return json.dumps(event)

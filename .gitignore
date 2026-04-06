@@ -9,3 +9,6 @@ editors/vscode/out/
 editors/vscode/*.vsix
 test/
 .venv/
+
+hello.fire
+kiln.exe

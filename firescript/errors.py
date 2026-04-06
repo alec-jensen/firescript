@@ -55,6 +55,9 @@ class CompileTimeError:
             )
         return header
 
+    def __str__(self) -> str:
+        return self.to_log_string()
+
 
 class ParserError(CompileTimeError):
     code = "FS-PARSE-0001"
