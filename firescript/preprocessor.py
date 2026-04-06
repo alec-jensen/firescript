@@ -57,6 +57,21 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
     # origin in {"local", "param", "global"}
     var_maps: List[Dict[str, Tuple[Optional[str], bool, str]]] = [dict()]
 
+    def _collect_identifier_names(node: Optional[ASTNode]) -> set[str]:
+        """Collect identifier names referenced by an expression subtree."""
+        if node is None:
+            return set()
+
+        names: set[str] = set()
+        if node.node_type == NodeTypes.IDENTIFIER and node.name:
+            names.add(node.name)
+
+        for child in node.children:
+            if child is not None:
+                names.update(_collect_identifier_names(child))
+
+        return names
+
     def process_node(node: ASTNode) -> ASTNode:
         # Variable declaration: track owned locals by name
         if node.node_type == NodeTypes.VARIABLE_DECLARATION:
@@ -135,9 +150,13 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
         # Return: wrap with a scope that does drops for all active frames, then return
         if node.node_type == NodeTypes.RETURN_STATEMENT:
             wrap = ASTNode(NodeTypes.SCOPE, node.token, "scope", [], node.index)
+            used_in_return = _collect_identifier_names(node.children[0]) if node.children else set()
             # drain all frames outer-to-inner
             for frame in scope_stack:
                 for nm, vt, ia in frame:
+                    if nm in used_in_return:
+                        # Keep values alive until after return expression evaluation.
+                        continue
                     wrap.children.append(_make_drop_call(nm, vt, ia))
             wrap.children.append(node)
             return wrap
