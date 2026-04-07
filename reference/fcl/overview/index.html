@@ -8,7 +8,7 @@
       
       
       
-        <link rel="canonical" href="https://firescript.alecj.com/reference/fsnl/overview/">
+        <link rel="canonical" href="https://firescript.alecj.com/reference/fcl/overview/">
       
       
       
@@ -21,7 +21,7 @@
     
     
       
-        <title>firescript notation language - firescript</title>
+        <title>firescript config language - firescript</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#firescript-notation-language" class="md-skip">
+        <a href="#firescript-config-language" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              firescript notation language
+              firescript config language
             
           </span>
         </div>
@@ -989,6 +989,174 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-principle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Principle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relationship-to-firescript" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relationship to firescript
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Modes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-model-and-expression-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Model and Expression Layer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-fcl-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example fcl Files
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example fcl Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-static-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic static configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-deterministic-expression-helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using deterministic expression helpers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conditional-expression-in-a-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conditional expression in a value
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interface-backed-runtime-loading-firescript" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interface-backed runtime loading (firescript)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allowed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allowed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#not-allowed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not Allowed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logic-and-execution-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logic and Execution Roadmap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#name-and-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Name and Extension
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1012,7 +1180,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/reference/fsnl/overview.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/reference/fcl/overview.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1020,9 +1188,108 @@
   
 
 
-<h1 id="firescript-notation-language">firescript notation language<a class="headerlink" href="#firescript-notation-language" title="Permanent link">&para;</a></h1>
-<p>firescript notation language (fsnl) is a human-readable format for markup files, specialized to work well with firescript.</p>
-<h1 id="todo-come-up-with-fsnl-syntax-and-features">TODO: come up with fsnl syntax and features<a class="headerlink" href="#todo-come-up-with-fsnl-syntax-and-features" title="Permanent link">&para;</a></h1>
+<h1 id="firescript-config-language">firescript config language<a class="headerlink" href="#firescript-config-language" title="Permanent link">&para;</a></h1>
+<p>firescript config language (fcl) is a typed, human-readable configuration DSL designed for firescript configs.</p>
+<p>fcl is intended for the same use cases where teams often choose YAML or TOML, but with syntax and semantics aligned to firescript.</p>
+<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<p>fcl is config-first. It exists to make project configuration and structured data easier to write, validate, and consume from firescript.</p>
+<p>Files use the <code>.fcl</code> extension.</p>
+<h2 id="core-principle">Core Principle<a class="headerlink" href="#core-principle" title="Permanent link">&para;</a></h2>
+<p>fcl is a typed configuration DSL, not a general-purpose programming language.</p>
+<p>To keep that boundary clear, fcl is deliberately non-general in three ways:</p>
+<ul>
+<li>It can only produce data (a single exported value or object graph).</li>
+<li>It does not allow user-defined behavior (no functions, methods, or loops). Type declarations are structural only.</li>
+<li>It only allows a small set of total, deterministic expressions so complexity cannot grow unchecked.</li>
+</ul>
+<p>These constraints should be enforced at the parser and typechecker level.
+With these guardrails, fcl can evolve with new configuration features without becoming a full programming language.</p>
+<h2 id="relationship-to-firescript">Relationship to firescript<a class="headerlink" href="#relationship-to-firescript" title="Permanent link">&para;</a></h2>
+<p>fcl is designed as a constrained subset of firescript concepts:</p>
+<ul>
+<li>You can define structured data using explicit types.</li>
+<li>You can define interface-compatible typed structures and typed variables in fcl files.</li>
+<li>fcl data is accessible from firescript.</li>
+<li>The language remains intentionally focused on configuration and predictable static structure.</li>
+</ul>
+<p>This keeps fcl familiar to firescript users while preserving a clear config-oriented scope.</p>
+<h2 id="usage-modes">Usage Modes<a class="headerlink" href="#usage-modes" title="Permanent link">&para;</a></h2>
+<p>fcl is planned to support two major modes:</p>
+<ul>
+<li>Compile-time mode: fcl files are imported and consumed during compilation.</li>
+<li>Runtime mode (future): fcl files are read through an fcl interpreter.</li>
+</ul>
+<p>For runtime usage, schema is defined as an interface in the firescript program. Runtime-loaded fcl data is validated against that interface so structure and types remain explicit.</p>
+<h2 id="data-model-and-expression-layer">Data Model and Expression Layer<a class="headerlink" href="#data-model-and-expression-layer" title="Permanent link">&para;</a></h2>
+<p>fcl follows a typed object graph model with a small expression layer.
+Files are primarily declarative, while still allowing constrained expressions inside values.</p>
+<h2 id="example-fcl-files">Example fcl Files<a class="headerlink" href="#example-fcl-files" title="Permanent link">&para;</a></h2>
+<p>The examples below are illustrative and intended to show the design direction.</p>
+<h3 id="basic-static-configuration">Basic static configuration<a class="headerlink" href="#basic-static-configuration" title="Permanent link">&para;</a></h3>
+<pre><code class="language-fcl">class AppConfig {
+    string appName = &quot;firescript-app&quot;
+    int32 port = 8080
+    bool enableTelemetry = false
+    [string] allowedHosts = [&quot;localhost&quot;, &quot;127.0.0.1&quot;]
+}
+</code></pre>
+<h3 id="using-deterministic-expression-helpers">Using deterministic expression helpers<a class="headerlink" href="#using-deterministic-expression-helpers" title="Permanent link">&para;</a></h3>
+<pre><code class="language-fcl">class BuildConfig {
+    string mode = (optEnv(&quot;BUILD_MODE&quot;) ?? &quot;debug&quot;)
+    string outputDir = pathJoin(&quot;build&quot;, mode)
+    int32 workerCount = parseInt((optEnv(&quot;WORKERS&quot;) ?? &quot;4&quot;))
+}
+</code></pre>
+<h3 id="conditional-expression-in-a-value">Conditional expression in a value<a class="headerlink" href="#conditional-expression-in-a-value" title="Permanent link">&para;</a></h3>
+<pre><code class="language-fcl">class RuntimeConfig {
+    string environment = (optEnv(&quot;ENV&quot;) ?? &quot;dev&quot;)
+    string logLevel = if (environment == &quot;prod&quot;) { &quot;warn&quot; } else { &quot;debug&quot; } // Note: expression form of if/else is not currently implemented and may be different syntax when added.
+}
+</code></pre>
+<h3 id="interface-backed-runtime-loading-firescript">Interface-backed runtime loading (firescript)<a class="headerlink" href="#interface-backed-runtime-loading-firescript" title="Permanent link">&para;</a></h3>
+<p>When loading fcl at runtime, define the expected structure as an interface in firescript:</p>
+<pre><code class="language-firescript">interface RuntimeConfig {
+    string environment;
+    string logLevel;
+    int32 port;
+}
+
+RuntimeConfig cfg = load_config&lt;RuntimeConfig&gt;(&quot;config.fcl&quot;);
+</code></pre>
+<h3 id="allowed">Allowed<a class="headerlink" href="#allowed" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Literals (<code>"text"</code>, numeric literals, <code>true</code>, <code>false</code>, <code>null</code>)</li>
+<li>Object/class initializers for config structures</li>
+<li>Arrays and maps</li>
+<li><code>if/else</code> expressions (expression form, not statement form)</li>
+<li>Null coalescing (<code>??</code>)</li>
+<li>Optional ternary expression (<code>?:</code>) if adopted</li>
+<li>A small set of built-in pure functions (for example <code>env()</code>, <code>optEnv()</code>, <code>pathJoin()</code>, <code>parseInt()</code>)</li>
+<li>Imports of types only, or config-class-only imports</li>
+</ul>
+<h3 id="not-allowed">Not Allowed<a class="headerlink" href="#not-allowed" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Defining functions</li>
+<li>Calling arbitrary methods</li>
+<li>Loops (<code>for</code>, <code>while</code>)</li>
+<li>Mutation or reassignment (config values are effectively <code>const</code>)</li>
+<li>General module-system behavior or arbitrary code execution</li>
+</ul>
+<h2 id="logic-and-execution-roadmap">Logic and Execution Roadmap<a class="headerlink" href="#logic-and-execution-roadmap" title="Permanent link">&para;</a></h2>
+<p>fcl is declarative first, but limited logic is planned over time:</p>
+<ul>
+<li>Basic logic support is planned for future versions.</li>
+<li>Runtime interpretation is planned after compile-time workflows.</li>
+<li>Longer term, this roadmap may enable JIT-style execution paths for fcl.</li>
+</ul>
+<p>These capabilities are intended to evolve without changing fcl's core identity as a typed configuration format for firescript.</p>
+<h2 id="name-and-extension">Name and Extension<a class="headerlink" href="#name-and-extension" title="Permanent link">&para;</a></h2>
+<p>The official name is firescript config language.</p>
+<ul>
+<li>The short form is fcl.</li>
+<li>The file extension is <code>.fcl</code>.</li>
+<li>fcl remains focused on being a firescript-native alternative to YAML/TOML for configuration.</li>
+</ul>
 
 
 
