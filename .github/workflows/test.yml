@@ -68,7 +68,7 @@ jobs:
 
       - name: Resolve compiler command (Windows)
         if: runner.os == 'Windows'
-        run: "FS_CC=${{ matrix.compiler }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        run: echo "FS_CC=${{ matrix.compiler }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Resolve compiler command (macOS)
         if: runner.os == 'macOS'
