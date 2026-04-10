@@ -16,6 +16,30 @@ FIRESCRIPT_RELEASE_DATE = "February 2, 2026"
 FIRESCRIPT_RELEASE_NAME = "Phoenix"
 
 
+def _homebrew_prefix(formula_name):
+    """Return the Homebrew prefix for a formula, or None if unavailable."""
+    brew = shutil.which("brew")
+    if not brew:
+        return None
+
+    try:
+        process = subprocess.run(
+            [brew, "--prefix", formula_name],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+    except Exception:
+        return None
+
+    if process.returncode != 0:
+        return None
+
+    prefix = process.stdout.strip()
+    return prefix or None
+
+
 def _log_stage_duration(stage_name: str, start_time_ns: int) -> int:
     """Log a debug timing line for a compiler stage and return a new start time."""
     end_time_ns = time.perf_counter_ns()
@@ -218,9 +242,23 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
 
         logging.debug(f"Using C compiler: {compiler}")
 
-        compiler_name = os.path.basename(compiler).lower()
         is_macos = sys.platform == "darwin"
-        is_gcc = "gcc" in compiler_name and "clang" not in compiler_name
+
+        include_dirs = []
+        library_dirs = []
+        if is_macos:
+            for formula_name in ("gmp", "mpfr"):
+                prefix = _homebrew_prefix(formula_name)
+                if not prefix:
+                    continue
+
+                include_dir = os.path.join(prefix, "include")
+                library_dir = os.path.join(prefix, "lib")
+
+                if os.path.isdir(include_dir) and include_dir not in include_dirs:
+                    include_dirs.append(include_dir)
+                if os.path.isdir(library_dir) and library_dir not in library_dirs:
+                    library_dirs.append(library_dir)
 
         # Build the transpiled C with runtime
         # Note: -flto (Link Time Optimization) doesn't work with clang on Windows MinGW
@@ -229,13 +267,15 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
         
         compile_command = [compiler, "-O3"]
 
-        # GCC on macOS does not accept clang-style native march tuning. Keep the
-        # optimization baseline portable there and use the native tuning flags elsewhere.
-        if not (is_macos and is_gcc):
+        # macOS GCC/Clang both behave more reliably without native march/tune flags.
+        if not is_macos:
             compile_command.extend([
                 "-march=native",
                 "-mtune=native",
             ])
+
+        for include_dir in include_dirs:
+            compile_command.append(f"-I{include_dir}")
         
         if use_lto:
             compile_command.append("-flto")
@@ -259,6 +299,8 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
             compile_command.extend(["-c", "-o", out_obj])
         else:
             linker_flags = []
+            for library_dir in library_dirs:
+                linker_flags.append(f"-L{library_dir}")
             if not is_macos:
                 linker_flags.extend([
                     "-Wl,-O2",
