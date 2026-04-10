@@ -1,0 +1,170 @@
+// firescript std.fs library
+
+directive enable_syscalls;
+
+export class FileResult {
+    int32 status;
+    string data;
+
+    FileResult(int32 status, string data) {
+        this.status = status;
+        this.data = data;
+    }
+}
+
+export class File {
+    string path;
+
+    File(&this, string path) {
+        this.path = path;
+    }
+
+    FileResult read(&this) {
+        return _read_internal(this.path, -1);
+    }
+
+    FileResult readBytes(&this, int32 bytes) {
+        return _read_internal(this.path, bytes);
+    }
+
+    FileResult writeAll(&this, string data) {
+        return _write_mode(this.path, data, "w");
+    }
+
+    FileResult appendAll(&this, string data) {
+        return _write_mode(this.path, data, "a");
+    }
+
+    bool exists(&this) {
+        SyscallResult open_result = syscall_open(this.path, "r");
+        if (open_result.status < 0) {
+            return false;
+        }
+
+        SyscallResult close_result = syscall_close(open_result.status);
+        return close_result.status >= 0;
+    }
+
+    FileResult remove(&this) {
+        SyscallResult result = syscall_remove(this.path);
+        return FileResult(result.status, "");
+    }
+
+    FileResult renameTo(&this, string new_path) {
+        SyscallResult result = syscall_rename(this.path, new_path);
+        if (result.status >= 0) {
+            this.path = new_path;
+        }
+        return FileResult(result.status, "");
+    }
+
+    FileResult moveTo(&this, string dst_path) {
+        SyscallResult result = syscall_move(this.path, dst_path);
+        if (result.status >= 0) {
+            this.path = dst_path;
+        }
+        return FileResult(result.status, "");
+    }
+}
+
+FileResult _read_internal(&string path, int32 max_bytes) {
+    if (max_bytes < -1) {
+        return FileResult(-22, "");
+    }
+
+    if (max_bytes == 0) {
+        return FileResult(0, "");
+    }
+
+    SyscallResult open_result = syscall_open(path, "r");
+    if (open_result.status < 0) {
+        return FileResult(open_result.status, "");
+    }
+
+    int32 fd = open_result.status;
+    string content = "";
+    int32 total = 0;
+
+    if (max_bytes == -1) {
+        while (true) {
+            SyscallResult read_result = syscall_read(fd, 4096);
+            if (read_result.status < 0) {
+                syscall_close(fd);
+                return FileResult(read_result.status, "");
+            }
+            if (read_result.status == 0) {
+                break;
+            }
+            total = total + read_result.status;
+            content = content + read_result.data;
+        }
+    } else {
+        int32 remaining = max_bytes;
+        while (remaining > 0) {
+            int32 request = remaining;
+            if (request > 4096) {
+                request = 4096;
+            }
+
+            SyscallResult read_result = syscall_read(fd, request);
+            if (read_result.status < 0) {
+                syscall_close(fd);
+                return FileResult(read_result.status, "");
+            }
+            if (read_result.status == 0) {
+                break;
+            }
+
+            total = total + read_result.status;
+            remaining = remaining - read_result.status;
+            content = content + read_result.data;
+        }
+    }
+
+    SyscallResult close_result = syscall_close(fd);
+    if (close_result.status < 0) {
+        return FileResult(close_result.status, "");
+    }
+
+    return FileResult(total, content);
+}
+
+export bool ok(&FileResult result) {
+    return result.status >= 0;
+}
+
+export int32 err_code(&FileResult result) {
+    if (result.status < 0) {
+        return -result.status;
+    }
+    return 0;
+}
+
+export int32 result_status(&FileResult result) {
+    return result.status;
+}
+
+export string result_data(&FileResult result) {
+    return "" + result.data;
+}
+
+FileResult _write_mode(&string path, &string data, &string mode) {
+    SyscallResult open_result = syscall_open(path, mode);
+    if (open_result.status < 0) {
+        return FileResult(open_result.status, "");
+    }
+
+    int32 fd = open_result.status;
+    SyscallResult write_result = syscall_write(fd, data);
+    SyscallResult close_result = syscall_close(fd);
+
+    if (write_result.status < 0) {
+        return FileResult(write_result.status, "");
+    }
+    if (close_result.status < 0) {
+        return FileResult(close_result.status, "");
+    }
+
+    return FileResult(write_result.status, "");
+}
+

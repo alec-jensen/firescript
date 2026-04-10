@@ -77,6 +77,7 @@ class CCodeGeneratorBase:
         # Name mangling support: map original names to mangled names
         self.name_counter = 0
         self.mangled_names: dict[str, str] = {}
+        self.mangled_function_names: dict[str, str] = {}
         # Stack of name scopes for nested functions/blocks
         self.name_scope_stack: list[dict[str, str]] = [{}]
         # Built-in functions that shouldn't be mangled
@@ -93,6 +94,9 @@ class CCodeGeneratorBase:
             "syscall_read",
             "syscall_write",
             "syscall_close",
+            "syscall_remove",
+            "syscall_rename",
+            "syscall_move",
         }
         
         # Collect class names and metadata for constructors and methods
@@ -144,6 +148,10 @@ class CCodeGeneratorBase:
                     self.generic_templates[c.name] = c
                     logging.debug(f"Found generic template: {c.name} with type params {c.type_params}")
                 else:
+                    if c.name != "main" and c.name not in self.mangled_function_names:
+                        mangled_fn = f"{c.name}_{self.name_counter}"
+                        self.name_counter += 1
+                        self.mangled_function_names[c.name] = mangled_fn
                     # Non-generic: check for explicit [] array parameters
                     for ch in (c.children or []):
                         if ch.node_type == NodeTypes.PARAMETER and ch.is_array:
@@ -306,6 +314,12 @@ class CCodeGeneratorBase:
         self.name_counter += 1
         self.name_scope_stack[-1][name] = mangled
         return mangled
+
+    def _mangle_function_name(self, name: str) -> str:
+        """Return stable mangled name for top-level function symbols."""
+        if name in self.builtin_names:
+            return name
+        return self.mangled_function_names.get(name, self._mangle_name(name))
 
     def _get_c_class_name(self, fs_name: str) -> str:
         """Return the C-safe mangled struct name for a firescript class."""

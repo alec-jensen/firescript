@@ -17,7 +17,7 @@ copyable class SyscallResult {
 }
 ```
 
-- `status` — An integer status code. `0` or a positive value (e.g. bytes read/written) indicates success. A negative value indicates an error.
+- `status` — An integer status code. `0` or a positive value (e.g. bytes read/written) indicates success. A negative value indicates an error, represented as a negated `errno` value when available.
 - `data` — A string containing any output produced by the syscall (e.g. bytes read, environment variable value). **Not guaranteed to have a meaningful value** — for syscalls that do not produce output (e.g. `syscall_write`, `syscall_close`), `data` will be an empty string.
 
 ## Available Syscalls
@@ -26,12 +26,13 @@ Enabling syscalls gives you access to the following functions. Only the basic I/
 
 | Syscall                    | Description                                                                                                   | `status`                        | `data`                        |
 |----------------------------|---------------------------------------------------------------------------------------------------------------|---------------------------------|-------------------------------|
-| `syscall_open(path, mode)` | Opens the file at `path` with the given `mode` (`"r"`, `"w"`, `"a"`, etc.). Returns a file descriptor.       | fd (≥ 0) or negative error code | empty                         |
+| `syscall_open(path, mode)` | Opens the file at `path` with the given `mode` (`"r"`, `"w"`, `"a"`, etc.). Returns a file descriptor.        | fd (≥ 0) or negative error code | empty                         |
 | `syscall_read(fd, n)`      | Reads up to `n` bytes from file descriptor `fd`.                                                              | bytes read or negative error code | the bytes read as a string  |
 | `syscall_write(fd, buf)`   | Writes string `buf` to file descriptor `fd`.                                                                  | bytes written or negative error code | empty                    |
 | `syscall_close(fd)`        | Closes file descriptor `fd`.                                                                                  | 0 on success or negative error code | empty                    |
-| `syscall_remove(path)`     | *(planned)* Removes the file at `path`.                                                                       | 0 on success or negative error code | empty                    |
-| `syscall_rename(old, new)` | *(planned)* Renames file `old` to `new`.                                                                      | 0 on success or negative error code | empty                    |
+| `syscall_remove(path)`     | Removes the file at `path`.                                                                                    | 0 on success or negative error code | empty                    |
+| `syscall_rename(old, new)` | Renames file `old` to `new`.                                                                                   | 0 on success or negative error code | empty                    |
+| `syscall_move(src, dst)`   | Moves file from `src` to `dst` (rename first, then copy+remove fallback for cross-device moves).             | 0 on success or negative error code | empty                    |
 | `syscall_exec(cmd, args)`  | *(planned)* Executes command `cmd` with `string[]` arguments `args`.                                          | exit code or negative error code | empty                    |
 | `syscall_getenv(name)`     | *(planned)* Gets the value of environment variable `name`.                                                    | 0 on success or negative error code | the variable's value     |
 | `syscall_system(cmd)`      | *(planned)* Executes shell command `cmd` via the system shell.                                                | exit code or negative error code | empty                    |

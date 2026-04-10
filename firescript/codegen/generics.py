@@ -112,15 +112,20 @@ class GenericsMixin(CCodeGeneratorBase):
                     if field_type is None:
                         # return_type not set yet; resolve from class_fields
                         obj_node = arg.children[0] if arg.children else None
+                        obj_type = None
                         if obj_node and obj_node.node_type == NodeTypes.IDENTIFIER:
                             obj_sym = self.symbol_table.get(obj_node.name)
                             if obj_sym:
                                 obj_type = obj_sym[0]
-                                for fname, ftype in self.class_fields.get(obj_type, []):
-                                    if fname == arg.name:
-                                        field_type = ftype
-                                        arg.return_type = ftype  # cache for later
-                                        break
+                        elif obj_node is not None:
+                            obj_type = getattr(obj_node, 'return_type', None) or getattr(obj_node, 'var_type', None)
+
+                        if obj_type:
+                            for fname, ftype in self.class_fields.get(obj_type, []):
+                                if fname == arg.name:
+                                    field_type = ftype
+                                    arg.return_type = ftype  # cache for later
+                                    break
                     if field_type:
                         type_map_ctx = getattr(self, '_current_type_map', {})
                         if type_map_ctx and field_type in type_map_ctx:

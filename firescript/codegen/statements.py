@@ -588,7 +588,7 @@ class StatementsMixin(DeclarationsMixin):
             elif node.name == "drop":
                 # Fixed-size arrays are copyable; drop is a no-op
                 return "/* drop noop */"
-            elif node.name in ("syscall_open", "syscall_read", "syscall_write", "syscall_close"):
+            elif node.name in ("syscall_open", "syscall_read", "syscall_write", "syscall_close", "syscall_remove", "syscall_rename", "syscall_move"):
                 # Check if syscalls are enabled in the file where this call is made
                 node_file_directives = self._directives_for_node(node)
                 if "enable_syscalls" not in node_file_directives:
@@ -675,7 +675,7 @@ class StatementsMixin(DeclarationsMixin):
                 
                 # Regular function call - inject size args for functions with explicit array params
                 args = self._build_call_args(node.children, func_name=node.name)
-                return f"{self._mangle_name(node.name)}({args})"
+                return f"{self._mangle_function_name(node.name)}({args})"
         elif node.node_type == NodeTypes.TYPE_METHOD_CALL:
             # Dispatch to generated constructor/static function: Class_method(args)
             class_name = getattr(node, "class_name", "")

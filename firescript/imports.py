@@ -260,6 +260,20 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
         root.children.append(node)
         seen[name] = node
 
+    def collect_called_function_names(node: ASTNode) -> set[str]:
+        names: set[str] = set()
+
+        def walk(n: ASTNode):
+            if getattr(n, "node_type", None) == NodeTypes.FUNCTION_CALL:
+                fn = getattr(n, "name", None)
+                if isinstance(fn, str) and fn:
+                    names.add(fn)
+            for ch in getattr(n, "children", []) or []:
+                walk(ch)
+
+        walk(node)
+        return names
+
     # Add exports from all modules in topo order (dependencies first)
     for mod in ordered:
         if mod is entry:
@@ -274,10 +288,48 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
                 annotate_source_file(child, mod.path)
                 child.parent = root
                 root.children.append(child)
-        for name, node in mod.exports.items():
-            # Only include function, class, and top-level var declarations
+        top_level_by_name: Dict[str, ASTNode] = {}
+        for child in mod.ast.children:
+            if child.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION):
+                child_name = getattr(child, "name", None)
+                if child_name:
+                    top_level_by_name[child_name] = child
+
+        emitted_for_module: set[str] = set()
+        resolving_for_module: set[str] = set()
+
+        def append_symbol_with_deps(symbol_name: str) -> None:
+            if symbol_name in emitted_for_module:
+                return
+            if symbol_name in resolving_for_module:
+                return
+            node = top_level_by_name.get(symbol_name)
+            if node is None:
+                return
+
+            resolving_for_module.add(symbol_name)
+            if node.node_type == NodeTypes.FUNCTION_DEFINITION:
+                deps = collect_called_function_names(node)
+                for dep_name in deps:
+                    if dep_name in top_level_by_name:
+                        append_symbol_with_deps(dep_name)
+            elif node.node_type == NodeTypes.CLASS_DEFINITION:
+                # Exported classes may call private top-level helpers from methods.
+                for class_child in node.children or []:
+                    if class_child.node_type != NodeTypes.CLASS_METHOD_DEFINITION:
+                        continue
+                    deps = collect_called_function_names(class_child)
+                    for dep_name in deps:
+                        if dep_name in top_level_by_name:
+                            append_symbol_with_deps(dep_name)
+            resolving_for_module.remove(symbol_name)
+
+            append_export(node, mod.path)
+            emitted_for_module.add(symbol_name)
+
+        for export_name, node in mod.exports.items():
             if node.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION):
-                append_export(node, mod.path)
+                append_symbol_with_deps(export_name)
 
     # Read entry module source for error reporting
     cache_source_text(entry.path, entry.source_text)

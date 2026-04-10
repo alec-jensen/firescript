@@ -28,7 +28,7 @@ With these guardrails, fcl can evolve with new configuration features without be
 fcl is designed as a constrained subset of firescript concepts:
 
 - You can define structured data using explicit types.
-- You can define interface-compatible typed structures and typed variables in fcl files.
+- You can define class-based typed structures and typed variables in fcl files.
 - fcl data is accessible from firescript.
 - The language remains intentionally focused on configuration and predictable static structure.
 
@@ -41,7 +41,8 @@ fcl is planned to support two major modes:
 - Compile-time mode: fcl files are imported and consumed during compilation.
 - Runtime mode (future): fcl files are read through an fcl interpreter.
 
-For runtime usage, schema is defined as an interface in the firescript program. Runtime-loaded fcl data is validated against that interface so structure and types remain explicit.
+For runtime usage, schema is defined as a class in the firescript program. Runtime-loaded fcl data is validated against that class so structure and types remain explicit.
+Runtime file loading is expected to go through standard library file I/O APIs (for example `@firescript/std.fs`) instead of direct syscall use in application code.
 
 ## Data Model and Expression Layer
 
@@ -82,12 +83,12 @@ class RuntimeConfig {
 }
 ```
 
-### Interface-backed runtime loading (firescript)
+### Class-based runtime loading (firescript)
 
-When loading fcl at runtime, define the expected structure as an interface in firescript:
+When loading fcl at runtime, define the expected structure as a class in firescript:
 
 ```firescript
-interface RuntimeConfig {
+class RuntimeConfig {
 	string environment;
 	string logLevel;
 	int32 port;

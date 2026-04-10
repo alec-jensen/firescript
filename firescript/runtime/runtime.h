@@ -102,5 +102,8 @@ SyscallResult firescript_syscall_open(const char *path, const char *mode);
 SyscallResult firescript_syscall_read(int fd, int32_t n);
 SyscallResult firescript_syscall_write(int fd, const char *buf);
 SyscallResult firescript_syscall_close(int fd);
+SyscallResult firescript_syscall_remove(const char *path);
+SyscallResult firescript_syscall_rename(const char *old_path, const char *new_path);
+SyscallResult firescript_syscall_move(const char *src_path, const char *dst_path);
 
 #endif

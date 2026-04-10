@@ -97,6 +97,14 @@ class StatementsMixin(ExpressionsMixin):
 
         # Type
         next_tok = self.peek()
+        is_deferred_named_type = (
+            self.defer_undefined_identifiers
+            and self.current_token is not None
+            and self.current_token.type == "IDENTIFIER"
+            and bool(self.current_token.value.strip())
+            and next_tok is not None
+            and next_tok.type == "IDENTIFIER"
+        )
         is_deferred_generic = (
             self.defer_undefined_identifiers
             and self.current_token is not None
@@ -105,7 +113,7 @@ class StatementsMixin(ExpressionsMixin):
             and next_tok is not None
             and next_tok.type == "LESS_THAN"
         )
-        if not (self.current_token and (self._is_type_token(self.current_token) or is_deferred_generic)):
+        if not (self.current_token and (self._is_type_token(self.current_token) or is_deferred_generic or is_deferred_named_type)):
             self.expected_token_error("type in variable declaration", self.current_token)
             return None
         type_token = self.current_token
@@ -602,6 +610,16 @@ class StatementsMixin(ExpressionsMixin):
 
         # Variable Declaration: type tokens or nullable/const modifiers can start a declaration
         if self._is_type_token(self.current_token) or token_type in ("NULLABLE", "CONST"):
+            return self.parse_variable_declaration()
+
+        # Deferred-import mode: IDENT IDENT = ... is a named-type variable declaration
+        # for imported class/types that are not yet known during the initial parse.
+        elif (
+            self.defer_undefined_identifiers
+            and token_type == "IDENTIFIER"
+            and next_token
+            and next_token.type == "IDENTIFIER"
+        ):
             return self.parse_variable_declaration()
 
         # Deferred-import mode: IDENT<TYPE_ARGS> var_name = ...  is a generic class var declaration

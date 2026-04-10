@@ -14,6 +14,52 @@ from errors import UndefinedIdentifierError
 from imports import ModuleResolver, Module, build_merged_ast
 
 
+def _hydrate_parser_symbols_from_merged_ast(parser_instance: Parser, merged_ast: ASTNode) -> None:
+    """Populate parser symbol registries from merged AST after import resolution.
+
+    This ensures imported classes/methods/functions are visible to subsequent
+    type resolution and method-call validation.
+    """
+    for node in merged_ast.children or []:
+        if node.node_type == NodeTypes.FUNCTION_DEFINITION:
+            if getattr(node, "name", None):
+                parser_instance.user_functions[node.name] = node.return_type
+            continue
+
+        if node.node_type != NodeTypes.CLASS_DEFINITION:
+            continue
+
+        class_name = getattr(node, "name", None)
+        if not class_name:
+            continue
+
+        parser_instance.user_types.add(class_name)
+        parser_instance.user_class_bases[class_name] = getattr(node, "base_class", None)
+
+        fields: dict[str, str] = {}
+        methods_sig: dict[str, dict[str, object]] = parser_instance.user_methods.get(class_name, {})
+
+        for child in node.children or []:
+            if child.node_type == NodeTypes.CLASS_FIELD:
+                field_name = getattr(child, "name", None)
+                if field_name:
+                    fields[field_name] = getattr(child, "var_type", None)
+                continue
+
+            if child.node_type == NodeTypes.CLASS_METHOD_DEFINITION:
+                param_nodes = [p for p in (child.children[:-1] if child.children else []) if p.node_type == NodeTypes.PARAMETER]
+                effective_params = param_nodes[1:] if (param_nodes and getattr(param_nodes[0], "name", None) == "this") else param_nodes
+                params_types = [getattr(p, "var_type", None) for p in effective_params]
+                methods_sig[child.name] = {
+                    "return": getattr(child, "return_type", None),
+                    "params": params_types,
+                    "is_static": bool(getattr(child, "is_static", False)),
+                }
+
+        parser_instance.user_classes[class_name] = fields
+        parser_instance.user_methods[class_name] = methods_sig
+
+
 def tokenize_and_parse(source_text: str, file_path: str) -> Tuple[Parser, ASTNode, bool]:
     """Run lexer + parser and return (parser, ast, has_import_tokens)."""
     lexer = Lexer(source_text)
@@ -76,6 +122,7 @@ def resolve_imports_and_deferred_identifiers(
 
     merged_ast = build_merged_ast(entry_mod, topo)
     setattr(merged_ast, "_resolver", resolver)
+    _hydrate_parser_symbols_from_merged_ast(parser_instance, merged_ast)
 
     deferred = getattr(parser_instance, "deferred_undefined_identifiers", [])
     if deferred:

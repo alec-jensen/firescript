@@ -25,7 +25,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        compiler: [gcc, clang]
     
     steps:
       - uses: actions/checkout@v4
@@ -35,19 +36,25 @@ jobs:
         with:
           python-version: '3.x'
       
-      - name: Install GCC and dependencies (Linux)
+      - name: Install compilers and dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc build-essential libgmp-dev libmpfr-dev
+          sudo apt-get install -y gcc clang build-essential libgmp-dev libmpfr-dev
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install gcc gmp mpfr
       
-      - name: Set up MSYS2 with GCC and dependencies (Windows)
+      - name: Set up MSYS2 with GCC/Clang and dependencies (Windows)
         if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
           update: true
-          install: mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp mingw-w64-x86_64-mpfr
+          install: mingw-w64-x86_64-gcc mingw-w64-x86_64-clang mingw-w64-x86_64-gmp mingw-w64-x86_64-mpfr
           path-type: inherit
           release: false
 
@@ -55,8 +62,33 @@ jobs:
         if: runner.os == 'Windows'
         run: echo "C:\msys64\mingw64\bin" >> $env:GITHUB_PATH
 
-      - name: Verify GCC installation
-        run: gcc --version
+      - name: Resolve compiler command (Linux)
+        if: runner.os == 'Linux'
+        run: echo "FS_CC=${{ matrix.compiler }}" >> $GITHUB_ENV
+
+      - name: Resolve compiler command (Windows)
+        if: runner.os == 'Windows'
+        run: "FS_CC=${{ matrix.compiler }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Resolve compiler command (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            GCC_BIN=$(ls -1 "$(brew --prefix)"/bin/gcc-[0-9]* | sort -V | tail -n 1)
+            if [ -z "$GCC_BIN" ]; then
+              echo "Unable to find Homebrew GNU GCC binary" >&2
+              exit 1
+            fi
+            echo "FS_CC=$GCC_BIN" >> "$GITHUB_ENV"
+          else
+            echo "FS_CC=clang" >> "$GITHUB_ENV"
+          fi
+
+      - name: Verify selected compiler
+        run: ${{ env.FS_CC }} --version
       
-      - name: Run golden tests
-        run: python tests/golden_runner.py
+      - name: Run unified test suite
+        env:
+          CC: ${{ env.FS_CC }}
+        run: python tests/run_tests.py

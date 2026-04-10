@@ -28,8 +28,8 @@ class DeclarationsMixin(ClassesMixin):
         if node.name == "main":
             mangled_func_name = "main"
         else:
-            # Mangle the function name BEFORE pushing new scope so recursive calls can find it
-            mangled_func_name = self._mangle_name(node.name)
+            # Use pre-registered stable mangled name so call sites and definition match.
+            mangled_func_name = self._mangle_function_name(node.name)
 
         # Parameters are all children except the last one, which is the body scope
         params = []

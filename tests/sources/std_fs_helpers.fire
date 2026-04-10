@@ -1,0 +1,34 @@
+import @firescript/std.fs.File;
+import @firescript/std.fs.FileResult;
+import @firescript/std.fs.err_code;
+import @firescript/std.fs.result_status;
+import @firescript/std.fs.result_data;
+import @firescript/std.io.println;
+
+string path = "build/temp/std_fs_helpers.txt";
+string missing = "build/temp/does_not_exist_std_fs_helpers.txt";
+File file = File(path);
+File missingFile = File(missing);
+
+FileResult write_result = file.writeAll("one");
+println(result_status(write_result));
+FileResult append_result = file.appendAll(" two");
+println(result_status(append_result));
+
+if (file.exists()) {
+    println("exists");
+} else {
+    println("missing");
+}
+
+if (missingFile.exists()) {
+    println("exists");
+} else {
+    println("missing");
+}
+
+FileResult read_result = file.read();
+println(result_status(read_result));
+println(result_data(read_result));
+FileResult missing_result = missingFile.read();
+println(err_code(missing_result));

@@ -54,6 +54,13 @@ nav:
     - Error Handling: reference/error_handling.md
     - Modules: reference/modules.md
     - Imports: reference/imports.md
+    - Standard Library:
+      - Overview: reference/std/overview.md
+      - I/O: reference/std/io.md
+      - File System: reference/std/fs.md
+      - Math: reference/std/math.md
+      - Command-Line Arguments: reference/std/cli_args.md
+      - Types: reference/std/types.md
     - kiln:
       - Overview: reference/kiln/overview.md
       - Manifest: reference/kiln/manifest.md

@@ -66,6 +66,9 @@ class ParserBase:
         "syscall_read": "SyscallResult",   # requires directive enable_syscalls
         "syscall_write": "SyscallResult",  # requires directive enable_syscalls
         "syscall_close": "SyscallResult",  # requires directive enable_syscalls
+        "syscall_remove": "SyscallResult",  # requires directive enable_syscalls
+        "syscall_rename": "SyscallResult",  # requires directive enable_syscalls
+        "syscall_move": "SyscallResult",    # requires directive enable_syscalls
     }
 
     # Register for user-defined methods (className -> methodName -> signature)

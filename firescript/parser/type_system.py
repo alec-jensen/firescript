@@ -865,9 +865,17 @@ class TypeSystemMixin(StatementsMixin):
                                 )
                     node.return_type = sig.get("return")
                 else:
-                    # When imports are pending, defer method lookup for composite generic
-                    # types (e.g. Option<string>) that come from imported modules.
-                    if self.defer_undefined_identifiers and object_type and "<" in object_type:
+                    # When imports are pending, defer method lookup for unresolved
+                    # imported types (including composite generic types like
+                    # Option<string>) until after import resolution/merge.
+                    if (
+                        self.defer_undefined_identifiers
+                        and object_type
+                        and (
+                            "<" in object_type
+                            or object_type not in self.user_methods
+                        )
+                    ):
                         pass  # Will be resolved after import merge
                     else:
                         self.invalid_type_error(

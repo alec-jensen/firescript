@@ -90,14 +90,14 @@ class GeneratorMixin(StatementsMixin):
                     monomorphized_funcs_code.append(mono_code)
                 instantiated_keys.add(key)
         
-        # Generate forward declarations for all monomorphized functions
-        # This allows them to call each other regardless of definition order
+        # Generate forward declarations for generated functions so calls are
+        # order-independent (methods may call helpers emitted later).
         forward_decls: list[str] = []
-        for mono_code in monomorphized_funcs_code:
-            # Extract function signature (first line before the opening brace)
-            if ' {' in mono_code:
-                signature = mono_code.split(' {')[0]
-                forward_decls.append(f"{signature};")
+
+        def _extract_signature(code: str) -> str | None:
+            if ' {' in code:
+                return code.split(' {')[0]
+            return None
         
         # Add the main() function if it was defined
         if main_function_code:
@@ -106,11 +106,19 @@ class GeneratorMixin(StatementsMixin):
         typedefs_code = ("\n\n".join(typedefs) + "\n\n") if typedefs else ""
         constants_code = ("\n".join(constants) + "\n\n") if constants else ""
         
-        # Emit forward declarations for monomorphized functions
-        forward_decls_code = ("\n".join(forward_decls) + "\n\n") if forward_decls else ""
-        
-        # Emit monomorphized functions first, then regular functions
         all_functions = monomorphized_funcs_code + function_defs
+
+        seen_decl_sigs: set[str] = set()
+        for fn_code in all_functions:
+            sig = _extract_signature(fn_code)
+            if sig and sig not in seen_decl_sigs:
+                forward_decls.append(f"{sig};")
+                seen_decl_sigs.add(sig)
+
+        # Emit forward declarations for generated functions
+        forward_decls_code = ("\n".join(forward_decls) + "\n\n") if forward_decls else ""
+
+        # Emit monomorphized functions first, then regular functions
         functions_code = ("\n\n".join(all_functions) + "\n\n") if all_functions else ""
 
         # Only generate wrapper main() if user didn't define one

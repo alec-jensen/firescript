@@ -1,57 +1,32 @@
-# firescript v0.3.0 Documentation
+# firescript documentation
 
-> This documentation is being used for the most part as a reference for planning the direction of the firescript language and its features. The compiler is still in early development, so many features are not yet implemented, or are implemented differently than described here. Nothing here should be considered final until the language reaches a stable 1.0.0 release.
+This documentation covers firescript language concepts, compiler behavior, standard library APIs, and project updates.
 
-This documentation is organized to help both newcomers and experienced developers understand and use the firescript language effectively.
+firescript is still in active development. Some pages describe planned behavior in addition to currently implemented behavior. For user-visible changes, treat the [changelog](changelog.md) as the source of truth.
 
-## 1. Language Reference Manual
+## Start Here
 
-* [Type System](reference/type_system.md) - Formal definition of types, nullability, arrays
-* [Scoping Rules](reference/scoping.md) - Variable visibility, lifetime, and scope creation
-* [Control Flow](reference/control_flow.md) - Conditional statements and loops
+- [Getting Started](getting_started.md): installation and first compile/run workflow
+- [Reference Overview](reference/overview.md): language design goals and implementation notes
+- [Glossary](glossary.md): shared terminology used throughout the docs
 
-## 2. Getting Started & Tutorials
+## Language Reference
 
-* [Types & Variables](reference/variables.md) - Basic variable declarations and types
-* [Arrays](reference/arrays.md) - Working with array data structures
-* [Functions & Methods](reference/functions.md) - Built-in functions and user-defined functions
+- [Types and Variables](reference/variables.md)
+- [Arrays](reference/arrays.md)
+- [Control Flow](reference/control_flow.md)
+- [Functions and Methods](reference/functions.md)
+- [Classes and Inheritance](reference/classes.md)
+- [Scoping Rules](reference/scoping.md)
+- [Type System](reference/type_system.md)
+- [Memory Management](reference/memory_management.md)
+- [Error Handling](reference/error_handling.md)
+- [Modules](reference/modules.md)
+- [Imports](reference/imports.md)
 
-## 3. Language Features
+## Tooling and Project Docs
 
-* [Classes & Inheritance](reference/classes.md) - Object-oriented programming fundamentals
-
-## 4. Standard Library Reference
-
-Standard library does not yet exist.
-
-## 5. Examples
-
-Check the `/examples` directory for complete code samples:
-
-* Basic usage of built-in functions
-* Fibonacci sequence implementation
-* Array manipulation
-* Scope and variable visibility demonstrations
-
-
-## 6. Benchmarks
-
-See the [Benchmarks](benchmarks.md) page for performance comparisons with other languages.
-
-## 7. Changelog
-
-For the latest updates and changes to the firescript language, see the [changelog](changelog.md).
-
----
-
-### Implementation Status
-
-firescript is under active development. Key limitations in the current compiler version:
-
-* ❌ Some types are supported: Copyable types (`bool`, `char`), Owned types (`string`, arrays), and numeric types (`intN`, `floatN`) are planned.
-* ✅ Static type checking for expressions and assignments.
-* ✅ Built-in functions: `print`, `input`, and type conversions.
-* ❌ User-defined functions are not yet implemented.
-* ❌ Classes and inheritance are planned but not implemented.
-* ❌ Advanced array features like slicing and negative indices are not supported.
-* ❌ Control flow is limited to `if`/`else` and `while` loops; `for` loops and `switch` statements are not implemented.
+- [kiln Overview](reference/kiln/overview.md)
+- [kiln Manifest](reference/kiln/manifest.md)
+- [Benchmarks](benchmarks.md)
+- [Changelog](changelog.md)

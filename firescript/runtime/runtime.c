@@ -8,6 +8,7 @@
 #include <float.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 #include "runtime.h"
 
 // Internal registry to track heap pointers allocated via firescript_malloc/strdup
@@ -448,7 +449,7 @@ void firescript_cleanup(void)
 SyscallResult firescript_syscall_open(const char *path, const char *mode)
 {
     if (!path || !mode)
-        return (SyscallResult){ .status = -1, .data = firescript_strdup("") };
+        return (SyscallResult){ .status = -22, .data = firescript_strdup("") }; /* -EINVAL */
 
     int flags = 0;
     mode_t perm = 0644;
@@ -466,6 +467,8 @@ SyscallResult firescript_syscall_open(const char *path, const char *mode)
         return (SyscallResult){ .status = -22, .data = firescript_strdup("") }; /* -EINVAL */
 
     int fd = open(path, flags, perm);
+    if (fd < 0)
+        return (SyscallResult){ .status = -errno, .data = firescript_strdup("") };
     return (SyscallResult){ .status = (int32_t)fd, .data = firescript_strdup("") };
 }
 
@@ -480,8 +483,9 @@ SyscallResult firescript_syscall_read(int fd, int32_t n)
 
     ssize_t bytes = read(fd, buf, (size_t)n);
     if (bytes < 0) {
+        int err = errno;
         firescript_free(buf);
-        return (SyscallResult){ .status = (int32_t)bytes, .data = firescript_strdup("") };
+        return (SyscallResult){ .status = -err, .data = firescript_strdup("") };
     }
     buf[bytes] = '\0';
     return (SyscallResult){ .status = (int32_t)bytes, .data = buf };
@@ -493,11 +497,112 @@ SyscallResult firescript_syscall_write(int fd, const char *buf)
         return (SyscallResult){ .status = -22, .data = firescript_strdup("") };
 
     ssize_t written = write(fd, buf, strlen(buf));
+    if (written < 0)
+        return (SyscallResult){ .status = -errno, .data = firescript_strdup("") };
     return (SyscallResult){ .status = (int32_t)written, .data = firescript_strdup("") };
 }
 
 SyscallResult firescript_syscall_close(int fd)
 {
     int result = close(fd);
+    if (result < 0)
+        return (SyscallResult){ .status = -errno, .data = firescript_strdup("") };
     return (SyscallResult){ .status = result, .data = firescript_strdup("") };
+}
+
+SyscallResult firescript_syscall_remove(const char *path)
+{
+    if (!path)
+        return (SyscallResult){ .status = -22, .data = firescript_strdup("") }; /* -EINVAL */
+
+    int result = remove(path);
+    if (result < 0)
+        return (SyscallResult){ .status = -errno, .data = firescript_strdup("") };
+    return (SyscallResult){ .status = result, .data = firescript_strdup("") };
+}
+
+SyscallResult firescript_syscall_rename(const char *old_path, const char *new_path)
+{
+    if (!old_path || !new_path)
+        return (SyscallResult){ .status = -22, .data = firescript_strdup("") }; /* -EINVAL */
+
+    int result = rename(old_path, new_path);
+    if (result < 0)
+        return (SyscallResult){ .status = -errno, .data = firescript_strdup("") };
+    return (SyscallResult){ .status = result, .data = firescript_strdup("") };
+}
+
+SyscallResult firescript_syscall_move(const char *src_path, const char *dst_path)
+{
+    if (!src_path || !dst_path)
+        return (SyscallResult){ .status = -22, .data = firescript_strdup("") }; /* -EINVAL */
+
+    if (rename(src_path, dst_path) == 0)
+        return (SyscallResult){ .status = 0, .data = firescript_strdup("") };
+
+    int rename_err = errno;
+    /* For non-cross-device failures, preserve current syscall-style return contract. */
+    if (rename_err != EXDEV)
+        return (SyscallResult){ .status = -rename_err, .data = firescript_strdup("") };
+
+    /* Cross-device move fallback: copy destination contents, then remove source. */
+    int src_fd = open(src_path, O_RDONLY);
+    if (src_fd < 0)
+        return (SyscallResult){ .status = -errno, .data = firescript_strdup("") };
+
+    int dst_fd = open(dst_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (dst_fd < 0) {
+        int err = errno;
+        close(src_fd);
+        return (SyscallResult){ .status = -err, .data = firescript_strdup("") };
+    }
+
+    char buffer[8192];
+    bool copy_ok = true;
+    int copy_err = 0;
+    while (true) {
+        ssize_t r = read(src_fd, buffer, sizeof(buffer));
+        if (r == 0)
+            break;
+        if (r < 0) {
+            copy_ok = false;
+            copy_err = errno;
+            break;
+        }
+
+        ssize_t written_total = 0;
+        while (written_total < r) {
+            ssize_t w = write(dst_fd, buffer + written_total, (size_t)(r - written_total));
+            if (w <= 0) {
+                copy_ok = false;
+                copy_err = errno;
+                break;
+            }
+            written_total += w;
+        }
+        if (!copy_ok)
+            break;
+    }
+
+    int src_close = close(src_fd);
+    int dst_close = close(dst_fd);
+    if (!copy_ok || src_close != 0 || dst_close != 0) {
+        int err = copy_err;
+        if (err == 0 && src_close != 0)
+            err = errno;
+        if (err == 0 && dst_close != 0)
+            err = errno;
+        if (err == 0)
+            err = EIO;
+        remove(dst_path);
+        return (SyscallResult){ .status = -err, .data = firescript_strdup("") };
+    }
+
+    if (remove(src_path) != 0) {
+        int err = errno;
+        remove(dst_path);
+        return (SyscallResult){ .status = -err, .data = firescript_strdup("") };
+    }
+
+    return (SyscallResult){ .status = 0, .data = firescript_strdup("") };
 }

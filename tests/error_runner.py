@@ -79,6 +79,10 @@ def discover_error_tests() -> List[ErrorTestCase]:
     cases = []
     for src in sorted(sources):
         base = os.path.splitext(os.path.basename(src))[0]
+        # Helper provider modules are imported by other invalid tests and are not
+        # intended to be compiled as standalone failing cases.
+        if base.endswith("_provider"):
+            continue
         expected = os.path.join(EXPECTED_ERRORS_DIR, f"{base}.err")
         cases.append(ErrorTestCase(source=src, expected_errors=expected))
     

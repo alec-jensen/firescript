@@ -36,6 +36,21 @@ for (int8 i : range(9)) {
 }
 ```
 
+## Platforms
+
+firescript is cross-platform. Native compilation currently targets Windows, Linux, and macOS. A future JavaScript + Wasm target is planned for browser and Node.js environments.
+
+Development happens primarily on Windows and Linux, and CI test coverage runs on Windows, Linux, and macOS.
+
+## Build and Test Requirements
+
+firescript compiles source code to C and then builds native binaries. Because of this, a C compiler is required for local builds and test runs:
+
+- **Required:** GCC or Clang available on your `PATH`
+- **Used by:** compiler output builds and `tests/run_tests.py`
+
+On Linux/macOS, install GCC or Clang with your system package manager. On Windows, use MSYS2 (or another environment that provides GCC/Clang and related toolchain binaries on `PATH`).
+
 ## Getting Started
 
 See the [Getting Started Guide](https://firescript.alecj.com/getting_started/) for installation and usage instructions.
