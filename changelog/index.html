@@ -801,7 +801,7 @@
   <span class="md-ellipsis">
     
   
-    kiln
+    Standard Library
   
 
     
@@ -814,6 +814,232 @@
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Standard Library
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/std/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/std/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/std/fs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/std/math/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Math
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/std/cli_args/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-Line Arguments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/std/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    kiln
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1623,7 +1849,8 @@
 <li>Added explicit module exports with top-level <code>export</code> declarations. Module symbols are private by default and imports can only access exported symbols.</li>
 <li>Added generic classes with multiple type parameters (e.g., <code>class Pair&lt;T, U&gt; { ... }</code>). Monomorphization is performed automatically at each use site.</li>
 <li><code>Tuple&lt;T, U&gt;</code>, <code>CopyableTuple&lt;T, U&gt;</code>, <code>Option&lt;T&gt;</code>, and <code>CopyableOption&lt;T&gt;</code> are now provided by the standard library (<code>@firescript/std.types</code>).</li>
-<li>Added <code>syscall_*</code> intrinsics (<code>syscall_open</code>, <code>syscall_read</code>, <code>syscall_write</code>, <code>syscall_close</code>) behind <code>directive enable_syscalls</code>. For standard library use only.</li>
+<li>Added <code>@firescript/std.fs</code> with class-based file I/O centered on <code>File</code> objects and <code>FileResult</code> values, including <code>File</code> methods (<code>read</code>, <code>readBytes</code>, <code>writeAll</code>, <code>appendAll</code>, <code>exists</code>, <code>remove</code>, <code>renameTo</code>, <code>moveTo</code>) and result helpers (<code>ok</code>, <code>err_code</code>, <code>result_status</code>, <code>result_data</code>).</li>
+<li>Added <code>syscall_*</code> intrinsics (<code>syscall_open</code>, <code>syscall_read</code>, <code>syscall_write</code>, <code>syscall_close</code>, <code>syscall_remove</code>, <code>syscall_rename</code>, <code>syscall_move</code>) behind <code>directive enable_syscalls</code>. For standard library use only.</li>
 <li>Expanded <code>@firescript/std.cli.args</code> parsing helpers to support grouped short flags (for example <code>-abc</code>), <code>--name=value</code> / <code>-n=value</code> option forms, <code>--</code> terminator handling, and parsed positional value lookup.</li>
 <li>Added support for logical operators <code>&amp;&amp;</code>, <code>||</code>, and unary <code>!</code> in expressions and conditions.</li>
 <li>Added support for exponentiation operator <code>**</code>.</li>
@@ -1631,6 +1858,7 @@
 <h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Removed built-in <code>input()</code> function.</li>
+<li>Modules now need to explicitly export symbols to be imported by other modules. Top-level declarations are private by default.</li>
 </ul>
 <h3 id="compiler-improvements">Compiler improvements<a class="headerlink" href="#compiler-improvements" title="Permanent link">&para;</a></h3>
 <ul>

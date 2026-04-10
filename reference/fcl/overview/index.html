@@ -795,7 +795,7 @@
   <span class="md-ellipsis">
     
   
-    kiln
+    Standard Library
   
 
     
@@ -808,6 +808,232 @@
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Standard Library
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../std/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../std/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../std/fs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../std/math/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Math
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../std/cli_args/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-Line Arguments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../std/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    kiln
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1096,10 +1322,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#interface-backed-runtime-loading-firescript" class="md-nav__link">
+  <a href="#class-based-runtime-loading-firescript" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Interface-backed runtime loading (firescript)
+        Class-based runtime loading (firescript)
       
     </span>
   </a>
@@ -1208,7 +1434,7 @@ With these guardrails, fcl can evolve with new configuration features without be
 <p>fcl is designed as a constrained subset of firescript concepts:</p>
 <ul>
 <li>You can define structured data using explicit types.</li>
-<li>You can define interface-compatible typed structures and typed variables in fcl files.</li>
+<li>You can define class-based typed structures and typed variables in fcl files.</li>
 <li>fcl data is accessible from firescript.</li>
 <li>The language remains intentionally focused on configuration and predictable static structure.</li>
 </ul>
@@ -1219,7 +1445,8 @@ With these guardrails, fcl can evolve with new configuration features without be
 <li>Compile-time mode: fcl files are imported and consumed during compilation.</li>
 <li>Runtime mode (future): fcl files are read through an fcl interpreter.</li>
 </ul>
-<p>For runtime usage, schema is defined as an interface in the firescript program. Runtime-loaded fcl data is validated against that interface so structure and types remain explicit.</p>
+<p>For runtime usage, schema is defined as a class in the firescript program. Runtime-loaded fcl data is validated against that class so structure and types remain explicit.
+Runtime file loading is expected to go through standard library file I/O APIs (for example <code>@firescript/std.fs</code>) instead of direct syscall use in application code.</p>
 <h2 id="data-model-and-expression-layer">Data Model and Expression Layer<a class="headerlink" href="#data-model-and-expression-layer" title="Permanent link">&para;</a></h2>
 <p>fcl follows a typed object graph model with a small expression layer.
 Files are primarily declarative, while still allowing constrained expressions inside values.</p>
@@ -1246,9 +1473,9 @@ Files are primarily declarative, while still allowing constrained expressions in
     string logLevel = if (environment == &quot;prod&quot;) { &quot;warn&quot; } else { &quot;debug&quot; } // Note: expression form of if/else is not currently implemented and may be different syntax when added.
 }
 </code></pre>
-<h3 id="interface-backed-runtime-loading-firescript">Interface-backed runtime loading (firescript)<a class="headerlink" href="#interface-backed-runtime-loading-firescript" title="Permanent link">&para;</a></h3>
-<p>When loading fcl at runtime, define the expected structure as an interface in firescript:</p>
-<pre><code class="language-firescript">interface RuntimeConfig {
+<h3 id="class-based-runtime-loading-firescript">Class-based runtime loading (firescript)<a class="headerlink" href="#class-based-runtime-loading-firescript" title="Permanent link">&para;</a></h3>
+<p>When loading fcl at runtime, define the expected structure as a class in firescript:</p>
+<pre><code class="language-firescript">class RuntimeConfig {
     string environment;
     string logLevel;
     int32 port;
