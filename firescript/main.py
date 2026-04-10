@@ -218,17 +218,24 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
 
         logging.debug(f"Using C compiler: {compiler}")
 
+        compiler_name = os.path.basename(compiler).lower()
+        is_macos = sys.platform == "darwin"
+        is_gcc = "gcc" in compiler_name and "clang" not in compiler_name
+
         # Build the transpiled C with runtime
         # Note: -flto (Link Time Optimization) doesn't work with clang on Windows MinGW
         # because clang produces LLVM bitcode files that the MinGW linker can't handle
         use_lto = not (os.name == "nt" and "clang" in compiler)
         
-        compile_command = [
-            compiler,
-            "-O3",
-            "-march=native",
-            "-mtune=native",
-        ]
+        compile_command = [compiler, "-O3"]
+
+        # GCC on macOS does not accept clang-style native march tuning. Keep the
+        # optimization baseline portable there and use the native tuning flags elsewhere.
+        if not (is_macos and is_gcc):
+            compile_command.extend([
+                "-march=native",
+                "-mtune=native",
+            ])
         
         if use_lto:
             compile_command.append("-flto")
@@ -251,14 +258,19 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
             out_obj = out_path if out_path else temp_c_file[:-2] + ".o"
             compile_command.extend(["-c", "-o", out_obj])
         else:
+            linker_flags = []
+            if not is_macos:
+                linker_flags.extend([
+                    "-Wl,-O2",
+                    "-Wl,--as-needed",
+                    "-Wl,--gc-sections",
+                ])
             compile_command.extend([
                 "firescript/runtime/runtime.c",
-                "-Wl,-O2",
-                "-Wl,--as-needed",
-                "-Wl,--gc-sections",
                 "-lgmp",
                 "-lmpfr",
             ])
+            compile_command.extend(linker_flags)
             for la in link_args:
                 compile_command.append(la)
             
