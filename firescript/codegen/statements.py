@@ -473,16 +473,18 @@ class StatementsMixin(DeclarationsMixin):
                     else ""
                 )
                 # For owned values being returned, ownership transfers to caller - don't free them
-                # Check if we're returning a simple variable (identifier) - if so, exclude it from cleanup
-                exclude_var = None
-                if expr_node and expr_node.node_type == NodeTypes.IDENTIFIER:
-                    # Returning a variable - exclude it from cleanup (ownership transfers)
-                    exclude_var = self._mangle_name(expr_node.name)
+                # Collect all identifiers used in the return expression and exclude them from cleanup
+                exclude_vars: set[str] = set()
+                if expr_node:
+                    used_identifiers = self._collect_identifiers_in_expression(expr_node)
+                    # Convert to mangled names for exclusion
+                    for ident in used_identifiers:
+                        exclude_vars.add(self._mangle_name(ident))
                 
                 # Cleanup other owned values in scope
                 cleanup_lines = []
                 if self._in_function:
-                    cleanup_lines = self._free_arrays_in_all_active_scopes(exclude_var)
+                    cleanup_lines = self._free_arrays_in_all_active_scopes_excluding(exclude_vars)
                 
                 if cleanup_lines:
                     cleanup = "\n".join(cleanup_lines)

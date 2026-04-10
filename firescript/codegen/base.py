@@ -248,16 +248,43 @@ class CCodeGeneratorBase:
         if not self.scope_stack:
             return []
         
+        exclude_vars = {exclude_var} if exclude_var else set()
+        return self._free_arrays_in_all_active_scopes_excluding(exclude_vars)
+
+    def _free_arrays_in_all_active_scopes_excluding(self, exclude_vars: set[str]) -> list[str]:
+        """Return lines to free owned values in all active scopes, excluding specified variables.
+        
+        Args:
+            exclude_vars: Set of mangled variable names to exclude from cleanup
+        """
+        if not self.scope_stack:
+            return []
+        
         cleanup_lines = []
         # Free from innermost to outermost scope (reverse order of allocation)
         for scope in reversed(self.scope_stack):
             for var_name, var_type in reversed(scope):
-                # Skip the variable being returned (ownership transfers to caller)
-                if exclude_var and var_name == exclude_var:
+                # Skip variables in the exclusion set
+                if var_name in exclude_vars:
                     continue
                 cleanup_lines.append(f"firescript_free({var_name});")
         
         return cleanup_lines
+
+    def _collect_identifiers_in_expression(self, node: Optional[ASTNode]) -> set[str]:
+        """Collect all identifier names referenced by an expression subtree."""
+        if node is None:
+            return set()
+
+        names: set[str] = set()
+        if node.node_type == NodeTypes.IDENTIFIER and node.name:
+            names.add(node.name)
+
+        for child in node.children:
+            if child is not None:
+                names.update(self._collect_identifiers_in_expression(child))
+
+        return names
 
     def _handle_array_index(self, index_expr):
         """Helper function to properly handle array indices in C"""

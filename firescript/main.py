@@ -219,12 +219,21 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
         logging.debug(f"Using C compiler: {compiler}")
 
         # Build the transpiled C with runtime
+        # Note: -flto (Link Time Optimization) doesn't work with clang on Windows MinGW
+        # because clang produces LLVM bitcode files that the MinGW linker can't handle
+        use_lto = not (os.name == "nt" and "clang" in compiler)
+        
         compile_command = [
             compiler,
             "-O3",
             "-march=native",
             "-mtune=native",
-            "-flto",
+        ]
+        
+        if use_lto:
+            compile_command.append("-flto")
+        
+        compile_command.extend([
             "-fomit-frame-pointer",
             "-fno-plt",
             "-fstrict-aliasing",
@@ -236,7 +245,7 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
             "-I",
             ".",
             temp_c_file,
-        ]
+        ])
         
         if emit == "obj" or no_link:
             out_obj = out_path if out_path else temp_c_file[:-2] + ".o"
