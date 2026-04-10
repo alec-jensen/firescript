@@ -39,7 +39,6 @@ DEFAULT_SEARCH = [
     os.path.join(REPO_ROOT, "tests", "sources", "*.fire"),
 ]
 EXPECTED_DIR = os.path.join(REPO_ROOT, "tests", "expected")
-INPUTS_DIR = os.path.join(REPO_ROOT, "tests", "inputs")
 DIFFS_DIR = os.path.join(REPO_ROOT, "tests", "diffs")
 
 
@@ -74,7 +73,6 @@ class TestCase:
     source: str
     binary: str
     expected_path: str
-    input_path: Optional[str]
     args_path: Optional[str]
 
 
@@ -99,16 +97,12 @@ def discover_cases(patterns: List[str]) -> List[TestCase]:
         base = os.path.splitext(os.path.basename(src))[0]
         binary = os.path.join(REPO_ROOT, "build", base)
         expected = os.path.join(EXPECTED_DIR, f"{base}.out")
-        input_path = os.path.join(INPUTS_DIR, f"{base}.in")
-        if not os.path.exists(input_path):
-            input_path = None
         args_path = resolve_args_path(src)
         cases.append(
             TestCase(
                 source=src,
                 binary=binary,
                 expected_path=expected,
-                input_path=input_path,
                 args_path=args_path,
             )
         )
@@ -136,17 +130,10 @@ def resolve_args_path(source_path: str) -> Optional[str]:
 
     Preferred layout: same directory and same basename as source, with `.args` extension.
     Example: tests/sources/foo.fire -> tests/sources/foo.args
-
-    Backward compatibility: fall back to tests/inputs/<basename>.args if present.
     """
     sidecar = os.path.splitext(source_path)[0] + ".args"
     if os.path.exists(sidecar):
         return sidecar
-
-    base = os.path.splitext(os.path.basename(source_path))[0]
-    legacy = os.path.join(INPUTS_DIR, f"{base}.args")
-    if os.path.exists(legacy):
-        return legacy
     return None
 
 
@@ -260,9 +247,8 @@ def run_golden(
             compile_fire(tc.source, timeout=compile_timeout)
             if verbose:
                 _log("RUN", tc.binary, color_code="90")  # dim
-            input_text = read_file(tc.input_path) if tc.input_path else None
             args = read_args_file(tc.args_path) if tc.args_path else None
-            actual = run_binary(tc.binary, input_text=input_text, args=args, timeout=timeout)
+            actual = run_binary(tc.binary, input_text=None, args=args, timeout=timeout)
             actual_norm = normalize(actual)
 
             if os.path.exists(tc.expected_path):
@@ -360,11 +346,8 @@ def main():
             base = os.path.splitext(os.path.basename(src))[0]
             binary = os.path.join(REPO_ROOT, "build", base)
             expected = os.path.join(EXPECTED_DIR, f"{base}.out")
-            input_path = os.path.join(INPUTS_DIR, f"{base}.in")
-            if not os.path.exists(input_path):
-                input_path = None
             args_path = resolve_args_path(src)
-            cases.append(TestCase(src, binary, expected, input_path, args_path))
+            cases.append(TestCase(src, binary, expected, args_path))
     else:
         cases = discover_cases(patterns)
 
