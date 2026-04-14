@@ -71,6 +71,15 @@ def _log(label: str, message: str, color_code: str | None = None) -> None:
     print(f"{_tag(label, color_code)} {message}")
 
 
+def _normalize_user_path(path_value: str) -> str:
+    """Normalize a user-provided path used by local test harness operations."""
+    if not isinstance(path_value, str) or not path_value:
+        raise ValueError("Path must be a non-empty string")
+    if "\x00" in path_value:
+        raise ValueError("Path contains invalid NUL byte")
+    return os.path.abspath(os.path.expanduser(path_value))
+
+
 def discover_error_tests() -> List[ErrorTestCase]:
     """Find all .fire files in tests/sources/invalid/"""
     pattern = os.path.join(INVALID_DIR, "*.fire")
@@ -91,10 +100,11 @@ def discover_error_tests() -> List[ErrorTestCase]:
 
 def collect_errors(source: str) -> List[CompileTimeError]:
     """Run front-end linting and return structured compile-time diagnostics."""
-    with open(source, "r", encoding="utf-8") as f:
+    source_path = _normalize_user_path(source)
+    with open(source_path, "r", encoding="utf-8") as f:
         source_text = f.read()
 
-    display_path = os.path.relpath(source, REPO_ROOT)
+    display_path = os.path.relpath(source_path, REPO_ROOT)
     # lint_text temporarily mutates global logging level; serialize calls so
     # parallel test execution does not leak diagnostics to stderr.
     with _LINT_LOCK:
@@ -137,16 +147,18 @@ def _extract_signatures(errors: List[CompileTimeError]) -> List[ErrorSignature]:
 
 def read_file(path: str) -> str:
     """Read file contents."""
-    if not os.path.exists(path):
+    file_path = _normalize_user_path(path)
+    if not os.path.exists(file_path):
         return ""
-    with open(path, "r", encoding="utf-8") as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
 
 
 def write_file(path: str, content: str) -> None:
     """Write file contents."""
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w", encoding="utf-8", newline="\n") as f:
+    file_path = _normalize_user_path(path)
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    with open(file_path, "w", encoding="utf-8", newline="\n") as f:
         f.write(content)
 
 
@@ -276,6 +288,7 @@ def main():
         # Test specific files
         cases = []
         for src in args.cases:
+            src = _normalize_user_path(src)
             base = os.path.splitext(os.path.basename(src))[0]
             expected = os.path.join(EXPECTED_ERRORS_DIR, f"{base}.err")
             cases.append(ErrorTestCase(source=src, expected_errors=expected))

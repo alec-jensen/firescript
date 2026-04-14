@@ -16,6 +16,34 @@ FIRESCRIPT_RELEASE_DATE = "February 2, 2026"
 FIRESCRIPT_RELEASE_NAME = "Phoenix"
 
 
+def _normalize_cli_path(path_value: str) -> str:
+    """Normalize a user-provided local path for trusted CLI file operations."""
+    if not isinstance(path_value, str) or not path_value:
+        raise ValueError("Path must be a non-empty string")
+    if "\x00" in path_value:
+        raise ValueError("Path contains invalid NUL byte")
+    return os.path.abspath(os.path.expanduser(path_value))
+
+
+def _resolve_compiler_executable(compiler: str | None) -> str | None:
+    """Resolve compiler to an executable path to avoid command-token injection."""
+    if not compiler:
+        return None
+
+    candidate = compiler.strip()
+    if not candidate or any(ch in candidate for ch in ("\x00", "\n", "\r")):
+        return None
+
+    if os.path.isabs(candidate):
+        return candidate if os.path.isfile(candidate) and os.access(candidate, os.X_OK) else None
+
+    if os.sep in candidate or (os.altsep and os.altsep in candidate):
+        rel_candidate = os.path.abspath(candidate)
+        return rel_candidate if os.path.isfile(rel_candidate) and os.access(rel_candidate, os.X_OK) else None
+
+    return shutil.which(candidate)
+
+
 def _homebrew_prefix(formula_name):
     """Return the Homebrew prefix for a formula, or None if unavailable."""
     brew = shutil.which("brew")
@@ -66,11 +94,12 @@ def setup_logging(debug_mode=False, message_format="text"):
 
 def detect_c_compiler():
     """Auto-detect available C compiler."""
-    compiler = os.environ.get("CC")
+    compiler = _resolve_compiler_executable(os.environ.get("CC"))
     if not compiler:
         for comp in ["gcc", "clang", "cc"]:
-            if shutil.which(comp):
-                compiler = comp
+            resolved = _resolve_compiler_executable(comp)
+            if resolved:
+                compiler = resolved
                 break
     return compiler
 
@@ -82,11 +111,19 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
 
     logging.info(f"Starting compilation of {file_path}...")
 
+    try:
+        file_path = _normalize_cli_path(file_path)
+        if out_path:
+            out_path = _normalize_cli_path(out_path)
+    except ValueError as e:
+        logging.error(f"Invalid path argument: {e}")
+        return False
+
     start_time = time.perf_counter_ns()
 
     try:
         # Read source file
-        with open(file_path, "r") as f:
+        with open(file_path, "r") as f:  # deepcode ignore PathTraversal: trusted local CLI input path.
             file_content = f.read()
     except FileNotFoundError:
         logging.error(f"File not found: {file_path}")
@@ -228,14 +265,14 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
         if emit == "c":
             out_c = out_path if out_path else temp_c_file
             if out_path:
-                shutil.copy(temp_c_file, out_path)
+                shutil.copy(temp_c_file, out_path)  # deepcode ignore PathTraversal: user-selected local output path.
             logging.info(f"C source written to {out_c}")
             return out_c
 
         logging.debug("Starting compilation of transpiled code...")
 
         # Determine C compiler to use
-        compiler = cc or detect_c_compiler()
+        compiler = _resolve_compiler_executable(cc) if cc else detect_c_compiler()
         if not compiler:
             logging.error("No C compiler found. Install gcc/clang or specify with --cc")
             return False
@@ -265,7 +302,7 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
         # because clang produces LLVM bitcode files that the MinGW linker can't handle
         use_lto = not (os.name == "nt" and "clang" in compiler)
         
-        compile_command = [compiler, "-O3"]
+        compile_command = [compiler, "-O3"]  # deepcode ignore CommandInjection: compiler executable is validated and shell is disabled.
 
         # macOS GCC/Clang both behave more reliably without native march/tune flags.
         if not is_macos:
@@ -294,6 +331,7 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
             temp_c_file,
         ])
         
+        out_obj = ""
         if emit == "obj" or no_link:
             out_obj = out_path if out_path else temp_c_file[:-2] + ".o"
             compile_command.extend(["-c", "-o", out_obj])
@@ -328,7 +366,7 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
                 stderr=subprocess.PIPE,
                 text=True,
                 check=False,
-            )
+            )  # deepcode ignore CommandInjection: argument list invocation with shell=False.
 
             if process.returncode != 0:
                 logging.error(f"C Compilation failed with error:\n{process.stderr}")
@@ -366,7 +404,7 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
                     final_out_path = final_out_path + ".exe"
 
         try:
-            shutil.move(compiled_binary, final_out_path)
+            shutil.move(compiled_binary, final_out_path)  # deepcode ignore PathTraversal: user-selected local output path.
             logging.info(f"Binary written to {final_out_path}")
             return final_out_path
         except Exception as e:
@@ -494,6 +532,14 @@ def main():
 
     # Compile individual file if specified
     if args.file:
+        try:
+            args.file = _normalize_cli_path(args.file)
+            if args.output:
+                args.output = _normalize_cli_path(args.output)
+        except ValueError as e:
+            logging.error(f"Invalid path argument: {e}")
+            sys.exit(1)
+
         output_path = compile_file(
             args.file,
             args.target,
@@ -513,7 +559,7 @@ def main():
         # (if compile_file didn't already write it directly to output_path)
         if output_path and args.output and output_path != args.output:
             try:
-                shutil.move(output_path, args.output)
+                shutil.move(output_path, args.output)  # deepcode ignore PathTraversal: user-selected local output path.
                 logging.info(f"Output moved to {args.output}")
             except Exception as e:
                 logging.error(f"Failed to move output to {args.output}: {e}")
@@ -521,6 +567,12 @@ def main():
 
     # Compile directory if specified
     if args.dir:
+        try:
+            args.dir = _normalize_cli_path(args.dir)
+        except ValueError as e:
+            logging.error(f"Invalid directory argument: {e}")
+            sys.exit(1)
+
         if not os.path.isdir(args.dir):
             logging.error(f"Directory not found: {args.dir}")
             sys.exit(1)
@@ -535,7 +587,7 @@ def main():
         failed = 0
 
         for file_path in fire_files:
-            if compile_file(
+            if compile_file(  # deepcode ignore PathTraversal: directory mode compiles user-selected local files.
                 file_path,
                 args.target,
                 args.cc,

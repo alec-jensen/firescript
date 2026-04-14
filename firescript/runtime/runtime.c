@@ -58,7 +58,7 @@ void *firescript_malloc(size_t size) {
 }
 
 char *firescript_strdup(const char *s) {
-    char *p = strdup(s ? s : "");
+    char *p = safe_strdup(s ? s : ""); 
     registry_add(p);
     return p;
 }
@@ -570,15 +570,43 @@ SyscallResult firescript_syscall_move(const char *src_path, const char *dst_path
             break;
         }
 
-        ssize_t written_total = 0;
-        while (written_total < r) {
-            ssize_t w = write(dst_fd, buffer + written_total, (size_t)(r - written_total));
+        size_t bytes_read = (size_t)r;
+        if (bytes_read > sizeof(buffer)) {
+            copy_ok = false;
+            copy_err = EIO;
+            break;
+        }
+
+        size_t written_total = 0;
+        while (written_total < bytes_read) {
+            size_t remaining = bytes_read - written_total;
+            if (written_total > sizeof(buffer)) {
+                copy_ok = false;
+                copy_err = EIO;
+                break;
+            }
+            if (remaining > (sizeof(buffer) - written_total)) {
+                copy_ok = false;
+                copy_err = EIO;
+                break;
+            }
+            ssize_t w = write(dst_fd, buffer + written_total, remaining);
             if (w <= 0) {
                 copy_ok = false;
                 copy_err = errno;
                 break;
             }
-            written_total += w;
+            if ((size_t)w > remaining) {
+                copy_ok = false;
+                copy_err = EIO;
+                break;
+            }
+            if ((size_t)w > bytes_read || written_total > (bytes_read - (size_t)w)) {
+                copy_ok = false;
+                copy_err = EIO;
+                break;
+            }
+            written_total += (size_t)w;
         }
         if (!copy_ok)
             break;
