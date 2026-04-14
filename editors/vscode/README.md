@@ -12,9 +12,3 @@
    - Or via npx: `npx vsce package`
 4. Install the produced VSIX file (example filename):
    `code --install-extension firescript-0.1.0.vsix`
-
-## Quick verification
-- Open a `.fire` file (for example `tests/sources/invalid/array_errors.fire`).
-- Reload the window and the file icon should show the Firescript logo and diagnostics / token colouring should reflect the updated grammar.
-
-If you want, I can create the VSIX for you now and show the exact install command output.

@@ -113,7 +113,7 @@
         },
         {
           "name": "storage.modifier.fire",
-          "match": "\\b(static|const|nullable|copyable)\\b"
+          "match": "\\b(static|const|nullable|copyable|export)\\b"
         },
         {
           "name": "keyword.control.import.fire",
