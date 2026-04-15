@@ -47,6 +47,13 @@ class ErrorSignature:
     column: int
 
 
+@dataclass
+class SuiteStats:
+    total: int
+    passed: int
+    failed: int
+
+
 def _supports_color() -> bool:
     if os.environ.get("NO_COLOR") is not None:
         return False
@@ -208,7 +215,13 @@ def run_one_error_test(tc: ErrorTestCase, update: bool, verbose: bool) -> Tuple[
             return (False, tc.source, "<missing golden>", actual_errors)
 
 
-def run_error_tests(cases: List[ErrorTestCase], update: bool, verbose: bool, fail_fast: bool) -> int:
+def run_error_tests(
+    cases: List[ErrorTestCase],
+    update: bool,
+    verbose: bool,
+    fail_fast: bool,
+    return_stats: bool = False,
+) -> int | Tuple[int, SuiteStats]:
     """
     Run error tests in parallel and return exit code.
     """
@@ -272,8 +285,12 @@ def run_error_tests(cases: List[ErrorTestCase], update: bool, verbose: bool, fai
                     print(f"\nActual errors:\n{actual}")
     else:
         print(_colorize(f"\n{summary}", "32"))
-    
-    return 0 if not failed else 1
+
+    rc = 0 if not failed else 1
+    stats = SuiteStats(total=total, passed=passed, failed=len(failed))
+    if return_stats:
+        return rc, stats
+    return rc
 
 
 def main():
@@ -301,6 +318,8 @@ def main():
         return 0
 
     rc = run_error_tests(cases, update=args.update, verbose=args.verbose, fail_fast=args.fail_fast)
+    if isinstance(rc, tuple):
+        rc = rc[0]
     sys.exit(rc)
 
 

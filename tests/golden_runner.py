@@ -76,6 +76,13 @@ class TestCase:
     args_path: Optional[str]
 
 
+@dataclass
+class SuiteStats:
+    total: int
+    passed: int
+    failed: int
+
+
 class CompileTimeoutError(Exception):
     pass
 
@@ -237,7 +244,8 @@ def run_golden(
     timeout: Optional[float],
     compile_timeout: Optional[float],
     jobs: int,
-) -> int:
+    return_stats: bool = False,
+) -> int | Tuple[int, SuiteStats]:
 
     def run_one(tc: TestCase):
         try:
@@ -324,7 +332,12 @@ def run_golden(
         print("\nFailed cases summary:")
         for tc, exp, act in failed:
             print(f"  {tc.source}")
-    return 0 if not failed else 1
+
+    rc = 0 if not failed else 1
+    stats = SuiteStats(total=total, passed=passed, failed=len(failed))
+    if return_stats:
+        return rc, stats
+    return rc
 
 
 def main():
@@ -360,6 +373,8 @@ def main():
         compile_timeout=args.compile_timeout,
         jobs=args.jobs,
     )
+    if isinstance(rc, tuple):
+        rc = rc[0]
     sys.exit(rc)
 
 

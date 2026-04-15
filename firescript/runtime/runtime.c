@@ -26,6 +26,7 @@ static char **g_process_argv = NULL;
 #undef strdup
 #undef free
 
+
 static void registry_add(void *p) {
     if (!p) return;
     PtrNode *n = (PtrNode*)malloc(sizeof(PtrNode));
@@ -58,7 +59,25 @@ void *firescript_malloc(size_t size) {
 }
 
 char *firescript_strdup(const char *s) {
-    char *p = safe_strdup(s ? s : ""); 
+    if (!s) {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    size_t len = strnlen(s, SIZE_MAX);
+    if (len == SIZE_MAX) {
+        errno = EINVAL; // unterminated — reject, don't truncate
+        return NULL;
+    }
+
+    char *p = malloc(len + 1);
+    if (!p) {
+        errno = ENOMEM;
+        return NULL;
+    }
+
+    memcpy(p, s, len);
+    p[len] = '\0';
     registry_add(p);
     return p;
 }
