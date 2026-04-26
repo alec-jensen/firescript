@@ -942,6 +942,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../reference/std/regex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../reference/std/cli_args/" class="md-nav__link">
         
   
@@ -1850,6 +1878,7 @@
 <li>Added generic classes with multiple type parameters (e.g., <code>class Pair&lt;T, U&gt; { ... }</code>). Monomorphization is performed automatically at each use site.</li>
 <li><code>Tuple&lt;T, U&gt;</code>, <code>CopyableTuple&lt;T, U&gt;</code>, <code>Option&lt;T&gt;</code>, and <code>CopyableOption&lt;T&gt;</code> are now provided by the standard library (<code>@firescript/std.types</code>).</li>
 <li>Added <code>@firescript/std.fs</code> with class-based file I/O centered on <code>File</code> objects and <code>FileResult</code> values, including <code>File</code> methods (<code>read</code>, <code>readBytes</code>, <code>writeAll</code>, <code>appendAll</code>, <code>exists</code>, <code>remove</code>, <code>renameTo</code>, <code>moveTo</code>) and result helpers (<code>ok</code>, <code>err_code</code>, <code>result_status</code>, <code>result_data</code>).</li>
+<li>Added <code>@firescript/std.regex</code> for full-string regular-expression matching with <code>is_match(pattern, text)</code>, <code>match(pattern, text)</code>, and <code>last_error(pattern)</code>. Current syntax supports literals, escapes, <code>.</code>, grouping <code>(...)</code>, alternation <code>|</code>, quantifiers <code>* + ?</code>, and character classes (<code>[...]</code>, <code>[^...]</code>, basic ranges like <code>[a-z]</code>).</li>
 <li>Added <code>syscall_*</code> intrinsics (<code>syscall_open</code>, <code>syscall_read</code>, <code>syscall_write</code>, <code>syscall_close</code>, <code>syscall_remove</code>, <code>syscall_rename</code>, <code>syscall_move</code>) behind <code>directive enable_syscalls</code>. For standard library use only.</li>
 <li>Expanded <code>@firescript/std.cli.args</code> parsing helpers to support grouped short flags (for example <code>-abc</code>), <code>--name=value</code> / <code>-n=value</code> option forms, <code>--</code> terminator handling, and parsed positional value lookup.</li>
 <li>Added support for logical operators <code>&amp;&amp;</code>, <code>||</code>, and unary <code>!</code> in expressions and conditions.</li>

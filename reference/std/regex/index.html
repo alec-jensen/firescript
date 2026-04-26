@@ -8,31 +8,31 @@
       
       
       
-        <link rel="canonical" href="https://firescript.alecj.com/reference/modules/">
+        <link rel="canonical" href="https://firescript.alecj.com/reference/std/regex/">
       
       
-        <link rel="prev" href="../error_handling/">
+        <link rel="prev" href="../math/">
       
       
-        <link rel="next" href="../imports/">
+        <link rel="next" href="../cli_args/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Modules - firescript</title>
+        <title>Regex - firescript</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -51,7 +51,7 @@
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#modules" class="md-skip">
+        <a href="#stdregex" class="md-skip">
           Skip to content
         </a>
       
@@ -90,7 +90,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
+    <a href="../../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Modules
+              Regex
             
           </span>
         </div>
@@ -223,7 +223,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -246,7 +246,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../overview/" class="md-tabs__link">
+        <a href="../../overview/" class="md-tabs__link">
           
   
   
@@ -264,7 +264,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../glossary/" class="md-tabs__link">
+      <a href="../../../glossary/" class="md-tabs__link">
         
   
   
@@ -283,7 +283,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../changelog/" class="md-tabs__link">
+      <a href="../../../changelog/" class="md-tabs__link">
         
   
   
@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../benchmarks/" class="md-tabs__link">
+      <a href="../../../benchmarks/" class="md-tabs__link">
         
   
   
@@ -337,7 +337,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
+    <a href="../../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -367,7 +367,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -449,6 +449,394 @@
   
   
     <li class="md-nav__item">
+      <a href="../../overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types & Variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../control_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions & Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes & Inheritance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scoping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scoping Rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../type_system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../memory_management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../imports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_13" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_13" id="__nav_2_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Standard Library
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Standard Library
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../overview/" class="md-nav__link">
         
   
@@ -477,14 +865,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../variables/" class="md-nav__link">
+      <a href="../io/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Types & Variables
+    I/O
   
 
     
@@ -505,14 +893,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../arrays/" class="md-nav__link">
+      <a href="../fs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Arrays
+    File System
   
 
     
@@ -533,182 +921,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../control_flow/" class="md-nav__link">
+      <a href="../math/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Control Flow
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../functions/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Functions & Methods
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../classes/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Classes & Inheritance
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../scoping/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Scoping Rules
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../type_system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Type System
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../memory_management/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Memory Management
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../error_handling/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Error Handling
+    Math
   
 
     
@@ -745,7 +965,7 @@
   <span class="md-ellipsis">
     
   
-    Modules
+    Regex
   
 
     
@@ -763,7 +983,7 @@
   <span class="md-ellipsis">
     
   
-    Modules
+    Regex
   
 
     
@@ -789,10 +1009,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#module-exports" class="md-nav__link">
+  <a href="#quick-start" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Module Exports
+        Quick Start
       
     </span>
   </a>
@@ -800,10 +1020,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#directory-modules-and-initfire" class="md-nav__link">
+  <a href="#api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Directory Modules and init.fire
+        API
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bool-is_matchstring-pattern-string-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bool is_match(string pattern, string text)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bool-matchstring-pattern-string-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bool match(string pattern, string text)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#string-last_errorstring-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        string last_error(string pattern)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supported-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Syntax
       
     </span>
   </a>
@@ -811,10 +1081,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#nested-modules" class="md-nav__link">
+  <a href="#notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Nested Modules
+        Notes
       
     </span>
   </a>
@@ -822,10 +1092,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#definitions" class="md-nav__link">
+  <a href="#future-sections" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Definitions
+        Future Sections
       
     </span>
   </a>
@@ -848,225 +1118,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../imports/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Imports
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_13" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_13" id="__nav_2_13_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Standard Library
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_13">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Standard Library
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../std/overview/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../std/io/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    I/O
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../std/fs/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    File System
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../std/math/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Math
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../std/regex/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Regex
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../std/cli_args/" class="md-nav__link">
+      <a href="../cli_args/" class="md-nav__link">
         
   
   
@@ -1094,7 +1146,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../std/types/" class="md-nav__link">
+      <a href="../types/" class="md-nav__link">
         
   
   
@@ -1180,7 +1232,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../kiln/overview/" class="md-nav__link">
+      <a href="../../kiln/overview/" class="md-nav__link">
         
   
   
@@ -1208,7 +1260,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../kiln/manifest/" class="md-nav__link">
+      <a href="../../kiln/manifest/" class="md-nav__link">
         
   
   
@@ -1251,7 +1303,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../glossary/" class="md-nav__link">
+      <a href="../../../glossary/" class="md-nav__link">
         
   
   
@@ -1278,7 +1330,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../changelog/" class="md-nav__link">
+      <a href="../../../changelog/" class="md-nav__link">
         
   
   
@@ -1305,7 +1357,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
+      <a href="../../../benchmarks/" class="md-nav__link">
         
   
   
@@ -1352,10 +1404,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#module-exports" class="md-nav__link">
+  <a href="#quick-start" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Module Exports
+        Quick Start
       
     </span>
   </a>
@@ -1363,10 +1415,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#directory-modules-and-initfire" class="md-nav__link">
+  <a href="#api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Directory Modules and init.fire
+        API
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bool-is_matchstring-pattern-string-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bool is_match(string pattern, string text)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bool-matchstring-pattern-string-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bool match(string pattern, string text)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#string-last_errorstring-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        string last_error(string pattern)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supported-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Syntax
       
     </span>
   </a>
@@ -1374,10 +1476,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#nested-modules" class="md-nav__link">
+  <a href="#notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Nested Modules
+        Notes
       
     </span>
   </a>
@@ -1385,10 +1487,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#definitions" class="md-nav__link">
+  <a href="#future-sections" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Definitions
+        Future Sections
       
     </span>
   </a>
@@ -1420,7 +1522,7 @@
   
   
     <li class="md-path__item">
-      <a href="../.." class="md-path__link">
+      <a href="../../.." class="md-path__link">
         
   <span class="md-ellipsis">
     Home
@@ -1438,10 +1540,28 @@
     
     
       <li class="md-path__item">
-        <a href="../overview/" class="md-path__link">
+        <a href="../../overview/" class="md-path__link">
           
   <span class="md-ellipsis">
     Reference
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../overview/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Standard Library
   </span>
 
         </a>
@@ -1460,7 +1580,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/reference/modules.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/reference/std/regex.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1468,59 +1588,50 @@
   
 
 
-<h1 id="modules">Modules<a class="headerlink" href="#modules" title="Permanent link">&para;</a></h1>
-<p>A <strong>module</strong> is a unit of firescript code that you can import. Modules are similar to Python modules and can be:</p>
+<h1 id="stdregex">std.regex<a class="headerlink" href="#stdregex" title="Permanent link">&para;</a></h1>
+<p><code>@firescript/std.regex</code> provides a small, pure firescript regular-expression helper module.</p>
+<p>This page is intentionally basic for now. It covers the current API and syntax that the module supports today, and it leaves room for future sections on captures, search helpers, replacements, and richer pattern syntax.</p>
+<h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
+<pre><code class="language-firescript">import @firescript/std.io.println;
+import @firescript/std.regex.is_match;
+import @firescript/std.regex.last_error;
+
+println(is_match(&quot;(ab)+c&quot;, &quot;ababc&quot;));
+println(is_match(&quot;[a-z]+&quot;, &quot;firescript&quot;));
+println(last_error(&quot;[ab&quot;));
+</code></pre>
+<h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
+<h3 id="bool-is_matchstring-pattern-string-text"><code>bool is_match(string pattern, string text)</code><a class="headerlink" href="#bool-is_matchstring-pattern-string-text" title="Permanent link">&para;</a></h3>
+<p>Returns <code>true</code> when the pattern matches the entire input text.</p>
+<h3 id="bool-matchstring-pattern-string-text"><code>bool match(string pattern, string text)</code><a class="headerlink" href="#bool-matchstring-pattern-string-text" title="Permanent link">&para;</a></h3>
+<p>Alias of <code>is_match</code>.</p>
+<h3 id="string-last_errorstring-pattern"><code>string last_error(string pattern)</code><a class="headerlink" href="#string-last_errorstring-pattern" title="Permanent link">&para;</a></h3>
+<p>Validates a pattern and returns an empty string when the pattern is usable. If validation fails, it returns a short error message.</p>
+<h2 id="supported-syntax">Supported Syntax<a class="headerlink" href="#supported-syntax" title="Permanent link">&para;</a></h2>
+<p>The current matcher supports:</p>
 <ul>
-<li>A <strong>single source file</strong>, or</li>
-<li>A <strong>directory</strong> that contains firescript source files.</li>
+<li>Literals like <code>abc</code></li>
+<li>Escapes like <code>\n</code>, <code>\t</code>, <code>\r</code>, and escaped metacharacters</li>
+<li>Wildcard <code>.</code></li>
+<li>Grouping with <code>( ... )</code></li>
+<li>Alternation with <code>|</code></li>
+<li>Quantifiers <code>*</code>, <code>+</code>, and <code>?</code></li>
+<li>Character classes like <code>[abc]</code>, <code>[^abc]</code>, and simple ranges like <code>[a-z]</code></li>
 </ul>
-<p>A <strong>package</strong> is something you can install from the package manager. Packages are modules, but not all modules are packages.</p>
-<p>A <strong>library</strong> is a package included with the Firescript installation.</p>
-<h2 id="module-exports">Module Exports<a class="headerlink" href="#module-exports" title="Permanent link">&para;</a></h2>
-<p>A module's top-level declarations are private by default. Other files can only import symbols that the module explicitly exports.</p>
-<p>That means module scope is the API boundary:</p>
+<h2 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Keep helper functions, internal constants, and implementation details unexported.</li>
-<li>Export only the symbols you want other modules to use directly.</li>
-<li>Wildcard imports still only bring in exported symbols.</li>
+<li>Matching is full-string only.</li>
+<li>Counted quantifiers, lookarounds, non-greedy quantifiers, captures, and backreferences are not part of this first version.</li>
+<li>Character-class range ordering is intentionally simple and currently best suited to ASCII alphanumeric ranges.</li>
 </ul>
-<h2 id="directory-modules-and-initfire">Directory Modules and init.fire<a class="headerlink" href="#directory-modules-and-initfire" title="Permanent link">&para;</a></h2>
-<p>If a directory contains an <code>init.fire</code> file, that file defines the module for the directory name.</p>
-<p>Example layout:</p>
-<pre><code>math/
-  init.fire
-  trig.fire
-</code></pre>
+<h2 id="future-sections">Future Sections<a class="headerlink" href="#future-sections" title="Permanent link">&para;</a></h2>
+<p>These are good follow-up topics for later expansion:</p>
 <ul>
-<li>The contents of <code>math/init.fire</code> are imported with:</li>
-</ul>
-<pre><code class="language-firescript">import math
-</code></pre>
-<ul>
-<li>The contents of <code>math/trig.fire</code> are imported with:</li>
-</ul>
-<pre><code class="language-firescript">import math.trig
-</code></pre>
-<h2 id="nested-modules">Nested Modules<a class="headerlink" href="#nested-modules" title="Permanent link">&para;</a></h2>
-<p>Modules can be nested by creating subdirectories with their own source files:</p>
-<pre><code>math/
-  init.fire
-  trig.fire
-  geometry/
-    init.fire
-    angles.fire
-</code></pre>
-<p>Examples:</p>
-<pre><code class="language-firescript">import math
-import math.trig
-import math.geometry
-import math.geometry.angles
-</code></pre>
-<h2 id="definitions">Definitions<a class="headerlink" href="#definitions" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Module</strong>: A single <code>.fire</code> file, or a directory containing <code>.fire</code> files.</li>
-<li><strong>Package</strong>: An installable module from the package manager.</li>
-<li><strong>Rule</strong>: All packages are modules, but not all modules are packages.</li>
+<li>Capturing groups and submatch extraction</li>
+<li>Search helpers like <code>find_first</code> and <code>find_all</code></li>
+<li>Replacement helpers</li>
+<li>More complete character classes and escaping rules</li>
+<li>Anchors like <code>^</code> and <code>$</code></li>
 </ul>
 
 
@@ -1551,7 +1662,7 @@ import math.geometry.angles
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../error_handling/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Error Handling">
+          <a href="../math/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Math">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1561,20 +1672,20 @@ import math.geometry.angles
                 Previous
               </span>
               <div class="md-ellipsis">
-                Error Handling
+                Math
               </div>
             </div>
           </a>
         
         
           
-          <a href="../imports/" class="md-footer__link md-footer__link--next" aria-label="Next: Imports">
+          <a href="../cli_args/" class="md-footer__link md-footer__link--next" aria-label="Next: Command-Line Arguments">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Imports
+                Command-Line Arguments
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1615,10 +1726,10 @@ import math.geometry.angles
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

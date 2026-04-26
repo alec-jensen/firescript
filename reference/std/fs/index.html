@@ -1097,22 +1097,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#result-helper-functions" class="md-nav__link">
+  <a href="#fileresult-methods" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Result Helper Functions
+        FileResult Methods
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Result Helper Functions">
+    <nav class="md-nav" aria-label="FileResult Methods">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#okfileresult" class="md-nav__link">
+  <a href="#ok" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ok(FileResult)
+        ok()
       
     </span>
   </a>
@@ -1120,10 +1120,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#err_codefileresult" class="md-nav__link">
+  <a href="#err_code" class="md-nav__link">
     <span class="md-ellipsis">
       
-        err_code(FileResult)
+        err_code()
       
     </span>
   </a>
@@ -1131,10 +1131,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#result_statusfileresult" class="md-nav__link">
+  <a href="#result_status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        result_status(FileResult)
+        result_status()
       
     </span>
   </a>
@@ -1142,10 +1142,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#result_datafileresult" class="md-nav__link">
+  <a href="#result_data" class="md-nav__link">
     <span class="md-ellipsis">
       
-        result_data(FileResult)
+        result_data()
       
     </span>
   </a>
@@ -1203,6 +1203,34 @@
     
   
     Math
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../regex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regex
   
 
     
@@ -1653,22 +1681,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#result-helper-functions" class="md-nav__link">
+  <a href="#fileresult-methods" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Result Helper Functions
+        FileResult Methods
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Result Helper Functions">
+    <nav class="md-nav" aria-label="FileResult Methods">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#okfileresult" class="md-nav__link">
+  <a href="#ok" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ok(FileResult)
+        ok()
       
     </span>
   </a>
@@ -1676,10 +1704,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#err_codefileresult" class="md-nav__link">
+  <a href="#err_code" class="md-nav__link">
     <span class="md-ellipsis">
       
-        err_code(FileResult)
+        err_code()
       
     </span>
   </a>
@@ -1687,10 +1715,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#result_statusfileresult" class="md-nav__link">
+  <a href="#result_status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        result_status(FileResult)
+        result_status()
       
     </span>
   </a>
@@ -1698,10 +1726,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#result_datafileresult" class="md-nav__link">
+  <a href="#result_data" class="md-nav__link">
     <span class="md-ellipsis">
       
-        result_data(FileResult)
+        result_data()
       
     </span>
   </a>
@@ -1864,12 +1892,17 @@ File myFile = File(&quot;hello.txt&quot;);
     string data;
 
     FileResult(int32 status, string data);
+
+    bool ok(&amp;FileResult this);
+    int32 err_code(&amp;FileResult this);
+    int32 result_status(&amp;FileResult this);
+    string result_data(&amp;FileResult this);
 }
 </code></pre>
 <p><strong>Fields:</strong>
 - <code>status</code>: Operation status (≥ 0 for success, negative errno for failure)
 - <code>data</code>: Operation output (e.g., file contents for reads), empty for most writes</p>
-<p><strong>Check the status:</strong> A negative <code>status</code> indicates an error. Use helper functions to inspect results (see below).</p>
+<p><strong>Check the status:</strong> A negative <code>status</code> indicates an error. Use <code>FileResult</code> methods to inspect results.</p>
 <h2 id="file-methods">File Methods<a class="headerlink" href="#file-methods" title="Permanent link">&para;</a></h2>
 <h3 id="read"><code>read()</code><a class="headerlink" href="#read" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">FileResult read(&amp;this)
@@ -1878,13 +1911,10 @@ File myFile = File(&quot;hello.txt&quot;);
 <p><strong>Returns:</strong> <code>FileResult</code> with status = bytes read (on success) or negative error code</p>
 <p><strong>Example:</strong></p>
 <pre><code class="language-firescript">import @firescript/std.fs.File;
-import @firescript/std.fs.result_data;
-import @firescript/std.fs.ok;
-
 File f = File(&quot;data.txt&quot;);
 FileResult r = f.read();
-if (ok(r)) {
-    println(result_data(r));
+if (r.ok()) {
+    println(r.result_data());
 }
 </code></pre>
 <h3 id="readbytesint32-bytes"><code>readBytes(int32 bytes)</code><a class="headerlink" href="#readbytesint32-bytes" title="Permanent link">&para;</a></h3>
@@ -1956,32 +1986,32 @@ Updates the <code>File</code> path on success.</p>
 <p><strong>Example:</strong></p>
 <pre><code class="language-firescript">f.moveTo(&quot;/other/location/file.txt&quot;);
 </code></pre>
-<h2 id="result-helper-functions">Result Helper Functions<a class="headerlink" href="#result-helper-functions" title="Permanent link">&para;</a></h2>
-<h3 id="okfileresult"><code>ok(FileResult)</code><a class="headerlink" href="#okfileresult" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">bool ok(&amp;FileResult result)
+<h2 id="fileresult-methods">FileResult Methods<a class="headerlink" href="#fileresult-methods" title="Permanent link">&para;</a></h2>
+<h3 id="ok"><code>ok()</code><a class="headerlink" href="#ok" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">bool ok(&amp;FileResult this)
 </code></pre>
-<p>Check if operation succeeded (status ≥ 0).</p>
+<p>Check if operation succeeded (status &gt;= 0).</p>
 <p><strong>Example:</strong></p>
-<pre><code class="language-firescript">if (ok(result)) {
+<pre><code class="language-firescript">if (result.ok()) {
     println(&quot;Success!&quot;);
 }
 </code></pre>
-<h3 id="err_codefileresult"><code>err_code(FileResult)</code><a class="headerlink" href="#err_codefileresult" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int32 err_code(&amp;FileResult result)
+<h3 id="err_code"><code>err_code()</code><a class="headerlink" href="#err_code" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">int32 err_code(&amp;FileResult this)
 </code></pre>
 <p>Extract the error code (positive errno value). Returns 0 if operation succeeded.</p>
 <p><strong>Example:</strong></p>
-<pre><code class="language-firescript">int32 err = err_code(result);
+<pre><code class="language-firescript">int32 err = result.err_code();
 if (err &gt; 0) {
     println(&quot;Error: &quot; + err);
 }
 </code></pre>
-<h3 id="result_statusfileresult"><code>result_status(FileResult)</code><a class="headerlink" href="#result_statusfileresult" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int32 result_status(&amp;FileResult result)
+<h3 id="result_status"><code>result_status()</code><a class="headerlink" href="#result_status" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">int32 result_status(&amp;FileResult this)
 </code></pre>
 <p>Get the raw status field (positive on success, negative errno on failure).</p>
-<h3 id="result_datafileresult"><code>result_data(FileResult)</code><a class="headerlink" href="#result_datafileresult" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">string result_data(&amp;FileResult result)
+<h3 id="result_data"><code>result_data()</code><a class="headerlink" href="#result_data" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">string result_data(&amp;FileResult this)
 </code></pre>
 <p>Get the data field (file contents for reads, empty for writes).</p>
 <h2 id="error-codes">Error Codes<a class="headerlink" href="#error-codes" title="Permanent link">&para;</a></h2>
@@ -1996,22 +2026,20 @@ if (err &gt; 0) {
 <p>Consult your system's <code>errno.h</code> for a complete list.</p>
 <h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
 <pre><code class="language-firescript">import @firescript/std.fs.File;
-import @firescript/std.fs.ok;
-import @firescript/std.fs.result_data;
 import @firescript/std.io.println;
 
 File config = File(&quot;config.txt&quot;);
 
 // Write
 FileResult write_result = config.writeAll(&quot;setting=value&quot;);
-if (ok(write_result)) {
+if (write_result.ok()) {
     println(&quot;Configuration saved&quot;);
 }
 
 // Read
 FileResult read_result = config.read();
-if (ok(read_result)) {
-    println(&quot;Configuration: &quot; + result_data(read_result));
+if (read_result.ok()) {
+    println(&quot;Configuration: &quot; + read_result.result_data());
 }
 
 // Cleanup

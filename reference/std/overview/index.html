@@ -1040,6 +1040,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../regex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../cli_args/" class="md-nav__link">
         
   
@@ -1467,6 +1495,7 @@
 <li><a href="../io/">I/O</a>: Formatted output with <code>print</code> and <code>println</code></li>
 <li><a href="../fs/">File System</a>: File operations via the <code>File</code> class and <code>FileResult</code> helpers</li>
 <li><a href="../math/">Math</a>: Mathematical constants and functions</li>
+<li><a href="../regex/">Regex</a>: Full-string regular-expression matching and pattern validation</li>
 <li><a href="../cli_args/">Command-Line Arguments</a>: Argument parsing for CLI programs</li>
 <li><a href="../types/">Types</a>: Generic container types (<code>Tuple</code>, <code>Option</code>)</li>
 <li>FCL Lexer: Lexer for parsing FireScript Configuration Language (FCL) data</li>
@@ -1486,7 +1515,7 @@ import @firescript/std.fcl;  // imports all FCL lexer functions
 <pre><code class="language-firescript">import @firescript/std.types.*;  // imports Tuple, Option, etc.
 </code></pre>
 <h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
-<p>Most file-system operations return result types (e.g., <code>FileResult</code>) that encode success/failure in a <code>status</code> field. Check the <a href="../fs/">File System</a> module for details on error semantics and helper accessors like <code>ok()</code>.</p>
+<p>Most file-system operations return result types (e.g., <code>FileResult</code>) that encode success/failure in a <code>status</code> field. Check the <a href="../fs/">File System</a> module for details on error semantics and <code>FileResult</code> methods like <code>ok()</code>.</p>
 <h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Prefer stdlib over syscalls</strong>: User code should use standard library modules, not low-level syscalls (which require <code>directive enable_syscalls</code>).</li>
