@@ -59,6 +59,7 @@ nav:
       - I/O: reference/std/io.md
       - File System: reference/std/fs.md
       - Math: reference/std/math.md
+      - Regex: reference/std/regex.md
       - Command-Line Arguments: reference/std/cli_args.md
       - Types: reference/std/types.md
     - kiln:

@@ -10,6 +10,25 @@ export class FileResult {
         this.status = status;
         this.data = data;
     }
+
+    bool ok(&this) {
+        return this.status >= 0;
+    }
+
+    int32 err_code(&this) {
+        if (this.status < 0) {
+            return -this.status;
+        }
+        return 0;
+    }
+
+    int32 result_status(&this) {
+        return this.status;
+    }
+
+    string result_data(&this) {
+        return "" + this.data;
+    }
 }
 
 export class File {
@@ -127,25 +146,6 @@ FileResult _read_internal(&string path, int32 max_bytes) {
     }
 
     return FileResult(total, content);
-}
-
-export bool ok(&FileResult result) {
-    return result.status >= 0;
-}
-
-export int32 err_code(&FileResult result) {
-    if (result.status < 0) {
-        return -result.status;
-    }
-    return 0;
-}
-
-export int32 result_status(&FileResult result) {
-    return result.status;
-}
-
-export string result_data(&FileResult result) {
-    return "" + result.data;
 }
 
 FileResult _write_mode(&string path, &string data, &string mode) {

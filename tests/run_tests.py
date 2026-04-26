@@ -49,7 +49,12 @@ def main() -> int:
     parser.add_argument("--fail-fast", action="store_true", help="Stop after the first suite failure")
     parser.add_argument("--golden-only", action="store_true", help="Run only golden tests")
     parser.add_argument("--error-only", action="store_true", help="Run only error tests")
-    parser.add_argument("--jobs", type=int, default=4, help="Golden runner parallel workers (default: 4)")
+    parser.add_argument(
+        "--jobs",
+        type=int,
+        default=max(1, os.cpu_count() or 1),
+        help="Number of parallel test workers (default: number of processors)",
+    )
     parser.add_argument("--timeout", type=float, default=20.0, help="Golden runner per-test runtime timeout in seconds")
     parser.add_argument("--compile-timeout", type=float, default=120.0, help="Golden runner compile timeout in seconds")
     args = parser.parse_args()
@@ -96,6 +101,7 @@ def main() -> int:
             update=args.update,
             verbose=args.verbose,
             fail_fast=args.fail_fast,
+            jobs=args.jobs,
             return_stats=True,
         )
         if not isinstance(error_result, tuple):

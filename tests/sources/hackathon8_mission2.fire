@@ -1,5 +1,5 @@
 import @firescript/std.io.{print, println};
-import @firescript/std.fs.{File, ok, result_data, err_code};
+import @firescript/std.fs.{File, FileResult};
 
 // Solution for a coding challenge, being used as a test
 
@@ -17,18 +17,19 @@ bool contains(int16 n, &int16[] a) {
     return false;
 }
 
-if (ok(r)) {
+if (r.ok()) {
     bool sign = false; // true: +, false: -
 
     bool not_first = false;
 
     string number = "";
+    string input_data = r.result_data();
 
     int16[1000] nums = [];
     int8 idx = 0i8;
     int16[1000] frequencies = [];
 
-    for (string ch in result_data(r)) {
+    for (string ch in input_data) {
         if (ch == "+" || ch == "-") {
             if (not_first) {
                 // convert number to int, add/subtract based on sign
@@ -86,5 +87,5 @@ if (ok(r)) {
     println(max_n);
 } else {
     print("error: ");
-    println(err_code(r));
+    println(r.err_code());
 }

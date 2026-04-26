@@ -220,6 +220,7 @@ def run_error_tests(
     update: bool,
     verbose: bool,
     fail_fast: bool,
+    jobs: int,
     return_stats: bool = False,
 ) -> int | Tuple[int, SuiteStats]:
     """
@@ -249,7 +250,8 @@ def run_error_tests(
                 break
     else:
         # Parallel execution
-        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        max_workers = max(1, jobs)
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = {executor.submit(run_one_error_test, tc, update, verbose): tc for tc in cases}
             
             for future in futures:
@@ -299,6 +301,12 @@ def main():
     parser.add_argument("--update", action="store_true", help="Update or create golden error files")
     parser.add_argument("--verbose", action="store_true", help="Verbose output")
     parser.add_argument("--fail-fast", action="store_true", help="Stop on first failure")
+    parser.add_argument(
+        "--jobs",
+        type=int,
+        default=max(1, os.cpu_count() or 1),
+        help="Number of parallel test workers (default: number of processors)",
+    )
     args = parser.parse_args()
 
     if args.cases:
@@ -317,7 +325,13 @@ def main():
         print("No error test cases found.")
         return 0
 
-    rc = run_error_tests(cases, update=args.update, verbose=args.verbose, fail_fast=args.fail_fast)
+    rc = run_error_tests(
+        cases,
+        update=args.update,
+        verbose=args.verbose,
+        fail_fast=args.fail_fast,
+        jobs=args.jobs,
+    )
     if isinstance(rc, tuple):
         rc = rc[0]
     sys.exit(rc)

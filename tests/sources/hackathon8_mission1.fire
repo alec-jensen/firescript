@@ -1,5 +1,5 @@
 import @firescript/std.io.{print, println};
-import @firescript/std.fs.{File, ok, result_data, err_code};
+import @firescript/std.fs.{File, FileResult};
 
 // Solution for a coding challenge, being used as a test
 
@@ -7,16 +7,17 @@ File file = File("tests/sources/hackathon8_input.txt");
 
 FileResult r = file.read();
 
-if (ok(r)) {
+if (r.ok()) {
     bool sign = false; // true: +, false: -
 
     bool not_first = false;
 
     string number = "";
+    string input_data = r.result_data();
 
     int32 total = 0i32;
 
-    for (string ch in result_data(r)) {
+    for (string ch in input_data) {
         if (ch == "+" || ch == "-") {
             if (not_first) {
                 // convert number to int, add/subtract based on sign
@@ -61,5 +62,5 @@ if (ok(r)) {
     println(total);
 } else {
     print("error: ");
-    println(err_code(r));
+    println(r.err_code());
 }

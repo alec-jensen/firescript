@@ -1,38 +1,196 @@
 // firescript std.fcl package entrypoint
 
-import @firescript/std.fcl.lexer.FclLexTokenResult;
-import @firescript/std.fcl.lexer.lex_next;
-import @firescript/std.fcl.lexer.token_status;
-import @firescript/std.fcl.lexer.token_kind;
-import @firescript/std.fcl.lexer.token_lexeme;
-import @firescript/std.fcl.lexer.token_start;
-import @firescript/std.fcl.lexer.token_end;
-import @firescript/std.fcl.lexer.token_next_index;
+// String intrinsics used by this module are directive-gated.
+directive enable_process_args;
+
+export class FclLexTokenResult {
+	int32 status;
+	string kind;
+	string lexeme;
+	int32 start;
+	int32 end;
+	int32 next_index;
+
+	FclLexTokenResult(int32 status, string kind, string lexeme, int32 start, int32 end, int32 next_index) {
+		this.status = status;
+		this.kind = kind;
+		this.lexeme = lexeme;
+		this.start = start;
+		this.end = end;
+		this.next_index = next_index;
+	}
+}
+
+int32 _len(&string value) {
+	return str_length(value);
+}
+
+string _char_at(&string value, int32 index) {
+	return str_char_at(value, index);
+}
+
+string _slice(&string value, int32 start, int32 end) {
+	return str_slice(value, start, end);
+}
+
+bool _is_ws(&string ch) {
+	if (ch == " ") {
+		return true;
+	}
+	if (ch == "\t") {
+		return true;
+	}
+	if (ch == "\n") {
+		return true;
+	}
+	if (ch == "\r") {
+		return true;
+	}
+	return false;
+}
+
+bool _is_digit(&string ch) {
+	return str_index_of("0123456789", ch) >= 0;
+}
+
+bool _is_alpha(&string ch) {
+	if (str_index_of("abcdefghijklmnopqrstuvwxyz", ch) >= 0) {
+		return true;
+	}
+	if (str_index_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ", ch) >= 0) {
+		return true;
+	}
+	if (ch == "_") {
+		return true;
+	}
+	return false;
+}
+
+bool _is_ident_continue(&string ch) {
+	return _is_alpha(ch) || _is_digit(ch);
+}
+
+FclLexTokenResult _single(&string kind, &string text, int32 start, int32 next) {
+	return FclLexTokenResult(0, "" + kind, "" + text, start, next, next);
+}
 
 export FclLexTokenResult next_token(string source, int32 index) {
-    return lex_next(source, index);
+	int32 n = _len(source);
+	int32 i = index;
+
+	if (i < 0) {
+		i = 0;
+	}
+
+	while (i < n) {
+		string ch = _char_at(source, i);
+		if (_is_ws(ch) == false) {
+			break;
+		}
+		i = i + 1;
+	}
+
+	if (i >= n) {
+		return FclLexTokenResult(0, "eof", "", i, i, i);
+	}
+
+	string ch = _char_at(source, i);
+
+	if (ch == "{") {
+		return _single("lbrace", ch, i, i + 1);
+	}
+	if (ch == "}") {
+		return _single("rbrace", ch, i, i + 1);
+	}
+	if (ch == "[") {
+		return _single("lbracket", ch, i, i + 1);
+	}
+	if (ch == "]") {
+		return _single("rbracket", ch, i, i + 1);
+	}
+	if (ch == ":") {
+		return _single("colon", ch, i, i + 1);
+	}
+	if (ch == ",") {
+		return _single("comma", ch, i, i + 1);
+	}
+	if (ch == "=") {
+		return _single("assign", ch, i, i + 1);
+	}
+
+	if (ch == "\"") {
+		int32 j = i + 1;
+		while (j < n) {
+			string c = _char_at(source, j);
+			if (c == "\"") {
+				return FclLexTokenResult(0, "string", _slice(source, i + 1, j), i, j + 1, j + 1);
+			}
+			j = j + 1;
+		}
+		return FclLexTokenResult(-84, "invalid", "unterminated_string", i, n, n);
+	}
+
+	if (ch == "-" || _is_digit(ch)) {
+		int32 j = i;
+		if (ch == "-") {
+			j = j + 1;
+			if (j >= n) {
+				return FclLexTokenResult(-84, "invalid", "-", i, i + 1, i + 1);
+			}
+			string next_ch = _char_at(source, j);
+			if (_is_digit(next_ch) == false) {
+				return FclLexTokenResult(-84, "invalid", "-", i, i + 1, i + 1);
+			}
+		}
+		while (j < n) {
+			string c = _char_at(source, j);
+			if (_is_digit(c) == false) {
+				break;
+			}
+			j = j + 1;
+		}
+		return FclLexTokenResult(0, "int32", _slice(source, i, j), i, j, j);
+	}
+
+	if (_is_alpha(ch)) {
+		int32 j = i + 1;
+		while (j < n) {
+			string c = _char_at(source, j);
+			if (_is_ident_continue(c) == false) {
+				break;
+			}
+			j = j + 1;
+		}
+		string word = _slice(source, i, j);
+		if (word == "true" || word == "false") {
+			return FclLexTokenResult(0, "bool", word, i, j, j);
+		}
+		return FclLexTokenResult(0, "identifier", word, i, j, j);
+	}
+
+	return FclLexTokenResult(-84, "invalid", ch, i, i + 1, i + 1);
 }
 
 export int32 status(&FclLexTokenResult token) {
-    return token_status(token);
+	return token.status;
 }
 
 export string kind(&FclLexTokenResult token) {
-    return token_kind(token);
+	return "" + token.kind;
 }
 
 export string lexeme(&FclLexTokenResult token) {
-    return token_lexeme(token);
+	return "" + token.lexeme;
 }
 
 export int32 start(&FclLexTokenResult token) {
-    return token_start(token);
+	return token.start;
 }
 
 export int32 end(&FclLexTokenResult token) {
-    return token_end(token);
+	return token.end;
 }
 
 export int32 next_index(&FclLexTokenResult token) {
-    return token_next_index(token);
+	return token.next_index;
 }

@@ -7,6 +7,7 @@ firescript includes a standard library under the `@firescript/std` namespace, pr
 - [I/O](io.md): Formatted output with `print` and `println`
 - [File System](fs.md): File operations via the `File` class and `FileResult` helpers
 - [Math](math.md): Mathematical constants and functions
+- [Regex](regex.md): Full-string regular-expression matching and pattern validation
 - [Command-Line Arguments](cli_args.md): Argument parsing for CLI programs
 - [Types](types.md): Generic container types (`Tuple`, `Option`)
 - FCL Lexer: Lexer for parsing FireScript Configuration Language (FCL) data
@@ -37,7 +38,7 @@ import @firescript/std.types.*;  // imports Tuple, Option, etc.
 
 ## Error Handling
 
-Most file-system operations return result types (e.g., `FileResult`) that encode success/failure in a `status` field. Check the [File System](fs.md) module for details on error semantics and helper accessors like `ok()`.
+Most file-system operations return result types (e.g., `FileResult`) that encode success/failure in a `status` field. Check the [File System](fs.md) module for details on error semantics and `FileResult` methods like `ok()`.
 
 ## Best Practices
 

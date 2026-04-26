@@ -54,6 +54,11 @@ class FileResult {
     string data;
     
     FileResult(int32 status, string data);
+
+    bool ok(&FileResult this);
+    int32 err_code(&FileResult this);
+    int32 result_status(&FileResult this);
+    string result_data(&FileResult this);
 }
 ```
 
@@ -61,7 +66,7 @@ class FileResult {
 - `status`: Operation status (≥ 0 for success, negative errno for failure)
 - `data`: Operation output (e.g., file contents for reads), empty for most writes
 
-**Check the status:** A negative `status` indicates an error. Use helper functions to inspect results (see below).
+**Check the status:** A negative `status` indicates an error. Use `FileResult` methods to inspect results.
 
 ## File Methods
 
@@ -79,13 +84,10 @@ Read the entire file contents into a string.
 
 ```firescript
 import @firescript/std.fs.File;
-import @firescript/std.fs.result_data;
-import @firescript/std.fs.ok;
-
 File f = File("data.txt");
 FileResult r = f.read();
-if (ok(r)) {
-    println(result_data(r));
+if (r.ok()) {
+    println(r.result_data());
 }
 ```
 
@@ -219,28 +221,28 @@ Updates the `File` path on success.
 f.moveTo("/other/location/file.txt");
 ```
 
-## Result Helper Functions
+## FileResult Methods
 
-### `ok(FileResult)`
+### `ok()`
 
 ```firescript
-bool ok(&FileResult result)
+bool ok(&FileResult this)
 ```
 
-Check if operation succeeded (status ≥ 0).
+Check if operation succeeded (status >= 0).
 
 **Example:**
 
 ```firescript
-if (ok(result)) {
+if (result.ok()) {
     println("Success!");
 }
 ```
 
-### `err_code(FileResult)`
+### `err_code()`
 
 ```firescript
-int32 err_code(&FileResult result)
+int32 err_code(&FileResult this)
 ```
 
 Extract the error code (positive errno value). Returns 0 if operation succeeded.
@@ -248,24 +250,24 @@ Extract the error code (positive errno value). Returns 0 if operation succeeded.
 **Example:**
 
 ```firescript
-int32 err = err_code(result);
+int32 err = result.err_code();
 if (err > 0) {
     println("Error: " + err);
 }
 ```
 
-### `result_status(FileResult)`
+### `result_status()`
 
 ```firescript
-int32 result_status(&FileResult result)
+int32 result_status(&FileResult this)
 ```
 
 Get the raw status field (positive on success, negative errno on failure).
 
-### `result_data(FileResult)`
+### `result_data()`
 
 ```firescript
-string result_data(&FileResult result)
+string result_data(&FileResult this)
 ```
 
 Get the data field (file contents for reads, empty for writes).
@@ -286,22 +288,20 @@ Consult your system's `errno.h` for a complete list.
 
 ```firescript
 import @firescript/std.fs.File;
-import @firescript/std.fs.ok;
-import @firescript/std.fs.result_data;
 import @firescript/std.io.println;
 
 File config = File("config.txt");
 
 // Write
 FileResult write_result = config.writeAll("setting=value");
-if (ok(write_result)) {
+if (write_result.ok()) {
     println("Configuration saved");
 }
 
 // Read
 FileResult read_result = config.read();
-if (ok(read_result)) {
-    println("Configuration: " + result_data(read_result));
+if (read_result.ok()) {
+    println("Configuration: " + read_result.result_data());
 }
 
 // Cleanup

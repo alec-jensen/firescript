@@ -9,6 +9,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - Added generic classes with multiple type parameters (e.g., `class Pair<T, U> { ... }`). Monomorphization is performed automatically at each use site.
 - `Tuple<T, U>`, `CopyableTuple<T, U>`, `Option<T>`, and `CopyableOption<T>` are now provided by the standard library (`@firescript/std.types`).
 - Added `@firescript/std.fs` with class-based file I/O centered on `File` objects and `FileResult` values, including `File` methods (`read`, `readBytes`, `writeAll`, `appendAll`, `exists`, `remove`, `renameTo`, `moveTo`) and result helpers (`ok`, `err_code`, `result_status`, `result_data`).
+- Added `@firescript/std.regex` for full-string regular-expression matching with `is_match(pattern, text)`, `match(pattern, text)`, and `last_error(pattern)`. Current syntax supports literals, escapes, `.`, grouping `(...)`, alternation `|`, quantifiers `* + ?`, and character classes (`[...]`, `[^...]`, basic ranges like `[a-z]`).
 - Added `syscall_*` intrinsics (`syscall_open`, `syscall_read`, `syscall_write`, `syscall_close`, `syscall_remove`, `syscall_rename`, `syscall_move`) behind `directive enable_syscalls`. For standard library use only.
 - Expanded `@firescript/std.cli.args` parsing helpers to support grouped short flags (for example `-abc`), `--name=value` / `-n=value` option forms, `--` terminator handling, and parsed positional value lookup.
 - Added support for logical operators `&&`, `||`, and unary `!` in expressions and conditions.

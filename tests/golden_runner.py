@@ -349,7 +349,12 @@ def main():
     ap.add_argument("--verbose", action="store_true", help="Verbose output")
     ap.add_argument("--timeout", type=float, default=20.0, help="Per-run timeout for executing produced binaries in seconds (default: 20.0)")
     ap.add_argument("--compile-timeout", type=float, default=120.0, help="Per-test compile timeout in seconds (default: 120.0)")
-    ap.add_argument("--jobs", type=int, default=4, help="Number of parallel test workers (default: 4)")
+    ap.add_argument(
+        "--jobs",
+        type=int,
+        default=max(1, os.cpu_count() or 1),
+        help="Number of parallel test workers (default: number of processors)",
+    )
     args = ap.parse_args()
 
     patterns = args.glob if args.glob else DEFAULT_SEARCH
