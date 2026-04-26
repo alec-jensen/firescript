@@ -84,25 +84,42 @@ class StatementsMixin(DeclarationsMixin):
                 init_node = node.children[0] if node.children else None
                 elem_c = self._map_type_to_c(var_type_fs)
                 mangled_name = self._mangle_name(node.name)
+                declared_size = getattr(node, "array_size", None)
                 if init_node and init_node.node_type == NodeTypes.ARRAY_LITERAL:
                     elements = init_node.children or []
                     n = len(elements)
-                    # Store array size for length() method
+                    # Empty literal [] with a declared size: treat as zero-init
+                    if n == 0 and declared_size is not None:
+                        pass  # fall through to sized zero-init branch
+                    else:
+                        if declared_size is not None and n != declared_size:
+                            self.report_error(CodegenError(message=f"Array size mismatch: declared size {declared_size} but initializer has {n} elements"), node)
+                            return ""
+                        # Store array size for length() method
+                        self.symbol_table[node.name] = (var_type_fs, node.is_array, n)
+                        # Track array for cleanup at scope exit
+                        if self.scope_stack:
+                            self.scope_stack[-1].append((mangled_name, var_type_fs))
+                        # Generate heap allocation for array
+                        elem_codes = [self._visit(elem) for elem in elements]
+                        lines = []
+                        # Allocate array on heap
+                        lines.append(f"{elem_c}* {mangled_name} = malloc({n} * sizeof({elem_c}));")
+                        # Initialize elements
+                        for i, elem_code in enumerate(elem_codes):
+                            lines.append(f"{mangled_name}[{i}] = {elem_code};")
+                        return "\n".join(lines)
+                if declared_size is not None:
+                    # Sized array with no initializer: zero-initialize
+                    n = declared_size
                     self.symbol_table[node.name] = (var_type_fs, node.is_array, n)
-                    # Track array for cleanup at scope exit
                     if self.scope_stack:
                         self.scope_stack[-1].append((mangled_name, var_type_fs))
-                    # Generate heap allocation for array
-                    elem_codes = [self._visit(elem) for elem in elements]
                     lines = []
-                    # Allocate array on heap
-                    lines.append(f"{elem_c}* {mangled_name} = malloc({n} * sizeof({elem_c}));")
-                    # Initialize elements
-                    for i, elem_code in enumerate(elem_codes):
-                        lines.append(f"{mangled_name}[{i}] = {elem_code};")
+                    lines.append(f"{elem_c}* {mangled_name} = calloc({n}, sizeof({elem_c}));")
                     return "\n".join(lines)
                 # Allow initializing from an expression (would need additional handling)
-                self.report_error(CodegenError(message="Array initialization from expressions not yet supported for fixed-size arrays"), node)
+                self.report_error(CodegenError(message="Array declaration requires either a size (e.g. int32[10]) or a literal initializer"), node)
                 return ""
             elif var_type_fs == "string":
                 # Strings are Owned (heap-allocated)
@@ -250,6 +267,23 @@ class StatementsMixin(DeclarationsMixin):
                     # Primitive to string conversion
                     return f"firescript_toString({expr_code})"
             
+            # Special handling for casting string to numeric types
+            int_types = {"int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64"}
+            float_types = {"float32", "float64", "float", "double"}
+            expr_type = (
+                getattr(expr_node, "return_type", None)
+                or getattr(expr_node, "var_type", None)
+                or (self.symbol_table.get(getattr(expr_node, "name", ""), (None, False))[0]
+                   if expr_node and expr_node.node_type == NodeTypes.IDENTIFIER else None)
+            )
+            if expr_type == "string":
+                if target_fs in ("int64", "uint64"):
+                    return f"((int64_t)atoll({expr_code}))"
+                elif target_fs in int_types:
+                    return f"(({self._map_type_to_c(target_fs)})atoi({expr_code}))"
+                elif target_fs in float_types:
+                    return f"(({self._map_type_to_c(target_fs)})atof({expr_code}))"
+
             target_c = self._map_type_to_c(target_fs)
             return f"(({target_c})({expr_code}))"
         elif node.node_type == NodeTypes.BINARY_EXPRESSION:
@@ -860,8 +894,46 @@ class StatementsMixin(DeclarationsMixin):
             old_symbol_entry = self.symbol_table.get(loop_var)
             self.symbol_table[loop_var] = (var_type, False)
             
+            # Determine if the collection resolves to a string type
+            collection_type = (
+                getattr(collection, "return_type", None)
+                or getattr(collection, "var_type", None)
+                or (
+                    self.symbol_table.get(collection.name, (None, False))[0]
+                    if collection.node_type == NodeTypes.IDENTIFIER
+                    else None
+                )
+            )
+            is_string_collection = collection_type == "string"
+
             # Handle different collection types
-            if collection.node_type == NodeTypes.ARRAY_LITERAL:
+            if is_string_collection:
+                # Iterating over a string yields individual characters.
+                # Declare the loop variable as `char` internally regardless of the declared
+                # firescript type, and wrap it into a heap/stack string when needed.
+                collection_code = self._visit(collection)
+
+                # Use a temp variable to avoid evaluating the expression multiple times.
+                temp_str_var = f"_str_{loop_var}"
+
+                # Generate body code
+                body_code = self._visit(body)
+
+                result = f"char* {temp_str_var} = {collection_code};\n"
+                result += f"for (int {loop_idx} = 0; {temp_str_var}[{loop_idx}] != '\\0'; {loop_idx}++) {{\n"
+                if var_type == "string":
+                    # Wrap the char in a tiny stack-allocated string so the body can treat it
+                    # as a `char*` (firescript `string`).
+                    result += f"char __{mangled_loop_var}_buf[2] = {{{temp_str_var}[{loop_idx}], '\\0'}};\n"
+                    result += f"char* {mangled_loop_var} = __{mangled_loop_var}_buf;\n"
+                else:
+                    result += f"char {mangled_loop_var} = {temp_str_var}[{loop_idx}];\n"
+                if body_code.startswith('{') and body_code.endswith('}'):
+                    result += body_code.strip()[1:-1]
+                else:
+                    result += body_code
+                result += "\n}"
+            elif collection.node_type == NodeTypes.ARRAY_LITERAL:
                 # For array literals, we need to create a temporary array
                 elements = collection.children or []
                 collection_size = len(elements)

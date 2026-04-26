@@ -1,0 +1,65 @@
+import @firescript/std.io.{print, println};
+import @firescript/std.fs.{File, ok, result_data, err_code};
+
+// Solution for a coding challenge, being used as a test
+
+File file = File("tests/sources/hackathon8_input.txt");
+
+FileResult r = file.read();
+
+if (ok(r)) {
+    bool sign = false; // true: +, false: -
+
+    bool not_first = false;
+
+    string number = "";
+
+    int32 total = 0i32;
+
+    for (string ch in result_data(r)) {
+        if (ch == "+" || ch == "-") {
+            if (not_first) {
+                // convert number to int, add/subtract based on sign
+                int32 n = (number as int32);
+
+                if (sign) {
+                    total = total + n;
+                } else {
+                    total = total - n;
+                }
+
+                number = "";
+            }
+
+            // read sign
+            if (ch == "+") { sign = true; }
+            else if (ch == "-") { sign = false; }
+            else {
+                println("shits broke, cant read sign");
+                break;
+            }
+
+            not_first = true;
+        } else {
+            if (ch == "\n" || ch == "\r") {
+                continue;
+            }
+
+            // read number
+            number = number + ch;
+        }
+    }
+
+    int32 n = (number as int32);
+
+    if (sign) {
+        total = total + n;
+    } else {
+        total = total - n;
+    }
+
+    println(total);
+} else {
+    print("error: ");
+    println(err_code(r));
+}

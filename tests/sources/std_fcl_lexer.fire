@@ -1,0 +1,31 @@
+import @firescript/std.fcl.FclLexTokenResult;
+import @firescript/std.fcl.next_token;
+import @firescript/std.fcl.status;
+import @firescript/std.fcl.kind;
+import @firescript/std.fcl.lexeme;
+import @firescript/std.fcl.start;
+import @firescript/std.fcl.end;
+import @firescript/std.fcl.next_index;
+import @firescript/std.io.println;
+
+string src = "appName = \"firescript\", port: 8080 enabled = true";
+int32 index = 0;
+
+while (true) {
+    FclLexTokenResult token = next_token(src, index);
+
+    println(status(token));
+    println(kind(token));
+    println(lexeme(token));
+    println(start(token));
+    println(end(token));
+
+    if (kind(token) == "eof") {
+        break;
+    }
+    if (status(token) < 0) {
+        break;
+    }
+
+    index = next_index(token);
+}

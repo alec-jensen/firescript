@@ -9,6 +9,7 @@ firescript includes a standard library under the `@firescript/std` namespace, pr
 - [Math](math.md): Mathematical constants and functions
 - [Command-Line Arguments](cli_args.md): Argument parsing for CLI programs
 - [Types](types.md): Generic container types (`Tuple`, `Option`)
+- FCL Lexer: Lexer for parsing FireScript Configuration Language (FCL) data
 
 ## Importing
 
@@ -18,12 +19,14 @@ Standard library modules are imported using `@firescript/std` namespace syntax:
 import @firescript/std.io.println;
 import @firescript/std.fs.File;
 import @firescript/std.math.PI64;
+import @firescript/std.fcl.next_token;  // FCL lexer
 ```
 
 You can also import at the module level:
 
 ```firescript
 import @firescript/std.io;  // imports all I/O exports
+import @firescript/std.fcl;  // imports all FCL lexer functions
 ```
 
 Or use wildcard imports:

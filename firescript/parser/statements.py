@@ -180,11 +180,18 @@ class StatementsMixin(ExpressionsMixin):
             self.advance()  # consume >
             composite_type = self._register_generic_class_instance(type_token.value, type_args)
 
-        # Optional array suffix []
+        # Optional array suffix [] or [N]
         is_array = False
+        array_size = None
         if self.current_token and self.current_token.type == "OPEN_BRACKET":
-            # Expect a matching CLOSE_BRACKET
             self.advance()
+            if self.current_token and self.current_token.type == "INTEGER_LITERAL":
+                try:
+                    array_size = int(self.current_token.value)
+                except ValueError:
+                    self.expected_token_error("integer size in array type declaration", self.current_token)
+                    return None
+                self.advance()
             if not self.consume("CLOSE_BRACKET"):
                 self.expected_token_error(
                     "']' after '[' in array type declaration",
@@ -199,18 +206,22 @@ class StatementsMixin(ExpressionsMixin):
             self.expected_token_error("variable name after type", self.current_token)
             return None
 
-        # Assignment
-        if not self.consume("ASSIGN"):
+        # Assignment - optional when array size is explicitly declared
+        if self.current_token and self.current_token.type == "ASSIGN":
+            self.advance()
+            value = self.parse_expression()
+            if value is None:
+                self.expected_token_error(
+                    "initializer expression in variable declaration",
+                    self.current_token,
+                )
+                return None
+        elif array_size is not None:
+            # Sized array with no initializer: synthesize an empty array literal
+            # Codegen will zero-initialize based on array_size
+            value = ASTNode(NodeTypes.ARRAY_LITERAL, identifier, "array", [], identifier.index)
+        else:
             self.expected_token_error("'=' in variable declaration", self.current_token)
-            return None
-
-        # Initializer expression
-        value = self.parse_expression()
-        if value is None:
-            self.expected_token_error(
-                "initializer expression in variable declaration",
-                self.current_token,
-            )
             return None
 
         effective_type = composite_type if composite_type is not None else self._normalize_type_name(type_token)
@@ -228,6 +239,7 @@ class StatementsMixin(ExpressionsMixin):
             is_ref_counted=(
                 True if (type_token.value in ("string",) or is_array) else False
             ),
+            array_size=array_size,
         )
         return node
 

@@ -753,66 +753,11 @@ class TypeSystemMixin(StatementsMixin):
 
             if isinstance(object_type, str) and object_type.endswith("[]"):  # It's an array method
                 elem_type = object_type[:-2]
-                if method_name == "append":
-                    if len(arg_types) == 1:
-                        if arg_types[0] == elem_type:
-                            node.return_type = object_type  # append returns the array itself (or void?) - let's say array type for chaining
-                        else:
-                            self.invalid_type_error(
-                                f"Method 'append' for {object_type} expected element type {elem_type}, got {arg_types[0]}",
-                                node.children[1].token,
-                            )
-                    else:
-                        self.invalid_type_error(
-                            f"Method 'append' expected 1 argument, got {len(arg_types)}",
-                            node.token,
-                        )
-                elif method_name == "insert":
-                    if len(arg_types) == 2:
-                        if arg_types[0] in self.INTEGER_TYPES:
-                            if arg_types[1] == elem_type:
-                                node.return_type = object_type
-                            else:
-                                self.invalid_type_error(
-                                    f"Method 'insert' for {object_type} expected element type {elem_type}, got {arg_types[1]}",
-                                    node.children[2].token,
-                                )
-                        else:
-                            self.invalid_type_error(
-                                f"Method 'insert' expected integer index as first argument, got {arg_types[0]}",
-                                node.children[1].token,
-                            )
-                    else:
-                        self.invalid_type_error(
-                            f"Method 'insert' expected 2 arguments (index, element), got {len(arg_types)}",
-                            node.token,
-                        )
-                elif method_name == "pop":
-                    if len(arg_types) == 0:  # Pop last
-                        node.return_type = elem_type
-                    elif len(arg_types) == 1:  # Pop at index
-                        if arg_types[0] in self.INTEGER_TYPES:
-                            node.return_type = elem_type
-                        else:
-                            self.invalid_type_error(
-                                f"Method 'pop' expected integer index, got {arg_types[0]}",
-                                node.children[1].token,
-                            )
-                    else:
-                        self.invalid_type_error(
-                            f"Method 'pop' expected 0 or 1 argument, got {len(arg_types)}",
-                            node.token,
-                        )
-                elif method_name == "clear":
-                    if len(arg_types) == 0:
-                        node.return_type = (
-                            "void"  # Or None? Let's use void consistently
-                        )
-                    else:
-                        self.invalid_type_error(
-                            f"Method 'clear' expected 0 arguments, got {len(arg_types)}",
-                            node.token,
-                        )
+                if method_name in ("append", "insert", "pop", "clear"):
+                    self.invalid_type_error(
+                        f"Arrays are fixed-size; method '{method_name}' is not supported",
+                        node.token,
+                    )
                 elif method_name in ("length", "size"):
                     if len(arg_types) == 0:
                         node.return_type = "int32"

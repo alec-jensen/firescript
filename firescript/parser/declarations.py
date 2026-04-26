@@ -179,10 +179,18 @@ class DeclarationsMixin(TypeSystemMixin):
                     return None
                 ptype_tok = self.current_token
                 self.advance()
-                # Optional array suffix for parameter type
+                # Optional array suffix for parameter type: [] or [N]
                 p_is_array = False
+                p_array_size = None
                 if self.current_token and self.current_token.type == "OPEN_BRACKET":
                     self.advance()
+                    if self.current_token and self.current_token.type == "INTEGER_LITERAL":
+                        try:
+                            p_array_size = int(self.current_token.value)
+                        except ValueError:
+                            self.expected_token_error("integer size in array parameter type", self.current_token)
+                            return None
+                        self.advance()
                     if not self.consume("CLOSE_BRACKET"):
                         self.expected_token_error(
                             "']' after '[' in array parameter type",
@@ -206,6 +214,7 @@ class DeclarationsMixin(TypeSystemMixin):
                     None,
                     p_is_array,
                     p_is_array,
+                    array_size=p_array_size,
                 )
                 # Mark parameter as borrowed
                 setattr(param_node, "is_borrowed", p_is_borrowed)

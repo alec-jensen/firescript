@@ -1,0 +1,38 @@
+// firescript std.fcl package entrypoint
+
+import @firescript/std.fcl.lexer.FclLexTokenResult;
+import @firescript/std.fcl.lexer.lex_next;
+import @firescript/std.fcl.lexer.token_status;
+import @firescript/std.fcl.lexer.token_kind;
+import @firescript/std.fcl.lexer.token_lexeme;
+import @firescript/std.fcl.lexer.token_start;
+import @firescript/std.fcl.lexer.token_end;
+import @firescript/std.fcl.lexer.token_next_index;
+
+export FclLexTokenResult next_token(string source, int32 index) {
+    return lex_next(source, index);
+}
+
+export int32 status(&FclLexTokenResult token) {
+    return token_status(token);
+}
+
+export string kind(&FclLexTokenResult token) {
+    return token_kind(token);
+}
+
+export string lexeme(&FclLexTokenResult token) {
+    return token_lexeme(token);
+}
+
+export int32 start(&FclLexTokenResult token) {
+    return token_start(token);
+}
+
+export int32 end(&FclLexTokenResult token) {
+    return token_end(token);
+}
+
+export int32 next_index(&FclLexTokenResult token) {
+    return token_next_index(token);
+}

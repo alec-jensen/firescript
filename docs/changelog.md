@@ -13,6 +13,10 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - Expanded `@firescript/std.cli.args` parsing helpers to support grouped short flags (for example `-abc`), `--name=value` / `-n=value` option forms, `--` terminator handling, and parsed positional value lookup.
 - Added support for logical operators `&&`, `||`, and unary `!` in expressions and conditions.
 - Added support for exponentiation operator `**`.
+- Added sized array declarations with optional initializers (e.g., `int32[10]` or `int32[10] = [1, 2, 3]`). Arrays without explicit initializers are zero-initialized.
+- Added string iteration in `for-in` loops (e.g., `for (string ch in "hello")`), iterating over individual characters.
+- Added string-to-numeric type casting via `as` operator (e.g., `("42" as int32)`, `("3.14" as float64)`).
+- Added `@firescript/std.fcl` standard library module with FCL (FireScript Configuration Language) lexer for parsing configuration data.
 
 ### Breaking Changes
 - Removed built-in `input()` function.

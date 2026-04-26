@@ -41,7 +41,7 @@ These values are stored on the heap with pointers on the stack and use move sema
 
 ### Explicit Casts (`as`)
 
-firescript requires **explicit** numeric conversions. There are no implicit casts between integer widths/signedness.
+firescript requires **explicit** conversions. There are no implicit casts between types.
 
 Use Rust-style casts:
 
@@ -49,13 +49,21 @@ Use Rust-style casts:
 int8 myInt = (59i16 as int8);
 uint8 u = (255i16 as uint8);
 float64 f = (42i32 as float64);
+
+// String to numeric conversions
+int32 num = ("42" as int32);
+float64 pi = ("3.14159" as float64);
+int64 bigNum = ("9223372036854775807" as int64);
 ```
 
 Notes:
 
 * `as` is a postfix operator: `expr as type`.
 * For readability, parentheses are recommended when mixing with other operators.
-* `as` is currently supported for numeric-to-numeric casts.
+* `as` is supported for:
+  - Numeric-to-numeric casts (with possible loss of precision or overflow)
+  - String-to-numeric casts (using standard C conversion functions: `atoi`, `atoll`, `atof`)
+  - Built-in type conversions to `string` (via `+ ""` concatenation)
 
 ### Integer Type (`intN` and `uintN`)
 

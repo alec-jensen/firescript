@@ -8,23 +8,30 @@ In firescript, arrays are fixed-size, ordered collections of elements that all s
 
 ## Declaration and Initialization
 
-Arrays are declared by appending `[N]` to any valid type and initializing with values in square brackets:
+Arrays are declared by appending `[N]` to any valid type, where `N` is the fixed size. Arrays can be initialized with values in square brackets, or left uninitialized to be zero-initialized:
 
 ```firescript
-// Array initialization with values
-int8[] numbers = [10, 20, 30, 40, 50];
-string[] names = ["Alice", "Bob", "Charlie"];
-bool[] flags = [true, false, true];
+// Array initialization with explicit values
+int8[5] numbers = [10, 20, 30, 40, 50];
+string[3] names = ["Alice", "Bob", "Charlie"];
+bool[3] flags = [true, false, true];
+
+// Array with declared size, zero-initialized
+int32[10] zeros = [];           // All elements are 0
+float32[100] empty = [];        // All elements are 0.0
+
+// Array with declared size and partial initializer
+int32[5] partial = [1, 2, 3];   // Error: initializer size must match declared size
 ```
 
-All elements in an array must be of the same type as specified in the declaration.
+All elements in an array must be of the same type as specified in the declaration. The declared size must match the number of initializer elements if an initializer is provided.
 
 ## Accessing Array Elements
 
 Individual array elements can be accessed using zero-based indexing:
 
 ```firescript
-int8[] scores = [85, 92, 78, 90, 88];
+int8[5] scores = [85, 92, 78, 90, 88];
 
 // Access individual elements
 int8 firstScore = scores[0];    // 85
@@ -32,6 +39,10 @@ int8 thirdScore = scores[2];    // 78
 
 // Modifying elements
 scores[1] = 95;                // Array becomes [85, 95, 78, 90, 88]
+
+// Negative indexing (from end)
+int8 lastScore = scores[-1];    // 88 (last element)
+int8 secondLast = scores[-2];   // 90 (second to last)
 ```
 
 ⚠️ **Warning:** Accessing an index outside the array bounds will cause a runtime error. Always ensure your index is valid before access.
@@ -51,24 +62,40 @@ int8 size = data.length();      // size = 5
 
 ### Iterating Over Arrays
 
-Use a `while` loop with an index variable to iterate over array elements:
+Use a `while` loop with an index variable, or a `for-in` loop to iterate over array elements:
 
 ```firescript
-string[] cities = ["New York", "London", "Tokyo", "Paris", "Sydney"];
+string[5] cities = ["New York", "London", "Tokyo", "Paris", "Sydney"];
+
+// Using while loop with index
 uint8 i = 0;
 while (i < cities.length()) {
     print(cities[i]);
     i = i + 1;
 }
+
+// Using for-in loop (preferred)
+for (string city in cities) {
+    print(city);
+}
+```
+
+String iteration is also supported with `for-in`, iterating over individual characters:
+
+```firescript
+string text = "hello";
+for (string ch in text) {
+    print(ch);  // Prints: h, e, l, l, o
+}
 ```
 
 ### Array as Function Arguments
 
-Arrays can be passed to functions:
+Arrays can be passed to functions. Function parameters can specify a fixed array size or use a size placeholder:
 
 ```firescript
-// Example of how it would work when user-defined functions are implemented
-int32 sum(int8[] numbers) {
+// Function with sized array parameter
+int32 sum(&int8[5] numbers) {
     int32 total = 0;
     uint8 i = 0;
     while (i < numbers.length()) {
@@ -79,7 +106,7 @@ int32 sum(int8[] numbers) {
 }
 
 // Usage
-int8[] values = [1, 2, 3, 4, 5];
+int8[5] values = [1, 2, 3, 4, 5];
 int32 result = sum(values);  // 15
 ```
 
@@ -104,7 +131,7 @@ int8 element = matrix[1][2];  // 6
 ### Finding an Element
 
 ```firescript
-int8[] numbers = [10, 20, 30, 40, 50];
+int8[5] numbers = [10, 20, 30, 40, 50];
 int8 target = 30;
 int8 index = -1;
 uint8 i = 0;
@@ -118,6 +145,19 @@ while (i < numbers.length()) {
 }
 
 // index = 2 if found, -1 if not found
+```
+
+### Counting Occurrences
+
+```firescript
+int8[10] data = [1, 2, 1, 3, 1, 2, 1, 4, 5, 1];
+int8 count = 0;
+for (int8 val in data) {
+    if (val == 1) {
+        count = count + 1;
+    }
+}
+// count = 5
 ```
 
 ## Features Not Yet Implemented

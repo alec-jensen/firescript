@@ -1,0 +1,90 @@
+import @firescript/std.io.{print, println};
+import @firescript/std.fs.{File, ok, result_data, err_code};
+
+// Solution for a coding challenge, being used as a test
+
+File file = File("tests/sources/hackathon8_input.txt");
+
+FileResult r = file.read();
+
+bool contains(int16 n, &int16[] a) {
+    for (int16 e in a) {
+        if (e == n) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+if (ok(r)) {
+    bool sign = false; // true: +, false: -
+
+    bool not_first = false;
+
+    string number = "";
+
+    int16[1000] nums = [];
+    int8 idx = 0i8;
+    int16[1000] frequencies = [];
+
+    for (string ch in result_data(r)) {
+        if (ch == "+" || ch == "-") {
+            if (not_first) {
+                // convert number to int, add/subtract based on sign
+                int16 n = (number as int16);
+
+                if (contains(n, nums)) {
+                    int16 n_idx = 0i16;
+
+                    for (int16 n1 in nums) {
+                        if (n1 == n) {
+                            break;
+                        }
+
+                        n_idx++;
+                    }
+
+                    frequencies[n_idx] = frequencies[n_idx] + 1i16;
+                } else {
+                    idx++;
+                    nums[idx] = n;
+                }
+
+                number = "";
+            }
+
+            // read sign
+            if (ch == "+") { sign = true; }
+            else if (ch == "-") { sign = false; }
+            else {
+                println("shits broke, cant read sign");
+                break;
+            }
+
+            not_first = true;
+        } else {
+            if (ch == "\n" || ch == "\r") {
+                continue;
+            }
+
+            // read number
+            number = number + ch;
+        }
+    }
+
+    int16 max_n = -1i16;
+    int16 max_f = -1i16;
+
+    for (uint8 i=0u8; i<(idx as uint8) + 1u8;i++) {
+        if (frequencies[i] > max_f) {
+            max_n = nums[i];
+            max_f = frequencies[i];
+        }
+    }
+
+    println(max_n);
+} else {
+    print("error: ");
+    println(err_code(r));
+}

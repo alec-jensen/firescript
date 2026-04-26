@@ -20,6 +20,7 @@ class ASTNode:
         return_type: Optional[str] = None,
         is_array: bool = False,
         is_ref_counted: bool = False,
+        array_size: Optional[int] = None,
     ):
         self.node_type: NodeTypes = node_type
         self.token = token
@@ -43,6 +44,7 @@ class ASTNode:
         self.return_type: Optional[str] = return_type
         self.is_array: bool = is_array
         self.is_ref_counted: bool = is_ref_counted
+        self.array_size: Optional[int] = array_size
         self.parent: Optional[ASTNode] = None  # Parent is typically set externally
         # Optional semantic metadata; populated by analysis passes
         self.value_category = None

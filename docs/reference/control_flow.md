@@ -219,11 +219,11 @@ Loops and conditional statements can be combined to create powerful control flow
 ```firescript
 import @firescript/std.io.print;
 
-int8[] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+int8[10] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 int8 sum = 0;
 uint8 i = 0;
 
-while (i < numbers.length) {
+while (i < numbers.length()) {
     if (numbers[i] % 2 == 0) {
         sum = sum + numbers[i]; // Add only even numbers
     }
@@ -295,12 +295,12 @@ for (int32 i = 0; i < 3; i++) {
 
 ### For-In Loops
 
-For-in loops iterate over elements in a collection (currently arrays). The loop variable must be declared with a type:
+For-in loops iterate over elements in a collection (arrays or strings). The loop variable must be declared with a type:
 
 ```firescript
 import @firescript/std.io.println;
 
-int32[] numbers = [1, 2, 3, 4, 5];
+int32[5] numbers = [1, 2, 3, 4, 5];
 for (int32 num in numbers) {
     println(num);
 }
@@ -313,6 +313,17 @@ import @firescript/std.io.println;
 
 for (int32 value in [10, 20, 30, 40, 50]) {
     println(value);
+}
+```
+
+String iteration with for-in:
+
+```firescript
+import @firescript/std.io.println;
+
+string text = "hello";
+for (string ch in text) {
+    println(ch);  // Prints each character: h, e, l, l, o
 }
 ```
 
