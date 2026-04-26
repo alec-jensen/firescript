@@ -1469,15 +1469,18 @@
 <li><a href="../math/">Math</a>: Mathematical constants and functions</li>
 <li><a href="../cli_args/">Command-Line Arguments</a>: Argument parsing for CLI programs</li>
 <li><a href="../types/">Types</a>: Generic container types (<code>Tuple</code>, <code>Option</code>)</li>
+<li>FCL Lexer: Lexer for parsing FireScript Configuration Language (FCL) data</li>
 </ul>
 <h2 id="importing">Importing<a class="headerlink" href="#importing" title="Permanent link">&para;</a></h2>
 <p>Standard library modules are imported using <code>@firescript/std</code> namespace syntax:</p>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 import @firescript/std.fs.File;
 import @firescript/std.math.PI64;
+import @firescript/std.fcl.next_token;  // FCL lexer
 </code></pre>
 <p>You can also import at the module level:</p>
 <pre><code class="language-firescript">import @firescript/std.io;  // imports all I/O exports
+import @firescript/std.fcl;  // imports all FCL lexer functions
 </code></pre>
 <p>Or use wildcard imports:</p>
 <pre><code class="language-firescript">import @firescript/std.types.*;  // imports Tuple, Option, etc.

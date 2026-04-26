@@ -2062,11 +2062,11 @@ while (i &lt; 10) {
 <p>Loops and conditional statements can be combined to create powerful control flows:</p>
 <pre><code class="language-firescript">import @firescript/std.io.print;
 
-int8[] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+int8[10] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 int8 sum = 0;
 uint8 i = 0;
 
-while (i &lt; numbers.length) {
+while (i &lt; numbers.length()) {
     if (numbers[i] % 2 == 0) {
         sum = sum + numbers[i]; // Add only even numbers
     }
@@ -2121,10 +2121,10 @@ for (int32 i = 0; i &lt; 3; i++) {
 }
 </code></pre>
 <h3 id="for-in-loops">For-In Loops<a class="headerlink" href="#for-in-loops" title="Permanent link">&para;</a></h3>
-<p>For-in loops iterate over elements in a collection (currently arrays). The loop variable must be declared with a type:</p>
+<p>For-in loops iterate over elements in a collection (arrays or strings). The loop variable must be declared with a type:</p>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 
-int32[] numbers = [1, 2, 3, 4, 5];
+int32[5] numbers = [1, 2, 3, 4, 5];
 for (int32 num in numbers) {
     println(num);
 }
@@ -2134,6 +2134,14 @@ for (int32 num in numbers) {
 
 for (int32 value in [10, 20, 30, 40, 50]) {
     println(value);
+}
+</code></pre>
+<p>String iteration with for-in:</p>
+<pre><code class="language-firescript">import @firescript/std.io.println;
+
+string text = &quot;hello&quot;;
+for (string ch in text) {
+    println(ch);  // Prints each character: h, e, l, l, o
 }
 </code></pre>
 <h3 id="break-and-continue-in-for-loops">Break and Continue in For Loops<a class="headerlink" href="#break-and-continue-in-for-loops" title="Permanent link">&para;</a></h3>

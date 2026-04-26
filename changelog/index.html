@@ -1854,6 +1854,10 @@
 <li>Expanded <code>@firescript/std.cli.args</code> parsing helpers to support grouped short flags (for example <code>-abc</code>), <code>--name=value</code> / <code>-n=value</code> option forms, <code>--</code> terminator handling, and parsed positional value lookup.</li>
 <li>Added support for logical operators <code>&amp;&amp;</code>, <code>||</code>, and unary <code>!</code> in expressions and conditions.</li>
 <li>Added support for exponentiation operator <code>**</code>.</li>
+<li>Added sized array declarations with optional initializers (e.g., <code>int32[10]</code> or <code>int32[10] = [1, 2, 3]</code>). Arrays without explicit initializers are zero-initialized.</li>
+<li>Added string iteration in <code>for-in</code> loops (e.g., <code>for (string ch in "hello")</code>), iterating over individual characters.</li>
+<li>Added string-to-numeric type casting via <code>as</code> operator (e.g., <code>("42" as int32)</code>, <code>("3.14" as float64)</code>).</li>
+<li>Added <code>@firescript/std.fcl</code> standard library module with FCL (FireScript Configuration Language) lexer for parsing configuration data.</li>
 </ul>
 <h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
 <ul>
