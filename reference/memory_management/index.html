@@ -505,6 +505,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../arrays/" class="md-nav__link">
         
   
@@ -1141,10 +1169,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_13" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
         
           
-          <label class="md-nav__link" for="__nav_2_13" id="__nav_2_13_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
             
   
   
@@ -1162,8 +1190,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_13">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1395,10 +1423,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
         
           
-          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
             
   
   
@@ -1416,8 +1444,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_14">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2044,7 +2072,7 @@
 <li>Borrowing is only defined for Owned types.</li>
 <li>A borrowed <code>&amp;OwnedType</code> is a non-owning, read-only view.</li>
 <li>A borrow cannot be stored in any owned field or global location that outlives the borrow expression/call.</li>
-<li>Mutability of Owned values occurs via methods on an owned receiver or a consuming pattern (no mutable borrow form yet).</li>
+<li>Mutability of Owned values occurs via methods with a <code>&amp;mut this</code> receiver (mutable borrow) or a consuming <code>this</code> receiver.</li>
 <li>If a function must retain or store a value, it must take ownership (<code>owned T</code>) or clone inside the borrow’s scope.</li>
 </ul>
 <p>TL;DRL Borrowing passes a read-only pointer.</p>
@@ -2074,8 +2102,9 @@ f.flush();
 <h3 id="7-method-receivers">7. Method Receivers<a class="headerlink" href="#7-method-receivers" title="Permanent link">&para;</a></h3>
 <p>Method receiver kinds apply only to Owned types (Copyable methods implicitly copy the receiver):</p>
 <ul>
-<li>Borrowed receiver (default for Owned): signature form <code>name(...) ReturnType</code> implicitly receives <code>&amp;OwnedType this</code> (read-only).</li>
-<li>Consuming receiver: <code>name(this, ...) ReturnType</code> takes ownership; caller's binding is invalid unless the method returns it.</li>
+<li><strong>Read-only borrow</strong> <code>&amp;this</code> — non-consuming, non-mutating. The method may read fields but the compiler rejects any assignment to <code>this.field</code>.</li>
+<li><strong>Mutable borrow</strong> <code>&amp;mut this</code> — non-consuming, mutating. The method may read and write fields. Use for constructors and state-modifying methods.</li>
+<li><strong>Consuming receiver</strong> <code>this</code> — takes ownership; caller's binding is invalid unless the method returns it.</li>
 </ul>
 <p>For Copyable types:
 - Methods always receive the value by copy; “consuming” semantics do not apply.</p>

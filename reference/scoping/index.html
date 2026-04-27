@@ -505,6 +505,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../arrays/" class="md-nav__link">
         
   
@@ -1064,10 +1092,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_13" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
         
           
-          <label class="md-nav__link" for="__nav_2_13" id="__nav_2_13_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
             
   
   
@@ -1085,8 +1113,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_13">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1318,10 +1346,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
         
           
-          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
             
   
   
@@ -1339,8 +1367,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_14">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1872,7 +1900,7 @@ if (globalVar &gt; 5) {
 <ul>
 <li><strong>Outer Scope Access:</strong> An inner scope can access variables declared in any of its enclosing (outer) scopes, all the way up to the global scope.</li>
 <li><strong>Inner Scope Isolation:</strong> An outer scope <em>cannot</em> access variables declared within any of its inner scopes. Once a scope block is exited, all variables declared directly within that scope are destroyed and become inaccessible.</li>
-<li><strong>Variable Shadowing:</strong> Variable shadowing is not allowed. firescript will throw an error if you try to declare a variable with the same name in an inner scope that already exists in an outer scope. This is to prevent confusion and ensure that the intended variable is always accessed.</li>
+<li><strong>Variable Shadowing:</strong> Variable shadowing is not allowed, since variables exist in their scope and all nested scopes. This means you cannot declare a variable with the same name as an existing variable in an outer scope.</li>
 </ul>
 <h2 id="detailed-scoping-rules">Detailed Scoping Rules<a class="headerlink" href="#detailed-scoping-rules" title="Permanent link">&para;</a></h2>
 <h3 id="1-variable-declaration-and-initialization">1. Variable Declaration and Initialization<a class="headerlink" href="#1-variable-declaration-and-initialization" title="Permanent link">&para;</a></h3>

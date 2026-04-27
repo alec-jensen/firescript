@@ -500,6 +500,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../reference/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../reference/arrays/" class="md-nav__link">
         
   
@@ -791,10 +819,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_13" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
         
           
-          <label class="md-nav__link" for="__nav_2_13" id="__nav_2_13_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
             
   
   
@@ -812,8 +840,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_13">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1045,10 +1073,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
         
           
-          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
             
   
   
@@ -1066,8 +1094,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_14">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1874,6 +1902,11 @@
 <h2 id="currently-in-development">Currently in development<a class="headerlink" href="#currently-in-development" title="Permanent link">&para;</a></h2>
 <h3 id="new-language-features">New Language Features<a class="headerlink" href="#new-language-features" title="Permanent link">&para;</a></h3>
 <ul>
+<li>Added <code>char</code> type — a copyable, stack-allocated scalar representing a single character. Initialized with single-character string literals (<code>char c = "A"</code>).</li>
+<li>Added character literal syntax with single quotes (<code>'A'</code>, <code>'\n'</code>).</li>
+<li>Added <code>&amp;mut this</code> receiver syntax for mutable borrowing in methods. Methods can now declare <code>&amp;this</code> for read-only access or <code>&amp;mut this</code> for mutable access, with compiler enforcement preventing field mutation through read-only receivers.</li>
+<li>Added <code>string.length()</code> method, returning an <code>int32</code> count of characters.</li>
+<li>String concatenation now requires both operands to be strings (<code>string + string</code>). Implicit type conversion is no longer allowed; use explicit <code>as</code> casting instead (e.g., <code>"value: " + (42 as string)</code>).</li>
 <li>Added explicit module exports with top-level <code>export</code> declarations. Module symbols are private by default and imports can only access exported symbols.</li>
 <li>Added generic classes with multiple type parameters (e.g., <code>class Pair&lt;T, U&gt; { ... }</code>). Monomorphization is performed automatically at each use site.</li>
 <li><code>Tuple&lt;T, U&gt;</code>, <code>CopyableTuple&lt;T, U&gt;</code>, <code>Option&lt;T&gt;</code>, and <code>CopyableOption&lt;T&gt;</code> are now provided by the standard library (<code>@firescript/std.types</code>).</li>
@@ -1892,6 +1925,7 @@
 <ul>
 <li>Removed built-in <code>input()</code> function.</li>
 <li>Modules now need to explicitly export symbols to be imported by other modules. Top-level declarations are private by default.</li>
+<li>String concatenation no longer performs implicit type conversion. Both operands must be strings; use explicit <code>as</code> casting for non-string values.</li>
 </ul>
 <h3 id="compiler-improvements">Compiler improvements<a class="headerlink" href="#compiler-improvements" title="Permanent link">&para;</a></h3>
 <ul>

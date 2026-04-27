@@ -505,6 +505,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../arrays/" class="md-nav__link">
         
   
@@ -926,10 +954,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_13" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
         
           
-          <label class="md-nav__link" for="__nav_2_13" id="__nav_2_13_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
             
   
   
@@ -947,8 +975,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_13">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1180,10 +1208,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
         
           
-          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
             
   
   
@@ -1201,8 +1229,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_14">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1557,7 +1585,7 @@ returnType functionName(paramType1 param1, paramType2 param2) {
 }
 
 // Examples:
-int add(int a, int b) {
+int32 add(int32 a, int32 b) {
     return a + b;
 }
 
@@ -1565,14 +1593,14 @@ void greet(string name) {
     print(&quot;Hello, &quot; + name);
 }
 
-float calculateAverage(int[] numbers) {
-    int sum = 0;
-    int i = 0;
-    while (i &lt; numbers.length) {
+float calculateAverage(int32[] numbers) {
+    int32 sum = 0;
+    int32 i = 0;
+    while (i &lt; numbers.length()) {
         sum = sum + numbers[i];
         i = i + 1;
     }
-    return toFloat(sum) / toFloat(numbers.length);
+    return (sum as float32) / (numbers.length() as float32);
 }
 </code></pre>
 <h3 id="ownership-notes-planned-semantics">Ownership Notes (Planned Semantics)<a class="headerlink" href="#ownership-notes-planned-semantics" title="Permanent link">&para;</a></h3>
@@ -1669,8 +1697,6 @@ float add(float a, float b) {
 </code></pre>
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <ul>
-<li>✅ Built-in functions: <code>print</code>, <code>input</code>, type conversions, <code>typeof</code></li>
-<li>✅ Array methods: <code>append</code>, <code>insert</code>, <code>pop</code>, <code>clear</code>, <code>length</code></li>
 <li>✅ User-defined function definitions</li>
 <li>✅ Methods on objects</li>
 <li>❌ Optional, named, or variadic parameters</li>

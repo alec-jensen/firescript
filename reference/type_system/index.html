@@ -505,6 +505,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../arrays/" class="md-nav__link">
         
   
@@ -1558,10 +1586,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_13" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
         
           
-          <label class="md-nav__link" for="__nav_2_13" id="__nav_2_13_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
             
   
   
@@ -1579,8 +1607,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_13">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1812,10 +1840,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
         
           
-          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
             
   
   
@@ -1833,8 +1861,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_14">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2949,6 +2977,7 @@ float64 f64Value = 3.14f64;
 float128 f128Value = 3.14f128;
 </code></pre>
 <h4 id="special-floating-point-values">Special Floating Point Values<a class="headerlink" href="#special-floating-point-values" title="Permanent link">&para;</a></h4>
+<p><em>Floating point operations follow IEEE 754 semantics.</em></p>
 <p>Floating point types support special values such as <code>NaN</code> (Not a Number), <code>Infinity</code>, and <code>-Infinity</code>:</p>
 <pre><code class="language-firescript">float32 notANumber = 0.0f32 / 0.0f32;  // NaN
 float64 positiveInfinity = 1.0f64 / 0.0f64;  // Infinity
@@ -2991,7 +3020,7 @@ string&quot;;
 <li>Comparison: <code>==</code>, <code>!=</code></li>
 </ul>
 <h3 id="character-type-char">Character Type (<code>char</code>)<a class="headerlink" href="#character-type-char" title="Permanent link">&para;</a></h3>
-<p>The <code>char</code> type represents a single character and is currently implemented as a string with length 1.</p>
+<p>The <code>char</code> type represents a single character. Unlike strings, <code>char</code> is a copyable type and is stored on the stack. It can be initialized with a single character string literal.</p>
 <pre><code class="language-firescript">char letter = &quot;A&quot;;
 char digit = &quot;7&quot;;
 char newline = &quot;\n&quot;;  // Special character
@@ -3042,37 +3071,38 @@ print(data);  // Might try to print null
 <h2 id="type-compatibility-and-conversions">Type Compatibility and Conversions<a class="headerlink" href="#type-compatibility-and-conversions" title="Permanent link">&para;</a></h2>
 <p>firescript has strict typing rules and requires explicit type conversions using casting syntax.</p>
 <h3 id="explicit-type-casting">Explicit Type Casting<a class="headerlink" href="#explicit-type-casting" title="Permanent link">&para;</a></h3>
-<p>To convert between types, use Java-style casting with parentheses:</p>
+<p>To convert between types, use postfix casting with <code>as</code>.</p>
+<p>firescript uses Rust-style postfix casting; Java/C-style casts are not supported.</p>
 <pre><code class="language-firescript">// Numeric conversions
 int32 intVal = 42;
-float64 floatVal = (float64)intVal;     // 42.0
+float64 floatVal = intVal as float64;     // 42.0
 
 float32 pi = 3.14f32;
-int32 truncated = (int32)pi;            // 3 (truncates decimal)
+int32 truncated = pi as int32;            // 3 (truncates decimal)
 
 // Between numeric types
 int8 small = 100i8;
-int64 large = (int64)small;             // 100i64
+int64 large = small as int64;             // 100i64
 
 uint32 unsigned = 42u32;
-int32 signed = (int32)unsigned;         // 42i32
+int32 signed = unsigned as int32;         // 42i32
 
 // String conversions
 string numStr = &quot;42&quot;;
-int32 parsed = (int32)numStr;           // 42
-float64 parsedFloat = (float64)&quot;3.14&quot;;  // 3.14
+int32 parsed = numStr as int32;           // 42
+float64 parsedFloat = &quot;3.14&quot; as float64;  // 3.14
 
 // To string
-string str1 = (string)42;               // &quot;42&quot;
-string str2 = (string)3.14f32;          // &quot;3.14&quot;
-string str3 = (string)true;             // &quot;true&quot;
+string str1 = 42 as string;               // &quot;42&quot;
+string str2 = 3.14f32 as string;          // &quot;3.14&quot;
+string str3 = true as string;             // &quot;true&quot;
 
 // Boolean conversions
-bool fromString = (bool)&quot;true&quot;;         // true
-bool fromInt = (bool)1;                 // true (non-zero is true)
+bool fromString = &quot;true&quot; as bool;         // true
+bool fromInt = 1 as bool;                 // true (non-zero is true)
 
 // Character conversions
-char first = (char)&quot;Hello&quot;;             // &quot;H&quot; - first character
+char first = &quot;Hello&quot; as char;             // &quot;H&quot; - first character
 </code></pre>
 <p><strong>Casting Rules:</strong></p>
 <ol>
@@ -3086,8 +3116,8 @@ char first = (char)&quot;Hello&quot;;             // &quot;H&quot; - first chara
 </ol>
 <p><strong>Invalid Casts:</strong></p>
 <p>Some casts are not allowed and will result in compile-time errors:</p>
-<pre><code class="language-firescript">// int32 x = (int32)[1, 2, 3];  // ❌ Error: Cannot cast array to int32
-// bool b = (bool)&quot;hello&quot;;       // ⚠️ Runtime error: Invalid boolean string
+<pre><code class="language-firescript">// int32 x = [1, 2, 3] as int32;  // ❌ Error: Cannot cast array to int32
+// bool b = &quot;hello&quot; as bool;       // ⚠️ Runtime error: Invalid boolean string
 </code></pre>
 <h3 id="mixed-type-arithmetic">Mixed-Type Arithmetic<a class="headerlink" href="#mixed-type-arithmetic" title="Permanent link">&para;</a></h3>
 <p>firescript does <strong>not</strong> perform implicit type conversions in arithmetic operations. When performing operations between different types or precisions, you must explicitly cast to the desired result type.</p>
@@ -3097,8 +3127,8 @@ int64 b = 20i64;
 // int32 result = a + b;  // ❌ Error: Cannot mix int32 and int64
 
 // Must explicitly cast to desired type
-int32 result1 = (int32)(a + (int32)b);  // Cast b to int32 first
-int64 result2 = (int64)((int64)a + b);  // Cast a to int64 first
+int32 result1 = a + (b as int32);  // Cast b to int32 first
+int64 result2 = (a as int64) + b;  // Cast a to int64 first
 
 // Mixed integer and float
 int32 intVal = 5;
@@ -3106,8 +3136,8 @@ float32 floatVal = 2.5f32;
 
 // float32 mixed = intVal + floatVal;  // ❌ Error: Cannot mix int32 and float32
 
-float32 result3 = (float32)((float32)intVal + floatVal);  // Cast int to float
-int32 result4 = (int32)((int32)floatVal + intVal);        // Cast float to int (truncates)
+float32 result3 = (intVal as float32) + floatVal;  // Cast int to float
+int32 result4 = (floatVal as int32) + intVal;      // Cast float to int (truncates)
 
 // Different float precisions
 float32 f32 = 3.14f32;
@@ -3115,8 +3145,8 @@ float64 f64 = 2.71f64;
 
 // float64 sum = f32 + f64;  // ❌ Error: Cannot mix float32 and float64
 
-float64 result5 = (float64)((float64)f32 + f64);  // Cast to float64
-float32 result6 = (float32)(f32 + (float32)f64);  // Cast to float32
+float64 result5 = (f32 as float64) + f64;  // Cast to float64
+float32 result6 = f32 + (f64 as float32);  // Cast to float32
 </code></pre>
 <p><strong>Design Rationale:</strong></p>
 <p>This explicit approach prevents silent precision loss and makes data type conversions visible in the code, aligning with firescript's philosophy of explicitness and safety.</p>
@@ -4056,7 +4086,13 @@ class Point {
 <li>✅ Nullable type modifiers</li>
 <li>✅ Arrays (as Owned heap-allocated types)</li>
 <li>✅ Static type checking for expressions and assignments</li>
-<li>⚠️ Explicit type casting (only for numeric types at present)</li>
+<li>✅ Generics</li>
+<li>✅ Generic functions</li>
+<li>✅ Type constraints with interfaces</li>
+<li>✅ Type union constraints (<code>T: int32 | float64</code>)</li>
+<li>✅ Generic classes</li>
+<li>✅ Type inference for generics</li>
+<li>⚠️ Explicit type casting (only for numeric types, <code>string</code>, and <code>bool</code> at present)</li>
 </ul>
 <p>Not yet implemented:</p>
 <ul>
@@ -4072,13 +4108,6 @@ class Point {
 <li>❌ Default implementations in interfaces</li>
 <li>❌ Associated types</li>
 <li>❌ Interface objects / dynamic dispatch</li>
-<li>❌ Generics (syntax and semantics documented, implementation pending)</li>
-<li>❌ Generic functions</li>
-<li>❌ Type constraints with interfaces</li>
-<li>❌ Type union constraints (<code>T: int32 | float64</code>)</li>
-<li>❌ Generic classes</li>
-<li>❌ Type inference for generics</li>
-<li>❌ User-defined types (classes)</li>
 <li>❌ Function types</li>
 </ul>
 

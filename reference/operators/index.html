@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://firescript.alecj.com/reference/control_flow/">
+        <link rel="canonical" href="https://firescript.alecj.com/reference/operators/">
       
       
-        <link rel="prev" href="../arrays/">
+        <link rel="prev" href="../variables/">
       
       
-        <link rel="next" href="../functions/">
+        <link rel="next" href="../arrays/">
       
       
         
@@ -25,7 +25,7 @@
     
     
       
-        <title>Control Flow - firescript</title>
+        <title>Operators - firescript</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#control-flow" class="md-skip">
+        <a href="#operators" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Control Flow
+              Operators
             
           </span>
         </div>
@@ -502,10 +502,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../operators/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -521,6 +548,158 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#arithmetic-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arithmetic Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compound-assignment-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compound Assignment Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#increment-and-decrement-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Increment and Decrement Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logical-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logical Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cast-operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cast Operator
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ternary-operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ternary Operator
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bitwise-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bitwise Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operator-precedence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator Precedence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#array-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Array Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -558,37 +737,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Control Flow
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../control_flow/" class="md-nav__link">
         
   
   
@@ -604,298 +756,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#introduction-to-control-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Introduction to Control Flow
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#conditional-statements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Conditional Statements
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Conditional Statements">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#basic-if-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Basic If Statement
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#if-else-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        If-Else Statement
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#if-else-if-else-chains" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        If-Else If-Else Chains
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nested-conditional-statements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Nested Conditional Statements
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#boolean-expressions-in-conditions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Boolean Expressions in Conditions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Loops
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Loops">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#while-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        While Loops
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="While Loops">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#infinite-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Infinite Loops
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#loop-control-statements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Loop Control Statements
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#combining-loops-and-conditionals" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Combining Loops and Conditionals
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#for-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For Loops
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="For Loops">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#c-style-for-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        C-style For Loops
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-in-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For-In Loops
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#break-and-continue-in-for-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Break and Continue in For Loops
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#future-control-flow-features" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Future Control Flow Features
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Future Control Flow Features">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#range-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Range Loops
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ternary-operator" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Ternary Operator
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#switch-statements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Switch Statements
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#best-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Best Practices
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Implementation Status
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1608,10 +1468,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#introduction-to-control-flow" class="md-nav__link">
+  <a href="#arithmetic-operators" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Introduction to Control Flow
+        Arithmetic Operators
       
     </span>
   </a>
@@ -1619,71 +1479,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conditional-statements" class="md-nav__link">
+  <a href="#assignment-operators" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Conditional Statements
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Conditional Statements">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#basic-if-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Basic If Statement
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#if-else-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        If-Else Statement
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#if-else-if-else-chains" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        If-Else If-Else Chains
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nested-conditional-statements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Nested Conditional Statements
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#boolean-expressions-in-conditions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Boolean Expressions in Conditions
+        Assignment Operators
       
     </span>
   </a>
@@ -1691,146 +1490,61 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#loops" class="md-nav__link">
+  <a href="#compound-assignment-operators" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Loops
+        Compound Assignment Operators
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Loops">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#while-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        While Loops
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="While Loops">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#infinite-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Infinite Loops
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#loop-control-statements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Loop Control Statements
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#combining-loops-and-conditionals" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Combining Loops and Conditionals
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#for-loops" class="md-nav__link">
+  <a href="#increment-and-decrement-operators" class="md-nav__link">
     <span class="md-ellipsis">
       
-        For Loops
+        Increment and Decrement Operators
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="For Loops">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#c-style-for-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        C-style For Loops
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-in-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        For-In Loops
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#break-and-continue-in-for-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Break and Continue in For Loops
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#future-control-flow-features" class="md-nav__link">
+  <a href="#comparison-operators" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Future Control Flow Features
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Future Control Flow Features">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#range-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Range Loops
+        Comparison Operators
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
+  <a href="#logical-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logical Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cast-operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cast Operator
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#ternary-operator" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1840,28 +1554,34 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#switch-statements" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#bitwise-operators" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Switch Statements
+        Bitwise Operators
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#operator-precedence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator Precedence
+      
+    </span>
+  </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#best-practices" class="md-nav__link">
+  <a href="#array-operators" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Best Practices
+        Array Operators
       
     </span>
   </a>
@@ -1944,7 +1664,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/reference/control_flow.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/reference/operators.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1952,343 +1672,473 @@
   
 
 
-<h1 id="control-flow">Control Flow<a class="headerlink" href="#control-flow" title="Permanent link">&para;</a></h1>
-<p>firescript supports several control flow structures: conditional statements (<code>if</code>/<code>else</code>), while loops, C-style for loops, and for-in loops. Range loops and the ternary operator are not yet supported by the compiler.</p>
-<h2 id="introduction-to-control-flow">Introduction to Control Flow<a class="headerlink" href="#introduction-to-control-flow" title="Permanent link">&para;</a></h2>
-<p>Control flow structures determine the order in which statements are executed in a program. They allow for conditional execution (if/else) and repeated execution (loops) of code blocks. In firescript, control flow constructs use curly braces <code>{}</code> to define code blocks.</p>
-<h2 id="conditional-statements">Conditional Statements<a class="headerlink" href="#conditional-statements" title="Permanent link">&para;</a></h2>
-<p>Conditional statements execute different blocks of code depending on whether a specified condition evaluates to <code>true</code> or <code>false</code>. firescript supports <code>if</code>, <code>else if</code>, and <code>else</code> statements.</p>
-<h3 id="basic-if-statement">Basic If Statement<a class="headerlink" href="#basic-if-statement" title="Permanent link">&para;</a></h3>
-<p>The simplest form executes a block of code only if the condition is true:</p>
-<pre><code class="language-firescript">if (condition) {
-    // Code executed only if condition is true
-}
-</code></pre>
-<p>Example:</p>
-<pre><code class="language-firescript">import @firescript/std.io.print;
+<h1 id="operators">Operators<a class="headerlink" href="#operators" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>This is the canonical reference for all firescript operators. Operators mentioned in passing elsewhere in the docs (e.g., <code>type_system.md</code>, <code>control_flow.md</code>) defer to this page for full definitions.</p>
+</blockquote>
+<h2 id="arithmetic-operators">Arithmetic Operators<a class="headerlink" href="#arithmetic-operators" title="Permanent link">&para;</a></h2>
+<p>Arithmetic operators work on numeric types (<code>intN</code>, <code>uintN</code>, <code>floatN</code>). There are no implicit type conversions — both operands must be the same type, or you must cast explicitly before the operation.</p>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Name</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>+</code></td>
+<td>Addition</td>
+<td><code>a + b</code></td>
+</tr>
+<tr>
+<td><code>-</code></td>
+<td>Subtraction</td>
+<td><code>a - b</code></td>
+</tr>
+<tr>
+<td><code>*</code></td>
+<td>Multiplication</td>
+<td><code>a * b</code></td>
+</tr>
+<tr>
+<td><code>/</code></td>
+<td>Division</td>
+<td><code>a / b</code></td>
+</tr>
+<tr>
+<td><code>%</code></td>
+<td>Modulo</td>
+<td><code>a % b</code></td>
+</tr>
+<tr>
+<td><code>**</code></td>
+<td>Power (exponentiation)</td>
+<td><code>a ** b</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-firescript">int32 a = 10;
+int32 b = 3;
 
-int8 age = 18;
-if (age &gt;= 18) {
-    print(&quot;You are eligible to vote&quot;);
-}
+int32 sum  = a + b;   // 13
+int32 diff = a - b;   // 7
+int32 prod = a * b;   // 30
+int32 quot = a / b;   // 3  (integer division truncates toward zero)
+int32 rem  = a % b;   // 1
+int32 pow  = a ** b;  // 1000
 </code></pre>
-<h3 id="if-else-statement">If-Else Statement<a class="headerlink" href="#if-else-statement" title="Permanent link">&para;</a></h3>
-<p>You can specify an alternative block of code to execute when the condition is false:</p>
-<pre><code class="language-firescript">if (condition) {
-    // Code executed if condition is true
-} else {
-    // Code executed if condition is false
-}
+<p>Integer division truncates toward zero. Modulo returns the remainder with the same sign as the dividend (C-style, not Python-style).</p>
+<p>The <code>+</code> operator is also used for string concatenation. When one operand is a <code>string</code>, the other is implicitly converted to a string. This is the only implicit conversion in the language.</p>
+<pre><code class="language-firescript">string msg = &quot;Value: &quot; + 42;  // &quot;Value: 42&quot;
 </code></pre>
-<p>Example:</p>
-<pre><code class="language-firescript">import @firescript/std.io.print;
+<h2 id="assignment-operators">Assignment Operators<a class="headerlink" href="#assignment-operators" title="Permanent link">&para;</a></h2>
+<p>The basic assignment operator <code>=</code> stores a value in a variable. For Owned types (strings, arrays, user-defined classes), assignment performs a <strong>move</strong> — the source is invalidated. For Copyable types (<code>intN</code>, <code>floatN</code>, <code>bool</code>), assignment performs a bitwise copy.</p>
+<pre><code class="language-firescript">int32 x = 10;
+x = 20;         // x is now 20
 
-int8 score = 65;
-if (score &gt;= 70) {
-    print(&quot;Pass&quot;);
-} else {
-    print(&quot;Fail&quot;);
+string a = &quot;hello&quot;;
+string b = a;   // a is moved into b; a is no longer valid
+</code></pre>
+<p>See <a href="../memory_management/">Memory Management</a> for full move/copy semantics.</p>
+<h2 id="compound-assignment-operators">Compound Assignment Operators<a class="headerlink" href="#compound-assignment-operators" title="Permanent link">&para;</a></h2>
+<p>Compound assignment operators combine an arithmetic operation with assignment. They are equivalent to <code>x = x OP expr</code> and require both sides to be the same type.</p>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Equivalent to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>+=</code></td>
+<td><code>x = x + expr</code></td>
+</tr>
+<tr>
+<td><code>-=</code></td>
+<td><code>x = x - expr</code></td>
+</tr>
+<tr>
+<td><code>*=</code></td>
+<td><code>x = x * expr</code></td>
+</tr>
+<tr>
+<td><code>/=</code></td>
+<td><code>x = x / expr</code></td>
+</tr>
+<tr>
+<td><code>%=</code></td>
+<td><code>x = x % expr</code></td>
+</tr>
+<tr>
+<td><code>**=</code></td>
+<td><code>x = x ** expr</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-firescript">int32 n = 10;
+n += 5;   // n = 15
+n -= 3;   // n = 12
+n *= 2;   // n = 24
+n /= 4;   // n = 6
+n %= 4;   // n = 2
+n **= 3;  // n = 8
+</code></pre>
+<h2 id="increment-and-decrement-operators">Increment and Decrement Operators<a class="headerlink" href="#increment-and-decrement-operators" title="Permanent link">&para;</a></h2>
+<p>The postfix <code>++</code> and <code>--</code> operators increment or decrement a numeric variable by 1 in-place. Only the postfix form is supported; prefix <code>++x</code> is not.</p>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Name</th>
+<th>Equivalent to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x++</code></td>
+<td>Post-increment</td>
+<td><code>x = x + 1</code></td>
+</tr>
+<tr>
+<td><code>x--</code></td>
+<td>Post-decrement</td>
+<td><code>x = x - 1</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-firescript">int32 i = 0;
+i++;   // i = 1
+i++;   // i = 2
+i--;   // i = 1
+</code></pre>
+<p>These are most commonly used in <code>for</code> loop increments:</p>
+<pre><code class="language-firescript">for (int32 i = 0; i &lt; 5; i++) {
+    // i = 0, 1, 2, 3, 4
 }
 </code></pre>
-<h3 id="if-else-if-else-chains">If-Else If-Else Chains<a class="headerlink" href="#if-else-if-else-chains" title="Permanent link">&para;</a></h3>
-<p>For multiple conditions, you can use <code>else if</code>:</p>
-<pre><code class="language-firescript">if (condition1) {
-    // Executed if condition1 is true
-} else if (condition2) {
-    // Executed if condition1 is false and condition2 is true
-} else if (condition3) {
-    // Executed if condition1 and condition2 are false and condition3 is true
-} else {
-    // Executed if all conditions are false
-}
+<p>⚠️ <strong>Note:</strong> <code>++</code> and <code>--</code> are statements, not expressions. Using them as values (e.g., <code>int32 j = i++</code>) is not supported.</p>
+<h2 id="comparison-operators">Comparison Operators<a class="headerlink" href="#comparison-operators" title="Permanent link">&para;</a></h2>
+<p>Comparison operators evaluate to <code>bool</code>. Both operands must be the same type.</p>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>==</code></td>
+<td>Equal</td>
+</tr>
+<tr>
+<td><code>!=</code></td>
+<td>Not equal</td>
+</tr>
+<tr>
+<td><code>&lt;</code></td>
+<td>Less than</td>
+</tr>
+<tr>
+<td><code>&gt;</code></td>
+<td>Greater than</td>
+</tr>
+<tr>
+<td><code>&lt;=</code></td>
+<td>Less than or equal</td>
+</tr>
+<tr>
+<td><code>&gt;=</code></td>
+<td>Greater than or equal</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-firescript">int32 a = 5;
+int32 b = 10;
+
+bool eq  = a == b;  // false
+bool neq = a != b;  // true
+bool lt  = a &lt; b;   // true
+bool gt  = a &gt; b;   // false
+bool lte = a &lt;= b;  // true
+bool gte = a &gt;= b;  // false
 </code></pre>
-<p>Example:</p>
-<pre><code class="language-firescript">import @firescript/std.io.print;
+<p>Strings support <code>==</code> and <code>!=</code> for equality by value. Ordering comparisons (<code>&lt;</code>, <code>&gt;</code>, etc.) on strings are not supported.</p>
+<h2 id="logical-operators">Logical Operators<a class="headerlink" href="#logical-operators" title="Permanent link">&para;</a></h2>
+<p>Logical operators work on <code>bool</code> values and produce a <code>bool</code> result. <code>&amp;&amp;</code> and <code>||</code> use short-circuit evaluation — the right operand is only evaluated if the left operand does not determine the result.</p>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&amp;&amp;</code></td>
+<td>Logical AND</td>
+<td><code>true</code> only if both operands are <code>true</code></td>
+</tr>
+<tr>
+<td><code>\|\|</code></td>
+<td>Logical OR</td>
+<td><code>true</code> if at least one operand is <code>true</code></td>
+</tr>
+<tr>
+<td><code>!</code></td>
+<td>Logical NOT</td>
+<td>Inverts a <code>bool</code> value</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-firescript">bool a = true;
+bool b = false;
 
-int8 grade = 85;
-
-if (grade &gt;= 90) {
-    print(&quot;A&quot;);
-} else if (grade &gt;= 80) {
-    print(&quot;B&quot;);
-} else if (grade &gt;= 70) {
-    print(&quot;C&quot;);
-} else if (grade &gt;= 60) {
-    print(&quot;D&quot;);
-} else {
-    print(&quot;F&quot;);
-}
+bool and = a &amp;&amp; b;  // false
+bool or  = a || b;  // true
+bool not = !a;      // false
 </code></pre>
-<h3 id="nested-conditional-statements">Nested Conditional Statements<a class="headerlink" href="#nested-conditional-statements" title="Permanent link">&para;</a></h3>
-<p>Conditional statements can be nested within other conditional statements:</p>
-<pre><code class="language-firescript">import @firescript/std.io.print;
+<p>Short-circuit examples:</p>
+<pre><code class="language-firescript">// right side is never evaluated if left is false
+bool result = isReady() &amp;&amp; doWork();
 
-bool hasDiscount = true;
-int8 totalAmount = 120;
-
-if (totalAmount &gt; 100) {
-    if (hasDiscount) {
-        print(&quot;You qualify for a 15% discount&quot;);
-    } else {
-        print(&quot;You qualify for a 10% discount&quot;);
-    }
-} else {
-    print(&quot;No discount available&quot;);
-}
+// right side is never evaluated if left is true
+bool fallback = hasCache() || loadFromDisk();
 </code></pre>
-<h2 id="boolean-expressions-in-conditions">Boolean Expressions in Conditions<a class="headerlink" href="#boolean-expressions-in-conditions" title="Permanent link">&para;</a></h2>
-<p>Conditions can use various boolean operators:</p>
+<h2 id="cast-operator">Cast Operator<a class="headerlink" href="#cast-operator" title="Permanent link">&para;</a></h2>
+<p>The <code>as</code> operator performs an explicit type conversion. It is a postfix operator with higher precedence than arithmetic. Parentheses are recommended when mixing with other operators for clarity.</p>
+<pre><code class="language-firescript">expr as TargetType
+</code></pre>
+<p>Supported conversions:</p>
 <ul>
-<li>Comparison operators: <code>==</code>, <code>!=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code></li>
-<li>Logical operators: <code>&amp;&amp;</code> (AND), <code>||</code> (OR), <code>!</code> (NOT)</li>
+<li>Between any numeric types (<code>intN</code>, <code>uintN</code>, <code>floatN</code>)</li>
+<li>Numeric to <code>string</code> and <code>string</code> to numeric</li>
+<li>Numeric to <code>bool</code> (zero → <code>false</code>, non-zero → <code>true</code>)</li>
+<li><code>string</code> to <code>bool</code> (<code>"true"</code> → <code>true</code>, anything else → <code>false</code>)</li>
 </ul>
-<p>Operator precedence for boolean expressions follows standard rules:</p>
-<ul>
-<li><code>!</code> (highest)</li>
-<li><code>&amp;&amp;</code></li>
-<li><code>||</code> (lowest)</li>
-</ul>
-<p>Example:</p>
-<pre><code class="language-firescript">import @firescript/std.io.print;
+<pre><code class="language-firescript">int16 small  = 300i16;
+int32 wide   = small as int32;   // widening: 300
+int8  narrow = small as int8;    // narrowing: truncates to fit
 
-int8 age = 25;
-bool hasLicense = true;
+float64 pi  = 3.14159f64;
+int32   ipi = pi as int32;       // 3 (truncates toward zero)
 
-if (age &gt;= 18 &amp;&amp; hasLicense) {
-    print(&quot;You can drive&quot;);
-}
+string s = 42 as string;         // &quot;42&quot;
+int32  n = &quot;100&quot; as int32;       // 100
 
-if (!(age &lt; 18 || !hasLicense)) {
-    print(&quot;Also, you can drive&quot;); // Equivalent to the above
+bool fromInt = 1 as bool;        // true
+bool fromStr = &quot;true&quot; as bool;   // true
+</code></pre>
+<p>⚠️ <strong>Note:</strong> Java/C-style casts (<code>(int32)value</code>) are not supported. Always use the postfix <code>as</code> form.</p>
+<h2 id="ternary-operator">Ternary Operator<a class="headerlink" href="#ternary-operator" title="Permanent link">&para;</a></h2>
+<p>❌ <strong>Not yet implemented.</strong></p>
+<p>The ternary operator is planned with the following syntax:</p>
+<pre><code class="language-firescript">condition ? trueValue : falseValue
+</code></pre>
+<p>Use an <code>if/else</code> block in the meantime:</p>
+<pre><code class="language-firescript">// Instead of: int32 abs = x &lt; 0 ? -x : x;
+int32 abs = 0;
+if (x &lt; 0) {
+    abs = -x;
+} else {
+    abs = x;
 }
 </code></pre>
-<h2 id="loops">Loops<a class="headerlink" href="#loops" title="Permanent link">&para;</a></h2>
-<p>Loops allow for repeated execution of a block of code. firescript supports <code>while</code> loops and plans to support various forms of <code>for</code> loops in the future.</p>
-<h3 id="while-loops">While Loops<a class="headerlink" href="#while-loops" title="Permanent link">&para;</a></h3>
-<p>A <code>while</code> loop repeatedly executes a block of code as long as a specified condition is <code>true</code>:</p>
-<pre><code class="language-firescript">while (condition) {
-    // Loop body: code executed repeatedly as long as condition is true
-}
+<h2 id="bitwise-operators">Bitwise Operators<a class="headerlink" href="#bitwise-operators" title="Permanent link">&para;</a></h2>
+<p>❌ <strong>Not yet implemented.</strong></p>
+<p>The following bitwise operators are planned for integer types:</p>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&amp;</code></td>
+<td>Bitwise AND</td>
+</tr>
+<tr>
+<td><code>\|</code></td>
+<td>Bitwise OR</td>
+</tr>
+<tr>
+<td><code>^</code></td>
+<td>Bitwise XOR</td>
+</tr>
+<tr>
+<td><code>~</code></td>
+<td>Bitwise NOT</td>
+</tr>
+<tr>
+<td><code>&lt;&lt;</code></td>
+<td>Left shift</td>
+</tr>
+<tr>
+<td><code>&gt;&gt;</code></td>
+<td>Right shift</td>
+</tr>
+</tbody>
+</table>
+<h2 id="operator-precedence">Operator Precedence<a class="headerlink" href="#operator-precedence" title="Permanent link">&para;</a></h2>
+<p>Operators are evaluated in the following order (highest precedence first). Operators on the same row have equal precedence and associate left-to-right unless noted.</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Operators</th>
+<th>Associativity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 (highest)</td>
+<td><code>!</code> <code>-</code> <code>+</code> (unary)</td>
+<td>Right</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>**</code></td>
+<td>Right</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>*</code> <code>/</code> <code>%</code></td>
+<td>Left</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>+</code> <code>-</code></td>
+<td>Left</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>&lt;</code> <code>&gt;</code> <code>&lt;=</code> <code>&gt;=</code></td>
+<td>Left</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>==</code> <code>!=</code></td>
+<td>Left</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>&amp;&amp;</code></td>
+<td>Left</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>\|\|</code></td>
+<td>Left</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>as</code></td>
+<td>Left</td>
+</tr>
+<tr>
+<td>10 (lowest)</td>
+<td><code>=</code> <code>+=</code> <code>-=</code> <code>*=</code> <code>/=</code> <code>%=</code> <code>**=</code></td>
+<td>Right</td>
+</tr>
+</tbody>
+</table>
+<p>Use parentheses to make evaluation order explicit when combining operators from different levels:</p>
+<pre><code class="language-firescript">int32 result = 2 + 3 * 4;          // 14 (not 20)
+int32 result = (2 + 3) * 4;        // 20
+
+bool check = a + 1 &gt; b &amp;&amp; c != 0;  // ((a + 1) &gt; b) &amp;&amp; (c != 0)
 </code></pre>
-<p>Example:</p>
-<pre><code class="language-firescript">import @firescript/std.io.print;
-
-uint8 count = 0;
-while (count &lt; 5) {
-    print(count);
-    count = count + 1;
-}
-// Outputs: 0, 1, 2, 3, 4
-</code></pre>
-<h4 id="infinite-loops">Infinite Loops<a class="headerlink" href="#infinite-loops" title="Permanent link">&para;</a></h4>
-<p>A <code>while</code> loop with a condition that is always <code>true</code> creates an infinite loop. These should be used with caution and should include a break statement:</p>
-<pre><code class="language-firescript">while (true) {
-    // This will run forever unless broken
-    if (someCondition) {
-        break; // Exit the loop
-    }
-}
-</code></pre>
-<h4 id="loop-control-statements">Loop Control Statements<a class="headerlink" href="#loop-control-statements" title="Permanent link">&para;</a></h4>
-<p>The following statements can control loop execution:</p>
-<ul>
-<li><code>break</code> - Immediately exits the loop</li>
-<li><code>continue</code> - Skips the rest of the current iteration and starts the next one</li>
-</ul>
-<p>Example:</p>
-<pre><code class="language-firescript">import @firescript/std.io.print;
-
-uint8 i = 0;
-while (i &lt; 10) {
-    i = i + 1;
-
-    if (i == 3) {
-        continue; // Skip the rest of this iteration
-    }
-
-    if (i == 8) {
-        break; // Exit the loop
-    }
-
-    print(i);
-}
-// Outputs: 1, 2, 4, 5, 6, 7
-</code></pre>
-<h3 id="combining-loops-and-conditionals">Combining Loops and Conditionals<a class="headerlink" href="#combining-loops-and-conditionals" title="Permanent link">&para;</a></h3>
-<p>Loops and conditional statements can be combined to create powerful control flows:</p>
-<pre><code class="language-firescript">import @firescript/std.io.print;
-
-int8[10] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-int8 sum = 0;
-uint8 i = 0;
-
-while (i &lt; numbers.length()) {
-    if (numbers[i] % 2 == 0) {
-        sum = sum + numbers[i]; // Add only even numbers
-    }
-    i = i + 1;
-}
-
-print(sum); // Outputs: 30 (2 + 4 + 6 + 8 + 10)
-</code></pre>
-<h2 id="for-loops">For Loops<a class="headerlink" href="#for-loops" title="Permanent link">&para;</a></h2>
-<p>firescript supports two types of for loops: C-style for loops and for-in loops.</p>
-<h3 id="c-style-for-loops">C-style For Loops<a class="headerlink" href="#c-style-for-loops" title="Permanent link">&para;</a></h3>
-<p>C-style for loops consist of three parts: initialization, condition, and increment. They are ideal for counting iterations.</p>
-<pre><code class="language-firescript">import @firescript/std.io.println;
-
-for (int32 i = 0; i &lt; 5; i++) {
-    println(i);
-}
-</code></pre>
-<p>Any or all parts can be omitted:</p>
-<pre><code class="language-firescript">import @firescript/std.io.println;
-
-int32 i = 0;
-for (; i &lt; 5; i++) {  // Init omitted
-    println(i);
-}
-
-for (int32 j = 0; j &lt; 10;) {  // Increment omitted
-    println(j);
-    j++;
-}
-</code></pre>
-<p>Variables declared in the initialization section are scoped to the for loop:</p>
-<pre><code class="language-firescript">import @firescript/std.io.println;
-
-for (int32 i = 0; i &lt; 3; i++) {
-    println(i);
-}
-// i is not accessible here
-
-// This is valid - i is redeclared in a new scope
-for (int32 i = 0; i &lt; 5; i++) {
-    println(i);
-}
-</code></pre>
-<p>Nested for loops:</p>
-<pre><code class="language-firescript">import @firescript/std.io.println;
-
-for (int32 i = 0; i &lt; 3; i++) {
-    for (int32 j = 0; j &lt; 3; j++) {
-        println(i * 3 + j);
-    }
-}
-</code></pre>
-<h3 id="for-in-loops">For-In Loops<a class="headerlink" href="#for-in-loops" title="Permanent link">&para;</a></h3>
-<p>For-in loops iterate over elements in a collection (arrays or strings). The loop variable must be declared with a type:</p>
-<pre><code class="language-firescript">import @firescript/std.io.println;
-
-int32[5] numbers = [1, 2, 3, 4, 5];
-for (int32 num in numbers) {
-    println(num);
-}
-</code></pre>
-<p>For-in with array literals:</p>
-<pre><code class="language-firescript">import @firescript/std.io.println;
-
-for (int32 value in [10, 20, 30, 40, 50]) {
-    println(value);
-}
-</code></pre>
-<p>String iteration with for-in:</p>
-<pre><code class="language-firescript">import @firescript/std.io.println;
-
-string text = &quot;hello&quot;;
-for (string ch in text) {
-    println(ch);  // Prints each character: h, e, l, l, o
-}
-</code></pre>
-<h3 id="break-and-continue-in-for-loops">Break and Continue in For Loops<a class="headerlink" href="#break-and-continue-in-for-loops" title="Permanent link">&para;</a></h3>
-<p>Both <code>break</code> and <code>continue</code> work in for loops:</p>
-<pre><code class="language-firescript">import @firescript/std.io.println;
-
-// Break: exit the loop early
-for (int32 i = 0; i &lt; 10; i++) {
-    if (i == 5) {
-        break;  // Exit when i reaches 5
-    }
-    println(i);  // Prints 0, 1, 2, 3, 4
-}
-
-// Continue: skip to next iteration
-for (int32 i = 0; i &lt; 5; i++) {
-    if (i == 2) {
-        continue;  // Skip when i is 2
-    }
-    println(i);  // Prints 0, 1, 3, 4
-}
-</code></pre>
-<h2 id="future-control-flow-features">Future Control Flow Features<a class="headerlink" href="#future-control-flow-features" title="Permanent link">&para;</a></h2>
-<p>The following control flow features are planned but not yet implemented in the current compiler:</p>
-<h3 id="range-loops">Range Loops<a class="headerlink" href="#range-loops" title="Permanent link">&para;</a></h3>
+<h2 id="array-operators">Array Operators<a class="headerlink" href="#array-operators" title="Permanent link">&para;</a></h2>
+<p>❌ <strong>Not yet implemented.</strong></p>
+<p>The following operators are planned for arrays:</p>
 <pre><code class="language-firescript">// Future syntax
-import @firescript/std.io.print;\n\nfor (uint8 i : range(5)) {
-    print(i); // 0, 1, 2, 3, 4
-}
+int8[3] a = [1, 2, 3];
+int8[3] b = [4, 5, 6];
 
-for (uint8 i : range(2, 8)) {
-    print(i); // 2, 3, 4, 5, 6, 7
-}
+// add arrays element-wise
+int8[3] c = a + b;  // Would be [5, 7, 9]
 
-for (uint8 i : range(1, 10, 2)) {
-    print(i); // 1, 3, 5, 7, 9
-}
+// subtract arrays element-wise
+int8[3] e = b - a;  // Would be [3, 3, 3]
+
+// add scalar to array
+int8[3] g = a + 2;  // Would be [3, 4, 5]
+
+// subtract scalar from array
+int8[3] h = b - 1;  // Would be [3, 4, 5]
+
+// multiply arrays element-wise
+int8[3] j = a * b;  // Would be [4, 10, 18]
+
+// divide arrays element-wise
+int8[3] k = b / a;  // Would be [4, 2, 2]
+
+// multiply arrays by scalar
+int8[3] d = a * 2;  // Would be [2, 4, 6]
+
+// divide arrays by scalar
+int8[3] f = b / 2;  // Would be [2, 2, 3]
+
+// dot product of two arrays
+int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
 </code></pre>
-<h3 id="ternary-operator">Ternary Operator<a class="headerlink" href="#ternary-operator" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">// Future syntax
-int8 max = ternary a &gt; b then a else b;
-</code></pre>
-<h3 id="switch-statements">Switch Statements<a class="headerlink" href="#switch-statements" title="Permanent link">&para;</a></h3>
-<p>Switch statements provide a way to execute different parts of code based on the value of a variable:</p>
-<pre><code class="language-firescript">// Future syntax
-switch (value) {
-    case (1) {
-        // code for case 1
-    }
-    case (2) {
-        // code for case 2
-    }
-    case (value &gt; 2 &amp;&amp; value &lt; 5) {
-        // code for range case
-    }
-    default {
-        // default code
-        // executed if no cases match
-    }
-}
-</code></pre>
-<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
-<ol>
-<li>
-<p><strong>Keep conditions simple</strong>: Split complex conditions into multiple variables for better readability.</p>
-</li>
-<li>
-<p><strong>Avoid deep nesting</strong>: Too many nested if/else statements make code hard to follow. Consider refactoring deeply nested code.</p>
-</li>
-<li>
-<p><strong>Be careful with while loops</strong>: Always ensure that the condition will eventually become false to avoid infinite loops.</p>
-</li>
-<li>
-<p><strong>Use appropriate loop types</strong>: Once implemented, choose the right loop for the task: <code>while</code> for unknown iteration counts, <code>for</code> for counting, and <code>for-in</code> for collections.</p>
-</li>
-</ol>
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
-<p>The current firescript compiler supports:</p>
-<ul>
-<li>✅ <code>if</code>/<code>else</code>/<code>else if</code> conditional statements</li>
-<li>✅ <code>while</code> loops</li>
-<li>✅ C-style <code>for</code> loops</li>
-<li>✅ <code>for-in</code> loops (for arrays)</li>
-<li>✅ <code>break</code> and <code>continue</code> statements</li>
-</ul>
-<p>Not yet implemented:</p>
-<ul>
-<li>❌ Range-based loops</li>
-<li>❌ Ternary operator</li>
-<li>❌ <code>switch</code>/<code>case</code> statements</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Operator group</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arithmetic (<code>+</code> <code>-</code> <code>*</code> <code>/</code> <code>%</code> <code>**</code>)</td>
+<td>✅ Implemented</td>
+</tr>
+<tr>
+<td>Assignment (<code>=</code>)</td>
+<td>✅ Implemented</td>
+</tr>
+<tr>
+<td>Compound assignment (<code>+=</code> <code>-=</code> <code>*=</code> <code>/=</code> <code>%=</code> <code>**=</code>)</td>
+<td>✅ Implemented</td>
+</tr>
+<tr>
+<td>Increment / decrement (<code>++</code> <code>--</code>)</td>
+<td>✅ Implemented</td>
+</tr>
+<tr>
+<td>Comparison (<code>==</code> <code>!=</code> <code>&lt;</code> <code>&gt;</code> <code>&lt;=</code> <code>&gt;=</code>)</td>
+<td>✅ Implemented</td>
+</tr>
+<tr>
+<td>Logical (<code>&amp;&amp;</code> <code>\|\|</code> <code>!</code>)</td>
+<td>✅ Implemented</td>
+</tr>
+<tr>
+<td>Cast (<code>as</code>)</td>
+<td>✅ Implemented</td>
+</tr>
+<tr>
+<td>Ternary (<code>? :</code>)</td>
+<td>❌ Planned</td>
+</tr>
+<tr>
+<td>Bitwise (<code>&amp;</code> <code>\|</code> <code>^</code> <code>~</code> <code>&lt;&lt;</code> <code>&gt;&gt;</code>)</td>
+<td>❌ Planned</td>
+</tr>
+<tr>
+<td>Array operators (<code>+</code> <code>-</code> <code>*</code> <code>/</code> <code>.</code>)</td>
+<td>❌ Planned</td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -2318,7 +2168,7 @@ switch (value) {
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../arrays/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Arrays">
+          <a href="../variables/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Types &amp; Variables">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2328,20 +2178,20 @@ switch (value) {
                 Previous
               </span>
               <div class="md-ellipsis">
-                Arrays
+                Types & Variables
               </div>
             </div>
           </a>
         
         
           
-          <a href="../functions/" class="md-footer__link md-footer__link--next" aria-label="Next: Functions &amp; Methods">
+          <a href="../arrays/" class="md-footer__link md-footer__link--next" aria-label="Next: Arrays">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Functions & Methods
+                Arrays
               </div>
             </div>
             <div class="md-footer__button md-icon">

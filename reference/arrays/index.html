@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://firescript.alecj.com/reference/arrays/">
       
       
-        <link rel="prev" href="../variables/">
+        <link rel="prev" href="../operators/">
       
       
         <link rel="next" href="../control_flow/">
@@ -485,6 +485,34 @@
     
   
     Types & Variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
   
 
     
@@ -998,10 +1026,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_13" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
         
           
-          <label class="md-nav__link" for="__nav_2_13" id="__nav_2_13_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
             
   
   
@@ -1019,8 +1047,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_13">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1252,10 +1280,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
         
           
-          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
             
   
   
@@ -1273,8 +1301,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_14">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1732,7 +1760,7 @@ int8 secondLast = scores[-2];   // 90 (second to last)
 <ul>
 <li><strong><code>length()</code></strong> – Method that returns the current size of the array</li>
 </ul>
-<pre><code class="language-firescript">int8[] data = [5, 10, 15, 20, 25];
+<pre><code class="language-firescript">int8[5] data = [5, 10, 15, 20, 25];
 int8 size = data.length();      // size = 5
 </code></pre>
 <h2 id="working-with-arrays">Working with Arrays<a class="headerlink" href="#working-with-arrays" title="Permanent link">&para;</a></h2>
@@ -1778,7 +1806,7 @@ int32 result = sum(values);  // 15
 <h3 id="nested-arrays">Nested Arrays<a class="headerlink" href="#nested-arrays" title="Permanent link">&para;</a></h3>
 <p>Arrays can contain other arrays (though this is not fully implemented yet):</p>
 <pre><code class="language-firescript">// 2D array example
-int8[][] matrix = [
+int8[3][3] matrix = [
     [1, 2, 3],
     [4, 5, 6],
     [7, 8, 9]
@@ -1820,8 +1848,8 @@ for (int8 val in data) {
 <li><strong>Array slicing</strong> (<code>arr[start:end:step]</code>) – Extract a portion of the array</li>
 </ul>
 <pre><code class="language-firescript">// Future syntax
-int8[] numbers = [10, 20, 30, 40, 50];
-int8[] subset = numbers[1:4];  // Would be [20, 30, 40]
+int8[5] numbers = [10, 20, 30, 40, 50];
+int8[3] subset = numbers[1:4];  // Would be [20, 30, 40]
 </code></pre>
 <ul>
 <li>
@@ -1836,32 +1864,32 @@ int8[] subset = numbers[1:4];  // Would be [20, 30, 40]
 </ul>
 <p>Will use SIMD where possible for performance.</p>
 <pre><code class="language-firescript">// Future syntax
-int8[] a = [1, 2, 3];
-int8[] b = [4, 5, 6];
+int8[3] a = [1, 2, 3];
+int8[3] b = [4, 5, 6];
 
 // add arrays element-wise
-int8[] c = a + b;  // Would be [5, 7, 9]
+int8[3] c = a + b;  // Would be [5, 7, 9]
 
 // subtract arrays element-wise
-int8[] e = b - a;  // Would be [3, 3, 3]
+int8[3] e = b - a;  // Would be [3, 3, 3]
 
 // add scalar to array
-int8[] g = a + 2;  // Would be [3, 4, 5]
+int8[3] g = a + 2;  // Would be [3, 4, 5]
 
 // subtract scalar from array
-int8[] h = b - 1;  // Would be [3, 4, 5]
+int8[3] h = b - 1;  // Would be [3, 4, 5]
 
 // multiply arrays element-wise
-int8[] j = a * b;  // Would be [4, 10, 18]
+int8[3] j = a * b;  // Would be [4, 10, 18]
 
 // divide arrays element-wise
-int8[] k = b / a;  // Would be [4, 2, 2]
+int8[3] k = b / a;  // Would be [4, 2, 2]
 
 // multiply arrays by scalar
-int8[] d = a * 2;  // Would be [2, 4, 6]
+int8[3] d = a * 2;  // Would be [2, 4, 6]
 
 // divide arrays by scalar
-int8[] f = b / 2;  // Would be [2, 2, 3]
+int8[3] f = b / 2;  // Would be [2, 2, 3]
 
 // dot product of two arrays
 int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
@@ -1908,7 +1936,7 @@ int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../variables/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Types &amp; Variables">
+          <a href="../operators/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Operators">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1918,7 +1946,7 @@ int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
                 Previous
               </span>
               <div class="md-ellipsis">
-                Types & Variables
+                Operators
               </div>
             </div>
           </a>

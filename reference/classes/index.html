@@ -505,6 +505,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../arrays/" class="md-nav__link">
         
   
@@ -792,6 +820,17 @@
   
     <nav class="md-nav" aria-label="Inheritance">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#super-attribute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        super Attribute
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#method-overriding" class="md-nav__link">
@@ -1098,10 +1137,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_13" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
         
           
-          <label class="md-nav__link" for="__nav_2_13" id="__nav_2_13_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
             
   
   
@@ -1119,8 +1158,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_13">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1352,10 +1391,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
         
           
-          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
             
   
   
@@ -1373,8 +1412,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_14">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1708,6 +1747,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#super-attribute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        super Attribute
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#method-overriding" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1894,7 +1944,6 @@
 <blockquote>
 <p>Status: This page describes planned class semantics that integrate with the ownership-based memory model. See <a href="../memory_management/">Memory Management</a> and the <a href="../../glossary/#memory-management-terms">Glossary</a> for authoritative lifetime terminology.</p>
 </blockquote>
-<p><strong>Note:</strong> Class definitions, inheritance, and methods are currently not supported by the compiler. This documentation describes the planned implementation.</p>
 <h2 id="object-oriented-programming-in-firescript">Object-Oriented Programming in firescript<a class="headerlink" href="#object-oriented-programming-in-firescript" title="Permanent link">&para;</a></h2>
 <p>firescript's class system is designed to provide a clean, intuitive approach to object-oriented programming with features like single inheritance, constructors, and both instance and static methods.</p>
 <h2 id="ownership-lifetime-planned">Ownership &amp; Lifetime (Planned)<a class="headerlink" href="#ownership-lifetime-planned" title="Permanent link">&para;</a></h2>
@@ -1909,19 +1958,25 @@
 <li>Inheritance does not change ownership: moving a <code>Student</code> moves its base <code>Person</code> subobject as part of the same operation.</li>
 <li>Borrowed references cannot escape beyond the lifetime of the owning instance; the compiler enforces non-escaping borrows.</li>
 </ul>
-<p>Receiver convention (planned): Methods use a borrowed receiver <code>&amp;this</code> by default—even when mutating fields—because internal mutation does not require taking ownership of the entire object. A method takes an owning <code>this</code> only when it will consume the instance (e.g., irreversible state transition, transferring internal resources, or explicit <code>drop(this)</code> destructor). Examples below follow this convention.</p>
+<p>Receiver convention: firescript distinguishes three receiver forms:</p>
+<ul>
+<li><strong><code>&amp;this</code></strong> — read-only borrow. The method may read fields but cannot assign to them. Use this for query/observer methods.</li>
+<li><strong><code>&amp;mut this</code></strong> — mutable borrow. The method may read and write fields without consuming the instance. Use this for constructors and any method that modifies state.</li>
+<li><strong><code>this</code></strong> (owning) — the method takes ownership of the instance and consumes it. Use this only when the instance will be destroyed or irreversibly transferred (e.g., a <code>drop(this)</code> destructor).</li>
+</ul>
+<p>The compiler enforces this: assigning to <code>this.field</code> inside a <code>&amp;this</code> method is a compile error.</p>
 <p>Borrowing applies only to Owned (Non-Trivially Copyable) types. Copyable types (<code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>) are always passed and returned by value with implicit bitwise copy; using a borrow marker on copyable values is unnecessary and omitted below. Owned types include <code>string</code>, arrays, and user-defined classes. When you see <code>&amp;Type</code> it implies the type is Owned.</p>
 <h3 id="example-deterministic-drop-ordering">Example: Deterministic Drop Ordering<a class="headerlink" href="#example-deterministic-drop-ordering" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">class HandleBundle {
     File log;
     Socket conn;
 
-    HandleBundle(&amp;this, File &amp;log, Socket &amp;conn) {
+    HandleBundle(&amp;mut this, File &amp;log, Socket &amp;conn) {
         this.log = log;     // constructed first
         this.conn = conn;   // constructed second
     }
 
-    drop(&amp;this) {            // planned destructor
+    drop(this) {            // planned destructor
         // Custom cleanup (optional). Fields are then dropped automatically
         // in reverse: conn then log.
     }
@@ -2073,6 +2128,9 @@ string speciesName = Person.species();
 </code></pre>
 <h2 id="inheritance">Inheritance<a class="headerlink" href="#inheritance" title="Permanent link">&para;</a></h2>
 <p>Inheritance allows a class to inherit fields and methods from another class. firescript supports single inheritance using the <code>from</code> keyword:</p>
+<h3 id="super-attribute"><code>super</code> Attribute<a class="headerlink" href="#super-attribute" title="Permanent link">&para;</a></h3>
+<p>The <code>super</code> attribute is an alias for the parent class and functions like super in other languages. It allows you to call the parent class's constructor and methods from the child class.
+The main difference of <code>super</code> in firescript is that it is an attribute of the instance (<code>this.super</code>).</p>
 <pre><code class="language-firescript">class Student from Person {
     string school;
     string[] courses;
