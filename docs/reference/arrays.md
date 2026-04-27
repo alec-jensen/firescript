@@ -54,7 +54,7 @@ firescript provides several built-in methods for manipulating arrays:
 - **`length()`** – Method that returns the current size of the array
 
 ```firescript
-int8[] data = [5, 10, 15, 20, 25];
+int8[5] data = [5, 10, 15, 20, 25];
 int8 size = data.length();      // size = 5
 ```
 
@@ -116,7 +116,7 @@ Arrays can contain other arrays (though this is not fully implemented yet):
 
 ```firescript
 // 2D array example
-int8[][] matrix = [
+int8[3][3] matrix = [
     [1, 2, 3],
     [4, 5, 6],
     [7, 8, 9]
@@ -168,8 +168,8 @@ The following array features are planned but not yet implemented in the current 
 
 ```firescript
 // Future syntax
-int8[] numbers = [10, 20, 30, 40, 50];
-int8[] subset = numbers[1:4];  // Would be [20, 30, 40]
+int8[5] numbers = [10, 20, 30, 40, 50];
+int8[3] subset = numbers[1:4];  // Would be [20, 30, 40]
 ```
 
 - **Additional utility methods**:
@@ -181,32 +181,32 @@ Will use SIMD where possible for performance.
 
 ```firescript
 // Future syntax
-int8[] a = [1, 2, 3];
-int8[] b = [4, 5, 6];
+int8[3] a = [1, 2, 3];
+int8[3] b = [4, 5, 6];
 
 // add arrays element-wise
-int8[] c = a + b;  // Would be [5, 7, 9]
+int8[3] c = a + b;  // Would be [5, 7, 9]
 
 // subtract arrays element-wise
-int8[] e = b - a;  // Would be [3, 3, 3]
+int8[3] e = b - a;  // Would be [3, 3, 3]
 
 // add scalar to array
-int8[] g = a + 2;  // Would be [3, 4, 5]
+int8[3] g = a + 2;  // Would be [3, 4, 5]
 
 // subtract scalar from array
-int8[] h = b - 1;  // Would be [3, 4, 5]
+int8[3] h = b - 1;  // Would be [3, 4, 5]
 
 // multiply arrays element-wise
-int8[] j = a * b;  // Would be [4, 10, 18]
+int8[3] j = a * b;  // Would be [4, 10, 18]
 
 // divide arrays element-wise
-int8[] k = b / a;  // Would be [4, 2, 2]
+int8[3] k = b / a;  // Would be [4, 2, 2]
 
 // multiply arrays by scalar
-int8[] d = a * 2;  // Would be [2, 4, 6]
+int8[3] d = a * 2;  // Would be [2, 4, 6]
 
 // divide arrays by scalar
-int8[] f = b / 2;  // Would be [2, 2, 3]
+int8[3] f = b / 2;  // Would be [2, 2, 3]
 
 // dot product of two arrays
 int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)

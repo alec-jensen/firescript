@@ -269,6 +269,7 @@ class ExpressionsMixin(ParserBase):
             "DOUBLE_LITERAL",
             "FLOAT_LITERAL",
             "STRING_LITERAL",
+            "CHAR_LITERAL",
             "NULL_LITERAL",
         ):
             self.advance()
@@ -278,6 +279,8 @@ class ExpressionsMixin(ParserBase):
                 node.return_type = "bool"
             elif token.type == "STRING_LITERAL":
                 node.return_type = "string"
+            elif token.type == "CHAR_LITERAL":
+                node.return_type = "char"
             elif token.type == "NULL_LITERAL":
                 node.return_type = "null"
             elif token.type in ("INTEGER_LITERAL", "FLOAT_LITERAL", "DOUBLE_LITERAL"):

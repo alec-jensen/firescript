@@ -14,7 +14,7 @@ returnType functionName(paramType1 param1, paramType2 param2) {
 }
 
 // Examples:
-int add(int a, int b) {
+int32 add(int32 a, int32 b) {
     return a + b;
 }
 
@@ -22,14 +22,14 @@ void greet(string name) {
     print("Hello, " + name);
 }
 
-float calculateAverage(int[] numbers) {
-    int sum = 0;
-    int i = 0;
-    while (i < numbers.length) {
+float calculateAverage(int32[] numbers) {
+    int32 sum = 0;
+    int32 i = 0;
+    while (i < numbers.length()) {
         sum = sum + numbers[i];
         i = i + 1;
     }
-    return toFloat(sum) / toFloat(numbers.length);
+    return (sum as float32) / (numbers.length() as float32);
 }
 ```
 
@@ -132,8 +132,6 @@ float add(float a, float b) {
 
 ## Implementation Status
 
-- ✅ Built-in functions: `print`, `input`, type conversions, `typeof`
-- ✅ Array methods: `append`, `insert`, `pop`, `clear`, `length`
 - ✅ User-defined function definitions
 - ✅ Methods on objects
 - ❌ Optional, named, or variadic parameters

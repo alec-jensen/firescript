@@ -64,6 +64,8 @@ import @firescript/std.math.sqrt as squareRoot
 
 ## Paths and Resolution
 
+The project root is the base for all import paths. It is the folder containing the entry point of the program (e.g., `src/main.fire`). The compiler resolves import paths from this root.
+
 - Import paths are absolute from the project root. For example, `src.utils.utils` maps to `{project-root}/src/utils/utils.fire`.
 - Relative imports (e.g., `import ../utils`) are not permitted.
 - There are no default or magic imports—every symbol must be explicitly imported.

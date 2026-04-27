@@ -1,0 +1,41 @@
+import @firescript/std.io.println;
+
+// Nullable class fields
+class Config {
+    string host;
+    nullable string port;
+
+    Config(&mut this, string host, nullable string port) {
+        this.host = host;
+        this.port = port;
+    }
+
+    string address(&this) {
+        if (this.port != null) {
+            return this.host + ":" + this.port;
+        }
+        return this.host;
+    }
+}
+
+Config c1 = new Config("localhost", "8080");
+Config c2 = new Config("example.com", "1111");
+println(c1.address());
+println(c2.address());
+
+// Nullable in conditional chains
+nullable string a = "first";
+nullable string b = null;
+nullable string c = "third";
+
+int32 count = 0;
+if (a != null) { count = count + 1; }
+if (b != null) { count = count + 1; }
+if (c != null) { count = count + 1; }
+println(count);
+
+// Reassigning nullable
+nullable string val = null;
+println(val == null);
+val = "assigned";
+println(val != null);

@@ -336,13 +336,7 @@ class StatementsMixin(DeclarationsMixin):
                    if right_node.node_type == NodeTypes.IDENTIFIER else None)
             )
             if op == "+" and (left_t == "string" or right_t == "string"):
-                lcode = left
-                rcode = right
-                if left_t != "string":
-                    lcode = f"firescript_toString({left})"
-                if right_t != "string":
-                    rcode = f"firescript_toString({right})"
-                return f"firescript_strcat({lcode}, {rcode})"
+                return f"firescript_strcat({left}, {right})"
             # Numeric or generic binary op fallback
             return f"({left} {op} {right})"
         
@@ -425,6 +419,10 @@ class StatementsMixin(DeclarationsMixin):
                     return "0"
                 # Fixed-size arrays don't support mutation methods
                 self.report_error(CodegenError(message=f"Fixed-size arrays don't support method '{method_name}'. Arrays are immutable."), node)
+            # String built-in methods
+            if obj_type == "string":
+                if method_name == "length":
+                    return f"(int32_t)strlen({object_code})"
             # Class instance method call -> dispatch to free function Class_method(self, ...)
             # Determine class name from object expression type
             obj_type = (

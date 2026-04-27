@@ -28,6 +28,7 @@ FIRETYPE_TO_C: dict[str, str] = {
     # future: "float128": "__float128",
     # others
     "bool": "bool",
+    "char": "char",
     "string": "char*",
 }
 
@@ -488,6 +489,8 @@ class CCodeGeneratorBase:
         if t == "STRING_LITERAL":
             # Escape the string literal for C
             return self._escape_string_literal(tok.value)
+        if t == "CHAR_LITERAL":
+            return tok.value
         # Numbers
         if t == "INTEGER_LITERAL":
             return self._normalize_integer_literal(tok.value)

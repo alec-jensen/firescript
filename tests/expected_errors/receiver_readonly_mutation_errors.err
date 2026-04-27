@@ -1,0 +1,4 @@
+# firescript expected diagnostics v2
+# format: <ERROR_CODE>@<line>:<column>
+FS-SEM-0001@15:16
+FS-SEM-0001@19:16

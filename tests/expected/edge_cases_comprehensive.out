@@ -35,6 +35,8 @@ false
 5
 --- String Edge Cases ---
 a
+1
+3
 --- Comparison Edge Cases ---
 true
 false

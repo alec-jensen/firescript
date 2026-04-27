@@ -4,7 +4,7 @@ class Person {
     string name;
     int32 age;
 
-    Person(&this, string name, int32 age) {
+    Person(&mut this, string name, int32 age) {
         this.name = name;
         this.age = age;
     }
@@ -17,7 +17,7 @@ class Person {
 class Student from Person {
     string school;
 
-    Student(&this, string name, int32 age, string school) {
+    Student(&mut this, string name, int32 age, string school) {
         // Constructor chaining to parent
         this.super(name, age);
         this.school = school;
@@ -38,7 +38,7 @@ println(s.age);
 class A {
     string id;
 
-    A(&this, string id) {
+    A(&mut this, string id) {
         this.id = id;
     }
 
@@ -54,7 +54,7 @@ class A {
 class B from A {
     string bid;
 
-    B(&this, string id, string bid) {
+    B(&mut this, string id, string bid) {
         this.super(id);
         this.bid = bid;
     }
@@ -71,7 +71,7 @@ class B from A {
 class C from B {
     string cid;
 
-    C(&this, string id, string bid, string cid) {
+    C(&mut this, string id, string bid, string cid) {
         this.super(id, bid);
         this.cid = cid;
     }
@@ -88,7 +88,7 @@ class C from B {
 class D from C {
     string did;
 
-    D(&this, string id, string bid, string cid, string did) {
+    D(&mut this, string id, string bid, string cid, string did) {
         this.super(id, bid, cid);
         this.did = did;
     }

@@ -1,0 +1,51 @@
+import @firescript/std.io.println;
+
+// Each expression is commented with the expected value.
+// A wrong precedence would produce a different number, making failures obvious.
+
+// Multiplicative binds tighter than additive
+println(2 + 3 * 4);        // 14, not 20
+println(10 - 2 * 3);       // 4, not 24
+println(10 / 2 + 3);       // 8, not 2
+println(10 % 3 + 1);       // 2, not 1 (10%3=1, +1=2)
+
+// Power binds tighter than multiplicative
+println(2 * 3 ** 2);       // 18  (3**2=9, *2=18), not 36 (6**2)
+println(4 / 2 ** 2);       // 1   (2**2=4, 4/4=1), not 1 (same here, use another)
+println(10 - 2 ** 3);      // 2   (2**3=8, 10-8=2), not 512 ((10-2)**3)
+
+// Unary minus binds tighter than binary operators
+println(-2 + 5);           // 3, not -7
+println(-3 * -3);          // 9
+
+// Comparison binds looser than arithmetic
+bool r1 = 2 + 3 > 4;      // true  (5 > 4)
+bool r2 = 2 + 3 < 4;      // false (5 < 4)
+bool r3 = 2 * 3 == 6;     // true
+bool r4 = 10 - 4 != 7;    // true  (6 != 7)
+println(r1);
+println(r2);
+println(r3);
+println(r4);
+
+// Logical AND binds tighter than logical OR
+bool r5 = true || false && false;   // true  (false&&false=false, true||false=true)
+bool r6 = false && true || true;    // true  (false&&true=false, false||true=true)
+bool r7 = false && false || false;  // false
+println(r5);
+println(r6);
+println(r7);
+
+// Mixed arithmetic and comparison
+int32 a = 4;
+int32 b = 2;
+int32 c = 3;
+bool r8 = a + b * c > a * b + c;   // 4+6=10 > 8+3=11 → false
+bool r9 = a * b + c == a + b + c;  // 8+3=11 == 4+2+3=9 → false
+println(r8);
+println(r9);
+
+// Parentheses override precedence
+println((2 + 3) * 4);     // 20
+println(2 * (3 + 4));     // 14
+println((10 - 2) ** 2);   // 64

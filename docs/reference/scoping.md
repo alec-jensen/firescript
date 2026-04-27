@@ -52,7 +52,7 @@ if (globalVar > 5) {
 
 * **Outer Scope Access:** An inner scope can access variables declared in any of its enclosing (outer) scopes, all the way up to the global scope.
 * **Inner Scope Isolation:** An outer scope *cannot* access variables declared within any of its inner scopes. Once a scope block is exited, all variables declared directly within that scope are destroyed and become inaccessible.
-* **Variable Shadowing:** Variable shadowing is not allowed. firescript will throw an error if you try to declare a variable with the same name in an inner scope that already exists in an outer scope. This is to prevent confusion and ensure that the intended variable is always accessed.
+* **Variable Shadowing:** Variable shadowing is not allowed, since variables exist in their scope and all nested scopes. This means you cannot declare a variable with the same name as an existing variable in an outer scope.
 
 ## Detailed Scoping Rules
 

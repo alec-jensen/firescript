@@ -7,7 +7,7 @@ class Point {
     int32 y;
 
     // Constructor named same as class
-    Point(&this, int32 x, int32 y) {
+    Point(&mut this, int32 x, int32 y) {
         this.x = x;
         this.y = y;
     }

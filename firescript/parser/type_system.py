@@ -414,11 +414,17 @@ class TypeSystemMixin(StatementsMixin):
 
             node_type_str: Optional[str] = None
 
-            # String concatenation stays allowed for string + string
+            # String concatenation: both operands must be string; use 'as string' for explicit conversion
             if op == "+":
-                # Allow string concatenation with any type (converted in codegen)
-                if left_type == "string" or right_type == "string":
+                if left_type == "string" and right_type == "string":
                     node_type_str = "string"
+                elif left_type == "string" or right_type == "string":
+                    non_str = right_type if left_type == "string" else left_type
+                    self.invalid_type_error(
+                        f"Cannot implicitly convert '{non_str}' to 'string'; "
+                        f"use '(value as string)' for explicit conversion",
+                        node.token,
+                    )
                 elif left_type == right_type and left_type in integer_types:
                     node_type_str = left_type
                 elif left_type == right_type and left_type in float_types:
@@ -783,6 +789,20 @@ class TypeSystemMixin(StatementsMixin):
                 else:
                     self.invalid_type_error(
                         f"Unknown method '{method_name}' for array type {object_type}",
+                        node.token,
+                    )
+            elif object_type == "string":
+                if method_name == "length":
+                    if len(arg_types) == 0:
+                        node.return_type = "int32"
+                    else:
+                        self.invalid_type_error(
+                            f"Method 'length' expected 0 arguments, got {len(arg_types)}",
+                            node.token,
+                        )
+                else:
+                    self.invalid_type_error(
+                        f"Unknown method '{method_name}' for type 'string'",
                         node.token,
                     )
             else:

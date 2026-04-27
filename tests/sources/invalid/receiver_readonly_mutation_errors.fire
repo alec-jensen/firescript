@@ -1,0 +1,21 @@
+// Attempting to mutate fields through a read-only &this receiver must be a compile error.
+
+import @firescript/std.io.println;
+
+class Pt {
+    int32 x;
+    int32 y;
+
+    Pt(&mut this, int32 x, int32 y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    void setX(&this, int32 v) {
+        this.x = v;
+    }
+
+    void setY(&this, int32 v) {
+        this.y = v;
+    }
+}

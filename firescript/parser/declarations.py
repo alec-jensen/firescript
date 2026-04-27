@@ -883,13 +883,17 @@ class DeclarationsMixin(TypeSystemMixin):
                 seen_receiver = False
                 if self.current_token and self.current_token.type != "CLOSE_PAREN":
                     while True:
-                        # Borrowed receiver syntax: &this
+                        # Borrowed receiver syntax: &this (read-only) or &mut this (mutable)
                         if (not seen_receiver) and self.current_token and self.current_token.type == "AMPERSAND":
                             amp_tok = self.current_token
                             self.advance()
+                            is_mutable_borrow = False
+                            if self.current_token and self.current_token.type == "MUT":
+                                is_mutable_borrow = True
+                                self.advance()
                             th_tok = self.consume("IDENTIFIER")
                             if th_tok is None or th_tok.value != "this":
-                                self.expected_token_error("'this' after '&' for receiver", th_tok or amp_tok)
+                                self.expected_token_error("'this' after '&' (or '&mut') for receiver", th_tok or amp_tok)
                                 return None
                             if local_is_static:
                                 self.invalid_expression_error("Static methods cannot declare receiver parameter 'this'", th_tok)
@@ -908,6 +912,7 @@ class DeclarationsMixin(TypeSystemMixin):
                                 False,
                             )
                             setattr(recv, "is_borrowed", True)
+                            setattr(recv, "is_mutable_borrow", is_mutable_borrow)
                             setattr(recv, "is_receiver", True)
                             params.append(recv)
                             seen_receiver = True
@@ -1044,13 +1049,17 @@ class DeclarationsMixin(TypeSystemMixin):
                 seen_receiver = False
                 if self.current_token and self.current_token.type != "CLOSE_PAREN":
                     while True:
-                        # Borrowed receiver syntax: &this (only allowed as first parameter)
+                        # Borrowed receiver syntax: &this (read-only) or &mut this (mutable)
                         if (not seen_receiver) and self.current_token and self.current_token.type == "AMPERSAND":
                             amp_tok = self.current_token
                             self.advance()
+                            is_mutable_borrow = False
+                            if self.current_token and self.current_token.type == "MUT":
+                                is_mutable_borrow = True
+                                self.advance()
                             th_tok = self.consume("IDENTIFIER")
                             if th_tok is None or th_tok.value != "this":
-                                self.expected_token_error("'this' after '&' for receiver", th_tok or amp_tok)
+                                self.expected_token_error("'this' after '&' (or '&mut') for receiver", th_tok or amp_tok)
                                 return None
                             if local_is_static:
                                 self.invalid_expression_error("Static methods cannot declare receiver parameter 'this'", th_tok)
@@ -1069,6 +1078,7 @@ class DeclarationsMixin(TypeSystemMixin):
                                 False,
                             )
                             setattr(recv, "is_borrowed", True)
+                            setattr(recv, "is_mutable_borrow", is_mutable_borrow)
                             setattr(recv, "is_receiver", True)
                             params.append(recv)
                             seen_receiver = True

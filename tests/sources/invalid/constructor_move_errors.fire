@@ -5,7 +5,7 @@ import @firescript/std.io.println;
 class Wrapper {
     string text;
 
-    Wrapper(&this, string text) {
+    Wrapper(&mut this, string text) {
         this.text = text;
     }
 }

@@ -19,6 +19,21 @@ That means module scope is the API boundary:
 - Export only the symbols you want other modules to use directly.
 - Wildcard imports still only bring in exported symbols.
 
+```firescript
+// Export a function
+export int32 add(int32 a, int32 b) {
+  return a + b;
+}
+
+// Export a constant
+export const int32 MAX_SIZE = 100;
+
+// This helper function is not exported and cannot be imported by other modules
+int32 helper(int32 x) {
+  return x * 2;
+}
+```
+
 ## Directory Modules and init.fire
 
 If a directory contains an `init.fire` file, that file defines the module for the directory name.

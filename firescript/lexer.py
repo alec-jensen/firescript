@@ -42,6 +42,7 @@ class Lexer:
         "CONST": r"const\b",
         "TERNARY": r"ternary\b",
         "COPYABLE": r"copyable\b",
+        "MUT": r"mut\b",
     }
 
     types: dict[str, str] = {
@@ -129,6 +130,7 @@ class Lexer:
         # Integer literal (bases with underscores) with optional width/unsigned suffix
         "INTEGER_LITERAL": rf"-?{int_core}(?:i8|i16|i32|i64|u8|u16|u32|u64)?",
         "STRING_LITERAL": r"(?:[rfb](?!.*[rfb])){0,3}\"(?:\\.|[^\\\"])*\"",
+        "CHAR_LITERAL": r"'(?:\\.|[^\\'])'",
     }
 
     comments: dict[str, str] = {

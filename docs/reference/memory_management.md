@@ -77,7 +77,7 @@ Notes:
 - Borrowing is only defined for Owned types.
 - A borrowed `&OwnedType` is a non-owning, read-only view.
 - A borrow cannot be stored in any owned field or global location that outlives the borrow expression/call.
-- Mutability of Owned values occurs via methods on an owned receiver or a consuming pattern (no mutable borrow form yet).
+- Mutability of Owned values occurs via methods with a `&mut this` receiver (mutable borrow) or a consuming `this` receiver.
 - If a function must retain or store a value, it must take ownership (`owned T`) or clone inside the borrow’s scope.
 
 TL;DRL Borrowing passes a read-only pointer.
@@ -112,8 +112,9 @@ f.flush();
 
 Method receiver kinds apply only to Owned types (Copyable methods implicitly copy the receiver):
 
-- Borrowed receiver (default for Owned): signature form `name(...) ReturnType` implicitly receives `&OwnedType this` (read-only).
-- Consuming receiver: `name(this, ...) ReturnType` takes ownership; caller's binding is invalid unless the method returns it.
+- **Read-only borrow** `&this` — non-consuming, non-mutating. The method may read fields but the compiler rejects any assignment to `this.field`.
+- **Mutable borrow** `&mut this` — non-consuming, mutating. The method may read and write fields. Use for constructors and state-modifying methods.
+- **Consuming receiver** `this` — takes ownership; caller's binding is invalid unless the method returns it.
 
 For Copyable types:
 - Methods always receive the value by copy; “consuming” semantics do not apply.

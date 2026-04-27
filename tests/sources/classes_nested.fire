@@ -5,7 +5,7 @@ import @firescript/std.io.println;
 class Point {
     int32 x;
     int32 y;
-    Point(&this, int32 x, int32 y) {
+    Point(&mut this, int32 x, int32 y) {
         this.x = x;
         this.y = y;
     }
@@ -14,7 +14,7 @@ class Point {
 class Rect {
     Point topLeft;
     Point bottomRight;
-    Rect(&this, Point tl, Point br) {
+    Rect(&mut this, Point tl, Point br) {
         this.topLeft = tl;
         this.bottomRight = br;
     }

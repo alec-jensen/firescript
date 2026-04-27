@@ -4,7 +4,7 @@
 
 # firescript
 
-firescript is a statically and strongly typed programming language that compiles natively or to JavaScript + Wasm. It is designed to be simple, powerful, and easy to learn while remaining expressive for advanced applications.
+firescript is a statically and strongly typed programming language that compiles natively or to JavaScript + Wasm (planned, not yet implemented). It is designed to be simple, powerful, and easy to learn while remaining expressive for advanced applications.
 
 *Disclaimer: firescript is currently in development and is not yet feature-complete. The language and compiler are subject to change. Not everything described in this document is implemented or working. Current builds may leak resources; the design goal is deterministic destruction via an ownership model.*
 
@@ -27,11 +27,11 @@ int8 fibonacci(int8 n) {
     if n <= 1 {
         return n
     }
-    return fibonacci(n - 1) + fibonacci(n - 2)
+    return fibonacci(n - 1i8) + fibonacci(n - 2i8)
 }
 
 // Print the first 10 Fibonacci numbers
-for (int8 i : range(9)) {
+for (int8 i=0i8; i < 10i8; i++) {
     println(fibonacci(i))
 }
 ```

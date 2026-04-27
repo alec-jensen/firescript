@@ -44,6 +44,7 @@ nav:
   - Reference:
     - Overview: reference/overview.md
     - Types & Variables: reference/variables.md
+    - Operators: reference/operators.md
     - Arrays: reference/arrays.md
     - Control Flow: reference/control_flow.md
     - Functions & Methods: reference/functions.md

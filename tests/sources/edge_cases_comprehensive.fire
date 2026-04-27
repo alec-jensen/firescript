@@ -82,10 +82,10 @@ for (int32 val in same) {
 println("--- String Edge Cases ---");
 string single_char = "a";
 println(single_char);
-// println(single_char.length());  // .length() not implemented for strings
+println(single_char.length());
 
 string spaces = "   ";
-// println(spaces.length());  // .length() not implemented for strings
+println(spaces.length());
 
 // Comparison edge cases
 println("--- Comparison Edge Cases ---");

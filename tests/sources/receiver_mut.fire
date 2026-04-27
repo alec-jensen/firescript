@@ -1,0 +1,55 @@
+import @firescript/std.io.println;
+
+class Counter {
+    int32 count;
+
+    Counter(&mut this, int32 start) {
+        this.count = start;
+    }
+
+    void increment(&mut this) {
+        this.count = this.count + 1;
+    }
+
+    void add(&mut this, int32 n) {
+        this.count = this.count + n;
+    }
+
+    int32 value(&this) {
+        return this.count;
+    }
+}
+
+class Pair {
+    string first;
+    string second;
+
+    Pair(&mut this, string a, string b) {
+        this.first = a;
+        this.second = b;
+    }
+
+    void swap(&mut this) {
+        string tmp = this.first;
+        this.first = this.second;
+        this.second = tmp;
+    }
+
+    string describe(&this) {
+        return this.first + "," + this.second;
+    }
+}
+
+Counter c = new Counter(0);
+c.increment();
+c.increment();
+c.increment();
+println(c.value());
+
+c.add(10);
+println(c.value());
+
+Pair p = new Pair("hello", "world");
+println(p.describe());
+p.swap();
+println(p.describe());

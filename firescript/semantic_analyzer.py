@@ -97,8 +97,9 @@ class SemanticAnalyzer:
         self.method_signatures: Dict[Tuple[str, str], List[Tuple[str, str, bool, bool]]] = {}
 
         # Track callable analysis context for validating return semantics.
-        # Each frame stores: (return_type, borrowed_parameter_names).
-        self.callable_stack: List[Tuple[Optional[str], Set[str]]] = []
+        # Each frame stores: (return_type, borrowed_parameter_names, receiver_is_mutable).
+        # receiver_is_mutable is False for &this (read-only), True for &mut this or no receiver.
+        self.callable_stack: List[Tuple[Optional[str], Set[str], bool]] = []
 
     def report_error(self, err: CompileTimeError, node: Optional[ASTNode] = None) -> None:
         """Record a semantic error object with source location, mirroring Parser.report_error()."""
@@ -428,16 +429,16 @@ class SemanticAnalyzer:
     def _analyze_callable_definition(self, node: ASTNode) -> None:
         """Analyze a function-like definition with parameters and body scope."""
         borrowed_params: Set[str] = set()
+        receiver_is_mutable = True  # default: no receiver means no mutation restriction
         for child in node.children:
             if child.node_type == NodeTypes.PARAMETER and getattr(child, "is_borrowed", False):
-                # Borrowed receiver `this` participates in method borrowing semantics,
-                # but should not be treated as an escaping borrowed parameter root for
-                # direct return-view checks. Existing class behavior expects returning
-                # receiver fields in borrowed methods to remain valid.
-                if not bool(getattr(child, "is_receiver", False)) and child.name != "this":
+                if bool(getattr(child, "is_receiver", False)) or child.name == "this":
+                    # Determine receiver mutability: &mut this → mutable, &this → read-only
+                    receiver_is_mutable = bool(getattr(child, "is_mutable_borrow", False))
+                else:
                     borrowed_params.add(child.name)
 
-        self.callable_stack.append((getattr(node, "return_type", None), borrowed_params))
+        self.callable_stack.append((getattr(node, "return_type", None), borrowed_params, receiver_is_mutable))
         self._enter_scope()
         for child in node.children:
             if child.node_type == NodeTypes.PARAMETER:
@@ -613,7 +614,7 @@ class SemanticAnalyzer:
                 self._analyze_node(child)
             if self.callable_stack and node.children:
                 ret_expr = node.children[0]
-                _, borrowed_params = self.callable_stack[-1]
+                _, borrowed_params, _ = self.callable_stack[-1]
                 if self._is_direct_borrow_view(ret_expr, borrowed_params) and self._expr_is_owned_value(ret_expr):
                     self.report_error(
                         SemanticError(message="Cannot return borrowed value; borrowed values cannot escape callable scope"),
@@ -762,7 +763,28 @@ class SemanticAnalyzer:
         elif node.node_type in (NodeTypes.ELIF_STATEMENT, NodeTypes.ELSE_STATEMENT):
             for child in node.children:
                 self._analyze_node(child)
-        
+
+        # Field assignment: enforce that &this receivers cannot mutate fields
+        elif node.node_type == NodeTypes.ASSIGNMENT:
+            lhs = node.children[0] if node.children else None
+            if lhs and lhs.node_type == NodeTypes.FIELD_ACCESS and lhs.children:
+                root = lhs.children[0]
+                if root.node_type == NodeTypes.IDENTIFIER and root.name == "this":
+                    if self.callable_stack:
+                        _, _, receiver_is_mutable = self.callable_stack[-1]
+                        if not receiver_is_mutable:
+                            self.report_error(
+                                SemanticError(
+                                    message=(
+                                        "Cannot mutate field through a read-only receiver '&this'; "
+                                        "declare the receiver as '&mut this' to allow mutation"
+                                    )
+                                ),
+                                node,
+                            )
+            for child in node.children:
+                self._analyze_node(child)
+
         # Default: recurse
         else:
             for child in node.children:

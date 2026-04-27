@@ -194,6 +194,8 @@ float128 f128Value = 3.14f128;
 
 #### Special Floating Point Values
 
+*Floating point operations follow IEEE 754 semantics.*
+
 Floating point types support special values such as `NaN` (Not a Number), `Infinity`, and `-Infinity`:
 
 ```firescript
@@ -252,7 +254,7 @@ Strings support:
 
 ### Character Type (`char`)
 
-The `char` type represents a single character and is currently implemented as a string with length 1.
+The `char` type represents a single character. Unlike strings, `char` is a copyable type and is stored on the stack. It can be initialized with a single character string literal.
 
 ```firescript
 char letter = "A";
@@ -326,39 +328,41 @@ firescript has strict typing rules and requires explicit type conversions using 
 
 ### Explicit Type Casting
 
-To convert between types, use Java-style casting with parentheses:
+To convert between types, use postfix casting with `as`.
+
+firescript uses Rust-style postfix casting; Java/C-style casts are not supported.
 
 ```firescript
 // Numeric conversions
 int32 intVal = 42;
-float64 floatVal = (float64)intVal;     // 42.0
+float64 floatVal = intVal as float64;     // 42.0
 
 float32 pi = 3.14f32;
-int32 truncated = (int32)pi;            // 3 (truncates decimal)
+int32 truncated = pi as int32;            // 3 (truncates decimal)
 
 // Between numeric types
 int8 small = 100i8;
-int64 large = (int64)small;             // 100i64
+int64 large = small as int64;             // 100i64
 
 uint32 unsigned = 42u32;
-int32 signed = (int32)unsigned;         // 42i32
+int32 signed = unsigned as int32;         // 42i32
 
 // String conversions
 string numStr = "42";
-int32 parsed = (int32)numStr;           // 42
-float64 parsedFloat = (float64)"3.14";  // 3.14
+int32 parsed = numStr as int32;           // 42
+float64 parsedFloat = "3.14" as float64;  // 3.14
 
 // To string
-string str1 = (string)42;               // "42"
-string str2 = (string)3.14f32;          // "3.14"
-string str3 = (string)true;             // "true"
+string str1 = 42 as string;               // "42"
+string str2 = 3.14f32 as string;          // "3.14"
+string str3 = true as string;             // "true"
 
 // Boolean conversions
-bool fromString = (bool)"true";         // true
-bool fromInt = (bool)1;                 // true (non-zero is true)
+bool fromString = "true" as bool;         // true
+bool fromInt = 1 as bool;                 // true (non-zero is true)
 
 // Character conversions
-char first = (char)"Hello";             // "H" - first character
+char first = "Hello" as char;             // "H" - first character
 ```
 
 **Casting Rules:**
@@ -376,8 +380,8 @@ char first = (char)"Hello";             // "H" - first character
 Some casts are not allowed and will result in compile-time errors:
 
 ```firescript
-// int32 x = (int32)[1, 2, 3];  // ❌ Error: Cannot cast array to int32
-// bool b = (bool)"hello";       // ⚠️ Runtime error: Invalid boolean string
+// int32 x = [1, 2, 3] as int32;  // ❌ Error: Cannot cast array to int32
+// bool b = "hello" as bool;       // ⚠️ Runtime error: Invalid boolean string
 ```
 
 ### Mixed-Type Arithmetic
@@ -391,8 +395,8 @@ int64 b = 20i64;
 // int32 result = a + b;  // ❌ Error: Cannot mix int32 and int64
 
 // Must explicitly cast to desired type
-int32 result1 = (int32)(a + (int32)b);  // Cast b to int32 first
-int64 result2 = (int64)((int64)a + b);  // Cast a to int64 first
+int32 result1 = a + (b as int32);  // Cast b to int32 first
+int64 result2 = (a as int64) + b;  // Cast a to int64 first
 
 // Mixed integer and float
 int32 intVal = 5;
@@ -400,8 +404,8 @@ float32 floatVal = 2.5f32;
 
 // float32 mixed = intVal + floatVal;  // ❌ Error: Cannot mix int32 and float32
 
-float32 result3 = (float32)((float32)intVal + floatVal);  // Cast int to float
-int32 result4 = (int32)((int32)floatVal + intVal);        // Cast float to int (truncates)
+float32 result3 = (intVal as float32) + floatVal;  // Cast int to float
+int32 result4 = (floatVal as int32) + intVal;      // Cast float to int (truncates)
 
 // Different float precisions
 float32 f32 = 3.14f32;
@@ -409,8 +413,8 @@ float64 f64 = 2.71f64;
 
 // float64 sum = f32 + f64;  // ❌ Error: Cannot mix float32 and float64
 
-float64 result5 = (float64)((float64)f32 + f64);  // Cast to float64
-float32 result6 = (float32)(f32 + (float32)f64);  // Cast to float32
+float64 result5 = (f32 as float64) + f64;  // Cast to float64
+float32 result6 = f32 + (f64 as float32);  // Cast to float32
 ```
 
 **Design Rationale:**
@@ -1504,7 +1508,13 @@ The current firescript compiler supports:
 * ✅ Nullable type modifiers
 * ✅ Arrays (as Owned heap-allocated types)
 * ✅ Static type checking for expressions and assignments
-* ⚠️ Explicit type casting (only for numeric types at present)
+* ✅ Generics
+  * ✅ Generic functions
+  * ✅ Type constraints with interfaces
+  * ✅ Type union constraints (`T: int32 | float64`)
+  * ✅ Generic classes
+  * ✅ Type inference for generics
+* ⚠️ Explicit type casting (only for numeric types, `string`, and `bool` at present)
 
 Not yet implemented:
 
@@ -1520,11 +1530,4 @@ Not yet implemented:
   * ❌ Default implementations in interfaces
   * ❌ Associated types
   * ❌ Interface objects / dynamic dispatch
-* ❌ Generics (syntax and semantics documented, implementation pending)
-  * ❌ Generic functions
-  * ❌ Type constraints with interfaces
-  * ❌ Type union constraints (`T: int32 | float64`)
-  * ❌ Generic classes
-  * ❌ Type inference for generics
-* ❌ User-defined types (classes)
 * ❌ Function types

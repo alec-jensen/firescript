@@ -34,7 +34,7 @@ export class FileResult {
 export class File {
     string path;
 
-    File(&this, string path) {
+    File(&mut this, string path) {
         this.path = path;
     }
 
@@ -69,7 +69,7 @@ export class File {
         return FileResult(result.status, "");
     }
 
-    FileResult renameTo(&this, string new_path) {
+    FileResult renameTo(&mut this, string new_path) {
         SyscallResult result = syscall_rename(this.path, new_path);
         if (result.status >= 0) {
             this.path = new_path;
@@ -77,7 +77,7 @@ export class File {
         return FileResult(result.status, "");
     }
 
-    FileResult moveTo(&this, string dst_path) {
+    FileResult moveTo(&mut this, string dst_path) {
         SyscallResult result = syscall_move(this.path, dst_path);
         if (result.status >= 0) {
             this.path = dst_path;

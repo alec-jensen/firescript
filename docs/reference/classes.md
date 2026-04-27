@@ -2,8 +2,6 @@
 
 > Status: This page describes planned class semantics that integrate with the ownership-based memory model. See [Memory Management](./memory_management.md) and the [Glossary](../glossary.md#memory-management-terms) for authoritative lifetime terminology.
 
-**Note:** Class definitions, inheritance, and methods are currently not supported by the compiler. This documentation describes the planned implementation.
-
 ## Object-Oriented Programming in firescript
 
 firescript's class system is designed to provide a clean, intuitive approach to object-oriented programming with features like single inheritance, constructors, and both instance and static methods.
@@ -21,7 +19,13 @@ Classes are Owned (Non-Trivially Copyable) types unless specified otherwise. The
 - Inheritance does not change ownership: moving a `Student` moves its base `Person` subobject as part of the same operation.
 - Borrowed references cannot escape beyond the lifetime of the owning instance; the compiler enforces non-escaping borrows.
 
-Receiver convention (planned): Methods use a borrowed receiver `&this` by default—even when mutating fields—because internal mutation does not require taking ownership of the entire object. A method takes an owning `this` only when it will consume the instance (e.g., irreversible state transition, transferring internal resources, or explicit `drop(this)` destructor). Examples below follow this convention.
+Receiver convention: firescript distinguishes three receiver forms:
+
+- **`&this`** — read-only borrow. The method may read fields but cannot assign to them. Use this for query/observer methods.
+- **`&mut this`** — mutable borrow. The method may read and write fields without consuming the instance. Use this for constructors and any method that modifies state.
+- **`this`** (owning) — the method takes ownership of the instance and consumes it. Use this only when the instance will be destroyed or irreversibly transferred (e.g., a `drop(this)` destructor).
+
+The compiler enforces this: assigning to `this.field` inside a `&this` method is a compile error.
 
 Borrowing applies only to Owned (Non-Trivially Copyable) types. Copyable types (`intN`, `floatN`, `bool`, `char`) are always passed and returned by value with implicit bitwise copy; using a borrow marker on copyable values is unnecessary and omitted below. Owned types include `string`, arrays, and user-defined classes. When you see `&Type` it implies the type is Owned.
 
@@ -32,12 +36,12 @@ class HandleBundle {
     File log;
     Socket conn;
 
-    HandleBundle(&this, File &log, Socket &conn) {
+    HandleBundle(&mut this, File &log, Socket &conn) {
         this.log = log;     // constructed first
         this.conn = conn;   // constructed second
     }
 
-    drop(&this) {            // planned destructor
+    drop(this) {            // planned destructor
         // Custom cleanup (optional). Fields are then dropped automatically
         // in reverse: conn then log.
     }
@@ -222,6 +226,11 @@ string speciesName = Person.species();
 ## Inheritance
 
 Inheritance allows a class to inherit fields and methods from another class. firescript supports single inheritance using the `from` keyword:
+
+### `super` Attribute
+
+The `super` attribute is an alias for the parent class and functions like super in other languages. It allows you to call the parent class's constructor and methods from the child class.
+The main difference of `super` in firescript is that it is an attribute of the instance (`this.super`).
 
 ```firescript
 class Student from Person {

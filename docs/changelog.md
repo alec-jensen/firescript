@@ -5,6 +5,11 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 ## Currently in development
 
 ### New Language Features
+- Added `char` type — a copyable, stack-allocated scalar representing a single character. Initialized with single-character string literals (`char c = "A"`).
+- Added character literal syntax with single quotes (`'A'`, `'\n'`).
+- Added `&mut this` receiver syntax for mutable borrowing in methods. Methods can now declare `&this` for read-only access or `&mut this` for mutable access, with compiler enforcement preventing field mutation through read-only receivers.
+- Added `string.length()` method, returning an `int32` count of characters.
+- String concatenation now requires both operands to be strings (`string + string`). Implicit type conversion is no longer allowed; use explicit `as` casting instead (e.g., `"value: " + (42 as string)`).
 - Added explicit module exports with top-level `export` declarations. Module symbols are private by default and imports can only access exported symbols.
 - Added generic classes with multiple type parameters (e.g., `class Pair<T, U> { ... }`). Monomorphization is performed automatically at each use site.
 - `Tuple<T, U>`, `CopyableTuple<T, U>`, `Option<T>`, and `CopyableOption<T>` are now provided by the standard library (`@firescript/std.types`).
@@ -22,6 +27,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 ### Breaking Changes
 - Removed built-in `input()` function.
 - Modules now need to explicitly export symbols to be imported by other modules. Top-level declarations are private by default.
+- String concatenation no longer performs implicit type conversion. Both operands must be strings; use explicit `as` casting for non-string values.
 
 ### Compiler improvements
 - Standard library modules can now import sibling modules using short relative paths (e.g., `import tuple.Tuple;`).

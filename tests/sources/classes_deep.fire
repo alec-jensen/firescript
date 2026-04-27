@@ -4,7 +4,7 @@ class Vec2 {
     int32 x;
     int32 y;
 
-    Vec2(&this, int32 x, int32 y) {
+    Vec2(&mut this, int32 x, int32 y) {
         this.x = x;
         this.y = y;
     }

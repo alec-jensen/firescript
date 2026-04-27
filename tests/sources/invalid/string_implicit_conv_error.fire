@@ -1,0 +1,3 @@
+import @firescript/std.io.println;
+println("value: " + 42);
+string s = "x" + true;
