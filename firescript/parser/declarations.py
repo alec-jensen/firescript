@@ -198,7 +198,7 @@ class DeclarationsMixin(TypeSystemMixin):
                         )
                         return None
                     p_is_array = True
-                pname_tok = self.consume("IDENTIFIER")
+                pname_tok = self.consume_name()
                 if pname_tok is None:
                     self.expected_token_error("parameter name", self.current_token)
                     return None
@@ -488,10 +488,7 @@ class DeclarationsMixin(TypeSystemMixin):
         Returns the alias string if present, None if no 'as' keyword follows.
         Logs an error and returns None if 'as' is found but no identifier follows.
         """
-        if not (self.current_token and (
-            self.current_token.type == "AS"
-            or (self.current_token.type == "IDENTIFIER" and self.current_token.value == "as")
-        )):
+        if not (self.current_token and self.current_token.type == "AS"):
             return None
         self.advance()  # consume 'as'
         al = self.consume("IDENTIFIER")
@@ -975,7 +972,7 @@ class DeclarationsMixin(TypeSystemMixin):
                                 while self.current_token and self.current_token.type != "CLOSE_PAREN":
                                     self.advance()
                                 break
-                            pname_tok = self.consume("IDENTIFIER")
+                            pname_tok = self.consume_name()
                             if pname_tok is None:
                                 self.expected_token_error("parameter name in method", self.current_token)
                                 return None
@@ -1107,7 +1104,7 @@ class DeclarationsMixin(TypeSystemMixin):
                             if self.current_token and self.current_token.type == "AMPERSAND":
                                 p_is_borrowed = True
                                 self.advance()
-                            pname_tok = self.consume("IDENTIFIER")
+                            pname_tok = self.consume_name()
                             if pname_tok is None:
                                 self.expected_token_error("parameter name in method", self.current_token)
                                 return None

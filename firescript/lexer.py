@@ -31,7 +31,7 @@ class Lexer:
         "RETURN": r"return\b",
         "IMPORT": r"import\b",
         "EXPORT": r"export\b",
-            "FROM": r"from\b",
+        "FROM": r"from\b",
         "NEW": r"new\b",
         "CLASS": r"class\b",
         "STATIC": r"static\b",
@@ -43,6 +43,8 @@ class Lexer:
         "TERNARY": r"ternary\b",
         "COPYABLE": r"copyable\b",
         "MUT": r"mut\b",
+        "OWNED": r"owned\b",
+        "AS": r"as\b",
     }
 
     types: dict[str, str] = {

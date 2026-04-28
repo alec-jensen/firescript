@@ -56,10 +56,7 @@ class ExpressionsMixin(ParserBase):
         """Parse Rust-style postfix cast: <expr> as <type>."""
         if node is None:
             return None
-        while self.current_token and (
-            self.current_token.type == "AS"
-            or (self.current_token.type == "IDENTIFIER" and self.current_token.value == "as")
-        ):
+        while self.current_token and self.current_token.type == "AS":
             self.advance()  # consume 'as'
             t_tok = self.current_token
             if t_tok is None:
@@ -286,7 +283,7 @@ class ExpressionsMixin(ParserBase):
             elif token.type in ("INTEGER_LITERAL", "FLOAT_LITERAL", "DOUBLE_LITERAL"):
                 node.return_type = self._infer_literal_type(token)
             return self._parse_postfix_cast(node)
-        elif token.type == "IDENTIFIER" or token.value in self.builtin_functions:
+        elif token.type in ("IDENTIFIER", "AS", "OWNED") or token.value in self.builtin_functions:
             self.advance()
             # Special-case: type-level method call like Type.method(...)
             if token.value in self.user_types and self.current_token and self.current_token.type == "DOT":
@@ -452,12 +449,7 @@ class ExpressionsMixin(ParserBase):
                         break
 
                 # Postfix cast: <expr> as <type>
-                elif self.current_token and (
-                    self.current_token.type == "AS"
-                    or (
-                        self.current_token.type == "IDENTIFIER" and self.current_token.value == "as"
-                    )
-                ):
+                elif self.current_token and self.current_token.type == "AS":
                     node = self._parse_postfix_cast(node)
                     continue
                 # Postfix increment/decrement: x++ or x--
@@ -543,7 +535,7 @@ class ExpressionsMixin(ParserBase):
 
     def parse_compound_assignment(self):
         """Parse compound assignment statements like x += y, x -= y, etc."""
-        identifier = self.consume("IDENTIFIER")
+        identifier = self.consume_name()
         if identifier is None:
             self.expected_token_error("identifier", self.current_token)
             self._sync_to_semicolon()
@@ -586,7 +578,7 @@ class ExpressionsMixin(ParserBase):
 
     def parse_increment_or_decrement(self):
         """Parse increment (x++) or decrement (x--) operations."""
-        identifier = self.consume("IDENTIFIER")
+        identifier = self.consume_name()
         if identifier is None:
             self.expected_token_error("identifier", self.current_token)
             self._sync_to_semicolon()

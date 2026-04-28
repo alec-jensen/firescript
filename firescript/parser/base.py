@@ -274,6 +274,17 @@ class ParserBase:
             return token
         return None
 
+    def consume_name(self) -> Optional[Token]:
+        """Consume a name token: either IDENTIFIER or keywords allowed as names (AS, OWNED)."""
+        if self.current_token is None:
+            return None
+        
+        if self.current_token.type in ("IDENTIFIER", "AS", "OWNED"):
+            token = self.current_token
+            self.advance()
+            return token
+        return None
+
     def expect(self, token_type: str) -> Optional[Token]:
         """Expect the current token to be of the given type."""
         if self.current_token is None:

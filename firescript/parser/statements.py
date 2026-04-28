@@ -201,7 +201,7 @@ class StatementsMixin(ExpressionsMixin):
             is_array = True
 
         # Identifier
-        identifier = self.consume("IDENTIFIER")
+        identifier = self.consume_name()
         if identifier is None:
             self.expected_token_error("variable name after type", self.current_token)
             return None
@@ -244,7 +244,7 @@ class StatementsMixin(ExpressionsMixin):
         return node
 
     def parse_variable_assignment(self):
-        identifier = self.consume("IDENTIFIER")
+        identifier = self.consume_name()
         if identifier is None:
             self.expected_token_error("identifier", self.current_token)
             self._sync_to_semicolon()
