@@ -1,0 +1,2765 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://firescript.alecj.com/internal/development/language_design_recommendations/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Firescript Language Design Recommendations - firescript</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lexend:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Lexend";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#firescript-language-design-recommendations" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            firescript
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Firescript Language Design Recommendations
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../reference/overview/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../glossary/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Glossary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../benchmarks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Benchmarks
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    firescript
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types & Variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/control_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions & Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes & Inheritance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/scoping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scoping Rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/type_system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/memory_management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/imports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Standard Library
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Standard Library
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/fs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/math/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Math
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/regex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/cli_args/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-Line Arguments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    kiln
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    kiln
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../benchmarks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#executive-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executive Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendation-1-explicit-value-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 1: Explicit Value Categories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommendation 1: Explicit Value Categories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proposed-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Change
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-before-and-after" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Before and After
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendation-2-explicit-ownership-operations-at-call-sites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 2: Explicit Ownership Operations at Call Sites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommendation 2: Explicit Ownership Operations at Call Sites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proposed-change_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Change
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-notes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-transformation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Transformation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#discussion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendation-3-ownership-aware-generics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 3: Ownership-Aware Generics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommendation 3: Ownership-Aware Generics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proposed-change_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Change
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-notes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-generic-clone-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Generic Clone Function
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendation-4-improved-error-messages-via-fir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 4: Improved Error Messages via FIR
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommendation 4: Improved Error Messages via FIR">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proposed-enhancement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Enhancement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-notes_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendation-5-dynamic-arrays-in-standard-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 5: Dynamic Arrays in Standard Library
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommendation 5: Dynamic Arrays in Standard Library">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proposed-change_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Change
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-notes_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-collections-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Collections Module
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendation-6-null-safety-optional-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 6: Null Safety &amp; Optional Values
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommendation 6: Null Safety &amp; Optional Values">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proposed-change-phase-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Change (Phase 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proposed-change-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Change (Phase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-notes_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendation-7-trait-system-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 7: Trait System (Phase 2)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommendation 7: Trait System (Phase 2)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proposed-change-phase-2-post-fir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Change (Phase 2 - post-FIR)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-notes_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendation-8-pattern-matching-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 8: Pattern Matching (Phase 2)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommendation 8: Pattern Matching (Phase 2)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proposed-change-phase-2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Change (Phase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-notes_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendation-9-asyncawait-phase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 9: Async/Await (Phase 3)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommendation 9: Async/Await (Phase 3)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proposed-direction-phase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Direction (Phase 3+)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-notes_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary-prioritization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary: Prioritization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendation-next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation: Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/development/language_design_recommendations.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="firescript-language-design-recommendations">Firescript Language Design Recommendations<a class="headerlink" href="#firescript-language-design-recommendations" title="Permanent link">&para;</a></h1>
+<p>This document provides detailed recommendations for language improvements that should be made <strong>early in development</strong>, ideally before or alongside FIR implementation, to establish strong foundations.</p>
+<h2 id="executive-summary">Executive Summary<a class="headerlink" href="#executive-summary" title="Permanent link">&para;</a></h2>
+<p>The following changes are recommended to improve language clarity, safety, and long-term maintainability:</p>
+<ol>
+<li><strong>Explicit Value Categories</strong> - Make <code>owned</code>/<code>copyable</code> explicit in declarations</li>
+<li><strong>Explicit Ownership Operations</strong> - Add <code>move()</code> and <code>borrow()</code> at call sites</li>
+<li><strong>Ownership-Aware Generics</strong> - Constraints that distinguish Owned vs Copyable</li>
+<li><strong>Improved Error Messages</strong> - Leverage FIR for better diagnostics</li>
+<li><strong>Array Dynamism in Stdlib</strong> - Move dynamic arrays to standard library</li>
+<li><strong>Null Safety Clarification</strong> - Explicit Option types or nullable syntax</li>
+<li><strong>Trait System</strong> (Phase 2) - For zero-cost abstraction and polymorphism</li>
+</ol>
+<hr />
+<h2 id="recommendation-1-explicit-value-categories">Recommendation 1: Explicit Value Categories<a class="headerlink" href="#recommendation-1-explicit-value-categories" title="Permanent link">&para;</a></h2>
+<h3 id="current-state">Current State<a class="headerlink" href="#current-state" title="Permanent link">&para;</a></h3>
+<p>Value categories (owned/copyable) are inferred entirely during semantic analysis. Users don't see or declare them explicitly.</p>
+<pre><code class="language-firescript">class Point {
+    int32 x;
+    int32 y;
+}  // Implicitly Owned - nothing indicates this
+
+copyable class Vec2 {
+    float32 x;
+    float32 y;
+}  // Only copyable is explicit
+</code></pre>
+<h3 id="proposed-change">Proposed Change<a class="headerlink" href="#proposed-change" title="Permanent link">&para;</a></h3>
+<p>Make value category explicit and consistent in all declarations:</p>
+<pre><code class="language-firescript">// Option A: Explicit 'owned' keyword (recommended)
+owned class Point {
+    int32 x;
+    int32 y;
+}
+
+copyable class Vec2 {
+    float32 x;
+    float32 y;
+}
+
+// Option B: Default owned, explicit for copyable (current)
+class Point { ... }           // defaults to owned
+copyable class Vec2 { ... }   // explicit copyable
+</code></pre>
+<p><strong>Option B (current) is acceptable if we document that "class" defaults to owned.</strong></p>
+<h3 id="benefits">Benefits<a class="headerlink" href="#benefits" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Benefit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Clarity</strong></td>
+<td>Language users immediately see whether a class is copyable</td>
+</tr>
+<tr>
+<td><strong>Teachability</strong></td>
+<td>Explicit is easier to learn than "class defaults to owned"</td>
+</tr>
+<tr>
+<td><strong>Safety</strong></td>
+<td>Reduces chance of accidentally using Owned semantics when Copyable intended</td>
+</tr>
+<tr>
+<td><strong>FIR Generation</strong></td>
+<td>Parser already has value category; simpler to preserve through pipeline</td>
+</tr>
+<tr>
+<td><strong>Type Diagnostics</strong></td>
+<td>Tools can show value category in hover tooltips</td>
+</tr>
+</tbody>
+</table>
+<h3 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Parser Change</strong>: Minimal - already supports <code>copyable</code> keyword</li>
+<li><strong>Documentation</strong>: Update getting started guide and memory management docs</li>
+<li><strong>Migration</strong>: No breaking change if <code>owned</code> keyword is optional (default)</li>
+<li><strong>Testing</strong>: Existing tests work unchanged</li>
+</ul>
+<h3 id="example-before-and-after">Example: Before and After<a class="headerlink" href="#example-before-and-after" title="Permanent link">&para;</a></h3>
+<p><strong>Before</strong> (implicit):</p>
+<pre><code class="language-firescript">class File {
+    string path;
+    int32 handle;
+}
+// Is this owned or copyable? User must read docs or infer from usage
+</code></pre>
+<p><strong>After</strong> (explicit):</p>
+<pre><code class="language-firescript">owned class File {
+    string path;
+    int32 handle;
+}
+// Clear that File is Owned (heap-allocated, unique ownership)
+</code></pre>
+<hr />
+<h2 id="recommendation-2-explicit-ownership-operations-at-call-sites">Recommendation 2: Explicit Ownership Operations at Call Sites<a class="headerlink" href="#recommendation-2-explicit-ownership-operations-at-call-sites" title="Permanent link">&para;</a></h2>
+<h3 id="current-state_1">Current State<a class="headerlink" href="#current-state_1" title="Permanent link">&para;</a></h3>
+<p>Ownership transfer (move vs. borrow) is implicit, determined by function signature:</p>
+<pre><code class="language-firescript">void addUser(string username);  // signature says 'move'
+
+string u = &quot;alice&quot;;
+addUser(u);  // u moved implicitly; not obvious from call site
+</code></pre>
+<h3 id="proposed-change_1">Proposed Change<a class="headerlink" href="#proposed-change_1" title="Permanent link">&para;</a></h3>
+<p>Make ownership operations explicit at call sites using <code>move()</code> and <code>borrow()</code>:</p>
+<pre><code class="language-firescript">void addUser(string username);        // Takes ownership
+int32 length(&amp;string s);              // Borrows
+
+string u = &quot;alice&quot;;
+addUser(move(u));                     // Explicit move - clear intent
+int32 len = length(borrow(u));        // Explicit borrow
+println(u);                           // OK - u still valid after borrow
+
+// For copyable types, move/borrow not needed (implicit copy):
+int32 x = 42;
+int32 y = x;                          // Copy - no annotation needed
+</code></pre>
+<h3 id="benefits_1">Benefits<a class="headerlink" href="#benefits_1" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Benefit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Explicitness</strong></td>
+<td>Follows firescript principle: explicit is better</td>
+</tr>
+<tr>
+<td><strong>Readability</strong></td>
+<td>Ownership intent obvious from call site, not just signature</td>
+</tr>
+<tr>
+<td><strong>Safety</strong></td>
+<td>Accidental moves easier to spot in code review</td>
+</tr>
+<tr>
+<td><strong>Education</strong></td>
+<td>New users see ownership operations explicitly</td>
+</tr>
+<tr>
+<td><strong>Debugging</strong></td>
+<td>Stack traces show which function moved value</td>
+</tr>
+<tr>
+<td><strong>Linting</strong></td>
+<td>Can warn on unexpected moves/borrows</td>
+</tr>
+</tbody>
+</table>
+<h3 id="implementation-notes_1">Implementation Notes<a class="headerlink" href="#implementation-notes_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Parser Change</strong>: Add <code>move(expr)</code> and <code>borrow(expr)</code> as expression forms</li>
+<li><strong>Semantic Analysis</strong>: Validate that <code>move(expr)</code> and <code>borrow(expr)</code> match parameter expectations</li>
+<li><strong>Code Generation</strong>: Remove move/borrow markers from C output (already handled)</li>
+<li><strong>Migration</strong>: Could support both implicit and explicit initially; deprecate implicit over time</li>
+</ul>
+<h3 id="example-transformation">Example Transformation<a class="headerlink" href="#example-transformation" title="Permanent link">&para;</a></h3>
+<p><strong>Before</strong>:</p>
+<pre><code class="language-firescript">class Database {
+    string connectionString;
+}
+
+void initDB(Database db) {  // Takes ownership
+    // ...
+}
+
+Database d = Database(&quot;localhost&quot;);
+initDB(d);  // Implicit move - not obvious
+// d is now invalid but not marked at call site
+</code></pre>
+<p><strong>After</strong>:</p>
+<pre><code class="language-firescript">void initDB(Database db) {  // Takes ownership
+
+}
+
+Database d = Database(&quot;localhost&quot;);
+initDB(move(d));  // Explicit move - clear at call site
+// Reader immediately sees d is moved here
+</code></pre>
+<h3 id="discussion">Discussion<a class="headerlink" href="#discussion" title="Permanent link">&para;</a></h3>
+<p>This recommendation has implications:
+- <strong>Verbosity</strong>: Adds <code>move()</code> and <code>borrow()</code> calls throughout code
+- <strong>Learning Curve</strong>: Users must learn move() and borrow() notation
+- <strong>Consistency</strong>: Applies to all ownership transfers, which is thorough</p>
+<p><strong>Recommendation</strong>: Implement as opt-in initially (warn if missing), then make required in future version.</p>
+<hr />
+<h2 id="recommendation-3-ownership-aware-generics">Recommendation 3: Ownership-Aware Generics<a class="headerlink" href="#recommendation-3-ownership-aware-generics" title="Permanent link">&para;</a></h2>
+<h3 id="current-state_2">Current State<a class="headerlink" href="#current-state_2" title="Permanent link">&para;</a></h3>
+<p>Generic type parameters don't distinguish between Owned and Copyable:</p>
+<pre><code class="language-firescript">func&lt;T&gt; clone(T value) -&gt; T {
+    return value.clone();  // ERROR if T is Copyable (no .clone() method)
+}
+</code></pre>
+<p>Generic constraints are basic:</p>
+<pre><code class="language-firescript">func&lt;T: int32 | float64 | float128&gt; absolute(T value) -&gt; T {
+    // Only numeric types
+}
+</code></pre>
+<h3 id="proposed-change_2">Proposed Change<a class="headerlink" href="#proposed-change_2" title="Permanent link">&para;</a></h3>
+<p>Add built-in constraint types that distinguish value categories:</p>
+<pre><code class="language-firescript">// Constraint: Only Copyable types
+func&lt;T: Copyable&gt; process(T value) -&gt; T {
+    return value;  // Simple copy, no ownership involved
+}
+
+// Constraint: Only Owned types
+func&lt;T: Owned&gt; clone(T value) -&gt; T {
+    return value.clone();
+}
+
+// Constraint: Numeric types (already exists)
+func&lt;T: int32 | float64&gt; absolute(T value) -&gt; T {
+    // ...
+}
+
+// Multiple constraints (intersection):
+func&lt;T: Owned + HasLength&gt; getLen(T value) -&gt; int32 {
+    return value.len();
+}
+</code></pre>
+<h3 id="benefits_2">Benefits<a class="headerlink" href="#benefits_2" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Benefit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Clarity</strong></td>
+<td>Generic constraints explicitly state whether Owned or Copyable</td>
+</tr>
+<tr>
+<td><strong>Correctness</strong></td>
+<td>Compiler prevents incorrect generic usage</td>
+</tr>
+<tr>
+<td><strong>Performance</strong></td>
+<td>Allows different code paths for Owned vs Copyable</td>
+</tr>
+<tr>
+<td><strong>Library Design</strong></td>
+<td>Enables building sophisticated generic abstractions</td>
+</tr>
+<tr>
+<td><strong>Documentation</strong></td>
+<td>Constraints document assumptions about types</td>
+</tr>
+</tbody>
+</table>
+<h3 id="implementation-notes_2">Implementation Notes<a class="headerlink" href="#implementation-notes_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Semantic Analysis</strong>: Extend constraint evaluation to recognize <code>Copyable</code>, <code>Owned</code> as built-in constraints</li>
+<li><strong>Code Generation</strong>: Already handles monomorphization; no changes needed</li>
+<li><strong>Migration</strong>: Backward compatible; existing generics continue to work</li>
+<li><strong>Documentation</strong>: Add section on generic constraints</li>
+</ul>
+<h3 id="example-generic-clone-function">Example: Generic Clone Function<a class="headerlink" href="#example-generic-clone-function" title="Permanent link">&para;</a></h3>
+<p><strong>Before</strong> (doesn't work well):</p>
+<pre><code class="language-firescript">func&lt;T&gt; clone(T value) -&gt; T {
+    // What if T is int32? Copyable types don't have .clone()
+    return value.clone();  // Compiler error for Copyable T
+}
+
+// Workaround: separate functions
+int32 cloneInt(int32 value) { return value; }
+string cloneString(string value) { return value.clone(); }
+</code></pre>
+<p><strong>After</strong> (clear intent):</p>
+<pre><code class="language-firescript">func&lt;T: Owned&gt; clone(T value) -&gt; T {
+    return value.clone();  // Only called with Owned types
+}
+
+// For copyables, users just use assignment:
+int32 x = 42;
+int32 y = x;  // Copy (no function call needed)
+</code></pre>
+<hr />
+<h2 id="recommendation-4-improved-error-messages-via-fir">Recommendation 4: Improved Error Messages via FIR<a class="headerlink" href="#recommendation-4-improved-error-messages-via-fir" title="Permanent link">&para;</a></h2>
+<h3 id="current-state_3">Current State<a class="headerlink" href="#current-state_3" title="Permanent link">&para;</a></h3>
+<p>Semantic analyzer produces good error messages, but they're tied to AST locations:</p>
+<pre><code>ownership_test.fire:7:5: error: use after move
+    println(p1.x)
+    ^
+note: ownership of 'p1' was moved here (5:0)
+    Point p2 = p1;
+    ^
+</code></pre>
+<h3 id="proposed-enhancement">Proposed Enhancement<a class="headerlink" href="#proposed-enhancement" title="Permanent link">&para;</a></h3>
+<p>With FIR in place, errors can be richer:</p>
+<pre><code>ownership_test.fire:7:5: error: use after move
+    println(p1.x)
+    ^
+note: 'p1: Point(owned)' ownership transferred here (5:0)
+    Point p2 = p1;
+    ^^^^^^
+hint: To borrow 'p1' instead, use: getX(borrow(p1))
+hint: To clone 'p1', use: Point p2 = p1.clone();
+</code></pre>
+<h3 id="benefits_3">Benefits<a class="headerlink" href="#benefits_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Context-Aware</strong>: Suggestions based on FIR information</li>
+<li><strong>Learning-Friendly</strong>: Hints teach best practices</li>
+<li><strong>Efficiency</strong>: Users fix errors faster</li>
+<li><strong>Tooling</strong>: LSP can provide rich hover information</li>
+</ul>
+<h3 id="implementation-notes_3">Implementation Notes<a class="headerlink" href="#implementation-notes_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>FIR Integration</strong>: Error reporting can examine FIR ownership map</li>
+<li><strong>Hint System</strong>: Develop heuristics for common error patterns</li>
+<li><strong>Testing</strong>: Add error message regression tests</li>
+</ul>
+<hr />
+<h2 id="recommendation-5-dynamic-arrays-in-standard-library">Recommendation 5: Dynamic Arrays in Standard Library<a class="headerlink" href="#recommendation-5-dynamic-arrays-in-standard-library" title="Permanent link">&para;</a></h2>
+<h3 id="current-state_4">Current State<a class="headerlink" href="#current-state_4" title="Permanent link">&para;</a></h3>
+<p>Arrays are fixed-size and largely immutable in user code:</p>
+<pre><code class="language-firescript">int32[10] numbers;  // Fixed-size, must know size at compile time
+// No .push(), .pop(), etc. available
+</code></pre>
+<h3 id="proposed-change_3">Proposed Change<a class="headerlink" href="#proposed-change_3" title="Permanent link">&para;</a></h3>
+<p>Provide a standard library <code>Vec&lt;T&gt;</code> type:</p>
+<pre><code class="language-firescript">import @firescript/std.collections.Vec;
+
+Vec&lt;int32&gt; numbers = Vec.new();
+numbers.push(10);
+numbers.push(20);
+numbers.pop();
+
+for (int32 n in numbers) {
+    println(n);
+}
+
+int32 len = numbers.length();
+</code></pre>
+<h3 id="benefits_4">Benefits<a class="headerlink" href="#benefits_4" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Benefit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Usability</strong></td>
+<td>Natural dynamic array operations</td>
+</tr>
+<tr>
+<td><strong>Simplicity</strong></td>
+<td>Keeps core language simple (no dynamic syntax)</td>
+</tr>
+<tr>
+<td><strong>Library Composition</strong></td>
+<td>Users can build on Vec (stacks, queues, etc.)</td>
+</tr>
+<tr>
+<td><strong>Performance</strong></td>
+<td>Can optimize Vec implementation independently</td>
+</tr>
+<tr>
+<td><strong>Consistency</strong></td>
+<td>Aligns with how Option, Result are provided</td>
+</tr>
+</tbody>
+</table>
+<h3 id="implementation-notes_4">Implementation Notes<a class="headerlink" href="#implementation-notes_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Standard Library</strong>: Implement <code>Vec&lt;T&gt;</code> in <code>std/collections.fire</code> (or C)</li>
+<li><strong>Generic Support</strong>: Leverages existing generic mechanisms</li>
+<li><strong>Ownership</strong>: Vec<T> is Owned type (moves on assignment)</li>
+<li><strong>Performance</strong>: Can use optimized C arrays under the hood</li>
+<li><strong>Future</strong>: Can add optimized specializations for <code>Vec&lt;int32&gt;</code>, <code>Vec&lt;string&gt;</code>, etc.</li>
+</ul>
+<h3 id="example-collections-module">Example: Collections Module<a class="headerlink" href="#example-collections-module" title="Permanent link">&para;</a></h3>
+<p><strong>std/collections.fire</strong>:</p>
+<pre><code class="language-firescript">class Vec&lt;T&gt; {
+    T[] data;
+    int32 capacity;
+    int32 len;
+
+    static Vec&lt;T&gt; new() {
+        return Vec&lt;T&gt;([], 0, 0);
+    }
+
+    void push(&amp;mut this, T value) {
+        // Grow if needed
+        // ...
+    }
+
+    T? pop(&amp;mut this) -&gt; Option&lt;T&gt; {
+        if this.len == 0 {
+            return None();
+        }
+        // ...
+    }
+
+    int32 length(&amp;this) {
+        return this.len;
+    }
+
+    T[]&amp; asSlice(&amp;this) {
+        return this.data;
+    }
+}
+</code></pre>
+<hr />
+<h2 id="recommendation-6-null-safety-optional-values">Recommendation 6: Null Safety &amp; Optional Values<a class="headerlink" href="#recommendation-6-null-safety-optional-values" title="Permanent link">&para;</a></h2>
+<h3 id="current-state_5">Current State<a class="headerlink" href="#current-state_5" title="Permanent link">&para;</a></h3>
+<p>Null safety is mentioned but not fully enforced or standardized:</p>
+<pre><code class="language-firescript">// Current: How to represent &quot;maybe a value&quot;?
+// Option: Use Option&lt;T&gt; from stdlib (works)
+Option&lt;int32&gt; maybeNum = Some(42);
+
+// But nullable syntax would be clearer:
+int32? maybeNum = 42;
+</code></pre>
+<h3 id="proposed-change-phase-1">Proposed Change (Phase 1)<a class="headerlink" href="#proposed-change-phase-1" title="Permanent link">&para;</a></h3>
+<p><strong>Clarify and document</strong> use of <code>Option&lt;T&gt;</code> for optional values:</p>
+<pre><code class="language-firescript">import @firescript/std.types.Option, Some, None;
+
+Option&lt;string&gt; maybeUser = Some(&quot;alice&quot;);
+if (maybeUser is Some) {
+    println(maybeUser.get());
+}
+</code></pre>
+<h3 id="proposed-change-phase-2">Proposed Change (Phase 2)<a class="headerlink" href="#proposed-change-phase-2" title="Permanent link">&para;</a></h3>
+<p><strong>Add nullable syntax</strong> for convenience:</p>
+<pre><code class="language-firescript">// Syntax sugar for Option&lt;T&gt;
+int32? maybeNum = 42;
+string? name = None();
+
+// Use with pattern matching or is-checks:
+if (maybeNum is Some) {
+    println(maybeNum!);  // unwrap operator
+}
+</code></pre>
+<h3 id="benefits_5">Benefits<a class="headerlink" href="#benefits_5" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Benefit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Clarity</strong></td>
+<td>Null handling explicit in types</td>
+</tr>
+<tr>
+<td><strong>Safety</strong></td>
+<td>Compiler prevents unwrapping None values</td>
+</tr>
+<tr>
+<td><strong>Familiarity</strong></td>
+<td>Similar to Kotlin, Swift, TypeScript nullable syntax</td>
+</tr>
+<tr>
+<td><strong>Composition</strong></td>
+<td>Forces thinking about None case upfront</td>
+</tr>
+</tbody>
+</table>
+<h3 id="implementation-notes_5">Implementation Notes<a class="headerlink" href="#implementation-notes_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Phase 1</strong>: Document Option<T> usage pattern</li>
+<li><strong>Phase 2</strong>: Add syntax sugar for nullable (<code>T?</code>), unwrap operator (<code>!</code>), pattern matching</li>
+<li><strong>Future</strong>: Could add Result<T, E> for error handling</li>
+</ul>
+<hr />
+<h2 id="recommendation-7-trait-system-phase-2">Recommendation 7: Trait System (Phase 2)<a class="headerlink" href="#recommendation-7-trait-system-phase-2" title="Permanent link">&para;</a></h2>
+<h3 id="current-state_6">Current State<a class="headerlink" href="#current-state_6" title="Permanent link">&para;</a></h3>
+<p>Polymorphism limited; code reuse requires inheritance chains:</p>
+<pre><code class="language-firescript">class Shape { virtual void draw(); }
+class Circle: Shape { void draw() { ... } }
+class Rectangle: Shape { void draw() { ... } }
+
+// But limited: only single inheritance, virtual methods
+</code></pre>
+<h3 id="proposed-change-phase-2-post-fir">Proposed Change (Phase 2 - post-FIR)<a class="headerlink" href="#proposed-change-phase-2-post-fir" title="Permanent link">&para;</a></h3>
+<p>Add trait system for composition-based polymorphism:</p>
+<pre><code class="language-firescript">trait Drawable {
+    void draw(&amp;this);
+}
+
+trait Serializable {
+    string serialize(&amp;this);
+}
+
+class Circle: Drawable + Serializable {
+    void draw(&amp;this) { println(&quot;drawing circle&quot;); }
+    string serialize(&amp;this) { return &quot;circle&quot;; }
+}
+
+class Rectangle: Drawable + Serializable {
+    void draw(&amp;this) { println(&quot;drawing rect&quot;); }
+    string serialize(&amp;this) { return &quot;rectangle&quot;; }
+}
+
+void renderAll(&amp;Drawable[] shapes) {
+    for (&amp;Drawable s in shapes) {
+        s.draw();
+    }
+}
+</code></pre>
+<h3 id="benefits_6">Benefits<a class="headerlink" href="#benefits_6" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Benefit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Composability</strong></td>
+<td>Types can implement multiple traits</td>
+</tr>
+<tr>
+<td><strong>Flexibility</strong></td>
+<td>Traits can be added to types after creation</td>
+</tr>
+<tr>
+<td><strong>Reuse</strong></td>
+<td>Generic functions work on trait bounds</td>
+</tr>
+<tr>
+<td><strong>Performance</strong></td>
+<td>Monomorphization generates specialized code (no vtables)</td>
+</tr>
+<tr>
+<td><strong>Idiomaticity</strong></td>
+<td>Aligns with Rust, Go, TypeScript interfaces</td>
+</tr>
+</tbody>
+</table>
+<h3 id="implementation-notes_6">Implementation Notes<a class="headerlink" href="#implementation-notes_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Complexity</strong>: Significant design work; defer to Phase 2</li>
+<li><strong>FIR Foundation</strong>: FIR makes this feasible by decoupling from C backend</li>
+<li><strong>Monomorphization</strong>: Leverage existing generic monomorphization mechanism</li>
+<li><strong>Dynamic Dispatch</strong> (optional): Could support vtable-based dynamic dispatch if desired</li>
+</ul>
+<hr />
+<h2 id="recommendation-8-pattern-matching-phase-2">Recommendation 8: Pattern Matching (Phase 2)<a class="headerlink" href="#recommendation-8-pattern-matching-phase-2" title="Permanent link">&para;</a></h2>
+<h3 id="current-state_7">Current State<a class="headerlink" href="#current-state_7" title="Permanent link">&para;</a></h3>
+<p>Limited ability to inspect and destructure values:</p>
+<pre><code class="language-firescript">// Current: Manual checks
+if (result is Some) {
+    int32 value = result.get();  // Awkward
+    println(value);
+}
+</code></pre>
+<h3 id="proposed-change-phase-2_1">Proposed Change (Phase 2)<a class="headerlink" href="#proposed-change-phase-2_1" title="Permanent link">&para;</a></h3>
+<p>Add pattern matching for ergonomics:</p>
+<pre><code class="language-firescript">// Pattern matching
+match (maybeValue) {
+    Some(v) =&gt; println(v),
+    None() =&gt; println(&quot;no value&quot;),
+}
+
+// Destructuring
+if (point is Point(x, y)) {
+    println(x);
+    println(y);
+}
+</code></pre>
+<h3 id="benefits_7">Benefits<a class="headerlink" href="#benefits_7" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Benefit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Readability</strong></td>
+<td>Patterns more concise than manual checks</td>
+</tr>
+<tr>
+<td><strong>Safety</strong></td>
+<td>Forces handling all cases</td>
+</tr>
+<tr>
+<td><strong>Ergonomics</strong></td>
+<td>Natural expression of control flow</td>
+</tr>
+<tr>
+<td><strong>Composition</strong></td>
+<td>Works naturally with ADTs (algebraic data types)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="implementation-notes_7">Implementation Notes<a class="headerlink" href="#implementation-notes_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Complexity</strong>: Moderate; requires AST, semantic analysis, codegen changes</li>
+<li><strong>FIR Integration</strong>: Pattern matching compiles to FIR branches naturally</li>
+<li><strong>Future Work</strong>: Phase 2+</li>
+</ul>
+<hr />
+<h2 id="recommendation-9-asyncawait-phase-3">Recommendation 9: Async/Await (Phase 3)<a class="headerlink" href="#recommendation-9-asyncawait-phase-3" title="Permanent link">&para;</a></h2>
+<h3 id="current-state_8">Current State<a class="headerlink" href="#current-state_8" title="Permanent link">&para;</a></h3>
+<p>Not supported; no asynchronous programming model.</p>
+<h3 id="proposed-direction-phase-3">Proposed Direction (Phase 3+)<a class="headerlink" href="#proposed-direction-phase-3" title="Permanent link">&para;</a></h3>
+<p>Add async/await for concurrent programming:</p>
+<pre><code class="language-firescript">async int32 fetchData(string url) {
+    result = await httpGet(url);
+    return result.length;
+}
+
+// Spawn task
+task t = spawn fetchData(&quot;https://...&quot;);
+await t;
+</code></pre>
+<h3 id="implementation-notes_8">Implementation Notes<a class="headerlink" href="#implementation-notes_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Complexity</strong>: Very significant; coordinate with FIR</li>
+<li><strong>Backends</strong>: Different strategies for C (threads) vs. JS/WASM (Promise)</li>
+<li><strong>Timeline</strong>: Phase 3+ (after FIR and traits)</li>
+</ul>
+<hr />
+<h2 id="summary-prioritization">Summary: Prioritization<a class="headerlink" href="#summary-prioritization" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Recommendation</th>
+<th>Priority</th>
+<th>Effort</th>
+<th>Impl. Phase</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Explicit Value Categories</td>
+<td>Medium</td>
+<td>Low</td>
+<td>1 (Concurrent)</td>
+<td>High (clarity)</td>
+</tr>
+<tr>
+<td>Explicit Ownership Ops</td>
+<td>High</td>
+<td>Medium</td>
+<td>1 (Concurrent)</td>
+<td>High (safety)</td>
+</tr>
+<tr>
+<td>Ownership-Aware Generics</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>1 (FIR)</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Improved Errors</td>
+<td>Medium</td>
+<td>Low</td>
+<td>2 (FIR)</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Dynamic Arrays</td>
+<td>Low</td>
+<td>Medium</td>
+<td>1 (Stdlib)</td>
+<td>Low (convenience)</td>
+</tr>
+<tr>
+<td>Null Safety Clarification</td>
+<td>Low</td>
+<td>Low</td>
+<td>1 (Docs)</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Trait System</td>
+<td>Low</td>
+<td>High</td>
+<td>2+ (After FIR)</td>
+<td>High (future)</td>
+</tr>
+<tr>
+<td>Pattern Matching</td>
+<td>Low</td>
+<td>High</td>
+<td>2+ (After FIR)</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Async/Await</td>
+<td>Very Low</td>
+<td>Very High</td>
+<td>3+ (Long-term)</td>
+<td>High (distant future)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="recommendation-next-steps">Recommendation: Next Steps<a class="headerlink" href="#recommendation-next-steps" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Immediate</strong> (Concurrent with FIR):</li>
+<li>Document that "class defaults to owned" explicitly</li>
+<li>Consider adding <code>move()</code> and <code>borrow()</code> markers at call sites</li>
+<li>
+<p>Improve error messages with FIR context</p>
+</li>
+<li>
+<p><strong>Phase 1</strong> (After FIR MVP):</p>
+</li>
+<li>Implement Ownership-Aware Generics</li>
+<li>Add Vec<T> to standard library</li>
+<li>
+<p>Clarify null safety with Option<T></p>
+</li>
+<li>
+<p><strong>Phase 2</strong> (Post-FIR Stabilization):</p>
+</li>
+<li>Trait System</li>
+<li>Pattern Matching</li>
+<li>
+<p>Enhanced error messages</p>
+</li>
+<li>
+<p><strong>Phase 3+</strong> (Long-term):</p>
+</li>
+<li>Async/Await</li>
+<li>Advanced generic features</li>
+<li>Macro system (if desired)</li>
+</ol>
+<hr />
+<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
+<p>These recommendations chart a course for firescript to mature into a powerful, ergonomic language while maintaining its core principles of safety, performance, and explicitness. With FIR providing a solid foundation, firescript can support increasingly sophisticated features without sacrificing simplicity or correctness.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Alec Jensen
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

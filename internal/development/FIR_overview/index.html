@@ -8,29 +8,27 @@
       
       
       
-        <link rel="canonical" href="https://firescript.alecj.com/">
+        <link rel="canonical" href="https://firescript.alecj.com/internal/development/FIR_overview/">
       
       
-      
-        <link rel="next" href="reference/overview/">
       
       
         
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>firescript</title>
+        <title>FIR Overview and Architecture - firescript</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -49,7 +47,7 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -74,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#firescript-documentation" class="md-skip">
+        <a href="#fir-overview-and-architecture" class="md-skip">
           Skip to content
         </a>
       
@@ -88,7 +86,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
+    <a href="../../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -108,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              FIR Overview and Architecture
             
           </span>
         </div>
@@ -219,11 +217,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="." class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -244,7 +240,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="reference/overview/" class="md-tabs__link">
+        <a href="../../../reference/overview/" class="md-tabs__link">
           
   
   
@@ -262,7 +258,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="glossary/" class="md-tabs__link">
+      <a href="../../../glossary/" class="md-tabs__link">
         
   
   
@@ -281,7 +277,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="changelog/" class="md-tabs__link">
+      <a href="../../../changelog/" class="md-tabs__link">
         
   
   
@@ -300,7 +296,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="benchmarks/" class="md-tabs__link">
+      <a href="../../../benchmarks/" class="md-tabs__link">
         
   
   
@@ -335,7 +331,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
+    <a href="../../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -362,37 +358,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Home
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -408,70 +377,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#start-here" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Start Here
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#language-reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Language Reference
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tooling-and-project-docs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tooling and Project Docs
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#internal-docs-compiler-developer-only" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Internal Docs (Compiler Developer-only)
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -533,7 +438,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/overview/" class="md-nav__link">
+      <a href="../../../reference/overview/" class="md-nav__link">
         
   
   
@@ -561,7 +466,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/variables/" class="md-nav__link">
+      <a href="../../../reference/variables/" class="md-nav__link">
         
   
   
@@ -589,7 +494,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/operators/" class="md-nav__link">
+      <a href="../../../reference/operators/" class="md-nav__link">
         
   
   
@@ -617,7 +522,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/arrays/" class="md-nav__link">
+      <a href="../../../reference/arrays/" class="md-nav__link">
         
   
   
@@ -645,7 +550,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/control_flow/" class="md-nav__link">
+      <a href="../../../reference/control_flow/" class="md-nav__link">
         
   
   
@@ -673,7 +578,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/functions/" class="md-nav__link">
+      <a href="../../../reference/functions/" class="md-nav__link">
         
   
   
@@ -701,7 +606,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/classes/" class="md-nav__link">
+      <a href="../../../reference/classes/" class="md-nav__link">
         
   
   
@@ -729,7 +634,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/scoping/" class="md-nav__link">
+      <a href="../../../reference/scoping/" class="md-nav__link">
         
   
   
@@ -757,7 +662,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/type_system/" class="md-nav__link">
+      <a href="../../../reference/type_system/" class="md-nav__link">
         
   
   
@@ -785,7 +690,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/memory_management/" class="md-nav__link">
+      <a href="../../../reference/memory_management/" class="md-nav__link">
         
   
   
@@ -813,7 +718,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/error_handling/" class="md-nav__link">
+      <a href="../../../reference/error_handling/" class="md-nav__link">
         
   
   
@@ -841,7 +746,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/modules/" class="md-nav__link">
+      <a href="../../../reference/modules/" class="md-nav__link">
         
   
   
@@ -869,7 +774,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/imports/" class="md-nav__link">
+      <a href="../../../reference/imports/" class="md-nav__link">
         
   
   
@@ -947,7 +852,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/std/overview/" class="md-nav__link">
+      <a href="../../../reference/std/overview/" class="md-nav__link">
         
   
   
@@ -975,7 +880,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/std/io/" class="md-nav__link">
+      <a href="../../../reference/std/io/" class="md-nav__link">
         
   
   
@@ -1003,7 +908,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/std/fs/" class="md-nav__link">
+      <a href="../../../reference/std/fs/" class="md-nav__link">
         
   
   
@@ -1031,7 +936,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/std/math/" class="md-nav__link">
+      <a href="../../../reference/std/math/" class="md-nav__link">
         
   
   
@@ -1059,7 +964,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/std/regex/" class="md-nav__link">
+      <a href="../../../reference/std/regex/" class="md-nav__link">
         
   
   
@@ -1087,7 +992,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/std/cli_args/" class="md-nav__link">
+      <a href="../../../reference/std/cli_args/" class="md-nav__link">
         
   
   
@@ -1115,7 +1020,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/std/types/" class="md-nav__link">
+      <a href="../../../reference/std/types/" class="md-nav__link">
         
   
   
@@ -1201,7 +1106,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/kiln/overview/" class="md-nav__link">
+      <a href="../../../reference/kiln/overview/" class="md-nav__link">
         
   
   
@@ -1229,7 +1134,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/kiln/manifest/" class="md-nav__link">
+      <a href="../../../reference/kiln/manifest/" class="md-nav__link">
         
   
   
@@ -1272,7 +1177,7 @@
   
   
     <li class="md-nav__item">
-      <a href="glossary/" class="md-nav__link">
+      <a href="../../../glossary/" class="md-nav__link">
         
   
   
@@ -1299,7 +1204,7 @@
   
   
     <li class="md-nav__item">
-      <a href="changelog/" class="md-nav__link">
+      <a href="../../../changelog/" class="md-nav__link">
         
   
   
@@ -1326,7 +1231,7 @@
   
   
     <li class="md-nav__item">
-      <a href="benchmarks/" class="md-nav__link">
+      <a href="../../../benchmarks/" class="md-nav__link">
         
   
   
@@ -1373,10 +1278,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#start-here" class="md-nav__link">
+  <a href="#executive-summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Start Here
+        Executive Summary
       
     </span>
   </a>
@@ -1384,35 +1289,63 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#language-reference" class="md-nav__link">
+  <a href="#current-compiler-architecture-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Language Reference
+        Current Compiler Architecture Analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Current Compiler Architecture Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#existing-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Existing Pipeline
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#tooling-and-project-docs" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#type-system-summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tooling and Project Docs
+        Type System Summary
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#internal-docs-compiler-developer-only" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#memory-semantic-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Internal Docs (Compiler Developer-only)
+        Memory &amp; Semantic Analysis
       
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strengths-weaknesses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strengths &amp; Weaknesses
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1441,7 +1374,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/README.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/development/FIR_overview.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1449,40 +1382,50 @@
   
 
 
-<h1 id="firescript-documentation">firescript documentation<a class="headerlink" href="#firescript-documentation" title="Permanent link">&para;</a></h1>
-<p>This documentation covers firescript language concepts, compiler behavior, standard library APIs, and project updates.</p>
-<p>firescript is still in active development. Some pages describe planned behavior in addition to currently implemented behavior. For user-visible changes, treat the <a href="changelog/">changelog</a> as the source of truth.</p>
-<h2 id="start-here">Start Here<a class="headerlink" href="#start-here" title="Permanent link">&para;</a></h2>
+<h1 id="fir-overview-and-architecture">FIR Overview and Architecture<a class="headerlink" href="#fir-overview-and-architecture" title="Permanent link">&para;</a></h1>
+<h2 id="executive-summary">Executive Summary<a class="headerlink" href="#executive-summary" title="Permanent link">&para;</a></h2>
+<p>This document summarizes the FIR+FLIR design for the firescript compiler and describes the current compiler state and motivations for adding a two-level IR.</p>
+<p><strong>Current State</strong>: Compiler uses direct AST → C translation.
+<strong>Target State</strong>: AST → FIR → [Optimization Passes] → FLIR → [C | Assembly | JS/WASM]</p>
+<h2 id="current-compiler-architecture-analysis">Current Compiler Architecture Analysis<a class="headerlink" href="#current-compiler-architecture-analysis" title="Permanent link">&para;</a></h2>
+<h3 id="existing-pipeline">Existing Pipeline<a class="headerlink" href="#existing-pipeline" title="Permanent link">&para;</a></h3>
+<pre><code>Source Text
+    ↓
+Lexer (lexer.py) → Token Stream
+    ↓
+Parser (parser/*.py, recursive descent) → AST
+    ↓
+Import Resolution (imports.py, frontend_pipeline.py) → Merged AST
+    ↓
+Preprocessing (preprocessor.py, drop insertion) → Annotated AST
+    ↓
+Semantic Analysis (semantic_analyzer.py) → Type-checked, Ownership-validated AST
+    ↓
+Code Generation (codegen/*.py) → C Source
+    ↓
+C Compiler (GCC/Clang) → Native Binary
+</code></pre>
+<h3 id="type-system-summary">Type System Summary<a class="headerlink" href="#type-system-summary" title="Permanent link">&para;</a></h3>
 <ul>
-<li><a href="getting_started/">Getting Started</a>: installation and first compile/run workflow</li>
-<li><a href="reference/overview/">Reference Overview</a>: language design goals and implementation notes</li>
-<li><a href="glossary/">Glossary</a>: shared terminology used throughout the docs</li>
+<li>Copyable types: numeric, float, bool, user-defined copyable classes</li>
+<li>Owned types: strings, arrays, user-defined classes (default), generics</li>
 </ul>
-<h2 id="language-reference">Language Reference<a class="headerlink" href="#language-reference" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="reference/variables/">Types and Variables</a></li>
-<li><a href="reference/arrays/">Arrays</a></li>
-<li><a href="reference/control_flow/">Control Flow</a></li>
-<li><a href="reference/functions/">Functions and Methods</a></li>
-<li><a href="reference/classes/">Classes and Inheritance</a></li>
-<li><a href="reference/scoping/">Scoping Rules</a></li>
-<li><a href="reference/type_system/">Type System</a></li>
-<li><a href="reference/memory_management/">Memory Management</a></li>
-<li><a href="reference/error_handling/">Error Handling</a></li>
-<li><a href="reference/modules/">Modules</a></li>
-<li><a href="reference/imports/">Imports</a></li>
-</ul>
-<h2 id="tooling-and-project-docs">Tooling and Project Docs<a class="headerlink" href="#tooling-and-project-docs" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="reference/kiln/overview/">kiln Overview</a></li>
-<li><a href="reference/kiln/manifest/">kiln Manifest</a></li>
-<li><a href="benchmarks/">Benchmarks</a></li>
-<li><a href="changelog/">Changelog</a></li>
-</ul>
-<h2 id="internal-docs-compiler-developer-only">Internal Docs (Compiler Developer-only)<a class="headerlink" href="#internal-docs-compiler-developer-only" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="internal/">Internal development notes</a> - Documentation for internal language features, compiler design, and future plans. Not written for or useful for typical firescript users.</li>
-</ul>
+<h3 id="memory-semantic-analysis">Memory &amp; Semantic Analysis<a class="headerlink" href="#memory-semantic-analysis" title="Permanent link">&para;</a></h3>
+<p>The <code>SemanticAnalyzer</code> tracks binding scope, ownership states (VALID/MOVED/MAYBE_MOVED/BORROWED), borrow validation and drop points. Currently this information is not preserved in a reusable IR and is lost once codegen begins.</p>
+<h3 id="strengths-weaknesses">Strengths &amp; Weaknesses<a class="headerlink" href="#strengths-weaknesses" title="Permanent link">&para;</a></h3>
+<p>Strengths:
+- Clear ownership semantics
+- Readable AST and error reporting
+- Working module and generic support</p>
+<p>Weaknesses:
+- No IR for multi-backend reuse
+- Late monomorphization and tight coupling of semantic analysis to codegen
+- No IR-level optimizations</p>
+<hr />
+<p>For detailed FIR and FLIR specifications, see:
+- FIR spec: <code>FIR_fir_spec.md</code>
+- FLIR spec: <code>FIR_flir_spec.md</code>
+- Roadmap and migration: <code>FIR_roadmap_and_migration.md</code></p>
 
 
 
@@ -1507,28 +1450,6 @@
       
         <footer class="md-footer">
   
-    
-      
-      <nav class="md-footer__inner md-grid" aria-label="Footer" >
-        
-        
-          
-          <a href="reference/overview/" class="md-footer__link md-footer__link--next" aria-label="Next: Overview">
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              <div class="md-ellipsis">
-                Overview
-              </div>
-            </div>
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
-            </div>
-          </a>
-        
-      </nav>
     
   
   <div class="md-footer-meta md-typeset">
@@ -1560,10 +1481,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
