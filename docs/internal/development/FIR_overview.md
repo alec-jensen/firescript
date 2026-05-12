@@ -14,20 +14,57 @@ This document summarizes the FIR+FLIR design for the firescript compiler and des
 ```
 Source Text
     ↓
-Lexer (lexer.py) → Token Stream
+Lexer + Parser → AST
     ↓
-Parser (parser/*.py, recursive descent) → AST
+Import Resolution → Merged AST
     ↓
-Import Resolution (imports.py, frontend_pipeline.py) → Merged AST
+Preprocessing → Annotated AST
     ↓
-Preprocessing (preprocessor.py, drop insertion) → Annotated AST
+Semantic Analysis → Type-checked, Ownership-validated AST
     ↓
-Semantic Analysis (semantic_analyzer.py) → Type-checked, Ownership-validated AST
+Code Generation → C Source
     ↓
-Code Generation (codegen/*.py) → C Source
-    ↓
-C Compiler (GCC/Clang) → Native Binary
+C Compiler → Native Binary
 ```
+
+### Proposed FIR+FLIR Pipeline
+
+```
+Source Text
+    ↓
+Lexer + Parser → AST
+    ↓
+Import Resolution → Merged AST
+    ↓
+Preprocessing → Annotated AST
+    ↓
+Semantic Analysis → Type-checked, ownership-validated AST
+    ↓
+AST → FIR Converter → FIR
+    ↓
+[FIR Optimization Passes]
+    • Constant folding
+    • Dead code elimination
+    • Common subexpression elimination
+    ↓
+FIR → FLIR Lowering → FLIR
+    ↓
+[Backend Selection]
+    ├─ FLIR → C
+    ├─ FLIR → Assembly
+    └─ FLIR → JS/WASM
+```
+
+### Proposed Pipeline Stages
+
+- **AST stage**: parser output plus import and preprocessing passes, with source structure still intact.
+- **Semantic stage**: validates types, ownership, borrows, and drops while the tree is still high-level.
+- **FIR stage**: preserves classes, generics, and ownership so optimization passes can still use language semantics.
+- **Optimization stage**: runs high-level IR passes before lowering removes useful type information.
+- **FLIR stage**: erases high-level constructs into structs, pointers, primitive operations, and ABI-aware layouts.
+- **Backend stage**: emits C, assembly, or other backend targets from the lowered IR.
+
+The main rule is that FIR stays simple and semantic, while FLIR is the lowering boundary for backend-specific code generation.
 
 ### Type System Summary
 
