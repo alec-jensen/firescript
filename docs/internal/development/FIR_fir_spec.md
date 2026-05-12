@@ -65,6 +65,62 @@ function main() -> void {
 }
 ```
 
+### Larger FIR Example: Ownership, Branching, and a Method Call
+
+This example keeps classes, ownership, and control flow visible in FIR:
+
+```
+module firescript
+
+type Counter owned {
+  value: int32
+}
+
+function bump_or_reset(counter: Counter, should_reset: bool) -> int32 {
+  block_0:
+    %0 = LoadField(counter, "value")
+    Branch(should_reset, block_1, block_2)
+
+  block_1:
+    %1 = IntLiteral(0, int32)
+    %2 = StoreField(counter, "value", %1)
+    %3 = Drop(counter)
+    Return(%1)
+
+  block_2:
+    %4 = IntLiteral(1, int32)
+    %5 = BinaryOp("+", %0, %4)
+    %6 = StoreField(counter, "value", %5)
+    %7 = Call(println, [%5]) -> void
+    Return(%5)
+}
+```
+
+### Larger FIR Example: Generic Function Before Monomorphization
+
+FIR keeps the generic type parameter intact so optimization can still see the original shape of the program:
+
+```
+type Box<T> owned {
+  value: T
+}
+
+function<T> unwrap_or_default(box: Box<T>, fallback: T) -> T {
+  block_0:
+    %0 = LoadField(box, "value")
+    %1 = Call(is_default, [%0]) -> bool
+    Branch(%1, block_1, block_2)
+
+  block_1:
+    Return(fallback)
+
+  block_2:
+    Return(%0)
+}
+```
+
+In FIR, the type parameter `T` is still present. That means passes can still reason about ownership, field access, and control flow before lowering specializes the function.
+
 ## Ownership & Optimization Notes
 
 FIR preserves ownership information coming from the semantic analyzer. Optimization passes (dead code elimination, constant folding, CSE) operate on FIR while type/ownership info is still available.
