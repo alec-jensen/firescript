@@ -1312,6 +1312,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#proposed-firflir-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed FIR+FLIR Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proposed-pipeline-stages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Pipeline Stages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#type-system-summary" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1391,20 +1413,53 @@
 <h3 id="existing-pipeline">Existing Pipeline<a class="headerlink" href="#existing-pipeline" title="Permanent link">&para;</a></h3>
 <pre><code>Source Text
     ↓
-Lexer (lexer.py) → Token Stream
+Lexer + Parser → AST
     ↓
-Parser (parser/*.py, recursive descent) → AST
+Import Resolution → Merged AST
     ↓
-Import Resolution (imports.py, frontend_pipeline.py) → Merged AST
+Preprocessing → Annotated AST
     ↓
-Preprocessing (preprocessor.py, drop insertion) → Annotated AST
+Semantic Analysis → Type-checked, Ownership-validated AST
     ↓
-Semantic Analysis (semantic_analyzer.py) → Type-checked, Ownership-validated AST
+Code Generation → C Source
     ↓
-Code Generation (codegen/*.py) → C Source
-    ↓
-C Compiler (GCC/Clang) → Native Binary
+C Compiler → Native Binary
 </code></pre>
+<h3 id="proposed-firflir-pipeline">Proposed FIR+FLIR Pipeline<a class="headerlink" href="#proposed-firflir-pipeline" title="Permanent link">&para;</a></h3>
+<pre><code>Source Text
+    ↓
+Lexer + Parser → AST
+    ↓
+Import Resolution → Merged AST
+    ↓
+Preprocessing → Annotated AST
+    ↓
+Semantic Analysis → Type-checked, ownership-validated AST
+    ↓
+AST → FIR Converter → FIR
+    ↓
+[FIR Optimization Passes]
+    • Constant folding
+    • Dead code elimination
+    • Common subexpression elimination
+    ↓
+FIR → FLIR Lowering → FLIR
+    ↓
+[Backend Selection]
+    ├─ FLIR → C
+    ├─ FLIR → Assembly
+    └─ FLIR → JS/WASM
+</code></pre>
+<h3 id="proposed-pipeline-stages">Proposed Pipeline Stages<a class="headerlink" href="#proposed-pipeline-stages" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>AST stage</strong>: parser output plus import and preprocessing passes, with source structure still intact.</li>
+<li><strong>Semantic stage</strong>: validates types, ownership, borrows, and drops while the tree is still high-level.</li>
+<li><strong>FIR stage</strong>: preserves classes, generics, and ownership so optimization passes can still use language semantics.</li>
+<li><strong>Optimization stage</strong>: runs high-level IR passes before lowering removes useful type information.</li>
+<li><strong>FLIR stage</strong>: erases high-level constructs into structs, pointers, primitive operations, and ABI-aware layouts.</li>
+<li><strong>Backend stage</strong>: emits C, assembly, or other backend targets from the lowered IR.</li>
+</ul>
+<p>The main rule is that FIR stays simple and semantic, while FLIR is the lowering boundary for backend-specific code generation.</p>
 <h3 id="type-system-summary">Type System Summary<a class="headerlink" href="#type-system-summary" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Copyable types: numeric, float, bool, user-defined copyable classes</li>
