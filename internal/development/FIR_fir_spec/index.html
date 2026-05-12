@@ -1330,6 +1330,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Textual Representation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#larger-fir-example-ownership-branching-and-a-method-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Larger FIR Example: Ownership, Branching, and a Method Call
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#larger-fir-example-generic-function-before-monomorphization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Larger FIR Example: Generic Function Before Monomorphization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1434,6 +1462,53 @@ function main() -&gt; void {
     Return()
 }
 </code></pre>
+<h3 id="larger-fir-example-ownership-branching-and-a-method-call">Larger FIR Example: Ownership, Branching, and a Method Call<a class="headerlink" href="#larger-fir-example-ownership-branching-and-a-method-call" title="Permanent link">&para;</a></h3>
+<p>This example keeps classes, ownership, and control flow visible in FIR:</p>
+<pre><code>module firescript
+
+type Counter owned {
+  value: int32
+}
+
+function bump_or_reset(counter: Counter, should_reset: bool) -&gt; int32 {
+  block_0:
+    %0 = LoadField(counter, &quot;value&quot;)
+    Branch(should_reset, block_1, block_2)
+
+  block_1:
+    %1 = IntLiteral(0, int32)
+    %2 = StoreField(counter, &quot;value&quot;, %1)
+    %3 = Drop(counter)
+    Return(%1)
+
+  block_2:
+    %4 = IntLiteral(1, int32)
+    %5 = BinaryOp(&quot;+&quot;, %0, %4)
+    %6 = StoreField(counter, &quot;value&quot;, %5)
+    %7 = Call(println, [%5]) -&gt; void
+    Return(%5)
+}
+</code></pre>
+<h3 id="larger-fir-example-generic-function-before-monomorphization">Larger FIR Example: Generic Function Before Monomorphization<a class="headerlink" href="#larger-fir-example-generic-function-before-monomorphization" title="Permanent link">&para;</a></h3>
+<p>FIR keeps the generic type parameter intact so optimization can still see the original shape of the program:</p>
+<pre><code>type Box&lt;T&gt; owned {
+  value: T
+}
+
+function&lt;T&gt; unwrap_or_default(box: Box&lt;T&gt;, fallback: T) -&gt; T {
+  block_0:
+    %0 = LoadField(box, &quot;value&quot;)
+    %1 = Call(is_default, [%0]) -&gt; bool
+    Branch(%1, block_1, block_2)
+
+  block_1:
+    Return(fallback)
+
+  block_2:
+    Return(%0)
+}
+</code></pre>
+<p>In FIR, the type parameter <code>T</code> is still present. That means passes can still reason about ownership, field access, and control flow before lowering specializes the function.</p>
 <h2 id="ownership-optimization-notes">Ownership &amp; Optimization Notes<a class="headerlink" href="#ownership-optimization-notes" title="Permanent link">&para;</a></h2>
 <p>FIR preserves ownership information coming from the semantic analyzer. Optimization passes (dead code elimination, constant folding, CSE) operate on FIR while type/ownership info is still available.</p>
 <p>For details on lowering and FLIR, see <code>FIR_flir_spec.md</code>.</p>
