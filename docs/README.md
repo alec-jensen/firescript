@@ -30,3 +30,7 @@ firescript is still in active development. Some pages describe planned behavior 
 - [kiln Manifest](reference/kiln/manifest.md)
 - [Benchmarks](benchmarks.md)
 - [Changelog](changelog.md)
+
+## Internal Docs (Compiler Developer-only)
+
+- [Internal development notes](internal/README.md) - Documentation for internal language features, compiler design, and future plans. Not written for or useful for typical firescript users.
