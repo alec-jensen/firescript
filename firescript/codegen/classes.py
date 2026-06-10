@@ -8,6 +8,30 @@ from .generics import GenericsMixin
 
 
 class ClassesMixin(GenericsMixin):
+    def _class_needs_destructor(self, class_name: str) -> bool:
+        """Return True if this class has any owned fields that need explicit freeing."""
+        for _fname, ftype in self.class_fields.get(class_name, []):
+            if is_owned(ftype, False):
+                return True
+        return False
+
+    def _emit_destructor(self, class_name: str) -> str:
+        """Emit a C destructor function that frees owned fields then frees self."""
+        c_name = self._get_c_class_name(class_name)
+        lines = [f"void {c_name}_destroy({c_name}* self) {{"]
+        for fname, ftype in self.class_fields.get(class_name, []):
+            if not is_owned(ftype, False):
+                continue
+            field_access = f"self->{fname}"
+            if ftype in self.class_names and self._class_needs_destructor(ftype):
+                c_field_type = self._get_c_class_name(ftype)
+                lines.append(f"    if ({field_access}) {c_field_type}_destroy({field_access});")
+            else:
+                lines.append(f"    if ({field_access}) firescript_free({field_access});")
+        lines.append(f"    firescript_free(self);")
+        lines.append("}")
+        return "\n".join(lines)
+
     def _emit_class_typedef(self, node: ASTNode) -> str:
         """Emit a C typedef struct for a class definition."""
         c_name = self._get_c_class_name(node.name)

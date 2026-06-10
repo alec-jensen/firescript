@@ -1,0 +1,38 @@
+// Regression test: owned objects moved into a constructor must not be freed
+// by the caller afterward (double-free / use-after-free prevention).
+
+import @firescript/std.io.println;
+
+class Point {
+    int32 x;
+    int32 y;
+    Point(&mut this, int32 x, int32 y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+class Rect {
+    Point topLeft;
+    Point bottomRight;
+    Rect(&mut this, Point tl, Point br) {
+        this.topLeft = tl;
+        this.bottomRight = br;
+    }
+    int32 width(&this) {
+        return this.bottomRight.x - this.topLeft.x;
+    }
+    int32 height(&this) {
+        return this.bottomRight.y - this.topLeft.y;
+    }
+}
+
+Point p1 = new Point(1, 2);
+Point p2 = new Point(7, 8);
+Rect r = new Rect(p1, p2);
+println(r.topLeft.x);
+println(r.topLeft.y);
+println(r.bottomRight.x);
+println(r.bottomRight.y);
+println(r.width());
+println(r.height());

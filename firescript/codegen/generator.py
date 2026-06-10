@@ -45,6 +45,11 @@ class GeneratorMixin(StatementsMixin):
                 if getattr(child, 'type_params', []):
                     continue
                 typedefs.append(self._emit_class_typedef(child))
+                # Emit destructor if the class has owned fields
+                if self._class_needs_destructor(child.name):
+                    dtor = self._emit_destructor(child.name)
+                    if dtor:
+                        function_defs.append(dtor)
                 # Emit method functions for this class
                 for m in self.class_methods.get(child.name, []):
                     mcode = self._emit_method_definition(child.name, m)

@@ -1,0 +1,21 @@
+// Test that classes with owned fields (strings) generate correct destructors
+// and don't leak or double-free their fields.
+
+import @firescript/std.io.println;
+
+class Person {
+    string name;
+    int32 age;
+    Person(&mut this, string name, int32 age) {
+        this.name = name;
+        this.age = age;
+    }
+    string greet(&this) {
+        return "Hello, " + this.name;
+    }
+}
+
+Person p = new Person("Alice", 30);
+println(p.name);
+println(p.age);
+println(p.greet());

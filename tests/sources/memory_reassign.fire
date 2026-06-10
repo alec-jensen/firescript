@@ -1,5 +1,4 @@
-// Reassignment semantics test adapted for fixed-size arrays model
-// Arrays are fixed-size and non-assignable; test scalar reassignment instead.
+// Reassignment semantics: old owned value must be dropped before rebinding.
 
 import @firescript/std.io.println;
 
@@ -8,4 +7,11 @@ import @firescript/std.io.println;
     println(x);
     x = 42;
     println(x);
+}
+
+{
+    string s = "hello";
+    println(s);
+    s = "world";
+    println(s);
 }

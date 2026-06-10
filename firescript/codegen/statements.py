@@ -547,7 +547,12 @@ class StatementsMixin(DeclarationsMixin):
                 return f"firescript_str_slice({s_code}, {start_code}, {end_code})"
             elif node.name == "drop":
                 if node.children:
-                    mangled = self._mangle_name(node.children[0].name)
+                    ident = node.children[0]
+                    mangled = self._mangle_name(ident.name)
+                    var_type = getattr(ident, "var_type", None)
+                    if var_type and var_type in self.class_names and self._class_needs_destructor(var_type):
+                        c_class = self._get_c_class_name(var_type)
+                        return f"{c_class}_destroy({mangled})"
                     return f"firescript_free({mangled})"
                 return "/* drop: no argument */"
             elif node.name in ("syscall_open", "syscall_read", "syscall_write", "syscall_close", "syscall_remove", "syscall_rename", "syscall_move"):

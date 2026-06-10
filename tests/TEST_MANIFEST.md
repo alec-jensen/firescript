@@ -108,8 +108,11 @@ Expected error files are stored in `tests/expected_errors/` with `.err` extensio
 
 #### Memory Management
 - **memory_branching.fire** - Memory behavior with branching
+- **memory_break_continue_owned.fire** - Owned vars correctly dropped on break/continue
+- **memory_class_owned_fields.fire** - Classes with owned fields (string) use generated destructors
+- **memory_constructor_move.fire** - Owned objects moved into a constructor not double-freed
 - **memory_early_return.fire** - Memory with early returns
-- **memory_reassign.fire** - Memory during reassignment
+- **memory_reassign.fire** - Memory during reassignment (int and string)
 - **memory_scopes.fire** - Memory in different scopes
 - **ownership_demo.fire** - Ownership model demonstration
 - **ownership_test.fire** - Ownership testing

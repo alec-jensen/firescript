@@ -1,0 +1,19 @@
+// Test that owned variables are correctly dropped on break and continue
+// inside loops, without leaking or double-freeing.
+
+import @firescript/std.io.println;
+
+int32 i = 0;
+while (i < 5) {
+    string msg = "iter";
+    if (i == 2) {
+        i = i + 1;
+        continue;
+    }
+    if (i == 4) {
+        break;
+    }
+    println(i);
+    i = i + 1;
+}
+println(i);

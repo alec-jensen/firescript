@@ -319,12 +319,11 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
                 for nm, vt, ia in scope_stack[-1]:
                     wrap.children.append(_make_drop_call(nm, vt, ia))
             wrap.children.append(node)
-            # Clear drained frames so parent scopes don't emit double-drops
-            if loop_boundaries:
-                for frame in scope_stack[loop_boundaries[-1]:]:
-                    frame.clear()
-            elif scope_stack:
-                scope_stack[-1].clear()
+            # NOTE: do NOT clear the scope_stack frames here. Break/continue only
+            # exits one iteration/the loop — other iterations (or the fallthrough path
+            # for break) still need the scope-exit drops. The registry-based
+            # firescript_free is safe against double-free (registry_remove is a no-op
+            # for already-freed pointers), so any redundant scope-exit drop is harmless.
             return wrap
 
         # Loop statements: record loop boundary before processing body
@@ -359,12 +358,32 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
             _apply_move_semantics(new_children, flags)
             return node
 
-        if node.node_type in (NodeTypes.METHOD_CALL, NodeTypes.TYPE_METHOD_CALL):
-            # node.name is the method name; first child may be the object (for METHOD_CALL)
-            # We can't easily resolve the class type here, so skip move semantics for methods.
-            # Method receivers are always borrows, so args may or may not be moved.
+        if node.node_type == NodeTypes.METHOD_CALL:
             new_children = [process_node(c) if c is not None else None for c in node.children]
             node.children = new_children
+            # Resolve receiver type to look up method signature
+            receiver = new_children[0] if new_children else None
+            receiver_type = None
+            if receiver is not None and receiver.node_type == NodeTypes.IDENTIFIER:
+                for frame in reversed(var_maps):
+                    if receiver.name in frame:
+                        vt, _ia, _origin = frame[receiver.name]
+                        receiver_type = vt
+                        break
+            if receiver_type and receiver_type in method_sigs:
+                flags = method_sigs[receiver_type].get(node.name)
+                if flags:
+                    _apply_move_semantics(new_children[1:], flags)
+            return node
+
+        if node.node_type == NodeTypes.TYPE_METHOD_CALL:
+            new_children = [process_node(c) if c is not None else None for c in node.children]
+            node.children = new_children
+            class_name = getattr(node, "class_name", None)
+            if class_name and class_name in method_sigs:
+                flags = method_sigs[class_name].get(node.name)
+                if flags:
+                    _apply_move_semantics(new_children, flags)
             return node
 
         # Other nodes: recurse into children
