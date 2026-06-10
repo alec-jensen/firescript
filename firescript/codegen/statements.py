@@ -51,20 +51,12 @@ class StatementsMixin(DeclarationsMixin):
                     lines.append(stmt_code)
             return "\n".join(lines)
         elif node.node_type == NodeTypes.SCOPE:
-            # Enter new scope for tracking owned values
-            self.scope_stack.append([])
             lines = []
             for child in node.children:
                 # In scopes, each child is a statement.
                 stmt_code = self.emit_statement(child)
                 if stmt_code:
                     lines.append(stmt_code)
-            # Generate cleanup code for owned values in this scope
-            cleanup_lines = self._free_arrays_in_current_scope()
-            if cleanup_lines:
-                lines.extend(cleanup_lines)
-            # Pop the scope
-            self.scope_stack.pop()
             return "{\n" + "\n".join("    " + line for line in lines) + "\n}"
         elif node.node_type == NodeTypes.ARRAY_LITERAL:
             # Array literals are typically handled in variable declarations for correct element typing.
@@ -97,9 +89,6 @@ class StatementsMixin(DeclarationsMixin):
                             return ""
                         # Store array size for length() method
                         self.symbol_table[node.name] = (var_type_fs, node.is_array, n)
-                        # Track array for cleanup at scope exit
-                        if self.scope_stack:
-                            self.scope_stack[-1].append((mangled_name, var_type_fs))
                         # Generate heap allocation for array
                         elem_codes = [self._visit(elem) for elem in elements]
                         lines = []
@@ -113,8 +102,6 @@ class StatementsMixin(DeclarationsMixin):
                     # Sized array with no initializer: zero-initialize
                     n = declared_size
                     self.symbol_table[node.name] = (var_type_fs, node.is_array, n)
-                    if self.scope_stack:
-                        self.scope_stack[-1].append((mangled_name, var_type_fs))
                     lines = []
                     lines.append(f"{elem_c}* {mangled_name} = calloc({n}, sizeof({elem_c}));")
                     return "\n".join(lines)
@@ -126,16 +113,6 @@ class StatementsMixin(DeclarationsMixin):
                 # String literals need to be duplicated to heap
                 init_node = node.children[0] if node.children else None
                 mangled_name = self._mangle_name(node.name)
-                
-                # Only track for cleanup if this creates a NEW allocation (not a borrow)
-                # Track if: literal, function call, or no initializer (default empty string)
-                should_track = (
-                    init_node is None or  # Default empty string
-                    init_node.node_type == NodeTypes.LITERAL or  # String literal
-                    init_node.node_type == NodeTypes.FUNCTION_CALL  # Function returns new string
-                )
-                if should_track and self.scope_stack:
-                    self.scope_stack[-1].append((mangled_name, "string"))
                 
                 if init_node and init_node.node_type == NodeTypes.LITERAL and init_node.token and init_node.token.type == "STRING_LITERAL":
                     # String literal - use strdup to allocate on heap
@@ -149,27 +126,6 @@ class StatementsMixin(DeclarationsMixin):
                 # Non-array, non-string variable
                 mangled_name = self._mangle_name(node.name)
                 init_node = node.children[0] if node.children else None
-                
-                # Track owned (non-copyable) classes for cleanup ONLY if allocated (not borrowed)
-                # Track if: 
-                # 1. CONSTRUCTOR_CALL (new ClassName(...))
-                # 2. FUNCTION_CALL that is a constructor or returns an owned type
-                # 3. NOT an identifier (which would be a borrow/copy)
-                is_class_type = is_owned(var_type_fs, False)
-                should_track = False
-                if is_class_type and init_node is not None:
-                    if init_node.node_type == NodeTypes.CONSTRUCTOR_CALL:
-                        # new ClassName(...) always creates a new allocation
-                        should_track = True
-                    elif init_node.node_type == NodeTypes.FUNCTION_CALL:
-                        # Either constructor or function returning owned type
-                        should_track = True
-                    # Don't track if it's just copying from another variable (borrow)
-                    elif init_node.node_type == NodeTypes.IDENTIFIER:
-                        should_track = False
-                
-                if should_track and self.scope_stack:
-                    self.scope_stack[-1].append((mangled_name, var_type_fs))
                 
                 init_value = self._visit(init_node) if init_node else "0"
                 return f"{var_type_c} {mangled_name} = {init_value};"
@@ -479,7 +435,6 @@ class StatementsMixin(DeclarationsMixin):
                 if isinstance(rhs_type_fs, str) and rhs_type_fs.endswith("[]"):
                     elem_fs = rhs_type_fs[:-2]
                     self.symbol_table[name] = (elem_fs, True)
-                    self.scope_stack[-1].append((mangled_name, elem_fs))
                     return f"VArray* {mangled_name} = {value_code}"
                 # If still unknown, fall back to int32
                 fs_type = rhs_type_fs or "int32"
@@ -496,39 +451,10 @@ class StatementsMixin(DeclarationsMixin):
             rhs_code = self._visit(rhs) if rhs else "0"
             return f"{lhs_code} = {rhs_code}"
         elif node.node_type == NodeTypes.RETURN_STATEMENT:
-            # Return with or without expression
             if node.children:
                 expr_node = node.children[0]
-                expr_code = (
-                    self._visit(expr_node)
-                    if expr_node is not None
-                    else ""
-                )
-                # For owned values being returned, ownership transfers to caller - don't free them
-                # Collect all identifiers used in the return expression and exclude them from cleanup
-                exclude_vars: set[str] = set()
-                if expr_node:
-                    used_identifiers = self._collect_identifiers_in_expression(expr_node)
-                    # Convert to mangled names for exclusion
-                    for ident in used_identifiers:
-                        exclude_vars.add(self._mangle_name(ident))
-                
-                # Cleanup other owned values in scope
-                cleanup_lines = []
-                if self._in_function:
-                    cleanup_lines = self._free_arrays_in_all_active_scopes_excluding(exclude_vars)
-                
-                if cleanup_lines:
-                    cleanup = "\n".join(cleanup_lines)
-                    return f"{{\n{cleanup}\nreturn {expr_code};\n}}"
+                expr_code = self._visit(expr_node) if expr_node is not None else ""
                 return f"return {expr_code}"
-            # bare return - no value being returned, safe to cleanup all
-            cleanup_lines = []
-            if self._in_function:
-                cleanup_lines = self._free_arrays_in_all_active_scopes()
-            if cleanup_lines:
-                cleanup = "\n".join(cleanup_lines)
-                return f"{{\n{cleanup}\nreturn;\n}}"
             return "return"
         elif node.node_type == NodeTypes.FUNCTION_CALL:
             # Positional constructors for classes (no zero-arg default): map args by field order
@@ -620,8 +546,10 @@ class StatementsMixin(DeclarationsMixin):
                 end_code = self._visit(node.children[2])
                 return f"firescript_str_slice({s_code}, {start_code}, {end_code})"
             elif node.name == "drop":
-                # Fixed-size arrays are copyable; drop is a no-op
-                return "/* drop noop */"
+                if node.children:
+                    mangled = self._mangle_name(node.children[0].name)
+                    return f"firescript_free({mangled})"
+                return "/* drop: no argument */"
             elif node.name in ("syscall_open", "syscall_read", "syscall_write", "syscall_close", "syscall_remove", "syscall_rename", "syscall_move"):
                 # Check if syscalls are enabled in the file where this call is made
                 node_file_directives = self._directives_for_node(node)
@@ -1008,18 +936,8 @@ class StatementsMixin(DeclarationsMixin):
             
             return result
         elif node.node_type == NodeTypes.BREAK_STATEMENT:
-            # On break, free arrays declared in current scope so far
-            cleanup_lines = self._free_arrays_in_current_scope()
-            if cleanup_lines:
-                cleanup = "\n".join(cleanup_lines)
-                return f"{{\n{cleanup}\nbreak;\n}}"
             return "break"
         elif node.node_type == NodeTypes.CONTINUE_STATEMENT:
-            # On continue, free arrays declared in current scope so far
-            cleanup_lines = self._free_arrays_in_current_scope()
-            if cleanup_lines:
-                cleanup = "\n".join(cleanup_lines)
-                return f"{{\n{cleanup}\ncontinue;\n}}"
             return "continue"
         elif node.node_type == NodeTypes.RELATIONAL_EXPRESSION:
             leftNode, rightNode = node.children

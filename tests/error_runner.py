@@ -17,7 +17,7 @@ import glob
 import threading
 from typing import List, Tuple
 from dataclasses import dataclass
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(REPO_ROOT, os.pardir))
@@ -253,27 +253,33 @@ def run_error_tests(
         max_workers = max(1, jobs)
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = {executor.submit(run_one_error_test, tc, update, verbose): tc for tc in cases}
-            
-            for future in futures:
-                tc = futures[future]
-                _log("CASE", tc.source, "36")  # cyan
-                
-                success, source, expected, actual = future.result()
-                
-                if success:
-                    passed += 1
-                    if update and expected == "":
-                        _log("UPDATE", tc.expected_errors, "33")  # yellow
+            try:
+                for future in as_completed(futures):
+                    tc = futures[future]
+                    _log("CASE", tc.source, "36")  # cyan
+
+                    success, source, expected, actual = future.result()
+
+                    if success:
+                        passed += 1
+                        if update and expected == "":
+                            _log("UPDATE", tc.expected_errors, "33")  # yellow
+                        else:
+                            _log("PASS", source, "32")  # green
                     else:
-                        _log("PASS", source, "32")  # green
-                else:
-                    failed.append((tc, expected, actual))
-                    if expected == "UNEXPECTED SUCCESS":
-                        _log("FAIL", f"{source} - Expected compilation to fail but it succeeded!", "31")
-                    elif expected == "<missing golden>":
-                        _log("FAIL", f"{source} - No golden error file", "31")
-                    else:
-                        _log("FAIL", f"{source} - Error signature mismatch", "31")  # red
+                        failed.append((tc, expected, actual))
+                        if expected == "UNEXPECTED SUCCESS":
+                            _log("FAIL", f"{source} - Expected compilation to fail but it succeeded!", "31")
+                        elif expected == "<missing golden>":
+                            _log("FAIL", f"{source} - No golden error file", "31")
+                        else:
+                            _log("FAIL", f"{source} - Error signature mismatch", "31")  # red
+            except KeyboardInterrupt:
+                print("\nInterrupted — cancelling pending tests...")
+                for f in futures:
+                    f.cancel()
+                executor.shutdown(wait=False)
+                sys.exit(130)
 
     # Summary
     summary = f"Summary: {passed}/{total} passed, {len(failed)}/{total} failed"

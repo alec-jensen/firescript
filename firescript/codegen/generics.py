@@ -313,28 +313,13 @@ class GenericsMixin(CCodeGeneratorBase):
         # Generate body
         prev_in_fn = self._in_function
         self._in_function = True
-        prev_scope_stack = self.scope_stack
-        self.scope_stack = [[]]
-        
+
         # Collect generic instances within the body while type_map is active
         # This handles nested generic calls like println(T) inside swap<T>
         if body_node:
             self._collect_generic_instances(body_node)
-        
+
         body_code = self._visit(body_node) if body_node else "{ }"
-        
-        # Add cleanup code for owned values before function exits
-        # Inject cleanup before the closing brace of the function body
-        cleanup_lines = self._free_arrays_in_current_scope()
-        if cleanup_lines and body_code.startswith("{") and body_code.endswith("}"):
-            # Extract the body content (without braces)
-            inner = body_code[1:-1].rstrip()
-            # Add cleanup before the closing brace
-            cleanup_code = "\n".join("    " + line for line in cleanup_lines)
-            body_code = "{\n" + inner + "\n" + cleanup_code + "\n}"
-        
-        # Restore state
-        self.scope_stack = prev_scope_stack
         self._in_function = prev_in_fn
         self.symbol_table = prev_symbols
         self._current_type_map = prev_type_map

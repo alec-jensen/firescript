@@ -27,8 +27,6 @@ class GeneratorMixin(StatementsMixin):
         main_lines: list[str] = []
         main_function_code: str | None = None  # Store the main() function separately
 
-        # Ensure outer (main) scope exists for tracking arrays declared at top-level
-        self.scope_stack = [[]]
 
         for child in self.ast.children:
             if child.node_type == NodeTypes.FUNCTION_DEFINITION:
@@ -130,12 +128,6 @@ class GeneratorMixin(StatementsMixin):
                     "    " + line for line in "\n".join(main_lines).split("\n")
                 )
                 main_code += f"{indented_body}\n"
-            # Add cleanup for owned values declared at top level
-            cleanup_lines = self._free_arrays_in_current_scope()
-            if cleanup_lines:
-                cleanup_code = "\n".join("    " + line for line in cleanup_lines)
-                main_code += f"{cleanup_code}\n"
-            # Fixed-size arrays on stack, no cleanup needed
             main_code += "    firescript_cleanup();\n"
             main_code += "    return 0;\n"
             main_code += "}\n"

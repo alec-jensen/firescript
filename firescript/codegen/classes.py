@@ -71,8 +71,6 @@ class ClassesMixin(GenericsMixin):
 
         prev_in_fn = self._in_function
         self._in_function = True
-        prev_scope_stack = self.scope_stack
-        self.scope_stack = [[]]
         body_code = self._visit(body_node) if body_node else "{ }"
 
         if is_constructor:
@@ -81,11 +79,9 @@ class ClassesMixin(GenericsMixin):
             c_class_name = self._get_c_class_name(class_name)
 
             if class_is_owned:
-                # Owned classes: allocate on heap with malloc, return pointer
                 init_line = f"    {c_class_name}* this = malloc(sizeof({c_class_name}));"
                 zero_init = f"    *this = ({c_class_name}){{0}};"
             else:
-                # Copyable classes: stack allocation
                 init_line = f"    {c_class_name} this = ({c_class_name}){{0}};"
                 zero_init = ""
 
@@ -101,7 +97,6 @@ class ClassesMixin(GenericsMixin):
 
             add_implicit_return = not _contains_return(body_node)
 
-            # body_code is expected to be a '{\n...\n}' block; splice in our lines.
             if body_code.startswith("{\n") and body_code.endswith("\n}"):
                 inner = body_code[len("{\n") : -len("\n}")].rstrip("\n")
                 lines = ["{", init_line]
@@ -109,32 +104,15 @@ class ClassesMixin(GenericsMixin):
                     lines.append(zero_init)
                 if inner:
                     lines.append(inner)
-                # Add cleanup before return
-                cleanup_lines = self._free_arrays_in_current_scope()
-                if cleanup_lines:
-                    lines.extend("    " + line for line in cleanup_lines)
                 if add_implicit_return:
                     lines.append("    return this;")
                 lines.append("}")
                 body_code = "\n".join(lines)
             else:
-                # Fallback: wrap the generated body in a new block.
-                cleanup_lines = self._free_arrays_in_current_scope()
-                cleanup_code = "\n".join("    " + line for line in cleanup_lines) if cleanup_lines else ""
                 ret_line = "\n    return this;" if add_implicit_return else ""
                 init_lines = f"{init_line}\n{zero_init}\n" if zero_init else f"{init_line}\n"
-                body_code = f"{{\n{init_lines}    {body_code}\n{cleanup_code}{ret_line}\n}}"
-        else:
-            # Regular method - add cleanup before function exits
-            cleanup_lines = self._free_arrays_in_current_scope()
-            if cleanup_lines and body_code.startswith("{") and body_code.endswith("}"):
-                # Extract the body content (without braces)
-                inner = body_code[1:-1].rstrip()
-                # Add cleanup before the closing brace
-                cleanup_code = "\n".join("    " + line for line in cleanup_lines)
-                body_code = "{\n" + inner + "\n" + cleanup_code + "\n}"
-        
-        self.scope_stack = prev_scope_stack
+                body_code = f"{{\n{init_lines}    {body_code}{ret_line}\n}}"
+
         self._in_function = prev_in_fn
         self.symbol_table = prev_symbols
 

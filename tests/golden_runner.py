@@ -290,34 +290,42 @@ def run_golden(
     max_workers = max(1, jobs)
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         fut_to_tc = {executor.submit(run_one, tc): tc for tc in cases}
-        for fut in concurrent.futures.as_completed(fut_to_tc):
-            tc, status, exp, act = fut.result()
-            if status == "PASS":
-                _log("PASS", tc.source, color_code="32")
-            elif status == "UPDATE":
-                _log("UPDATE", tc.expected_path, color_code="33")
-            elif status == "NEW":
-                _log("NEW", f"wrote golden {tc.expected_path}", color_code="33")
-            elif status == "FAIL":
-                _log("FAIL", f"{tc.source}", color_code="31")
-                exp_text = exp or ""
-                act_text = act or ""
-                diff_lines = list(difflib.unified_diff(
-                    exp_text.splitlines(keepends=True),
-                    act_text.splitlines(keepends=True),
-                    fromfile="expected",
-                    tofile="actual",
-                ))
-                if diff_lines:
-                    print(_colorize("".join(diff_lines), "33"))
-            elif status == "FAIL_MISSING":
-                _log("FAIL", f"missing golden for {tc.source}: {tc.expected_path}", color_code="31")
-                print(f"  --- actual output ---")
-                print(_indent(act or ""))
-            elif status == "ERROR":
-                if act:
-                    _log("ERROR", f"{tc.source}: {act}", color_code="31")
-            results.append((tc, status, exp, act))
+        try:
+            futs = concurrent.futures.as_completed(fut_to_tc)
+            for fut in futs:
+                tc, status, exp, act = fut.result()
+                if status == "PASS":
+                    _log("PASS", tc.source, color_code="32")
+                elif status == "UPDATE":
+                    _log("UPDATE", tc.expected_path, color_code="33")
+                elif status == "NEW":
+                    _log("NEW", f"wrote golden {tc.expected_path}", color_code="33")
+                elif status == "FAIL":
+                    _log("FAIL", f"{tc.source}", color_code="31")
+                    exp_text = exp or ""
+                    act_text = act or ""
+                    diff_lines = list(difflib.unified_diff(
+                        exp_text.splitlines(keepends=True),
+                        act_text.splitlines(keepends=True),
+                        fromfile="expected",
+                        tofile="actual",
+                    ))
+                    if diff_lines:
+                        print(_colorize("".join(diff_lines), "33"))
+                elif status == "FAIL_MISSING":
+                    _log("FAIL", f"missing golden for {tc.source}: {tc.expected_path}", color_code="31")
+                    print(f"  --- actual output ---")
+                    print(_indent(act or ""))
+                elif status == "ERROR":
+                    if act:
+                        _log("ERROR", f"{tc.source}: {act}", color_code="31")
+                results.append((tc, status, exp, act))
+        except KeyboardInterrupt:
+            print("\nInterrupted — cancelling pending tests...")
+            for f in fut_to_tc:
+                f.cancel()
+            executor.shutdown(wait=False)
+            sys.exit(130)
 
     total = len(results)
     passed = sum(1 for _, status, _, _ in results if status in ("PASS", "UPDATE", "NEW"))
