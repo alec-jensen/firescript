@@ -3,9 +3,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <gmp.h>
-#include <mpfr.h>
-#include <float.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
@@ -273,21 +270,6 @@ static void string_destructor(void *str)
     }
 }
 
-// Big integer support: initialize rop from decimal string (allocates and sets)
-void firescript_toBigInt(mpz_t rop, const char *s)
-{
-    mpz_init(rop);
-    if (s)
-        mpz_set_str(rop, s, 10);
-}
-
-// Print a big integer followed by newline
-void firescript_print_int(const mpz_t x)
-{
-    mpz_out_str(stdout, 10, x);
-    printf("\n");
-}
-
 // Print a int64_t followed by newline
 void firescript_print_int64(int64_t x)
 {
@@ -371,37 +353,6 @@ void firescript_print_float(float x)
 void firescript_print_double(double x)
 {
     printf("%f\n", x);
-}
-
-// Format a long double into a buffer (portable across platforms lacking %Lf in printf)
-size_t firescript_format_long_double(char *buf, size_t size, long double x)
-{
-    if (!buf || size == 0)
-        return 0;
-    buf[0] = '\0';
-
-    mpfr_t tmp;
-    mpfr_init2(tmp, (mpfr_prec_t)LDBL_MANT_DIG);
-    mpfr_set_ld(tmp, x, MPFR_RNDN);
-    int n = mpfr_snprintf(buf, size, "%.10Rf", tmp);
-    mpfr_clear(tmp);
-
-    if (n < 0)
-    {
-        buf[0] = '\0';
-        return 0;
-    }
-    // Ensure null-termination even if truncated
-    buf[size - 1] = '\0';
-    return (size_t)n;
-}
-
-// Print a long double followed by newline
-void firescript_print_long_double(long double x)
-{
-    char buf[128];
-    firescript_format_long_double(buf, sizeof(buf), x);
-    puts(buf);
 }
 
 // Print a reference counted string

@@ -24,8 +24,9 @@ FIRETYPE_TO_C: dict[str, str] = {
     # floats (explicit only)
     "float32": "float",
     "float64": "double",
-    "float128": "long double",
-    # future: "float128": "__float128",
+    # float128 is currently an alias of float64 (64-bit double); true binary128
+    # support is a future softfloat project.
+    "float128": "double",
     # others
     "bool": "bool",
     "char": "char",
@@ -346,10 +347,8 @@ class CCodeGeneratorBase:
         # Apply C-specific suffix based on target type
         if ftype == "float32":
             return s2 + "f"
-        if ftype == "float128":
-            # Map to long double with L suffix
-            return s2 + "L"
-        # float64 (double) default: no suffix
+        # float64 (double) default: no suffix.
+        # float128 aliases float64, so f128 literals also lower to plain double.
         return s2
 
     def _escape_string_literal(self, literal: str) -> str:

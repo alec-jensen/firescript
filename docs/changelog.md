@@ -27,11 +27,14 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - Added `@firescript/std.fcl` standard library module with FCL (FireScript Configuration Language) lexer for parsing configuration data.
 
 ### Breaking Changes
+- `float128` is currently an alias of `float64` (64-bit precision). Values declared as `float128` no longer carry extended precision, and converting a `float128` value to a string now produces the standard `float64` formatting (e.g. `4.000000` instead of `4.0000000000`). True 128-bit floating point support is planned for a future release.
 - Removed built-in `input()` function.
 - Modules now need to explicitly export symbols to be imported by other modules. Top-level declarations are private by default.
 - String concatenation no longer performs implicit type conversion. Both operands must be strings; use explicit `as` casting for non-string values.
 
 ### Compiler improvements
+- Added `--backend {c-legacy,c-fir,asm}`, `--emit-fir`, and `--emit-flir` compiler flags for the in-development FIR (firescript intermediate representation) pipeline. The default backend remains `c-legacy`; the other backends and the IR dump flags report an error until the FIR pipeline is implemented.
+- firescript binaries no longer link against GMP and MPFR; the libraries are no longer build dependencies.
 - Standard library modules can now import sibling modules using short relative paths (e.g., `import tuple.Tuple;`).
 - Golden runner now supports per-test command-line argument sidecars placed next to each source file (`tests/sources/<name>.args`).
 - Compiler diagnostics are now unified under structured compile-time error objects across parser, semantic analysis, code generation, and `lint_text(...)`; this improves consistency of reported locations and diagnostics integrations (for example LSP).

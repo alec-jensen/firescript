@@ -8,7 +8,7 @@ uint32 to string: 4294967295
 uint64 to string: 18446744073709551615
 float32 to string: 3.141590
 float64 to string: 2.718282
-float128 to string: 1.2345678900
+float128 to string: 1.234568
 bool true to string: true
 bool false to string: false
 string to string: Hello, World!

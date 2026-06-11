@@ -8,7 +8,7 @@ uint32: 4294967295
 uint64: 18446744073709551615
 float32: 3.141590
 float64: 2.718280
-float128: 1.2345678900
+float128: 1.234568
 bool true: true
 bool false: false
 string: Hello, firescript!

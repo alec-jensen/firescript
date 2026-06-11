@@ -44,30 +44,6 @@ def _resolve_compiler_executable(compiler: str | None) -> str | None:
     return shutil.which(candidate)
 
 
-def _homebrew_prefix(formula_name):
-    """Return the Homebrew prefix for a formula, or None if unavailable."""
-    brew = shutil.which("brew")
-    if not brew:
-        return None
-
-    try:
-        process = subprocess.run(
-            [brew, "--prefix", formula_name],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            check=False,
-        )
-    except Exception:
-        return None
-
-    if process.returncode != 0:
-        return None
-
-    prefix = process.stdout.strip()
-    return prefix or None
-
-
 def _log_stage_duration(stage_name: str, start_time_ns: int) -> int:
     """Log a debug timing line for a compiler stage and return a new start time."""
     end_time_ns = time.perf_counter_ns()
@@ -104,7 +80,7 @@ def detect_c_compiler():
     return compiler
 
 
-def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=False, emit_deps=False, no_link=False, link_args=None):
+def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=False, emit_deps=False, no_link=False, link_args=None, backend="c-legacy", emit_fir=False, emit_flir=False):
     """Compile a single firescript file"""
     if link_args is None:
         link_args = []
@@ -190,6 +166,16 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
         traceback.print_exc()
         return False
     stage_start = _log_stage_duration("Semantic analysis", stage_start)
+
+    # FIR pipeline hooks: --backend c-fir/asm and --emit-fir/--emit-flir are
+    # plumbed here; the AST→FIR converter and the new backends land with the
+    # FIR pipeline work (see docs/internal/development/FIR_impl_plan.md).
+    if backend != "c-legacy" or emit_fir or emit_flir:
+        logging.error(
+            "The FIR pipeline (--backend c-fir/asm, --emit-fir, --emit-flir) is not implemented yet; "
+            "use the default --backend c-legacy"
+        )
+        return False
 
     # Output deps if requested
     if emit_deps:
@@ -283,19 +269,6 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
 
         include_dirs = []
         library_dirs = []
-        if is_macos:
-            for formula_name in ("gmp", "mpfr"):
-                prefix = _homebrew_prefix(formula_name)
-                if not prefix:
-                    continue
-
-                include_dir = os.path.join(prefix, "include")
-                library_dir = os.path.join(prefix, "lib")
-
-                if os.path.isdir(include_dir) and include_dir not in include_dirs:
-                    include_dirs.append(include_dir)
-                if os.path.isdir(library_dir) and library_dir not in library_dirs:
-                    library_dirs.append(library_dir)
 
         # Build the transpiled C with runtime
         # Note: -flto (Link Time Optimization) doesn't work with clang on Windows MinGW
@@ -347,8 +320,6 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
                 ])
             compile_command.extend([
                 "firescript/runtime/runtime.c",
-                "-lgmp",
-                "-lmpfr",
             ])
             compile_command.extend(linker_flags)
             for la in link_args:
@@ -492,6 +463,14 @@ def main():
     )
     parser.add_argument("--message-format", choices=["text", "json"], default="text", help="Format for diagnostic messages")
     parser.add_argument("--emit", choices=["ast", "c", "obj", "bin"], default="bin", help="Type of output to generate")
+    parser.add_argument(
+        "--backend",
+        choices=["c-legacy", "c-fir", "asm"],
+        default="c-legacy",
+        help="Code generation backend (default: c-legacy). c-fir and asm use the FIR pipeline.",
+    )
+    parser.add_argument("--emit-fir", action="store_true", help="Dump FIR (high-level IR) for debugging")
+    parser.add_argument("--emit-flir", action="store_true", help="Dump FLIR (lowered IR) for debugging")
     parser.add_argument("--check", action="store_true", help="Run checks only, do not emit code")
     parser.add_argument("--emit-deps", action="store_true", help="Emit dependency information (.d file)")
     parser.add_argument("--no-link", action="store_true", help="Compile only, do not link")
@@ -550,6 +529,9 @@ def main():
             emit_deps=args.emit_deps,
             no_link=args.no_link,
             link_args=args.link_arg,
+            backend=args.backend,
+            emit_fir=args.emit_fir,
+            emit_flir=args.emit_flir,
         )
 
         if not output_path:
@@ -596,6 +578,9 @@ def main():
                 emit_deps=args.emit_deps,
                 no_link=args.no_link,
                 link_args=args.link_arg,
+                backend=args.backend,
+                emit_fir=args.emit_fir,
+                emit_flir=args.emit_flir,
             ):
                 successful += 1
             else:

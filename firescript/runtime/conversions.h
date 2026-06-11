@@ -5,8 +5,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <mpfr.h>
-#include <gmp.h>
 
 static int firescript_toInt_impl_string(const char *s)
 {
@@ -231,20 +229,6 @@ static char *firescript_toString_impl_double(double d)
     return strdup(buffer);
 }
 
-static char *firescript_toString_impl_long_double(long double d)
-{
-    char buffer[128];
-    firescript_format_long_double(buffer, sizeof(buffer), d);
-    return strdup(buffer);
-}
-
-static char *firescript_toString_impl_mpfr(mpfr_t d)
-{
-    char buffer[128];
-    mpfr_snprintf(buffer, sizeof(buffer), "%.10Rf", d);
-    return strdup(buffer);
-}
-
 #define firescript_toString(x) _Generic((x),       \
     char *: firescript_toString_impl_string,       \
     const char *: firescript_toString_impl_string, \
@@ -259,8 +243,6 @@ static char *firescript_toString_impl_mpfr(mpfr_t d)
     uint64_t: firescript_toString_impl_uint64,     \
     float: firescript_toString_impl_float,         \
     double: firescript_toString_impl_double,       \
-    long double: firescript_toString_impl_long_double, \
-    mpfr_t: firescript_toString_impl_mpfr,         \
     default: firescript_toString_impl_string)(x)
 
 static char firescript_toChar_impl_string(const char *s)

@@ -21,7 +21,7 @@ These are fixed-size scalars stored on the stack and copied by value:
   * **`uint64`**: 64-bit unsigned integer
   * **`float32`**: 32-bit floating point number
   * **`float64`**: 64-bit floating point number
-  * **`float128`**: 128-bit floating point number
+  * **`float128`**: 128-bit floating point number. [IN DEVELOPMENT] — currently an alias of `float64` (64-bit precision); true 128-bit precision is planned.
 * **`bool`**: Represents boolean values, either `true` or `false`. Example: `bool isActive = true;`
 * **`char`**: Represents a single character. (Note: Currently handled similarly to strings in some contexts, formal `char` type might be refined). Example: `char initial = "A";`
 

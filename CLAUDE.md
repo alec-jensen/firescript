@@ -107,7 +107,8 @@ The table below reflects the **current implementation status** of major language
 | Feature | Status |
 |---|---|
 | Static and strong typing | [IMPLEMENTED] |
-| Fixed-width numeric types (`int8`…`uint64`, `float32`…`float128`) | [IMPLEMENTED] |
+| Fixed-width numeric types (`int8`…`uint64`, `float32`, `float64`) | [IMPLEMENTED] |
+| `float128` (currently an alias of `float64`; true binary128 planned) | [IN DEVELOPMENT] |
 | Literal suffixes (`i8`, `u32`, `f64`, etc.) | [IMPLEMENTED] |
 | `char` type | [IMPLEMENTED] |
 | Character literals (`'A'`, `'\n'`) | [IMPLEMENTED] |
