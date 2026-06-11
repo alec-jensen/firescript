@@ -8,6 +8,7 @@ Internal pages:
 - [FIR specification](FIR_fir_spec.md)
 - [FLIR specification](FIR_flir_spec.md)
 - [Roadmap, migration, and testing](FIR_roadmap_and_migration.md)
+- [Migration build prompt (no C backend)](FIR_migration_build_prompt.md)
 
 Warning: internal docs for compiler and language developers only.
 
