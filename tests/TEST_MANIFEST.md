@@ -54,6 +54,15 @@ The error test runner verifies that:
 
 Expected error files are stored in `tests/expected_errors/` with `.err` extension.
 
+### Compiler Infrastructure Tests
+
+```bash
+# FIR (firescript intermediate representation) infrastructure unit tests
+python tests/fir_unit_tests.py
+```
+
+- **fir_unit_tests.py** - Unit tests for `firescript/fir/`: FIRBuilder construction, textual dump format (verified against the spec example in `docs/internal/development/FIR_fir_spec.md`), dump determinism, structural validation (terminators, branch targets, cross-function value use)
+
 ## Test Categories
 
 ### Core Language Features

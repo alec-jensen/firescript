@@ -33,12 +33,22 @@ FIRModule
 
 ## Instruction Set (summary)
 
-- Literals: `IntLiteral`, `FloatLiteral`, `StringLiteral`, `BoolLiteral`, `ArrayLiteral`
-- Arithmetic: `BinaryOp`, `UnaryOp`
+- Literals: `IntLiteral`, `FloatLiteral`, `StringLiteral`, `CharLiteral`, `BoolLiteral`, `NullLiteral`, `ArrayLiteral`
+- Arithmetic: `BinaryOp`, `UnaryOp`, `Cast`
 - Memory: `Allocate`, `LoadField`, `StoreField`, `IndexArray`, `StoreArray`
+- Locals: `DeclareLocal`, `LoadVar`, `StoreVar` (FIR is not SSA; mutable locals are explicit named slots instead of block parameters)
 - Ownership: `Move`, `Borrow`, `Clone`, `Drop`
 - Calls: `Call`, `MethodCall`
+- Generators: `Yield` (generator functions render with the `generator` keyword instead of `function`)
 - Control: `Branch`, `Jump`, `Return`, `Unreachable`
+
+### Dump format rules
+
+- Value numbers `%N` are assigned in (block order, instruction order) within each function; dumps are deterministic.
+- Instructions that produce no value (`StoreField`, `StoreArray`, `StoreVar`, `DeclareLocal`, `Drop`, `Yield`, void `Call`s) are not numbered.
+- Function parameters are referenced by name in operand position.
+- Parameter passing modes render as `name: T` (owned), `name: &T` (borrow), `name: &mut T` (mutable borrow).
+- `Call`/`MethodCall` render their argument modes and, when non-void, a trailing `-> type`.
 
 ## Textual Representation
 
@@ -83,16 +93,16 @@ function bump_or_reset(counter: Counter, should_reset: bool) -> int32 {
 
   block_1:
     %1 = IntLiteral(0, int32)
-    %2 = StoreField(counter, "value", %1)
-    %3 = Drop(counter)
+    StoreField(counter, "value", %1)
+    Drop(counter)
     Return(%1)
 
   block_2:
-    %4 = IntLiteral(1, int32)
-    %5 = BinaryOp("+", %0, %4)
-    %6 = StoreField(counter, "value", %5)
-    %7 = Call(println, [%5]) -> void
-    Return(%5)
+    %2 = IntLiteral(1, int32)
+    %3 = BinaryOp("+", %0, %2)
+    StoreField(counter, "value", %3)
+    Call(println, [%3], ["borrow"])
+    Return(%3)
 }
 ```
 
