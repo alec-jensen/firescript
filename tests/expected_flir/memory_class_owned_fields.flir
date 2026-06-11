@@ -1,0 +1,91 @@
+flir module memory_class_owned_fields
+entry @fs_main
+
+struct Person { size: 16, align: 8, kind: class
+  name: ptr<i8> @ 0
+  age: i32 @ 8
+}
+
+func @Person__Person(name: ptr<i8>, age: i32) -> ptr<Person> {
+  L0:
+    %0 = const.i64 16
+    %1 = call.ptr<Person> @fs_rt_alloc_zeroed(%0)
+    slot this: ptr<Person>
+    slotstore this, %1
+    %2 = slotload.ptr<i8> name
+    %3 = slotload.ptr<Person> this
+    store.ptr<i8> %3, 0, %2
+    %4 = slotload.i32 age
+    %5 = slotload.ptr<Person> this
+    store.i32 %5, 8, %4
+    %6 = slotload.ptr<Person> this
+    ret %6
+}
+
+func @Person__greet(this: ptr<Person>) -> ptr<i8> {
+  L0:
+    %0 = strconst "Hello, "
+    %1 = slotload.ptr<Person> this
+    %2 = load.ptr<i8> %1, 0
+    %3 = call.ptr<i8> @fs_rt_str_concat(%0, %2)
+    ret %3
+}
+
+func @fs_main() -> void {
+  L0:
+    %0 = strconst "Alice"
+    %1 = const.i32 30
+    %2 = call.ptr<Person> @Person__Person(%0, %1)
+    slot p: ptr<Person>
+    slotstore p, %2
+    %3 = slotload.ptr<Person> p
+    %4 = load.ptr<i8> %3, 0
+    call.void @println__string(%4)
+    %5 = slotload.ptr<Person> p
+    %6 = load.i32 %5, 8
+    call.void @println__int32(%6)
+    %7 = slotload.ptr<Person> p
+    %8 = call.ptr<i8> @Person__greet(%7)
+    call.void @println__string(%8)
+    %9 = slotload.ptr<Person> p
+    call.void @Person__destroy(%9)
+    ret
+}
+
+func @Person__destroy(self: ptr<Person>) -> void {
+  L0:
+    %0 = slotload.ptr<Person> self
+    %1 = load.ptr<i8> %0, 0
+    %2 = nullconst
+    %3 = ne.ptr %1, %2
+    br %3, L1, L2
+
+  L1:
+    call.void @fs_rt_free(%1)
+    jmp L2
+
+  L2:
+    %4 = slotload.ptr<Person> self
+    call.void @fs_rt_free(%4)
+    ret
+}
+
+func @println__string(value: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> value
+    %1 = call.ptr<i8> @fs_rt_str_dup(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__int32(value: i32) -> void {
+  L0:
+    %0 = slotload.i32 value
+    %1 = call.ptr<i8> @fs_rt_i32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

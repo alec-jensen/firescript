@@ -1,0 +1,70 @@
+flir module classes_static_methods
+entry @fs_main
+
+struct Math { size: 1, align: 1, kind: class
+}
+
+func @Math__max(a: i32, b: i32) -> i32 {
+  L0:
+    %0 = slotload.i32 a
+    %1 = slotload.i32 b
+    %2 = gt.i32 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = slotload.i32 b
+    ret %3
+
+  L2:
+    %4 = slotload.i32 a
+    ret %4
+}
+
+func @Math__add(a: i32, b: i32) -> i32 {
+  L0:
+    %0 = slotload.i32 a
+    %1 = slotload.i32 b
+    %2 = add.i32 %0, %1
+    ret %2
+}
+
+func @Math__twice(this: ptr<Math>, x: i32) -> i32 {
+  L0:
+    %0 = slotload.i32 x
+    %1 = const.i32 2
+    %2 = mul.i32 %0, %1
+    ret %2
+}
+
+func @fs_main() -> void {
+  L0:
+    %0 = const.i32 3
+    %1 = const.i32 7
+    %2 = call.i32 @Math__max(%0, %1)
+    call.void @println__int32(%2)
+    %3 = const.i32 8
+    %4 = const.i32 5
+    %5 = call.i32 @Math__add(%3, %4)
+    call.void @println__int32(%5)
+    %6 = const.i64 1
+    %7 = call.ptr<Math> @fs_rt_alloc_zeroed(%6)
+    slot m: ptr<Math>
+    slotstore m, %7
+    %8 = slotload.ptr<Math> m
+    %9 = const.i32 6
+    %10 = call.i32 @Math__twice(%8, %9)
+    call.void @println__int32(%10)
+    %11 = slotload.ptr<Math> m
+    call.void @fs_rt_free(%11)
+    ret
+}
+
+func @println__int32(value: i32) -> void {
+  L0:
+    %0 = slotload.i32 value
+    %1 = call.ptr<i8> @fs_rt_i32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

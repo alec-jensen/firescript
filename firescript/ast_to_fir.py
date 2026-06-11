@@ -144,8 +144,14 @@ class ASTToFIRConverter:
         # Per-function conversion state
         self.builder: Optional[FIRBuilder] = None
         self.current_function: Optional[FIRFunction] = None
-        # scope stack of name -> (type_str, is_array, array_size)
-        self.scopes: list[dict[str, tuple[str, bool, Optional[int]]]] = []
+        # Declared type of the binding currently being initialized, used to
+        # recover generic type args for constructions like `Pair(1, 2)`.
+        self._expected_type_str: Optional[str] = None
+        # scope stack of name -> (type_str, is_array, array_size, unique_name)
+        # unique_name disambiguates sibling-scope locals that share a source
+        # name, so FIR local names are unique within a function.
+        self.scopes: list[dict[str, tuple[str, bool, Optional[int], str]]] = []
+        self._used_local_names: set[str] = set()
         # (continue_target_block_id, break_target_block_id)
         self.loop_stack: list[tuple[str, str]] = []
 
@@ -285,14 +291,25 @@ class ASTToFIRConverter:
     def _pop_scope(self) -> None:
         self.scopes.pop()
 
-    def _declare(self, name: str, type_str: str, is_array: bool, size: Optional[int] = None) -> None:
-        self.scopes[-1][name] = (type_str, is_array, size)
+    def _declare(self, name: str, type_str: str, is_array: bool, size: Optional[int] = None) -> str:
+        unique = name
+        counter = 2
+        while unique in self._used_local_names:
+            unique = f"{name}__{counter}"
+            counter += 1
+        self._used_local_names.add(unique)
+        self.scopes[-1][name] = (type_str, is_array, size, unique)
+        return unique
 
-    def _lookup(self, name: str) -> Optional[tuple[str, bool, Optional[int]]]:
+    def _lookup(self, name: str) -> Optional[tuple[str, bool, Optional[int], str]]:
         for scope in reversed(self.scopes):
             if name in scope:
                 return scope[name]
         return None
+
+    def _local_name(self, name: str) -> str:
+        symbol = self._lookup(name)
+        return symbol[3] if symbol is not None else name
 
     # ------------------------------------------------------------------
     # Expression typing (reads AST annotations, mirrors codegen lookups)
@@ -319,7 +336,7 @@ class ASTToFIRConverter:
         if node.node_type == NodeTypes.IDENTIFIER:
             symbol = self._lookup(node.name)
             if symbol is not None:
-                type_str, is_array, _ = symbol
+                type_str, is_array = symbol[0], symbol[1]
                 return f"{type_str}[]" if is_array else type_str
             base = node.var_type or "int32"
             return f"{base}[]" if node.is_array else base
@@ -411,9 +428,14 @@ class ASTToFIRConverter:
             if annotated:
                 return annotated
             obj_type = self._expr_type(node.children[0])
-            for field_name, field_type in self._all_class_fields(obj_type):
+            base = obj_type.split("<")[0]
+            subst: dict[str, str] = {}
+            if "<" in obj_type and obj_type.endswith(">"):
+                args = self._split_type_args(obj_type.split("<", 1)[1][:-1])
+                subst = dict(zip(self.class_generic_params.get(base, []), args))
+            for field_name, field_type in self._all_class_fields(base):
                 if field_name == node.name:
-                    return field_type
+                    return subst.get(field_type, field_type)
             return "int32"
 
         return getattr(node, "return_type", None) or "int32"
@@ -516,9 +538,11 @@ class ASTToFIRConverter:
                 modes.append("own")
         return params, modes
 
-    def _register_params_in_scope(self, node: ASTNode) -> None:
+    def _register_params_in_scope(self, node: ASTNode, skip_this: bool = False) -> None:
         for child in node.children:
             if child.node_type == NodeTypes.PARAMETER:
+                if skip_this and child.name == "this":
+                    continue
                 self._declare(child.name, child.var_type or "int32", child.is_array, None)
 
     def _convert_function(self, node: ASTNode, fir_name: Optional[str] = None) -> None:
@@ -549,9 +573,17 @@ class ASTToFIRConverter:
         self._convert_body(node, function)
 
     def _convert_method(self, class_name: str, node: ASTNode) -> None:
-        params, modes = self._function_params(node)
         is_constructor = bool(getattr(node, "is_constructor", False))
         is_static = bool(getattr(node, "is_static", False))
+        params, modes = self._function_params(node)
+        if is_constructor:
+            # Constructors create 'this' themselves; drop any explicit
+            # 'this' parameter the parser kept in the signature.
+            filtered = [
+                (i, p) for i, p in enumerate(params) if p[0] != "this"
+            ]
+            params = [p for _, p in filtered]
+            modes = [modes[i] for i, _ in filtered]
 
         return_type_str = node.return_type or "void"
         if is_constructor:
@@ -571,15 +603,16 @@ class ASTToFIRConverter:
 
         self.current_function = function
         self.builder = FIRBuilder(function)
+        self._used_local_names = set()
         self._push_scope()
-        self._register_params_in_scope(node)
+        self._register_params_in_scope(node, skip_this=is_constructor)
 
         if is_constructor:
             # 'this' is created by the constructor itself.
             this_type = self._fir_type(class_name)
             this_value = self.builder.allocate(this_type, [])
-            self.builder.declare_local("this", this_type, this_value)
-            self._declare("this", class_name, False, None)
+            this_local = self._declare("this", class_name, False, None)
+            self.builder.declare_local(this_local, this_type, this_value)
         elif not is_static:
             if self._lookup("this") is None:
                 self._declare("this", class_name, False, None)
@@ -591,7 +624,7 @@ class ASTToFIRConverter:
         if not self.builder.current_block.is_terminated():
             if is_constructor:
                 this_type = self._fir_type(class_name)
-                result = self.builder.load_var("this", this_type)
+                result = self.builder.load_var(self._local_name("this"), this_type)
                 self.builder.ret(result)
             else:
                 self.builder.ret()
@@ -604,6 +637,7 @@ class ASTToFIRConverter:
     def _convert_body(self, node: ASTNode, function: FIRFunction) -> None:
         self.current_function = function
         self.builder = FIRBuilder(function)
+        self._used_local_names = set()
         self._push_scope()
         self._register_params_in_scope(node)
 
@@ -626,6 +660,7 @@ class ASTToFIRConverter:
 
         self.current_function = function
         self.builder = FIRBuilder(function)
+        self._used_local_names = set()
         self._push_scope()
         self._convert_statements(statements)
         if not self.builder.current_block.is_terminated():
@@ -749,19 +784,30 @@ class ASTToFIRConverter:
                 element_count = len(init_node.children or [])
                 if element_count > 0:
                     size = element_count
+                elif size is None:
+                    # `int32[] x = [];` declares a zero-length array.
+                    size = 0
             var_type = self._fir_type(type_str, True, size)
-            init_value = self._convert_expression(init_node) if init_node is not None else None
-            if init_value is None:
+            if init_node is not None and init_node.node_type == NodeTypes.ARRAY_LITERAL:
+                # Build the literal with the declared size so empty literals
+                # like `int16[1000] x = [];` allocate the full array.
+                elements = [self._require_value(c) for c in (init_node.children or [])]
+                init_value = self.builder.array_literal(elements, var_type)
+            elif init_node is not None:
+                init_value = self._convert_expression(init_node)
+            else:
                 # Sized array with no initializer: zero-initialized array literal.
                 init_value = self.builder.array_literal([], var_type)
-            self.builder.declare_local(node.name, var_type, init_value)
-            self._declare(node.name, type_str, True, size)
+            unique = self._declare(node.name, type_str, True, size)
+            self.builder.declare_local(unique, var_type, init_value)
             return
 
         var_type = self._fir_type(type_str, nullable=node.is_nullable)
+        self._expected_type_str = type_str
         init_value = self._convert_expression(init_node) if init_node is not None else None
-        self.builder.declare_local(node.name, var_type, init_value)
-        self._declare(node.name, type_str, False, None)
+        self._expected_type_str = None
+        unique = self._declare(node.name, type_str, False, None)
+        self.builder.declare_local(unique, var_type, init_value)
 
     def _convert_variable_assignment(self, node: ASTNode) -> None:
         value = self._convert_expression(node.children[0]) if node.children else None
@@ -772,10 +818,10 @@ class ASTToFIRConverter:
             rhs_type = self._expr_type(node.children[0])
             is_array = rhs_type.endswith("[]")
             base_type = rhs_type[:-2] if is_array else rhs_type
-            self.builder.declare_local(node.name, self._fir_type(base_type, is_array), value)
-            self._declare(node.name, base_type, is_array, None)
+            unique = self._declare(node.name, base_type, is_array, None)
+            self.builder.declare_local(unique, self._fir_type(base_type, is_array), value)
             return
-        self.builder.store_var(node.name, value)
+        self.builder.store_var(self._local_name(node.name), value)
 
     def _convert_assignment(self, node: ASTNode) -> None:
         lhs = node.children[0]
@@ -783,7 +829,7 @@ class ASTToFIRConverter:
         value = self._convert_expression(rhs)
 
         if lhs.node_type == NodeTypes.IDENTIFIER:
-            self.builder.store_var(lhs.name, value)
+            self.builder.store_var(self._local_name(lhs.name), value)
             return
         if lhs.node_type == NodeTypes.FIELD_ACCESS:
             obj = self._convert_expression(lhs.children[0])
@@ -801,22 +847,24 @@ class ASTToFIRConverter:
         op = COMPOUND_OP_MAP.get(op_token or "", "+")
         symbol = self._lookup(node.name)
         type_str = symbol[0] if symbol else "int32"
+        local = self._local_name(node.name)
         var_type = self._fir_type(type_str)
-        current = self.builder.load_var(node.name, var_type)
+        current = self.builder.load_var(local, var_type)
         rhs = self._convert_expression(node.children[0])
         result = self.builder.binary_op(op, current, rhs, var_type)
-        self.builder.store_var(node.name, result)
+        self.builder.store_var(local, result)
 
     def _convert_increment(self, node: ASTNode) -> None:
         var_name = node.token.value if node.token else ""
         symbol = self._lookup(var_name)
         type_str = symbol[0] if symbol else "int32"
+        local = self._local_name(var_name)
         var_type = self._fir_type(type_str)
-        current = self.builder.load_var(var_name, var_type)
+        current = self.builder.load_var(local, var_type)
         one = self.builder.int_literal("1", var_type)
         op = "+" if node.name == "++" else "-"
         result = self.builder.binary_op(op, current, one, var_type)
-        self.builder.store_var(var_name, result)
+        self.builder.store_var(local, result)
 
     def _convert_if(self, node: ASTNode) -> None:
         join_block = self.builder.new_block()
@@ -970,7 +1018,7 @@ class ASTToFIRConverter:
 
         args = [self._convert_expression(arg) for arg in (collection.children or [])]
         gen_value = self.builder.gen_new(collection.name, args, gen_type)
-        gen_local = f"__gen_{loop_var}"
+        gen_local = self._declare(f"__gen_{loop_var}", f"generator<{yield_type_str}>", False, None)
         self.builder.declare_local(gen_local, gen_type, gen_value)
 
         header = self.builder.new_block()
@@ -987,8 +1035,8 @@ class ASTToFIRConverter:
         self._push_scope()
         gen_in_body = self.builder.load_var(gen_local, gen_type)
         element = self.builder.gen_value(gen_in_body, elem_type)
-        self.builder.declare_local(loop_var, self._fir_type(loop_var_type_str), element)
-        self._declare(loop_var, loop_var_type_str, False, None)
+        loop_local = self._declare(loop_var, loop_var_type_str, False, None)
+        self.builder.declare_local(loop_local, self._fir_type(loop_var_type_str), element)
 
         self.loop_stack.append((header.id, exit_block.id))
         if body.node_type == NodeTypes.SCOPE:
@@ -1015,9 +1063,9 @@ class ASTToFIRConverter:
         bool_type = make_simple("bool")
 
         source = self._convert_expression(collection)
-        source_local = f"__str_{loop_var}"
+        source_local = self._declare(f"__str_{loop_var}", "string", False, None)
         self.builder.declare_local(source_local, string_type, source)
-        index_local = f"__i_{loop_var}"
+        index_local = self._declare(f"__i_{loop_var}", "int32", False, None)
         zero = self.builder.int_literal("0", int32)
         self.builder.declare_local(index_local, int32, zero)
 
@@ -1047,8 +1095,8 @@ class ASTToFIRConverter:
                 "str_char_code_at", [source_in_body, index_in_body], ["borrow", "own"], make_simple("char")
             )
         element.instruction.metadata["intrinsic"] = True
-        self.builder.declare_local(loop_var, self._fir_type(loop_var_type_str), element)
-        self._declare(loop_var, loop_var_type_str, False, None)
+        loop_local = self._declare(loop_var, loop_var_type_str, False, None)
+        self.builder.declare_local(loop_local, self._fir_type(loop_var_type_str), element)
 
         # The increment happens in a dedicated block so `continue` advances.
         incr_block = self.builder.new_block()
@@ -1090,9 +1138,9 @@ class ASTToFIRConverter:
         array_type = self._fir_type(element_type_str, True, size)
 
         source = self._convert_expression(collection)
-        source_local = f"__arr_{loop_var}"
+        source_local = self._declare(f"__arr_{loop_var}", element_type_str, True, size)
         self.builder.declare_local(source_local, array_type, source)
-        index_local = f"__i_{loop_var}"
+        index_local = self._declare(f"__i_{loop_var}", "int32", False, None)
         zero = self.builder.int_literal("0", int32)
         self.builder.declare_local(index_local, int32, zero)
 
@@ -1117,8 +1165,8 @@ class ASTToFIRConverter:
         array_in_body = self.builder.load_var(source_local, array_type)
         index_in_body = self.builder.load_var(index_local, int32)
         element = self.builder.index_array(array_in_body, index_in_body, self._fir_type(element_type_str))
-        self.builder.declare_local(loop_var, self._fir_type(loop_var_type_str), element)
-        self._declare(loop_var, loop_var_type_str, False, None)
+        loop_local = self._declare(loop_var, loop_var_type_str, False, None)
+        self.builder.declare_local(loop_local, self._fir_type(loop_var_type_str), element)
 
         incr_block = self.builder.new_block()
         self.loop_stack.append((incr_block.id, exit_block.id))
@@ -1174,7 +1222,7 @@ class ASTToFIRConverter:
             base = type_str[:-2] if is_array else type_str
             symbol = self._lookup(node.name)
             size = symbol[2] if symbol else None
-            return self.builder.load_var(node.name, self._fir_type(base, is_array, size))
+            return self.builder.load_var(self._local_name(node.name), self._fir_type(base, is_array, size))
 
         if node_type == NodeTypes.ARRAY_LITERAL:
             elements = [self._convert_expression(child) for child in (node.children or [])]
@@ -1242,20 +1290,9 @@ class ASTToFIRConverter:
             )
 
         if node_type == NodeTypes.CONSTRUCTOR_CALL:
-            args = [self._convert_expression(arg) for arg in node.children]
-            class_name = node.name
-            if f"{class_name}.{class_name}" in {f.name for f in self.module.functions} or (
-                class_name in self.class_method_names
-                and class_name in self.class_method_names[class_name]
-            ):
-                return self.builder.call(
-                    f"{class_name}.{class_name}",
-                    args,
-                    ["own"] * len(args),
-                    self._fir_type(class_name),
-                )
-            # No explicit constructor: positional field initialization.
-            return self.builder.allocate(self._fir_type(class_name), args)
+            full_name = node.name
+            base_name = full_name.split("<")[0] if "<" in full_name else full_name
+            return self._convert_construction(node, full_name, base_name)
 
         if node_type == NodeTypes.SUPER_CALL:
             return self._convert_super_call(node)
@@ -1266,6 +1303,7 @@ class ASTToFIRConverter:
         """Lower && / || with C-style short-circuit evaluation via a temp local."""
         bool_type = make_simple("bool")
         temp_name = f"__sc_{len(self.current_function.blocks)}_{len(self.builder.current_block.instructions)}"
+        self._used_local_names.add(temp_name)
 
         left = self._convert_expression(node.children[0])
         self.builder.declare_local(temp_name, bool_type, left)
@@ -1324,10 +1362,9 @@ class ASTToFIRConverter:
                 self.current_function.ownership.record_move(target.name)
             return None
 
-        if name in self.class_categories:
-            # Positional construction: ClassName(args) maps args to fields.
-            args = [self._convert_expression(arg) for arg in node.children]
-            return self.builder.allocate(self._fir_type(name), args)
+        base_name = name.split("<")[0] if "<" in name else name
+        if base_name in self.class_categories:
+            return self._convert_construction(node, name, base_name)
 
         if name in self.generator_defs:
             gen_def = self.generator_defs[name]
@@ -1352,6 +1389,44 @@ class ASTToFIRConverter:
         if type_args:
             call_inst.metadata["type_args"] = type_args
         return call
+
+    def _convert_construction(self, node: ASTNode, full_name: str, base_name: str) -> Value:
+        """Construct a class instance: explicit constructor call when one
+        exists, positional field initialization otherwise. Handles generic
+        instances (e.g. `Pair<int32, string>(...)`)."""
+        args = [self._require_value(arg) for arg in node.children]
+        type_args: list[str] = []
+        if "<" in full_name and full_name.endswith(">"):
+            type_args = self._split_type_args(full_name.split("<", 1)[1][:-1])
+        if not type_args:
+            annotated = list(getattr(node, "type_args", []) or [])
+            if annotated:
+                type_args = annotated
+                full_name = f"{base_name}<{', '.join(type_args)}>"
+        if not type_args and self.class_generic_params.get(base_name):
+            # Fall back to the declared type of the binding being initialized
+            # (e.g. `Pair<int32, string> p = Pair(1, "x");`).
+            expected = getattr(self, "_expected_type_str", None)
+            if expected and expected.split("<")[0] == base_name and "<" in expected:
+                full_name = expected
+                type_args = self._split_type_args(expected.split("<", 1)[1][:-1])
+        result_type = self._fir_type(full_name)
+
+        has_constructor = base_name in self.class_method_names and base_name in self.class_method_names.get(
+            base_name, set()
+        )
+        if has_constructor:
+            call = self.builder.call(
+                f"{base_name}.{base_name}",
+                args,
+                ["own"] * len(args),
+                result_type,
+            )
+            if type_args:
+                call.instruction.metadata["type_args"] = type_args
+            return call
+        # No explicit constructor: positional field initialization.
+        return self.builder.allocate(result_type, args)
 
     def _call_arg_modes(self, name: str, node: ASTNode) -> list[str]:
         func_def = self.function_defs.get(name)
@@ -1471,7 +1546,7 @@ class ASTToFIRConverter:
         # Copy base fields onto this, then release the temporary base object
         # without running its destructor (fields now belong to this).
         this_type_str = self.current_function.metadata.get("class_name", super_class)
-        this_value = self.builder.load_var("this", self._fir_type(this_type_str))
+        this_value = self.builder.load_var(self._local_name("this"), self._fir_type(this_type_str))
         for field_name, field_type in self._all_class_fields(super_class):
             field_value = self.builder.load_field(base, field_name, self._fir_type(field_type))
             self.builder.store_field(this_value, field_name, field_value)

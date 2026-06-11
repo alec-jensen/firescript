@@ -1,0 +1,270 @@
+flir module operator_precedence
+entry @fs_main
+
+func @fs_main() -> void {
+  L0:
+    %0 = const.i32 2
+    %1 = const.i32 3
+    %2 = const.i32 4
+    %3 = mul.i32 %1, %2
+    %4 = add.i32 %0, %3
+    call.void @println__int32(%4)
+    %5 = const.i32 10
+    %6 = const.i32 2
+    %7 = const.i32 3
+    %8 = mul.i32 %6, %7
+    %9 = sub.i32 %5, %8
+    call.void @println__int32(%9)
+    %10 = const.i32 10
+    %11 = const.i32 2
+    %12 = div.i32 %10, %11
+    %13 = const.i32 3
+    %14 = add.i32 %12, %13
+    call.void @println__int32(%14)
+    %15 = const.i32 10
+    %16 = const.i32 3
+    %17 = mod.i32 %15, %16
+    %18 = const.i32 1
+    %19 = add.i32 %17, %18
+    call.void @println__int32(%19)
+    %20 = const.i32 2
+    %21 = const.i32 3
+    %22 = const.i32 2
+    %23 = cvt.i32_to_i64 %21
+    %24 = cvt.i32_to_i64 %22
+    %25 = call.i64 @fs_rt_pow_i64(%23, %24)
+    %26 = cvt.i64_to_i32 %25
+    %27 = mul.i32 %20, %26
+    call.void @println__int32(%27)
+    %28 = const.i32 4
+    %29 = const.i32 2
+    %30 = const.i32 2
+    %31 = cvt.i32_to_i64 %29
+    %32 = cvt.i32_to_i64 %30
+    %33 = call.i64 @fs_rt_pow_i64(%31, %32)
+    %34 = cvt.i64_to_i32 %33
+    %35 = div.i32 %28, %34
+    call.void @println__int32(%35)
+    %36 = const.i32 10
+    %37 = const.i32 2
+    %38 = const.i32 3
+    %39 = cvt.i32_to_i64 %37
+    %40 = cvt.i32_to_i64 %38
+    %41 = call.i64 @fs_rt_pow_i64(%39, %40)
+    %42 = cvt.i64_to_i32 %41
+    %43 = sub.i32 %36, %42
+    call.void @println__int32(%43)
+    %44 = const.i32 2
+    %45 = neg.i32 %44
+    %46 = const.i32 5
+    %47 = add.i32 %45, %46
+    call.void @println__int32(%47)
+    %48 = const.i32 3
+    %49 = neg.i32 %48
+    %50 = const.i32 3
+    %51 = neg.i32 %50
+    %52 = mul.i32 %49, %51
+    call.void @println__int32(%52)
+    %53 = const.i32 2
+    %54 = const.i32 3
+    %55 = add.i32 %53, %54
+    %56 = const.i32 4
+    %57 = gt.i32 %55, %56
+    slot r1: bool
+    slotstore r1, %57
+    %58 = const.i32 2
+    %59 = const.i32 3
+    %60 = add.i32 %58, %59
+    %61 = const.i32 4
+    %62 = lt.i32 %60, %61
+    slot r2: bool
+    slotstore r2, %62
+    %63 = const.i32 2
+    %64 = const.i32 3
+    %65 = mul.i32 %63, %64
+    %66 = const.i32 6
+    %67 = eq.i32 %65, %66
+    slot r3: bool
+    slotstore r3, %67
+    %68 = const.i32 10
+    %69 = const.i32 4
+    %70 = sub.i32 %68, %69
+    %71 = const.i32 7
+    %72 = ne.i32 %70, %71
+    slot r4: bool
+    slotstore r4, %72
+    %73 = slotload.bool r1
+    call.void @println__bool(%73)
+    %74 = slotload.bool r2
+    call.void @println__bool(%74)
+    %75 = slotload.bool r3
+    call.void @println__bool(%75)
+    %76 = slotload.bool r4
+    call.void @println__bool(%76)
+    %77 = bconst true
+    slot __sc_1_85: bool
+    slotstore __sc_1_85, %77
+    %78 = slotload.bool __sc_1_85
+    br %78, L2, L1
+
+  L1:
+    %79 = bconst false
+    slot __sc_3_0: bool
+    slotstore __sc_3_0, %79
+    %80 = slotload.bool __sc_3_0
+    br %80, L3, L4
+
+  L2:
+    %81 = slotload.bool __sc_1_85
+    slot r5: bool
+    slotstore r5, %81
+    %82 = bconst false
+    slot __sc_5_2: bool
+    slotstore __sc_5_2, %82
+    %83 = slotload.bool __sc_5_2
+    br %83, L5, L6
+
+  L3:
+    %84 = bconst false
+    slotstore __sc_3_0, %84
+    jmp L4
+
+  L4:
+    %85 = slotload.bool __sc_3_0
+    slotstore __sc_1_85, %85
+    jmp L2
+
+  L5:
+    %86 = bconst true
+    slotstore __sc_5_2, %86
+    jmp L6
+
+  L6:
+    %87 = slotload.bool __sc_5_2
+    slotstore __sc_5_2, %87
+    %88 = slotload.bool __sc_5_2
+    br %88, L8, L7
+
+  L7:
+    %89 = bconst true
+    slotstore __sc_5_2, %89
+    jmp L8
+
+  L8:
+    %90 = slotload.bool __sc_5_2
+    slot r6: bool
+    slotstore r6, %90
+    %91 = bconst false
+    slot __sc_9_2: bool
+    slotstore __sc_9_2, %91
+    %92 = slotload.bool __sc_9_2
+    br %92, L9, L10
+
+  L9:
+    %93 = bconst false
+    slotstore __sc_9_2, %93
+    jmp L10
+
+  L10:
+    %94 = slotload.bool __sc_9_2
+    slotstore __sc_9_2, %94
+    %95 = slotload.bool __sc_9_2
+    br %95, L12, L11
+
+  L11:
+    %96 = bconst false
+    slotstore __sc_9_2, %96
+    jmp L12
+
+  L12:
+    %97 = slotload.bool __sc_9_2
+    slot r7: bool
+    slotstore r7, %97
+    %98 = slotload.bool r5
+    call.void @println__bool(%98)
+    %99 = slotload.bool r6
+    call.void @println__bool(%99)
+    %100 = slotload.bool r7
+    call.void @println__bool(%100)
+    %101 = const.i32 4
+    slot a: i32
+    slotstore a, %101
+    %102 = const.i32 2
+    slot b: i32
+    slotstore b, %102
+    %103 = const.i32 3
+    slot c: i32
+    slotstore c, %103
+    %104 = slotload.i32 a
+    %105 = slotload.i32 b
+    %106 = slotload.i32 c
+    %107 = mul.i32 %105, %106
+    %108 = add.i32 %104, %107
+    %109 = slotload.i32 a
+    %110 = slotload.i32 b
+    %111 = mul.i32 %109, %110
+    %112 = slotload.i32 c
+    %113 = add.i32 %111, %112
+    %114 = gt.i32 %108, %113
+    slot r8: bool
+    slotstore r8, %114
+    %115 = slotload.i32 a
+    %116 = slotload.i32 b
+    %117 = mul.i32 %115, %116
+    %118 = slotload.i32 c
+    %119 = add.i32 %117, %118
+    %120 = slotload.i32 a
+    %121 = slotload.i32 b
+    %122 = add.i32 %120, %121
+    %123 = slotload.i32 c
+    %124 = add.i32 %122, %123
+    %125 = eq.i32 %119, %124
+    slot r9: bool
+    slotstore r9, %125
+    %126 = slotload.bool r8
+    call.void @println__bool(%126)
+    %127 = slotload.bool r9
+    call.void @println__bool(%127)
+    %128 = const.i32 2
+    %129 = const.i32 3
+    %130 = add.i32 %128, %129
+    %131 = const.i32 4
+    %132 = mul.i32 %130, %131
+    call.void @println__int32(%132)
+    %133 = const.i32 2
+    %134 = const.i32 3
+    %135 = const.i32 4
+    %136 = add.i32 %134, %135
+    %137 = mul.i32 %133, %136
+    call.void @println__int32(%137)
+    %138 = const.i32 10
+    %139 = const.i32 2
+    %140 = sub.i32 %138, %139
+    %141 = const.i32 2
+    %142 = cvt.i32_to_i64 %140
+    %143 = cvt.i32_to_i64 %141
+    %144 = call.i64 @fs_rt_pow_i64(%142, %143)
+    %145 = cvt.i64_to_i32 %144
+    call.void @println__int32(%145)
+    ret
+}
+
+func @println__int32(value: i32) -> void {
+  L0:
+    %0 = slotload.i32 value
+    %1 = call.ptr<i8> @fs_rt_i32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__bool(value: bool) -> void {
+  L0:
+    %0 = slotload.bool value
+    %1 = call.ptr<i8> @fs_rt_bool_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

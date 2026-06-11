@@ -126,7 +126,7 @@ function main() -> void {
   block_0:
     %0 = IntLiteral(42, int32)
     %1 = StringLiteral("hello", string)
-    %2 = Call(Tuple<int32, string>, [%0, %1], ["own", "own"]) -> Tuple<int32, string>
+    %2 = Call(Tuple.Tuple, [%0, %1], ["own", "own"]) -> Tuple<int32, string>
     DeclareLocal("t1", Tuple<int32, string>, %2)
     %3 = LoadVar("t1") -> Tuple<int32, string>
     %4 = LoadField(%3, "first")

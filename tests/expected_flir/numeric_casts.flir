@@ -1,0 +1,197 @@
+flir module numeric_casts
+entry @fs_main
+
+func @fs_main() -> void {
+  L0:
+    %0 = strconst "-- numeric casts --"
+    call.void @println__string(%0)
+    %1 = const.i16 127
+    %2 = cvt.i16_to_i8 %1
+    slot i8: i8
+    slotstore i8, %2
+    %3 = slotload.i8 i8
+    call.void @println__int8(%3)
+    %4 = const.i32 0
+    %5 = const.i32 12345
+    %6 = sub.i32 %4, %5
+    %7 = cvt.i32_to_i16 %6
+    slot i16: i16
+    slotstore i16, %7
+    %8 = slotload.i16 i16
+    call.void @println__int16(%8)
+    %9 = const.i64 123456
+    %10 = cvt.i64_to_i32 %9
+    slot i32: i32
+    slotstore i32, %10
+    %11 = slotload.i32 i32
+    call.void @println__int32(%11)
+    %12 = const.i64 123456789
+    slot i64: i64
+    slotstore i64, %12
+    %13 = slotload.i64 i64
+    call.void @println__int64(%13)
+    %14 = const.i16 255
+    %15 = cvt.i16_to_u8 %14
+    slot u8: u8
+    slotstore u8, %15
+    %16 = slotload.u8 u8
+    call.void @println__uint8(%16)
+    %17 = const.i32 65000
+    %18 = cvt.i32_to_u16 %17
+    slot u16: u16
+    slotstore u16, %18
+    %19 = slotload.u16 u16
+    call.void @println__uint16(%19)
+    %20 = const.u64 4000000000
+    %21 = cvt.u64_to_u32 %20
+    slot u32: u32
+    slotstore u32, %21
+    %22 = slotload.u32 u32
+    call.void @println__uint32(%22)
+    %23 = const.u64 9000000000
+    slot u64: u64
+    slotstore u64, %23
+    %24 = slotload.u64 u64
+    call.void @println__uint64(%24)
+    %25 = fconst.f64 3.25
+    %26 = cvt.f64_to_f32 %25
+    slot f32: f32
+    slotstore f32, %26
+    %27 = slotload.f32 f32
+    call.void @println__float32(%27)
+    %28 = fconst.f64 3.25
+    slot f64: f64
+    slotstore f64, %28
+    %29 = slotload.f64 f64
+    call.void @println__float64(%29)
+    %30 = fconst.f64 3.25
+    slot f128: f64
+    slotstore f128, %30
+    %31 = slotload.f64 f128
+    call.void @println__float128(%31)
+    ret
+}
+
+func @println__string(value: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> value
+    %1 = call.ptr<i8> @fs_rt_str_dup(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__int8(value: i8) -> void {
+  L0:
+    %0 = slotload.i8 value
+    %1 = cvt.i8_to_i32 %0
+    %2 = call.ptr<i8> @fs_rt_i32_to_str(%1)
+    %3 = strconst "\n"
+    %4 = call.ptr<i8> @fs_rt_str_concat(%2, %3)
+    call.void @fs_rt_stdout(%4)
+    ret
+}
+
+func @println__int16(value: i16) -> void {
+  L0:
+    %0 = slotload.i16 value
+    %1 = cvt.i16_to_i32 %0
+    %2 = call.ptr<i8> @fs_rt_i32_to_str(%1)
+    %3 = strconst "\n"
+    %4 = call.ptr<i8> @fs_rt_str_concat(%2, %3)
+    call.void @fs_rt_stdout(%4)
+    ret
+}
+
+func @println__int32(value: i32) -> void {
+  L0:
+    %0 = slotload.i32 value
+    %1 = call.ptr<i8> @fs_rt_i32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__int64(value: i64) -> void {
+  L0:
+    %0 = slotload.i64 value
+    %1 = call.ptr<i8> @fs_rt_i64_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__uint8(value: u8) -> void {
+  L0:
+    %0 = slotload.u8 value
+    %1 = cvt.u8_to_u32 %0
+    %2 = call.ptr<i8> @fs_rt_u32_to_str(%1)
+    %3 = strconst "\n"
+    %4 = call.ptr<i8> @fs_rt_str_concat(%2, %3)
+    call.void @fs_rt_stdout(%4)
+    ret
+}
+
+func @println__uint16(value: u16) -> void {
+  L0:
+    %0 = slotload.u16 value
+    %1 = cvt.u16_to_u32 %0
+    %2 = call.ptr<i8> @fs_rt_u32_to_str(%1)
+    %3 = strconst "\n"
+    %4 = call.ptr<i8> @fs_rt_str_concat(%2, %3)
+    call.void @fs_rt_stdout(%4)
+    ret
+}
+
+func @println__uint32(value: u32) -> void {
+  L0:
+    %0 = slotload.u32 value
+    %1 = call.ptr<i8> @fs_rt_u32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__uint64(value: u64) -> void {
+  L0:
+    %0 = slotload.u64 value
+    %1 = call.ptr<i8> @fs_rt_u64_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__float32(value: f32) -> void {
+  L0:
+    %0 = slotload.f32 value
+    %1 = call.ptr<i8> @fs_rt_f32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__float64(value: f64) -> void {
+  L0:
+    %0 = slotload.f64 value
+    %1 = call.ptr<i8> @fs_rt_f64_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__float128(value: f64) -> void {
+  L0:
+    %0 = slotload.f64 value
+    %1 = call.ptr<i8> @fs_rt_f64_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

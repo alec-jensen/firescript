@@ -23,7 +23,7 @@ function<T> println(value: &T) -> void {
     Return()
 }
 
-function Point.Point(this: &mut Point, x: int32, y: int32) -> Point {
+function Point.Point(x: int32, y: int32) -> Point {
   block_0:
     %0 = Allocate(Point, [])
     DeclareLocal("this", Point, %0)

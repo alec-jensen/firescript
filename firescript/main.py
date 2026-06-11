@@ -167,10 +167,12 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
         return False
     stage_start = _log_stage_duration("Semantic analysis", stage_start)
 
-    # FIR pipeline hooks: --emit-fir dumps the high-level IR; --backend
-    # c-fir/asm and --emit-flir land with the lowering/backend work
-    # (see docs/internal/development/FIR_impl_plan.md).
-    if emit_fir:
+    # FIR pipeline: --emit-fir/--emit-flir dump the IRs; --backend c-fir
+    # compiles through AST -> FIR -> FLIR -> C (see
+    # docs/internal/development/FIR_impl_plan.md).
+    fir_module = None
+    flir_module = None
+    if emit_fir or emit_flir or backend in ("c-fir", "asm"):
         from ast_to_fir import ASTToFIRConverter
         from fir import dump_module
 
@@ -183,20 +185,41 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
             import traceback
             traceback.print_exc()
             return False
-        os.makedirs("build", exist_ok=True)
-        fir_out = os.path.join("build", f"{base_name}.fir")
-        with open(fir_out, "w", encoding="utf-8", newline="\n") as f:
-            f.write(dump_module(fir_module))
-        logging.info(f"FIR written to {fir_out}")
         stage_start = _log_stage_duration("AST->FIR conversion", stage_start)
-        if backend == "c-legacy" and not emit_flir:
-            return fir_out
 
-    if backend != "c-legacy" or emit_flir:
-        logging.error(
-            "The FIR backends (--backend c-fir/asm, --emit-flir) are not implemented yet; "
-            "use the default --backend c-legacy"
-        )
+        if emit_fir:
+            os.makedirs("build", exist_ok=True)
+            fir_out = os.path.join("build", f"{base_name}.fir")
+            with open(fir_out, "w", encoding="utf-8", newline="\n") as f:
+                f.write(dump_module(fir_module))
+            logging.info(f"FIR written to {fir_out}")
+            if backend == "c-legacy" and not emit_flir:
+                return fir_out
+
+    if emit_flir or backend in ("c-fir", "asm"):
+        from flir import FIRToFLIRLowering, dump_flir_module
+
+        base_name = os.path.splitext(os.path.basename(file_path))[0]
+        try:
+            flir_module = FIRToFLIRLowering(fir_module).lower()
+        except Exception as e:
+            logging.error(f"FIR->FLIR lowering failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+        stage_start = _log_stage_duration("FIR->FLIR lowering", stage_start)
+
+        if emit_flir:
+            os.makedirs("build", exist_ok=True)
+            flir_out = os.path.join("build", f"{base_name}.flir")
+            with open(flir_out, "w", encoding="utf-8", newline="\n") as f:
+                f.write(dump_flir_module(flir_module))
+            logging.info(f"FLIR written to {flir_out}")
+            if backend == "c-legacy":
+                return flir_out
+
+    if backend == "asm":
+        logging.error("The asm backend is not implemented yet; use --backend c-fir or c-legacy")
         return False
 
     # Output deps if requested
@@ -236,20 +259,25 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
     logging.debug("Starting code generation...")
 
     if target == "native":
-        from codegen import CCodeGenerator
+        if backend == "c-fir":
+            from codegen.flir_to_c import FLIRToCBackend
 
-        # Generate C code
-        generator = CCodeGenerator(ast, source_file=file_path)
-        generator.source_code = file_content
-        output = generator.generate()
-        if generator.errors:
-            logging.error(f"Code generation failed with {len(generator.errors)} errors")
-            return False
-        # Safety: wrap any raw free() calls emitted by codegen into firescript_free()
-        # This prevents double-free and freeing static literals.
-        output = output.replace(" free(", " firescript_free(")
-        output = output.replace("\tfree(", "\tfirescript_free(")
-        output = output.replace("\nfree(", "\nfirescript_free(")
+            output = FLIRToCBackend(flir_module).generate()
+        else:
+            from codegen import CCodeGenerator
+
+            # Generate C code
+            generator = CCodeGenerator(ast, source_file=file_path)
+            generator.source_code = file_content
+            output = generator.generate()
+            if generator.errors:
+                logging.error(f"Code generation failed with {len(generator.errors)} errors")
+                return False
+            # Safety: wrap any raw free() calls emitted by codegen into firescript_free()
+            # This prevents double-free and freeing static literals.
+            output = output.replace(" free(", " firescript_free(")
+            output = output.replace("\tfree(", "\tfirescript_free(")
+            output = output.replace("\nfree(", "\nfirescript_free(")
         stage_start = _log_stage_duration("Code generation", stage_start)
 
         # Create temp folder if it doesn't exist

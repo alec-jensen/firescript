@@ -1,0 +1,360 @@
+flir module types_numeric_comprehensive
+entry @fs_main
+
+func @fs_main() -> void {
+  L0:
+    %0 = strconst "=== Numeric Type Tests ==="
+    call.void @println__string(%0)
+    %1 = strconst "--- int8 ---"
+    call.void @println__string(%1)
+    %2 = const.i8 128
+    %3 = neg.i8 %2
+    slot i8_min: i8
+    slotstore i8_min, %3
+    %4 = const.i8 127
+    slot i8_max: i8
+    slotstore i8_max, %4
+    %5 = const.i8 0
+    slot i8_zero: i8
+    slotstore i8_zero, %5
+    %6 = slotload.i8 i8_min
+    call.void @println__int8(%6)
+    %7 = slotload.i8 i8_max
+    call.void @println__int8(%7)
+    %8 = slotload.i8 i8_zero
+    call.void @println__int8(%8)
+    %9 = slotload.i8 i8_max
+    %10 = const.i8 1
+    %11 = add.i8 %9, %10
+    call.void @println__int8(%11)
+    %12 = slotload.i8 i8_min
+    %13 = const.i8 1
+    %14 = sub.i8 %12, %13
+    call.void @println__int8(%14)
+    %15 = strconst "--- int16 ---"
+    call.void @println__string(%15)
+    %16 = const.i16 32768
+    %17 = neg.i16 %16
+    slot i16_min: i16
+    slotstore i16_min, %17
+    %18 = const.i16 32767
+    slot i16_max: i16
+    slotstore i16_max, %18
+    %19 = const.i16 1000
+    slot i16_test: i16
+    slotstore i16_test, %19
+    %20 = slotload.i16 i16_min
+    call.void @println__int16(%20)
+    %21 = slotload.i16 i16_max
+    call.void @println__int16(%21)
+    %22 = slotload.i16 i16_test
+    call.void @println__int16(%22)
+    %23 = slotload.i16 i16_test
+    %24 = const.i16 2
+    %25 = mul.i16 %23, %24
+    call.void @println__int16(%25)
+    %26 = strconst "--- int32 ---"
+    call.void @println__string(%26)
+    %27 = const.i32 2147483648
+    %28 = neg.i32 %27
+    slot i32_min: i32
+    slotstore i32_min, %28
+    %29 = const.i32 2147483647
+    slot i32_max: i32
+    slotstore i32_max, %29
+    %30 = const.i32 1000000
+    slot i32_test: i32
+    slotstore i32_test, %30
+    %31 = slotload.i32 i32_min
+    call.void @println__int32(%31)
+    %32 = slotload.i32 i32_max
+    call.void @println__int32(%32)
+    %33 = slotload.i32 i32_test
+    call.void @println__int32(%33)
+    %34 = slotload.i32 i32_test
+    %35 = const.i32 500000
+    %36 = add.i32 %34, %35
+    call.void @println__int32(%36)
+    %37 = strconst "--- int64 ---"
+    call.void @println__string(%37)
+    %38 = const.i64 9223372036854775807
+    slot i64_test: i64
+    slotstore i64_test, %38
+    %39 = const.i64 9223372036854775808
+    %40 = neg.i64 %39
+    slot i64_negative: i64
+    slotstore i64_negative, %40
+    %41 = slotload.i64 i64_test
+    call.void @println__int64(%41)
+    %42 = slotload.i64 i64_negative
+    call.void @println__int64(%42)
+    %43 = slotload.i64 i64_test
+    %44 = const.i64 1000
+    %45 = div.i64 %43, %44
+    call.void @println__int64(%45)
+    %46 = strconst "--- uint8 ---"
+    call.void @println__string(%46)
+    %47 = const.u8 0
+    slot u8_min: u8
+    slotstore u8_min, %47
+    %48 = const.u8 255
+    slot u8_max: u8
+    slotstore u8_max, %48
+    %49 = const.u8 128
+    slot u8_test: u8
+    slotstore u8_test, %49
+    %50 = slotload.u8 u8_min
+    call.void @println__uint8(%50)
+    %51 = slotload.u8 u8_max
+    call.void @println__uint8(%51)
+    %52 = slotload.u8 u8_test
+    call.void @println__uint8(%52)
+    %53 = slotload.u8 u8_max
+    %54 = const.u8 1
+    %55 = add.u8 %53, %54
+    call.void @println__uint8(%55)
+    %56 = strconst "--- uint16 ---"
+    call.void @println__string(%56)
+    %57 = const.u16 65535
+    slot u16_max: u16
+    slotstore u16_max, %57
+    %58 = const.u16 30000
+    slot u16_test: u16
+    slotstore u16_test, %58
+    %59 = slotload.u16 u16_max
+    call.void @println__uint16(%59)
+    %60 = slotload.u16 u16_test
+    call.void @println__uint16(%60)
+    %61 = slotload.u16 u16_test
+    %62 = const.u16 1000
+    %63 = add.u16 %61, %62
+    call.void @println__uint16(%63)
+    %64 = strconst "--- uint32 ---"
+    call.void @println__string(%64)
+    %65 = const.u32 4294967295
+    slot u32_max: u32
+    slotstore u32_max, %65
+    %66 = const.u32 1000000
+    slot u32_test: u32
+    slotstore u32_test, %66
+    %67 = slotload.u32 u32_max
+    call.void @println__uint32(%67)
+    %68 = slotload.u32 u32_test
+    call.void @println__uint32(%68)
+    %69 = slotload.u32 u32_test
+    %70 = const.u32 2
+    %71 = mul.u32 %69, %70
+    call.void @println__uint32(%71)
+    %72 = strconst "--- uint64 ---"
+    call.void @println__string(%72)
+    %73 = const.u64 18446744073709551615
+    slot u64_max: u64
+    slotstore u64_max, %73
+    %74 = const.u64 1000000000
+    slot u64_test: u64
+    slotstore u64_test, %74
+    %75 = slotload.u64 u64_max
+    call.void @println__uint64(%75)
+    %76 = slotload.u64 u64_test
+    call.void @println__uint64(%76)
+    %77 = slotload.u64 u64_test
+    %78 = const.u64 10
+    %79 = mul.u64 %77, %78
+    call.void @println__uint64(%79)
+    %80 = strconst "--- float32 ---"
+    call.void @println__string(%80)
+    %81 = fconst.f32 3.14159
+    slot f32_pi: f32
+    slotstore f32_pi, %81
+    %82 = fconst.f32 2.71828
+    slot f32_e: f32
+    slotstore f32_e, %82
+    %83 = fconst.f32 0.0
+    slot f32_zero: f32
+    slotstore f32_zero, %83
+    %84 = fconst.f32 42.5
+    %85 = neg.f32 %84
+    slot f32_negative: f32
+    slotstore f32_negative, %85
+    %86 = slotload.f32 f32_pi
+    call.void @println__float32(%86)
+    %87 = slotload.f32 f32_e
+    call.void @println__float32(%87)
+    %88 = slotload.f32 f32_zero
+    call.void @println__float32(%88)
+    %89 = slotload.f32 f32_negative
+    call.void @println__float32(%89)
+    %90 = slotload.f32 f32_pi
+    %91 = fconst.f32 2.0
+    %92 = mul.f32 %90, %91
+    call.void @println__float32(%92)
+    %93 = slotload.f32 f32_e
+    %94 = slotload.f32 f32_pi
+    %95 = add.f32 %93, %94
+    call.void @println__float32(%95)
+    %96 = strconst "--- float64 ---"
+    call.void @println__string(%96)
+    %97 = fconst.f64 3.141592653589793
+    slot f64_pi: f64
+    slotstore f64_pi, %97
+    %98 = fconst.f64 2.718281828459045
+    slot f64_e: f64
+    slotstore f64_e, %98
+    %99 = fconst.f64 1e100
+    slot f64_large: f64
+    slotstore f64_large, %99
+    %100 = fconst.f64 1e-100
+    slot f64_small: f64
+    slotstore f64_small, %100
+    %101 = slotload.f64 f64_pi
+    call.void @println__float64(%101)
+    %102 = slotload.f64 f64_e
+    call.void @println__float64(%102)
+    %103 = slotload.f64 f64_large
+    call.void @println__float64(%103)
+    %104 = slotload.f64 f64_small
+    call.void @println__float64(%104)
+    %105 = slotload.f64 f64_pi
+    %106 = slotload.f64 f64_e
+    %107 = mul.f64 %105, %106
+    call.void @println__float64(%107)
+    %108 = strconst "--- bool ---"
+    call.void @println__string(%108)
+    %109 = bconst true
+    slot b_true: bool
+    slotstore b_true, %109
+    %110 = bconst false
+    slot b_false: bool
+    slotstore b_false, %110
+    %111 = slotload.bool b_true
+    call.void @println__bool(%111)
+    %112 = slotload.bool b_false
+    call.void @println__bool(%112)
+    %113 = strconst "=== All numeric type tests passed ==="
+    call.void @println__string(%113)
+    ret
+}
+
+func @println__string(value: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> value
+    %1 = call.ptr<i8> @fs_rt_str_dup(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__int8(value: i8) -> void {
+  L0:
+    %0 = slotload.i8 value
+    %1 = cvt.i8_to_i32 %0
+    %2 = call.ptr<i8> @fs_rt_i32_to_str(%1)
+    %3 = strconst "\n"
+    %4 = call.ptr<i8> @fs_rt_str_concat(%2, %3)
+    call.void @fs_rt_stdout(%4)
+    ret
+}
+
+func @println__int16(value: i16) -> void {
+  L0:
+    %0 = slotload.i16 value
+    %1 = cvt.i16_to_i32 %0
+    %2 = call.ptr<i8> @fs_rt_i32_to_str(%1)
+    %3 = strconst "\n"
+    %4 = call.ptr<i8> @fs_rt_str_concat(%2, %3)
+    call.void @fs_rt_stdout(%4)
+    ret
+}
+
+func @println__int32(value: i32) -> void {
+  L0:
+    %0 = slotload.i32 value
+    %1 = call.ptr<i8> @fs_rt_i32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__int64(value: i64) -> void {
+  L0:
+    %0 = slotload.i64 value
+    %1 = call.ptr<i8> @fs_rt_i64_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__uint8(value: u8) -> void {
+  L0:
+    %0 = slotload.u8 value
+    %1 = cvt.u8_to_u32 %0
+    %2 = call.ptr<i8> @fs_rt_u32_to_str(%1)
+    %3 = strconst "\n"
+    %4 = call.ptr<i8> @fs_rt_str_concat(%2, %3)
+    call.void @fs_rt_stdout(%4)
+    ret
+}
+
+func @println__uint16(value: u16) -> void {
+  L0:
+    %0 = slotload.u16 value
+    %1 = cvt.u16_to_u32 %0
+    %2 = call.ptr<i8> @fs_rt_u32_to_str(%1)
+    %3 = strconst "\n"
+    %4 = call.ptr<i8> @fs_rt_str_concat(%2, %3)
+    call.void @fs_rt_stdout(%4)
+    ret
+}
+
+func @println__uint32(value: u32) -> void {
+  L0:
+    %0 = slotload.u32 value
+    %1 = call.ptr<i8> @fs_rt_u32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__uint64(value: u64) -> void {
+  L0:
+    %0 = slotload.u64 value
+    %1 = call.ptr<i8> @fs_rt_u64_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__float32(value: f32) -> void {
+  L0:
+    %0 = slotload.f32 value
+    %1 = call.ptr<i8> @fs_rt_f32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__float64(value: f64) -> void {
+  L0:
+    %0 = slotload.f64 value
+    %1 = call.ptr<i8> @fs_rt_f64_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__bool(value: bool) -> void {
+  L0:
+    %0 = slotload.bool value
+    %1 = call.ptr<i8> @fs_rt_bool_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

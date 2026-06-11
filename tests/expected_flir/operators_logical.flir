@@ -1,0 +1,163 @@
+flir module operators_logical
+entry @fs_main
+
+func @fs_main() -> void {
+  L0:
+    %0 = strconst "=== Logical Operators ==="
+    call.void @println__string(%0)
+    %1 = strconst "--- Boolean Basics ---"
+    call.void @println__string(%1)
+    %2 = bconst true
+    slot t: bool
+    slotstore t, %2
+    %3 = bconst false
+    slot f: bool
+    slotstore f, %3
+    %4 = slotload.bool t
+    call.void @println__bool(%4)
+    %5 = slotload.bool f
+    call.void @println__bool(%5)
+    %6 = slotload.bool t
+    %7 = bconst true
+    %8 = eq.bool %6, %7
+    call.void @println__bool(%8)
+    %9 = slotload.bool f
+    %10 = bconst false
+    %11 = eq.bool %9, %10
+    call.void @println__bool(%11)
+    %12 = slotload.bool t
+    %13 = slotload.bool f
+    %14 = eq.bool %12, %13
+    call.void @println__bool(%14)
+    %15 = strconst "--- Logical Conditions ---"
+    call.void @println__string(%15)
+    %16 = const.i32 10
+    slot a: i32
+    slotstore a, %16
+    %17 = const.i32 5
+    slot b: i32
+    slotstore b, %17
+    %18 = const.i32 15
+    slot c: i32
+    slotstore c, %18
+    %19 = slotload.i32 a
+    %20 = slotload.i32 b
+    %21 = gt.i32 %19, %20
+    slot __sc_2_32: bool
+    slotstore __sc_2_32, %21
+    %22 = slotload.bool __sc_2_32
+    br %22, L2, L3
+
+  L1:
+    %23 = slotload.i32 a
+    %24 = slotload.i32 b
+    %25 = lt.i32 %23, %24
+    slot __sc_6_0: bool
+    slotstore __sc_6_0, %25
+    %26 = slotload.bool __sc_6_0
+    br %26, L7, L6
+
+  L2:
+    %27 = slotload.i32 a
+    %28 = slotload.i32 c
+    %29 = lt.i32 %27, %28
+    slotstore __sc_2_32, %29
+    jmp L3
+
+  L3:
+    %30 = slotload.bool __sc_2_32
+    br %30, L4, L1
+
+  L4:
+    %31 = strconst "a is between b and c"
+    call.void @println__string(%31)
+    jmp L1
+
+  L5:
+    %32 = slotload.i32 a
+    %33 = slotload.i32 b
+    %34 = lt.i32 %32, %33
+    slot __sc_10_0: bool
+    slotstore __sc_10_0, %34
+    %35 = slotload.bool __sc_10_0
+    br %35, L11, L10
+
+  L6:
+    %36 = slotload.i32 a
+    %37 = const.i32 0
+    %38 = gt.i32 %36, %37
+    slotstore __sc_6_0, %38
+    jmp L7
+
+  L7:
+    %39 = slotload.bool __sc_6_0
+    br %39, L8, L5
+
+  L8:
+    %40 = strconst "a meets at least one condition"
+    call.void @println__string(%40)
+    jmp L5
+
+  L9:
+    %41 = slotload.bool t
+    slot __sc_14_0: bool
+    slotstore __sc_14_0, %41
+    %42 = slotload.bool __sc_14_0
+    br %42, L14, L15
+
+  L10:
+    %43 = slotload.bool t
+    %44 = not %43
+    slotstore __sc_10_0, %44
+    jmp L11
+
+  L11:
+    %45 = slotload.bool __sc_10_0
+    %46 = not %45
+    br %46, L12, L9
+
+  L12:
+    %47 = strconst "not/or combination works"
+    call.void @println__string(%47)
+    jmp L9
+
+  L13:
+    %48 = strconst "=== All logical operator tests passed ==="
+    call.void @println__string(%48)
+    ret
+
+  L14:
+    %49 = slotload.bool f
+    %50 = not %49
+    slotstore __sc_14_0, %50
+    jmp L15
+
+  L15:
+    %51 = slotload.bool __sc_14_0
+    br %51, L16, L13
+
+  L16:
+    %52 = strconst "and/not combination works"
+    call.void @println__string(%52)
+    jmp L13
+}
+
+func @println__string(value: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> value
+    %1 = call.ptr<i8> @fs_rt_str_dup(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__bool(value: bool) -> void {
+  L0:
+    %0 = slotload.bool value
+    %1 = call.ptr<i8> @fs_rt_bool_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

@@ -71,7 +71,14 @@ python tests/fir_snapshot_runner.py
 python tests/fir_snapshot_runner.py --update
 ```
 
-- **fir_snapshot_runner.py** - Converts a representative subset of test sources (25 cases spanning the implemented feature surface) to FIR via `--emit-fir`, compares the dumps against goldens in `tests/expected_fir/`, and verifies determinism by converting each case twice. These goldens are internal compiler fixtures, not user-facing behavior.
+- **fir_snapshot_runner.py** - Converts a representative subset of test sources (25 cases spanning the implemented feature surface) to FIR and FLIR via `--emit-fir`/`--emit-flir`, compares the dumps against goldens in `tests/expected_fir/` and `tests/expected_flir/`, and verifies determinism by converting each case twice. These goldens are internal compiler fixtures, not user-facing behavior.
+
+```bash
+# FIR pipeline differential harness: full golden suite via --backend c-fir
+python tests/fir_runner.py
+```
+
+- **fir_runner.py** - Runs the entire golden suite through the FIR pipeline (`AST -> FIR -> FLIR -> C`) against the same goldens as the legacy backend, proving output parity. Migration scaffolding; removed once the FIR pipeline is the default.
 
 ## Test Categories
 

@@ -1,0 +1,44 @@
+flir module fibonacci
+entry @fs_main
+
+func @fib(n: i64) -> i64 {
+  L0:
+    %0 = slotload.i64 n
+    %1 = const.i64 1
+    %2 = le.i64 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = slotload.i64 n
+    %4 = const.i64 1
+    %5 = sub.i64 %3, %4
+    %6 = call.i64 @fib(%5)
+    %7 = slotload.i64 n
+    %8 = const.i64 2
+    %9 = sub.i64 %7, %8
+    %10 = call.i64 @fib(%9)
+    %11 = add.i64 %6, %10
+    ret %11
+
+  L2:
+    %12 = slotload.i64 n
+    ret %12
+}
+
+func @fs_main() -> void {
+  L0:
+    %0 = const.i64 20
+    %1 = call.i64 @fib(%0)
+    call.void @println__int64(%1)
+    ret
+}
+
+func @println__int64(value: i64) -> void {
+  L0:
+    %0 = slotload.i64 value
+    %1 = call.ptr<i8> @fs_rt_i64_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

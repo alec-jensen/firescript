@@ -1,0 +1,59 @@
+flir module std_types_test
+entry @fs_main
+
+struct Tuple__int32_string { size: 16, align: 8, kind: class
+  first: i32 @ 0
+  second: ptr<i8> @ 8
+}
+
+func @fs_main() -> void {
+  L0:
+    %0 = const.i32 42
+    %1 = strconst "hello"
+    %2 = call.ptr<Tuple__int32_string> @Tuple__Tuple__int32_string(%0, %1)
+    slot t1: ptr<Tuple__int32_string>
+    slotstore t1, %2
+    %3 = slotload.ptr<Tuple__int32_string> t1
+    %4 = load.i32 %3, 0
+    call.void @println__int32(%4)
+    %5 = slotload.ptr<Tuple__int32_string> t1
+    %6 = load.ptr<i8> %5, 8
+    call.void @println__string(%6)
+    ret
+}
+
+func @Tuple__Tuple__int32_string(first: i32, second: ptr<i8>) -> ptr<Tuple__int32_string> {
+  L0:
+    %0 = const.i64 16
+    %1 = call.ptr<Tuple__int32_string> @fs_rt_alloc_zeroed(%0)
+    slot this: ptr<Tuple__int32_string>
+    slotstore this, %1
+    %2 = slotload.i32 first
+    %3 = slotload.ptr<Tuple__int32_string> this
+    store.i32 %3, 0, %2
+    %4 = slotload.ptr<i8> second
+    %5 = slotload.ptr<Tuple__int32_string> this
+    store.ptr<i8> %5, 8, %4
+    %6 = slotload.ptr<Tuple__int32_string> this
+    ret %6
+}
+
+func @println__int32(value: i32) -> void {
+  L0:
+    %0 = slotload.i32 value
+    %1 = call.ptr<i8> @fs_rt_i32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__string(value: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> value
+    %1 = call.ptr<i8> @fs_rt_str_dup(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

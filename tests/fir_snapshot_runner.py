@@ -1,8 +1,9 @@
-"""FIR snapshot test runner.
+"""FIR/FLIR snapshot test runner.
 
-Converts a representative subset of test sources to FIR via --emit-fir,
-compares the dumps against goldens in tests/expected_fir/, and verifies
-determinism (each case is converted twice; the dumps must be identical).
+Converts a representative subset of test sources via --emit-fir and
+--emit-flir, compares the dumps against goldens in tests/expected_fir/
+and tests/expected_flir/, and verifies determinism (each case is
+converted twice; the dumps must be identical).
 
 Usage:
     python tests/fir_snapshot_runner.py            # run all snapshot cases
@@ -18,6 +19,7 @@ import sys
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOURCES_DIR = os.path.join(REPO_ROOT, "tests", "sources")
 EXPECTED_DIR = os.path.join(REPO_ROOT, "tests", "expected_fir")
+EXPECTED_FLIR_DIR = os.path.join(REPO_ROOT, "tests", "expected_flir")
 BUILD_DIR = os.path.join(REPO_ROOT, "build")
 
 # Representative subset spanning the implemented feature surface.
@@ -50,22 +52,30 @@ SNAPSHOT_CASES = [
 ]
 
 
-def convert(source_path: str) -> str:
-    """Run --emit-fir for source_path and return the dump text."""
+def convert(source_path: str) -> tuple[str, str]:
+    """Run --emit-fir --emit-flir for source_path; return both dump texts."""
     result = subprocess.run(
-        [sys.executable, os.path.join(REPO_ROOT, "firescript", "main.py"), source_path, "--emit-fir"],
+        [
+            sys.executable,
+            os.path.join(REPO_ROOT, "firescript", "main.py"),
+            source_path,
+            "--emit-fir",
+            "--emit-flir",
+        ],
         capture_output=True,
         text=True,
         cwd=REPO_ROOT,
     )
     if result.returncode != 0:
         raise RuntimeError(
-            f"--emit-fir failed for {source_path}:\n{result.stdout}\n{result.stderr}"
+            f"--emit-fir/--emit-flir failed for {source_path}:\n{result.stdout}\n{result.stderr}"
         )
     base_name = os.path.splitext(os.path.basename(source_path))[0]
-    fir_path = os.path.join(BUILD_DIR, f"{base_name}.fir")
-    with open(fir_path, "r", encoding="utf-8") as f:
-        return f.read()
+    with open(os.path.join(BUILD_DIR, f"{base_name}.fir"), "r", encoding="utf-8") as f:
+        fir_text = f.read()
+    with open(os.path.join(BUILD_DIR, f"{base_name}.flir"), "r", encoding="utf-8") as f:
+        flir_text = f.read()
+    return fir_text, flir_text
 
 
 def main() -> int:
@@ -80,12 +90,12 @@ def main() -> int:
         cases = SNAPSHOT_CASES
 
     os.makedirs(EXPECTED_DIR, exist_ok=True)
+    os.makedirs(EXPECTED_FLIR_DIR, exist_ok=True)
 
     passed = 0
     failed = 0
     for case in cases:
         source_path = os.path.join(SOURCES_DIR, case)
-        expected_path = os.path.join(EXPECTED_DIR, case.replace(".fire", ".fir"))
         print(f"[CASE  ] {case}")
         try:
             first = convert(source_path)
@@ -96,36 +106,43 @@ def main() -> int:
             continue
 
         if first != second:
-            print(f"[FAIL  ] {case}: FIR dump is not deterministic")
+            print(f"[FAIL  ] {case}: IR dumps are not deterministic")
             failed += 1
             continue
 
-        if args.update:
-            with open(expected_path, "w", encoding="utf-8", newline="\n") as f:
-                f.write(first)
-            print(f"[UPDATE] {expected_path}")
-            passed += 1
-            continue
+        case_ok = True
+        checks = [
+            (os.path.join(EXPECTED_DIR, case.replace(".fire", ".fir")), first[0], "FIR"),
+            (os.path.join(EXPECTED_FLIR_DIR, case.replace(".fire", ".flir")), first[1], "FLIR"),
+        ]
+        for expected_path, actual, label in checks:
+            if args.update:
+                with open(expected_path, "w", encoding="utf-8", newline="\n") as f:
+                    f.write(actual)
+                print(f"[UPDATE] {expected_path}")
+                continue
+            if not os.path.exists(expected_path):
+                print(f"[FAIL  ] {case}: missing {label} golden {expected_path} (run with --update)")
+                case_ok = False
+                continue
+            with open(expected_path, "r", encoding="utf-8") as f:
+                expected = f.read()
+            if actual != expected:
+                import difflib
 
-        if not os.path.exists(expected_path):
-            print(f"[FAIL  ] {case}: missing golden {expected_path} (run with --update)")
-            failed += 1
-            continue
+                diff = "\n".join(
+                    difflib.unified_diff(
+                        expected.splitlines(), actual.splitlines(), "expected", "actual", lineterm=""
+                    )
+                )
+                print(f"[FAIL  ] {case} ({label})\n{diff}")
+                case_ok = False
 
-        with open(expected_path, "r", encoding="utf-8") as f:
-            expected = f.read()
-        if first == expected:
-            print(f"[PASS  ] {case}")
+        if case_ok:
+            if not args.update:
+                print(f"[PASS  ] {case}")
             passed += 1
         else:
-            import difflib
-
-            diff = "\n".join(
-                difflib.unified_diff(
-                    expected.splitlines(), first.splitlines(), "expected", "actual", lineterm=""
-                )
-            )
-            print(f"[FAIL  ] {case}\n{diff}")
             failed += 1
 
     print(f"\nSummary: {passed}/{len(cases)} passed, {failed}/{len(cases)} failed")

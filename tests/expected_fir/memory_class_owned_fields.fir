@@ -23,7 +23,7 @@ function<T> println(value: &T) -> void {
     Return()
 }
 
-function Person.Person(this: &mut Person, name: string, age: int32) -> Person {
+function Person.Person(name: string, age: int32) -> Person {
   block_0:
     %0 = Allocate(Person, [])
     DeclareLocal("this", Person, %0)

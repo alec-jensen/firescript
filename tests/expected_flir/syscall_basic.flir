@@ -1,0 +1,89 @@
+flir module syscall_basic
+entry @fs_main
+
+struct SyscallResult { size: 16, align: 8, kind: builtin
+  status: i32 @ 0
+  data: ptr<i8> @ 8
+}
+
+func @fs_main() -> void {
+  L0:
+    %0 = strconst "build/temp/syscall_test_data.txt"
+    %1 = strconst "w"
+    %2 = call.%SyscallResult @fs_rt_syscall_open(%0, %1)
+    slot open_w: %SyscallResult
+    slotstore open_w, %2
+    %3 = slotload.%SyscallResult open_w
+    %4 = slotaddr open_w
+    %5 = load.i32 %4, 0
+    %6 = const.i32 0
+    %7 = ge.i32 %5, %6
+    br %7, L2, L1
+
+  L1:
+    ret
+
+  L2:
+    %8 = slotload.%SyscallResult open_w
+    %9 = slotaddr open_w
+    %10 = load.i32 %9, 0
+    %11 = strconst "hello syscall"
+    %12 = call.%SyscallResult @fs_rt_syscall_write(%10, %11)
+    %13 = slotload.%SyscallResult open_w
+    %14 = slotaddr open_w
+    %15 = load.i32 %14, 0
+    %16 = call.%SyscallResult @fs_rt_syscall_close(%15)
+    %17 = strconst "build/temp/syscall_test_data.txt"
+    %18 = strconst "r"
+    %19 = call.%SyscallResult @fs_rt_syscall_open(%17, %18)
+    slot open_r: %SyscallResult
+    slotstore open_r, %19
+    %20 = slotload.%SyscallResult open_r
+    %21 = slotaddr open_r
+    %22 = load.i32 %21, 0
+    %23 = const.i32 0
+    %24 = ge.i32 %22, %23
+    br %24, L4, L3
+
+  L3:
+    jmp L1
+
+  L4:
+    %25 = slotload.%SyscallResult open_r
+    %26 = slotaddr open_r
+    %27 = load.i32 %26, 0
+    %28 = const.i32 64
+    %29 = call.%SyscallResult @fs_rt_syscall_read(%27, %28)
+    slot read_result: %SyscallResult
+    slotstore read_result, %29
+    %30 = slotload.%SyscallResult open_r
+    %31 = slotaddr open_r
+    %32 = load.i32 %31, 0
+    %33 = call.%SyscallResult @fs_rt_syscall_close(%32)
+    %34 = slotload.%SyscallResult read_result
+    %35 = slotaddr read_result
+    %36 = load.i32 %35, 0
+    %37 = const.i32 0
+    %38 = ge.i32 %36, %37
+    br %38, L6, L5
+
+  L5:
+    jmp L3
+
+  L6:
+    %39 = slotload.%SyscallResult read_result
+    %40 = slotaddr read_result
+    %41 = load.ptr<i8> %40, 8
+    call.void @println__string(%41)
+    jmp L5
+}
+
+func @println__string(value: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> value
+    %1 = call.ptr<i8> @fs_rt_str_dup(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

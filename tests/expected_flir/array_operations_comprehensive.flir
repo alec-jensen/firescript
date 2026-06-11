@@ -1,0 +1,694 @@
+flir module array_operations_comprehensive
+entry @fs_main
+
+func @sumArray(arr: ptr, arr_len: i32) -> i32 {
+  L0:
+    %0 = const.i32 0
+    slot sum: i32
+    slotstore sum, %0
+    %1 = slotload.ptr arr
+    slot __arr_val: ptr
+    slotstore __arr_val, %1
+    %2 = const.i32 0
+    slot __i_val: i32
+    slotstore __i_val, %2
+    jmp L1
+
+  L1:
+    %3 = slotload.i32 __i_val
+    %4 = slotload.ptr __arr_val
+    %5 = slotload.i32 arr_len
+    %6 = lt.i32 %3, %5
+    br %6, L2, L3
+
+  L2:
+    %7 = slotload.ptr __arr_val
+    %8 = slotload.i32 __i_val
+    %9 = slotload.i32 arr_len
+    %10 = const.i32 0
+    %11 = lt.i32 %8, %10
+    %12 = cvt.bool_to_i32 %11
+    %13 = mul.i32 %12, %9
+    %14 = add.i32 %8, %13
+    %15 = ptradd %7, %14, 4
+    %16 = load.i32 %15, 0
+    slot val: i32
+    slotstore val, %16
+    %17 = slotload.i32 sum
+    %18 = slotload.i32 val
+    %19 = add.i32 %17, %18
+    slotstore sum, %19
+    jmp L4
+
+  L3:
+    %20 = slotload.i32 sum
+    ret %20
+
+  L4:
+    %21 = slotload.i32 __i_val
+    %22 = const.i32 1
+    %23 = add.i32 %21, %22
+    slotstore __i_val, %23
+    jmp L1
+}
+
+func @fs_main() -> void {
+  L0:
+    %0 = strconst "=== Array Operation Tests ==="
+    call.void @println__string(%0)
+    %1 = strconst "--- Array Basics ---"
+    call.void @println__string(%1)
+    %2 = const.i32 1
+    %3 = const.i32 2
+    %4 = const.i32 3
+    %5 = const.i32 4
+    %6 = const.i32 5
+    %7 = const.i64 20
+    %8 = call.ptr @fs_rt_alloc_zeroed(%7)
+    store.i32 %8, 0, %2
+    store.i32 %8, 4, %3
+    store.i32 %8, 8, %4
+    store.i32 %8, 12, %5
+    store.i32 %8, 16, %6
+    slot arr1: ptr
+    slotstore arr1, %8
+    %9 = slotload.ptr arr1
+    %10 = const.i32 0
+    %11 = const.i32 5
+    %12 = const.i32 0
+    %13 = lt.i32 %10, %12
+    %14 = cvt.bool_to_i32 %13
+    %15 = mul.i32 %14, %11
+    %16 = add.i32 %10, %15
+    %17 = ptradd %9, %16, 4
+    %18 = load.i32 %17, 0
+    call.void @println__int32(%18)
+    %19 = slotload.ptr arr1
+    %20 = const.i32 4
+    %21 = const.i32 5
+    %22 = const.i32 0
+    %23 = lt.i32 %20, %22
+    %24 = cvt.bool_to_i32 %23
+    %25 = mul.i32 %24, %21
+    %26 = add.i32 %20, %25
+    %27 = ptradd %19, %26, 4
+    %28 = load.i32 %27, 0
+    call.void @println__int32(%28)
+    %29 = const.i32 5
+    call.void @println__int32(%29)
+    %30 = slotload.ptr arr1
+    call.void @fs_rt_free(%30)
+    %31 = strconst "--- Empty Array ---"
+    call.void @println__string(%31)
+    %32 = const.i64 4
+    %33 = call.ptr @fs_rt_alloc_zeroed(%32)
+    slot empty: ptr
+    slotstore empty, %33
+    %34 = const.i32 0
+    call.void @println__int32(%34)
+    %35 = slotload.ptr empty
+    call.void @fs_rt_free(%35)
+    %36 = strconst "--- Different Type Arrays ---"
+    call.void @println__string(%36)
+    %37 = const.i8 1
+    %38 = const.i8 2
+    %39 = const.i8 3
+    %40 = const.i64 3
+    %41 = call.ptr @fs_rt_alloc_zeroed(%40)
+    store.i8 %41, 0, %37
+    store.i8 %41, 1, %38
+    store.i8 %41, 2, %39
+    slot i8_arr: ptr
+    slotstore i8_arr, %41
+    %42 = slotload.ptr i8_arr
+    %43 = const.i32 0
+    %44 = const.i32 3
+    %45 = const.i32 0
+    %46 = lt.i32 %43, %45
+    %47 = cvt.bool_to_i32 %46
+    %48 = mul.i32 %47, %44
+    %49 = add.i32 %43, %48
+    %50 = ptradd %42, %49, 1
+    %51 = load.i8 %50, 0
+    call.void @println__int8(%51)
+    %52 = const.i32 3
+    call.void @println__int32(%52)
+    %53 = slotload.ptr i8_arr
+    call.void @fs_rt_free(%53)
+    %54 = const.i64 100
+    %55 = const.i64 200
+    %56 = const.i64 300
+    %57 = const.i64 24
+    %58 = call.ptr @fs_rt_alloc_zeroed(%57)
+    store.i64 %58, 0, %54
+    store.i64 %58, 8, %55
+    store.i64 %58, 16, %56
+    slot i64_arr: ptr
+    slotstore i64_arr, %58
+    %59 = slotload.ptr i64_arr
+    %60 = const.i32 1
+    %61 = const.i32 3
+    %62 = const.i32 0
+    %63 = lt.i32 %60, %62
+    %64 = cvt.bool_to_i32 %63
+    %65 = mul.i32 %64, %61
+    %66 = add.i32 %60, %65
+    %67 = ptradd %59, %66, 8
+    %68 = load.i64 %67, 0
+    call.void @println__int64(%68)
+    %69 = slotload.ptr i64_arr
+    call.void @fs_rt_free(%69)
+    %70 = fconst.f32 1.1
+    %71 = fconst.f32 2.2
+    %72 = fconst.f32 3.3
+    %73 = const.i64 12
+    %74 = call.ptr @fs_rt_alloc_zeroed(%73)
+    store.f32 %74, 0, %70
+    store.f32 %74, 4, %71
+    store.f32 %74, 8, %72
+    slot f32_arr: ptr
+    slotstore f32_arr, %74
+    %75 = slotload.ptr f32_arr
+    %76 = const.i32 0
+    %77 = const.i32 3
+    %78 = const.i32 0
+    %79 = lt.i32 %76, %78
+    %80 = cvt.bool_to_i32 %79
+    %81 = mul.i32 %80, %77
+    %82 = add.i32 %76, %81
+    %83 = ptradd %75, %82, 4
+    %84 = load.f32 %83, 0
+    call.void @println__float32(%84)
+    %85 = slotload.ptr f32_arr
+    %86 = const.i32 2
+    %87 = const.i32 3
+    %88 = const.i32 0
+    %89 = lt.i32 %86, %88
+    %90 = cvt.bool_to_i32 %89
+    %91 = mul.i32 %90, %87
+    %92 = add.i32 %86, %91
+    %93 = ptradd %85, %92, 4
+    %94 = load.f32 %93, 0
+    call.void @println__float32(%94)
+    %95 = slotload.ptr f32_arr
+    call.void @fs_rt_free(%95)
+    %96 = fconst.f64 1.111
+    %97 = fconst.f64 2.222
+    %98 = fconst.f64 3.333
+    %99 = const.i64 24
+    %100 = call.ptr @fs_rt_alloc_zeroed(%99)
+    store.f64 %100, 0, %96
+    store.f64 %100, 8, %97
+    store.f64 %100, 16, %98
+    slot f64_arr: ptr
+    slotstore f64_arr, %100
+    %101 = slotload.ptr f64_arr
+    %102 = const.i32 1
+    %103 = const.i32 3
+    %104 = const.i32 0
+    %105 = lt.i32 %102, %104
+    %106 = cvt.bool_to_i32 %105
+    %107 = mul.i32 %106, %103
+    %108 = add.i32 %102, %107
+    %109 = ptradd %101, %108, 8
+    %110 = load.f64 %109, 0
+    call.void @println__float64(%110)
+    %111 = slotload.ptr f64_arr
+    call.void @fs_rt_free(%111)
+    %112 = strconst "hello"
+    %113 = strconst "world"
+    %114 = strconst "firescript"
+    %115 = const.i64 24
+    %116 = call.ptr @fs_rt_alloc_zeroed(%115)
+    store.ptr<i8> %116, 0, %112
+    store.ptr<i8> %116, 8, %113
+    store.ptr<i8> %116, 16, %114
+    slot str_arr: ptr
+    slotstore str_arr, %116
+    %117 = slotload.ptr str_arr
+    %118 = const.i32 0
+    %119 = const.i32 3
+    %120 = const.i32 0
+    %121 = lt.i32 %118, %120
+    %122 = cvt.bool_to_i32 %121
+    %123 = mul.i32 %122, %119
+    %124 = add.i32 %118, %123
+    %125 = ptradd %117, %124, 8
+    %126 = load.ptr<i8> %125, 0
+    call.void @println__string(%126)
+    %127 = slotload.ptr str_arr
+    %128 = const.i32 2
+    %129 = const.i32 3
+    %130 = const.i32 0
+    %131 = lt.i32 %128, %130
+    %132 = cvt.bool_to_i32 %131
+    %133 = mul.i32 %132, %129
+    %134 = add.i32 %128, %133
+    %135 = ptradd %127, %134, 8
+    %136 = load.ptr<i8> %135, 0
+    call.void @println__string(%136)
+    %137 = const.i32 3
+    call.void @println__int32(%137)
+    %138 = slotload.ptr str_arr
+    call.void @fs_rt_free(%138)
+    %139 = bconst true
+    %140 = bconst false
+    %141 = bconst true
+    %142 = bconst true
+    %143 = const.i64 4
+    %144 = call.ptr @fs_rt_alloc_zeroed(%143)
+    store.bool %144, 0, %139
+    store.bool %144, 1, %140
+    store.bool %144, 2, %141
+    store.bool %144, 3, %142
+    slot bool_arr: ptr
+    slotstore bool_arr, %144
+    %145 = slotload.ptr bool_arr
+    %146 = const.i32 0
+    %147 = const.i32 4
+    %148 = const.i32 0
+    %149 = lt.i32 %146, %148
+    %150 = cvt.bool_to_i32 %149
+    %151 = mul.i32 %150, %147
+    %152 = add.i32 %146, %151
+    %153 = ptradd %145, %152, 1
+    %154 = load.bool %153, 0
+    call.void @println__bool(%154)
+    %155 = slotload.ptr bool_arr
+    %156 = const.i32 1
+    %157 = const.i32 4
+    %158 = const.i32 0
+    %159 = lt.i32 %156, %158
+    %160 = cvt.bool_to_i32 %159
+    %161 = mul.i32 %160, %157
+    %162 = add.i32 %156, %161
+    %163 = ptradd %155, %162, 1
+    %164 = load.bool %163, 0
+    call.void @println__bool(%164)
+    %165 = const.i32 4
+    call.void @println__int32(%165)
+    %166 = slotload.ptr bool_arr
+    call.void @fs_rt_free(%166)
+    %167 = strconst "--- Array Modification ---"
+    call.void @println__string(%167)
+    %168 = const.i32 10
+    %169 = const.i32 20
+    %170 = const.i32 30
+    %171 = const.i64 12
+    %172 = call.ptr @fs_rt_alloc_zeroed(%171)
+    store.i32 %172, 0, %168
+    store.i32 %172, 4, %169
+    store.i32 %172, 8, %170
+    slot mutable: ptr
+    slotstore mutable, %172
+    %173 = slotload.ptr mutable
+    %174 = const.i32 1
+    %175 = const.i32 3
+    %176 = const.i32 0
+    %177 = lt.i32 %174, %176
+    %178 = cvt.bool_to_i32 %177
+    %179 = mul.i32 %178, %175
+    %180 = add.i32 %174, %179
+    %181 = ptradd %173, %180, 4
+    %182 = load.i32 %181, 0
+    call.void @println__int32(%182)
+    %183 = const.i32 99
+    %184 = slotload.ptr mutable
+    %185 = const.i32 1
+    %186 = const.i32 3
+    %187 = const.i32 0
+    %188 = lt.i32 %185, %187
+    %189 = cvt.bool_to_i32 %188
+    %190 = mul.i32 %189, %186
+    %191 = add.i32 %185, %190
+    %192 = ptradd %184, %191, 4
+    store.i32 %192, 0, %183
+    %193 = slotload.ptr mutable
+    %194 = const.i32 1
+    %195 = const.i32 3
+    %196 = const.i32 0
+    %197 = lt.i32 %194, %196
+    %198 = cvt.bool_to_i32 %197
+    %199 = mul.i32 %198, %195
+    %200 = add.i32 %194, %199
+    %201 = ptradd %193, %200, 4
+    %202 = load.i32 %201, 0
+    call.void @println__int32(%202)
+    %203 = slotload.ptr mutable
+    call.void @fs_rt_free(%203)
+    %204 = strconst "--- Array Iteration (for-in) ---"
+    call.void @println__string(%204)
+    %205 = const.i32 5
+    %206 = const.i32 10
+    %207 = const.i32 15
+    %208 = const.i32 20
+    %209 = const.i64 16
+    %210 = call.ptr @fs_rt_alloc_zeroed(%209)
+    store.i32 %210, 0, %205
+    store.i32 %210, 4, %206
+    store.i32 %210, 8, %207
+    store.i32 %210, 12, %208
+    slot nums: ptr
+    slotstore nums, %210
+    %211 = slotload.ptr nums
+    slot __arr_n: ptr
+    slotstore __arr_n, %211
+    %212 = const.i32 0
+    slot __i_n: i32
+    slotstore __i_n, %212
+    jmp L1
+
+  L1:
+    %213 = slotload.i32 __i_n
+    %214 = const.i32 4
+    %215 = lt.i32 %213, %214
+    br %215, L2, L3
+
+  L2:
+    %216 = slotload.ptr __arr_n
+    %217 = slotload.i32 __i_n
+    %218 = const.i32 4
+    %219 = const.i32 0
+    %220 = lt.i32 %217, %219
+    %221 = cvt.bool_to_i32 %220
+    %222 = mul.i32 %221, %218
+    %223 = add.i32 %217, %222
+    %224 = ptradd %216, %223, 4
+    %225 = load.i32 %224, 0
+    slot n: i32
+    slotstore n, %225
+    %226 = slotload.i32 n
+    call.void @println__int32(%226)
+    jmp L4
+
+  L3:
+    %227 = slotload.ptr nums
+    call.void @fs_rt_free(%227)
+    %228 = strconst "--- Array Iteration (C-style for) ---"
+    call.void @println__string(%228)
+    %229 = const.i32 100
+    %230 = const.i32 200
+    %231 = const.i32 300
+    %232 = const.i64 12
+    %233 = call.ptr @fs_rt_alloc_zeroed(%232)
+    store.i32 %233, 0, %229
+    store.i32 %233, 4, %230
+    store.i32 %233, 8, %231
+    slot values: ptr
+    slotstore values, %233
+    %234 = const.i32 0
+    slot i: i32
+    slotstore i, %234
+    jmp L5
+
+  L4:
+    %235 = slotload.i32 __i_n
+    %236 = const.i32 1
+    %237 = add.i32 %235, %236
+    slotstore __i_n, %237
+    jmp L1
+
+  L5:
+    %238 = slotload.i32 i
+    %239 = const.i32 3
+    %240 = lt.i32 %238, %239
+    br %240, L6, L8
+
+  L6:
+    %241 = slotload.ptr values
+    %242 = slotload.i32 i
+    %243 = const.i32 3
+    %244 = const.i32 0
+    %245 = lt.i32 %242, %244
+    %246 = cvt.bool_to_i32 %245
+    %247 = mul.i32 %246, %243
+    %248 = add.i32 %242, %247
+    %249 = ptradd %241, %248, 4
+    %250 = load.i32 %249, 0
+    call.void @println__int32(%250)
+    jmp L7
+
+  L7:
+    %251 = slotload.i32 i
+    %252 = const.i32 1
+    %253 = add.i32 %251, %252
+    slotstore i, %253
+    jmp L5
+
+  L8:
+    %254 = slotload.ptr values
+    call.void @fs_rt_free(%254)
+    %255 = strconst "--- Array Iteration (while) ---"
+    call.void @println__string(%255)
+    %256 = const.i32 7
+    %257 = const.i32 14
+    %258 = const.i32 21
+    %259 = const.i32 28
+    %260 = const.i64 16
+    %261 = call.ptr @fs_rt_alloc_zeroed(%260)
+    store.i32 %261, 0, %256
+    store.i32 %261, 4, %257
+    store.i32 %261, 8, %258
+    store.i32 %261, 12, %259
+    slot data: ptr
+    slotstore data, %261
+    %262 = const.i32 0
+    slot idx: i32
+    slotstore idx, %262
+    jmp L9
+
+  L9:
+    %263 = slotload.i32 idx
+    %264 = const.i32 4
+    %265 = lt.i32 %263, %264
+    br %265, L10, L11
+
+  L10:
+    %266 = slotload.ptr data
+    %267 = slotload.i32 idx
+    %268 = const.i32 4
+    %269 = const.i32 0
+    %270 = lt.i32 %267, %269
+    %271 = cvt.bool_to_i32 %270
+    %272 = mul.i32 %271, %268
+    %273 = add.i32 %267, %272
+    %274 = ptradd %266, %273, 4
+    %275 = load.i32 %274, 0
+    call.void @println__int32(%275)
+    %276 = slotload.i32 idx
+    %277 = const.i32 1
+    %278 = add.i32 %276, %277
+    slotstore idx, %278
+    jmp L9
+
+  L11:
+    %279 = slotload.ptr data
+    call.void @fs_rt_free(%279)
+    %280 = strconst "--- Array in Function ---"
+    call.void @println__string(%280)
+    %281 = const.i32 1
+    %282 = const.i32 2
+    %283 = const.i32 3
+    %284 = const.i32 4
+    %285 = const.i32 5
+    %286 = const.i64 20
+    %287 = call.ptr @fs_rt_alloc_zeroed(%286)
+    store.i32 %287, 0, %281
+    store.i32 %287, 4, %282
+    store.i32 %287, 8, %283
+    store.i32 %287, 12, %284
+    store.i32 %287, 16, %285
+    slot to_sum: ptr
+    slotstore to_sum, %287
+    %288 = slotload.ptr to_sum
+    %289 = const.i32 5
+    %290 = call.i32 @sumArray(%288, %289)
+    slot total: i32
+    slotstore total, %290
+    %291 = slotload.i32 total
+    call.void @println__int32(%291)
+    %292 = strconst "--- Large Array ---"
+    call.void @println__string(%292)
+    %293 = const.i32 1
+    %294 = const.i32 2
+    %295 = const.i32 3
+    %296 = const.i32 4
+    %297 = const.i32 5
+    %298 = const.i32 6
+    %299 = const.i32 7
+    %300 = const.i32 8
+    %301 = const.i32 9
+    %302 = const.i32 10
+    %303 = const.i32 11
+    %304 = const.i32 12
+    %305 = const.i32 13
+    %306 = const.i32 14
+    %307 = const.i32 15
+    %308 = const.i32 16
+    %309 = const.i32 17
+    %310 = const.i32 18
+    %311 = const.i32 19
+    %312 = const.i32 20
+    %313 = const.i64 80
+    %314 = call.ptr @fs_rt_alloc_zeroed(%313)
+    store.i32 %314, 0, %293
+    store.i32 %314, 4, %294
+    store.i32 %314, 8, %295
+    store.i32 %314, 12, %296
+    store.i32 %314, 16, %297
+    store.i32 %314, 20, %298
+    store.i32 %314, 24, %299
+    store.i32 %314, 28, %300
+    store.i32 %314, 32, %301
+    store.i32 %314, 36, %302
+    store.i32 %314, 40, %303
+    store.i32 %314, 44, %304
+    store.i32 %314, 48, %305
+    store.i32 %314, 52, %306
+    store.i32 %314, 56, %307
+    store.i32 %314, 60, %308
+    store.i32 %314, 64, %309
+    store.i32 %314, 68, %310
+    store.i32 %314, 72, %311
+    store.i32 %314, 76, %312
+    slot large: ptr
+    slotstore large, %314
+    %315 = const.i32 20
+    call.void @println__int32(%315)
+    %316 = slotload.ptr large
+    %317 = const.i32 0
+    %318 = const.i32 20
+    %319 = const.i32 0
+    %320 = lt.i32 %317, %319
+    %321 = cvt.bool_to_i32 %320
+    %322 = mul.i32 %321, %318
+    %323 = add.i32 %317, %322
+    %324 = ptradd %316, %323, 4
+    %325 = load.i32 %324, 0
+    call.void @println__int32(%325)
+    %326 = slotload.ptr large
+    %327 = const.i32 19
+    %328 = const.i32 20
+    %329 = const.i32 0
+    %330 = lt.i32 %327, %329
+    %331 = cvt.bool_to_i32 %330
+    %332 = mul.i32 %331, %328
+    %333 = add.i32 %327, %332
+    %334 = ptradd %326, %333, 4
+    %335 = load.i32 %334, 0
+    call.void @println__int32(%335)
+    %336 = slotload.ptr large
+    call.void @fs_rt_free(%336)
+    %337 = strconst "--- Array Bounds ---"
+    call.void @println__string(%337)
+    %338 = const.i32 99
+    %339 = const.i32 88
+    %340 = const.i32 77
+    %341 = const.i64 12
+    %342 = call.ptr @fs_rt_alloc_zeroed(%341)
+    store.i32 %342, 0, %338
+    store.i32 %342, 4, %339
+    store.i32 %342, 8, %340
+    slot bounds_test: ptr
+    slotstore bounds_test, %342
+    %343 = slotload.ptr bounds_test
+    %344 = const.i32 0
+    %345 = const.i32 3
+    %346 = const.i32 0
+    %347 = lt.i32 %344, %346
+    %348 = cvt.bool_to_i32 %347
+    %349 = mul.i32 %348, %345
+    %350 = add.i32 %344, %349
+    %351 = ptradd %343, %350, 4
+    %352 = load.i32 %351, 0
+    call.void @println__int32(%352)
+    %353 = slotload.ptr bounds_test
+    %354 = const.i32 3
+    %355 = const.i32 1
+    %356 = sub.i32 %354, %355
+    %357 = const.i32 3
+    %358 = const.i32 0
+    %359 = lt.i32 %356, %358
+    %360 = cvt.bool_to_i32 %359
+    %361 = mul.i32 %360, %357
+    %362 = add.i32 %356, %361
+    %363 = ptradd %353, %362, 4
+    %364 = load.i32 %363, 0
+    call.void @println__int32(%364)
+    %365 = slotload.ptr bounds_test
+    call.void @fs_rt_free(%365)
+    %366 = strconst "=== All array operation tests passed ==="
+    call.void @println__string(%366)
+    ret
+}
+
+func @println__string(value: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> value
+    %1 = call.ptr<i8> @fs_rt_str_dup(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__int32(value: i32) -> void {
+  L0:
+    %0 = slotload.i32 value
+    %1 = call.ptr<i8> @fs_rt_i32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__int8(value: i8) -> void {
+  L0:
+    %0 = slotload.i8 value
+    %1 = cvt.i8_to_i32 %0
+    %2 = call.ptr<i8> @fs_rt_i32_to_str(%1)
+    %3 = strconst "\n"
+    %4 = call.ptr<i8> @fs_rt_str_concat(%2, %3)
+    call.void @fs_rt_stdout(%4)
+    ret
+}
+
+func @println__int64(value: i64) -> void {
+  L0:
+    %0 = slotload.i64 value
+    %1 = call.ptr<i8> @fs_rt_i64_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__float32(value: f32) -> void {
+  L0:
+    %0 = slotload.f32 value
+    %1 = call.ptr<i8> @fs_rt_f32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__float64(value: f64) -> void {
+  L0:
+    %0 = slotload.f64 value
+    %1 = call.ptr<i8> @fs_rt_f64_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__bool(value: bool) -> void {
+  L0:
+    %0 = slotload.bool value
+    %1 = call.ptr<i8> @fs_rt_bool_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

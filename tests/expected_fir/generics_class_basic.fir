@@ -41,11 +41,11 @@ function main() -> void {
   block_0:
     %0 = IntLiteral(10, int32)
     %1 = IntLiteral(20, int32)
-    %2 = Call(Pair<int32, int32>, [%0, %1], ["own", "own"]) -> Pair<int32, int32>
+    %2 = Call(Pair.Pair, [%0, %1], ["own", "own"]) -> Pair<int32, int32>
     DeclareLocal("p1", Pair<int32, int32>, %2)
     %3 = IntLiteral(42, int32)
     %4 = StringLiteral("hello", string)
-    %5 = Call(Pair<int32, string>, [%3, %4], ["own", "own"]) -> Pair<int32, string>
+    %5 = Call(Pair.Pair, [%3, %4], ["own", "own"]) -> Pair<int32, string>
     DeclareLocal("p2", Pair<int32, string>, %5)
     %6 = LoadVar("p1") -> Pair<int32, int32>
     %7 = LoadField(%6, "first")

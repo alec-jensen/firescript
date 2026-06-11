@@ -1,0 +1,475 @@
+flir module inheritance
+entry @fs_main
+
+struct Person { size: 16, align: 8, kind: class
+  name: ptr<i8> @ 0
+  age: i32 @ 8
+}
+
+struct Student { size: 24, align: 8, kind: class
+  name: ptr<i8> @ 0
+  age: i32 @ 8
+  school: ptr<i8> @ 16
+}
+
+struct A { size: 8, align: 8, kind: class
+  id: ptr<i8> @ 0
+}
+
+struct B { size: 16, align: 8, kind: class
+  id: ptr<i8> @ 0
+  bid: ptr<i8> @ 8
+}
+
+struct C { size: 24, align: 8, kind: class
+  id: ptr<i8> @ 0
+  bid: ptr<i8> @ 8
+  cid: ptr<i8> @ 16
+}
+
+struct D { size: 32, align: 8, kind: class
+  id: ptr<i8> @ 0
+  bid: ptr<i8> @ 8
+  cid: ptr<i8> @ 16
+  did: ptr<i8> @ 24
+}
+
+func @Person__Person(name: ptr<i8>, age: i32) -> ptr<Person> {
+  L0:
+    %0 = const.i64 16
+    %1 = call.ptr<Person> @fs_rt_alloc_zeroed(%0)
+    slot this: ptr<Person>
+    slotstore this, %1
+    %2 = slotload.ptr<i8> name
+    %3 = slotload.ptr<Person> this
+    store.ptr<i8> %3, 0, %2
+    %4 = slotload.i32 age
+    %5 = slotload.ptr<Person> this
+    store.i32 %5, 8, %4
+    %6 = slotload.ptr<Person> this
+    ret %6
+}
+
+func @Person__describe(this: ptr<Person>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<Person> this
+    %1 = load.ptr<i8> %0, 0
+    %2 = strconst " is "
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    %4 = slotload.ptr<Person> this
+    %5 = load.i32 %4, 8
+    %6 = call.ptr<i8> @fs_rt_i32_to_str(%5)
+    %7 = call.ptr<i8> @fs_rt_str_concat(%3, %6)
+    ret %7
+}
+
+func @Student__Student(name: ptr<i8>, age: i32, school: ptr<i8>) -> ptr<Student> {
+  L0:
+    %0 = const.i64 24
+    %1 = call.ptr<Student> @fs_rt_alloc_zeroed(%0)
+    slot this: ptr<Student>
+    slotstore this, %1
+    %2 = slotload.ptr<i8> name
+    %3 = slotload.i32 age
+    %4 = call.ptr<Person> @Person__Person(%2, %3)
+    %5 = slotload.ptr<Student> this
+    %6 = load.ptr<i8> %4, 0
+    store.ptr<i8> %5, 0, %6
+    %7 = load.i32 %4, 8
+    store.i32 %5, 8, %7
+    call.void @fs_rt_free(%4)
+    %8 = slotload.ptr<i8> school
+    %9 = slotload.ptr<Student> this
+    store.ptr<i8> %9, 16, %8
+    %10 = slotload.ptr<Student> this
+    ret %10
+}
+
+func @Student__describe(this: ptr<Student>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<Student> this
+    %1 = load.ptr<i8> %0, 0
+    %2 = strconst " is "
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    %4 = slotload.ptr<Student> this
+    %5 = load.i32 %4, 8
+    %6 = call.ptr<i8> @fs_rt_i32_to_str(%5)
+    %7 = call.ptr<i8> @fs_rt_str_concat(%3, %6)
+    %8 = strconst " at "
+    %9 = call.ptr<i8> @fs_rt_str_concat(%7, %8)
+    %10 = slotload.ptr<Student> this
+    %11 = load.ptr<i8> %10, 16
+    %12 = call.ptr<i8> @fs_rt_str_concat(%9, %11)
+    ret %12
+}
+
+func @A__A(id: ptr<i8>) -> ptr<A> {
+  L0:
+    %0 = const.i64 8
+    %1 = call.ptr<A> @fs_rt_alloc_zeroed(%0)
+    slot this: ptr<A>
+    slotstore this, %1
+    %2 = slotload.ptr<i8> id
+    %3 = slotload.ptr<A> this
+    store.ptr<i8> %3, 0, %2
+    %4 = slotload.ptr<A> this
+    ret %4
+}
+
+func @A__root(this: ptr<A>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<A> this
+    %1 = load.ptr<i8> %0, 0
+    ret %1
+}
+
+func @A__chain(this: ptr<A>) -> ptr<i8> {
+  L0:
+    %0 = strconst "A("
+    %1 = slotload.ptr<A> this
+    %2 = load.ptr<i8> %1, 0
+    %3 = call.ptr<i8> @fs_rt_str_concat(%0, %2)
+    %4 = strconst ")"
+    %5 = call.ptr<i8> @fs_rt_str_concat(%3, %4)
+    ret %5
+}
+
+func @B__B(id: ptr<i8>, bid: ptr<i8>) -> ptr<B> {
+  L0:
+    %0 = const.i64 16
+    %1 = call.ptr<B> @fs_rt_alloc_zeroed(%0)
+    slot this: ptr<B>
+    slotstore this, %1
+    %2 = slotload.ptr<i8> id
+    %3 = call.ptr<A> @A__A(%2)
+    %4 = slotload.ptr<B> this
+    %5 = load.ptr<i8> %3, 0
+    store.ptr<i8> %4, 0, %5
+    call.void @fs_rt_free(%3)
+    %6 = slotload.ptr<i8> bid
+    %7 = slotload.ptr<B> this
+    store.ptr<i8> %7, 8, %6
+    %8 = slotload.ptr<B> this
+    ret %8
+}
+
+func @B__onlyB(this: ptr<B>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<B> this
+    %1 = load.ptr<i8> %0, 8
+    ret %1
+}
+
+func @B__chain(this: ptr<B>) -> ptr<i8> {
+  L0:
+    %0 = strconst "A("
+    %1 = slotload.ptr<B> this
+    %2 = load.ptr<i8> %1, 0
+    %3 = call.ptr<i8> @fs_rt_str_concat(%0, %2)
+    %4 = strconst ")->B("
+    %5 = call.ptr<i8> @fs_rt_str_concat(%3, %4)
+    %6 = slotload.ptr<B> this
+    %7 = load.ptr<i8> %6, 8
+    %8 = call.ptr<i8> @fs_rt_str_concat(%5, %7)
+    %9 = strconst ")"
+    %10 = call.ptr<i8> @fs_rt_str_concat(%8, %9)
+    ret %10
+}
+
+func @B__root(this: ptr<B>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<B> this
+    %1 = load.ptr<i8> %0, 0
+    ret %1
+}
+
+func @C__C(id: ptr<i8>, bid: ptr<i8>, cid: ptr<i8>) -> ptr<C> {
+  L0:
+    %0 = const.i64 24
+    %1 = call.ptr<C> @fs_rt_alloc_zeroed(%0)
+    slot this: ptr<C>
+    slotstore this, %1
+    %2 = slotload.ptr<i8> id
+    %3 = slotload.ptr<i8> bid
+    %4 = call.ptr<B> @B__B(%2, %3)
+    %5 = slotload.ptr<C> this
+    %6 = load.ptr<i8> %4, 0
+    store.ptr<i8> %5, 0, %6
+    %7 = load.ptr<i8> %4, 8
+    store.ptr<i8> %5, 8, %7
+    call.void @fs_rt_free(%4)
+    %8 = slotload.ptr<i8> cid
+    %9 = slotload.ptr<C> this
+    store.ptr<i8> %9, 16, %8
+    %10 = slotload.ptr<C> this
+    ret %10
+}
+
+func @C__onlyC(this: ptr<C>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<C> this
+    %1 = load.ptr<i8> %0, 16
+    ret %1
+}
+
+func @C__chain(this: ptr<C>) -> ptr<i8> {
+  L0:
+    %0 = strconst "A("
+    %1 = slotload.ptr<C> this
+    %2 = load.ptr<i8> %1, 0
+    %3 = call.ptr<i8> @fs_rt_str_concat(%0, %2)
+    %4 = strconst ")->B("
+    %5 = call.ptr<i8> @fs_rt_str_concat(%3, %4)
+    %6 = slotload.ptr<C> this
+    %7 = load.ptr<i8> %6, 8
+    %8 = call.ptr<i8> @fs_rt_str_concat(%5, %7)
+    %9 = strconst ")->C("
+    %10 = call.ptr<i8> @fs_rt_str_concat(%8, %9)
+    %11 = slotload.ptr<C> this
+    %12 = load.ptr<i8> %11, 16
+    %13 = call.ptr<i8> @fs_rt_str_concat(%10, %12)
+    %14 = strconst ")"
+    %15 = call.ptr<i8> @fs_rt_str_concat(%13, %14)
+    ret %15
+}
+
+func @C__onlyB(this: ptr<C>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<C> this
+    %1 = load.ptr<i8> %0, 8
+    ret %1
+}
+
+func @C__root(this: ptr<C>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<C> this
+    %1 = load.ptr<i8> %0, 0
+    ret %1
+}
+
+func @D__D(id: ptr<i8>, bid: ptr<i8>, cid: ptr<i8>, did: ptr<i8>) -> ptr<D> {
+  L0:
+    %0 = const.i64 32
+    %1 = call.ptr<D> @fs_rt_alloc_zeroed(%0)
+    slot this: ptr<D>
+    slotstore this, %1
+    %2 = slotload.ptr<i8> id
+    %3 = slotload.ptr<i8> bid
+    %4 = slotload.ptr<i8> cid
+    %5 = call.ptr<C> @C__C(%2, %3, %4)
+    %6 = slotload.ptr<D> this
+    %7 = load.ptr<i8> %5, 0
+    store.ptr<i8> %6, 0, %7
+    %8 = load.ptr<i8> %5, 8
+    store.ptr<i8> %6, 8, %8
+    %9 = load.ptr<i8> %5, 16
+    store.ptr<i8> %6, 16, %9
+    call.void @fs_rt_free(%5)
+    %10 = slotload.ptr<i8> did
+    %11 = slotload.ptr<D> this
+    store.ptr<i8> %11, 24, %10
+    %12 = slotload.ptr<D> this
+    ret %12
+}
+
+func @D__chain(this: ptr<D>) -> ptr<i8> {
+  L0:
+    %0 = strconst "A("
+    %1 = slotload.ptr<D> this
+    %2 = load.ptr<i8> %1, 0
+    %3 = call.ptr<i8> @fs_rt_str_concat(%0, %2)
+    %4 = strconst ")->B("
+    %5 = call.ptr<i8> @fs_rt_str_concat(%3, %4)
+    %6 = slotload.ptr<D> this
+    %7 = load.ptr<i8> %6, 8
+    %8 = call.ptr<i8> @fs_rt_str_concat(%5, %7)
+    %9 = strconst ")->C("
+    %10 = call.ptr<i8> @fs_rt_str_concat(%8, %9)
+    %11 = slotload.ptr<D> this
+    %12 = load.ptr<i8> %11, 16
+    %13 = call.ptr<i8> @fs_rt_str_concat(%10, %12)
+    %14 = strconst ")->D("
+    %15 = call.ptr<i8> @fs_rt_str_concat(%13, %14)
+    %16 = slotload.ptr<D> this
+    %17 = load.ptr<i8> %16, 24
+    %18 = call.ptr<i8> @fs_rt_str_concat(%15, %17)
+    %19 = strconst ")"
+    %20 = call.ptr<i8> @fs_rt_str_concat(%18, %19)
+    ret %20
+}
+
+func @D__onlyC(this: ptr<D>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<D> this
+    %1 = load.ptr<i8> %0, 16
+    ret %1
+}
+
+func @D__onlyB(this: ptr<D>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<D> this
+    %1 = load.ptr<i8> %0, 8
+    ret %1
+}
+
+func @D__root(this: ptr<D>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<D> this
+    %1 = load.ptr<i8> %0, 0
+    ret %1
+}
+
+func @fs_main() -> void {
+  L0:
+    %0 = strconst "Jane"
+    %1 = const.i32 18
+    %2 = strconst "School"
+    %3 = call.ptr<Student> @Student__Student(%0, %1, %2)
+    slot s: ptr<Student>
+    slotstore s, %3
+    %4 = slotload.ptr<Student> s
+    %5 = call.ptr<i8> @Student__describe(%4)
+    call.void @println__string(%5)
+    %6 = slotload.ptr<Student> s
+    %7 = load.ptr<i8> %6, 0
+    call.void @println__string(%7)
+    %8 = slotload.ptr<Student> s
+    %9 = load.i32 %8, 8
+    call.void @println__int32(%9)
+    %10 = slotload.ptr<Student> s
+    call.void @Student__destroy(%10)
+    %11 = strconst "a"
+    %12 = strconst "b"
+    %13 = strconst "c"
+    %14 = strconst "d"
+    %15 = call.ptr<D> @D__D(%11, %12, %13, %14)
+    slot d: ptr<D>
+    slotstore d, %15
+    %16 = slotload.ptr<D> d
+    %17 = call.ptr<i8> @D__chain(%16)
+    call.void @println__string(%17)
+    %18 = slotload.ptr<D> d
+    %19 = load.ptr<i8> %18, 0
+    call.void @println__string(%19)
+    %20 = slotload.ptr<D> d
+    %21 = load.ptr<i8> %20, 8
+    call.void @println__string(%21)
+    %22 = slotload.ptr<D> d
+    %23 = load.ptr<i8> %22, 16
+    call.void @println__string(%23)
+    %24 = slotload.ptr<D> d
+    %25 = load.ptr<i8> %24, 24
+    call.void @println__string(%25)
+    %26 = slotload.ptr<D> d
+    %27 = call.ptr<i8> @D__root(%26)
+    call.void @println__string(%27)
+    %28 = slotload.ptr<D> d
+    %29 = call.ptr<i8> @D__onlyB(%28)
+    call.void @println__string(%29)
+    %30 = slotload.ptr<D> d
+    %31 = call.ptr<i8> @D__onlyC(%30)
+    call.void @println__string(%31)
+    %32 = slotload.ptr<D> d
+    call.void @D__destroy(%32)
+    ret
+}
+
+func @Student__destroy(self: ptr<Student>) -> void {
+  L0:
+    %0 = slotload.ptr<Student> self
+    %1 = load.ptr<i8> %0, 0
+    %2 = nullconst
+    %3 = ne.ptr %1, %2
+    br %3, L1, L2
+
+  L1:
+    call.void @fs_rt_free(%1)
+    jmp L2
+
+  L2:
+    %4 = slotload.ptr<Student> self
+    %5 = load.ptr<i8> %4, 16
+    %6 = nullconst
+    %7 = ne.ptr %5, %6
+    br %7, L3, L4
+
+  L3:
+    call.void @fs_rt_free(%5)
+    jmp L4
+
+  L4:
+    %8 = slotload.ptr<Student> self
+    call.void @fs_rt_free(%8)
+    ret
+}
+
+func @D__destroy(self: ptr<D>) -> void {
+  L0:
+    %0 = slotload.ptr<D> self
+    %1 = load.ptr<i8> %0, 0
+    %2 = nullconst
+    %3 = ne.ptr %1, %2
+    br %3, L1, L2
+
+  L1:
+    call.void @fs_rt_free(%1)
+    jmp L2
+
+  L2:
+    %4 = slotload.ptr<D> self
+    %5 = load.ptr<i8> %4, 8
+    %6 = nullconst
+    %7 = ne.ptr %5, %6
+    br %7, L3, L4
+
+  L3:
+    call.void @fs_rt_free(%5)
+    jmp L4
+
+  L4:
+    %8 = slotload.ptr<D> self
+    %9 = load.ptr<i8> %8, 16
+    %10 = nullconst
+    %11 = ne.ptr %9, %10
+    br %11, L5, L6
+
+  L5:
+    call.void @fs_rt_free(%9)
+    jmp L6
+
+  L6:
+    %12 = slotload.ptr<D> self
+    %13 = load.ptr<i8> %12, 24
+    %14 = nullconst
+    %15 = ne.ptr %13, %14
+    br %15, L7, L8
+
+  L7:
+    call.void @fs_rt_free(%13)
+    jmp L8
+
+  L8:
+    %16 = slotload.ptr<D> self
+    call.void @fs_rt_free(%16)
+    ret
+}
+
+func @println__string(value: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> value
+    %1 = call.ptr<i8> @fs_rt_str_dup(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__int32(value: i32) -> void {
+  L0:
+    %0 = slotload.i32 value
+    %1 = call.ptr<i8> @fs_rt_i32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

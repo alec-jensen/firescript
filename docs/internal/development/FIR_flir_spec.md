@@ -98,6 +98,43 @@ function unwrap_or_default_Box_String(box: *Box_String, fallback: *String) -> *S
 
 These examples show the key FLIR rule: every high-level language feature that would complicate backend code is already resolved into concrete loads, stores, calls, and jumps.
 
+## Implemented Representation Decisions
+
+These are the concrete layouts the implemented lowering uses:
+
+- **Strings**: `ptr<i8>` to a NUL-terminated, heap-allocated byte buffer.
+  Literals live in read-only data (`strconst`); binding a literal to a local
+  duplicates it (`fs_rt_str_dup`). Concatenation/equality go through
+  `fs_rt_str_concat` / `fs_rt_str_eq`. No refcount header (matches the
+  legacy backend's plain `char*` representation).
+- **Arrays**: `ptr` to a heap buffer of elements; no length header. Lengths
+  are tracked statically per binding; array-typed function parameters get an
+  implicit trailing `<name>_len: i32` parameter (legacy ABI). Generic
+  instantiations do not take length parameters (legacy parity).
+- **Classes**: fields in declaration order, inherited (base-chain) fields
+  first; natural alignment with padding; struct size padded to max field
+  alignment. Owned classes are heap pointers (`ptr<Struct>`), copyable
+  classes are by-value structs. Classes with owned fields get a generated
+  `<Struct>__destroy` function (null-checks each owned field, recursing into
+  owned class fields, then frees self).
+- **Monomorphization**: deterministic name mangling `base__arg1_arg2` (e.g.
+  `Pair__int32_string`, `println__int32`); methods are `Class__T__method`.
+  Reachability-driven from non-generic roots via a FIFO worklist.
+- **Generators**: a frame struct `__gen_<name>` (`_state: i32`, params,
+  locals) plus `<name>__init(frame, args)` and
+  `<name>__next(frame, out) -> bool`. `_state` is 0 initially, k after the
+  k-th yield (the dispatch chain jumps to the matching resume block), and -1
+  when exhausted. Frames live in caller stack slots; `for-in` drives
+  GenNew/GenNext/GenValue.
+- **SyscallResult**: compiler-internal copyable struct
+  `{ status: i32 @ 0, data: ptr<i8> @ 8 }`, returned by value from the
+  `fs_rt_syscall_*` runtime calls.
+- **Runtime ABI**: all runtime entry points are `fs_rt_*` (alloc/free,
+  string ops, numeric<->string conversions, pow, stdout, process args,
+  syscalls). Backends bind these names to the runtime implementation.
+- **Entry**: the user/synthetic `main` lowers to `fs_main`; backends emit a
+  host entry that sets process args, calls `fs_main`, and exits 0.
+
 ## ABI & Backend Notes
 
 FLIR must include stable ABI data (field offsets, sizes, alignments, calling conventions) so that backends can emit correct code without re-evaluating high-level semantics.

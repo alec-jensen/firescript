@@ -27,7 +27,7 @@ function<T> println(value: &T) -> void {
     Return()
 }
 
-function Counter.Counter(this: &mut Counter, start: int32) -> Counter {
+function Counter.Counter(start: int32) -> Counter {
   block_0:
     %0 = Allocate(Counter, [])
     DeclareLocal("this", Counter, %0)
@@ -67,7 +67,7 @@ function Counter.value(this: &Counter) -> int32 {
     Return(%1)
 }
 
-function Pair.Pair(this: &mut Pair, a: string, b: string) -> Pair {
+function Pair.Pair(a: string, b: string) -> Pair {
   block_0:
     %0 = Allocate(Pair, [])
     DeclareLocal("this", Pair, %0)

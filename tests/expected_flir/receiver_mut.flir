@@ -1,0 +1,189 @@
+flir module receiver_mut
+entry @fs_main
+
+struct Counter { size: 4, align: 4, kind: class
+  count: i32 @ 0
+}
+
+struct Pair { size: 16, align: 8, kind: class
+  first: ptr<i8> @ 0
+  second: ptr<i8> @ 8
+}
+
+func @Counter__Counter(start: i32) -> ptr<Counter> {
+  L0:
+    %0 = const.i64 4
+    %1 = call.ptr<Counter> @fs_rt_alloc_zeroed(%0)
+    slot this: ptr<Counter>
+    slotstore this, %1
+    %2 = slotload.i32 start
+    %3 = slotload.ptr<Counter> this
+    store.i32 %3, 0, %2
+    %4 = slotload.ptr<Counter> this
+    ret %4
+}
+
+func @Counter__increment(this: ptr<Counter>) -> void {
+  L0:
+    %0 = slotload.ptr<Counter> this
+    %1 = load.i32 %0, 0
+    %2 = const.i32 1
+    %3 = add.i32 %1, %2
+    %4 = slotload.ptr<Counter> this
+    store.i32 %4, 0, %3
+    ret
+}
+
+func @Counter__add(this: ptr<Counter>, n: i32) -> void {
+  L0:
+    %0 = slotload.ptr<Counter> this
+    %1 = load.i32 %0, 0
+    %2 = slotload.i32 n
+    %3 = add.i32 %1, %2
+    %4 = slotload.ptr<Counter> this
+    store.i32 %4, 0, %3
+    ret
+}
+
+func @Counter__value(this: ptr<Counter>) -> i32 {
+  L0:
+    %0 = slotload.ptr<Counter> this
+    %1 = load.i32 %0, 0
+    ret %1
+}
+
+func @Pair__Pair(a: ptr<i8>, b: ptr<i8>) -> ptr<Pair> {
+  L0:
+    %0 = const.i64 16
+    %1 = call.ptr<Pair> @fs_rt_alloc_zeroed(%0)
+    slot this: ptr<Pair>
+    slotstore this, %1
+    %2 = slotload.ptr<i8> a
+    %3 = slotload.ptr<Pair> this
+    store.ptr<i8> %3, 0, %2
+    %4 = slotload.ptr<i8> b
+    %5 = slotload.ptr<Pair> this
+    store.ptr<i8> %5, 8, %4
+    %6 = slotload.ptr<Pair> this
+    ret %6
+}
+
+func @Pair__swap(this: ptr<Pair>) -> void {
+  L0:
+    %0 = slotload.ptr<Pair> this
+    %1 = load.ptr<i8> %0, 0
+    slot tmp: ptr<i8>
+    slotstore tmp, %1
+    %2 = slotload.ptr<Pair> this
+    %3 = load.ptr<i8> %2, 8
+    %4 = slotload.ptr<Pair> this
+    store.ptr<i8> %4, 0, %3
+    %5 = slotload.ptr<i8> tmp
+    %6 = slotload.ptr<Pair> this
+    store.ptr<i8> %6, 8, %5
+    %7 = slotload.ptr<i8> tmp
+    call.void @fs_rt_free(%7)
+    ret
+}
+
+func @Pair__describe(this: ptr<Pair>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<Pair> this
+    %1 = load.ptr<i8> %0, 0
+    %2 = strconst ","
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    %4 = slotload.ptr<Pair> this
+    %5 = load.ptr<i8> %4, 8
+    %6 = call.ptr<i8> @fs_rt_str_concat(%3, %5)
+    ret %6
+}
+
+func @fs_main() -> void {
+  L0:
+    %0 = const.i32 0
+    %1 = call.ptr<Counter> @Counter__Counter(%0)
+    slot c: ptr<Counter>
+    slotstore c, %1
+    %2 = slotload.ptr<Counter> c
+    call.void @Counter__increment(%2)
+    %3 = slotload.ptr<Counter> c
+    call.void @Counter__increment(%3)
+    %4 = slotload.ptr<Counter> c
+    call.void @Counter__increment(%4)
+    %5 = slotload.ptr<Counter> c
+    %6 = call.i32 @Counter__value(%5)
+    call.void @println__int32(%6)
+    %7 = slotload.ptr<Counter> c
+    %8 = const.i32 10
+    call.void @Counter__add(%7, %8)
+    %9 = slotload.ptr<Counter> c
+    %10 = call.i32 @Counter__value(%9)
+    call.void @println__int32(%10)
+    %11 = slotload.ptr<Counter> c
+    call.void @fs_rt_free(%11)
+    %12 = strconst "hello"
+    %13 = strconst "world"
+    %14 = call.ptr<Pair> @Pair__Pair(%12, %13)
+    slot p: ptr<Pair>
+    slotstore p, %14
+    %15 = slotload.ptr<Pair> p
+    %16 = call.ptr<i8> @Pair__describe(%15)
+    call.void @println__string(%16)
+    %17 = slotload.ptr<Pair> p
+    call.void @Pair__swap(%17)
+    %18 = slotload.ptr<Pair> p
+    %19 = call.ptr<i8> @Pair__describe(%18)
+    call.void @println__string(%19)
+    %20 = slotload.ptr<Pair> p
+    call.void @Pair__destroy(%20)
+    ret
+}
+
+func @Pair__destroy(self: ptr<Pair>) -> void {
+  L0:
+    %0 = slotload.ptr<Pair> self
+    %1 = load.ptr<i8> %0, 0
+    %2 = nullconst
+    %3 = ne.ptr %1, %2
+    br %3, L1, L2
+
+  L1:
+    call.void @fs_rt_free(%1)
+    jmp L2
+
+  L2:
+    %4 = slotload.ptr<Pair> self
+    %5 = load.ptr<i8> %4, 8
+    %6 = nullconst
+    %7 = ne.ptr %5, %6
+    br %7, L3, L4
+
+  L3:
+    call.void @fs_rt_free(%5)
+    jmp L4
+
+  L4:
+    %8 = slotload.ptr<Pair> self
+    call.void @fs_rt_free(%8)
+    ret
+}
+
+func @println__int32(value: i32) -> void {
+  L0:
+    %0 = slotload.i32 value
+    %1 = call.ptr<i8> @fs_rt_i32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__string(value: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> value
+    %1 = call.ptr<i8> @fs_rt_str_dup(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

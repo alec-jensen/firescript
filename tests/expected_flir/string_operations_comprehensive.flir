@@ -1,0 +1,276 @@
+flir module string_operations_comprehensive
+entry @fs_main
+
+func @fs_main() -> void {
+  L0:
+    %0 = strconst "=== String Operation Tests ==="
+    call.void @println__string(%0)
+    %1 = strconst "--- String Basics ---"
+    call.void @println__string(%1)
+    %2 = strconst "Hello"
+    slot s1: ptr<i8>
+    %3 = call.ptr<i8> @fs_rt_str_dup(%2)
+    slotstore s1, %3
+    %4 = strconst "World"
+    slot s2: ptr<i8>
+    %5 = call.ptr<i8> @fs_rt_str_dup(%4)
+    slotstore s2, %5
+    %6 = strconst ""
+    slot empty: ptr<i8>
+    %7 = call.ptr<i8> @fs_rt_str_dup(%6)
+    slotstore empty, %7
+    %8 = slotload.ptr<i8> s1
+    call.void @println__string(%8)
+    %9 = slotload.ptr<i8> s2
+    call.void @println__string(%9)
+    %10 = slotload.ptr<i8> empty
+    call.void @println__string(%10)
+    %11 = slotload.ptr<i8> empty
+    call.void @fs_rt_free(%11)
+    %12 = strconst "--- String Concatenation ---"
+    call.void @println__string(%12)
+    %13 = slotload.ptr<i8> s1
+    %14 = strconst ", "
+    %15 = call.ptr<i8> @fs_rt_str_concat(%13, %14)
+    %16 = slotload.ptr<i8> s2
+    %17 = call.ptr<i8> @fs_rt_str_concat(%15, %16)
+    %18 = strconst "!"
+    %19 = call.ptr<i8> @fs_rt_str_concat(%17, %18)
+    slot greeting: ptr<i8>
+    slotstore greeting, %19
+    %20 = slotload.ptr<i8> s1
+    call.void @fs_rt_free(%20)
+    %21 = slotload.ptr<i8> s2
+    call.void @fs_rt_free(%21)
+    %22 = slotload.ptr<i8> greeting
+    call.void @println__string(%22)
+    %23 = slotload.ptr<i8> greeting
+    call.void @fs_rt_free(%23)
+    %24 = strconst "Line 1"
+    %25 = strconst " "
+    %26 = call.ptr<i8> @fs_rt_str_concat(%24, %25)
+    %27 = strconst "Line 2"
+    %28 = call.ptr<i8> @fs_rt_str_concat(%26, %27)
+    %29 = strconst " "
+    %30 = call.ptr<i8> @fs_rt_str_concat(%28, %29)
+    %31 = strconst "Line 3"
+    %32 = call.ptr<i8> @fs_rt_str_concat(%30, %31)
+    slot multi: ptr<i8>
+    slotstore multi, %32
+    %33 = slotload.ptr<i8> multi
+    call.void @println__string(%33)
+    %34 = slotload.ptr<i8> multi
+    call.void @fs_rt_free(%34)
+    %35 = strconst "--- Special Characters ---"
+    call.void @println__string(%35)
+    %36 = strconst "Line1\nLine2"
+    slot newline: ptr<i8>
+    %37 = call.ptr<i8> @fs_rt_str_dup(%36)
+    slotstore newline, %37
+    %38 = slotload.ptr<i8> newline
+    call.void @println__string(%38)
+    %39 = slotload.ptr<i8> newline
+    call.void @fs_rt_free(%39)
+    %40 = strconst "Col1\tCol2\tCol3"
+    slot tab: ptr<i8>
+    %41 = call.ptr<i8> @fs_rt_str_dup(%40)
+    slotstore tab, %41
+    %42 = slotload.ptr<i8> tab
+    call.void @println__string(%42)
+    %43 = slotload.ptr<i8> tab
+    call.void @fs_rt_free(%43)
+    %44 = strconst "She said \"Hello\""
+    slot quote: ptr<i8>
+    %45 = call.ptr<i8> @fs_rt_str_dup(%44)
+    slotstore quote, %45
+    %46 = slotload.ptr<i8> quote
+    call.void @println__string(%46)
+    %47 = slotload.ptr<i8> quote
+    call.void @fs_rt_free(%47)
+    %48 = strconst "Path\\to\\file"
+    slot backslash: ptr<i8>
+    %49 = call.ptr<i8> @fs_rt_str_dup(%48)
+    slotstore backslash, %49
+    %50 = slotload.ptr<i8> backslash
+    call.void @println__string(%50)
+    %51 = slotload.ptr<i8> backslash
+    call.void @fs_rt_free(%51)
+    %52 = strconst "--- String Comparison ---"
+    call.void @println__string(%52)
+    %53 = strconst "apple"
+    slot a: ptr<i8>
+    %54 = call.ptr<i8> @fs_rt_str_dup(%53)
+    slotstore a, %54
+    %55 = strconst "apple"
+    slot b: ptr<i8>
+    %56 = call.ptr<i8> @fs_rt_str_dup(%55)
+    slotstore b, %56
+    %57 = strconst "banana"
+    slot c: ptr<i8>
+    %58 = call.ptr<i8> @fs_rt_str_dup(%57)
+    slotstore c, %58
+    %59 = slotload.ptr<i8> a
+    %60 = slotload.ptr<i8> b
+    %61 = call.bool @fs_rt_str_eq(%59, %60)
+    call.void @println__bool(%61)
+    %62 = slotload.ptr<i8> b
+    call.void @fs_rt_free(%62)
+    %63 = slotload.ptr<i8> a
+    %64 = slotload.ptr<i8> c
+    %65 = call.bool @fs_rt_str_eq(%63, %64)
+    call.void @println__bool(%65)
+    %66 = slotload.ptr<i8> a
+    %67 = slotload.ptr<i8> c
+    %68 = call.bool @fs_rt_str_eq(%66, %67)
+    %69 = not %68
+    call.void @println__bool(%69)
+    %70 = slotload.ptr<i8> a
+    call.void @fs_rt_free(%70)
+    %71 = slotload.ptr<i8> c
+    call.void @fs_rt_free(%71)
+    %72 = strconst "--- String with Numbers ---"
+    call.void @println__string(%72)
+    %73 = strconst "12345"
+    slot num_str: ptr<i8>
+    %74 = call.ptr<i8> @fs_rt_str_dup(%73)
+    slotstore num_str, %74
+    %75 = slotload.ptr<i8> num_str
+    call.void @println__string(%75)
+    %76 = slotload.ptr<i8> num_str
+    call.void @fs_rt_free(%76)
+    %77 = strconst "--- Unicode Characters ---"
+    call.void @println__string(%77)
+    %78 = strconst "ðŸ”¥"
+    slot emoji: ptr<i8>
+    %79 = call.ptr<i8> @fs_rt_str_dup(%78)
+    slotstore emoji, %79
+    %80 = slotload.ptr<i8> emoji
+    call.void @println__string(%80)
+    %81 = slotload.ptr<i8> emoji
+    call.void @fs_rt_free(%81)
+    %82 = strconst "cafÃ©"
+    slot accents: ptr<i8>
+    %83 = call.ptr<i8> @fs_rt_str_dup(%82)
+    slotstore accents, %83
+    %84 = slotload.ptr<i8> accents
+    call.void @println__string(%84)
+    %85 = slotload.ptr<i8> accents
+    call.void @fs_rt_free(%85)
+    %86 = strconst "--- String in Expressions ---"
+    call.void @println__string(%86)
+    %87 = const.i32 5
+    slot count: i32
+    slotstore count, %87
+    %88 = strconst "Count: "
+    %89 = slotload.i32 count
+    %90 = call.ptr<i8> @fs_rt_i32_to_str(%89)
+    %91 = call.ptr<i8> @fs_rt_str_concat(%88, %90)
+    slot result: ptr<i8>
+    slotstore result, %91
+    %92 = slotload.ptr<i8> result
+    call.void @println__string(%92)
+    %93 = slotload.ptr<i8> result
+    call.void @fs_rt_free(%93)
+    %94 = strconst "--- String Methods ---"
+    call.void @println__string(%94)
+    %95 = strconst "hello"
+    slot upper_test: ptr<i8>
+    %96 = call.ptr<i8> @fs_rt_str_dup(%95)
+    slotstore upper_test, %96
+    %97 = strconst "WORLD"
+    slot lower_test: ptr<i8>
+    %98 = call.ptr<i8> @fs_rt_str_dup(%97)
+    slotstore lower_test, %98
+    %99 = strconst "--- Long Strings ---"
+    call.void @println__string(%99)
+    %100 = strconst "This is a very long string that contains many words and characters to test how the compiler and runtime handle longer string values."
+    slot long_str: ptr<i8>
+    %101 = call.ptr<i8> @fs_rt_str_dup(%100)
+    slotstore long_str, %101
+    %102 = slotload.ptr<i8> long_str
+    call.void @println__string(%102)
+    %103 = slotload.ptr<i8> long_str
+    call.void @fs_rt_free(%103)
+    %104 = strconst "--- String Variables ---"
+    call.void @println__string(%104)
+    %105 = strconst "Alice"
+    slot name: ptr<i8>
+    %106 = call.ptr<i8> @fs_rt_str_dup(%105)
+    slotstore name, %106
+    %107 = strconst "30"
+    slot age_str: ptr<i8>
+    %108 = call.ptr<i8> @fs_rt_str_dup(%107)
+    slotstore age_str, %108
+    %109 = strconst "Name: "
+    %110 = slotload.ptr<i8> name
+    %111 = call.ptr<i8> @fs_rt_str_concat(%109, %110)
+    %112 = strconst ", Age: "
+    %113 = call.ptr<i8> @fs_rt_str_concat(%111, %112)
+    %114 = slotload.ptr<i8> age_str
+    %115 = call.ptr<i8> @fs_rt_str_concat(%113, %114)
+    slot info: ptr<i8>
+    slotstore info, %115
+    %116 = slotload.ptr<i8> name
+    call.void @fs_rt_free(%116)
+    %117 = slotload.ptr<i8> age_str
+    call.void @fs_rt_free(%117)
+    %118 = slotload.ptr<i8> info
+    call.void @println__string(%118)
+    %119 = slotload.ptr<i8> info
+    call.void @fs_rt_free(%119)
+    %120 = strconst "--- Repeated Concatenation ---"
+    call.void @println__string(%120)
+    %121 = strconst ""
+    slot build: ptr<i8>
+    %122 = call.ptr<i8> @fs_rt_str_dup(%121)
+    slotstore build, %122
+    %123 = slotload.ptr<i8> build
+    call.void @fs_rt_free(%123)
+    %124 = slotload.ptr<i8> build
+    %125 = strconst "a"
+    %126 = call.ptr<i8> @fs_rt_str_concat(%124, %125)
+    slotstore build, %126
+    %127 = slotload.ptr<i8> build
+    call.void @fs_rt_free(%127)
+    %128 = slotload.ptr<i8> build
+    %129 = strconst "b"
+    %130 = call.ptr<i8> @fs_rt_str_concat(%128, %129)
+    slotstore build, %130
+    %131 = slotload.ptr<i8> build
+    call.void @fs_rt_free(%131)
+    %132 = slotload.ptr<i8> build
+    %133 = strconst "c"
+    %134 = call.ptr<i8> @fs_rt_str_concat(%132, %133)
+    slotstore build, %134
+    %135 = slotload.ptr<i8> build
+    call.void @println__string(%135)
+    %136 = slotload.ptr<i8> build
+    call.void @fs_rt_free(%136)
+    %137 = strconst "=== All string operation tests passed ==="
+    call.void @println__string(%137)
+    %138 = slotload.ptr<i8> upper_test
+    call.void @fs_rt_free(%138)
+    %139 = slotload.ptr<i8> lower_test
+    call.void @fs_rt_free(%139)
+    ret
+}
+
+func @println__string(value: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> value
+    %1 = call.ptr<i8> @fs_rt_str_dup(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__bool(value: bool) -> void {
+  L0:
+    %0 = slotload.bool value
+    %1 = call.ptr<i8> @fs_rt_bool_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

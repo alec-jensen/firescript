@@ -1,0 +1,58 @@
+flir module classes_methods
+entry @fs_main
+
+struct Point { size: 8, align: 4, kind: class
+  x: i32 @ 0
+  y: i32 @ 4
+}
+
+func @Point__Point(x: i32, y: i32) -> ptr<Point> {
+  L0:
+    %0 = const.i64 8
+    %1 = call.ptr<Point> @fs_rt_alloc_zeroed(%0)
+    slot this: ptr<Point>
+    slotstore this, %1
+    %2 = slotload.i32 x
+    %3 = slotload.ptr<Point> this
+    store.i32 %3, 0, %2
+    %4 = slotload.i32 y
+    %5 = slotload.ptr<Point> this
+    store.i32 %5, 4, %4
+    %6 = slotload.ptr<Point> this
+    ret %6
+}
+
+func @Point__sum(this: ptr<Point>) -> i32 {
+  L0:
+    %0 = slotload.ptr<Point> this
+    %1 = load.i32 %0, 0
+    %2 = slotload.ptr<Point> this
+    %3 = load.i32 %2, 4
+    %4 = add.i32 %1, %3
+    ret %4
+}
+
+func @fs_main() -> void {
+  L0:
+    %0 = const.i32 2
+    %1 = const.i32 3
+    %2 = call.ptr<Point> @Point__Point(%0, %1)
+    slot p: ptr<Point>
+    slotstore p, %2
+    %3 = slotload.ptr<Point> p
+    %4 = call.i32 @Point__sum(%3)
+    call.void @println__int32(%4)
+    %5 = slotload.ptr<Point> p
+    call.void @fs_rt_free(%5)
+    ret
+}
+
+func @println__int32(value: i32) -> void {
+  L0:
+    %0 = slotload.i32 value
+    %1 = call.ptr<i8> @fs_rt_i32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

@@ -144,9 +144,11 @@ def resolve_args_path(source_path: str) -> Optional[str]:
     return None
 
 
-def compile_fire(src: str, timeout: Optional[float]) -> None:
+def compile_fire(src: str, timeout: Optional[float], backend: str = "c-legacy") -> None:
     # Invoke the firescript compiler to build the native binary into build/<basename>
     cmd = [sys.executable, os.path.join(REPO_ROOT, "firescript", "main.py"), src]
+    if backend != "c-legacy":
+        cmd.extend(["--backend", backend])
     try:
         code, out, err = run_cmd(cmd, cwd=REPO_ROOT, check=False, timeout=timeout)
     except subprocess.TimeoutExpired as e:
@@ -245,6 +247,7 @@ def run_golden(
     compile_timeout: Optional[float],
     jobs: int,
     return_stats: bool = False,
+    backend: str = "c-legacy",
 ) -> int | Tuple[int, SuiteStats]:
 
     def run_one(tc: TestCase):
@@ -252,7 +255,7 @@ def run_golden(
             _log("CASE", tc.source, color_code="36")  # cyan
             if verbose:
                 _log("BUILD", tc.source, color_code="90")  # dim
-            compile_fire(tc.source, timeout=compile_timeout)
+            compile_fire(tc.source, timeout=compile_timeout, backend=backend)
             if verbose:
                 _log("RUN", tc.binary, color_code="90")  # dim
             args = read_args_file(tc.args_path) if tc.args_path else None
@@ -363,6 +366,12 @@ def main():
         default=max(1, os.cpu_count() or 1),
         help="Number of parallel test workers (default: number of processors)",
     )
+    ap.add_argument(
+        "--backend",
+        choices=["c-legacy", "c-fir", "asm"],
+        default="c-legacy",
+        help="Compiler backend to test (default: c-legacy)",
+    )
     args = ap.parse_args()
 
     patterns = args.glob if args.glob else DEFAULT_SEARCH
@@ -385,6 +394,7 @@ def main():
         timeout=args.timeout,
         compile_timeout=args.compile_timeout,
         jobs=args.jobs,
+        backend=args.backend,
     )
     if isinstance(rc, tuple):
         rc = rc[0]

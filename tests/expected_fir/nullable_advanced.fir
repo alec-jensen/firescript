@@ -23,7 +23,7 @@ function<T> println(value: &T) -> void {
     Return()
 }
 
-function Config.Config(this: &mut Config, host: string, port: string) -> Config {
+function Config.Config(host: string, port: string) -> Config {
   block_0:
     %0 = Allocate(Config, [])
     DeclareLocal("this", Config, %0)

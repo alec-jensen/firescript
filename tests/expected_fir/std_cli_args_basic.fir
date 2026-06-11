@@ -488,8 +488,8 @@ function option_value(name: string, fallback: string) -> string {
     %53 = LoadVar("i") -> int32
     %54 = IntLiteral(1, int32)
     %55 = BinaryOp("+", %53, %54)
-    DeclareLocal("next", int32, %55)
-    %56 = LoadVar("next") -> int32
+    DeclareLocal("next__2", int32, %55)
+    %56 = LoadVar("next__2") -> int32
     %57 = Call(argc, [], []) -> int32
     %58 = BinaryOp("<", %56, %57)
     Branch(%58, block_15, block_14)
@@ -502,10 +502,10 @@ function option_value(name: string, fallback: string) -> string {
     Jump(block_1)
 
   block_15:
-    %62 = LoadVar("next") -> int32
+    %62 = LoadVar("next__2") -> int32
     %63 = Call(argv_at, [%62], ["own"]) -> string
-    DeclareLocal("next_value", string, %63)
-    %64 = LoadVar("next_value") -> string
+    DeclareLocal("next_value__2", string, %63)
+    %64 = LoadVar("next_value__2") -> string
     %65 = Call(_looks_like_option_token, [%64], ["borrow"]) -> bool
     %66 = BoolLiteral(false, bool)
     %67 = BinaryOp("==", %65, %66)
@@ -515,7 +515,7 @@ function option_value(name: string, fallback: string) -> string {
     Jump(block_14)
 
   block_17:
-    %68 = LoadVar("next_value") -> string
+    %68 = LoadVar("next_value__2") -> string
     Return(%68)
 
   block_18:
@@ -653,8 +653,8 @@ function option_value_alias(long_name: string, short_name: string, fallback: str
     %53 = LoadVar("i") -> int32
     %54 = IntLiteral(1, int32)
     %55 = BinaryOp("+", %53, %54)
-    DeclareLocal("next", int32, %55)
-    %56 = LoadVar("next") -> int32
+    DeclareLocal("next__2", int32, %55)
+    %56 = LoadVar("next__2") -> int32
     %57 = Call(argc, [], []) -> int32
     %58 = BinaryOp("<", %56, %57)
     Branch(%58, block_15, block_14)
@@ -667,10 +667,10 @@ function option_value_alias(long_name: string, short_name: string, fallback: str
     Jump(block_1)
 
   block_15:
-    %62 = LoadVar("next") -> int32
+    %62 = LoadVar("next__2") -> int32
     %63 = Call(argv_at, [%62], ["own"]) -> string
-    DeclareLocal("next_value", string, %63)
-    %64 = LoadVar("next_value") -> string
+    DeclareLocal("next_value__2", string, %63)
+    %64 = LoadVar("next_value__2") -> string
     %65 = Call(_looks_like_option_token, [%64], ["borrow"]) -> bool
     %66 = BoolLiteral(false, bool)
     %67 = BinaryOp("==", %65, %66)
@@ -680,7 +680,7 @@ function option_value_alias(long_name: string, short_name: string, fallback: str
     Jump(block_14)
 
   block_17:
-    %68 = LoadVar("next_value") -> string
+    %68 = LoadVar("next_value__2") -> string
     Return(%68)
 
   block_18:
@@ -971,8 +971,8 @@ function positional_value(index: int32, fallback: string) -> string {
     %91 = LoadVar("i") -> int32
     %92 = IntLiteral(1, int32)
     %93 = BinaryOp("+", %91, %92)
-    DeclareLocal("next", int32, %93)
-    %94 = LoadVar("next") -> int32
+    DeclareLocal("next__2", int32, %93)
+    %94 = LoadVar("next__2") -> int32
     %95 = Call(argc, [], []) -> int32
     %96 = BinaryOp("<", %94, %95)
     Branch(%96, block_29, block_28)
@@ -985,17 +985,17 @@ function positional_value(index: int32, fallback: string) -> string {
     Jump(block_3)
 
   block_29:
-    %100 = LoadVar("next") -> int32
+    %100 = LoadVar("next__2") -> int32
     %101 = Call(argv_at, [%100], ["own"]) -> string
-    DeclareLocal("next_value", string, %101)
-    %102 = LoadVar("next_value") -> string
+    DeclareLocal("next_value__2", string, %101)
+    %102 = LoadVar("next_value__2") -> string
     %103 = Call(_looks_like_option_token, [%102], ["borrow"]) -> bool
     %104 = BoolLiteral(false, bool)
     %105 = BinaryOp("==", %103, %104)
     Branch(%105, block_31, block_30)
 
   block_30:
-    %106 = LoadVar("next_value") -> string
+    %106 = LoadVar("next_value__2") -> string
     Drop(%106)
     Jump(block_28)
 
@@ -1004,7 +1004,7 @@ function positional_value(index: int32, fallback: string) -> string {
     %108 = IntLiteral(2, int32)
     %109 = BinaryOp("+", %107, %108)
     StoreVar("i", %109)
-    %110 = LoadVar("next_value") -> string
+    %110 = LoadVar("next_value__2") -> string
     Drop(%110)
     Jump(block_3)
 

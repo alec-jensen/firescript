@@ -1,0 +1,60 @@
+flir module move_semantics_test
+entry @fs_main
+
+func @take_ownership(s: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> s
+    call.void @println__string(%0)
+    ret
+}
+
+func @borrow_only(s: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> s
+    call.void @println__string(%0)
+    ret
+}
+
+func @fs_main() -> void {
+  L0:
+    %0 = strconst "hello"
+    slot s1: ptr<i8>
+    %1 = call.ptr<i8> @fs_rt_str_dup(%0)
+    slotstore s1, %1
+    %2 = slotload.ptr<i8> s1
+    call.void @take_ownership(%2)
+    %3 = strconst "world"
+    slot s2: ptr<i8>
+    %4 = call.ptr<i8> @fs_rt_str_dup(%3)
+    slotstore s2, %4
+    %5 = slotload.ptr<i8> s2
+    call.void @borrow_only(%5)
+    %6 = slotload.ptr<i8> s2
+    call.void @println__string(%6)
+    %7 = slotload.ptr<i8> s2
+    call.void @fs_rt_free(%7)
+    %8 = strconst "test"
+    slot s3: ptr<i8>
+    %9 = call.ptr<i8> @fs_rt_str_dup(%8)
+    slotstore s3, %9
+    %10 = slotload.ptr<i8> s3
+    slot s4: ptr<i8>
+    slotstore s4, %10
+    %11 = slotload.ptr<i8> s3
+    call.void @fs_rt_free(%11)
+    %12 = slotload.ptr<i8> s4
+    call.void @println__string(%12)
+    %13 = slotload.ptr<i8> s4
+    call.void @fs_rt_free(%13)
+    ret
+}
+
+func @println__string(value: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> value
+    %1 = call.ptr<i8> @fs_rt_str_dup(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

@@ -1,0 +1,105 @@
+flir module generics_class_basic
+entry @fs_main
+
+struct Pair__int32_int32 { size: 8, align: 4, kind: class
+  first: i32 @ 0
+  second: i32 @ 4
+}
+
+struct Pair__int32_string { size: 16, align: 8, kind: class
+  first: i32 @ 0
+  second: ptr<i8> @ 8
+}
+
+func @fs_main() -> void {
+  L0:
+    %0 = const.i32 10
+    %1 = const.i32 20
+    %2 = call.%Pair__int32_int32 @Pair__Pair__int32_int32(%0, %1)
+    slot p1: %Pair__int32_int32
+    slotstore p1, %2
+    %3 = const.i32 42
+    %4 = strconst "hello"
+    %5 = call.%Pair__int32_string @Pair__Pair__int32_string(%3, %4)
+    slot p2: %Pair__int32_string
+    slotstore p2, %5
+    %6 = slotload.%Pair__int32_int32 p1
+    %7 = slotaddr p1
+    %8 = load.i32 %7, 0
+    call.void @println__int32(%8)
+    %9 = slotload.%Pair__int32_int32 p1
+    %10 = slotaddr p1
+    %11 = load.i32 %10, 4
+    call.void @println__int32(%11)
+    %12 = slotload.%Pair__int32_string p2
+    %13 = slotaddr p2
+    %14 = load.i32 %13, 0
+    call.void @println__int32(%14)
+    %15 = slotload.%Pair__int32_string p2
+    %16 = slotaddr p2
+    %17 = load.ptr<i8> %16, 8
+    call.void @println__string(%17)
+    ret
+}
+
+func @Pair__Pair__int32_int32(first: i32, second: i32) -> %Pair__int32_int32 {
+  L0:
+    slot __agg1: %Pair__int32_int32
+    %0 = slotaddr __agg1
+    %1 = const.i64 8
+    call.void @fs_rt_zero_memory(%0, %1)
+    %2 = slotload.%Pair__int32_int32 __agg1
+    slot this: %Pair__int32_int32
+    slotstore this, %2
+    %3 = slotload.i32 first
+    %4 = slotload.%Pair__int32_int32 this
+    %5 = slotaddr this
+    store.i32 %5, 0, %3
+    %6 = slotload.i32 second
+    %7 = slotload.%Pair__int32_int32 this
+    %8 = slotaddr this
+    store.i32 %8, 4, %6
+    %9 = slotload.%Pair__int32_int32 this
+    ret %9
+}
+
+func @Pair__Pair__int32_string(first: i32, second: ptr<i8>) -> %Pair__int32_string {
+  L0:
+    slot __agg1: %Pair__int32_string
+    %0 = slotaddr __agg1
+    %1 = const.i64 16
+    call.void @fs_rt_zero_memory(%0, %1)
+    %2 = slotload.%Pair__int32_string __agg1
+    slot this: %Pair__int32_string
+    slotstore this, %2
+    %3 = slotload.i32 first
+    %4 = slotload.%Pair__int32_string this
+    %5 = slotaddr this
+    store.i32 %5, 0, %3
+    %6 = slotload.ptr<i8> second
+    %7 = slotload.%Pair__int32_string this
+    %8 = slotaddr this
+    store.ptr<i8> %8, 8, %6
+    %9 = slotload.%Pair__int32_string this
+    ret %9
+}
+
+func @println__int32(value: i32) -> void {
+  L0:
+    %0 = slotload.i32 value
+    %1 = call.ptr<i8> @fs_rt_i32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @println__string(value: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> value
+    %1 = call.ptr<i8> @fs_rt_str_dup(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}

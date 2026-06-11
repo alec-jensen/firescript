@@ -1,0 +1,203 @@
+flir module generics_basic
+entry @fs_main
+
+func @fs_main() -> void {
+  L0:
+    %0 = const.i32 10
+    slot a: i32
+    slotstore a, %0
+    %1 = const.i32 20
+    slot b: i32
+    slotstore b, %1
+    %2 = slotload.i32 a
+    %3 = slotload.i32 b
+    %4 = call.i32 @max__int32(%2, %3)
+    slot maxVal: i32
+    slotstore maxVal, %4
+    %5 = slotload.i32 maxVal
+    call.void @println__int32(%5)
+    %6 = slotload.i32 a
+    %7 = slotload.i32 b
+    %8 = call.i32 @min__int32(%6, %7)
+    slot minVal: i32
+    slotstore minVal, %8
+    %9 = slotload.i32 minVal
+    call.void @println__int32(%9)
+    %10 = const.i64 100
+    slot c: i64
+    slotstore c, %10
+    %11 = const.i64 50
+    slot d: i64
+    slotstore d, %11
+    %12 = slotload.i64 c
+    %13 = slotload.i64 d
+    %14 = call.i64 @max__int64(%12, %13)
+    slot maxVal64: i64
+    slotstore maxVal64, %14
+    %15 = slotload.i64 maxVal64
+    call.void @println__int64(%15)
+    %16 = fconst.f32 3.14
+    slot e: f32
+    slotstore e, %16
+    %17 = fconst.f32 2.71
+    slot f: f32
+    slotstore f, %17
+    %18 = slotload.f32 e
+    %19 = slotload.f32 f
+    %20 = call.f32 @max__float32(%18, %19)
+    slot maxFloat: f32
+    slotstore maxFloat, %20
+    %21 = slotload.f32 maxFloat
+    call.void @println__float32(%21)
+    %22 = const.i32 42
+    %23 = neg.i32 %22
+    slot negInt: i32
+    slotstore negInt, %23
+    %24 = slotload.i32 negInt
+    %25 = const.i32 0
+    %26 = call.i32 @abs__int32(%24, %25)
+    slot absInt: i32
+    slotstore absInt, %26
+    %27 = slotload.i32 absInt
+    call.void @println__int32(%27)
+    %28 = const.i64 999
+    %29 = neg.i64 %28
+    slot negInt64: i64
+    slotstore negInt64, %29
+    %30 = slotload.i64 negInt64
+    %31 = const.i64 0
+    %32 = call.i64 @abs__int64(%30, %31)
+    slot absInt64: i64
+    slotstore absInt64, %32
+    %33 = slotload.i64 absInt64
+    call.void @println__int64(%33)
+    ret
+}
+
+func @max__int32(a: i32, b: i32) -> i32 {
+  L0:
+    %0 = slotload.i32 a
+    %1 = slotload.i32 b
+    %2 = gt.i32 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = slotload.i32 b
+    ret %3
+
+  L2:
+    %4 = slotload.i32 a
+    ret %4
+}
+
+func @println__int32(value: i32) -> void {
+  L0:
+    %0 = slotload.i32 value
+    %1 = call.ptr<i8> @fs_rt_i32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @min__int32(a: i32, b: i32) -> i32 {
+  L0:
+    %0 = slotload.i32 a
+    %1 = slotload.i32 b
+    %2 = lt.i32 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = slotload.i32 b
+    ret %3
+
+  L2:
+    %4 = slotload.i32 a
+    ret %4
+}
+
+func @max__int64(a: i64, b: i64) -> i64 {
+  L0:
+    %0 = slotload.i64 a
+    %1 = slotload.i64 b
+    %2 = gt.i64 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = slotload.i64 b
+    ret %3
+
+  L2:
+    %4 = slotload.i64 a
+    ret %4
+}
+
+func @println__int64(value: i64) -> void {
+  L0:
+    %0 = slotload.i64 value
+    %1 = call.ptr<i8> @fs_rt_i64_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @max__float32(a: f32, b: f32) -> f32 {
+  L0:
+    %0 = slotload.f32 a
+    %1 = slotload.f32 b
+    %2 = gt.f32 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = slotload.f32 b
+    ret %3
+
+  L2:
+    %4 = slotload.f32 a
+    ret %4
+}
+
+func @println__float32(value: f32) -> void {
+  L0:
+    %0 = slotload.f32 value
+    %1 = call.ptr<i8> @fs_rt_f32_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
+    call.void @fs_rt_stdout(%3)
+    ret
+}
+
+func @abs__int32(x: i32, zero: i32) -> i32 {
+  L0:
+    %0 = slotload.i32 x
+    %1 = slotload.i32 zero
+    %2 = lt.i32 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = slotload.i32 x
+    ret %3
+
+  L2:
+    %4 = slotload.i32 x
+    %5 = neg.i32 %4
+    ret %5
+}
+
+func @abs__int64(x: i64, zero: i64) -> i64 {
+  L0:
+    %0 = slotload.i64 x
+    %1 = slotload.i64 zero
+    %2 = lt.i64 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = slotload.i64 x
+    ret %3
+
+  L2:
+    %4 = slotload.i64 x
+    %5 = neg.i64 %4
+    ret %5
+}

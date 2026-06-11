@@ -51,7 +51,7 @@ function<T> println(value: &T) -> void {
     Return()
 }
 
-function Person.Person(this: &mut Person, name: string, age: int32) -> Person {
+function Person.Person(name: string, age: int32) -> Person {
   block_0:
     %0 = Allocate(Person, [])
     DeclareLocal("this", Person, %0)
@@ -78,7 +78,7 @@ function Person.describe(this: &Person) -> string {
     Return(%7)
 }
 
-function Student.Student(this: &mut Student, name: string, age: int32, school: string) -> Student {
+function Student.Student(name: string, age: int32, school: string) -> Student {
   block_0:
     %0 = Allocate(Student, [])
     DeclareLocal("this", Student, %0)
@@ -116,7 +116,7 @@ function Student.describe(this: &Student) -> string {
     Return(%12)
 }
 
-function A.A(this: &mut A, id: string) -> A {
+function A.A(id: string) -> A {
   block_0:
     %0 = Allocate(A, [])
     DeclareLocal("this", A, %0)
@@ -145,7 +145,7 @@ function A.chain(this: &A) -> string {
     Return(%5)
 }
 
-function B.B(this: &mut B, id: string, bid: string) -> B {
+function B.B(id: string, bid: string) -> B {
   block_0:
     %0 = Allocate(B, [])
     DeclareLocal("this", B, %0)
@@ -192,7 +192,7 @@ function B.root(this: &B) -> string {
     Return(%1)
 }
 
-function C.C(this: &mut C, id: string, bid: string, cid: string) -> C {
+function C.C(id: string, bid: string, cid: string) -> C {
   block_0:
     %0 = Allocate(C, [])
     DeclareLocal("this", C, %0)
@@ -254,7 +254,7 @@ function C.root(this: &C) -> string {
     Return(%1)
 }
 
-function D.D(this: &mut D, id: string, bid: string, cid: string, did: string) -> D {
+function D.D(id: string, bid: string, cid: string, did: string) -> D {
   block_0:
     %0 = Allocate(D, [])
     DeclareLocal("this", D, %0)
