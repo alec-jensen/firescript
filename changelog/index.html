@@ -1902,6 +1902,8 @@
 <h2 id="currently-in-development">Currently in development<a class="headerlink" href="#currently-in-development" title="Permanent link">&para;</a></h2>
 <h3 id="new-language-features">New Language Features<a class="headerlink" href="#new-language-features" title="Permanent link">&para;</a></h3>
 <ul>
+<li>Added generator functions with <code>generator&lt;T&gt;</code> syntax: lazy iterables that produce values on demand via <code>yield</code>. Generators compile to C state-machine structs. User-defined generators and <code>for-in</code> loops over generators are both supported.</li>
+<li>Added <code>@firescript/std.ranges</code> standard library module with <code>range(end)</code>, <code>rangeFrom(start, end)</code>, and <code>rangeStep(start, end, step)</code> generators, enabling <code>for (int32 i in range(5))</code> style loops.</li>
 <li>Added <code>char</code> type — a copyable, stack-allocated scalar representing a single character. Initialized with single-character string literals (<code>char c = "A"</code>).</li>
 <li>Added character literal syntax with single quotes (<code>'A'</code>, <code>'\n'</code>).</li>
 <li>Added <code>&amp;mut this</code> receiver syntax for mutable borrowing in methods. Methods can now declare <code>&amp;this</code> for read-only access or <code>&amp;mut this</code> for mutable access, with compiler enforcement preventing field mutation through read-only receivers.</li>
