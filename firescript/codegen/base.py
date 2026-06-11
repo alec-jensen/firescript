@@ -97,6 +97,8 @@ class CCodeGeneratorBase:
             "syscall_move",
         }
         
+        # Generator type registry: gen_name -> (struct_name, yield_type)
+        self.generator_types: dict[str, tuple[str, str]] = {}
         # Collect class names and metadata for constructors and methods
         self.class_names: set[str] = set()
         # Maps firescript class name -> mangled C struct name (e.g. "MyClass" -> "MyClass_0")

@@ -109,7 +109,7 @@ class ModuleResolver:
     def collect_exports(self, mod: Module) -> Dict[str, ASTNode]:
         exports: Dict[str, ASTNode] = {}
         for c in mod.ast.children:
-            if c.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION) and bool(getattr(c, "is_exported", False)):
+            if c.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.GENERATOR_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION) and bool(getattr(c, "is_exported", False)):
                 exports[c.name] = c
         return exports
 
@@ -290,7 +290,7 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
                 root.children.append(child)
         top_level_by_name: Dict[str, ASTNode] = {}
         for child in mod.ast.children:
-            if child.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION):
+            if child.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.GENERATOR_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION):
                 child_name = getattr(child, "name", None)
                 if child_name:
                     top_level_by_name[child_name] = child
@@ -308,7 +308,7 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
                 return
 
             resolving_for_module.add(symbol_name)
-            if node.node_type == NodeTypes.FUNCTION_DEFINITION:
+            if node.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.GENERATOR_DEFINITION):
                 deps = collect_called_function_names(node)
                 for dep_name in deps:
                     if dep_name in top_level_by_name:
@@ -328,7 +328,7 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
             emitted_for_module.add(symbol_name)
 
         for export_name, node in mod.exports.items():
-            if node.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION):
+            if node.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.GENERATOR_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION):
                 append_symbol_with_deps(export_name)
 
     # Read entry module source for error reporting
@@ -341,7 +341,7 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
         # Annotate entry nodes with source file
         annotate_source_file(c, entry.path)
         # Prevent duplicate symbol definitions when an import pulled in a symbol with same name
-        if c.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION):
+        if c.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.GENERATOR_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION):
             if getattr(c, "name", None) in seen:
                 logging.error(f"Top-level symbol '{c.name}' in entry conflicts with imported symbol.")
                 # Prefer entry's definition: replace the imported one
@@ -367,7 +367,7 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
     symbol_table: MergedSymbolTable = {}
     
     for node in root.children:
-        if node.node_type == NodeTypes.FUNCTION_DEFINITION:
+        if node.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.GENERATOR_DEFINITION):
             rt = getattr(node, "return_type", None) or "void"
             fname = getattr(node, "name", "")
             func_types[fname] = rt

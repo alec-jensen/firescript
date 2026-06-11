@@ -547,6 +547,24 @@ class StatementsMixin(ExpressionsMixin):
             self.advance()
             self.invalid_expression_error(f"Unexpected character '{bad_tok.value}'", bad_tok)
             return None
+        # Handle generator definitions
+        if self.current_token and self.current_token.type == "GENERATOR":
+            parse_gen = getattr(self, "_parse_generator_definition", None)
+            if callable(parse_gen):
+                return parse_gen()
+            return None
+        # Handle yield statements
+        if self.current_token and self.current_token.type == "YIELD":
+            yield_tok = self.current_token
+            self.advance()
+            expr = self.parse_expression()
+            if expr is None:
+                self.expected_token_error("expression after 'yield'", self.current_token or yield_tok)
+                return None
+            if self.current_token and self.current_token.type == "SEMICOLON":
+                self.consume("SEMICOLON")
+            node = ASTNode(NodeTypes.YIELD_STATEMENT, yield_tok, "yield", [expr], yield_tok.index)
+            return node
         # Handle while loops
         if self.current_token and self.current_token.type == "WHILE":
             return self.parse_while_statement()

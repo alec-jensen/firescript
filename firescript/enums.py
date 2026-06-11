@@ -39,6 +39,8 @@ class NodeTypes(Enum):
     CONSTRUCTOR_CALL = "ConstructorCall"
     CAST_EXPRESSION = "CastExpression"
     SUPER_CALL = "SuperCall"
+    GENERATOR_DEFINITION = "GeneratorDefinition"
+    YIELD_STATEMENT = "YieldStatement"
 
 
 class CompilerDirective(Enum):

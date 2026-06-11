@@ -147,6 +147,9 @@ The table below reflects the **current implementation status** of major language
 | `@firescript/std.fcl` (FCL lexer) | [IMPLEMENTED] |
 | LSP server (`firescript/lsp_server.py`) | [IMPLEMENTED] |
 | VS Code extension (syntax highlighting, LSP diagnostics) | [IMPLEMENTED] |
+| Generator functions (`generator<T>`, `yield`) | [IMPLEMENTED] |
+| `for-in` over generators | [IMPLEMENTED] |
+| `@firescript/std.ranges` (`range`, `rangeFrom`, `rangeStep`) | [IMPLEMENTED] |
 | JavaScript + Wasm compilation target | [PLANNED] |
 | Dynamic arrays (stdlib) | [PLANNED] |
 | Built-in `input()` function | Removed in current dev cycle |

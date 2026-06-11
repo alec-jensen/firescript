@@ -5,6 +5,8 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 ## Currently in development
 
 ### New Language Features
+- Added generator functions with `generator<T>` syntax: lazy iterables that produce values on demand via `yield`. Generators compile to C state-machine structs. User-defined generators and `for-in` loops over generators are both supported.
+- Added `@firescript/std.ranges` standard library module with `range(end)`, `rangeFrom(start, end)`, and `rangeStep(start, end, step)` generators, enabling `for (int32 i in range(5))` style loops.
 - Added `char` type — a copyable, stack-allocated scalar representing a single character. Initialized with single-character string literals (`char c = "A"`).
 - Added character literal syntax with single quotes (`'A'`, `'\n'`).
 - Added `&mut this` receiver syntax for mutable borrowing in methods. Methods can now declare `&this` for read-only access or `&mut this` for mutable access, with compiler enforcement preventing field mutation through read-only receivers.

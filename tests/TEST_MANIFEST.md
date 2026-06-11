@@ -69,6 +69,9 @@ Expected error files are stored in `tests/expected_errors/` with `.err` extensio
 - **for_c_style.fire** - C-style for loop variations
 - **for_in.fire** - For-in loop over arrays
 
+#### Generators
+- **generators_basic.fire** - Generator functions with `generator<T>` syntax, `yield`, stdlib `range`/`rangeFrom`/`rangeStep`, user-defined generators, for-in over generators
+
 #### Types and Variables
 - **types_numeric_comprehensive.fire** - All numeric types (int8/16/32/64, uint8/16/32/64, float32/64/128), min/max values, overflow behavior
 - **types_tests.fire** - Basic type operations and comparisons

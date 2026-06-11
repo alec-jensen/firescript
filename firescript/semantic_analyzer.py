@@ -145,7 +145,7 @@ class SemanticAnalyzer:
         if node is None:
             return
             
-        if node.node_type == NodeTypes.FUNCTION_DEFINITION:
+        if node.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.GENERATOR_DEFINITION):
             func_name = node.name
             params = []
             for child in node.children:
@@ -593,7 +593,7 @@ class SemanticAnalyzer:
             self._exit_scope()
         
         # Function definition: enter new scope for parameters and body
-        elif node.node_type == NodeTypes.FUNCTION_DEFINITION:
+        elif node.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.GENERATOR_DEFINITION):
             self._analyze_callable_definition(node)
         
         # Class definition: register class, analyze methods

@@ -252,7 +252,7 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
             return node
 
         # Function/method definition: process body
-        if node.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.CLASS_METHOD_DEFINITION):
+        if node.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.CLASS_METHOD_DEFINITION, NodeTypes.GENERATOR_DEFINITION):
             new_kids = []
             var_maps.append(dict())
             # Isolate scope_stack so returns inside the function don't drain outer scopes

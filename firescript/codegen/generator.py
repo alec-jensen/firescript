@@ -29,6 +29,12 @@ class GeneratorMixin(StatementsMixin):
 
 
         for child in self.ast.children:
+            if child.node_type == NodeTypes.GENERATOR_DEFINITION:
+                gen_code = self._emit_generator_definition(child)
+                if gen_code:
+                    typedefs.append(gen_code[0])
+                    function_defs.extend(gen_code[1])
+                continue
             if child.node_type == NodeTypes.FUNCTION_DEFINITION:
                 # Skip generic templates - they'll be instantiated on demand
                 if hasattr(child, 'type_params') and child.type_params:
@@ -140,4 +146,276 @@ class GeneratorMixin(StatementsMixin):
             main_code = ""
 
         return header + typedefs_code + constants_code + forward_decls_code + functions_code + main_code
+
+    # -------------------------------------------------------------------------
+    # Generator (language feature) emission
+    # -------------------------------------------------------------------------
+
+    def _collect_gen_locals(self, node: ASTNode, locals_out: list) -> None:
+        """Recursively collect all VARIABLE_DECLARATION names+types from a body."""
+        if node is None:
+            return
+        if node.node_type == NodeTypes.VARIABLE_DECLARATION:
+            locals_out.append((node.name, node.var_type or "int32", node.is_array))
+        for child in (node.children or []):
+            if child is not None:
+                self._collect_gen_locals(child, locals_out)
+
+    def _collect_yield_count(self, node: ASTNode) -> int:
+        """Count YIELD_STATEMENT nodes in a subtree."""
+        if node is None:
+            return 0
+        count = 1 if node.node_type == NodeTypes.YIELD_STATEMENT else 0
+        for child in (node.children or []):
+            if child is not None:
+                count += self._collect_yield_count(child)
+        return count
+
+    def _emit_gen_body(self, node: ASTNode, yield_counter: list, struct_var: str,
+                       c_yield_type: str, gen_locals: set) -> str:
+        """Emit a generator body node, replacing yield with state-machine code."""
+        if node is None:
+            return ""
+
+        if node.node_type == NodeTypes.YIELD_STATEMENT:
+            yid = yield_counter[0]
+            yield_counter[0] += 1
+            val_code = self._emit_gen_expr(node.children[0], struct_var, gen_locals)
+            label_name = f"_gen_resume_{struct_var[1:]}_{yid}"  # unique per generator
+            return (
+                f"*_out = {val_code};\n"
+                f"{struct_var}->_state = {yid};\n"
+                f"return true;\n"
+                f"{label_name}:;"
+            )
+
+        if node.node_type == NodeTypes.SCOPE:
+            lines = []
+            for child in (node.children or []):
+                if child is not None:
+                    lines.append(self._emit_gen_body(child, yield_counter, struct_var, c_yield_type, gen_locals))
+            return "{\n" + "\n".join(lines) + "\n}"
+
+        if node.node_type == NodeTypes.VARIABLE_DECLARATION:
+            # Assign into struct field instead of declaring a local
+            var_name = node.name
+            mangled = self._mangle_name(var_name)
+            if node.children:
+                rhs = self._emit_gen_expr(node.children[0], struct_var, gen_locals)
+                return f"{struct_var}->{mangled} = {rhs};"
+            return ""
+
+        if node.node_type == NodeTypes.VARIABLE_ASSIGNMENT:
+            target = node.name
+            mangled = self._mangle_name(target)
+            if node.node_type == NodeTypes.SCOPE:
+                # wrapped drop+assign — emit children
+                lines = []
+                for child in (node.children or []):
+                    if child is not None:
+                        lines.append(self._emit_gen_body(child, yield_counter, struct_var, c_yield_type, gen_locals))
+                return "\n".join(lines)
+            rhs = self._emit_gen_expr(node.children[0], struct_var, gen_locals) if node.children else ""
+            if target in gen_locals:
+                return f"{struct_var}->{mangled} = {rhs};"
+            return f"{mangled} = {rhs};"
+
+        if node.node_type == NodeTypes.WHILE_STATEMENT:
+            cond = self._emit_gen_expr(node.children[0], struct_var, gen_locals)
+            body = self._emit_gen_body(node.children[1], yield_counter, struct_var, c_yield_type, gen_locals)
+            return f"while ({cond})\n{body}"
+
+        if node.node_type == NodeTypes.IF_STATEMENT:
+            cond = self._emit_gen_expr(node.children[0], struct_var, gen_locals)
+            then_b = self._emit_gen_body(node.children[1], yield_counter, struct_var, c_yield_type, gen_locals)
+            result = f"if ({cond})\n{then_b}"
+            if len(node.children) > 2:
+                else_b = self._emit_gen_body(node.children[2], yield_counter, struct_var, c_yield_type, gen_locals)
+                result += f"\nelse\n{else_b}"
+            return result
+
+        if node.node_type == NodeTypes.FOR_STATEMENT:
+            # C-style for loop — emit init/cond/incr/body using gen context
+            init_node, cond_node, incr_node, body_node = node.children[:4]
+            init = self._emit_gen_body(init_node, yield_counter, struct_var, c_yield_type, gen_locals).rstrip(";")
+            cond = self._emit_gen_expr(cond_node, struct_var, gen_locals)
+            incr = self._emit_gen_body(incr_node, yield_counter, struct_var, c_yield_type, gen_locals).rstrip(";")
+            body = self._emit_gen_body(body_node, yield_counter, struct_var, c_yield_type, gen_locals)
+            return f"for ({init}; {cond}; {incr})\n{body}"
+
+        if node.node_type == NodeTypes.RETURN_STATEMENT:
+            # bare return in a generator = exhaustion
+            return f"{struct_var}->_state = -1;\nreturn false;"
+
+        if node.node_type == NodeTypes.BREAK_STATEMENT:
+            return "break;"
+
+        if node.node_type == NodeTypes.CONTINUE_STATEMENT:
+            return "continue;"
+
+        if node.node_type == NodeTypes.COMPOUND_ASSIGNMENT:
+            target = node.name  # variable name (same as regular codegen)
+            op_type = getattr(node.token, "type", None)
+            mangled = self._mangle_name(target)
+            rhs = self._emit_gen_expr(node.children[0], struct_var, gen_locals) if node.children else "0"
+            op_map = {"ADD_ASSIGN": "+=", "SUBTRACT_ASSIGN": "-=", "MULTIPLY_ASSIGN": "*=",
+                      "DIVIDE_ASSIGN": "/=", "MODULO_ASSIGN": "%="}
+            c_op = op_map.get(op_type or "", "+=")
+            if target in gen_locals:
+                return f"{struct_var}->{mangled} {c_op} {rhs};"
+            return f"{mangled} {c_op} {rhs};"
+
+        if node.node_type == NodeTypes.UNARY_EXPRESSION:
+            target = node.name  # variable name
+            mangled = self._mangle_name(target)
+            field = f"{struct_var}->{mangled}" if target in gen_locals else mangled
+            op = node.token.type if node.token else "++"
+            op_str = "++" if op == "INCREMENT" else "--"
+            return f"{field}{op_str};"
+
+        # Fallback: emit as expression statement
+        code = self._emit_gen_expr(node, struct_var, gen_locals)
+        if code:
+            return code + ";"
+        return ""
+
+    def _emit_gen_expr(self, node: ASTNode, struct_var: str, gen_locals: set) -> str:
+        """Emit an expression inside a generator body, redirecting locals to struct fields."""
+        if node is None:
+            return ""
+
+        if node.node_type == NodeTypes.IDENTIFIER:
+            mangled = self._mangle_name(node.name)
+            if node.name in gen_locals:
+                return f"{struct_var}->{mangled}"
+            return mangled
+
+        # For everything else, delegate to regular _visit but patch IDENTIFIER nodes temporarily
+        # We use a recursive approach here
+        if node.node_type == NodeTypes.LITERAL:
+            return self._visit(node)
+
+        if node.node_type == NodeTypes.BINARY_EXPRESSION:
+            left = self._emit_gen_expr(node.children[0], struct_var, gen_locals)
+            right = self._emit_gen_expr(node.children[1], struct_var, gen_locals)
+            return f"({left} {node.name} {right})"
+
+        if node.node_type == NodeTypes.RELATIONAL_EXPRESSION:
+            left = self._emit_gen_expr(node.children[0], struct_var, gen_locals)
+            right = self._emit_gen_expr(node.children[1], struct_var, gen_locals)
+            return f"({left} {node.name} {right})"
+
+        if node.node_type == NodeTypes.EQUALITY_EXPRESSION:
+            left = self._emit_gen_expr(node.children[0], struct_var, gen_locals)
+            right = self._emit_gen_expr(node.children[1], struct_var, gen_locals)
+            return f"({left} {node.name} {right})"
+
+        if node.node_type == NodeTypes.UNARY_EXPRESSION and node.name == "neg":
+            operand = self._emit_gen_expr(node.children[0], struct_var, gen_locals)
+            return f"(-{operand})"
+
+        if node.node_type == NodeTypes.FUNCTION_CALL:
+            args = [self._emit_gen_expr(c, struct_var, gen_locals) for c in node.children]
+            mangled = self._mangle_function_name(node.name)
+            return f"{mangled}({', '.join(args)})"
+
+        if node.node_type == NodeTypes.CAST_EXPRESSION:
+            target_type = node.var_type or "int32"
+            c_type = self._map_type_to_c(target_type)
+            expr = self._emit_gen_expr(node.children[0], struct_var, gen_locals) if node.children else ""
+            return f"(({c_type}){expr})"
+
+        # Fallback: use regular _visit (won't redirect locals but handles exotic cases)
+        return self._visit(node)
+
+    def _emit_generator_definition(self, node: ASTNode):
+        """
+        Emit a generator state-machine struct + new/next functions.
+        Returns (typedef_str, [function_str, ...]).
+        """
+        gen_name = node.name
+        yield_type = getattr(node, "yield_type", node.return_type or "int32")
+        c_yield_type = self._map_type_to_c(yield_type)
+
+        # Separate params from body (body is last child)
+        params = [c for c in node.children[:-1] if c.node_type == NodeTypes.PARAMETER]
+        body = node.children[-1]
+
+        # Collect all locals declared in the generator body
+        locals_list: list = []
+        self._collect_gen_locals(body, locals_list)
+        # gen_locals: set of firescript names (un-mangled) — includes params + locals
+        param_names = {p.name for p in params}
+        gen_locals: set = param_names | {name for name, _, _ in locals_list}
+
+        # Register the generator in name scope so mangling is consistent
+        self.name_scope_stack.append({})
+        for p in params:
+            self._mangle_name(p.name)
+        for (lname, _, _) in locals_list:
+            self._mangle_name(lname)
+
+        # Count yields to build switch cases
+        yield_count = self._collect_yield_count(body)
+
+        # ---- Struct typedef ----
+        struct_name = f"_gen_{gen_name}"
+        lines = [f"typedef struct {{", f"    int _state;"]
+        for p in params:
+            c_t = self._map_type_to_c(p.var_type or "int32")
+            mangled_p = self._mangle_name(p.name)
+            lines.append(f"    {c_t} {mangled_p};")
+        for (lname, ltype, lis_array) in locals_list:
+            c_t = self._map_type_to_c(ltype + ("[]" if lis_array else ""))
+            mangled_l = self._mangle_name(lname)
+            lines.append(f"    {c_t} {mangled_l};")
+        lines.append(f"}} {struct_name};")
+        typedef_str = "\n".join(lines)
+
+        # ---- _new function ----
+        param_sig = ", ".join(
+            f"{self._map_type_to_c(p.var_type or 'int32')} {self._mangle_name(p.name)}"
+            for p in params
+        )
+        new_lines = [f"{struct_name} {gen_name}_gen_new({param_sig}) {{"]
+        new_lines.append(f"    {struct_name} _g;")
+        new_lines.append(f"    _g._state = 0;")
+        for p in params:
+            mangled_p = self._mangle_name(p.name)
+            new_lines.append(f"    _g.{mangled_p} = {mangled_p};")
+        for (lname, ltype, _) in locals_list:
+            mangled_l = self._mangle_name(lname)
+            c_t = self._map_type_to_c(ltype)
+            new_lines.append(f"    _g.{mangled_l} = ({c_t})0;")
+        new_lines.append(f"    return _g;")
+        new_lines.append(f"}}")
+        new_func = "\n".join(new_lines)
+
+        # ---- _next function ----
+        next_lines = [f"bool {gen_name}_gen_next({struct_name}* _gs, {c_yield_type}* _out) {{"]
+        # switch for resumption
+        next_lines.append(f"    if (_gs->_state == -1) return false;")
+        if yield_count > 0:
+            next_lines.append(f"    switch (_gs->_state) {{")
+            for yid in range(1, yield_count + 1):
+                label_name = f"_gen_resume_gs_{yid}"
+                next_lines.append(f"        case {yid}: goto {label_name};")
+            next_lines.append(f"    }}")
+        # emit body
+        yield_counter = [1]
+        body_code = self._emit_gen_body(body, yield_counter, "_gs", c_yield_type, gen_locals)
+        # indent body
+        for line in body_code.split("\n"):
+            next_lines.append(f"    {line}")
+        next_lines.append(f"    _gs->_state = -1;")
+        next_lines.append(f"    return false;")
+        next_lines.append(f"}}")
+        next_func = "\n".join(next_lines)
+
+        self.name_scope_stack.pop()
+
+        # Register the generator type name so for-in can detect it
+        self.generator_types[gen_name] = (struct_name, yield_type)
+
+        return (typedef_str, [new_func, next_func])
 

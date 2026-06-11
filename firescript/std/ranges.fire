@@ -1,0 +1,23 @@
+export generator<int32> range(int32 end) {
+    int32 i = 0;
+    while (i < end) {
+        yield i;
+        i += 1;
+    }
+}
+
+export generator<int32> rangeFrom(int32 start, int32 end) {
+    int32 i = start;
+    while (i < end) {
+        yield i;
+        i += 1;
+    }
+}
+
+export generator<int32> rangeStep(int32 start, int32 end, int32 step) {
+    int32 i = start;
+    while (i < end) {
+        yield i;
+        i += step;
+    }
+}

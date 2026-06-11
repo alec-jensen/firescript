@@ -1,0 +1,32 @@
+import @firescript/std.io.println;
+import @firescript/std.ranges.range;
+import @firescript/std.ranges.rangeFrom;
+import @firescript/std.ranges.rangeStep;
+
+// Basic range loop
+for (int32 i in range(5)) {
+    println(i);
+}
+
+// Range with start and end
+for (int32 i in rangeFrom(2, 6)) {
+    println(i);
+}
+
+// Range with step
+for (int32 i in rangeStep(0, 10, 3)) {
+    println(i);
+}
+
+// User-defined generator
+generator<int32> countdown(int32 n) {
+    int32 i = n;
+    while (i > 0) {
+        yield i;
+        i -= 1;
+    }
+}
+
+for (int32 v in countdown(3)) {
+    println(v);
+}

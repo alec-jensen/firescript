@@ -265,6 +265,105 @@ class DeclarationsMixin(TypeSystemMixin):
                 self.generic_constraints[name_token.value] = type_constraints
         return func_node
 
+    def _parse_generator_definition(self):
+        """Parse: generator<YieldType> name(params) { body }"""
+        gen_tok = self.consume("GENERATOR")
+        if gen_tok is None:
+            return None
+
+        if not self.consume("LESS_THAN"):
+            self.expected_token_error("'<' after 'generator'", self.current_token)
+            return None
+
+        if not self.current_token or not self._is_type_token(self.current_token):
+            self.expected_token_error("yield type inside 'generator<...>'", self.current_token)
+            return None
+        yield_type_tok = self.current_token
+        self.advance()
+
+        if not self.consume("GREATER_THAN"):
+            self.expected_token_error("'>' to close generator yield type", self.current_token)
+            return None
+
+        name_tok = self.consume("IDENTIFIER")
+        if name_tok is None:
+            self.expected_token_error("generator function name", self.current_token)
+            return None
+
+        if not self.consume("OPEN_PAREN"):
+            self.expected_token_error("'(' after generator name", self.current_token)
+            return None
+
+        params: list[ASTNode] = []
+        if self.current_token and self.current_token.type != "CLOSE_PAREN":
+            while True:
+                p_is_borrowed = False
+                if self.current_token and self.current_token.type == "AMPERSAND":
+                    p_is_borrowed = True
+                    self.advance()
+                if not (self.current_token and (self._is_type_token(self.current_token) or (
+                    self.current_token.type == "IDENTIFIER" and self.current_token.value in self.user_types
+                ))):
+                    self.expected_token_error("parameter type", self.current_token)
+                    return None
+                ptype_tok = self.current_token
+                self.advance()
+                pname_tok = self.consume_name()
+                if pname_tok is None:
+                    self.expected_token_error("parameter name", self.current_token)
+                    return None
+                p_type = self._normalize_type_name(ptype_tok)
+                param_node = ASTNode(
+                    NodeTypes.PARAMETER,
+                    pname_tok,
+                    pname_tok.value,
+                    [],
+                    pname_tok.index,
+                    p_type,
+                    False,
+                    False,
+                    None,
+                    False,
+                    False,
+                )
+                param_node.is_borrowed = p_is_borrowed
+                param_node.is_receiver = False
+                params.append(param_node)
+                if self.current_token and self.current_token.type == "COMMA":
+                    self.advance()
+                    continue
+                break
+
+        if not self.consume("CLOSE_PAREN"):
+            self.expected_token_error("')' after generator parameters", self.current_token)
+            return None
+
+        if not (self.current_token and self.current_token.type == "OPEN_BRACE"):
+            self.expected_token_error("'{' to start generator body", self.current_token)
+            return None
+        body_node = self.parse_scope()
+        if body_node is None:
+            return None
+
+        yield_type = self._normalize_type_name(yield_type_tok)
+        gen_node = ASTNode(
+            NodeTypes.GENERATOR_DEFINITION,
+            name_tok,
+            name_tok.value,
+            [*params, body_node],
+            name_tok.index,
+            None,
+            False,
+            False,
+            yield_type,
+            False,
+            False,
+        )
+        # Store yield type for retrieval by codegen
+        gen_node.yield_type = yield_type
+        self.user_functions[name_tok.value] = f"generator<{yield_type}>"
+        return gen_node
+
     def parse(self):
         logging.debug("Parsing tokens...")
         # Top-level: parse until all tokens are consumed.
@@ -340,6 +439,16 @@ class DeclarationsMixin(TypeSystemMixin):
                 # Optional semicolon
                 if self.current_token and self.current_token.type == "SEMICOLON":
                     self.consume("SEMICOLON")
+                continue
+            # Generator function definition: generator<T> name(...) { ... }
+            if self.current_token.type == "GENERATOR":
+                gen = self._parse_generator_definition()
+                if gen:
+                    if getattr(self, "_pending_export", False):
+                        setattr(gen, "is_exported", True)
+                        self._pending_export = False
+                    gen.parent = self.ast
+                    self.ast.children.append(gen)
                 continue
             # Try function definition first: <type> <identifier> '(' ... ')'{ ... }
             # Also handle generic functions where return type might be a type parameter
@@ -432,7 +541,7 @@ class DeclarationsMixin(TypeSystemMixin):
 
             if isinstance(stmt, ASTNode):
                 if getattr(self, "_pending_export", False):
-                    if stmt.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.VARIABLE_DECLARATION):
+                    if stmt.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.GENERATOR_DEFINITION, NodeTypes.VARIABLE_DECLARATION):
                         setattr(stmt, "is_exported", True)
                     else:
                         self.invalid_expression_error("export can only be applied to top-level declarations", stmt.token)
@@ -451,6 +560,7 @@ class DeclarationsMixin(TypeSystemMixin):
                         NodeTypes.FOR_IN_STATEMENT,
                         NodeTypes.SCOPE,
                         NodeTypes.FUNCTION_DEFINITION,
+                        NodeTypes.GENERATOR_DEFINITION,
                     )
                 ):
                     if self.current_token and self.current_token.type == "SEMICOLON":

@@ -42,8 +42,8 @@ class TypeSystemMixin(StatementsMixin):
                 self.resolve_variable_types(child, new_scope)
             return
 
-        # Function definition: parameters introduce a new scope level
-        if node.node_type == NodeTypes.FUNCTION_DEFINITION:
+        # Function/generator definition: parameters introduce a new scope level
+        if node.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.GENERATOR_DEFINITION):
             # Children layout: [params..., body_scope]
             new_scope = current_scope.copy()
             # Register parameters (prevent shadowing outer vars)

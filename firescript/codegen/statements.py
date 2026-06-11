@@ -26,7 +26,7 @@ class StatementsMixin(DeclarationsMixin):
             elif stripped.endswith("}"):
                 # Do not add semicolons after blocks, but ensure assignment statements
                 # that produce compound literals do get a semicolon.
-                if node.node_type in (NodeTypes.SCOPE, NodeTypes.IF_STATEMENT, NodeTypes.ELSE_STATEMENT, NodeTypes.ELIF_STATEMENT, NodeTypes.WHILE_STATEMENT, NodeTypes.FOR_STATEMENT, NodeTypes.FOR_IN_STATEMENT):
+                if node.node_type in (NodeTypes.SCOPE, NodeTypes.IF_STATEMENT, NodeTypes.ELSE_STATEMENT, NodeTypes.ELIF_STATEMENT, NodeTypes.WHILE_STATEMENT, NodeTypes.FOR_STATEMENT, NodeTypes.FOR_IN_STATEMENT, NodeTypes.GENERATOR_DEFINITION):
                     needs_semicolon = False
                 elif node.node_type in (NodeTypes.VARIABLE_ASSIGNMENT, NodeTypes.ASSIGNMENT, NodeTypes.RETURN_STATEMENT):
                     needs_semicolon = True
@@ -43,8 +43,8 @@ class StatementsMixin(DeclarationsMixin):
             lines = []
             for child in node.children:
                 # Assume all top-level nodes are statements.
-                if child.node_type == NodeTypes.FUNCTION_DEFINITION:
-                    # Functions are emitted separately by generate()
+                if child.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.GENERATOR_DEFINITION):
+                    # Functions/generators are emitted separately by generate()
                     continue
                 stmt_code = self.emit_statement(child)
                 if stmt_code:
@@ -807,18 +807,50 @@ class StatementsMixin(DeclarationsMixin):
             var_decl = node.children[0]
             collection = node.children[1]
             body = node.children[2]
-            
+
             # Extract loop variable name and type from the variable declaration
             # var_decl has var_type attribute and name attribute
             loop_var = var_decl.name
             var_type = var_decl.var_type or "int32"
-            
+
             # Convert firescript type to C type
             c_type = self._map_type_to_c(var_type)
-            
+
             # Generate a unique loop index variable
             loop_idx = f"_i_{loop_var}"
             mangled_loop_var = self._mangle_name(loop_var)
+
+            # --- Generator collection check ---
+            # Detect: collection is a FUNCTION_CALL whose name is a registered generator
+            gen_func_name = None
+            if collection.node_type == NodeTypes.FUNCTION_CALL and collection.name in self.generator_types:
+                gen_func_name = collection.name
+            if gen_func_name is not None:
+                struct_name, _yield_type = self.generator_types[gen_func_name]
+                # Emit generator args
+                arg_codes = [self._visit(a) for a in (collection.children or [])]
+                arg_str = ", ".join(arg_codes)
+                uid = self.name_counter
+                self.name_counter += 1
+                gen_var = f"_gen_{uid}"
+                out_var = f"_out_{uid}"
+                old_sym = self.symbol_table.get(loop_var)
+                self.symbol_table[loop_var] = (var_type, False)
+                body_code = self._visit(body)
+                if old_sym is None:
+                    self.symbol_table.pop(loop_var, None)
+                else:
+                    self.symbol_table[loop_var] = old_sym
+                result = f"{struct_name} {gen_var} = {gen_func_name}_gen_new({arg_str});\n"
+                result += f"{c_type} {out_var};\n"
+                result += f"while ({gen_func_name}_gen_next(&{gen_var}, &{out_var})) {{\n"
+                result += f"{c_type} {mangled_loop_var} = {out_var};\n"
+                if body_code.startswith('{') and body_code.endswith('}'):
+                    result += body_code.strip()[1:-1]
+                else:
+                    result += body_code
+                result += "\n}"
+                return result
             
             # Add the loop variable to symbol table for the body
             # Save current symbol table state to restore after loop

@@ -39,6 +39,7 @@ class Lexer:
         "DIRECTIVE": r"directive\b",
         "NULLABLE": r"nullable\b",
         "GENERATOR": r"generator\b",
+        "YIELD": r"yield\b",
         "CONST": r"const\b",
         "TERNARY": r"ternary\b",
         "COPYABLE": r"copyable\b",
