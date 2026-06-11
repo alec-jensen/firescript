@@ -1200,6 +1200,9 @@ class ASTToFIRConverter:
             cast.instruction.metadata["source_type"] = self._expr_type(node.children[0])
             return cast
 
+        if node_type == NodeTypes.BINARY_EXPRESSION and node.name in ("&&", "||"):
+            return self._convert_short_circuit(node)
+
         if node_type in (
             NodeTypes.BINARY_EXPRESSION,
             NodeTypes.EQUALITY_EXPRESSION,
@@ -1258,6 +1261,32 @@ class ASTToFIRConverter:
             return self._convert_super_call(node)
 
         raise FIRConversionError(f"Unsupported expression node {node_type}", node)
+
+    def _convert_short_circuit(self, node: ASTNode) -> Value:
+        """Lower && / || with C-style short-circuit evaluation via a temp local."""
+        bool_type = make_simple("bool")
+        temp_name = f"__sc_{len(self.current_function.blocks)}_{len(self.builder.current_block.instructions)}"
+
+        left = self._convert_expression(node.children[0])
+        self.builder.declare_local(temp_name, bool_type, left)
+
+        rhs_block = self.builder.new_block()
+        join_block = self.builder.new_block()
+        cond = self.builder.load_var(temp_name, bool_type)
+        if node.name == "&&":
+            # Evaluate RHS only when LHS is true.
+            self.builder.branch(cond, rhs_block.id, join_block.id)
+        else:
+            # ||: evaluate RHS only when LHS is false.
+            self.builder.branch(cond, join_block.id, rhs_block.id)
+
+        self.builder.position_at(rhs_block)
+        right = self._convert_expression(node.children[1])
+        self.builder.store_var(temp_name, right)
+        self.builder.jump(join_block.id)
+
+        self.builder.position_at(join_block)
+        return self.builder.load_var(temp_name, bool_type)
 
     def _convert_literal(self, node: ASTNode) -> Value:
         token_type = node.token.type if node.token else ""

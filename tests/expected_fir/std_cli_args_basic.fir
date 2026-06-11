@@ -31,11 +31,72 @@ function argv_at(index: int32) -> string {
     Return(%1)
 }
 
+function _starts_with(value: &string, prefix: &string) -> bool {
+  block_0:
+    %0 = LoadVar("value") -> string
+    %1 = LoadVar("prefix") -> string
+    %2 = Call(str_index_of, [%0, %1], ["own", "own"]) -> int32
+    %3 = IntLiteral(0, int32)
+    %4 = BinaryOp("==", %2, %3)
+    Return(%4)
+}
+
 function _str_len(value: &string) -> int32 {
   block_0:
     %0 = LoadVar("value") -> string
     %1 = Call(str_length, [%0], ["own"]) -> int32
     Return(%1)
+}
+
+function _is_grouped_short_token(value: &string) -> bool {
+  block_0:
+    %0 = LoadVar("value") -> string
+    %1 = StringLiteral("-", string)
+    %2 = Call(_starts_with, [%0, %1], ["borrow", "borrow"]) -> bool
+    %3 = BoolLiteral(false, bool)
+    %4 = BinaryOp("==", %2, %3)
+    Branch(%4, block_2, block_1)
+
+  block_1:
+    %5 = LoadVar("value") -> string
+    %6 = StringLiteral("--", string)
+    %7 = Call(_starts_with, [%5, %6], ["borrow", "borrow"]) -> bool
+    Branch(%7, block_4, block_3)
+
+  block_2:
+    %8 = BoolLiteral(false, bool)
+    Return(%8)
+
+  block_3:
+    %9 = LoadVar("value") -> string
+    %10 = Call(_str_len, [%9], ["borrow"]) -> int32
+    %11 = IntLiteral(2, int32)
+    %12 = BinaryOp("<=", %10, %11)
+    Branch(%12, block_6, block_5)
+
+  block_4:
+    %13 = BoolLiteral(false, bool)
+    Return(%13)
+
+  block_5:
+    %14 = LoadVar("value") -> string
+    %15 = StringLiteral("=", string)
+    %16 = Call(str_index_of, [%14, %15], ["own", "own"]) -> int32
+    %17 = IntLiteral(0, int32)
+    %18 = BinaryOp(">=", %16, %17)
+    Branch(%18, block_8, block_7)
+
+  block_6:
+    %19 = BoolLiteral(false, bool)
+    Return(%19)
+
+  block_7:
+    %20 = BoolLiteral(true, bool)
+    Return(%20)
+
+  block_8:
+    %21 = BoolLiteral(false, bool)
+    Return(%21)
 }
 
 function _group_has_short(token: &string, short_name: &string) -> bool {
@@ -87,67 +148,6 @@ function _group_has_short(token: &string, short_name: &string) -> bool {
     %20 = LoadVar("ch") -> string
     Drop(%20)
     %21 = BoolLiteral(true, bool)
-    Return(%21)
-}
-
-function _starts_with(value: &string, prefix: &string) -> bool {
-  block_0:
-    %0 = LoadVar("value") -> string
-    %1 = LoadVar("prefix") -> string
-    %2 = Call(str_index_of, [%0, %1], ["own", "own"]) -> int32
-    %3 = IntLiteral(0, int32)
-    %4 = BinaryOp("==", %2, %3)
-    Return(%4)
-}
-
-function _is_grouped_short_token(value: &string) -> bool {
-  block_0:
-    %0 = LoadVar("value") -> string
-    %1 = StringLiteral("-", string)
-    %2 = Call(_starts_with, [%0, %1], ["borrow", "borrow"]) -> bool
-    %3 = BoolLiteral(false, bool)
-    %4 = BinaryOp("==", %2, %3)
-    Branch(%4, block_2, block_1)
-
-  block_1:
-    %5 = LoadVar("value") -> string
-    %6 = StringLiteral("--", string)
-    %7 = Call(_starts_with, [%5, %6], ["borrow", "borrow"]) -> bool
-    Branch(%7, block_4, block_3)
-
-  block_2:
-    %8 = BoolLiteral(false, bool)
-    Return(%8)
-
-  block_3:
-    %9 = LoadVar("value") -> string
-    %10 = Call(_str_len, [%9], ["borrow"]) -> int32
-    %11 = IntLiteral(2, int32)
-    %12 = BinaryOp("<=", %10, %11)
-    Branch(%12, block_6, block_5)
-
-  block_4:
-    %13 = BoolLiteral(false, bool)
-    Return(%13)
-
-  block_5:
-    %14 = LoadVar("value") -> string
-    %15 = StringLiteral("=", string)
-    %16 = Call(str_index_of, [%14, %15], ["own", "own"]) -> int32
-    %17 = IntLiteral(0, int32)
-    %18 = BinaryOp(">=", %16, %17)
-    Branch(%18, block_8, block_7)
-
-  block_6:
-    %19 = BoolLiteral(false, bool)
-    Return(%19)
-
-  block_7:
-    %20 = BoolLiteral(true, bool)
-    Return(%20)
-
-  block_8:
-    %21 = BoolLiteral(false, bool)
     Return(%21)
 }
 

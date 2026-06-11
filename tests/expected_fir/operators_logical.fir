@@ -55,61 +55,97 @@ function main() -> void {
     %19 = LoadVar("a") -> int32
     %20 = LoadVar("b") -> int32
     %21 = BinaryOp(">", %19, %20)
-    %22 = LoadVar("a") -> int32
-    %23 = LoadVar("c") -> int32
-    %24 = BinaryOp("<", %22, %23)
-    %25 = BinaryOp("&&", %21, %24)
-    Branch(%25, block_2, block_1)
+    DeclareLocal("__sc_2_32", bool, %21)
+    %22 = LoadVar("__sc_2_32") -> bool
+    Branch(%22, block_2, block_3)
 
   block_1:
-    %26 = LoadVar("a") -> int32
-    %27 = LoadVar("b") -> int32
-    %28 = BinaryOp("<", %26, %27)
-    %29 = LoadVar("a") -> int32
-    %30 = IntLiteral(0, int32)
-    %31 = BinaryOp(">", %29, %30)
-    %32 = BinaryOp("||", %28, %31)
-    Branch(%32, block_4, block_3)
+    %23 = LoadVar("a") -> int32
+    %24 = LoadVar("b") -> int32
+    %25 = BinaryOp("<", %23, %24)
+    DeclareLocal("__sc_6_0", bool, %25)
+    %26 = LoadVar("__sc_6_0") -> bool
+    Branch(%26, block_7, block_6)
 
   block_2:
-    %33 = StringLiteral("a is between b and c", string)
-    Call(println, [%33], ["borrow"])
-    Jump(block_1)
-
-  block_3:
-    %34 = LoadVar("a") -> int32
-    %35 = LoadVar("b") -> int32
-    %36 = BinaryOp("<", %34, %35)
-    %37 = LoadVar("t") -> bool
-    %38 = UnaryOp("!", %37)
-    %39 = BinaryOp("||", %36, %38)
-    %40 = UnaryOp("!", %39)
-    Branch(%40, block_6, block_5)
-
-  block_4:
-    %41 = StringLiteral("a meets at least one condition", string)
-    Call(println, [%41], ["borrow"])
+    %27 = LoadVar("a") -> int32
+    %28 = LoadVar("c") -> int32
+    %29 = BinaryOp("<", %27, %28)
+    StoreVar("__sc_2_32", %29)
     Jump(block_3)
 
+  block_3:
+    %30 = LoadVar("__sc_2_32") -> bool
+    Branch(%30, block_4, block_1)
+
+  block_4:
+    %31 = StringLiteral("a is between b and c", string)
+    Call(println, [%31], ["borrow"])
+    Jump(block_1)
+
   block_5:
-    %42 = LoadVar("t") -> bool
-    %43 = LoadVar("f") -> bool
-    %44 = UnaryOp("!", %43)
-    %45 = BinaryOp("&&", %42, %44)
-    Branch(%45, block_8, block_7)
+    %32 = LoadVar("a") -> int32
+    %33 = LoadVar("b") -> int32
+    %34 = BinaryOp("<", %32, %33)
+    DeclareLocal("__sc_10_0", bool, %34)
+    %35 = LoadVar("__sc_10_0") -> bool
+    Branch(%35, block_11, block_10)
 
   block_6:
-    %46 = StringLiteral("not/or combination works", string)
-    Call(println, [%46], ["borrow"])
-    Jump(block_5)
+    %36 = LoadVar("a") -> int32
+    %37 = IntLiteral(0, int32)
+    %38 = BinaryOp(">", %36, %37)
+    StoreVar("__sc_6_0", %38)
+    Jump(block_7)
 
   block_7:
-    %47 = StringLiteral("=== All logical operator tests passed ===", string)
-    Call(println, [%47], ["borrow"])
-    Return()
+    %39 = LoadVar("__sc_6_0") -> bool
+    Branch(%39, block_8, block_5)
 
   block_8:
-    %48 = StringLiteral("and/not combination works", string)
+    %40 = StringLiteral("a meets at least one condition", string)
+    Call(println, [%40], ["borrow"])
+    Jump(block_5)
+
+  block_9:
+    %41 = LoadVar("t") -> bool
+    DeclareLocal("__sc_14_0", bool, %41)
+    %42 = LoadVar("__sc_14_0") -> bool
+    Branch(%42, block_14, block_15)
+
+  block_10:
+    %43 = LoadVar("t") -> bool
+    %44 = UnaryOp("!", %43)
+    StoreVar("__sc_10_0", %44)
+    Jump(block_11)
+
+  block_11:
+    %45 = LoadVar("__sc_10_0") -> bool
+    %46 = UnaryOp("!", %45)
+    Branch(%46, block_12, block_9)
+
+  block_12:
+    %47 = StringLiteral("not/or combination works", string)
+    Call(println, [%47], ["borrow"])
+    Jump(block_9)
+
+  block_13:
+    %48 = StringLiteral("=== All logical operator tests passed ===", string)
     Call(println, [%48], ["borrow"])
-    Jump(block_7)
+    Return()
+
+  block_14:
+    %49 = LoadVar("f") -> bool
+    %50 = UnaryOp("!", %49)
+    StoreVar("__sc_14_0", %50)
+    Jump(block_15)
+
+  block_15:
+    %51 = LoadVar("__sc_14_0") -> bool
+    Branch(%51, block_16, block_13)
+
+  block_16:
+    %52 = StringLiteral("and/not combination works", string)
+    Call(println, [%52], ["borrow"])
+    Jump(block_13)
 }

@@ -106,80 +106,134 @@ function main() -> void {
     %67 = LoadVar("r4") -> bool
     Call(println, [%67], ["borrow"])
     %68 = BoolLiteral(true, bool)
-    %69 = BoolLiteral(false, bool)
+    DeclareLocal("__sc_1_85", bool, %68)
+    %69 = LoadVar("__sc_1_85") -> bool
+    Branch(%69, block_2, block_1)
+
+  block_1:
     %70 = BoolLiteral(false, bool)
-    %71 = BinaryOp("&&", %69, %70)
-    %72 = BinaryOp("||", %68, %71)
+    DeclareLocal("__sc_3_0", bool, %70)
+    %71 = LoadVar("__sc_3_0") -> bool
+    Branch(%71, block_3, block_4)
+
+  block_2:
+    %72 = LoadVar("__sc_1_85") -> bool
     DeclareLocal("r5", bool, %72)
     %73 = BoolLiteral(false, bool)
-    %74 = BoolLiteral(true, bool)
-    %75 = BinaryOp("&&", %73, %74)
-    %76 = BoolLiteral(true, bool)
-    %77 = BinaryOp("||", %75, %76)
-    DeclareLocal("r6", bool, %77)
-    %78 = BoolLiteral(false, bool)
-    %79 = BoolLiteral(false, bool)
-    %80 = BinaryOp("&&", %78, %79)
-    %81 = BoolLiteral(false, bool)
-    %82 = BinaryOp("||", %80, %81)
-    DeclareLocal("r7", bool, %82)
-    %83 = LoadVar("r5") -> bool
-    Call(println, [%83], ["borrow"])
-    %84 = LoadVar("r6") -> bool
-    Call(println, [%84], ["borrow"])
-    %85 = LoadVar("r7") -> bool
-    Call(println, [%85], ["borrow"])
-    %86 = IntLiteral(4, int32)
-    DeclareLocal("a", int32, %86)
-    %87 = IntLiteral(2, int32)
-    DeclareLocal("b", int32, %87)
-    %88 = IntLiteral(3, int32)
-    DeclareLocal("c", int32, %88)
-    %89 = LoadVar("a") -> int32
-    %90 = LoadVar("b") -> int32
-    %91 = LoadVar("c") -> int32
-    %92 = BinaryOp("*", %90, %91)
-    %93 = BinaryOp("+", %89, %92)
-    %94 = LoadVar("a") -> int32
-    %95 = LoadVar("b") -> int32
-    %96 = BinaryOp("*", %94, %95)
+    DeclareLocal("__sc_5_2", bool, %73)
+    %74 = LoadVar("__sc_5_2") -> bool
+    Branch(%74, block_5, block_6)
+
+  block_3:
+    %75 = BoolLiteral(false, bool)
+    StoreVar("__sc_3_0", %75)
+    Jump(block_4)
+
+  block_4:
+    %76 = LoadVar("__sc_3_0") -> bool
+    StoreVar("__sc_1_85", %76)
+    Jump(block_2)
+
+  block_5:
+    %77 = BoolLiteral(true, bool)
+    StoreVar("__sc_5_2", %77)
+    Jump(block_6)
+
+  block_6:
+    %78 = LoadVar("__sc_5_2") -> bool
+    DeclareLocal("__sc_5_2", bool, %78)
+    %79 = LoadVar("__sc_5_2") -> bool
+    Branch(%79, block_8, block_7)
+
+  block_7:
+    %80 = BoolLiteral(true, bool)
+    StoreVar("__sc_5_2", %80)
+    Jump(block_8)
+
+  block_8:
+    %81 = LoadVar("__sc_5_2") -> bool
+    DeclareLocal("r6", bool, %81)
+    %82 = BoolLiteral(false, bool)
+    DeclareLocal("__sc_9_2", bool, %82)
+    %83 = LoadVar("__sc_9_2") -> bool
+    Branch(%83, block_9, block_10)
+
+  block_9:
+    %84 = BoolLiteral(false, bool)
+    StoreVar("__sc_9_2", %84)
+    Jump(block_10)
+
+  block_10:
+    %85 = LoadVar("__sc_9_2") -> bool
+    DeclareLocal("__sc_9_2", bool, %85)
+    %86 = LoadVar("__sc_9_2") -> bool
+    Branch(%86, block_12, block_11)
+
+  block_11:
+    %87 = BoolLiteral(false, bool)
+    StoreVar("__sc_9_2", %87)
+    Jump(block_12)
+
+  block_12:
+    %88 = LoadVar("__sc_9_2") -> bool
+    DeclareLocal("r7", bool, %88)
+    %89 = LoadVar("r5") -> bool
+    Call(println, [%89], ["borrow"])
+    %90 = LoadVar("r6") -> bool
+    Call(println, [%90], ["borrow"])
+    %91 = LoadVar("r7") -> bool
+    Call(println, [%91], ["borrow"])
+    %92 = IntLiteral(4, int32)
+    DeclareLocal("a", int32, %92)
+    %93 = IntLiteral(2, int32)
+    DeclareLocal("b", int32, %93)
+    %94 = IntLiteral(3, int32)
+    DeclareLocal("c", int32, %94)
+    %95 = LoadVar("a") -> int32
+    %96 = LoadVar("b") -> int32
     %97 = LoadVar("c") -> int32
-    %98 = BinaryOp("+", %96, %97)
-    %99 = BinaryOp(">", %93, %98)
-    DeclareLocal("r8", bool, %99)
+    %98 = BinaryOp("*", %96, %97)
+    %99 = BinaryOp("+", %95, %98)
     %100 = LoadVar("a") -> int32
     %101 = LoadVar("b") -> int32
     %102 = BinaryOp("*", %100, %101)
     %103 = LoadVar("c") -> int32
     %104 = BinaryOp("+", %102, %103)
-    %105 = LoadVar("a") -> int32
-    %106 = LoadVar("b") -> int32
-    %107 = BinaryOp("+", %105, %106)
-    %108 = LoadVar("c") -> int32
-    %109 = BinaryOp("+", %107, %108)
-    %110 = BinaryOp("==", %104, %109)
-    DeclareLocal("r9", bool, %110)
-    %111 = LoadVar("r8") -> bool
-    Call(println, [%111], ["borrow"])
-    %112 = LoadVar("r9") -> bool
-    Call(println, [%112], ["borrow"])
-    %113 = IntLiteral(2, int32)
-    %114 = IntLiteral(3, int32)
+    %105 = BinaryOp(">", %99, %104)
+    DeclareLocal("r8", bool, %105)
+    %106 = LoadVar("a") -> int32
+    %107 = LoadVar("b") -> int32
+    %108 = BinaryOp("*", %106, %107)
+    %109 = LoadVar("c") -> int32
+    %110 = BinaryOp("+", %108, %109)
+    %111 = LoadVar("a") -> int32
+    %112 = LoadVar("b") -> int32
+    %113 = BinaryOp("+", %111, %112)
+    %114 = LoadVar("c") -> int32
     %115 = BinaryOp("+", %113, %114)
-    %116 = IntLiteral(4, int32)
-    %117 = BinaryOp("*", %115, %116)
+    %116 = BinaryOp("==", %110, %115)
+    DeclareLocal("r9", bool, %116)
+    %117 = LoadVar("r8") -> bool
     Call(println, [%117], ["borrow"])
-    %118 = IntLiteral(2, int32)
-    %119 = IntLiteral(3, int32)
-    %120 = IntLiteral(4, int32)
+    %118 = LoadVar("r9") -> bool
+    Call(println, [%118], ["borrow"])
+    %119 = IntLiteral(2, int32)
+    %120 = IntLiteral(3, int32)
     %121 = BinaryOp("+", %119, %120)
-    %122 = BinaryOp("*", %118, %121)
-    Call(println, [%122], ["borrow"])
-    %123 = IntLiteral(10, int32)
+    %122 = IntLiteral(4, int32)
+    %123 = BinaryOp("*", %121, %122)
+    Call(println, [%123], ["borrow"])
     %124 = IntLiteral(2, int32)
-    %125 = BinaryOp("-", %123, %124)
-    %126 = IntLiteral(2, int32)
-    %127 = BinaryOp("**", %125, %126)
-    Call(println, [%127], ["borrow"])
+    %125 = IntLiteral(3, int32)
+    %126 = IntLiteral(4, int32)
+    %127 = BinaryOp("+", %125, %126)
+    %128 = BinaryOp("*", %124, %127)
+    Call(println, [%128], ["borrow"])
+    %129 = IntLiteral(10, int32)
+    %130 = IntLiteral(2, int32)
+    %131 = BinaryOp("-", %129, %130)
+    %132 = IntLiteral(2, int32)
+    %133 = BinaryOp("**", %131, %132)
+    Call(println, [%133], ["borrow"])
     Return()
 }

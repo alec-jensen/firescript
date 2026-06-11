@@ -260,19 +260,20 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
         root.children.append(node)
         seen[name] = node
 
-    def collect_called_function_names(node: ASTNode) -> set[str]:
-        names: set[str] = set()
+    def collect_called_function_names(node: ASTNode) -> list[str]:
+        # First-encounter order (not a set) so the merged AST is deterministic.
+        names: dict[str, None] = {}
 
         def walk(n: ASTNode):
             if getattr(n, "node_type", None) == NodeTypes.FUNCTION_CALL:
                 fn = getattr(n, "name", None)
                 if isinstance(fn, str) and fn:
-                    names.add(fn)
+                    names.setdefault(fn)
             for ch in getattr(n, "children", []) or []:
                 walk(ch)
 
         walk(node)
-        return names
+        return list(names)
 
     # Add exports from all modules in topo order (dependencies first)
     for mod in ordered:
