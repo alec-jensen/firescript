@@ -69,6 +69,33 @@ class ParserBase:
         "syscall_remove": "SyscallResult",  # requires directive enable_syscalls
         "syscall_rename": "SyscallResult",  # requires directive enable_syscalls
         "syscall_move": "SyscallResult",    # requires directive enable_syscalls
+        # Low-level runtime primitives (requires directive enable_lowlevel_runtime).
+        # For the firescript-implemented runtime (std/internal/runtime.fire) only.
+        "mem_load_u8": "uint8",
+        "mem_store_u8": "void",
+        "mem_load_u64": "uint64",
+        "mem_store_u64": "void",
+        "mem_copy": "void",
+        "str_to_addr": "uint64",
+        "addr_to_str": "string",
+        "runtime_state_get": "uint64",
+        "runtime_state_set": "void",
+        # Win32 externs (kernel32.dll imports; requires enable_lowlevel_runtime).
+        "win_get_process_heap": "uint64",
+        "win_heap_alloc": "uint64",
+        "win_heap_free": "uint32",
+        "win_get_std_handle": "uint64",
+        "win_write_file": "int32",
+        "win_read_file": "int32",
+        "win_create_file_a": "uint64",
+        "win_close_handle": "int32",
+        "win_delete_file_a": "int32",
+        "win_move_file_ex_a": "int32",
+        "win_copy_file_a": "int32",
+        "win_get_last_error": "uint32",
+        "win_get_command_line_a": "uint64",
+        "win_get_file_size": "uint32",
+        "win_exit_process": "void",
     }
 
     # Register for user-defined methods (className -> methodName -> signature)

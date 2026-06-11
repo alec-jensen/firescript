@@ -65,6 +65,31 @@ INTRINSIC_FUNCTIONS = frozenset(
         "i64_to_str",
         "f64_to_str",
         "f32_to_str",
+        # Low-level runtime primitives (enable_lowlevel_runtime)
+        "mem_load_u8",
+        "mem_store_u8",
+        "mem_load_u64",
+        "mem_store_u64",
+        "mem_copy",
+        "str_to_addr",
+        "addr_to_str",
+        "runtime_state_get",
+        "runtime_state_set",
+        "win_get_process_heap",
+        "win_heap_alloc",
+        "win_heap_free",
+        "win_get_std_handle",
+        "win_write_file",
+        "win_read_file",
+        "win_create_file_a",
+        "win_close_handle",
+        "win_delete_file_a",
+        "win_move_file_ex_a",
+        "win_copy_file_a",
+        "win_get_last_error",
+        "win_get_command_line_a",
+        "win_get_file_size",
+        "win_exit_process",
     }
 )
 
@@ -98,6 +123,30 @@ INTRINSIC_RETURN_TYPES: dict[str, str] = {
     "i64_to_str": "string",
     "f64_to_str": "string",
     "f32_to_str": "string",
+    "mem_load_u8": "uint8",
+    "mem_store_u8": "void",
+    "mem_load_u64": "uint64",
+    "mem_store_u64": "void",
+    "mem_copy": "void",
+    "str_to_addr": "uint64",
+    "addr_to_str": "string",
+    "runtime_state_get": "uint64",
+    "runtime_state_set": "void",
+    "win_get_process_heap": "uint64",
+    "win_heap_alloc": "uint64",
+    "win_heap_free": "uint32",
+    "win_get_std_handle": "uint64",
+    "win_write_file": "int32",
+    "win_read_file": "int32",
+    "win_create_file_a": "uint64",
+    "win_close_handle": "int32",
+    "win_delete_file_a": "int32",
+    "win_move_file_ex_a": "int32",
+    "win_copy_file_a": "int32",
+    "win_get_last_error": "uint32",
+    "win_get_command_line_a": "uint64",
+    "win_get_file_size": "uint32",
+    "win_exit_process": "void",
 }
 
 COMPOUND_OP_MAP = {
@@ -126,9 +175,11 @@ class FIRConversionError(Exception):
 class ASTToFIRConverter:
     """Convert a semantic-analyzed AST into a FIRModule."""
 
-    def __init__(self, ast: ASTNode, module_name: str = "firescript"):
+    def __init__(self, ast: ASTNode, module_name: str = "firescript", is_runtime_module: bool = False):
         self.ast = ast
         self.module = FIRModule(module_name)
+        # Runtime modules contain only definitions; no synthetic main.
+        self.is_runtime_module = is_runtime_module
 
         # Program-wide registries (filled by _collect_program_info)
         self.class_fields: dict[str, list[tuple[str, str]]] = {}
@@ -183,7 +234,12 @@ class ASTToFIRConverter:
             else:
                 top_level_statements.append(child)
 
-        if user_main is not None:
+        if self.is_runtime_module:
+            if top_level_statements:
+                raise FIRConversionError(
+                    "Runtime modules must not contain top-level statements"
+                )
+        elif user_main is not None:
             self._convert_function(user_main)
             if top_level_statements:
                 logging.warning(

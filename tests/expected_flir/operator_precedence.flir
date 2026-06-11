@@ -32,7 +32,7 @@ func @fs_main() -> void {
     %22 = const.i32 2
     %23 = cvt.i32_to_i64 %21
     %24 = cvt.i32_to_i64 %22
-    %25 = call.i64 @fs_rt_pow_i64(%23, %24)
+    %25 = call.i64 @impl_fs_rt_pow_i64(%23, %24)
     %26 = cvt.i64_to_i32 %25
     %27 = mul.i32 %20, %26
     call.void @println__int32(%27)
@@ -41,7 +41,7 @@ func @fs_main() -> void {
     %30 = const.i32 2
     %31 = cvt.i32_to_i64 %29
     %32 = cvt.i32_to_i64 %30
-    %33 = call.i64 @fs_rt_pow_i64(%31, %32)
+    %33 = call.i64 @impl_fs_rt_pow_i64(%31, %32)
     %34 = cvt.i64_to_i32 %33
     %35 = div.i32 %28, %34
     call.void @println__int32(%35)
@@ -50,7 +50,7 @@ func @fs_main() -> void {
     %38 = const.i32 3
     %39 = cvt.i32_to_i64 %37
     %40 = cvt.i32_to_i64 %38
-    %41 = call.i64 @fs_rt_pow_i64(%39, %40)
+    %41 = call.i64 @impl_fs_rt_pow_i64(%39, %40)
     %42 = cvt.i64_to_i32 %41
     %43 = sub.i32 %36, %42
     call.void @println__int32(%43)
@@ -243,7 +243,7 @@ func @fs_main() -> void {
     %141 = const.i32 2
     %142 = cvt.i32_to_i64 %140
     %143 = cvt.i32_to_i64 %141
-    %144 = call.i64 @fs_rt_pow_i64(%142, %143)
+    %144 = call.i64 @impl_fs_rt_pow_i64(%142, %143)
     %145 = cvt.i64_to_i32 %144
     call.void @println__int32(%145)
     ret
@@ -257,6 +257,35 @@ func @println__int32(value: i32) -> void {
     %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
     call.void @fs_rt_stdout(%3)
     ret
+}
+
+func @impl_fs_rt_pow_i64(base: i64, exp: i64) -> i64 {
+  L0:
+    %0 = const.i64 1
+    slot result: i64
+    slotstore result, %0
+    jmp L1
+
+  L1:
+    %1 = slotload.i64 exp
+    %2 = const.i64 0
+    %3 = gt.i64 %1, %2
+    br %3, L2, L3
+
+  L2:
+    %4 = slotload.i64 result
+    %5 = slotload.i64 base
+    %6 = mul.i64 %4, %5
+    slotstore result, %6
+    %7 = slotload.i64 exp
+    %8 = const.i64 1
+    %9 = sub.i64 %7, %8
+    slotstore exp, %9
+    jmp L1
+
+  L3:
+    %10 = slotload.i64 result
+    ret %10
 }
 
 func @println__bool(value: bool) -> void {

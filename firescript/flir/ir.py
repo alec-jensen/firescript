@@ -383,7 +383,7 @@ class SlotAddr(FInst):
 
 
 class GlobalLoad(FInst):
-    """Read a module-level constant."""
+    """Read a module-level constant or mutable global cell."""
 
     opcode = "gload"
 
@@ -393,6 +393,19 @@ class GlobalLoad(FInst):
 
     def format(self, resolve: Resolver) -> str:
         return f"gload.{self.result_type.render()} @{self.name}"
+
+
+class GlobalStore(FInst):
+    """Write a mutable module-level global cell."""
+
+    opcode = "gstore"
+
+    def __init__(self, name: str, value: FValue):
+        super().__init__(operands=[value])
+        self.name = name
+
+    def format(self, resolve: Resolver) -> str:
+        return f"gstore @{self.name}, {resolve(self.operands[0])}"
 
 
 class Call(FInst):
@@ -519,6 +532,10 @@ class FLIRModule:
         self.structs: list[FLIRStruct] = []
         self.functions: list[FLIRFunction] = []
         self.globals: list[tuple[str, FLIRType, str]] = []  # (name, type, literal text)
+        # Mutable global cells: (name, type, zero-initialized)
+        self.mutable_globals: list[tuple[str, FLIRType]] = []
+        # External imports: symbol -> (dll, return type, param types)
+        self.externs: dict[str, tuple[str, FLIRType, list[FLIRType]]] = {}
         self.entry_function: Optional[str] = None
         self._struct_index: dict[str, FLIRStruct] = {}
 

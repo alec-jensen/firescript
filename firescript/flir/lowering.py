@@ -89,6 +89,7 @@ from flir.ir import (
     FLIRStruct,
     FLIRType,
     FValue,
+    GlobalStore,
     I8,
     I16,
     I32,
@@ -200,7 +201,7 @@ class _FuncCtx:
 
 
 class FIRToFLIRLowering:
-    def __init__(self, fir_module: FIRModule):
+    def __init__(self, fir_module: FIRModule, runtime_module: Optional[FIRModule] = None):
         self.fir = fir_module
         self.flir = FLIRModule(fir_module.name)
 
@@ -209,6 +210,13 @@ class FIRToFLIRLowering:
             c.name: sanitize(c.name) for c in fir_module.constants
         }
         self.fir_funcs: dict[str, FIRFunction] = {f.name: f for f in fir_module.functions}
+        if runtime_module is not None:
+            # The firescript-implemented runtime: functions become callable
+            # targets for fs_rt_* routing but stay out of the user's FIR dump.
+            for func in runtime_module.functions:
+                self.fir_funcs.setdefault(func.name, func)
+            for type_def in runtime_module.types:
+                self.typedefs.setdefault(type_def.name, type_def)
         # (fir name, tuple(type_args)) -> lowered name; also marks enqueued work
         self.lowered_names: dict[tuple[str, tuple], str] = {}
         self.worklist: list[tuple[FIRFunction, dict[str, str], str]] = []
@@ -386,6 +394,10 @@ class FIRToFLIRLowering:
                 continue
             if func.is_generator:
                 continue
+            if func.name.startswith("fs_rt_"):
+                # Runtime implementations lower on demand via rt_call so
+                # they get the impl_ prefix and dead ones are skipped.
+                continue
             method_class = func.metadata.get("class_name")
             if method_class and self.typedefs.get(method_class) and self.typedefs[method_class].generic_params:
                 continue  # methods of generic classes lower per instantiation
@@ -411,6 +423,10 @@ class FIRToFLIRLowering:
         if func is None:
             raise LoweringError(f"call to unknown function {fir_name}")
         lowered = mangle_mono("fs_main" if fir_name == "main" else fir_name, type_args)
+        if fir_name.startswith("fs_rt_"):
+            # firescript-implemented runtime entry point: keep it distinct
+            # from the backend-provided fs_rt_* shim namespace.
+            lowered = "impl_" + lowered
         self.lowered_names[key] = lowered
         type_map = dict(zip(func.generic_params, type_args))
         if func.is_generator:
@@ -658,7 +674,7 @@ class FIRToFLIRLowering:
         count = array_type.size if array_type.size is not None else len(inst.operands)
 
         total = ctx.emit(ConstInt(str(max(count, 1) * elem_size), I64))
-        ptr = ctx.emit(Call("fs_rt_alloc_zeroed", [total], PTR))
+        ptr = self.rt_call("fs_rt_alloc_zeroed", [total], PTR, ctx)
         for i, operand in enumerate(inst.operands):
             value = self.val(operand, ctx)
             ctx.emit(Store(elem_type, ptr, i * elem_size, value))
@@ -685,13 +701,13 @@ class FIRToFLIRLowering:
 
         if string_operands:
             if op == "+":
-                self.set_val(inst, ctx.emit(Call("fs_rt_str_concat", [lhs, rhs], ptr_to("i8"))), ctx)
+                self.set_val(inst, self.rt_call("fs_rt_str_concat", [lhs, rhs], ptr_to("i8"), ctx), ctx)
                 return
             if op == "==":
-                self.set_val(inst, ctx.emit(Call("fs_rt_str_eq", [lhs, rhs], BOOL)), ctx)
+                self.set_val(inst, self.rt_call("fs_rt_str_eq", [lhs, rhs], BOOL, ctx), ctx)
                 return
             if op == "!=":
-                eq = ctx.emit(Call("fs_rt_str_eq", [lhs, rhs], BOOL))
+                eq = self.rt_call("fs_rt_str_eq", [lhs, rhs], BOOL, ctx)
                 self.set_val(inst, ctx.emit(Not(eq)), ctx)
                 return
             raise LoweringError(f"unsupported string operator {op}")
@@ -712,12 +728,12 @@ class FIRToFLIRLowering:
             if operand_type.kind in int_kinds and self.lower_type_str(rhs_type_str, ctx.type_map).kind in int_kinds:
                 lhs64 = self._cvt_to(lhs, operand_type, I64, ctx)
                 rhs64 = self._cvt_to(rhs, self.lower_type_str(rhs_type_str, ctx.type_map), I64, ctx)
-                powed = ctx.emit(Call("fs_rt_pow_i64", [lhs64, rhs64], I64))
+                powed = self.rt_call("fs_rt_pow_i64", [lhs64, rhs64], I64, ctx)
                 self.set_val(inst, self._cvt_to(powed, I64, result_type, ctx), ctx)
             else:
                 lhs64 = self._cvt_to(lhs, operand_type, F64, ctx)
                 rhs64 = self._cvt_to(rhs, self.lower_type_str(rhs_type_str, ctx.type_map), F64, ctx)
-                powed = ctx.emit(Call("fs_rt_pow_f64", [lhs64, rhs64], F64))
+                powed = self.rt_call("fs_rt_pow_f64", [lhs64, rhs64], F64, ctx)
                 self.set_val(inst, self._cvt_to(powed, F64, result_type, ctx), ctx)
             return
 
@@ -768,22 +784,22 @@ class FIRToFLIRLowering:
 
         if source_str == "string":
             if target_str in ("int64", "uint64"):
-                parsed = ctx.emit(Call("fs_rt_str_to_i64", [value], I64))
+                parsed = self.rt_call("fs_rt_str_to_i64", [value], I64, ctx)
                 self.set_val(inst, self._cvt_to(parsed, I64, target_type, ctx), ctx)
                 return
             if target_str in int_targets:
-                parsed = ctx.emit(Call("fs_rt_str_to_i32", [value], I32))
+                parsed = self.rt_call("fs_rt_str_to_i32", [value], I32, ctx)
                 self.set_val(inst, self._cvt_to(parsed, I32, target_type, ctx), ctx)
                 return
             if target_str in float_targets:
-                parsed = ctx.emit(Call("fs_rt_str_to_f64", [value], F64))
+                parsed = self.rt_call("fs_rt_str_to_f64", [value], F64, ctx)
                 self.set_val(inst, self._cvt_to(parsed, F64, target_type, ctx), ctx)
                 return
             if target_str == "bool":
-                self.set_val(inst, ctx.emit(Call("fs_rt_str_to_bool", [value], BOOL)), ctx)
+                self.set_val(inst, self.rt_call("fs_rt_str_to_bool", [value], BOOL, ctx), ctx)
                 return
             if target_str == "char":
-                code = ctx.emit(Call("fs_rt_str_char_code", [value], I8))
+                code = self.rt_call("fs_rt_str_char_code", [value], I8, ctx)
                 self.set_val(inst, code, ctx)
                 return
 
@@ -795,25 +811,25 @@ class FIRToFLIRLowering:
             return self._array_to_string(value, source_str[:-2], source_fir, ctx)
         match source_str:
             case "string":
-                return ctx.emit(Call("fs_rt_str_dup", [value], ptr_to("i8")))
+                return self.rt_call("fs_rt_str_dup", [value], ptr_to("i8"), ctx)
             case "bool":
-                return ctx.emit(Call("fs_rt_bool_to_str", [value], ptr_to("i8")))
+                return self.rt_call("fs_rt_bool_to_str", [value], ptr_to("i8"), ctx)
             case "char":
-                return ctx.emit(Call("fs_rt_char_to_str", [value], ptr_to("i8")))
+                return self.rt_call("fs_rt_char_to_str", [value], ptr_to("i8"), ctx)
             case "int8" | "int16" | "int32":
                 v32 = self._cvt_to(value, self.lower_type_str(source_str, ctx.type_map), I32, ctx)
-                return ctx.emit(Call("fs_rt_i32_to_str", [v32], ptr_to("i8")))
+                return self.rt_call("fs_rt_i32_to_str", [v32], ptr_to("i8"), ctx)
             case "int64":
-                return ctx.emit(Call("fs_rt_i64_to_str", [value], ptr_to("i8")))
+                return self.rt_call("fs_rt_i64_to_str", [value], ptr_to("i8"), ctx)
             case "uint8" | "uint16" | "uint32":
                 v32 = self._cvt_to(value, self.lower_type_str(source_str, ctx.type_map), U32, ctx)
-                return ctx.emit(Call("fs_rt_u32_to_str", [v32], ptr_to("i8")))
+                return self.rt_call("fs_rt_u32_to_str", [v32], ptr_to("i8"), ctx)
             case "uint64":
-                return ctx.emit(Call("fs_rt_u64_to_str", [value], ptr_to("i8")))
+                return self.rt_call("fs_rt_u64_to_str", [value], ptr_to("i8"), ctx)
             case "float32":
-                return ctx.emit(Call("fs_rt_f32_to_str", [value], ptr_to("i8")))
+                return self.rt_call("fs_rt_f32_to_str", [value], ptr_to("i8"), ctx)
             case "float64" | "float128":
-                return ctx.emit(Call("fs_rt_f64_to_str", [value], ptr_to("i8")))
+                return self.rt_call("fs_rt_f64_to_str", [value], ptr_to("i8"), ctx)
         raise LoweringError(f"cannot convert {source_str} to string")
 
     def _array_to_string(self, array: FValue, elem_str: str, source_fir: Value, ctx: _FuncCtx) -> FValue:
@@ -828,7 +844,7 @@ class FIRToFLIRLowering:
         idx_slot = ctx.temp("arridx")
         self.ensure_slot(result_slot, ptr_to("i8"), ctx)
         self.ensure_slot(idx_slot, I32, ctx)
-        opener = ctx.emit(Call("fs_rt_str_dup", [ctx.emit(ConstStr("["))], ptr_to("i8")))
+        opener = self.rt_call("fs_rt_str_dup", [ctx.emit(ConstStr("["))], ptr_to("i8"), ctx)
         ctx.emit(SlotStore(result_slot, opener))
         ctx.emit(SlotStore(idx_slot, ctx.emit(ConstInt("0", I32))))
 
@@ -854,7 +870,7 @@ class FIRToFLIRLowering:
         ctx.block = sep_block
         cur = ctx.emit(SlotLoad(result_slot, ptr_to("i8")))
         sep = ctx.emit(ConstStr(", "))
-        joined = ctx.emit(Call("fs_rt_str_concat", [cur, sep], ptr_to("i8")))
+        joined = self.rt_call("fs_rt_str_concat", [cur, sep], ptr_to("i8"), ctx)
         ctx.emit(SlotStore(result_slot, joined))
         ctx.emit(Jmp(append_block.id))
 
@@ -864,7 +880,7 @@ class FIRToFLIRLowering:
         elem = ctx.emit(Load(elem_type, addr, 0))
         elem_text = self._to_string(elem, elem_str, None, ctx) if elem_str != "string" else elem
         cur2 = ctx.emit(SlotLoad(result_slot, ptr_to("i8")))
-        joined2 = ctx.emit(Call("fs_rt_str_concat", [cur2, elem_text], ptr_to("i8")))
+        joined2 = self.rt_call("fs_rt_str_concat", [cur2, elem_text], ptr_to("i8"), ctx)
         ctx.emit(SlotStore(result_slot, joined2))
         one = ctx.emit(ConstInt("1", I32))
         nxt = ctx.emit(BinOp("add", I32, idx_a, one, I32))
@@ -874,7 +890,7 @@ class FIRToFLIRLowering:
         ctx.block = done
         cur3 = ctx.emit(SlotLoad(result_slot, ptr_to("i8")))
         closer = ctx.emit(ConstStr("]"))
-        return ctx.emit(Call("fs_rt_str_concat", [cur3, closer], ptr_to("i8")))
+        return self.rt_call("fs_rt_str_concat", [cur3, closer], ptr_to("i8"), ctx)
 
     # -- objects -----------------------------------------------------------
 
@@ -891,14 +907,14 @@ class FIRToFLIRLowering:
             self.ensure_slot(slot, struct_type(struct_name), ctx)
             base = ctx.emit(SlotAddr(slot, struct_name))
             zero_total = ctx.emit(ConstInt(str(struct.size), I64))
-            ctx.emit(Call("fs_rt_zero_memory", [base, zero_total], VOID))
+            self.rt_call("fs_rt_zero_memory", [base, zero_total], VOID, ctx)
             for (fname, ftype, offset), value in zip(struct.fields, args):
                 ctx.emit(Store(ftype, base, offset, value))
             self.set_val(inst, ctx.emit(SlotLoad(slot, struct_type(struct_name))), ctx)
             return
 
         size = ctx.emit(ConstInt(str(struct.size), I64))
-        ptr = ctx.emit(Call("fs_rt_alloc_zeroed", [size], ptr_to(struct_name)))
+        ptr = self.rt_call("fs_rt_alloc_zeroed", [size], ptr_to(struct_name), ctx)
         for (fname, ftype, offset), value in zip(struct.fields, args):
             ctx.emit(Store(ftype, ptr, offset, value))
         self.set_val(inst, ptr, ctx)
@@ -1058,7 +1074,7 @@ class FIRToFLIRLowering:
             isinstance(fir_value, FIRValue)
             and isinstance(fir_value.instruction, StringLiteralInst)
         ):
-            return ctx.emit(Call("fs_rt_str_dup", [value], ptr_to("i8")))
+            return self.rt_call("fs_rt_str_dup", [value], ptr_to("i8"), ctx)
         return value
 
     def _zero_value(self, lowered_type: FLIRType, ctx: _FuncCtx) -> Optional[FValue]:
@@ -1148,14 +1164,14 @@ class FIRToFLIRLowering:
                     inner_destroy = self.ensure_destructor(inner_struct)
                     ctx.emit(Call(inner_destroy, [field_val], VOID))
                 else:
-                    ctx.emit(Call("fs_rt_free", [field_val], VOID))
+                    self.rt_call("fs_rt_free", [field_val], VOID, ctx)
             else:
-                ctx.emit(Call("fs_rt_free", [field_val], VOID))
+                self.rt_call("fs_rt_free", [field_val], VOID, ctx)
             ctx.emit(Jmp(next_block.id))
             ctx.block = next_block
 
         self_final = ctx.emit(SlotLoad("self", ptr_to(struct_name)))
-        ctx.emit(Call("fs_rt_free", [self_final], VOID))
+        self.rt_call("fs_rt_free", [self_final], VOID, ctx)
         ctx.emit(Ret())
         return destroy_name
 
@@ -1174,7 +1190,7 @@ class FIRToFLIRLowering:
             if self.class_needs_destructor(struct_name):
                 ctx.emit(Call(self.ensure_destructor(struct_name), [value], VOID))
                 return
-        ctx.emit(Call("fs_rt_free", [value], VOID))
+        self.rt_call("fs_rt_free", [value], VOID, ctx)
 
     # -- calls ----------------------------------------------------------------
 
@@ -1197,9 +1213,92 @@ class FIRToFLIRLowering:
         "syscall_move": ("fs_rt_syscall_move", "SyscallResult"),
     }
 
+    # Win32 externs: fir intrinsic -> (symbol, dll, return type, param types)
+    _WIN_EXTERNS = {
+        "win_get_process_heap": ("GetProcessHeap", U64, []),
+        "win_heap_alloc": ("HeapAlloc", U64, [U64, U32, U64]),
+        "win_heap_free": ("HeapFree", U32, [U64, U32, U64]),
+        "win_get_std_handle": ("GetStdHandle", U64, [I32]),
+        "win_write_file": ("WriteFile", I32, [U64, U64, U32, U64, U64]),
+        "win_read_file": ("ReadFile", I32, [U64, U64, U32, U64, U64]),
+        "win_create_file_a": ("CreateFileA", U64, [U64, U32, U32, U64, U32, U32, U64]),
+        "win_close_handle": ("CloseHandle", I32, [U64]),
+        "win_delete_file_a": ("DeleteFileA", I32, [U64]),
+        "win_move_file_ex_a": ("MoveFileExA", I32, [U64, U64, U32]),
+        "win_copy_file_a": ("CopyFileA", I32, [U64, U64, I32]),
+        "win_get_last_error": ("GetLastError", U32, []),
+        "win_get_command_line_a": ("GetCommandLineA", U64, []),
+        "win_get_file_size": ("GetFileSize", U32, [U64, U64]),
+        "win_exit_process": ("ExitProcess", VOID, [U32]),
+    }
+
+    _MEM_OPS = {
+        "mem_load_u8": (U8, "load"),
+        "mem_store_u8": (U8, "store"),
+        "mem_load_u64": (U64, "load"),
+        "mem_store_u64": (U64, "store"),
+    }
+
+    def _lower_lowlevel_intrinsic(self, inst: CallInst, name: str, args: list[FValue], ctx: _FuncCtx) -> bool:
+        """Lower mem_*/win_*/state primitives. Returns True when handled."""
+        if name in self._MEM_OPS:
+            value_type, kind = self._MEM_OPS[name]
+            addr = ctx.emit(Cvt(args[0], U64, PTR))
+            if kind == "load":
+                self.set_val(inst, ctx.emit(Load(value_type, addr, 0)), ctx)
+            else:
+                ctx.emit(Store(value_type, addr, 0, args[1]))
+            return True
+        if name == "mem_copy":
+            dst = ctx.emit(Cvt(args[0], U64, PTR))
+            src = ctx.emit(Cvt(args[1], U64, PTR))
+            ctx.emit(Call("fs_rt_mem_copy", [dst, src, args[2]], VOID))
+            return True
+        if name == "str_to_addr":
+            self.set_val(inst, ctx.emit(Cvt(args[0], ptr_to("i8"), U64)), ctx)
+            return True
+        if name == "addr_to_str":
+            self.set_val(inst, ctx.emit(Cvt(args[0], U64, ptr_to("i8"))), ctx)
+            return True
+        if name == "runtime_state_get":
+            self._ensure_state_cell()
+            self.set_val(inst, ctx.emit(GlobalLoad("__fs_runtime_state", U64)), ctx)
+            return True
+        if name == "runtime_state_set":
+            self._ensure_state_cell()
+            ctx.emit(GlobalStore("__fs_runtime_state", args[0]))
+            return True
+        if name in self._WIN_EXTERNS:
+            symbol, ret_type, param_types = self._WIN_EXTERNS[name]
+            self.flir.externs.setdefault(symbol, ("kernel32.dll", ret_type, param_types))
+            converted = []
+            for arg, ptype in zip(args, param_types):
+                from_type = arg.value_type if arg.value_type is not None else ptype
+                converted.append(self._cvt_to(arg, from_type, ptype, ctx))
+            result = ctx.emit(Call(symbol, converted, ret_type))
+            if result is not None:
+                self.set_val(inst, result, ctx)
+            return True
+        return False
+
+    def _ensure_state_cell(self) -> None:
+        if not any(n == "__fs_runtime_state" for n, _ in self.flir.mutable_globals):
+            self.flir.mutable_globals.append(("__fs_runtime_state", U64))
+
+    def rt_call(self, name: str, args: list[FValue], ret_type: FLIRType, ctx: _FuncCtx) -> Optional[FValue]:
+        """Call a runtime entry point, preferring the firescript-implemented
+        version (std/internal/runtime.fire) when present in the module."""
+        if name in self.fir_funcs:
+            lowered = self.request_function(name, [])
+            return ctx.emit(Call(lowered, args, ret_type))
+        return ctx.emit(Call(name, args, ret_type))
+
     def lower_call(self, inst: CallInst, ctx: _FuncCtx) -> None:
         name = inst.function_ref
         args = [self.val(op, ctx) for op in inst.operands]
+
+        if self._lower_lowlevel_intrinsic(inst, name, args, ctx):
+            return
 
         if name in self._INTRINSIC_MAP:
             rt_name, ret = self._INTRINSIC_MAP[name]
@@ -1210,7 +1309,7 @@ class FIRToFLIRLowering:
                 ret_type = struct_type(struct_name)
             else:
                 ret_type = ret
-            result = ctx.emit(Call(rt_name, args, ret_type))
+            result = self.rt_call(rt_name, args, ret_type, ctx)
             if result is not None:
                 self.set_val(inst, result, ctx)
             return
@@ -1298,33 +1397,33 @@ class FIRToFLIRLowering:
         source_type = self.lower_type_str(source_str, ctx.type_map)
         if name in ("toInt", "int"):
             if source_str == "string":
-                self.set_val(inst, ctx.emit(Call("fs_rt_str_to_i32", [value], I32)), ctx)
+                self.set_val(inst, self.rt_call("fs_rt_str_to_i32", [value], I32, ctx), ctx)
             else:
                 self.set_val(inst, self._cvt_to(value, source_type, I32, ctx), ctx)
             return
         if name == "toFloat":
             if source_str == "string":
-                parsed = ctx.emit(Call("fs_rt_str_to_f64", [value], F64))
+                parsed = self.rt_call("fs_rt_str_to_f64", [value], F64, ctx)
                 self.set_val(inst, self._cvt_to(parsed, F64, F32, ctx), ctx)
             else:
                 self.set_val(inst, self._cvt_to(value, source_type, F32, ctx), ctx)
             return
         if name == "toDouble":
             if source_str == "string":
-                self.set_val(inst, ctx.emit(Call("fs_rt_str_to_f64", [value], F64)), ctx)
+                self.set_val(inst, self.rt_call("fs_rt_str_to_f64", [value], F64, ctx), ctx)
             else:
                 self.set_val(inst, self._cvt_to(value, source_type, F64, ctx), ctx)
             return
         if name == "toBool":
             if source_str == "string":
-                self.set_val(inst, ctx.emit(Call("fs_rt_str_to_bool", [value], BOOL)), ctx)
+                self.set_val(inst, self.rt_call("fs_rt_str_to_bool", [value], BOOL, ctx), ctx)
             else:
                 zero = self._zero_value(source_type, ctx)
                 self.set_val(inst, ctx.emit(BinOp("ne", source_type, value, zero, BOOL)), ctx)
             return
         if name == "toChar":
             if source_str == "string":
-                self.set_val(inst, ctx.emit(Call("fs_rt_str_char_code", [value], I8)), ctx)
+                self.set_val(inst, self.rt_call("fs_rt_str_char_code", [value], I8, ctx), ctx)
             else:
                 self.set_val(inst, self._cvt_to(value, source_type, I8, ctx), ctx)
             return
@@ -1369,7 +1468,7 @@ class FIRToFLIRLowering:
         addr = ctx.emit(PtrAdd(array, idx_b, elem_size))
         elem = ctx.emit(Load(elem_type, addr, 0))
         if elem_str == "string":
-            matches = ctx.emit(Call("fs_rt_str_eq", [elem, needle], BOOL))
+            matches = self.rt_call("fs_rt_str_eq", [elem, needle], BOOL, ctx)
         else:
             matches = ctx.emit(BinOp("eq", elem_type, elem, needle, BOOL))
         ctx.emit(Br(matches, hit.id, cont.id))

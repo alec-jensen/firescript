@@ -48,3 +48,4 @@ class CompilerDirective(Enum):
     ENABLE_DROPS = "enable_drops"
     ENABLE_LOWLEVEL_STDOUT = "enable_lowlevel_stdout"
     ENABLE_PROCESS_ARGS = "enable_process_args"
+    ENABLE_LOWLEVEL_RUNTIME = "enable_lowlevel_runtime"

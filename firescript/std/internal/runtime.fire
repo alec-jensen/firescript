@@ -1,0 +1,58 @@
+// firescript runtime, implemented in firescript.
+//
+// This module is compiled through the normal pipeline and merged into
+// every program built with the FIR backends. Functions named fs_rt_*
+// implement the FLIR runtime ABI (see FIR_flir_spec.md); the lowering
+// routes runtime calls here instead of to backend-provided shims.
+//
+// Rules for code in this file:
+// - Only lowlevel primitives (mem_*, win_*, str_to_addr/addr_to_str)
+//   and other fs_rt_* functions may be used; no std imports.
+// - Inside a function fs_rt_X, do not use language constructs that
+//   lower to fs_rt_X itself (e.g. no string + inside fs_rt_str_concat).
+
+directive enable_lowlevel_runtime;
+
+// ---- integer exponentiation (** operator) ----
+
+int64 fs_rt_pow_i64(int64 base, int64 exp) {
+    int64 result = 1i64;
+    while (exp > 0i64) {
+        result = result * base;
+        exp = exp - 1i64;
+    }
+    return result;
+}
+
+float64 fs_rt_pow_f64(float64 base, float64 exp) {
+    float64 result = 1.0;
+    if (exp < 0.0) {
+        float64 acc = 1.0;
+        int64 e = (-exp) as int64;
+        while (e > 0i64) {
+            acc = acc * base;
+            e = e - 1i64;
+        }
+        return 1.0 / acc;
+    }
+    int64 e2 = exp as int64;
+    while (e2 > 0i64) {
+        result = result * base;
+        e2 = e2 - 1i64;
+    }
+    return result;
+}
+
+// ---- string primitives (strings are NUL-terminated byte buffers) ----
+
+int32 fs_rt_str_length(&string s) {
+    uint64 addr = str_to_addr(s);
+    if (addr == 0u64) {
+        return 0;
+    }
+    int32 len = 0;
+    while (mem_load_u8(addr + (len as uint64)) != 0u8) {
+        len = len + 1;
+    }
+    return len;
+}

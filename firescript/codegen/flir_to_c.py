@@ -29,6 +29,7 @@ from flir.ir import (
     FLIRType,
     FValue,
     GlobalLoad,
+    GlobalStore,
     Jmp,
     Load,
     Neg,
@@ -84,6 +85,7 @@ static void* fs_rt_alloc_zeroed(int64_t n) {
 }
 static void fs_rt_free(void* p) { firescript_free(p); }
 static void fs_rt_zero_memory(void* p, int64_t n) { memset(p, 0, (size_t)n); }
+static void fs_rt_mem_copy(void* dst, const void* src, uint64_t n) { memmove(dst, src, (size_t)n); }
 static char* fs_rt_str_dup(const char* s) { return firescript_strdup(s ? s : ""); }
 static char* fs_rt_str_concat(const char* a, const char* b) { return firescript_strcat(a, b); }
 static bool fs_rt_str_eq(const char* a, const char* b) { return firescript_strcmp(a ? a : "", b ? b : ""); }
@@ -188,6 +190,13 @@ class FLIRToCBackend:
             "",
         ]
 
+        # Win32 extern prototypes (resolved by the kernel32 import library).
+        for symbol, (dll, ret, params) in sorted(self.module.externs.items()):
+            params_text = ", ".join(self.c_type(p) for p in params) or "void"
+            self.out.append(f"extern {self.c_type(ret)} __stdcall {symbol}({params_text});")
+        if self.module.externs:
+            self.out.append("")
+
         for struct in self.module.structs:
             self._emit_struct(struct)
 
@@ -203,7 +212,9 @@ class FLIRToCBackend:
 
         for gname, gtype, literal in self.module.globals:
             self.out.append(f"static const {self.c_type(gtype)} fsg_{gname} = {literal};")
-        if self.module.globals:
+        for gname, gtype in self.module.mutable_globals:
+            self.out.append(f"static {self.c_type(gtype)} fsg_mut_{gname} = 0;")
+        if self.module.globals or self.module.mutable_globals:
             self.out.append("")
 
         # Forward declarations (order independence).
@@ -299,7 +310,11 @@ class FLIRToCBackend:
         if isinstance(inst, ConstNull):
             return f"{ref(inst.result())} = NULL;"
         if isinstance(inst, GlobalLoad):
-            return f"{ref(inst.result())} = fsg_{inst.name};"
+            mutable_names = {n for n, _ in self.module.mutable_globals}
+            prefix = "fsg_mut_" if inst.name in mutable_names else "fsg_"
+            return f"{ref(inst.result())} = {prefix}{inst.name};"
+        if isinstance(inst, GlobalStore):
+            return f"fsg_mut_{inst.name} = {ref(inst.operands[0])};"
         if isinstance(inst, BinOp):
             op = _BINOPS[inst.op]
             lhs = ref(inst.operands[0])

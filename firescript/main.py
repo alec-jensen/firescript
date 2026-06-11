@@ -80,6 +80,40 @@ def detect_c_compiler():
     return compiler
 
 
+_RUNTIME_FIR_CACHE = None
+
+
+def _runtime_fir_module():
+    """Compile std/internal/runtime.fire (the firescript-implemented
+    runtime) to a FIR module, cached per process. Lowering routes fs_rt_*
+    calls to these implementations."""
+    global _RUNTIME_FIR_CACHE
+    if _RUNTIME_FIR_CACHE is None:
+        from ast_to_fir import ASTToFIRConverter
+
+        runtime_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "std", "internal", "runtime.fire"
+        )
+        with open(runtime_path, "r", encoding="utf-8") as f:
+            runtime_source = f.read()
+        pipeline = CompilerPipeline(runtime_source, os.path.relpath(runtime_path), runtime_path)
+        runtime_ast = pipeline.parse()
+        if pipeline.parser_errors:
+            raise RuntimeError(
+                f"runtime module failed to parse: {len(pipeline.parser_errors)} errors"
+            )
+        runtime_ast = pipeline.preprocess()
+        analyzer = pipeline.analyze_semantics()
+        if analyzer.errors:
+            analyzer.report_errors()
+            raise RuntimeError(
+                f"runtime module failed semantic analysis: {len(analyzer.errors)} errors"
+            )
+        converter = ASTToFIRConverter(runtime_ast, module_name="fs_runtime", is_runtime_module=True)
+        _RUNTIME_FIR_CACHE = converter.convert()
+    return _RUNTIME_FIR_CACHE
+
+
 def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=False, emit_deps=False, no_link=False, link_args=None, backend="c-legacy", emit_fir=False, emit_flir=False):
     """Compile a single firescript file"""
     if link_args is None:
@@ -201,7 +235,7 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
 
         base_name = os.path.splitext(os.path.basename(file_path))[0]
         try:
-            flir_module = FIRToFLIRLowering(fir_module).lower()
+            flir_module = FIRToFLIRLowering(fir_module, runtime_module=_runtime_fir_module()).lower()
         except Exception as e:
             logging.error(f"FIR->FLIR lowering failed: {e}")
             import traceback

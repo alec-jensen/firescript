@@ -10,9 +10,17 @@ def dump_flir_module(module: FLIRModule) -> str:
     if module.entry_function:
         lines.append(f"entry @{module.entry_function}")
 
+    for symbol, (dll, ret, params) in sorted(module.externs.items()):
+        params_text = ", ".join(p.render() for p in params)
+        lines.append(f'extern @{symbol}({params_text}) -> {ret.render()} from "{dll}"')
+
     for name, gtype, literal in module.globals:
         lines.append("")
         lines.append(f"global {name}: {gtype.render()} = {literal}")
+
+    for name, gtype in module.mutable_globals:
+        lines.append("")
+        lines.append(f"global mut {name}: {gtype.render()} = 0")
 
     for struct in module.structs:
         lines.append("")

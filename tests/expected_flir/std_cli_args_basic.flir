@@ -27,7 +27,7 @@ func @_starts_with(value: ptr<i8>, prefix: ptr<i8>) -> bool {
 func @_str_len(value: ptr<i8>) -> i32 {
   L0:
     %0 = slotload.ptr<i8> value
-    %1 = call.i32 @fs_rt_str_length(%0)
+    %1 = call.i32 @impl_fs_rt_str_length(%0)
     ret %1
 }
 
@@ -1076,6 +1076,50 @@ func @fs_main() -> void {
     %17 = call.bool @fs_rt_str_eq(%15, %16)
     call.void @println__bool(%17)
     ret
+}
+
+func @impl_fs_rt_str_length(s: ptr<i8>) -> i32 {
+  L0:
+    %0 = slotload.ptr<i8> s
+    %1 = cvt.ptr_to_u64 %0
+    slot addr: u64
+    slotstore addr, %1
+    %2 = slotload.u64 addr
+    %3 = const.u64 0
+    %4 = eq.u64 %2, %3
+    br %4, L2, L1
+
+  L1:
+    %5 = const.i32 0
+    slot len: i32
+    slotstore len, %5
+    jmp L3
+
+  L2:
+    %6 = const.i32 0
+    ret %6
+
+  L3:
+    %7 = slotload.u64 addr
+    %8 = slotload.i32 len
+    %9 = cvt.i32_to_u64 %8
+    %10 = add.u64 %7, %9
+    %11 = cvt.u64_to_ptr %10
+    %12 = load.u8 %11, 0
+    %13 = const.u8 0
+    %14 = ne.u8 %12, %13
+    br %14, L4, L5
+
+  L4:
+    %15 = slotload.i32 len
+    %16 = const.i32 1
+    %17 = add.i32 %15, %16
+    slotstore len, %17
+    jmp L3
+
+  L5:
+    %18 = slotload.i32 len
+    ret %18
 }
 
 func @println__bool(value: bool) -> void {
