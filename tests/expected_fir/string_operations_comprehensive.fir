@@ -198,23 +198,23 @@ function main() -> void {
     %102 = StringLiteral("", string)
     DeclareLocal("build", string, %102)
     %103 = LoadVar("build") -> string
-    Drop(%103)
-    %104 = LoadVar("build") -> string
-    %105 = StringLiteral("a", string)
-    %106 = BinaryOp("+", %104, %105)
-    StoreVar("build", %106)
+    %104 = StringLiteral("a", string)
+    %105 = BinaryOp("+", %103, %104)
+    %106 = LoadVar("build") -> string
+    Drop(%106)
+    StoreVar("build", %105)
     %107 = LoadVar("build") -> string
-    Drop(%107)
-    %108 = LoadVar("build") -> string
-    %109 = StringLiteral("b", string)
-    %110 = BinaryOp("+", %108, %109)
-    StoreVar("build", %110)
+    %108 = StringLiteral("b", string)
+    %109 = BinaryOp("+", %107, %108)
+    %110 = LoadVar("build") -> string
+    Drop(%110)
+    StoreVar("build", %109)
     %111 = LoadVar("build") -> string
-    Drop(%111)
-    %112 = LoadVar("build") -> string
-    %113 = StringLiteral("c", string)
-    %114 = BinaryOp("+", %112, %113)
-    StoreVar("build", %114)
+    %112 = StringLiteral("c", string)
+    %113 = BinaryOp("+", %111, %112)
+    %114 = LoadVar("build") -> string
+    Drop(%114)
+    StoreVar("build", %113)
     %115 = LoadVar("build") -> string
     Call(println, [%115], ["borrow"])
     %116 = LoadVar("build") -> string

@@ -751,6 +751,32 @@ class ASTToFIRConverter:
         node_type = node.node_type
 
         if node_type == NodeTypes.SCOPE:
+            # Preprocessor reassignment wrapper: { drop(x); x = RHS; }.
+            # RHS may read x, so evaluate RHS first, then drop the old
+            # value, then store (the legacy backend freed first, which was
+            # a latent use-after-free masked by allocator timing).
+            if (
+                len(node.children) == 2
+                and node.children[0].node_type == NodeTypes.FUNCTION_CALL
+                and node.children[0].name == "drop"
+                and node.children[1].node_type == NodeTypes.VARIABLE_ASSIGNMENT
+                and node.children[0].children
+                and node.children[0].children[0].node_type == NodeTypes.IDENTIFIER
+                and node.children[0].children[0].name == node.children[1].name
+            ):
+                assign = node.children[1]
+                value = self._require_value(assign.children[0])
+                old = self._convert_expression(node.children[0].children[0])
+                self.builder.drop(old)
+                if self._lookup(assign.name) is None:
+                    rhs_type = self._expr_type(assign.children[0])
+                    is_array = rhs_type.endswith("[]")
+                    base_type = rhs_type[:-2] if is_array else rhs_type
+                    unique = self._declare(assign.name, base_type, is_array, None)
+                    self.builder.declare_local(unique, self._fir_type(base_type, is_array), value)
+                else:
+                    self.builder.store_var(self._local_name(assign.name), value)
+                return
             self._push_scope()
             self._convert_statements(node.children)
             self._pop_scope()

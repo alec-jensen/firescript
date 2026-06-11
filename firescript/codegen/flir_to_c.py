@@ -346,10 +346,27 @@ class FLIRToCBackend:
         if isinstance(inst, SlotAddr):
             return f"{ref(inst.result())} = (void*)&l_{inst.name};"
         if isinstance(inst, Call):
-            args = ", ".join(ref(op) for op in inst.operands)
-            callee = inst.callee if inst.callee.startswith("fs_rt_") else f"fsf_{inst.callee}"
-            call_text = f"{callee}({args})"
+            if inst.callee.startswith("fs_rt_") or inst.callee in self.module.externs:
+                callee = inst.callee
+            else:
+                callee = f"fsf_{inst.callee}"
+            # Cast arguments to the callee's declared parameter types where
+            # known: GCC treats incompatible pointer types as errors, and the
+            # firescript-implemented runtime uses char* where callers may
+            # hold struct pointers.
+            target = self._function_by_name(inst.callee)
+            arg_texts = []
+            for i, op in enumerate(inst.operands):
+                text = ref(op)
+                if target is not None and i < len(target.params):
+                    ptype = target.params[i][1]
+                    if ptype.kind != "struct":
+                        text = f"({self.c_type(ptype)})({text})"
+                arg_texts.append(text)
+            call_text = f"{callee}({', '.join(arg_texts)})"
             if inst.has_result():
+                if inst.result_type.kind != "struct":
+                    return f"{ref(inst.result())} = ({self.c_type(inst.result_type)})({call_text});"
                 return f"{ref(inst.result())} = {call_text};"
             return f"{call_text};"
         if isinstance(inst, Ret):
@@ -383,6 +400,12 @@ class FLIRToCBackend:
             else:
                 out.append(ch)
         return "".join(out)
+
+    def _function_by_name(self, name: str):
+        for func in self.module.functions:
+            if func.name == name:
+                return func
+        return None
 
     def _slot_c_type(self, func: FLIRFunction, name: str) -> str:
         for pname, ptype in func.params:

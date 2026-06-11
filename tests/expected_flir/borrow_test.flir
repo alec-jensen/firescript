@@ -1,5 +1,12 @@
 flir module borrow_test
 entry @fs_main
+extern @GetProcessHeap() -> u64 from "kernel32.dll"
+extern @GetStdHandle(i32) -> u64 from "kernel32.dll"
+extern @HeapAlloc(u64, u32, u64) -> u64 from "kernel32.dll"
+extern @HeapFree(u64, u32, u64) -> u32 from "kernel32.dll"
+extern @WriteFile(u64, u64, u32, u64, u64) -> i32 from "kernel32.dll"
+
+global mut __fs_runtime_state: u64 = 0
 
 struct Point { size: 8, align: 4, kind: class
   x: i32 @ 0
@@ -26,7 +33,7 @@ func @fs_main() -> void {
     %0 = const.i32 10
     %1 = const.i32 20
     %2 = const.i64 8
-    %3 = call.ptr<Point> @fs_rt_alloc_zeroed(%2)
+    %3 = call.ptr<Point> @impl_fs_rt_alloc_zeroed(%2)
     store.i32 %3, 0, %0
     store.i32 %3, 4, %1
     slot p1: ptr<Point>
@@ -48,9 +55,708 @@ func @fs_main() -> void {
 func @println__int32(value: i32) -> void {
   L0:
     %0 = slotload.i32 value
-    %1 = call.ptr<i8> @fs_rt_i32_to_str(%0)
+    %1 = call.ptr<i8> @impl_fs_rt_i32_to_str(%0)
     %2 = strconst "\n"
-    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
-    call.void @fs_rt_stdout(%3)
+    %3 = call.ptr<i8> @impl_fs_rt_str_concat(%1, %2)
+    call.void @impl_fs_rt_stdout(%3)
     ret
+}
+
+func @impl_fs_rt_alloc_zeroed(n: i64) -> ptr<i8> {
+  L0:
+    %0 = slotload.i64 n
+    %1 = cvt.i64_to_u64 %0
+    %2 = call.u64 @rt_raw_alloc(%1)
+    slot p: u64
+    slotstore p, %2
+    %3 = slotload.u64 p
+    call.void @rt_reg_add(%3)
+    %4 = slotload.u64 p
+    %5 = cvt.u64_to_ptr %4
+    ret %5
+}
+
+func @impl_fs_rt_i32_to_str(v: i32) -> ptr<i8> {
+  L0:
+    %0 = slotload.i32 v
+    %1 = cvt.i32_to_i64 %0
+    %2 = call.ptr<i8> @impl_fs_rt_i64_to_str(%1)
+    ret %2
+}
+
+func @impl_fs_rt_str_concat(a: ptr<i8>, b: ptr<i8>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<i8> a
+    %1 = cvt.ptr_to_u64 %0
+    slot pa: u64
+    slotstore pa, %1
+    %2 = slotload.ptr<i8> b
+    %3 = cvt.ptr_to_u64 %2
+    slot pb: u64
+    slotstore pb, %3
+    %4 = slotload.u64 pa
+    %5 = call.u64 @rt_str_len_addr(%4)
+    slot la: u64
+    slotstore la, %5
+    %6 = slotload.u64 pb
+    %7 = call.u64 @rt_str_len_addr(%6)
+    slot lb: u64
+    slotstore lb, %7
+    %8 = slotload.u64 la
+    %9 = slotload.u64 lb
+    %10 = add.u64 %8, %9
+    %11 = const.u64 1
+    %12 = add.u64 %10, %11
+    %13 = call.u64 @rt_raw_alloc(%12)
+    slot dst: u64
+    slotstore dst, %13
+    %14 = slotload.u64 dst
+    call.void @rt_reg_add(%14)
+    %15 = slotload.u64 la
+    %16 = const.u64 0
+    %17 = gt.u64 %15, %16
+    br %17, L2, L1
+
+  L1:
+    %18 = slotload.u64 lb
+    %19 = const.u64 0
+    %20 = gt.u64 %18, %19
+    br %20, L4, L3
+
+  L2:
+    %21 = slotload.u64 dst
+    %22 = slotload.u64 pa
+    %23 = slotload.u64 la
+    %24 = cvt.u64_to_ptr %21
+    %25 = cvt.u64_to_ptr %22
+    call.void @fs_rt_mem_copy(%24, %25, %23)
+    jmp L1
+
+  L3:
+    %26 = slotload.u64 dst
+    %27 = slotload.u64 la
+    %28 = add.u64 %26, %27
+    %29 = slotload.u64 lb
+    %30 = add.u64 %28, %29
+    %31 = const.u8 0
+    %32 = cvt.u64_to_ptr %30
+    store.u8 %32, 0, %31
+    %33 = slotload.u64 dst
+    %34 = cvt.u64_to_ptr %33
+    ret %34
+
+  L4:
+    %35 = slotload.u64 dst
+    %36 = slotload.u64 la
+    %37 = add.u64 %35, %36
+    %38 = slotload.u64 pb
+    %39 = slotload.u64 lb
+    %40 = cvt.u64_to_ptr %37
+    %41 = cvt.u64_to_ptr %38
+    call.void @fs_rt_mem_copy(%40, %41, %39)
+    jmp L3
+}
+
+func @impl_fs_rt_stdout(s: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> s
+    %1 = cvt.ptr_to_u64 %0
+    slot addr: u64
+    slotstore addr, %1
+    %2 = slotload.u64 addr
+    %3 = const.u64 0
+    %4 = eq.u64 %2, %3
+    br %4, L2, L1
+
+  L1:
+    %5 = slotload.u64 addr
+    %6 = call.u64 @rt_str_len_addr(%5)
+    slot len: u64
+    slotstore len, %6
+    %7 = slotload.u64 len
+    %8 = const.u64 0
+    %9 = eq.u64 %7, %8
+    br %9, L4, L3
+
+  L2:
+    ret
+
+  L3:
+    %10 = const.i32 11
+    %11 = neg.i32 %10
+    %12 = call.u64 @GetStdHandle(%11)
+    slot handle: u64
+    slotstore handle, %12
+    %13 = call.u64 @rt_state()
+    slot state: u64
+    slotstore state, %13
+    %14 = slotload.u64 handle
+    %15 = slotload.u64 addr
+    %16 = slotload.u64 len
+    %17 = cvt.u64_to_u32 %16
+    %18 = slotload.u64 state
+    %19 = const.u64 32
+    %20 = add.u64 %18, %19
+    %21 = const.u64 0
+    %22 = call.i32 @WriteFile(%14, %15, %17, %20, %21)
+    ret
+
+  L4:
+    ret
+}
+
+func @rt_raw_alloc(n: u64) -> u64 {
+  L0:
+    %0 = slotload.u64 n
+    %1 = const.u64 0
+    %2 = eq.u64 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = call.u64 @rt_heap()
+    %4 = const.u32 8
+    %5 = slotload.u64 n
+    %6 = call.u64 @HeapAlloc(%3, %4, %5)
+    ret %6
+
+  L2:
+    %7 = const.u64 1
+    slotstore n, %7
+    jmp L1
+}
+
+func @rt_reg_add(p: u64) -> void {
+  L0:
+    %0 = slotload.u64 p
+    %1 = const.u64 1
+    %2 = le.u64 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = call.u64 @rt_state()
+    slot state: u64
+    slotstore state, %3
+    %4 = slotload.u64 state
+    %5 = const.u64 16
+    %6 = add.u64 %4, %5
+    %7 = cvt.u64_to_ptr %6
+    %8 = load.u64 %7, 0
+    slot cap: u64
+    slotstore cap, %8
+    %9 = slotload.u64 state
+    %10 = const.u64 24
+    %11 = add.u64 %9, %10
+    %12 = cvt.u64_to_ptr %11
+    %13 = load.u64 %12, 0
+    slot count: u64
+    slotstore count, %13
+    %14 = slotload.u64 cap
+    %15 = const.u64 0
+    %16 = eq.u64 %14, %15
+    slot __sc_4_12: bool
+    slotstore __sc_4_12, %16
+    %17 = slotload.bool __sc_4_12
+    br %17, L5, L4
+
+  L2:
+    ret
+
+  L3:
+    %18 = slotload.u64 state
+    %19 = const.u64 8
+    %20 = add.u64 %18, %19
+    %21 = cvt.u64_to_ptr %20
+    %22 = load.u64 %21, 0
+    slot table: u64
+    slotstore table, %22
+    %23 = slotload.u64 p
+    %24 = slotload.u64 cap
+    %25 = call.u64 @rt_reg_hash(%23, %24)
+    slot slot: u64
+    slotstore slot, %25
+    jmp L7
+
+  L4:
+    %26 = slotload.u64 count
+    %27 = const.u64 10
+    %28 = mul.u64 %26, %27
+    %29 = slotload.u64 cap
+    %30 = const.u64 7
+    %31 = mul.u64 %29, %30
+    %32 = ge.u64 %28, %31
+    slotstore __sc_4_12, %32
+    jmp L5
+
+  L5:
+    %33 = slotload.bool __sc_4_12
+    br %33, L6, L3
+
+  L6:
+    call.void @rt_reg_grow()
+    %34 = slotload.u64 state
+    %35 = const.u64 16
+    %36 = add.u64 %34, %35
+    %37 = cvt.u64_to_ptr %36
+    %38 = load.u64 %37, 0
+    slotstore cap, %38
+    jmp L3
+
+  L7:
+    %39 = bconst true
+    br %39, L8, L9
+
+  L8:
+    %40 = slotload.u64 table
+    %41 = slotload.u64 slot
+    %42 = const.u64 8
+    %43 = mul.u64 %41, %42
+    %44 = add.u64 %40, %43
+    %45 = cvt.u64_to_ptr %44
+    %46 = load.u64 %45, 0
+    slot entry: u64
+    slotstore entry, %46
+    %47 = slotload.u64 entry
+    %48 = const.u64 1
+    %49 = le.u64 %47, %48
+    br %49, L11, L10
+
+  L9:
+    ret
+
+  L10:
+    %50 = slotload.u64 entry
+    %51 = slotload.u64 p
+    %52 = eq.u64 %50, %51
+    br %52, L13, L12
+
+  L11:
+    %53 = slotload.u64 table
+    %54 = slotload.u64 slot
+    %55 = const.u64 8
+    %56 = mul.u64 %54, %55
+    %57 = add.u64 %53, %56
+    %58 = slotload.u64 p
+    %59 = cvt.u64_to_ptr %57
+    store.u64 %59, 0, %58
+    %60 = slotload.u64 state
+    %61 = const.u64 24
+    %62 = add.u64 %60, %61
+    %63 = slotload.u64 count
+    %64 = const.u64 1
+    %65 = add.u64 %63, %64
+    %66 = cvt.u64_to_ptr %62
+    store.u64 %66, 0, %65
+    ret
+
+  L12:
+    %67 = slotload.u64 slot
+    %68 = const.u64 1
+    %69 = add.u64 %67, %68
+    %70 = slotload.u64 cap
+    %71 = mod.u64 %69, %70
+    slotstore slot, %71
+    jmp L7
+
+  L13:
+    ret
+}
+
+func @impl_fs_rt_i64_to_str(v: i64) -> ptr<i8> {
+  L0:
+    %0 = slotload.i64 v
+    %1 = const.i64 0
+    %2 = lt.i64 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = slotload.i64 v
+    %4 = cvt.i64_to_u64 %3
+    %5 = bconst false
+    %6 = call.ptr<i8> @rt_u64_to_str_impl(%4, %5)
+    ret %6
+
+  L2:
+    %7 = const.u64 0
+    %8 = slotload.i64 v
+    %9 = cvt.i64_to_u64 %8
+    %10 = sub.u64 %7, %9
+    slot magnitude: u64
+    slotstore magnitude, %10
+    %11 = slotload.u64 magnitude
+    %12 = bconst true
+    %13 = call.ptr<i8> @rt_u64_to_str_impl(%11, %12)
+    ret %13
+}
+
+func @rt_str_len_addr(addr: u64) -> u64 {
+  L0:
+    %0 = slotload.u64 addr
+    %1 = const.u64 0
+    %2 = eq.u64 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = const.u64 0
+    slot len: u64
+    slotstore len, %3
+    jmp L3
+
+  L2:
+    %4 = const.u64 0
+    ret %4
+
+  L3:
+    %5 = slotload.u64 addr
+    %6 = slotload.u64 len
+    %7 = add.u64 %5, %6
+    %8 = cvt.u64_to_ptr %7
+    %9 = load.u8 %8, 0
+    %10 = const.u8 0
+    %11 = ne.u8 %9, %10
+    br %11, L4, L5
+
+  L4:
+    %12 = slotload.u64 len
+    %13 = const.u64 1
+    %14 = add.u64 %12, %13
+    slotstore len, %14
+    jmp L3
+
+  L5:
+    %15 = slotload.u64 len
+    ret %15
+}
+
+func @rt_state() -> u64 {
+  L0:
+    %0 = gload.u64 @__fs_runtime_state
+    slot state: u64
+    slotstore state, %0
+    %1 = slotload.u64 state
+    %2 = const.u64 0
+    %3 = ne.u64 %1, %2
+    br %3, L2, L1
+
+  L1:
+    %4 = call.u64 @GetProcessHeap()
+    slot heap: u64
+    slotstore heap, %4
+    %5 = slotload.u64 heap
+    %6 = const.u32 8
+    %7 = const.u64 64
+    %8 = call.u64 @HeapAlloc(%5, %6, %7)
+    slot block: u64
+    slotstore block, %8
+    %9 = slotload.u64 block
+    %10 = slotload.u64 heap
+    %11 = cvt.u64_to_ptr %9
+    store.u64 %11, 0, %10
+    %12 = slotload.u64 block
+    gstore @__fs_runtime_state, %12
+    %13 = slotload.u64 block
+    ret %13
+
+  L2:
+    %14 = slotload.u64 state
+    ret %14
+}
+
+func @rt_heap() -> u64 {
+  L0:
+    %0 = call.u64 @rt_state()
+    slot state: u64
+    slotstore state, %0
+    %1 = slotload.u64 state
+    %2 = cvt.u64_to_ptr %1
+    %3 = load.u64 %2, 0
+    ret %3
+}
+
+func @rt_reg_hash(p: u64, cap: u64) -> u64 {
+  L0:
+    %0 = slotload.u64 p
+    %1 = const.u64 16
+    %2 = div.u64 %0, %1
+    %3 = const.u64 2654435761
+    %4 = mul.u64 %2, %3
+    slot h: u64
+    slotstore h, %4
+    %5 = slotload.u64 h
+    %6 = slotload.u64 cap
+    %7 = mod.u64 %5, %6
+    ret %7
+}
+
+func @rt_reg_grow() -> void {
+  L0:
+    %0 = call.u64 @rt_state()
+    slot state: u64
+    slotstore state, %0
+    %1 = slotload.u64 state
+    %2 = const.u64 8
+    %3 = add.u64 %1, %2
+    %4 = cvt.u64_to_ptr %3
+    %5 = load.u64 %4, 0
+    slot old_table: u64
+    slotstore old_table, %5
+    %6 = slotload.u64 state
+    %7 = const.u64 16
+    %8 = add.u64 %6, %7
+    %9 = cvt.u64_to_ptr %8
+    %10 = load.u64 %9, 0
+    slot old_cap: u64
+    slotstore old_cap, %10
+    %11 = slotload.u64 old_cap
+    %12 = const.u64 2
+    %13 = mul.u64 %11, %12
+    slot new_cap: u64
+    slotstore new_cap, %13
+    %14 = slotload.u64 new_cap
+    %15 = const.u64 0
+    %16 = eq.u64 %14, %15
+    br %16, L2, L1
+
+  L1:
+    %17 = slotload.u64 new_cap
+    %18 = const.u64 8
+    %19 = mul.u64 %17, %18
+    %20 = call.u64 @rt_raw_alloc(%19)
+    slot new_table: u64
+    slotstore new_table, %20
+    %21 = slotload.u64 old_table
+    %22 = const.u64 0
+    %23 = ne.u64 %21, %22
+    br %23, L4, L3
+
+  L2:
+    %24 = const.u64 256
+    slotstore new_cap, %24
+    jmp L1
+
+  L3:
+    %25 = slotload.u64 state
+    %26 = const.u64 8
+    %27 = add.u64 %25, %26
+    %28 = slotload.u64 new_table
+    %29 = cvt.u64_to_ptr %27
+    store.u64 %29, 0, %28
+    %30 = slotload.u64 state
+    %31 = const.u64 16
+    %32 = add.u64 %30, %31
+    %33 = slotload.u64 new_cap
+    %34 = cvt.u64_to_ptr %32
+    store.u64 %34, 0, %33
+    ret
+
+  L4:
+    %35 = const.u64 0
+    slot i: u64
+    slotstore i, %35
+    jmp L5
+
+  L5:
+    %36 = slotload.u64 i
+    %37 = slotload.u64 old_cap
+    %38 = lt.u64 %36, %37
+    br %38, L6, L7
+
+  L6:
+    %39 = slotload.u64 old_table
+    %40 = slotload.u64 i
+    %41 = const.u64 8
+    %42 = mul.u64 %40, %41
+    %43 = add.u64 %39, %42
+    %44 = cvt.u64_to_ptr %43
+    %45 = load.u64 %44, 0
+    slot entry: u64
+    slotstore entry, %45
+    %46 = slotload.u64 entry
+    %47 = const.u64 1
+    %48 = gt.u64 %46, %47
+    br %48, L9, L8
+
+  L7:
+    %49 = call.u64 @rt_heap()
+    %50 = const.u32 0
+    %51 = slotload.u64 old_table
+    %52 = call.u32 @HeapFree(%49, %50, %51)
+    jmp L3
+
+  L8:
+    %53 = slotload.u64 i
+    %54 = const.u64 1
+    %55 = add.u64 %53, %54
+    slotstore i, %55
+    jmp L5
+
+  L9:
+    %56 = slotload.u64 entry
+    %57 = slotload.u64 new_cap
+    %58 = call.u64 @rt_reg_hash(%56, %57)
+    slot slot: u64
+    slotstore slot, %58
+    jmp L10
+
+  L10:
+    %59 = slotload.u64 new_table
+    %60 = slotload.u64 slot
+    %61 = const.u64 8
+    %62 = mul.u64 %60, %61
+    %63 = add.u64 %59, %62
+    %64 = cvt.u64_to_ptr %63
+    %65 = load.u64 %64, 0
+    %66 = const.u64 1
+    %67 = gt.u64 %65, %66
+    br %67, L11, L12
+
+  L11:
+    %68 = slotload.u64 slot
+    %69 = const.u64 1
+    %70 = add.u64 %68, %69
+    %71 = slotload.u64 new_cap
+    %72 = mod.u64 %70, %71
+    slotstore slot, %72
+    jmp L10
+
+  L12:
+    %73 = slotload.u64 new_table
+    %74 = slotload.u64 slot
+    %75 = const.u64 8
+    %76 = mul.u64 %74, %75
+    %77 = add.u64 %73, %76
+    %78 = slotload.u64 entry
+    %79 = cvt.u64_to_ptr %77
+    store.u64 %79, 0, %78
+    jmp L8
+}
+
+func @rt_u64_to_str_impl(v: u64, negative: bool) -> ptr<i8> {
+  L0:
+    %0 = const.u64 22
+    %1 = call.u64 @rt_raw_alloc(%0)
+    slot buf: u64
+    slotstore buf, %1
+    %2 = slotload.u64 buf
+    call.void @rt_reg_add(%2)
+    %3 = const.u64 21
+    slot pos: u64
+    slotstore pos, %3
+    %4 = slotload.u64 buf
+    %5 = slotload.u64 pos
+    %6 = add.u64 %4, %5
+    %7 = const.u8 0
+    %8 = cvt.u64_to_ptr %6
+    store.u8 %8, 0, %7
+    %9 = slotload.u64 v
+    %10 = const.u64 0
+    %11 = eq.u64 %9, %10
+    br %11, L2, L1
+
+  L1:
+    jmp L3
+
+  L2:
+    %12 = slotload.u64 pos
+    %13 = const.u64 1
+    %14 = sub.u64 %12, %13
+    slotstore pos, %14
+    %15 = slotload.u64 buf
+    %16 = slotload.u64 pos
+    %17 = add.u64 %15, %16
+    %18 = const.u8 48
+    %19 = cvt.u64_to_ptr %17
+    store.u8 %19, 0, %18
+    jmp L1
+
+  L3:
+    %20 = slotload.u64 v
+    %21 = const.u64 0
+    %22 = gt.u64 %20, %21
+    br %22, L4, L5
+
+  L4:
+    %23 = slotload.u64 pos
+    %24 = const.u64 1
+    %25 = sub.u64 %23, %24
+    slotstore pos, %25
+    %26 = slotload.u64 buf
+    %27 = slotload.u64 pos
+    %28 = add.u64 %26, %27
+    %29 = slotload.u64 v
+    %30 = const.u64 10
+    %31 = mod.u64 %29, %30
+    %32 = cvt.u64_to_u8 %31
+    %33 = const.u8 48
+    %34 = add.u8 %32, %33
+    %35 = cvt.u64_to_ptr %28
+    store.u8 %35, 0, %34
+    %36 = slotload.u64 v
+    %37 = const.u64 10
+    %38 = div.u64 %36, %37
+    slotstore v, %38
+    jmp L3
+
+  L5:
+    %39 = slotload.bool negative
+    br %39, L7, L6
+
+  L6:
+    %40 = const.u64 21
+    %41 = slotload.u64 pos
+    %42 = sub.u64 %40, %41
+    slot out_len: u64
+    slotstore out_len, %42
+    %43 = const.u64 0
+    slot i: u64
+    slotstore i, %43
+    jmp L8
+
+  L7:
+    %44 = slotload.u64 pos
+    %45 = const.u64 1
+    %46 = sub.u64 %44, %45
+    slotstore pos, %46
+    %47 = slotload.u64 buf
+    %48 = slotload.u64 pos
+    %49 = add.u64 %47, %48
+    %50 = const.u8 45
+    %51 = cvt.u64_to_ptr %49
+    store.u8 %51, 0, %50
+    jmp L6
+
+  L8:
+    %52 = slotload.u64 i
+    %53 = slotload.u64 out_len
+    %54 = lt.u64 %52, %53
+    br %54, L9, L10
+
+  L9:
+    %55 = slotload.u64 buf
+    %56 = slotload.u64 i
+    %57 = add.u64 %55, %56
+    %58 = slotload.u64 buf
+    %59 = slotload.u64 pos
+    %60 = add.u64 %58, %59
+    %61 = slotload.u64 i
+    %62 = add.u64 %60, %61
+    %63 = cvt.u64_to_ptr %62
+    %64 = load.u8 %63, 0
+    %65 = cvt.u64_to_ptr %57
+    store.u8 %65, 0, %64
+    %66 = slotload.u64 i
+    %67 = const.u64 1
+    %68 = add.u64 %66, %67
+    slotstore i, %68
+    jmp L8
+
+  L10:
+    %69 = slotload.u64 buf
+    %70 = slotload.u64 out_len
+    %71 = add.u64 %69, %70
+    %72 = const.u8 0
+    %73 = cvt.u64_to_ptr %71
+    store.u8 %73, 0, %72
+    %74 = slotload.u64 buf
+    %75 = cvt.u64_to_ptr %74
+    ret %75
 }

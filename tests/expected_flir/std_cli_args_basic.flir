@@ -1,5 +1,12 @@
 flir module std_cli_args_basic
 entry @fs_main
+extern @GetProcessHeap() -> u64 from "kernel32.dll"
+extern @GetStdHandle(i32) -> u64 from "kernel32.dll"
+extern @HeapAlloc(u64, u32, u64) -> u64 from "kernel32.dll"
+extern @HeapFree(u64, u32, u64) -> u32 from "kernel32.dll"
+extern @WriteFile(u64, u64, u32, u64, u64) -> i32 from "kernel32.dll"
+
+global mut __fs_runtime_state: u64 = 0
 
 func @argc() -> i32 {
   L0:
@@ -18,7 +25,7 @@ func @_starts_with(value: ptr<i8>, prefix: ptr<i8>) -> bool {
   L0:
     %0 = slotload.ptr<i8> value
     %1 = slotload.ptr<i8> prefix
-    %2 = call.i32 @fs_rt_str_index_of(%0, %1)
+    %2 = call.i32 @impl_fs_rt_str_index_of(%0, %1)
     %3 = const.i32 0
     %4 = eq.i32 %2, %3
     ret %4
@@ -64,7 +71,7 @@ func @_is_grouped_short_token(value: ptr<i8>) -> bool {
   L5:
     %14 = slotload.ptr<i8> value
     %15 = strconst "="
-    %16 = call.i32 @fs_rt_str_index_of(%14, %15)
+    %16 = call.i32 @impl_fs_rt_str_index_of(%14, %15)
     %17 = const.i32 0
     %18 = ge.i32 %16, %17
     br %18, L8, L7
@@ -110,12 +117,12 @@ func @_group_has_short(token: ptr<i8>, short_name: ptr<i8>) -> bool {
   L4:
     %10 = slotload.ptr<i8> token
     %11 = slotload.i32 i
-    %12 = call.ptr<i8> @fs_rt_str_char_at(%10, %11)
+    %12 = call.ptr<i8> @impl_fs_rt_str_char_at(%10, %11)
     slot ch: ptr<i8>
     slotstore ch, %12
     %13 = slotload.ptr<i8> ch
     %14 = slotload.ptr<i8> short_name
-    %15 = call.bool @fs_rt_str_eq(%13, %14)
+    %15 = call.bool @impl_fs_rt_str_eq(%13, %14)
     br %15, L7, L6
 
   L5:
@@ -131,7 +138,7 @@ func @_group_has_short(token: ptr<i8>, short_name: ptr<i8>) -> bool {
 
   L7:
     %20 = slotload.ptr<i8> ch
-    call.void @fs_rt_free(%20)
+    call.void @impl_fs_rt_free(%20)
     %21 = bconst true
     ret %21
 }
@@ -140,12 +147,12 @@ func @has_flag(name: ptr<i8>) -> bool {
   L0:
     %0 = strconst "-"
     %1 = slotload.ptr<i8> name
-    %2 = call.ptr<i8> @fs_rt_str_concat(%0, %1)
+    %2 = call.ptr<i8> @impl_fs_rt_str_concat(%0, %1)
     slot short_flag: ptr<i8>
     slotstore short_flag, %2
     %3 = strconst "--"
     %4 = slotload.ptr<i8> name
-    %5 = call.ptr<i8> @fs_rt_str_concat(%3, %4)
+    %5 = call.ptr<i8> @impl_fs_rt_str_concat(%3, %4)
     slot long_flag: ptr<i8>
     slotstore long_flag, %5
     %6 = const.i32 1
@@ -166,7 +173,7 @@ func @has_flag(name: ptr<i8>) -> bool {
     slotstore arg, %11
     %12 = slotload.ptr<i8> arg
     %13 = strconst "--"
-    %14 = call.bool @fs_rt_str_eq(%12, %13)
+    %14 = call.bool @impl_fs_rt_str_eq(%12, %13)
     br %14, L5, L4
 
   L3:
@@ -176,23 +183,23 @@ func @has_flag(name: ptr<i8>) -> bool {
   L4:
     %16 = slotload.ptr<i8> arg
     %17 = slotload.ptr<i8> short_flag
-    %18 = call.bool @fs_rt_str_eq(%16, %17)
+    %18 = call.bool @impl_fs_rt_str_eq(%16, %17)
     br %18, L7, L6
 
   L5:
     %19 = slotload.ptr<i8> short_flag
-    call.void @fs_rt_free(%19)
+    call.void @impl_fs_rt_free(%19)
     %20 = slotload.ptr<i8> long_flag
-    call.void @fs_rt_free(%20)
+    call.void @impl_fs_rt_free(%20)
     %21 = slotload.ptr<i8> arg
-    call.void @fs_rt_free(%21)
+    call.void @impl_fs_rt_free(%21)
     %22 = bconst false
     ret %22
 
   L6:
     %23 = slotload.ptr<i8> arg
     %24 = slotload.ptr<i8> long_flag
-    %25 = call.bool @fs_rt_str_eq(%23, %24)
+    %25 = call.bool @impl_fs_rt_str_eq(%23, %24)
     br %25, L9, L8
 
   L7:
@@ -233,12 +240,12 @@ func @has_flag_alias(long_name: ptr<i8>, short_name: ptr<i8>) -> bool {
   L0:
     %0 = strconst "-"
     %1 = slotload.ptr<i8> short_name
-    %2 = call.ptr<i8> @fs_rt_str_concat(%0, %1)
+    %2 = call.ptr<i8> @impl_fs_rt_str_concat(%0, %1)
     slot short_flag: ptr<i8>
     slotstore short_flag, %2
     %3 = strconst "--"
     %4 = slotload.ptr<i8> long_name
-    %5 = call.ptr<i8> @fs_rt_str_concat(%3, %4)
+    %5 = call.ptr<i8> @impl_fs_rt_str_concat(%3, %4)
     slot long_flag: ptr<i8>
     slotstore long_flag, %5
     %6 = const.i32 1
@@ -259,7 +266,7 @@ func @has_flag_alias(long_name: ptr<i8>, short_name: ptr<i8>) -> bool {
     slotstore arg, %11
     %12 = slotload.ptr<i8> arg
     %13 = strconst "--"
-    %14 = call.bool @fs_rt_str_eq(%12, %13)
+    %14 = call.bool @impl_fs_rt_str_eq(%12, %13)
     br %14, L5, L4
 
   L3:
@@ -269,23 +276,23 @@ func @has_flag_alias(long_name: ptr<i8>, short_name: ptr<i8>) -> bool {
   L4:
     %16 = slotload.ptr<i8> arg
     %17 = slotload.ptr<i8> short_flag
-    %18 = call.bool @fs_rt_str_eq(%16, %17)
+    %18 = call.bool @impl_fs_rt_str_eq(%16, %17)
     br %18, L7, L6
 
   L5:
     %19 = slotload.ptr<i8> short_flag
-    call.void @fs_rt_free(%19)
+    call.void @impl_fs_rt_free(%19)
     %20 = slotload.ptr<i8> long_flag
-    call.void @fs_rt_free(%20)
+    call.void @impl_fs_rt_free(%20)
     %21 = slotload.ptr<i8> arg
-    call.void @fs_rt_free(%21)
+    call.void @impl_fs_rt_free(%21)
     %22 = bconst false
     ret %22
 
   L6:
     %23 = slotload.ptr<i8> arg
     %24 = slotload.ptr<i8> long_flag
-    %25 = call.bool @fs_rt_str_eq(%23, %24)
+    %25 = call.bool @impl_fs_rt_str_eq(%23, %24)
     br %25, L9, L8
 
   L7:
@@ -326,7 +333,7 @@ func @_looks_like_option_token(value: ptr<i8>) -> bool {
   L0:
     %0 = slotload.ptr<i8> value
     %1 = strconst "-"
-    %2 = call.bool @fs_rt_str_eq(%0, %1)
+    %2 = call.bool @impl_fs_rt_str_eq(%0, %1)
     br %2, L2, L1
 
   L1:
@@ -346,7 +353,7 @@ func @_value_after_equals(token: ptr<i8>) -> ptr<i8> {
   L0:
     %0 = slotload.ptr<i8> token
     %1 = strconst "="
-    %2 = call.i32 @fs_rt_str_index_of(%0, %1)
+    %2 = call.i32 @impl_fs_rt_str_index_of(%0, %1)
     slot eq: i32
     slotstore eq, %2
     %3 = slotload.i32 eq
@@ -364,7 +371,7 @@ func @_value_after_equals(token: ptr<i8>) -> ptr<i8> {
     %10 = slotload.i32 start
     %11 = slotload.ptr<i8> token
     %12 = call.i32 @_str_len(%11)
-    %13 = call.ptr<i8> @fs_rt_str_slice(%9, %10, %12)
+    %13 = call.ptr<i8> @impl_fs_rt_str_slice(%9, %10, %12)
     ret %13
 
   L2:
@@ -376,22 +383,22 @@ func @option_value(name: ptr<i8>, fallback: ptr<i8>) -> ptr<i8> {
   L0:
     %0 = strconst "-"
     %1 = slotload.ptr<i8> name
-    %2 = call.ptr<i8> @fs_rt_str_concat(%0, %1)
+    %2 = call.ptr<i8> @impl_fs_rt_str_concat(%0, %1)
     slot short_flag: ptr<i8>
     slotstore short_flag, %2
     %3 = strconst "--"
     %4 = slotload.ptr<i8> name
-    %5 = call.ptr<i8> @fs_rt_str_concat(%3, %4)
+    %5 = call.ptr<i8> @impl_fs_rt_str_concat(%3, %4)
     slot long_flag: ptr<i8>
     slotstore long_flag, %5
     %6 = slotload.ptr<i8> short_flag
     %7 = strconst "="
-    %8 = call.ptr<i8> @fs_rt_str_concat(%6, %7)
+    %8 = call.ptr<i8> @impl_fs_rt_str_concat(%6, %7)
     slot short_eq: ptr<i8>
     slotstore short_eq, %8
     %9 = slotload.ptr<i8> long_flag
     %10 = strconst "="
-    %11 = call.ptr<i8> @fs_rt_str_concat(%9, %10)
+    %11 = call.ptr<i8> @impl_fs_rt_str_concat(%9, %10)
     slot long_eq: ptr<i8>
     slotstore long_eq, %11
     %12 = const.i32 1
@@ -412,7 +419,7 @@ func @option_value(name: ptr<i8>, fallback: ptr<i8>) -> ptr<i8> {
     slotstore arg, %17
     %18 = slotload.ptr<i8> arg
     %19 = strconst "--"
-    %20 = call.bool @fs_rt_str_eq(%18, %19)
+    %20 = call.bool @impl_fs_rt_str_eq(%18, %19)
     br %20, L5, L4
 
   L3:
@@ -422,27 +429,27 @@ func @option_value(name: ptr<i8>, fallback: ptr<i8>) -> ptr<i8> {
   L4:
     %22 = slotload.ptr<i8> arg
     %23 = slotload.ptr<i8> short_flag
-    %24 = call.bool @fs_rt_str_eq(%22, %23)
+    %24 = call.bool @impl_fs_rt_str_eq(%22, %23)
     br %24, L7, L6
 
   L5:
     %25 = slotload.ptr<i8> short_flag
-    call.void @fs_rt_free(%25)
+    call.void @impl_fs_rt_free(%25)
     %26 = slotload.ptr<i8> long_flag
-    call.void @fs_rt_free(%26)
+    call.void @impl_fs_rt_free(%26)
     %27 = slotload.ptr<i8> short_eq
-    call.void @fs_rt_free(%27)
+    call.void @impl_fs_rt_free(%27)
     %28 = slotload.ptr<i8> long_eq
-    call.void @fs_rt_free(%28)
+    call.void @impl_fs_rt_free(%28)
     %29 = slotload.ptr<i8> arg
-    call.void @fs_rt_free(%29)
+    call.void @impl_fs_rt_free(%29)
     %30 = slotload.ptr<i8> fallback
     ret %30
 
   L6:
     %31 = slotload.ptr<i8> arg
     %32 = slotload.ptr<i8> long_flag
-    %33 = call.bool @fs_rt_str_eq(%31, %32)
+    %33 = call.bool @impl_fs_rt_str_eq(%31, %32)
     br %33, L13, L12
 
   L7:
@@ -551,22 +558,22 @@ func @option_value_alias(long_name: ptr<i8>, short_name: ptr<i8>, fallback: ptr<
   L0:
     %0 = strconst "-"
     %1 = slotload.ptr<i8> short_name
-    %2 = call.ptr<i8> @fs_rt_str_concat(%0, %1)
+    %2 = call.ptr<i8> @impl_fs_rt_str_concat(%0, %1)
     slot short_flag: ptr<i8>
     slotstore short_flag, %2
     %3 = strconst "--"
     %4 = slotload.ptr<i8> long_name
-    %5 = call.ptr<i8> @fs_rt_str_concat(%3, %4)
+    %5 = call.ptr<i8> @impl_fs_rt_str_concat(%3, %4)
     slot long_flag: ptr<i8>
     slotstore long_flag, %5
     %6 = slotload.ptr<i8> short_flag
     %7 = strconst "="
-    %8 = call.ptr<i8> @fs_rt_str_concat(%6, %7)
+    %8 = call.ptr<i8> @impl_fs_rt_str_concat(%6, %7)
     slot short_eq: ptr<i8>
     slotstore short_eq, %8
     %9 = slotload.ptr<i8> long_flag
     %10 = strconst "="
-    %11 = call.ptr<i8> @fs_rt_str_concat(%9, %10)
+    %11 = call.ptr<i8> @impl_fs_rt_str_concat(%9, %10)
     slot long_eq: ptr<i8>
     slotstore long_eq, %11
     %12 = const.i32 1
@@ -587,7 +594,7 @@ func @option_value_alias(long_name: ptr<i8>, short_name: ptr<i8>, fallback: ptr<
     slotstore arg, %17
     %18 = slotload.ptr<i8> arg
     %19 = strconst "--"
-    %20 = call.bool @fs_rt_str_eq(%18, %19)
+    %20 = call.bool @impl_fs_rt_str_eq(%18, %19)
     br %20, L5, L4
 
   L3:
@@ -597,27 +604,27 @@ func @option_value_alias(long_name: ptr<i8>, short_name: ptr<i8>, fallback: ptr<
   L4:
     %22 = slotload.ptr<i8> arg
     %23 = slotload.ptr<i8> short_flag
-    %24 = call.bool @fs_rt_str_eq(%22, %23)
+    %24 = call.bool @impl_fs_rt_str_eq(%22, %23)
     br %24, L7, L6
 
   L5:
     %25 = slotload.ptr<i8> short_flag
-    call.void @fs_rt_free(%25)
+    call.void @impl_fs_rt_free(%25)
     %26 = slotload.ptr<i8> long_flag
-    call.void @fs_rt_free(%26)
+    call.void @impl_fs_rt_free(%26)
     %27 = slotload.ptr<i8> short_eq
-    call.void @fs_rt_free(%27)
+    call.void @impl_fs_rt_free(%27)
     %28 = slotload.ptr<i8> long_eq
-    call.void @fs_rt_free(%28)
+    call.void @impl_fs_rt_free(%28)
     %29 = slotload.ptr<i8> arg
-    call.void @fs_rt_free(%29)
+    call.void @impl_fs_rt_free(%29)
     %30 = slotload.ptr<i8> fallback
     ret %30
 
   L6:
     %31 = slotload.ptr<i8> arg
     %32 = slotload.ptr<i8> long_flag
-    %33 = call.bool @fs_rt_str_eq(%31, %32)
+    %33 = call.bool @impl_fs_rt_str_eq(%31, %32)
     br %33, L13, L12
 
   L7:
@@ -752,7 +759,7 @@ func @option_value_alias(long_name: ptr<i8>, short_name: ptr<i8>, fallback: ptr<
     %91 = const.i32 2
     %92 = slotload.ptr<i8> arg
     %93 = call.i32 @_str_len(%92)
-    %94 = call.ptr<i8> @fs_rt_str_slice(%90, %91, %93)
+    %94 = call.ptr<i8> @impl_fs_rt_str_slice(%90, %91, %93)
     ret %94
 }
 
@@ -838,7 +845,7 @@ func @positional_value(index: i32, fallback: ptr<i8>) -> ptr<i8> {
   L7:
     %17 = slotload.ptr<i8> arg
     %18 = strconst "--"
-    %19 = call.bool @fs_rt_str_eq(%17, %18)
+    %19 = call.bool @impl_fs_rt_str_eq(%17, %18)
     br %19, L9, L8
 
   L8:
@@ -855,7 +862,7 @@ func @positional_value(index: i32, fallback: ptr<i8>) -> ptr<i8> {
     %26 = add.i32 %24, %25
     slotstore i, %26
     %27 = slotload.ptr<i8> arg
-    call.void @fs_rt_free(%27)
+    call.void @impl_fs_rt_free(%27)
     jmp L3
 
   L10:
@@ -867,7 +874,7 @@ func @positional_value(index: i32, fallback: ptr<i8>) -> ptr<i8> {
   L11:
     %31 = slotload.ptr<i8> arg
     %32 = strconst "="
-    %33 = call.i32 @fs_rt_str_index_of(%31, %32)
+    %33 = call.i32 @impl_fs_rt_str_index_of(%31, %32)
     %34 = const.i32 0
     %35 = ge.i32 %33, %34
     br %35, L13, L12
@@ -889,7 +896,7 @@ func @positional_value(index: i32, fallback: ptr<i8>) -> ptr<i8> {
     %44 = add.i32 %42, %43
     slotstore i, %44
     %45 = slotload.ptr<i8> arg
-    call.void @fs_rt_free(%45)
+    call.void @impl_fs_rt_free(%45)
     jmp L3
 
   L14:
@@ -898,7 +905,7 @@ func @positional_value(index: i32, fallback: ptr<i8>) -> ptr<i8> {
     %48 = add.i32 %46, %47
     slotstore i, %48
     %49 = slotload.ptr<i8> arg
-    call.void @fs_rt_free(%49)
+    call.void @impl_fs_rt_free(%49)
     jmp L3
 
   L15:
@@ -914,7 +921,7 @@ func @positional_value(index: i32, fallback: ptr<i8>) -> ptr<i8> {
 
   L16:
     %56 = slotload.ptr<i8> next_value
-    call.void @fs_rt_free(%56)
+    call.void @impl_fs_rt_free(%56)
     jmp L14
 
   L17:
@@ -923,9 +930,9 @@ func @positional_value(index: i32, fallback: ptr<i8>) -> ptr<i8> {
     %59 = add.i32 %57, %58
     slotstore i, %59
     %60 = slotload.ptr<i8> next_value
-    call.void @fs_rt_free(%60)
+    call.void @impl_fs_rt_free(%60)
     %61 = slotload.ptr<i8> arg
-    call.void @fs_rt_free(%61)
+    call.void @impl_fs_rt_free(%61)
     jmp L3
 
   L18:
@@ -944,7 +951,7 @@ func @positional_value(index: i32, fallback: ptr<i8>) -> ptr<i8> {
   L20:
     %67 = slotload.ptr<i8> arg
     %68 = strconst "="
-    %69 = call.i32 @fs_rt_str_index_of(%67, %68)
+    %69 = call.i32 @impl_fs_rt_str_index_of(%67, %68)
     %70 = const.i32 0
     %71 = ge.i32 %69, %70
     br %71, L25, L24
@@ -1021,7 +1028,7 @@ func @positional_value(index: i32, fallback: ptr<i8>) -> ptr<i8> {
 
   L30:
     %106 = slotload.ptr<i8> next_value__2
-    call.void @fs_rt_free(%106)
+    call.void @impl_fs_rt_free(%106)
     jmp L28
 
   L31:
@@ -1030,7 +1037,7 @@ func @positional_value(index: i32, fallback: ptr<i8>) -> ptr<i8> {
     %109 = add.i32 %107, %108
     slotstore i, %109
     %110 = slotload.ptr<i8> next_value__2
-    call.void @fs_rt_free(%110)
+    call.void @impl_fs_rt_free(%110)
     jmp L3
 
   L32:
@@ -1061,24 +1068,910 @@ func @fs_main() -> void {
     %4 = const.i32 0
     %5 = call.ptr<i8> @argv_at(%4)
     %6 = strconst ""
-    %7 = call.bool @fs_rt_str_eq(%5, %6)
+    %7 = call.bool @impl_fs_rt_str_eq(%5, %6)
     %8 = not %7
     call.void @println__bool(%8)
     %9 = const.i32 1
     %10 = neg.i32 %9
     %11 = call.ptr<i8> @argv_at(%10)
     %12 = strconst ""
-    %13 = call.bool @fs_rt_str_eq(%11, %12)
+    %13 = call.bool @impl_fs_rt_str_eq(%11, %12)
     call.void @println__bool(%13)
     %14 = const.i32 9999
     %15 = call.ptr<i8> @argv_at(%14)
     %16 = strconst ""
-    %17 = call.bool @fs_rt_str_eq(%15, %16)
+    %17 = call.bool @impl_fs_rt_str_eq(%15, %16)
     call.void @println__bool(%17)
     ret
 }
 
+func @impl_fs_rt_str_index_of(haystack: ptr<i8>, needle: ptr<i8>) -> i32 {
+  L0:
+    %0 = slotload.ptr<i8> haystack
+    %1 = cvt.ptr_to_u64 %0
+    slot ph: u64
+    slotstore ph, %1
+    %2 = slotload.ptr<i8> needle
+    %3 = cvt.ptr_to_u64 %2
+    slot pn: u64
+    slotstore pn, %3
+    %4 = slotload.u64 ph
+    %5 = const.u64 0
+    %6 = eq.u64 %4, %5
+    slot __sc_2_6: bool
+    slotstore __sc_2_6, %6
+    %7 = slotload.bool __sc_2_6
+    br %7, L3, L2
+
+  L1:
+    %8 = slotload.u64 ph
+    %9 = call.u64 @rt_str_len_addr(%8)
+    slot lh: u64
+    slotstore lh, %9
+    %10 = slotload.u64 pn
+    %11 = call.u64 @rt_str_len_addr(%10)
+    slot ln: u64
+    slotstore ln, %11
+    %12 = slotload.u64 ln
+    %13 = const.u64 0
+    %14 = eq.u64 %12, %13
+    br %14, L6, L5
+
+  L2:
+    %15 = slotload.u64 pn
+    %16 = const.u64 0
+    %17 = eq.u64 %15, %16
+    slotstore __sc_2_6, %17
+    jmp L3
+
+  L3:
+    %18 = slotload.bool __sc_2_6
+    br %18, L4, L1
+
+  L4:
+    %19 = const.i32 1
+    %20 = neg.i32 %19
+    ret %20
+
+  L5:
+    %21 = slotload.u64 ln
+    %22 = slotload.u64 lh
+    %23 = gt.u64 %21, %22
+    br %23, L8, L7
+
+  L6:
+    %24 = const.i32 0
+    ret %24
+
+  L7:
+    %25 = slotload.u64 lh
+    %26 = slotload.u64 ln
+    %27 = sub.u64 %25, %26
+    slot last: u64
+    slotstore last, %27
+    %28 = const.u64 0
+    slot i: u64
+    slotstore i, %28
+    jmp L9
+
+  L8:
+    %29 = const.i32 1
+    %30 = neg.i32 %29
+    ret %30
+
+  L9:
+    %31 = slotload.u64 i
+    %32 = slotload.u64 last
+    %33 = le.u64 %31, %32
+    br %33, L10, L11
+
+  L10:
+    %34 = const.u64 0
+    slot j: u64
+    slotstore j, %34
+    %35 = bconst true
+    slot matched: bool
+    slotstore matched, %35
+    jmp L12
+
+  L11:
+    %36 = const.i32 1
+    %37 = neg.i32 %36
+    ret %37
+
+  L12:
+    %38 = slotload.u64 j
+    %39 = slotload.u64 ln
+    %40 = lt.u64 %38, %39
+    br %40, L13, L14
+
+  L13:
+    %41 = slotload.u64 ph
+    %42 = slotload.u64 i
+    %43 = add.u64 %41, %42
+    %44 = slotload.u64 j
+    %45 = add.u64 %43, %44
+    %46 = cvt.u64_to_ptr %45
+    %47 = load.u8 %46, 0
+    %48 = slotload.u64 pn
+    %49 = slotload.u64 j
+    %50 = add.u64 %48, %49
+    %51 = cvt.u64_to_ptr %50
+    %52 = load.u8 %51, 0
+    %53 = ne.u8 %47, %52
+    br %53, L16, L15
+
+  L14:
+    %54 = slotload.bool matched
+    br %54, L18, L17
+
+  L15:
+    %55 = slotload.u64 j
+    %56 = const.u64 1
+    %57 = add.u64 %55, %56
+    slotstore j, %57
+    jmp L12
+
+  L16:
+    %58 = bconst false
+    slotstore matched, %58
+    jmp L14
+
+  L17:
+    %59 = slotload.u64 i
+    %60 = const.u64 1
+    %61 = add.u64 %59, %60
+    slotstore i, %61
+    jmp L9
+
+  L18:
+    %62 = slotload.u64 i
+    %63 = cvt.u64_to_i32 %62
+    ret %63
+}
+
 func @impl_fs_rt_str_length(s: ptr<i8>) -> i32 {
+  L0:
+    %0 = slotload.ptr<i8> s
+    %1 = cvt.ptr_to_u64 %0
+    %2 = call.u64 @rt_str_len_addr(%1)
+    %3 = cvt.u64_to_i32 %2
+    ret %3
+}
+
+func @impl_fs_rt_str_char_at(s: ptr<i8>, index: i32) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<i8> s
+    %1 = cvt.ptr_to_u64 %0
+    slot src: u64
+    slotstore src, %1
+    %2 = slotload.u64 src
+    %3 = call.u64 @rt_str_len_addr(%2)
+    slot len: u64
+    slotstore len, %3
+    %4 = const.u64 2
+    %5 = call.u64 @rt_raw_alloc(%4)
+    slot dst: u64
+    slotstore dst, %5
+    %6 = slotload.u64 dst
+    call.void @rt_reg_add(%6)
+    %7 = slotload.i32 index
+    %8 = const.i32 0
+    %9 = ge.i32 %7, %8
+    slot __sc_2_11: bool
+    slotstore __sc_2_11, %9
+    %10 = slotload.bool __sc_2_11
+    br %10, L2, L3
+
+  L1:
+    %11 = slotload.u64 dst
+    %12 = cvt.u64_to_ptr %11
+    ret %12
+
+  L2:
+    %13 = slotload.i32 index
+    %14 = cvt.i32_to_u64 %13
+    %15 = slotload.u64 len
+    %16 = lt.u64 %14, %15
+    slotstore __sc_2_11, %16
+    jmp L3
+
+  L3:
+    %17 = slotload.bool __sc_2_11
+    br %17, L4, L5
+
+  L4:
+    %18 = slotload.u64 dst
+    %19 = slotload.u64 src
+    %20 = slotload.i32 index
+    %21 = cvt.i32_to_u64 %20
+    %22 = add.u64 %19, %21
+    %23 = cvt.u64_to_ptr %22
+    %24 = load.u8 %23, 0
+    %25 = cvt.u64_to_ptr %18
+    store.u8 %25, 0, %24
+    %26 = slotload.u64 dst
+    %27 = const.u64 1
+    %28 = add.u64 %26, %27
+    %29 = const.u8 0
+    %30 = cvt.u64_to_ptr %28
+    store.u8 %30, 0, %29
+    jmp L1
+
+  L5:
+    %31 = slotload.u64 dst
+    %32 = const.u8 0
+    %33 = cvt.u64_to_ptr %31
+    store.u8 %33, 0, %32
+    jmp L1
+}
+
+func @impl_fs_rt_str_eq(a: ptr<i8>, b: ptr<i8>) -> bool {
+  L0:
+    %0 = slotload.ptr<i8> a
+    %1 = cvt.ptr_to_u64 %0
+    slot pa: u64
+    slotstore pa, %1
+    %2 = slotload.ptr<i8> b
+    %3 = cvt.ptr_to_u64 %2
+    slot pb: u64
+    slotstore pb, %3
+    %4 = slotload.u64 pa
+    %5 = const.u64 0
+    %6 = eq.u64 %4, %5
+    slot __sc_2_6: bool
+    slotstore __sc_2_6, %6
+    %7 = slotload.bool __sc_2_6
+    br %7, L3, L2
+
+  L1:
+    %8 = const.u64 0
+    slot i: u64
+    slotstore i, %8
+    jmp L5
+
+  L2:
+    %9 = slotload.u64 pb
+    %10 = const.u64 0
+    %11 = eq.u64 %9, %10
+    slotstore __sc_2_6, %11
+    jmp L3
+
+  L3:
+    %12 = slotload.bool __sc_2_6
+    br %12, L4, L1
+
+  L4:
+    %13 = slotload.u64 pa
+    %14 = slotload.u64 pb
+    %15 = eq.u64 %13, %14
+    ret %15
+
+  L5:
+    %16 = bconst true
+    br %16, L6, L7
+
+  L6:
+    %17 = slotload.u64 pa
+    %18 = slotload.u64 i
+    %19 = add.u64 %17, %18
+    %20 = cvt.u64_to_ptr %19
+    %21 = load.u8 %20, 0
+    slot ca: u8
+    slotstore ca, %21
+    %22 = slotload.u64 pb
+    %23 = slotload.u64 i
+    %24 = add.u64 %22, %23
+    %25 = cvt.u64_to_ptr %24
+    %26 = load.u8 %25, 0
+    slot cb: u8
+    slotstore cb, %26
+    %27 = slotload.u8 ca
+    %28 = slotload.u8 cb
+    %29 = ne.u8 %27, %28
+    br %29, L9, L8
+
+  L7:
+    %30 = bconst true
+    ret %30
+
+  L8:
+    %31 = slotload.u8 ca
+    %32 = const.u8 0
+    %33 = eq.u8 %31, %32
+    br %33, L11, L10
+
+  L9:
+    %34 = bconst false
+    ret %34
+
+  L10:
+    %35 = slotload.u64 i
+    %36 = const.u64 1
+    %37 = add.u64 %35, %36
+    slotstore i, %37
+    jmp L5
+
+  L11:
+    %38 = bconst true
+    ret %38
+}
+
+func @impl_fs_rt_free(p: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> p
+    %1 = cvt.ptr_to_u64 %0
+    slot addr: u64
+    slotstore addr, %1
+    %2 = slotload.u64 addr
+    %3 = const.u64 0
+    %4 = eq.u64 %2, %3
+    br %4, L2, L1
+
+  L1:
+    %5 = slotload.u64 addr
+    %6 = call.bool @rt_reg_remove(%5)
+    br %6, L4, L3
+
+  L2:
+    ret
+
+  L3:
+    ret
+
+  L4:
+    %7 = call.u64 @rt_heap()
+    %8 = const.u32 0
+    %9 = slotload.u64 addr
+    %10 = call.u32 @HeapFree(%7, %8, %9)
+    jmp L3
+}
+
+func @impl_fs_rt_str_concat(a: ptr<i8>, b: ptr<i8>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<i8> a
+    %1 = cvt.ptr_to_u64 %0
+    slot pa: u64
+    slotstore pa, %1
+    %2 = slotload.ptr<i8> b
+    %3 = cvt.ptr_to_u64 %2
+    slot pb: u64
+    slotstore pb, %3
+    %4 = slotload.u64 pa
+    %5 = call.u64 @rt_str_len_addr(%4)
+    slot la: u64
+    slotstore la, %5
+    %6 = slotload.u64 pb
+    %7 = call.u64 @rt_str_len_addr(%6)
+    slot lb: u64
+    slotstore lb, %7
+    %8 = slotload.u64 la
+    %9 = slotload.u64 lb
+    %10 = add.u64 %8, %9
+    %11 = const.u64 1
+    %12 = add.u64 %10, %11
+    %13 = call.u64 @rt_raw_alloc(%12)
+    slot dst: u64
+    slotstore dst, %13
+    %14 = slotload.u64 dst
+    call.void @rt_reg_add(%14)
+    %15 = slotload.u64 la
+    %16 = const.u64 0
+    %17 = gt.u64 %15, %16
+    br %17, L2, L1
+
+  L1:
+    %18 = slotload.u64 lb
+    %19 = const.u64 0
+    %20 = gt.u64 %18, %19
+    br %20, L4, L3
+
+  L2:
+    %21 = slotload.u64 dst
+    %22 = slotload.u64 pa
+    %23 = slotload.u64 la
+    %24 = cvt.u64_to_ptr %21
+    %25 = cvt.u64_to_ptr %22
+    call.void @fs_rt_mem_copy(%24, %25, %23)
+    jmp L1
+
+  L3:
+    %26 = slotload.u64 dst
+    %27 = slotload.u64 la
+    %28 = add.u64 %26, %27
+    %29 = slotload.u64 lb
+    %30 = add.u64 %28, %29
+    %31 = const.u8 0
+    %32 = cvt.u64_to_ptr %30
+    store.u8 %32, 0, %31
+    %33 = slotload.u64 dst
+    %34 = cvt.u64_to_ptr %33
+    ret %34
+
+  L4:
+    %35 = slotload.u64 dst
+    %36 = slotload.u64 la
+    %37 = add.u64 %35, %36
+    %38 = slotload.u64 pb
+    %39 = slotload.u64 lb
+    %40 = cvt.u64_to_ptr %37
+    %41 = cvt.u64_to_ptr %38
+    call.void @fs_rt_mem_copy(%40, %41, %39)
+    jmp L3
+}
+
+func @impl_fs_rt_str_slice(s: ptr<i8>, start: i32, end: i32) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<i8> s
+    %1 = cvt.ptr_to_u64 %0
+    slot src: u64
+    slotstore src, %1
+    %2 = slotload.u64 src
+    %3 = call.u64 @rt_str_len_addr(%2)
+    slot len: u64
+    slotstore len, %3
+    %4 = slotload.u64 len
+    %5 = cvt.u64_to_i32 %4
+    slot length: i32
+    slotstore length, %5
+    %6 = slotload.i32 start
+    %7 = const.i32 0
+    %8 = lt.i32 %6, %7
+    br %8, L2, L1
+
+  L1:
+    %9 = slotload.i32 end
+    %10 = const.i32 0
+    %11 = lt.i32 %9, %10
+    br %11, L4, L3
+
+  L2:
+    %12 = const.i32 0
+    slotstore start, %12
+    jmp L1
+
+  L3:
+    %13 = slotload.i32 start
+    %14 = slotload.i32 length
+    %15 = gt.i32 %13, %14
+    br %15, L6, L5
+
+  L4:
+    %16 = const.i32 0
+    slotstore end, %16
+    jmp L3
+
+  L5:
+    %17 = slotload.i32 end
+    %18 = slotload.i32 length
+    %19 = gt.i32 %17, %18
+    br %19, L8, L7
+
+  L6:
+    %20 = slotload.i32 length
+    slotstore start, %20
+    jmp L5
+
+  L7:
+    %21 = slotload.i32 end
+    %22 = slotload.i32 start
+    %23 = lt.i32 %21, %22
+    br %23, L10, L9
+
+  L8:
+    %24 = slotload.i32 length
+    slotstore end, %24
+    jmp L7
+
+  L9:
+    %25 = slotload.i32 end
+    %26 = slotload.i32 start
+    %27 = sub.i32 %25, %26
+    slot out_len: i32
+    slotstore out_len, %27
+    %28 = slotload.i32 out_len
+    %29 = cvt.i32_to_u64 %28
+    %30 = const.u64 1
+    %31 = add.u64 %29, %30
+    %32 = call.u64 @rt_raw_alloc(%31)
+    slot dst: u64
+    slotstore dst, %32
+    %33 = slotload.u64 dst
+    call.void @rt_reg_add(%33)
+    %34 = slotload.i32 out_len
+    %35 = const.i32 0
+    %36 = gt.i32 %34, %35
+    br %36, L12, L11
+
+  L10:
+    %37 = slotload.i32 start
+    slotstore end, %37
+    jmp L9
+
+  L11:
+    %38 = slotload.u64 dst
+    %39 = slotload.i32 out_len
+    %40 = cvt.i32_to_u64 %39
+    %41 = add.u64 %38, %40
+    %42 = const.u8 0
+    %43 = cvt.u64_to_ptr %41
+    store.u8 %43, 0, %42
+    %44 = slotload.u64 dst
+    %45 = cvt.u64_to_ptr %44
+    ret %45
+
+  L12:
+    %46 = slotload.u64 dst
+    %47 = slotload.u64 src
+    %48 = slotload.i32 start
+    %49 = cvt.i32_to_u64 %48
+    %50 = add.u64 %47, %49
+    %51 = slotload.i32 out_len
+    %52 = cvt.i32_to_u64 %51
+    %53 = cvt.u64_to_ptr %46
+    %54 = cvt.u64_to_ptr %50
+    call.void @fs_rt_mem_copy(%53, %54, %52)
+    jmp L11
+}
+
+func @println__bool(value: bool) -> void {
+  L0:
+    %0 = slotload.bool value
+    %1 = call.ptr<i8> @impl_fs_rt_bool_to_str(%0)
+    %2 = strconst "\n"
+    %3 = call.ptr<i8> @impl_fs_rt_str_concat(%1, %2)
+    call.void @impl_fs_rt_stdout(%3)
+    ret
+}
+
+func @rt_str_len_addr(addr: u64) -> u64 {
+  L0:
+    %0 = slotload.u64 addr
+    %1 = const.u64 0
+    %2 = eq.u64 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = const.u64 0
+    slot len: u64
+    slotstore len, %3
+    jmp L3
+
+  L2:
+    %4 = const.u64 0
+    ret %4
+
+  L3:
+    %5 = slotload.u64 addr
+    %6 = slotload.u64 len
+    %7 = add.u64 %5, %6
+    %8 = cvt.u64_to_ptr %7
+    %9 = load.u8 %8, 0
+    %10 = const.u8 0
+    %11 = ne.u8 %9, %10
+    br %11, L4, L5
+
+  L4:
+    %12 = slotload.u64 len
+    %13 = const.u64 1
+    %14 = add.u64 %12, %13
+    slotstore len, %14
+    jmp L3
+
+  L5:
+    %15 = slotload.u64 len
+    ret %15
+}
+
+func @rt_raw_alloc(n: u64) -> u64 {
+  L0:
+    %0 = slotload.u64 n
+    %1 = const.u64 0
+    %2 = eq.u64 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = call.u64 @rt_heap()
+    %4 = const.u32 8
+    %5 = slotload.u64 n
+    %6 = call.u64 @HeapAlloc(%3, %4, %5)
+    ret %6
+
+  L2:
+    %7 = const.u64 1
+    slotstore n, %7
+    jmp L1
+}
+
+func @rt_reg_add(p: u64) -> void {
+  L0:
+    %0 = slotload.u64 p
+    %1 = const.u64 1
+    %2 = le.u64 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = call.u64 @rt_state()
+    slot state: u64
+    slotstore state, %3
+    %4 = slotload.u64 state
+    %5 = const.u64 16
+    %6 = add.u64 %4, %5
+    %7 = cvt.u64_to_ptr %6
+    %8 = load.u64 %7, 0
+    slot cap: u64
+    slotstore cap, %8
+    %9 = slotload.u64 state
+    %10 = const.u64 24
+    %11 = add.u64 %9, %10
+    %12 = cvt.u64_to_ptr %11
+    %13 = load.u64 %12, 0
+    slot count: u64
+    slotstore count, %13
+    %14 = slotload.u64 cap
+    %15 = const.u64 0
+    %16 = eq.u64 %14, %15
+    slot __sc_4_12: bool
+    slotstore __sc_4_12, %16
+    %17 = slotload.bool __sc_4_12
+    br %17, L5, L4
+
+  L2:
+    ret
+
+  L3:
+    %18 = slotload.u64 state
+    %19 = const.u64 8
+    %20 = add.u64 %18, %19
+    %21 = cvt.u64_to_ptr %20
+    %22 = load.u64 %21, 0
+    slot table: u64
+    slotstore table, %22
+    %23 = slotload.u64 p
+    %24 = slotload.u64 cap
+    %25 = call.u64 @rt_reg_hash(%23, %24)
+    slot slot: u64
+    slotstore slot, %25
+    jmp L7
+
+  L4:
+    %26 = slotload.u64 count
+    %27 = const.u64 10
+    %28 = mul.u64 %26, %27
+    %29 = slotload.u64 cap
+    %30 = const.u64 7
+    %31 = mul.u64 %29, %30
+    %32 = ge.u64 %28, %31
+    slotstore __sc_4_12, %32
+    jmp L5
+
+  L5:
+    %33 = slotload.bool __sc_4_12
+    br %33, L6, L3
+
+  L6:
+    call.void @rt_reg_grow()
+    %34 = slotload.u64 state
+    %35 = const.u64 16
+    %36 = add.u64 %34, %35
+    %37 = cvt.u64_to_ptr %36
+    %38 = load.u64 %37, 0
+    slotstore cap, %38
+    jmp L3
+
+  L7:
+    %39 = bconst true
+    br %39, L8, L9
+
+  L8:
+    %40 = slotload.u64 table
+    %41 = slotload.u64 slot
+    %42 = const.u64 8
+    %43 = mul.u64 %41, %42
+    %44 = add.u64 %40, %43
+    %45 = cvt.u64_to_ptr %44
+    %46 = load.u64 %45, 0
+    slot entry: u64
+    slotstore entry, %46
+    %47 = slotload.u64 entry
+    %48 = const.u64 1
+    %49 = le.u64 %47, %48
+    br %49, L11, L10
+
+  L9:
+    ret
+
+  L10:
+    %50 = slotload.u64 entry
+    %51 = slotload.u64 p
+    %52 = eq.u64 %50, %51
+    br %52, L13, L12
+
+  L11:
+    %53 = slotload.u64 table
+    %54 = slotload.u64 slot
+    %55 = const.u64 8
+    %56 = mul.u64 %54, %55
+    %57 = add.u64 %53, %56
+    %58 = slotload.u64 p
+    %59 = cvt.u64_to_ptr %57
+    store.u64 %59, 0, %58
+    %60 = slotload.u64 state
+    %61 = const.u64 24
+    %62 = add.u64 %60, %61
+    %63 = slotload.u64 count
+    %64 = const.u64 1
+    %65 = add.u64 %63, %64
+    %66 = cvt.u64_to_ptr %62
+    store.u64 %66, 0, %65
+    ret
+
+  L12:
+    %67 = slotload.u64 slot
+    %68 = const.u64 1
+    %69 = add.u64 %67, %68
+    %70 = slotload.u64 cap
+    %71 = mod.u64 %69, %70
+    slotstore slot, %71
+    jmp L7
+
+  L13:
+    ret
+}
+
+func @rt_reg_remove(p: u64) -> bool {
+  L0:
+    %0 = slotload.u64 p
+    %1 = const.u64 1
+    %2 = le.u64 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = call.u64 @rt_state()
+    slot state: u64
+    slotstore state, %3
+    %4 = slotload.u64 state
+    %5 = const.u64 16
+    %6 = add.u64 %4, %5
+    %7 = cvt.u64_to_ptr %6
+    %8 = load.u64 %7, 0
+    slot cap: u64
+    slotstore cap, %8
+    %9 = slotload.u64 cap
+    %10 = const.u64 0
+    %11 = eq.u64 %9, %10
+    br %11, L4, L3
+
+  L2:
+    %12 = bconst false
+    ret %12
+
+  L3:
+    %13 = slotload.u64 state
+    %14 = const.u64 8
+    %15 = add.u64 %13, %14
+    %16 = cvt.u64_to_ptr %15
+    %17 = load.u64 %16, 0
+    slot table: u64
+    slotstore table, %17
+    %18 = slotload.u64 p
+    %19 = slotload.u64 cap
+    %20 = call.u64 @rt_reg_hash(%18, %19)
+    slot slot: u64
+    slotstore slot, %20
+    %21 = const.u64 0
+    slot probes: u64
+    slotstore probes, %21
+    jmp L5
+
+  L4:
+    %22 = bconst false
+    ret %22
+
+  L5:
+    %23 = slotload.u64 probes
+    %24 = slotload.u64 cap
+    %25 = lt.u64 %23, %24
+    br %25, L6, L7
+
+  L6:
+    %26 = slotload.u64 table
+    %27 = slotload.u64 slot
+    %28 = const.u64 8
+    %29 = mul.u64 %27, %28
+    %30 = add.u64 %26, %29
+    %31 = cvt.u64_to_ptr %30
+    %32 = load.u64 %31, 0
+    slot entry: u64
+    slotstore entry, %32
+    %33 = slotload.u64 entry
+    %34 = const.u64 0
+    %35 = eq.u64 %33, %34
+    br %35, L9, L8
+
+  L7:
+    %36 = bconst false
+    ret %36
+
+  L8:
+    %37 = slotload.u64 entry
+    %38 = slotload.u64 p
+    %39 = eq.u64 %37, %38
+    br %39, L11, L10
+
+  L9:
+    %40 = bconst false
+    ret %40
+
+  L10:
+    %41 = slotload.u64 slot
+    %42 = const.u64 1
+    %43 = add.u64 %41, %42
+    %44 = slotload.u64 cap
+    %45 = mod.u64 %43, %44
+    slotstore slot, %45
+    %46 = slotload.u64 probes
+    %47 = const.u64 1
+    %48 = add.u64 %46, %47
+    slotstore probes, %48
+    jmp L5
+
+  L11:
+    %49 = slotload.u64 table
+    %50 = slotload.u64 slot
+    %51 = const.u64 8
+    %52 = mul.u64 %50, %51
+    %53 = add.u64 %49, %52
+    %54 = const.u64 1
+    %55 = cvt.u64_to_ptr %53
+    store.u64 %55, 0, %54
+    %56 = slotload.u64 state
+    %57 = const.u64 24
+    %58 = add.u64 %56, %57
+    %59 = cvt.u64_to_ptr %58
+    %60 = load.u64 %59, 0
+    slot count: u64
+    slotstore count, %60
+    %61 = slotload.u64 state
+    %62 = const.u64 24
+    %63 = add.u64 %61, %62
+    %64 = slotload.u64 count
+    %65 = const.u64 1
+    %66 = sub.u64 %64, %65
+    %67 = cvt.u64_to_ptr %63
+    store.u64 %67, 0, %66
+    %68 = bconst true
+    ret %68
+}
+
+func @rt_heap() -> u64 {
+  L0:
+    %0 = call.u64 @rt_state()
+    slot state: u64
+    slotstore state, %0
+    %1 = slotload.u64 state
+    %2 = cvt.u64_to_ptr %1
+    %3 = load.u64 %2, 0
+    ret %3
+}
+
+func @impl_fs_rt_bool_to_str(v: bool) -> ptr<i8> {
+  L0:
+    %0 = slotload.bool v
+    br %0, L2, L1
+
+  L1:
+    %1 = strconst "false"
+    %2 = call.ptr<i8> @impl_fs_rt_str_dup(%1)
+    ret %2
+
+  L2:
+    %3 = strconst "true"
+    %4 = call.ptr<i8> @impl_fs_rt_str_dup(%3)
+    ret %4
+}
+
+func @impl_fs_rt_stdout(s: ptr<i8>) -> void {
   L0:
     %0 = slotload.ptr<i8> s
     %1 = cvt.ptr_to_u64 %0
@@ -1090,44 +1983,274 @@ func @impl_fs_rt_str_length(s: ptr<i8>) -> i32 {
     br %4, L2, L1
 
   L1:
-    %5 = const.i32 0
-    slot len: i32
-    slotstore len, %5
-    jmp L3
+    %5 = slotload.u64 addr
+    %6 = call.u64 @rt_str_len_addr(%5)
+    slot len: u64
+    slotstore len, %6
+    %7 = slotload.u64 len
+    %8 = const.u64 0
+    %9 = eq.u64 %7, %8
+    br %9, L4, L3
 
   L2:
-    %6 = const.i32 0
-    ret %6
+    ret
 
   L3:
-    %7 = slotload.u64 addr
-    %8 = slotload.i32 len
-    %9 = cvt.i32_to_u64 %8
-    %10 = add.u64 %7, %9
-    %11 = cvt.u64_to_ptr %10
-    %12 = load.u8 %11, 0
-    %13 = const.u8 0
-    %14 = ne.u8 %12, %13
-    br %14, L4, L5
+    %10 = const.i32 11
+    %11 = neg.i32 %10
+    %12 = call.u64 @GetStdHandle(%11)
+    slot handle: u64
+    slotstore handle, %12
+    %13 = call.u64 @rt_state()
+    slot state: u64
+    slotstore state, %13
+    %14 = slotload.u64 handle
+    %15 = slotload.u64 addr
+    %16 = slotload.u64 len
+    %17 = cvt.u64_to_u32 %16
+    %18 = slotload.u64 state
+    %19 = const.u64 32
+    %20 = add.u64 %18, %19
+    %21 = const.u64 0
+    %22 = call.i32 @WriteFile(%14, %15, %17, %20, %21)
+    ret
 
   L4:
-    %15 = slotload.i32 len
-    %16 = const.i32 1
-    %17 = add.i32 %15, %16
-    slotstore len, %17
-    jmp L3
-
-  L5:
-    %18 = slotload.i32 len
-    ret %18
+    ret
 }
 
-func @println__bool(value: bool) -> void {
+func @rt_state() -> u64 {
   L0:
-    %0 = slotload.bool value
-    %1 = call.ptr<i8> @fs_rt_bool_to_str(%0)
-    %2 = strconst "\n"
-    %3 = call.ptr<i8> @fs_rt_str_concat(%1, %2)
-    call.void @fs_rt_stdout(%3)
+    %0 = gload.u64 @__fs_runtime_state
+    slot state: u64
+    slotstore state, %0
+    %1 = slotload.u64 state
+    %2 = const.u64 0
+    %3 = ne.u64 %1, %2
+    br %3, L2, L1
+
+  L1:
+    %4 = call.u64 @GetProcessHeap()
+    slot heap: u64
+    slotstore heap, %4
+    %5 = slotload.u64 heap
+    %6 = const.u32 8
+    %7 = const.u64 64
+    %8 = call.u64 @HeapAlloc(%5, %6, %7)
+    slot block: u64
+    slotstore block, %8
+    %9 = slotload.u64 block
+    %10 = slotload.u64 heap
+    %11 = cvt.u64_to_ptr %9
+    store.u64 %11, 0, %10
+    %12 = slotload.u64 block
+    gstore @__fs_runtime_state, %12
+    %13 = slotload.u64 block
+    ret %13
+
+  L2:
+    %14 = slotload.u64 state
+    ret %14
+}
+
+func @rt_reg_hash(p: u64, cap: u64) -> u64 {
+  L0:
+    %0 = slotload.u64 p
+    %1 = const.u64 16
+    %2 = div.u64 %0, %1
+    %3 = const.u64 2654435761
+    %4 = mul.u64 %2, %3
+    slot h: u64
+    slotstore h, %4
+    %5 = slotload.u64 h
+    %6 = slotload.u64 cap
+    %7 = mod.u64 %5, %6
+    ret %7
+}
+
+func @rt_reg_grow() -> void {
+  L0:
+    %0 = call.u64 @rt_state()
+    slot state: u64
+    slotstore state, %0
+    %1 = slotload.u64 state
+    %2 = const.u64 8
+    %3 = add.u64 %1, %2
+    %4 = cvt.u64_to_ptr %3
+    %5 = load.u64 %4, 0
+    slot old_table: u64
+    slotstore old_table, %5
+    %6 = slotload.u64 state
+    %7 = const.u64 16
+    %8 = add.u64 %6, %7
+    %9 = cvt.u64_to_ptr %8
+    %10 = load.u64 %9, 0
+    slot old_cap: u64
+    slotstore old_cap, %10
+    %11 = slotload.u64 old_cap
+    %12 = const.u64 2
+    %13 = mul.u64 %11, %12
+    slot new_cap: u64
+    slotstore new_cap, %13
+    %14 = slotload.u64 new_cap
+    %15 = const.u64 0
+    %16 = eq.u64 %14, %15
+    br %16, L2, L1
+
+  L1:
+    %17 = slotload.u64 new_cap
+    %18 = const.u64 8
+    %19 = mul.u64 %17, %18
+    %20 = call.u64 @rt_raw_alloc(%19)
+    slot new_table: u64
+    slotstore new_table, %20
+    %21 = slotload.u64 old_table
+    %22 = const.u64 0
+    %23 = ne.u64 %21, %22
+    br %23, L4, L3
+
+  L2:
+    %24 = const.u64 256
+    slotstore new_cap, %24
+    jmp L1
+
+  L3:
+    %25 = slotload.u64 state
+    %26 = const.u64 8
+    %27 = add.u64 %25, %26
+    %28 = slotload.u64 new_table
+    %29 = cvt.u64_to_ptr %27
+    store.u64 %29, 0, %28
+    %30 = slotload.u64 state
+    %31 = const.u64 16
+    %32 = add.u64 %30, %31
+    %33 = slotload.u64 new_cap
+    %34 = cvt.u64_to_ptr %32
+    store.u64 %34, 0, %33
     ret
+
+  L4:
+    %35 = const.u64 0
+    slot i: u64
+    slotstore i, %35
+    jmp L5
+
+  L5:
+    %36 = slotload.u64 i
+    %37 = slotload.u64 old_cap
+    %38 = lt.u64 %36, %37
+    br %38, L6, L7
+
+  L6:
+    %39 = slotload.u64 old_table
+    %40 = slotload.u64 i
+    %41 = const.u64 8
+    %42 = mul.u64 %40, %41
+    %43 = add.u64 %39, %42
+    %44 = cvt.u64_to_ptr %43
+    %45 = load.u64 %44, 0
+    slot entry: u64
+    slotstore entry, %45
+    %46 = slotload.u64 entry
+    %47 = const.u64 1
+    %48 = gt.u64 %46, %47
+    br %48, L9, L8
+
+  L7:
+    %49 = call.u64 @rt_heap()
+    %50 = const.u32 0
+    %51 = slotload.u64 old_table
+    %52 = call.u32 @HeapFree(%49, %50, %51)
+    jmp L3
+
+  L8:
+    %53 = slotload.u64 i
+    %54 = const.u64 1
+    %55 = add.u64 %53, %54
+    slotstore i, %55
+    jmp L5
+
+  L9:
+    %56 = slotload.u64 entry
+    %57 = slotload.u64 new_cap
+    %58 = call.u64 @rt_reg_hash(%56, %57)
+    slot slot: u64
+    slotstore slot, %58
+    jmp L10
+
+  L10:
+    %59 = slotload.u64 new_table
+    %60 = slotload.u64 slot
+    %61 = const.u64 8
+    %62 = mul.u64 %60, %61
+    %63 = add.u64 %59, %62
+    %64 = cvt.u64_to_ptr %63
+    %65 = load.u64 %64, 0
+    %66 = const.u64 1
+    %67 = gt.u64 %65, %66
+    br %67, L11, L12
+
+  L11:
+    %68 = slotload.u64 slot
+    %69 = const.u64 1
+    %70 = add.u64 %68, %69
+    %71 = slotload.u64 new_cap
+    %72 = mod.u64 %70, %71
+    slotstore slot, %72
+    jmp L10
+
+  L12:
+    %73 = slotload.u64 new_table
+    %74 = slotload.u64 slot
+    %75 = const.u64 8
+    %76 = mul.u64 %74, %75
+    %77 = add.u64 %73, %76
+    %78 = slotload.u64 entry
+    %79 = cvt.u64_to_ptr %77
+    store.u64 %79, 0, %78
+    jmp L8
+}
+
+func @impl_fs_rt_str_dup(s: ptr<i8>) -> ptr<i8> {
+  L0:
+    %0 = slotload.ptr<i8> s
+    %1 = cvt.ptr_to_u64 %0
+    slot src: u64
+    slotstore src, %1
+    %2 = slotload.u64 src
+    %3 = call.u64 @rt_str_len_addr(%2)
+    slot len: u64
+    slotstore len, %3
+    %4 = slotload.u64 len
+    %5 = const.u64 1
+    %6 = add.u64 %4, %5
+    %7 = call.u64 @rt_raw_alloc(%6)
+    slot dst: u64
+    slotstore dst, %7
+    %8 = slotload.u64 dst
+    call.void @rt_reg_add(%8)
+    %9 = slotload.u64 len
+    %10 = const.u64 0
+    %11 = gt.u64 %9, %10
+    br %11, L2, L1
+
+  L1:
+    %12 = slotload.u64 dst
+    %13 = slotload.u64 len
+    %14 = add.u64 %12, %13
+    %15 = const.u8 0
+    %16 = cvt.u64_to_ptr %14
+    store.u8 %16, 0, %15
+    %17 = slotload.u64 dst
+    %18 = cvt.u64_to_ptr %17
+    ret %18
+
+  L2:
+    %19 = slotload.u64 dst
+    %20 = slotload.u64 src
+    %21 = slotload.u64 len
+    %22 = cvt.u64_to_ptr %19
+    %23 = cvt.u64_to_ptr %20
+    call.void @fs_rt_mem_copy(%22, %23, %21)
+    jmp L1
 }

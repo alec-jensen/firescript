@@ -135,10 +135,10 @@ function main() -> void {
     %37 = NullLiteral(string?)
     %38 = BinaryOp("==", %36, %37)
     Call(println, [%38], ["borrow"])
-    %39 = LoadVar("val") -> string
-    Drop(%39)
-    %40 = StringLiteral("assigned", string)
-    StoreVar("val", %40)
+    %39 = StringLiteral("assigned", string)
+    %40 = LoadVar("val") -> string
+    Drop(%40)
+    StoreVar("val", %39)
     %41 = LoadVar("val") -> string
     %42 = NullLiteral(string?)
     %43 = BinaryOp("!=", %41, %42)

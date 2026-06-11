@@ -10,8 +10,170 @@
 //   and other fs_rt_* functions may be used; no std imports.
 // - Inside a function fs_rt_X, do not use language constructs that
 //   lower to fs_rt_X itself (e.g. no string + inside fs_rt_str_concat).
+// - Work with uint64 addresses internally; only touch string-typed
+//   values at function boundaries (avoids ownership churn).
 
 directive enable_lowlevel_runtime;
+
+// ---------------------------------------------------------------------
+// Runtime state block (lazily allocated; address in the state cell)
+//
+// Layout (byte offsets):
+//   0:  process heap handle
+//   8:  allocation registry table ptr (slots of u64; 0=empty, 1=tombstone)
+//   16: registry capacity (power of two)
+//   24: registry live count
+//   32: scratch u64 (WriteFile/ReadFile out-params)
+//   40: argc
+//   48: argv block ptr (argc * u64 string addresses)
+//   56: fd table ptr (64 slots of u64 HANDLE; fd = index + 3)
+// ---------------------------------------------------------------------
+
+uint64 rt_state() {
+    uint64 state = runtime_state_get();
+    if (state != 0u64) {
+        return state;
+    }
+    uint64 heap = win_get_process_heap();
+    // 0x8 = HEAP_ZERO_MEMORY
+    uint64 block = win_heap_alloc(heap, 8u32, 64u64);
+    mem_store_u64(block, heap);
+    runtime_state_set(block);
+    return block;
+}
+
+uint64 rt_heap() {
+    uint64 state = rt_state();
+    return mem_load_u64(state);
+}
+
+uint64 rt_raw_alloc(uint64 n) {
+    if (n == 0u64) {
+        n = 1u64;
+    }
+    return win_heap_alloc(rt_heap(), 8u32, n);
+}
+
+// ---- allocation registry (legacy double-free / literal-free guard) ----
+
+uint64 rt_reg_hash(uint64 p, uint64 cap) {
+    uint64 h = (p / 16u64) * 2654435761u64;
+    return h % cap;
+}
+
+void rt_reg_grow() {
+    uint64 state = rt_state();
+    uint64 old_table = mem_load_u64(state + 8u64);
+    uint64 old_cap = mem_load_u64(state + 16u64);
+    uint64 new_cap = old_cap * 2u64;
+    if (new_cap == 0u64) {
+        new_cap = 256u64;
+    }
+    uint64 new_table = rt_raw_alloc(new_cap * 8u64);
+    if (old_table != 0u64) {
+        uint64 i = 0u64;
+        while (i < old_cap) {
+            uint64 entry = mem_load_u64(old_table + i * 8u64);
+            if (entry > 1u64) {
+                uint64 slot = rt_reg_hash(entry, new_cap);
+                while (mem_load_u64(new_table + slot * 8u64) > 1u64) {
+                    slot = (slot + 1u64) % new_cap;
+                }
+                mem_store_u64(new_table + slot * 8u64, entry);
+            }
+            i = i + 1u64;
+        }
+        win_heap_free(rt_heap(), 0u32, old_table);
+    }
+    mem_store_u64(state + 8u64, new_table);
+    mem_store_u64(state + 16u64, new_cap);
+}
+
+void rt_reg_add(uint64 p) {
+    if (p <= 1u64) {
+        return;
+    }
+    uint64 state = rt_state();
+    uint64 cap = mem_load_u64(state + 16u64);
+    uint64 count = mem_load_u64(state + 24u64);
+    if (cap == 0u64 || count * 10u64 >= cap * 7u64) {
+        rt_reg_grow();
+        cap = mem_load_u64(state + 16u64);
+    }
+    uint64 table = mem_load_u64(state + 8u64);
+    uint64 slot = rt_reg_hash(p, cap);
+    while (true) {
+        uint64 entry = mem_load_u64(table + slot * 8u64);
+        if (entry <= 1u64) {
+            mem_store_u64(table + slot * 8u64, p);
+            mem_store_u64(state + 24u64, count + 1u64);
+            return;
+        }
+        if (entry == p) {
+            return;
+        }
+        slot = (slot + 1u64) % cap;
+    }
+}
+
+bool rt_reg_remove(uint64 p) {
+    if (p <= 1u64) {
+        return false;
+    }
+    uint64 state = rt_state();
+    uint64 cap = mem_load_u64(state + 16u64);
+    if (cap == 0u64) {
+        return false;
+    }
+    uint64 table = mem_load_u64(state + 8u64);
+    uint64 slot = rt_reg_hash(p, cap);
+    uint64 probes = 0u64;
+    while (probes < cap) {
+        uint64 entry = mem_load_u64(table + slot * 8u64);
+        if (entry == 0u64) {
+            return false;
+        }
+        if (entry == p) {
+            // 1 = tombstone
+            mem_store_u64(table + slot * 8u64, 1u64);
+            uint64 count = mem_load_u64(state + 24u64);
+            mem_store_u64(state + 24u64, count - 1u64);
+            return true;
+        }
+        slot = (slot + 1u64) % cap;
+        probes = probes + 1u64;
+    }
+    return false;
+}
+
+// ---- core allocation ABI ----
+
+string fs_rt_alloc_zeroed(int64 n) {
+    uint64 p = rt_raw_alloc(n as uint64);
+    rt_reg_add(p);
+    return addr_to_str(p);
+}
+
+void fs_rt_free(&string p) {
+    uint64 addr = str_to_addr(p);
+    if (addr == 0u64) {
+        return;
+    }
+    if (rt_reg_remove(addr)) {
+        win_heap_free(rt_heap(), 0u32, addr);
+    }
+    // Untracked pointers (string literals, already-freed blocks) are
+    // ignored, matching the legacy runtime's registry semantics.
+}
+
+void fs_rt_zero_memory(&string p, int64 n) {
+    uint64 addr = str_to_addr(p);
+    uint64 i = 0u64;
+    while (i < (n as uint64)) {
+        mem_store_u8(addr + i, 0u8);
+        i = i + 1u64;
+    }
+}
 
 // ---- integer exponentiation (** operator) ----
 
@@ -45,14 +207,370 @@ float64 fs_rt_pow_f64(float64 base, float64 exp) {
 
 // ---- string primitives (strings are NUL-terminated byte buffers) ----
 
-int32 fs_rt_str_length(&string s) {
-    uint64 addr = str_to_addr(s);
+uint64 rt_str_len_addr(uint64 addr) {
     if (addr == 0u64) {
-        return 0;
+        return 0u64;
     }
-    int32 len = 0;
-    while (mem_load_u8(addr + (len as uint64)) != 0u8) {
-        len = len + 1;
+    uint64 len = 0u64;
+    while (mem_load_u8(addr + len) != 0u8) {
+        len = len + 1u64;
     }
     return len;
+}
+
+int32 fs_rt_str_length(&string s) {
+    return rt_str_len_addr(str_to_addr(s)) as int32;
+}
+
+string fs_rt_str_dup(&string s) {
+    uint64 src = str_to_addr(s);
+    uint64 len = rt_str_len_addr(src);
+    uint64 dst = rt_raw_alloc(len + 1u64);
+    rt_reg_add(dst);
+    if (len > 0u64) {
+        mem_copy(dst, src, len);
+    }
+    mem_store_u8(dst + len, 0u8);
+    return addr_to_str(dst);
+}
+
+string fs_rt_str_concat(&string a, &string b) {
+    uint64 pa = str_to_addr(a);
+    uint64 pb = str_to_addr(b);
+    uint64 la = rt_str_len_addr(pa);
+    uint64 lb = rt_str_len_addr(pb);
+    uint64 dst = rt_raw_alloc(la + lb + 1u64);
+    rt_reg_add(dst);
+    if (la > 0u64) {
+        mem_copy(dst, pa, la);
+    }
+    if (lb > 0u64) {
+        mem_copy(dst + la, pb, lb);
+    }
+    mem_store_u8(dst + la + lb, 0u8);
+    return addr_to_str(dst);
+}
+
+bool fs_rt_str_eq(&string a, &string b) {
+    uint64 pa = str_to_addr(a);
+    uint64 pb = str_to_addr(b);
+    if (pa == 0u64 || pb == 0u64) {
+        return pa == pb;
+    }
+    uint64 i = 0u64;
+    while (true) {
+        uint8 ca = mem_load_u8(pa + i);
+        uint8 cb = mem_load_u8(pb + i);
+        if (ca != cb) {
+            return false;
+        }
+        if (ca == 0u8) {
+            return true;
+        }
+        i = i + 1u64;
+    }
+    return true;
+}
+
+string fs_rt_str_char_at(&string s, int32 index) {
+    uint64 src = str_to_addr(s);
+    uint64 len = rt_str_len_addr(src);
+    uint64 dst = rt_raw_alloc(2u64);
+    rt_reg_add(dst);
+    if (index >= 0 && (index as uint64) < len) {
+        mem_store_u8(dst, mem_load_u8(src + (index as uint64)));
+        mem_store_u8(dst + 1u64, 0u8);
+    } else {
+        mem_store_u8(dst, 0u8);
+    }
+    return addr_to_str(dst);
+}
+
+uint8 fs_rt_str_char_code_at(&string s, int32 index) {
+    uint64 src = str_to_addr(s);
+    uint64 len = rt_str_len_addr(src);
+    if (index < 0 || (index as uint64) >= len) {
+        return 0u8;
+    }
+    return mem_load_u8(src + (index as uint64));
+}
+
+uint8 fs_rt_str_char_code(&string s) {
+    uint64 src = str_to_addr(s);
+    if (src == 0u64) {
+        return 0u8;
+    }
+    return mem_load_u8(src);
+}
+
+int32 fs_rt_str_index_of(&string haystack, &string needle) {
+    uint64 ph = str_to_addr(haystack);
+    uint64 pn = str_to_addr(needle);
+    if (ph == 0u64 || pn == 0u64) {
+        return -1;
+    }
+    uint64 lh = rt_str_len_addr(ph);
+    uint64 ln = rt_str_len_addr(pn);
+    if (ln == 0u64) {
+        return 0;
+    }
+    if (ln > lh) {
+        return -1;
+    }
+    uint64 last = lh - ln;
+    uint64 i = 0u64;
+    while (i <= last) {
+        uint64 j = 0u64;
+        bool matched = true;
+        while (j < ln) {
+            if (mem_load_u8(ph + i + j) != mem_load_u8(pn + j)) {
+                matched = false;
+                break;
+            }
+            j = j + 1u64;
+        }
+        if (matched) {
+            return i as int32;
+        }
+        i = i + 1u64;
+    }
+    return -1;
+}
+
+string fs_rt_str_slice(&string s, int32 start, int32 end) {
+    uint64 src = str_to_addr(s);
+    uint64 len = rt_str_len_addr(src);
+    int32 length = len as int32;
+    if (start < 0) { start = 0; }
+    if (end < 0) { end = 0; }
+    if (start > length) { start = length; }
+    if (end > length) { end = length; }
+    if (end < start) { end = start; }
+    int32 out_len = end - start;
+    uint64 dst = rt_raw_alloc((out_len as uint64) + 1u64);
+    rt_reg_add(dst);
+    if (out_len > 0) {
+        mem_copy(dst, src + (start as uint64), out_len as uint64);
+    }
+    mem_store_u8(dst + (out_len as uint64), 0u8);
+    return addr_to_str(dst);
+}
+
+// ---- integer -> string conversions ----
+
+string rt_u64_to_str_impl(uint64 v, bool negative) {
+    // Max u64 is 20 digits + sign + NUL.
+    uint64 buf = rt_raw_alloc(22u64);
+    rt_reg_add(buf);
+    uint64 pos = 21u64;
+    mem_store_u8(buf + pos, 0u8);
+    if (v == 0u64) {
+        pos = pos - 1u64;
+        mem_store_u8(buf + pos, 48u8); // '0'
+    }
+    while (v > 0u64) {
+        pos = pos - 1u64;
+        mem_store_u8(buf + pos, ((v % 10u64) as uint8) + 48u8);
+        v = v / 10u64;
+    }
+    if (negative) {
+        pos = pos - 1u64;
+        mem_store_u8(buf + pos, 45u8); // '-'
+    }
+    // Shift to the buffer start so the returned pointer is the block start
+    // (required for the allocation registry to recognize it on free).
+    uint64 out_len = 21u64 - pos;
+    uint64 i = 0u64;
+    while (i < out_len) {
+        mem_store_u8(buf + i, mem_load_u8(buf + pos + i));
+        i = i + 1u64;
+    }
+    mem_store_u8(buf + out_len, 0u8);
+    return addr_to_str(buf);
+}
+
+string fs_rt_i64_to_str(int64 v) {
+    if (v < 0i64) {
+        // Negate via u64 to handle INT64_MIN.
+        uint64 magnitude = 0u64 - (v as uint64);
+        return rt_u64_to_str_impl(magnitude, true);
+    }
+    return rt_u64_to_str_impl(v as uint64, false);
+}
+
+string fs_rt_i32_to_str(int32 v) {
+    return fs_rt_i64_to_str(v as int64);
+}
+
+string fs_rt_u64_to_str(uint64 v) {
+    return rt_u64_to_str_impl(v, false);
+}
+
+string fs_rt_u32_to_str(uint32 v) {
+    return rt_u64_to_str_impl(v as uint64, false);
+}
+
+string fs_rt_bool_to_str(bool v) {
+    if (v) {
+        return fs_rt_str_dup("true");
+    }
+    return fs_rt_str_dup("false");
+}
+
+string fs_rt_char_to_str(uint8 c) {
+    uint64 dst = rt_raw_alloc(2u64);
+    rt_reg_add(dst);
+    mem_store_u8(dst, c);
+    mem_store_u8(dst + 1u64, 0u8);
+    return addr_to_str(dst);
+}
+
+// ---- string -> number parsing (atoi/atoll/atof semantics) ----
+
+int64 rt_parse_int(uint64 addr) {
+    if (addr == 0u64) {
+        return 0i64;
+    }
+    uint64 i = 0u64;
+    // Skip leading whitespace (space, tab, newline, CR, FF, VT).
+    while (true) {
+        uint8 c = mem_load_u8(addr + i);
+        if (c == 32u8 || (c >= 9u8 && c <= 13u8)) {
+            i = i + 1u64;
+        } else {
+            break;
+        }
+    }
+    bool negative = false;
+    uint8 sign = mem_load_u8(addr + i);
+    if (sign == 45u8) { // '-'
+        negative = true;
+        i = i + 1u64;
+    } else if (sign == 43u8) { // '+'
+        i = i + 1u64;
+    }
+    int64 value = 0i64;
+    while (true) {
+        uint8 c = mem_load_u8(addr + i);
+        if (c < 48u8 || c > 57u8) {
+            break;
+        }
+        value = value * 10i64 + ((c - 48u8) as int64);
+        i = i + 1u64;
+    }
+    if (negative) {
+        return -value;
+    }
+    return value;
+}
+
+int32 fs_rt_str_to_i32(&string s) {
+    return rt_parse_int(str_to_addr(s)) as int32;
+}
+
+int64 fs_rt_str_to_i64(&string s) {
+    return rt_parse_int(str_to_addr(s));
+}
+
+bool fs_rt_str_to_bool(&string s) {
+    if (fs_rt_str_eq(s, "true")) {
+        return true;
+    }
+    return fs_rt_str_eq(s, "1");
+}
+
+float64 fs_rt_str_to_f64(&string s) {
+    uint64 addr = str_to_addr(s);
+    if (addr == 0u64) {
+        return 0.0;
+    }
+    uint64 i = 0u64;
+    while (true) {
+        uint8 c = mem_load_u8(addr + i);
+        if (c == 32u8 || (c >= 9u8 && c <= 13u8)) {
+            i = i + 1u64;
+        } else {
+            break;
+        }
+    }
+    bool negative = false;
+    uint8 sign = mem_load_u8(addr + i);
+    if (sign == 45u8) {
+        negative = true;
+        i = i + 1u64;
+    } else if (sign == 43u8) {
+        i = i + 1u64;
+    }
+    float64 value = 0.0;
+    while (true) {
+        uint8 c = mem_load_u8(addr + i);
+        if (c < 48u8 || c > 57u8) {
+            break;
+        }
+        value = value * 10.0 + (((c - 48u8) as int32) as float64);
+        i = i + 1u64;
+    }
+    if (mem_load_u8(addr + i) == 46u8) { // '.'
+        i = i + 1u64;
+        float64 scale = 0.1;
+        while (true) {
+            uint8 c = mem_load_u8(addr + i);
+            if (c < 48u8 || c > 57u8) {
+                break;
+            }
+            value = value + (((c - 48u8) as int32) as float64) * scale;
+            scale = scale / 10.0;
+            i = i + 1u64;
+        }
+    }
+    // Exponent part (e/E).
+    uint8 e = mem_load_u8(addr + i);
+    if (e == 101u8 || e == 69u8) {
+        i = i + 1u64;
+        bool exp_negative = false;
+        uint8 esign = mem_load_u8(addr + i);
+        if (esign == 45u8) {
+            exp_negative = true;
+            i = i + 1u64;
+        } else if (esign == 43u8) {
+            i = i + 1u64;
+        }
+        int32 exponent = 0;
+        while (true) {
+            uint8 c = mem_load_u8(addr + i);
+            if (c < 48u8 || c > 57u8) {
+                break;
+            }
+            exponent = exponent * 10 + ((c - 48u8) as int32);
+            i = i + 1u64;
+        }
+        while (exponent > 0) {
+            if (exp_negative) {
+                value = value / 10.0;
+            } else {
+                value = value * 10.0;
+            }
+            exponent = exponent - 1;
+        }
+    }
+    if (negative) {
+        return -value;
+    }
+    return value;
+}
+
+// ---- stdout ----
+
+void fs_rt_stdout(&string s) {
+    uint64 addr = str_to_addr(s);
+    if (addr == 0u64) {
+        return;
+    }
+    uint64 len = rt_str_len_addr(addr);
+    if (len == 0u64) {
+        return;
+    }
+    uint64 handle = win_get_std_handle(-11); // STD_OUTPUT_HANDLE
+    uint64 state = rt_state();
+    win_write_file(handle, addr, len as uint32, state + 32u64, 0u64);
 }
