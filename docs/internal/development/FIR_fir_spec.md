@@ -39,7 +39,7 @@ FIRModule
 - Locals: `DeclareLocal`, `LoadVar`, `StoreVar` (FIR is not SSA; mutable locals are explicit named slots instead of block parameters)
 - Ownership: `Move`, `Borrow`, `Clone`, `Drop`
 - Calls: `Call`, `MethodCall`
-- Generators: `Yield` (generator functions render with the `generator` keyword instead of `function`)
+- Generators: `Yield`, `GenNew(name, [args]) -> generator<T>`, `GenNext(gen) -> bool`, `GenValue(gen) -> T` (generator functions render with the `generator` keyword instead of `function`; `for-in` over a generator converts to a GenNew/GenNext/GenValue loop)
 - Control: `Branch`, `Jump`, `Return`, `Unreachable`
 
 ### Dump format rules

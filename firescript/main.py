@@ -167,12 +167,34 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
         return False
     stage_start = _log_stage_duration("Semantic analysis", stage_start)
 
-    # FIR pipeline hooks: --backend c-fir/asm and --emit-fir/--emit-flir are
-    # plumbed here; the AST→FIR converter and the new backends land with the
-    # FIR pipeline work (see docs/internal/development/FIR_impl_plan.md).
-    if backend != "c-legacy" or emit_fir or emit_flir:
+    # FIR pipeline hooks: --emit-fir dumps the high-level IR; --backend
+    # c-fir/asm and --emit-flir land with the lowering/backend work
+    # (see docs/internal/development/FIR_impl_plan.md).
+    if emit_fir:
+        from ast_to_fir import ASTToFIRConverter
+        from fir import dump_module
+
+        base_name = os.path.splitext(os.path.basename(file_path))[0]
+        try:
+            converter = ASTToFIRConverter(ast, module_name=base_name)
+            fir_module = converter.convert()
+        except Exception as e:
+            logging.error(f"AST->FIR conversion failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+        os.makedirs("build", exist_ok=True)
+        fir_out = os.path.join("build", f"{base_name}.fir")
+        with open(fir_out, "w", encoding="utf-8", newline="\n") as f:
+            f.write(dump_module(fir_module))
+        logging.info(f"FIR written to {fir_out}")
+        stage_start = _log_stage_duration("AST->FIR conversion", stage_start)
+        if backend == "c-legacy" and not emit_flir:
+            return fir_out
+
+    if backend != "c-legacy" or emit_flir:
         logging.error(
-            "The FIR pipeline (--backend c-fir/asm, --emit-fir, --emit-flir) is not implemented yet; "
+            "The FIR backends (--backend c-fir/asm, --emit-flir) are not implemented yet; "
             "use the default --backend c-legacy"
         )
         return False

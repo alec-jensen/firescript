@@ -63,6 +63,16 @@ python tests/fir_unit_tests.py
 
 - **fir_unit_tests.py** - Unit tests for `firescript/fir/`: FIRBuilder construction, textual dump format (verified against the spec example in `docs/internal/development/FIR_fir_spec.md`), dump determinism, structural validation (terminators, branch targets, cross-function value use)
 
+```bash
+# FIR snapshot tests (AST->FIR conversion goldens)
+python tests/fir_snapshot_runner.py
+
+# Regenerate FIR goldens (review diffs carefully!)
+python tests/fir_snapshot_runner.py --update
+```
+
+- **fir_snapshot_runner.py** - Converts a representative subset of test sources (25 cases spanning the implemented feature surface) to FIR via `--emit-fir`, compares the dumps against goldens in `tests/expected_fir/`, and verifies determinism by converting each case twice. These goldens are internal compiler fixtures, not user-facing behavior.
+
 ## Test Categories
 
 ### Core Language Features

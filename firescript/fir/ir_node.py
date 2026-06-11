@@ -401,6 +401,46 @@ class YieldInst(Instruction):
         super().__init__(operands=[value])
 
 
+class GenNewInst(Instruction):
+    """Instantiate a generator: GenNew(name, [args]) -> generator<T>."""
+
+    opcode = "GenNew"
+
+    def __init__(self, generator_ref: str, args: list[Value], result_type: FIRType):
+        super().__init__(operands=list(args), result_type=result_type)
+        self.generator_ref = generator_ref
+
+    def format(self, resolve: Resolver) -> str:
+        return (
+            f"GenNew({self.generator_ref}, {_fmt_value_list(self.operands, resolve)})"
+            f" -> {self.result_type.render()}"
+        )
+
+
+class GenNextInst(Instruction):
+    """Advance a generator; result is true while a value was produced."""
+
+    opcode = "GenNext"
+
+    def __init__(self, generator: Value, result_type: FIRType):
+        super().__init__(operands=[generator], result_type=result_type)
+
+    def format(self, resolve: Resolver) -> str:
+        return f"GenNext({resolve(self.operands[0])}) -> {self.result_type.render()}"
+
+
+class GenValueInst(Instruction):
+    """Read the current value of a generator after a successful GenNext."""
+
+    opcode = "GenValue"
+
+    def __init__(self, generator: Value, result_type: FIRType):
+        super().__init__(operands=[generator], result_type=result_type)
+
+    def format(self, resolve: Resolver) -> str:
+        return f"GenValue({resolve(self.operands[0])}) -> {self.result_type.render()}"
+
+
 # ---------------------------------------------------------------------------
 # Terminators
 # ---------------------------------------------------------------------------

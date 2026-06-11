@@ -21,6 +21,9 @@ from fir.ir_node import (
     DropInst,
     FIRValue,
     FloatLiteralInst,
+    GenNewInst,
+    GenNextInst,
+    GenValueInst,
     IndexArrayInst,
     Instruction,
     IntLiteralInst,
@@ -165,6 +168,15 @@ class FIRBuilder:
 
     def yield_value(self, value: Value) -> None:
         self.emit(YieldInst(value))
+
+    def gen_new(self, generator_ref: str, args: list[Value], result_type: FIRType) -> FIRValue:
+        return self.emit(GenNewInst(generator_ref, args, result_type))
+
+    def gen_next(self, generator: Value, bool_type: FIRType) -> FIRValue:
+        return self.emit(GenNextInst(generator, bool_type))
+
+    def gen_value(self, generator: Value, element_type: FIRType) -> FIRValue:
+        return self.emit(GenValueInst(generator, element_type))
 
     # -- terminators -------------------------------------------------------
 
