@@ -1,10 +1,9 @@
-from .base import CCodeGeneratorBase
-from .generics import GenericsMixin
-from .classes import ClassesMixin
-from .declarations import DeclarationsMixin
-from .statements import StatementsMixin
-from .generator import GeneratorMixin
+"""firescript code generation backends.
 
+The compiler pipeline is AST -> FIR -> FLIR -> x86-64 assembly; see
+flir_to_asm.FLIRToAsmBackend.
+"""
 
-class CCodeGenerator(GeneratorMixin):
-    pass
+from codegen.flir_to_asm import FLIRToAsmBackend
+
+__all__ = ["FLIRToAsmBackend"]

@@ -451,10 +451,7 @@ class FIRToFLIRLowering:
             if isinstance(ptype, ArrayType):
                 concrete = self.render_concrete(ptype.element_type, type_map)
                 ctx.array_elems[pname] = concrete
-                if type_map and False:
-                    pass
-                # Non-generic array params get an implicit length parameter
-                # (legacy ABI). Generic instantiations do not (legacy parity).
+                # Array params get an implicit trailing length parameter.
                 len_name = f"{pname}_len"
                 params.append((len_name, I32))
                 ctx.slot_types[len_name] = I32

@@ -2,10 +2,12 @@
 
 ## Executive Summary
 
-This document summarizes the FIR+FLIR design for the firescript compiler and describes the current compiler state and motivations for adding a two-level IR.
+This document summarizes the FIR+FLIR design for the firescript compiler and describes the original compiler state and motivations for adding a two-level IR.
 
-**Current State**: Compiler uses direct AST → C translation.
-**Target State**: AST → FIR → [Optimization Passes] → FLIR → [C | Assembly | JS/WASM]
+**Status**: implemented. The compiler pipeline is AST → FIR → FLIR → x86-64 assembly; the direct AST → C translation described below as "current state" has been removed. Optimization passes are follow-up work.
+
+**Original State**: Compiler uses direct AST → C translation.
+**Target State (reached)**: AST → FIR → [Optimization Passes] → FLIR → [Assembly | future targets]
 
 ## Current Compiler Architecture Analysis
 

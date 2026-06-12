@@ -38,18 +38,16 @@ for (int8 i=0i8; i < 10i8; i++) {
 
 ## Platforms
 
-firescript is cross-platform. Native compilation currently targets Windows, Linux, and macOS. A future JavaScript + Wasm target is planned for browser and Node.js environments.
-
-Development happens primarily on Windows and Linux, and CI test coverage runs on Windows, Linux, and macOS.
+firescript compiles directly to native x86-64 machine code through its own intermediate representations (FIR and FLIR) — no C compiler involved. Native compilation currently targets Windows x64; Linux and macOS targets are planned, as is a future JavaScript + Wasm target for browser and Node.js environments.
 
 ## Build and Test Requirements
 
-firescript compiles source code to C and then builds native binaries. Because of this, a C compiler is required for local builds and test runs:
+The compiler emits x86-64 assembly and drives the system assembler and linker. Compiled binaries are freestanding and import only `kernel32.dll` — the entire language runtime is written in firescript itself.
 
-- **Required:** GCC or Clang available on your `PATH`
-- **Used by:** compiler output builds and `tests/run_tests.py`
+- **Required:** Python 3.13+ and MinGW-w64 binutils (`as` and `ld`) available on your `PATH`
+- **Used by:** compiler output builds and the test runners (`objdump` is also used to verify binary imports)
 
-On Linux/macOS, install GCC or Clang with your system package manager. On Windows, use MSYS2 (or another environment that provides GCC/Clang and related toolchain binaries on `PATH`).
+On Windows, MSYS2's `mingw-w64-ucrt-x86_64-binutils` package (or any MinGW-w64 distribution) provides the required tools. No C compiler is needed.
 
 ## Getting Started
 

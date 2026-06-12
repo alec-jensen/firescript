@@ -25,25 +25,6 @@ def _normalize_cli_path(path_value: str) -> str:
     return os.path.abspath(os.path.expanduser(path_value))
 
 
-def _resolve_compiler_executable(compiler: str | None) -> str | None:
-    """Resolve compiler to an executable path to avoid command-token injection."""
-    if not compiler:
-        return None
-
-    candidate = compiler.strip()
-    if not candidate or any(ch in candidate for ch in ("\x00", "\n", "\r")):
-        return None
-
-    if os.path.isabs(candidate):
-        return candidate if os.path.isfile(candidate) and os.access(candidate, os.X_OK) else None
-
-    if os.sep in candidate or (os.altsep and os.altsep in candidate):
-        rel_candidate = os.path.abspath(candidate)
-        return rel_candidate if os.path.isfile(rel_candidate) and os.access(rel_candidate, os.X_OK) else None
-
-    return shutil.which(candidate)
-
-
 def _log_stage_duration(stage_name: str, start_time_ns: int) -> int:
     """Log a debug timing line for a compiler stage and return a new start time."""
     end_time_ns = time.perf_counter_ns()
@@ -66,18 +47,6 @@ def setup_logging(debug_mode=False, message_format="text"):
         formatter = LogFormatter()
     console_handler.setFormatter(formatter)
     root_logger.addHandler(console_handler)
-
-
-def detect_c_compiler():
-    """Auto-detect available C compiler."""
-    compiler = _resolve_compiler_executable(os.environ.get("CC"))
-    if not compiler:
-        for comp in ["gcc", "clang", "cc"]:
-            resolved = _resolve_compiler_executable(comp)
-            if resolved:
-                compiler = resolved
-                break
-    return compiler
 
 
 def _find_binutil(name: str) -> str | None:
@@ -103,10 +72,12 @@ def _kernel32_lib_dir() -> str | None:
     return None
 
 
-def _compile_asm(flir_module, file_path, out_path, start_time, stage_start):
+def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
+                 emit="bin", no_link=False, link_args=None):
     """FLIR -> .s -> as -> ld: freestanding PE importing only kernel32."""
     from codegen.flir_to_asm import FLIRToAsmBackend
 
+    link_args = link_args or []
     base_name = os.path.splitext(os.path.basename(file_path))[0]
     os.makedirs("build/temp", exist_ok=True)
     asm_path = os.path.join("build", "temp", f"{base_name}.s")
@@ -115,21 +86,30 @@ def _compile_asm(flir_module, file_path, out_path, start_time, stage_start):
     try:
         asm_text = FLIRToAsmBackend(flir_module).generate()
     except Exception as e:
-        logging.error(f"FLIR->asm code generation failed: {e}")
+        logging.error(f"Code generation failed: {e}")
         import traceback
         traceback.print_exc()
         return False
     # Locale-default encoding on purpose: source files are read with the
     # locale encoding, so writing the .s the same way round-trips string
-    # literal bytes exactly (mirrors the legacy C backend).
+    # literal bytes exactly.
     with open(asm_path, "w", newline="\n") as f:
         f.write(asm_text)
-    stage_start = _log_stage_duration("FLIR->asm code generation", stage_start)
+    stage_start = _log_stage_duration("Code generation", stage_start)
+
+    if emit == "asm":
+        final_asm = out_path if out_path else asm_path
+        if out_path:
+            shutil.copy(asm_path, out_path)  # deepcode ignore PathTraversal: user-selected local output path.
+        logging.info(f"Assembly written to {final_asm}")
+        return final_asm
 
     assembler = _find_binutil("as")
     linker = _find_binutil("ld")
-    if not assembler or not linker:
-        logging.error("MinGW binutils (as, ld) not found on PATH; required for --backend asm")
+    if not assembler or (not linker and not (emit == "obj" or no_link)):
+        logging.error(
+            "MinGW binutils (as, ld) not found on PATH; install MinGW-w64 binutils"
+        )
         return False
 
     proc = subprocess.run(
@@ -140,6 +120,13 @@ def _compile_asm(flir_module, file_path, out_path, start_time, stage_start):
         logging.error(f"Assembly failed:\n{proc.stderr}")
         return False
     stage_start = _log_stage_duration("Assemble", stage_start)
+
+    if emit == "obj" or no_link:
+        final_obj = out_path if out_path else obj_path
+        if out_path:
+            shutil.copy(obj_path, out_path)  # deepcode ignore PathTraversal: user-selected local output path.
+        logging.info(f"Object file written to {final_obj}")
+        return final_obj
 
     os.makedirs("build", exist_ok=True)
     final_out = out_path if out_path else os.path.join("build", base_name + ".exe")
@@ -157,6 +144,7 @@ def _compile_asm(flir_module, file_path, out_path, start_time, stage_start):
     if lib_dir:
         link_cmd.extend(["-L", lib_dir])
     link_cmd.append("-lkernel32")
+    link_cmd.extend(link_args)
 
     proc = subprocess.run(
         link_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False
@@ -208,7 +196,7 @@ def _runtime_fir_module():
     return _RUNTIME_FIR_CACHE
 
 
-def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=False, emit_deps=False, no_link=False, link_args=None, backend="c-legacy", emit_fir=False, emit_flir=False):
+def compile_file(file_path, target, out_path=None, emit="bin", check=False, emit_deps=False, no_link=False, link_args=None, emit_fir=False, emit_flir=False):
     """Compile a single firescript file"""
     if link_args is None:
         link_args = []
@@ -295,60 +283,6 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
         return False
     stage_start = _log_stage_duration("Semantic analysis", stage_start)
 
-    # FIR pipeline: --emit-fir/--emit-flir dump the IRs; --backend c-fir
-    # compiles through AST -> FIR -> FLIR -> C (see
-    # docs/internal/development/FIR_impl_plan.md).
-    fir_module = None
-    flir_module = None
-    if emit_fir or emit_flir or backend in ("c-fir", "asm"):
-        from ast_to_fir import ASTToFIRConverter
-        from fir import dump_module
-
-        base_name = os.path.splitext(os.path.basename(file_path))[0]
-        try:
-            converter = ASTToFIRConverter(ast, module_name=base_name)
-            fir_module = converter.convert()
-        except Exception as e:
-            logging.error(f"AST->FIR conversion failed: {e}")
-            import traceback
-            traceback.print_exc()
-            return False
-        stage_start = _log_stage_duration("AST->FIR conversion", stage_start)
-
-        if emit_fir:
-            os.makedirs("build", exist_ok=True)
-            fir_out = os.path.join("build", f"{base_name}.fir")
-            with open(fir_out, "w", encoding="utf-8", newline="\n") as f:
-                f.write(dump_module(fir_module))
-            logging.info(f"FIR written to {fir_out}")
-            if backend == "c-legacy" and not emit_flir:
-                return fir_out
-
-    if emit_flir or backend in ("c-fir", "asm"):
-        from flir import FIRToFLIRLowering, dump_flir_module
-
-        base_name = os.path.splitext(os.path.basename(file_path))[0]
-        try:
-            flir_module = FIRToFLIRLowering(fir_module, runtime_module=_runtime_fir_module()).lower()
-        except Exception as e:
-            logging.error(f"FIR->FLIR lowering failed: {e}")
-            import traceback
-            traceback.print_exc()
-            return False
-        stage_start = _log_stage_duration("FIR->FLIR lowering", stage_start)
-
-        if emit_flir:
-            os.makedirs("build", exist_ok=True)
-            flir_out = os.path.join("build", f"{base_name}.flir")
-            with open(flir_out, "w", encoding="utf-8", newline="\n") as f:
-                f.write(dump_flir_module(flir_module))
-            logging.info(f"FLIR written to {flir_out}")
-            if backend == "c-legacy":
-                return flir_out
-
-    if backend == "asm":
-        return _compile_asm(flir_module, file_path, out_path, start_time, stage_start)
-
     # Output deps if requested
     if emit_deps:
         if has_imports and getattr(ast, "_resolver", None):
@@ -383,187 +317,56 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
         logging.info(f"Check completed for {file_path}")
         return True
 
-    logging.debug("Starting code generation...")
-
-    if target == "native":
-        if backend == "c-fir":
-            from codegen.flir_to_c import FLIRToCBackend
-
-            output = FLIRToCBackend(flir_module).generate()
-        else:
-            from codegen import CCodeGenerator
-
-            # Generate C code
-            generator = CCodeGenerator(ast, source_file=file_path)
-            generator.source_code = file_content
-            output = generator.generate()
-            if generator.errors:
-                logging.error(f"Code generation failed with {len(generator.errors)} errors")
-                return False
-            # Safety: wrap any raw free() calls emitted by codegen into firescript_free()
-            # This prevents double-free and freeing static literals.
-            output = output.replace(" free(", " firescript_free(")
-            output = output.replace("\tfree(", "\tfirescript_free(")
-            output = output.replace("\nfree(", "\nfirescript_free(")
-        stage_start = _log_stage_duration("Code generation", stage_start)
-
-        # Create temp folder if it doesn't exist
-        os.makedirs("build/temp", exist_ok=True)
-
-        # Determine output file path
-        base_name = os.path.splitext(os.path.basename(file_path))[0]
-        temp_c_file = os.path.join("build/temp", f"{base_name}.c")
-
-        # Write generated C code to file
-        try:
-            with open(temp_c_file, "w") as f:
-                f.write(output)
-        except Exception as e:
-            logging.error(f"Failed to write C code to {temp_c_file}: {e}")
-            return False
-        stage_start = _log_stage_duration("Write transpiled C", stage_start)
-
-        logging.debug(f"Transpiled code written to {temp_c_file}")
-
-        if emit == "c":
-            out_c = out_path if out_path else temp_c_file
-            if out_path:
-                shutil.copy(temp_c_file, out_path)  # deepcode ignore PathTraversal: user-selected local output path.
-            logging.info(f"C source written to {out_c}")
-            return out_c
-
-        logging.debug("Starting compilation of transpiled code...")
-
-        # Determine C compiler to use
-        compiler = _resolve_compiler_executable(cc) if cc else detect_c_compiler()
-        if not compiler:
-            logging.error("No C compiler found. Install gcc/clang or specify with --cc")
-            return False
-
-        logging.debug(f"Using C compiler: {compiler}")
-
-        is_macos = sys.platform == "darwin"
-
-        include_dirs = []
-        library_dirs = []
-
-        # Build the transpiled C with runtime
-        # Note: -flto (Link Time Optimization) doesn't work with clang on Windows MinGW
-        # because clang produces LLVM bitcode files that the MinGW linker can't handle
-        use_lto = not (os.name == "nt" and "clang" in compiler)
-        
-        compile_command = [compiler, "-O3"]  # deepcode ignore CommandInjection: compiler executable is validated and shell is disabled.
-
-        # macOS GCC/Clang both behave more reliably without native march/tune flags.
-        if not is_macos:
-            compile_command.extend([
-                "-march=native",
-                "-mtune=native",
-            ])
-
-        for include_dir in include_dirs:
-            compile_command.append(f"-I{include_dir}")
-        
-        if use_lto:
-            compile_command.append("-flto")
-        
-        compile_command.extend([
-            "-fomit-frame-pointer",
-            "-fno-plt",
-            "-fstrict-aliasing",
-            "-fno-stack-protector",
-            "-foptimize-sibling-calls",
-            "-ffunction-sections",
-            "-fdata-sections",
-            "-DNDEBUG",
-            "-I",
-            ".",
-            temp_c_file,
-        ])
-        
-        out_obj = ""
-        if emit == "obj" or no_link:
-            out_obj = out_path if out_path else temp_c_file[:-2] + ".o"
-            compile_command.extend(["-c", "-o", out_obj])
-        else:
-            linker_flags = []
-            for library_dir in library_dirs:
-                linker_flags.append(f"-L{library_dir}")
-            if not is_macos:
-                linker_flags.extend([
-                    "-Wl,-O2",
-                    "-Wl,--as-needed",
-                    "-Wl,--gc-sections",
-                ])
-            if backend == "c-legacy":
-                # The FIR pipeline's runtime is firescript code compiled into
-                # the program; only the legacy backend links the C runtime.
-                compile_command.extend([
-                    "firescript/runtime/runtime.c",
-                ])
-            compile_command.extend(linker_flags)
-            for la in link_args:
-                compile_command.append(la)
-            
-            compile_command.extend([
-                "-o",
-                temp_c_file[:-2],
-            ])
-
-        try:
-            process = subprocess.run(
-                compile_command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                check=False,
-            )  # deepcode ignore CommandInjection: argument list invocation with shell=False.
-
-            if process.returncode != 0:
-                logging.error(f"C Compilation failed with error:\n{process.stderr}")
-                logging.error("This is not an error in your firescript code, but an issue in the compiler.")
-                return False
-
-            if process.stdout:
-                logging.debug(f"Compilation output:\n{process.stdout}")
-
-        except Exception as e:
-            logging.error(f"Failed to execute compiler: {e}")
-            return False
-        stage_start = _log_stage_duration("C compilation", stage_start)
-
-        end_time = time.perf_counter_ns()
-
-        logging.info(f"Compilation of {file_path} completed successfully in {(end_time - start_time) / 1_000_000:.2f} ms")
-        
-        if emit == "obj" or no_link:
-            logging.info(f"Object file written to {out_obj}")
-            return out_obj
-
-        # Handle output file location
-        compiled_binary = os.path.splitext(temp_c_file)[0]
-        os.makedirs("build", exist_ok=True)
-
-        # Default output location
-        final_out_path = out_path if out_path else os.path.join("build", base_name)
-
-        # Windows toolchains typically emit .exe even if -o omits extension
-        if os.name == "nt":
-            if os.path.exists(compiled_binary + ".exe"):
-                compiled_binary = compiled_binary + ".exe"
-                if not out_path or not final_out_path.endswith(".exe"):
-                    final_out_path = final_out_path + ".exe"
-
-        try:
-            shutil.move(compiled_binary, final_out_path)  # deepcode ignore PathTraversal: user-selected local output path.
-            logging.info(f"Binary written to {final_out_path}")
-            return final_out_path
-        except Exception as e:
-            logging.error(f"Failed to move compiled binary: {e}")
-            return False
-    else:
+    if target != "native":
         logging.error(f"Unsupported target: {target}")
         return False
+
+    # AST -> FIR -> FLIR -> x86-64 assembly.
+    from ast_to_fir import ASTToFIRConverter
+    from fir import dump_module
+    from flir import FIRToFLIRLowering, dump_flir_module
+
+    base_name = os.path.splitext(os.path.basename(file_path))[0]
+    try:
+        converter = ASTToFIRConverter(ast, module_name=base_name)
+        fir_module = converter.convert()
+    except Exception as e:
+        logging.error(f"AST->FIR conversion failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+    stage_start = _log_stage_duration("AST->FIR conversion", stage_start)
+
+    if emit_fir:
+        os.makedirs("build", exist_ok=True)
+        fir_out = os.path.join("build", f"{base_name}.fir")
+        with open(fir_out, "w", encoding="utf-8", newline="\n") as f:
+            f.write(dump_module(fir_module))
+        logging.info(f"FIR written to {fir_out}")
+        if not emit_flir:
+            return fir_out
+
+    try:
+        flir_module = FIRToFLIRLowering(fir_module, runtime_module=_runtime_fir_module()).lower()
+    except Exception as e:
+        logging.error(f"FIR->FLIR lowering failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+    stage_start = _log_stage_duration("FIR->FLIR lowering", stage_start)
+
+    if emit_flir:
+        os.makedirs("build", exist_ok=True)
+        flir_out = os.path.join("build", f"{base_name}.flir")
+        with open(flir_out, "w", encoding="utf-8", newline="\n") as f:
+            f.write(dump_flir_module(flir_module))
+        logging.info(f"FLIR written to {flir_out}")
+        return flir_out
+
+    return _compile_asm(
+        flir_module, file_path, out_path, start_time, stage_start,
+        emit=emit, no_link=no_link, link_args=link_args,
+    )
 
 
 def lint_text(source_text: str, file_path: str = "<stdin>"):
@@ -638,17 +441,8 @@ def main():
         help="Target language for compilation. Default is native",
         default="native",
     )
-    parser.add_argument(
-        "--cc", help="C compiler to use (default: auto-detect)", default=None
-    )
     parser.add_argument("--message-format", choices=["text", "json"], default="text", help="Format for diagnostic messages")
-    parser.add_argument("--emit", choices=["ast", "c", "obj", "bin"], default="bin", help="Type of output to generate")
-    parser.add_argument(
-        "--backend",
-        choices=["c-legacy", "c-fir", "asm"],
-        default="c-legacy",
-        help="Code generation backend (default: c-legacy). c-fir and asm use the FIR pipeline.",
-    )
+    parser.add_argument("--emit", choices=["ast", "asm", "obj", "bin"], default="bin", help="Type of output to generate")
     parser.add_argument("--emit-fir", action="store_true", help="Dump FIR (high-level IR) for debugging")
     parser.add_argument("--emit-flir", action="store_true", help="Dump FLIR (lowered IR) for debugging")
     parser.add_argument("--check", action="store_true", help="Run checks only, do not emit code")
@@ -702,14 +496,12 @@ def main():
         output_path = compile_file(
             args.file,
             args.target,
-            args.cc,
             out_path=args.output,
             emit=args.emit,
             check=args.check,
             emit_deps=args.emit_deps,
             no_link=args.no_link,
             link_args=args.link_arg,
-            backend=args.backend,
             emit_fir=args.emit_fir,
             emit_flir=args.emit_flir,
         )
@@ -752,13 +544,11 @@ def main():
             if compile_file(  # deepcode ignore PathTraversal: directory mode compiles user-selected local files.
                 file_path,
                 args.target,
-                args.cc,
                 emit=args.emit,
                 check=args.check,
                 emit_deps=args.emit_deps,
                 no_link=args.no_link,
                 link_args=args.link_arg,
-                backend=args.backend,
                 emit_fir=args.emit_fir,
                 emit_flir=args.emit_flir,
             ):

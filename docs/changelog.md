@@ -27,13 +27,16 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - Added `@firescript/std.fcl` standard library module with FCL (FireScript Configuration Language) lexer for parsing configuration data.
 
 ### Breaking Changes
+- **firescript no longer compiles through C.** The compiler now lowers source through its own intermediate representations (FIR and FLIR) and emits native x86-64 assembly directly, assembled and linked with MinGW-w64 binutils (`as` and `ld`). GCC/Clang are no longer used or required; the `--cc` flag and the `CC` environment variable have been removed, and `--emit c` is replaced by `--emit asm`.
+- Native compilation currently targets **Windows x64 only**. Compiled binaries are freestanding and import only `kernel32.dll`. Linux and macOS native targets are planned for a future release.
+- The language runtime (strings, arrays, numeric formatting and parsing, process arguments, file syscalls) is now implemented in firescript itself (`std/internal/runtime.fire`) and compiled into every program.
 - `float128` is currently an alias of `float64` (64-bit precision). Values declared as `float128` no longer carry extended precision, and converting a `float128` value to a string now produces the standard `float64` formatting (e.g. `4.000000` instead of `4.0000000000`). True 128-bit floating point support is planned for a future release.
 - Removed built-in `input()` function.
 - Modules now need to explicitly export symbols to be imported by other modules. Top-level declarations are private by default.
 - String concatenation no longer performs implicit type conversion. Both operands must be strings; use explicit `as` casting for non-string values.
 
 ### Compiler improvements
-- Added `--backend {c-legacy,c-fir,asm}`, `--emit-fir`, and `--emit-flir` compiler flags for the in-development FIR (firescript intermediate representation) pipeline. The default backend remains `c-legacy`; the other backends and the IR dump flags report an error until the FIR pipeline is implemented.
+- Added `--emit-fir` and `--emit-flir` flags to dump the compiler's intermediate representations (FIR and FLIR) for debugging.
 - firescript binaries no longer link against GMP and MPFR; the libraries are no longer build dependencies.
 - Standard library modules can now import sibling modules using short relative paths (e.g., `import tuple.Tuple;`).
 - Golden runner now supports per-test command-line argument sidecars placed next to each source file (`tests/sources/<name>.args`).
