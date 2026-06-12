@@ -836,7 +836,7 @@ class FIRToFLIRLowering:
         """Build "[a, b, c]" text for an array, matching the legacy format."""
         length = self._array_length_value(source_fir, ctx)
         if length is None:
-            return ctx.emit(Call("fs_rt_str_dup", [ctx.emit(ConstStr("[..."  "]"))], ptr_to("i8")))
+            return self.rt_call("fs_rt_str_dup", [ctx.emit(ConstStr("[...]"))], ptr_to("i8"), ctx)
 
         elem_type = self.lower_type_str(elem_str, ctx.type_map)
         elem_size = elem_type.size(self.flir)
@@ -1229,6 +1229,7 @@ class FIRToFLIRLowering:
         "win_get_last_error": ("GetLastError", U32, []),
         "win_get_command_line_a": ("GetCommandLineA", U64, []),
         "win_get_file_size": ("GetFileSize", U32, [U64, U64]),
+        "win_set_file_pointer": ("SetFilePointer", U32, [U64, I32, U64, U32]),
         "win_exit_process": ("ExitProcess", VOID, [U32]),
     }
 
@@ -1341,7 +1342,7 @@ class FIRToFLIRLowering:
                 "f32_to_str": "fs_rt_f32_to_repr",
                 "f64_to_str": "fs_rt_f64_to_repr",
             }[name]
-            self.set_val(inst, ctx.emit(Call(rt, args, ptr_to("i8"))), ctx)
+            self.set_val(inst, self.rt_call(rt, args, ptr_to("i8"), ctx), ctx)
             return
 
         if name == "array_length":

@@ -1040,3 +1040,340 @@ string fs_rt_f64_to_repr(float64 value) {
 string fs_rt_f32_to_repr(float32 fvalue) {
     return fs_rt_f64_to_repr(fvalue as float64);
 }
+
+// ---- process arguments (GetCommandLineA + Windows quoting rules) ----
+
+void rt_args_parse() {
+    uint64 state = rt_state();
+    if (mem_load_u64(state + 48u64) != 0u64) {
+        return;
+    }
+    uint64 cmd = win_get_command_line_a();
+    uint64 cmd_len = rt_str_len_addr(cmd);
+    // Worst case every other char is an arg: cap argv at len/2 + 2.
+    uint64 argv = rt_raw_alloc((cmd_len / 2u64 + 2u64) * 8u64);
+    uint64 argc = 0u64;
+    uint64 i = 0u64;
+    uint64 scratch = rt_raw_alloc(cmd_len + 1u64);
+    while (i < cmd_len) {
+        // Skip whitespace between arguments.
+        while (i < cmd_len) {
+            uint8 c = mem_load_u8(cmd + i);
+            if (c == 32u8 || c == 9u8) {
+                i = i + 1u64;
+            } else {
+                break;
+            }
+        }
+        if (i >= cmd_len) {
+            break;
+        }
+        uint64 out_len = 0u64;
+        bool in_quotes = false;
+        while (i < cmd_len) {
+            uint8 c = mem_load_u8(cmd + i);
+            if (!in_quotes && (c == 32u8 || c == 9u8)) {
+                break;
+            }
+            if (c == 92u8) { // backslash run
+                uint64 n_bs = 0u64;
+                while (i < cmd_len && mem_load_u8(cmd + i) == 92u8) {
+                    n_bs = n_bs + 1u64;
+                    i = i + 1u64;
+                }
+                bool followed_by_quote = i < cmd_len && mem_load_u8(cmd + i) == 34u8;
+                uint64 emit = n_bs;
+                if (followed_by_quote) {
+                    emit = n_bs / 2u64;
+                }
+                uint64 b = 0u64;
+                while (b < emit) {
+                    mem_store_u8(scratch + out_len, 92u8);
+                    out_len = out_len + 1u64;
+                    b = b + 1u64;
+                }
+                if (followed_by_quote && n_bs % 2u64 == 1u64) {
+                    mem_store_u8(scratch + out_len, 34u8);
+                    out_len = out_len + 1u64;
+                    i = i + 1u64;
+                }
+            } else if (c == 34u8) {
+                in_quotes = !in_quotes;
+                i = i + 1u64;
+            } else {
+                mem_store_u8(scratch + out_len, c);
+                out_len = out_len + 1u64;
+                i = i + 1u64;
+            }
+        }
+        uint64 arg = rt_raw_alloc(out_len + 1u64);
+        if (out_len > 0u64) {
+            mem_copy(arg, scratch, out_len);
+        }
+        mem_store_u8(arg + out_len, 0u8);
+        mem_store_u64(argv + argc * 8u64, arg);
+        argc = argc + 1u64;
+    }
+    win_heap_free(rt_heap(), 0u32, scratch);
+    mem_store_u64(state + 40u64, argc);
+    mem_store_u64(state + 48u64, argv);
+}
+
+int32 fs_rt_argc() {
+    rt_args_parse();
+    uint64 state = rt_state();
+    return mem_load_u64(state + 40u64) as int32;
+}
+
+string fs_rt_argv_at(int32 index) {
+    rt_args_parse();
+    uint64 state = rt_state();
+    uint64 argc = mem_load_u64(state + 40u64);
+    if (index < 0 || (index as uint64) >= argc) {
+        return fs_rt_str_dup("");
+    }
+    uint64 argv = mem_load_u64(state + 48u64);
+    uint64 arg = mem_load_u64(argv + (index as uint64) * 8u64);
+    string view = addr_to_str(arg);
+    return fs_rt_str_dup(view);
+}
+
+// ---- syscalls over kernel32 (fd table maps small ints to HANDLEs) ----
+
+copyable class SyscallResult {
+    int32 status;
+    string data;
+}
+
+uint64 rt_fd_table() {
+    uint64 state = rt_state();
+    uint64 table = mem_load_u64(state + 56u64);
+    if (table == 0u64) {
+        table = rt_raw_alloc(64u64 * 8u64);
+        mem_store_u64(state + 56u64, table);
+    }
+    return table;
+}
+
+int32 rt_fd_register(uint64 handle) {
+    uint64 table = rt_fd_table();
+    uint64 i = 0u64;
+    while (i < 64u64) {
+        if (mem_load_u64(table + i * 8u64) == 0u64) {
+            mem_store_u64(table + i * 8u64, handle);
+            return (i as int32) + 3;
+        }
+        i = i + 1u64;
+    }
+    return -24; // -EMFILE
+}
+
+uint64 rt_fd_handle(int32 fd) {
+    if (fd == 0) {
+        return win_get_std_handle(-10);
+    }
+    if (fd == 1) {
+        return win_get_std_handle(-11);
+    }
+    if (fd == 2) {
+        return win_get_std_handle(-12);
+    }
+    if (fd < 3 || fd >= 67) {
+        return 0u64;
+    }
+    uint64 table = rt_fd_table();
+    return mem_load_u64(table + ((fd - 3) as uint64) * 8u64);
+}
+
+void rt_fd_release(int32 fd) {
+    if (fd < 3 || fd >= 67) {
+        return;
+    }
+    uint64 table = rt_fd_table();
+    mem_store_u64(table + ((fd - 3) as uint64) * 8u64, 0u64);
+}
+
+// Map a GetLastError code to a negated errno-style status (legacy ABI).
+int32 rt_win_err() {
+    uint32 err = win_get_last_error();
+    if (err == 2u32 || err == 3u32) {
+        return -2; // ENOENT
+    }
+    if (err == 5u32) {
+        return -13; // EACCES
+    }
+    if (err == 183u32) {
+        return -17; // EEXIST
+    }
+    if (err == 17u32) {
+        return -18; // EXDEV
+    }
+    if (err == 32u32) {
+        return -16; // EBUSY (sharing violation)
+    }
+    return -(err as int32);
+}
+
+SyscallResult fs_rt_syscall_open(&string path, &string mode) {
+    uint32 access = 0u32;
+    uint32 disposition = 0u32;
+    bool append = false;
+    if (fs_rt_str_eq(mode, "r")) {
+        access = 2147483648u32;       // GENERIC_READ
+        disposition = 3u32;           // OPEN_EXISTING
+    } else if (fs_rt_str_eq(mode, "w")) {
+        access = 1073741824u32;       // GENERIC_WRITE
+        disposition = 2u32;           // CREATE_ALWAYS
+    } else if (fs_rt_str_eq(mode, "a")) {
+        access = 1073741824u32;
+        disposition = 4u32;           // OPEN_ALWAYS
+        append = true;
+    } else if (fs_rt_str_eq(mode, "r+")) {
+        access = 3221225472u32;       // GENERIC_READ | GENERIC_WRITE
+        disposition = 3u32;
+    } else if (fs_rt_str_eq(mode, "w+")) {
+        access = 3221225472u32;
+        disposition = 2u32;
+    } else {
+        return SyscallResult(-22, ""); // -EINVAL
+    }
+    uint64 handle = win_create_file_a(
+        str_to_addr(path), access, 3u32, 0u64, disposition, 128u32, 0u64
+    );
+    if (handle == 18446744073709551615u64) { // INVALID_HANDLE_VALUE
+        return SyscallResult(rt_win_err(), "");
+    }
+    if (append) {
+        win_set_file_pointer(handle, 0, 0u64, 2u32); // FILE_END
+    }
+    int32 fd = rt_fd_register(handle);
+    if (fd < 0) {
+        win_close_handle(handle);
+        return SyscallResult(fd, "");
+    }
+    return SyscallResult(fd, "");
+}
+
+SyscallResult fs_rt_syscall_read(int32 fd, int32 n) {
+    if (n <= 0) {
+        return SyscallResult(-22, "");
+    }
+    uint64 handle = rt_fd_handle(fd);
+    if (handle == 0u64) {
+        return SyscallResult(-9, ""); // -EBADF
+    }
+    uint64 raw = rt_raw_alloc((n as uint64) + 1u64);
+    uint64 state = rt_state();
+    int32 ok = win_read_file(handle, raw, n as uint32, state + 32u64, 0u64);
+    if (ok == 0) {
+        win_heap_free(rt_heap(), 0u32, raw);
+        return SyscallResult(rt_win_err(), "");
+    }
+    uint64 got = mem_load_u64(state + 32u64) % 4294967296u64;
+    // Text-mode semantics (legacy parity): CRLF -> LF.
+    uint64 dst = rt_raw_alloc(got + 1u64);
+    rt_reg_add(dst);
+    uint64 src_i = 0u64;
+    uint64 dst_i = 0u64;
+    while (src_i < got) {
+        uint8 c = mem_load_u8(raw + src_i);
+        if (c == 13u8 && src_i + 1u64 < got && mem_load_u8(raw + src_i + 1u64) == 10u8) {
+            src_i = src_i + 1u64;
+        } else {
+            mem_store_u8(dst + dst_i, c);
+            dst_i = dst_i + 1u64;
+            src_i = src_i + 1u64;
+        }
+    }
+    mem_store_u8(dst + dst_i, 0u8);
+    win_heap_free(rt_heap(), 0u32, raw);
+    return SyscallResult(dst_i as int32, addr_to_str(dst));
+}
+
+SyscallResult fs_rt_syscall_write(int32 fd, &string buf) {
+    uint64 src = str_to_addr(buf);
+    if (src == 0u64) {
+        return SyscallResult(-22, "");
+    }
+    uint64 handle = rt_fd_handle(fd);
+    if (handle == 0u64) {
+        return SyscallResult(-9, "");
+    }
+    uint64 len = rt_str_len_addr(src);
+    // Text-mode semantics (legacy parity): LF -> CRLF on disk; the
+    // returned count is the pre-translation length.
+    uint64 expanded = rt_raw_alloc(len * 2u64 + 1u64);
+    uint64 src_j = 0u64;
+    uint64 out_j = 0u64;
+    while (src_j < len) {
+        uint8 c = mem_load_u8(src + src_j);
+        if (c == 10u8) {
+            mem_store_u8(expanded + out_j, 13u8);
+            out_j = out_j + 1u64;
+        }
+        mem_store_u8(expanded + out_j, c);
+        out_j = out_j + 1u64;
+        src_j = src_j + 1u64;
+    }
+    uint64 state = rt_state();
+    int32 ok = win_write_file(handle, expanded, out_j as uint32, state + 32u64, 0u64);
+    win_heap_free(rt_heap(), 0u32, expanded);
+    if (ok == 0) {
+        return SyscallResult(rt_win_err(), "");
+    }
+    return SyscallResult(len as int32, "");
+}
+
+SyscallResult fs_rt_syscall_close(int32 fd) {
+    uint64 handle = rt_fd_handle(fd);
+    if (handle == 0u64 || fd < 3) {
+        return SyscallResult(-9, "");
+    }
+    rt_fd_release(fd);
+    int32 ok = win_close_handle(handle);
+    if (ok == 0) {
+        return SyscallResult(rt_win_err(), "");
+    }
+    return SyscallResult(0, "");
+}
+
+SyscallResult fs_rt_syscall_remove(&string path) {
+    int32 ok = win_delete_file_a(str_to_addr(path));
+    if (ok == 0) {
+        return SyscallResult(rt_win_err(), "");
+    }
+    return SyscallResult(0, "");
+}
+
+SyscallResult fs_rt_syscall_rename(&string old_path, &string new_path) {
+    // C rename() on Windows fails when the destination exists.
+    int32 ok = win_move_file_ex_a(str_to_addr(old_path), str_to_addr(new_path), 0u32);
+    if (ok == 0) {
+        return SyscallResult(rt_win_err(), "");
+    }
+    return SyscallResult(0, "");
+}
+
+SyscallResult fs_rt_syscall_move(&string src_path, &string dst_path) {
+    // Rename first; fall back to copy + remove for cross-device moves
+    // (legacy contract).
+    int32 ok = win_move_file_ex_a(str_to_addr(src_path), str_to_addr(dst_path), 0u32);
+    if (ok != 0) {
+        return SyscallResult(0, "");
+    }
+    int32 err = rt_win_err();
+    if (err != -18) { // not EXDEV
+        return SyscallResult(err, "");
+    }
+    int32 copied = win_copy_file_a(str_to_addr(src_path), str_to_addr(dst_path), 0);
+    if (copied == 0) {
+        return SyscallResult(rt_win_err(), "");
+    }
+    int32 removed = win_delete_file_a(str_to_addr(src_path));
+    if (removed == 0) {
+        int32 rm_err = rt_win_err();
+        win_delete_file_a(str_to_addr(dst_path));
+        return SyscallResult(rm_err, "");
+    }
+    return SyscallResult(0, "");
+}

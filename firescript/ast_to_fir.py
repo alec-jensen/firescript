@@ -90,6 +90,7 @@ INTRINSIC_FUNCTIONS = frozenset(
         "win_get_last_error",
         "win_get_command_line_a",
         "win_get_file_size",
+        "win_set_file_pointer",
         "win_exit_process",
     }
 )
@@ -148,6 +149,7 @@ INTRINSIC_RETURN_TYPES: dict[str, str] = {
     "win_get_last_error": "uint32",
     "win_get_command_line_a": "uint64",
     "win_get_file_size": "uint32",
+    "win_set_file_pointer": "uint32",
     "win_exit_process": "void",
 }
 

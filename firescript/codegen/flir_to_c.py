@@ -76,92 +76,30 @@ _BINOPS = {
     "or": "||",
 }
 
-_RUNTIME_SHIMS = r"""
-/* ---- fs_rt_* runtime shims over the legacy C runtime ---- */
-static void* fs_rt_alloc_zeroed(int64_t n) {
-    void* p = firescript_malloc((size_t)n);
-    if (p) memset(p, 0, (size_t)n);
-    return p;
+# The complete runtime is implemented in firescript
+# (std/internal/runtime.fire). Only two true primitives remain at the
+# backend level; the asm backend later emits these natively (rep movsb /
+# movq). All other fs_rt_* symbols must resolve to firescript
+# implementations -- an unresolved one is a porting bug and fails at link.
+_RUNTIME_PRIMITIVES = r"""
+/* ---- backend primitives (everything else is firescript code) ---- */
+static void fs_rt_mem_copy(void* dst, const void* src, uint64_t n) {
+    unsigned char* d = (unsigned char*)dst;
+    const unsigned char* s = (const unsigned char*)src;
+    if (d < s) {
+        for (uint64_t i = 0; i < n; i++) d[i] = s[i];
+    } else {
+        for (uint64_t i = n; i > 0; i--) d[i - 1] = s[i - 1];
+    }
 }
-static void fs_rt_free(void* p) { firescript_free(p); }
-static void fs_rt_zero_memory(void* p, int64_t n) { memset(p, 0, (size_t)n); }
-static void fs_rt_mem_copy(void* dst, const void* src, uint64_t n) { memmove(dst, src, (size_t)n); }
 static uint64_t fs_rt_f64_bits(double v) {
     uint64_t bits;
-    memcpy(&bits, &v, sizeof(bits));
+    unsigned char* src = (unsigned char*)&v;
+    unsigned char* dst = (unsigned char*)&bits;
+    for (int i = 0; i < 8; i++) dst[i] = src[i];
     return bits;
 }
-static char* fs_rt_str_dup(const char* s) { return firescript_strdup(s ? s : ""); }
-static char* fs_rt_str_concat(const char* a, const char* b) { return firescript_strcat(a, b); }
-static bool fs_rt_str_eq(const char* a, const char* b) { return firescript_strcmp(a ? a : "", b ? b : ""); }
-static int32_t fs_rt_str_length(const char* s) { return firescript_str_length(s); }
-static char* fs_rt_str_char_at(const char* s, int32_t i) { return firescript_str_char_at(s, i); }
-static int8_t fs_rt_str_char_code_at(const char* s, int32_t i) {
-    if (!s) return 0;
-    int32_t len = (int32_t)strlen(s);
-    if (i < 0 || i >= len) return 0;
-    return (int8_t)s[i];
-}
-static int8_t fs_rt_str_char_code(const char* s) { return (s && s[0]) ? (int8_t)s[0] : 0; }
-static int32_t fs_rt_str_index_of(const char* h, const char* n) { return firescript_str_index_of(h, n); }
-static char* fs_rt_str_slice(const char* s, int32_t a, int32_t b) { return firescript_str_slice(s, a, b); }
-static char* fs_rt_i32_to_str(int32_t v) { return firescript_toString_impl_int32(v); }
-static char* fs_rt_i64_to_str(int64_t v) { return firescript_toString_impl_int64(v); }
-static char* fs_rt_u32_to_str(uint32_t v) { return firescript_toString_impl_uint32(v); }
-static char* fs_rt_u64_to_str(uint64_t v) { return firescript_toString_impl_uint64(v); }
-static char* fs_rt_f32_to_str(float v) { return firescript_toString_impl_float(v); }
-static char* fs_rt_f64_to_str(double v) { return firescript_toString_impl_double(v); }
-static char* fs_rt_f32_to_repr(float v) { return firescript_f32_to_str(v); }
-static char* fs_rt_f64_to_repr(double v) { return firescript_f64_to_str(v); }
-static char* fs_rt_bool_to_str(bool v) { return firescript_toString_impl_bool(v); }
-static char* fs_rt_char_to_str(int8_t c) {
-    char buf[2] = { (char)c, '\0' };
-    return firescript_strdup(buf);
-}
-static int32_t fs_rt_str_to_i32(const char* s) { return (int32_t)atoi(s ? s : "0"); }
-static int64_t fs_rt_str_to_i64(const char* s) { return (int64_t)atoll(s ? s : "0"); }
-static double fs_rt_str_to_f64(const char* s) { return atof(s ? s : "0"); }
-static bool fs_rt_str_to_bool(const char* s) { return firescript_toBool_impl_string(s ? s : ""); }
-static int64_t fs_rt_pow_i64(int64_t base, int64_t exp) {
-    int64_t r = 1;
-    while (exp > 0) { r *= base; exp--; }
-    return r;
-}
-static double fs_rt_pow_f64(double base, double exp) {
-    double r = 1.0;
-    if (exp < 0.0) {
-        double acc = 1.0;
-        int64_t e = (int64_t)(-exp);
-        while (e > 0) { acc *= base; e--; }
-        return 1.0 / acc;
-    }
-    int64_t e = (int64_t)exp;
-    while (e > 0) { r *= base; e--; }
-    return r;
-}
-static void fs_rt_stdout(const char* s) { printf("%s", s ? s : ""); }
-static int32_t fs_rt_argc(void) { return firescript_argc(); }
-static char* fs_rt_argv_at(int32_t i) { return firescript_argv_at(i); }
 """
-
-_SYSCALL_SHIM_TEMPLATE = """static fst_SyscallResult fs_rt_syscall_{name}({params}) {{
-    SyscallResult r = firescript_syscall_{name}({args});
-    fst_SyscallResult out;
-    out.status = r.status;
-    out.data = r.data;
-    return out;
-}}
-"""
-
-_SYSCALL_SIGS = {
-    "open": [("path", "const char*"), ("mode", "const char*")],
-    "read": [("fd", "int32_t"), ("n", "int32_t")],
-    "write": [("fd", "int32_t"), ("buf", "const char*")],
-    "close": [("fd", "int32_t")],
-    "remove": [("path", "const char*")],
-    "rename": [("a", "const char*"), ("b", "const char*")],
-    "move": [("a", "const char*"), ("b", "const char*")],
-}
 
 
 class FLIRToCBackend:
@@ -184,14 +122,9 @@ class FLIRToCBackend:
 
     def generate(self) -> str:
         self.out = [
-            "#include <stdio.h>",
             "#include <stdlib.h>",
             "#include <stdbool.h>",
             "#include <stdint.h>",
-            "#include <inttypes.h>",
-            "#include <string.h>",
-            '#include "firescript/runtime/runtime.h"',
-            '#include "firescript/runtime/conversions.h"',
             "",
         ]
 
@@ -205,15 +138,7 @@ class FLIRToCBackend:
         for struct in self.module.structs:
             self._emit_struct(struct)
 
-        uses_syscalls = self._uses_syscalls()
-        self.out.append(_RUNTIME_SHIMS)
-        if uses_syscalls:
-            for name, params in _SYSCALL_SIGS.items():
-                params_text = ", ".join(f"{ctype} {pname}" for pname, ctype in params)
-                args_text = ", ".join(pname for pname, _ in params)
-                self.out.append(
-                    _SYSCALL_SHIM_TEMPLATE.format(name=name, params=params_text, args=args_text)
-                )
+        self.out.append(_RUNTIME_PRIMITIVES)
 
         for gname, gtype, literal in self.module.globals:
             self.out.append(f"static const {self.c_type(gtype)} fsg_{gname} = {literal};")
@@ -231,22 +156,14 @@ class FLIRToCBackend:
             self._emit_function(func)
 
         if self.module.entry_function:
-            self.out.append("int main(int argc, char **argv) {")
-            self.out.append("    firescript_set_process_args(argc, argv);")
+            # Process args come from GetCommandLineA inside the firescript
+            # runtime; the host entry only calls the program.
+            self.out.append("int main(void) {")
             self.out.append(f"    fsf_{self.module.entry_function}();")
-            self.out.append("    firescript_cleanup();")
             self.out.append("    return 0;")
             self.out.append("}")
 
         return "\n".join(self.out) + "\n"
-
-    def _uses_syscalls(self) -> bool:
-        for func in self.module.functions:
-            for block in func.blocks:
-                for inst in block.instructions:
-                    if isinstance(inst, Call) and inst.callee.startswith("fs_rt_syscall_"):
-                        return True
-        return False
 
     def _emit_struct(self, struct: FLIRStruct) -> None:
         self.out.append(f"typedef struct fst_{struct.name} {{")

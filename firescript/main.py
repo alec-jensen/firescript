@@ -402,9 +402,12 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
                     "-Wl,--as-needed",
                     "-Wl,--gc-sections",
                 ])
-            compile_command.extend([
-                "firescript/runtime/runtime.c",
-            ])
+            if backend == "c-legacy":
+                # The FIR pipeline's runtime is firescript code compiled into
+                # the program; only the legacy backend links the C runtime.
+                compile_command.extend([
+                    "firescript/runtime/runtime.c",
+                ])
             compile_command.extend(linker_flags)
             for la in link_args:
                 compile_command.append(la)
