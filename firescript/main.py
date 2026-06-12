@@ -80,6 +80,100 @@ def detect_c_compiler():
     return compiler
 
 
+def _find_binutil(name: str) -> str | None:
+    """Locate a MinGW binutils executable (as/ld) on PATH."""
+    resolved = shutil.which(name)
+    return resolved
+
+
+def _kernel32_lib_dir() -> str | None:
+    """Find the directory containing libkernel32.a near the ld install."""
+    ld_path = shutil.which("ld")
+    if not ld_path:
+        return None
+    base = os.path.dirname(os.path.dirname(ld_path))
+    candidates = [
+        os.path.join(base, "x86_64-w64-mingw32", "lib"),
+        os.path.join(base, "lib"),
+        os.path.join(os.path.dirname(ld_path), "..", "x86_64-w64-mingw32", "lib"),
+    ]
+    for candidate in candidates:
+        if os.path.isfile(os.path.join(candidate, "libkernel32.a")):
+            return os.path.abspath(candidate)
+    return None
+
+
+def _compile_asm(flir_module, file_path, out_path, start_time, stage_start):
+    """FLIR -> .s -> as -> ld: freestanding PE importing only kernel32."""
+    from codegen.flir_to_asm import FLIRToAsmBackend
+
+    base_name = os.path.splitext(os.path.basename(file_path))[0]
+    os.makedirs("build/temp", exist_ok=True)
+    asm_path = os.path.join("build", "temp", f"{base_name}.s")
+    obj_path = os.path.join("build", "temp", f"{base_name}.o")
+
+    try:
+        asm_text = FLIRToAsmBackend(flir_module).generate()
+    except Exception as e:
+        logging.error(f"FLIR->asm code generation failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+    # Locale-default encoding on purpose: source files are read with the
+    # locale encoding, so writing the .s the same way round-trips string
+    # literal bytes exactly (mirrors the legacy C backend).
+    with open(asm_path, "w", newline="\n") as f:
+        f.write(asm_text)
+    stage_start = _log_stage_duration("FLIR->asm code generation", stage_start)
+
+    assembler = _find_binutil("as")
+    linker = _find_binutil("ld")
+    if not assembler or not linker:
+        logging.error("MinGW binutils (as, ld) not found on PATH; required for --backend asm")
+        return False
+
+    proc = subprocess.run(
+        [assembler, "-o", obj_path, asm_path],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False,
+    )
+    if proc.returncode != 0:
+        logging.error(f"Assembly failed:\n{proc.stderr}")
+        return False
+    stage_start = _log_stage_duration("Assemble", stage_start)
+
+    os.makedirs("build", exist_ok=True)
+    final_out = out_path if out_path else os.path.join("build", base_name + ".exe")
+    if not final_out.lower().endswith(".exe"):
+        final_out += ".exe"
+
+    link_cmd = [
+        linker,
+        "-o", final_out,
+        obj_path,
+        "-e", "firescript_entry",
+        "--subsystem", "console",
+    ]
+    lib_dir = _kernel32_lib_dir()
+    if lib_dir:
+        link_cmd.extend(["-L", lib_dir])
+    link_cmd.append("-lkernel32")
+
+    proc = subprocess.run(
+        link_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False
+    )
+    if proc.returncode != 0:
+        logging.error(f"Link failed:\n{proc.stderr}")
+        return False
+    _log_stage_duration("Link", stage_start)
+
+    end_time = time.perf_counter_ns()
+    logging.info(
+        f"Compilation of {file_path} completed successfully in {(end_time - start_time) / 1_000_000:.2f} ms"
+    )
+    logging.info(f"Binary written to {os.path.abspath(final_out)}")
+    return final_out
+
+
 _RUNTIME_FIR_CACHE = None
 
 
@@ -253,8 +347,7 @@ def compile_file(file_path, target, cc=None, out_path=None, emit="bin", check=Fa
                 return flir_out
 
     if backend == "asm":
-        logging.error("The asm backend is not implemented yet; use --backend c-fir or c-legacy")
-        return False
+        return _compile_asm(flir_module, file_path, out_path, start_time, stage_start)
 
     # Output deps if requested
     if emit_deps:

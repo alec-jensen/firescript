@@ -144,6 +144,27 @@ def resolve_args_path(source_path: str) -> Optional[str]:
     return None
 
 
+def check_kernel32_only(binary: str) -> Optional[str]:
+    """Verify a PE binary imports only KERNEL32.dll (asm backend contract).
+    Returns an error message or None."""
+    resolved = binary if os.path.exists(binary) else binary + ".exe"
+    try:
+        code, out, _err = run_cmd(["objdump", "-p", resolved], check=False, timeout=30)
+    except FileNotFoundError:
+        return None  # objdump unavailable; skip the check
+    if code != 0:
+        return f"objdump failed on {resolved}"
+    dlls = [
+        line.split("DLL Name:", 1)[1].strip()
+        for line in out.splitlines()
+        if "DLL Name:" in line
+    ]
+    bad = [d for d in dlls if d.upper() != "KERNEL32.DLL"]
+    if bad:
+        return f"binary imports more than kernel32: {', '.join(dlls)}"
+    return None
+
+
 def compile_fire(src: str, timeout: Optional[float], backend: str = "c-legacy") -> None:
     # Invoke the firescript compiler to build the native binary into build/<basename>
     cmd = [sys.executable, os.path.join(REPO_ROOT, "firescript", "main.py"), src]
@@ -256,6 +277,10 @@ def run_golden(
             if verbose:
                 _log("BUILD", tc.source, color_code="90")  # dim
             compile_fire(tc.source, timeout=compile_timeout, backend=backend)
+            if backend == "asm":
+                import_error = check_kernel32_only(tc.binary)
+                if import_error:
+                    return (tc, "FAIL", "<kernel32-only imports>", import_error)
             if verbose:
                 _log("RUN", tc.binary, color_code="90")  # dim
             args = read_args_file(tc.args_path) if tc.args_path else None
