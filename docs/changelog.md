@@ -39,6 +39,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - Golden runner now supports per-test command-line argument sidecars placed next to each source file (`tests/sources/<name>.args`).
 - Compiler diagnostics are now unified under structured compile-time error objects across parser, semantic analysis, code generation, and `lint_text(...)`; this improves consistency of reported locations and diagnostics integrations (for example LSP).
 - Bug fixes
+- Fixed float-to-string conversion silently truncating at 31 characters for large magnitudes (e.g. `1e100 as string` now produces the full fixed-notation digits instead of a truncated prefix).
 - Fixed `for-in` loops and `length()` calls on array function parameters.
 - Fixed error caret positions for indented code.
 - Semantic analysis errors now report exact source location with a caret.

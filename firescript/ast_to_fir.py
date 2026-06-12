@@ -66,6 +66,7 @@ INTRINSIC_FUNCTIONS = frozenset(
         "f64_to_str",
         "f32_to_str",
         # Low-level runtime primitives (enable_lowlevel_runtime)
+        "f64_bits",
         "mem_load_u8",
         "mem_store_u8",
         "mem_load_u64",
@@ -123,6 +124,7 @@ INTRINSIC_RETURN_TYPES: dict[str, str] = {
     "i64_to_str": "string",
     "f64_to_str": "string",
     "f32_to_str": "string",
+    "f64_bits": "uint64",
     "mem_load_u8": "uint8",
     "mem_store_u8": "void",
     "mem_load_u64": "uint64",

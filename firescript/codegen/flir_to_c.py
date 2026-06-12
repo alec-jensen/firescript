@@ -86,6 +86,11 @@ static void* fs_rt_alloc_zeroed(int64_t n) {
 static void fs_rt_free(void* p) { firescript_free(p); }
 static void fs_rt_zero_memory(void* p, int64_t n) { memset(p, 0, (size_t)n); }
 static void fs_rt_mem_copy(void* dst, const void* src, uint64_t n) { memmove(dst, src, (size_t)n); }
+static uint64_t fs_rt_f64_bits(double v) {
+    uint64_t bits;
+    memcpy(&bits, &v, sizeof(bits));
+    return bits;
+}
 static char* fs_rt_str_dup(const char* s) { return firescript_strdup(s ? s : ""); }
 static char* fs_rt_str_concat(const char* a, const char* b) { return firescript_strcat(a, b); }
 static bool fs_rt_str_eq(const char* a, const char* b) { return firescript_strcmp(a ? a : "", b ? b : ""); }

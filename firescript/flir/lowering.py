@@ -1254,6 +1254,11 @@ class FIRToFLIRLowering:
             src = ctx.emit(Cvt(args[1], U64, PTR))
             ctx.emit(Call("fs_rt_mem_copy", [dst, src, args[2]], VOID))
             return True
+        if name == "f64_bits":
+            # Bit-pattern reinterpretation; primitive (C: union punning,
+            # asm: movq xmm -> gpr).
+            self.set_val(inst, ctx.emit(Call("fs_rt_f64_bits", [args[0]], U64)), ctx)
+            return True
         if name == "str_to_addr":
             self.set_val(inst, ctx.emit(Cvt(args[0], ptr_to("i8"), U64)), ctx)
             return True

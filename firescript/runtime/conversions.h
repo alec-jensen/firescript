@@ -217,14 +217,16 @@ static char *firescript_toString_impl_uint64(uint64_t i)
 
 static char *firescript_toString_impl_float(float f)
 {
-    char buffer[32];
+    /* %f of the largest doubles needs 300+ chars; a small buffer would
+       silently truncate the output. */
+    char buffer[352];
     snprintf(buffer, sizeof(buffer), "%f", f);
     return strdup(buffer);
 }
 
 static char *firescript_toString_impl_double(double d)
 {
-    char buffer[32];
+    char buffer[352];
     snprintf(buffer, sizeof(buffer), "%f", d);
     return strdup(buffer);
 }
