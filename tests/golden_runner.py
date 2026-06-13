@@ -37,6 +37,9 @@ from typing import List, Tuple, Optional
 
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(REPO_ROOT, os.pardir))
+sys.path.insert(0, os.path.join(REPO_ROOT, "firescript"))
+from backend import pe_inspect  # noqa: E402
+
 DEFAULT_SEARCH = [
     os.path.join(REPO_ROOT, "tests", "sources", "*.fire"),
 ]
@@ -147,20 +150,14 @@ def resolve_args_path(source_path: str) -> Optional[str]:
 
 
 def check_kernel32_only(binary: str) -> Optional[str]:
-    """Verify a PE binary imports only KERNEL32.dll (asm backend contract).
-    Returns an error message or None."""
+    """Verify a PE binary imports only KERNEL32.dll (native backend contract).
+    Uses the pure-Python PE inspector (no external objdump). Returns an error
+    message or None."""
     resolved = binary if os.path.exists(binary) else binary + ".exe"
     try:
-        code, out, _err = run_cmd(["objdump", "-p", resolved], check=False, timeout=30)
-    except FileNotFoundError:
-        return None  # objdump unavailable; skip the check
-    if code != 0:
-        return f"objdump failed on {resolved}"
-    dlls = [
-        line.split("DLL Name:", 1)[1].strip()
-        for line in out.splitlines()
-        if "DLL Name:" in line
-    ]
+        dlls = pe_inspect.imported_dlls(resolved)
+    except Exception as e:  # noqa: BLE001 - surface any parse failure as a test error
+        return f"PE inspection failed on {resolved}: {e}"
     bad = [d for d in dlls if d.upper() != "KERNEL32.DLL"]
     if bad:
         return f"binary imports more than kernel32: {', '.join(dlls)}"

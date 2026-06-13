@@ -73,8 +73,14 @@ def _kernel32_lib_dir() -> str | None:
 
 
 def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
-                 emit="bin", no_link=False, link_args=None):
-    """FLIR -> .s -> as -> ld: freestanding PE importing only kernel32."""
+                 emit="bin", no_link=False, link_args=None, toolchain="binutils"):
+    """FLIR -> .s -> native binary.
+
+    toolchain="binutils": assemble/link with MinGW as/ld (interim, kept for
+    differential validation during the self-hosted toolchain bringup).
+    toolchain="self": assemble and write the PE with our own Python code,
+    invoking zero external processes.
+    """
     from codegen.flir_to_asm import FLIRToAsmBackend
 
     link_args = link_args or []
@@ -103,6 +109,12 @@ def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
             shutil.copy(asm_path, out_path)  # deepcode ignore PathTraversal: user-selected local output path.
         logging.info(f"Assembly written to {final_asm}")
         return final_asm
+
+    if toolchain == "self":
+        return _compile_asm_self(
+            asm_text, file_path, out_path, start_time, stage_start,
+            emit=emit, no_link=no_link,
+        )
 
     assembler = _find_binutil("as")
     linker = _find_binutil("ld")
@@ -162,6 +174,19 @@ def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
     return final_out
 
 
+def _compile_asm_self(asm_text, file_path, out_path, start_time, stage_start,
+                      emit="bin", no_link=False):
+    """Self-hosted path: Python x86-64 assembler + PE32+ writer, no subprocess.
+
+    Bringup stub — the assembler (A1) and PE writer (A2) land next.
+    """
+    logging.error(
+        "The self-hosted toolchain (--toolchain self) is not implemented yet; "
+        "use --toolchain binutils"
+    )
+    return False
+
+
 _RUNTIME_FIR_CACHE = None
 
 
@@ -196,7 +221,7 @@ def _runtime_fir_module():
     return _RUNTIME_FIR_CACHE
 
 
-def compile_file(file_path, target, out_path=None, emit="bin", check=False, emit_deps=False, no_link=False, link_args=None, emit_fir=False, emit_flir=False):
+def compile_file(file_path, target, out_path=None, emit="bin", check=False, emit_deps=False, no_link=False, link_args=None, emit_fir=False, emit_flir=False, toolchain="binutils"):
     """Compile a single firescript file"""
     if link_args is None:
         link_args = []
@@ -365,7 +390,7 @@ def compile_file(file_path, target, out_path=None, emit="bin", check=False, emit
 
     return _compile_asm(
         flir_module, file_path, out_path, start_time, stage_start,
-        emit=emit, no_link=no_link, link_args=link_args,
+        emit=emit, no_link=no_link, link_args=link_args, toolchain=toolchain,
     )
 
 
@@ -449,6 +474,13 @@ def main():
     parser.add_argument("--emit-deps", action="store_true", help="Emit dependency information (.d file)")
     parser.add_argument("--no-link", action="store_true", help="Compile only, do not link")
     parser.add_argument("--link-arg", action="append", default=[], help="Additional argument to pass to the linker")
+    parser.add_argument(
+        "--toolchain",
+        choices=["binutils", "self"],
+        default="binutils",
+        help="Assembler/linker: 'binutils' (MinGW as/ld) or 'self' (pure-Python, no external tools). "
+             "Interim during self-hosted toolchain bringup; default 'binutils'.",
+    )
     
     # Make the file argument optional and add a directory argument
     parser.add_argument("file", nargs="?", help="Input file")
@@ -504,6 +536,7 @@ def main():
             link_args=args.link_arg,
             emit_fir=args.emit_fir,
             emit_flir=args.emit_flir,
+            toolchain=args.toolchain,
         )
 
         if not output_path:
@@ -551,6 +584,7 @@ def main():
                 link_args=args.link_arg,
                 emit_fir=args.emit_fir,
                 emit_flir=args.emit_flir,
+                toolchain=args.toolchain,
             ):
                 successful += 1
             else:
