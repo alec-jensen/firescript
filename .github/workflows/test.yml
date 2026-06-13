@@ -21,9 +21,9 @@ on:
 
 jobs:
   test:
-    # firescript compiles directly to native Windows x64 machine code and
-    # links freestanding binaries against kernel32 only. The compiler needs
-    # MinGW-w64 binutils (as, ld) and objdump; no C compiler is involved.
+    # firescript compiles directly to native Windows x64 executables with its
+    # own assembler and PE writer — no external toolchain. Python is the only
+    # requirement.
     runs-on: windows-latest
 
     steps:
@@ -33,24 +33,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-
-      - name: Set up MSYS2 with MinGW-w64 binutils
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: UCRT64
-          update: true
-          install: mingw-w64-ucrt-x86_64-binutils
-          path-type: inherit
-          release: false
-
-      - name: Add UCRT64 to PATH
-        run: echo "C:\msys64\ucrt64\bin" >> $env:GITHUB_PATH
-
-      - name: Verify toolchain
-        run: |
-          as --version
-          ld --version
-          objdump --version
 
       - name: Run unified test suite
         run: python tests/run_tests.py

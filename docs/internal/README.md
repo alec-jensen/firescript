@@ -10,7 +10,9 @@ The following are documents for planning the future of firescript.
 
 [FIR Implementation Plan](development/FIR_impl_plan.md) - Details a plan to replace the current AST-based codegen with a new FIR (Firescript Intermediate Representation) and FLIR (Firescript Lowered Intermediate Representation) pipeline. This includes design notes, implementation plans, and testing strategies. **[IMPLEMENTED]**
 
-[Self-Hosted Toolchain + binary128 Build Prompt](development/selfhost_toolchain_and_float128_build_prompt.md) - Spec for removing the last external dependencies (the MinGW `as`/`ld` assembler and linker) by writing a pure-Python x86-64 assembler and PE32+ writer, and for implementing true IEEE binary128 `float128`. Includes phased gates and completion criteria. **[PLANNED]**
+[Self-Hosted Toolchain + binary128 Build Prompt](development/selfhost_toolchain_and_float128_build_prompt.md) - Spec for removing the last external dependencies (the MinGW `as`/`ld` assembler and linker) by writing a pure-Python x86-64 assembler and PE32+ writer, and for implementing true IEEE binary128 `float128`. Includes phased gates and completion criteria. Track A (self-hosted toolchain) is **[IMPLEMENTED]**; Track B (binary128) is **[IN DEVELOPMENT]**.
+
+[Native Toolchain](development/native_toolchain.md) - How the self-hosted x86-64 assembler and PE32+ writer work (the implemented Track A). **[IMPLEMENTED]**
 
 ## Directives
 

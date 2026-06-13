@@ -2,7 +2,6 @@ import argparse
 import logging
 import os
 import sys
-import subprocess
 import shutil
 import glob
 import time
@@ -49,45 +48,20 @@ def setup_logging(debug_mode=False, message_format="text"):
     root_logger.addHandler(console_handler)
 
 
-def _find_binutil(name: str) -> str | None:
-    """Locate a MinGW binutils executable (as/ld) on PATH."""
-    resolved = shutil.which(name)
-    return resolved
-
-
-def _kernel32_lib_dir() -> str | None:
-    """Find the directory containing libkernel32.a near the ld install."""
-    ld_path = shutil.which("ld")
-    if not ld_path:
-        return None
-    base = os.path.dirname(os.path.dirname(ld_path))
-    candidates = [
-        os.path.join(base, "x86_64-w64-mingw32", "lib"),
-        os.path.join(base, "lib"),
-        os.path.join(os.path.dirname(ld_path), "..", "x86_64-w64-mingw32", "lib"),
-    ]
-    for candidate in candidates:
-        if os.path.isfile(os.path.join(candidate, "libkernel32.a")):
-            return os.path.abspath(candidate)
-    return None
-
-
 def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
-                 emit="bin", no_link=False, link_args=None, toolchain="binutils"):
-    """FLIR -> .s -> native binary.
+                 emit="bin", no_link=False, link_args=None):
+    """FLIR -> x86-64 assembly -> machine code -> PE32+ executable.
 
-    toolchain="binutils": assemble/link with MinGW as/ld (interim, kept for
-    differential validation during the self-hosted toolchain bringup).
-    toolchain="self": assemble and write the PE with our own Python code,
-    invoking zero external processes.
+    Everything is done in-process with the pure-Python assembler and PE
+    writer; no external tools are invoked.
     """
     from codegen.flir_to_asm import FLIRToAsmBackend
+    from backend.assembler import assemble, AssemblerError
+    from backend.pe import write_pe
 
-    link_args = link_args or []
     base_name = os.path.splitext(os.path.basename(file_path))[0]
     os.makedirs("build/temp", exist_ok=True)
     asm_path = os.path.join("build", "temp", f"{base_name}.s")
-    obj_path = os.path.join("build", "temp", f"{base_name}.o")
 
     try:
         asm_text = FLIRToAsmBackend(flir_module).generate()
@@ -97,8 +71,7 @@ def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
         traceback.print_exc()
         return False
     # Locale-default encoding on purpose: source files are read with the
-    # locale encoding, so writing the .s the same way round-trips string
-    # literal bytes exactly.
+    # locale encoding, so the .s round-trips string literal bytes exactly.
     with open(asm_path, "w", newline="\n") as f:
         f.write(asm_text)
     stage_start = _log_stage_duration("Code generation", stage_start)
@@ -110,103 +83,32 @@ def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
         logging.info(f"Assembly written to {final_asm}")
         return final_asm
 
-    if toolchain == "self":
-        import_dll_map = {
-            sym: info[0] for sym, info in getattr(flir_module, "externs", {}).items()
-        }
-        return _compile_asm_self(
-            asm_text, file_path, out_path, start_time, stage_start,
-            emit=emit, no_link=no_link, import_dll_map=import_dll_map,
-        )
-
-    assembler = _find_binutil("as")
-    linker = _find_binutil("ld")
-    if not assembler or (not linker and not (emit == "obj" or no_link)):
-        logging.error(
-            "MinGW binutils (as, ld) not found on PATH; install MinGW-w64 binutils"
-        )
-        return False
-
-    proc = subprocess.run(
-        [assembler, "-o", obj_path, asm_path],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False,
-    )
-    if proc.returncode != 0:
-        logging.error(f"Assembly failed:\n{proc.stderr}")
-        return False
-    stage_start = _log_stage_duration("Assemble", stage_start)
-
     if emit == "obj" or no_link:
-        final_obj = out_path if out_path else obj_path
-        if out_path:
-            shutil.copy(obj_path, out_path)  # deepcode ignore PathTraversal: user-selected local output path.
-        logging.info(f"Object file written to {final_obj}")
-        return final_obj
-
-    os.makedirs("build", exist_ok=True)
-    final_out = out_path if out_path else os.path.join("build", base_name + ".exe")
-    if not final_out.lower().endswith(".exe"):
-        final_out += ".exe"
-
-    link_cmd = [
-        linker,
-        "-o", final_out,
-        obj_path,
-        "-e", "firescript_entry",
-        "--subsystem", "console",
-    ]
-    lib_dir = _kernel32_lib_dir()
-    if lib_dir:
-        link_cmd.extend(["-L", lib_dir])
-    link_cmd.append("-lkernel32")
-    link_cmd.extend(link_args)
-
-    proc = subprocess.run(
-        link_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False
-    )
-    if proc.returncode != 0:
-        logging.error(f"Link failed:\n{proc.stderr}")
+        logging.error("--emit obj / --no-link is not supported")
         return False
-    _log_stage_duration("Link", stage_start)
 
-    end_time = time.perf_counter_ns()
-    logging.info(
-        f"Compilation of {file_path} completed successfully in {(end_time - start_time) / 1_000_000:.2f} ms"
-    )
-    logging.info(f"Binary written to {os.path.abspath(final_out)}")
-    return final_out
-
-
-def _compile_asm_self(asm_text, file_path, out_path, start_time, stage_start,
-                      emit="bin", no_link=False, import_dll_map=None):
-    """Self-hosted path: Python x86-64 assembler + PE32+ writer, no subprocess."""
-    from backend.assembler import assemble, AssemblerError
-    from backend.pe import write_pe
-
-    base_name = os.path.splitext(os.path.basename(file_path))[0]
     try:
         obj = assemble(asm_text)
     except AssemblerError as e:
         logging.error(f"Assembly failed: {e}")
         return False
-    stage_start = _log_stage_duration("Assemble (self)", stage_start)
+    stage_start = _log_stage_duration("Assemble", stage_start)
 
-    if emit == "obj" or no_link:
-        logging.error("--emit obj / --no-link is not supported by --toolchain self")
-        return False
-
+    import_dll_map = {
+        sym: info[0] for sym, info in getattr(flir_module, "externs", {}).items()
+    }
     os.makedirs("build", exist_ok=True)
     final_out = out_path if out_path else os.path.join("build", base_name + ".exe")
     if not final_out.lower().endswith(".exe"):
         final_out += ".exe"
     try:
-        write_pe(obj, final_out, import_dll_map=import_dll_map or {})
+        write_pe(obj, final_out, import_dll_map=import_dll_map)
     except Exception as e:  # noqa: BLE001
-        logging.error(f"PE writing failed: {e}")
+        logging.error(f"Linking (PE write) failed: {e}")
         import traceback
         traceback.print_exc()
         return False
-    _log_stage_duration("Link (self)", stage_start)
+    _log_stage_duration("Link", stage_start)
 
     end_time = time.perf_counter_ns()
     logging.info(
@@ -250,7 +152,7 @@ def _runtime_fir_module():
     return _RUNTIME_FIR_CACHE
 
 
-def compile_file(file_path, target, out_path=None, emit="bin", check=False, emit_deps=False, no_link=False, link_args=None, emit_fir=False, emit_flir=False, toolchain="binutils"):
+def compile_file(file_path, target, out_path=None, emit="bin", check=False, emit_deps=False, no_link=False, link_args=None, emit_fir=False, emit_flir=False):
     """Compile a single firescript file"""
     if link_args is None:
         link_args = []
@@ -419,7 +321,7 @@ def compile_file(file_path, target, out_path=None, emit="bin", check=False, emit
 
     return _compile_asm(
         flir_module, file_path, out_path, start_time, stage_start,
-        emit=emit, no_link=no_link, link_args=link_args, toolchain=toolchain,
+        emit=emit, no_link=no_link, link_args=link_args,
     )
 
 
@@ -503,14 +405,7 @@ def main():
     parser.add_argument("--emit-deps", action="store_true", help="Emit dependency information (.d file)")
     parser.add_argument("--no-link", action="store_true", help="Compile only, do not link")
     parser.add_argument("--link-arg", action="append", default=[], help="Additional argument to pass to the linker")
-    parser.add_argument(
-        "--toolchain",
-        choices=["binutils", "self"],
-        default="binutils",
-        help="Assembler/linker: 'binutils' (MinGW as/ld) or 'self' (pure-Python, no external tools). "
-             "Interim during self-hosted toolchain bringup; default 'binutils'.",
-    )
-    
+
     # Make the file argument optional and add a directory argument
     parser.add_argument("file", nargs="?", help="Input file")
     parser.add_argument("--dir", help="Compile all .fire files in directory")
@@ -565,7 +460,6 @@ def main():
             link_args=args.link_arg,
             emit_fir=args.emit_fir,
             emit_flir=args.emit_flir,
-            toolchain=args.toolchain,
         )
 
         if not output_path:
@@ -613,7 +507,6 @@ def main():
                 link_args=args.link_arg,
                 emit_fir=args.emit_fir,
                 emit_flir=args.emit_flir,
-                toolchain=args.toolchain,
             ):
                 successful += 1
             else:

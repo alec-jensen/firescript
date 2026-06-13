@@ -38,16 +38,13 @@ for (int8 i=0i8; i < 10i8; i++) {
 
 ## Platforms
 
-firescript compiles directly to native x86-64 machine code through its own intermediate representations (FIR and FLIR) — no C compiler involved. Native compilation currently targets Windows x64; Linux and macOS targets are planned, as is a future JavaScript + Wasm target for browser and Node.js environments.
+firescript compiles directly to native x86-64 machine code through its own intermediate representations (FIR and FLIR), with its own x86-64 assembler and PE writer — **no external toolchain of any kind**. Native compilation currently targets Windows x64; Linux and macOS targets are planned, as is a future JavaScript + Wasm target for browser and Node.js environments.
 
 ## Build and Test Requirements
 
-The compiler emits x86-64 assembly and drives the system assembler and linker. Compiled binaries are freestanding and import only `kernel32.dll` — the entire language runtime is written in firescript itself.
+- **Required:** Python 3.13+. That's it.
 
-- **Required:** Python 3.13+ and MinGW-w64 binutils (`as` and `ld`) available on your `PATH`
-- **Used by:** compiler output builds and the test runners (`objdump` is also used to verify binary imports)
-
-On Windows, MSYS2's `mingw-w64-ucrt-x86_64-binutils` package (or any MinGW-w64 distribution) provides the required tools. No C compiler is needed.
+The compiler assembles machine code and writes the executable itself; it invokes no external programs. Compiled binaries are freestanding and import only `kernel32.dll` — the entire language runtime is written in firescript. No C compiler, no assembler, no linker, and no third-party Python packages are needed.
 
 ## Getting Started
 

@@ -153,6 +153,7 @@ The table below reflects the **current implementation status** of major language
 | `@firescript/std.ranges` (`range`, `rangeFrom`, `rangeStep`) | [IMPLEMENTED] |
 | FIR + FLIR pipeline (AST → FIR → FLIR → native code) | [IMPLEMENTED] |
 | Native x86-64 backend (Windows x64; freestanding, kernel32-only) | [IMPLEMENTED] |
+| Self-hosted toolchain (Python x86-64 assembler + PE writer; no external tools) | [IMPLEMENTED] |
 | firescript-implemented runtime (`std/internal/runtime.fire`) | [IMPLEMENTED] |
 | Linux / macOS native targets | [PLANNED] |
 | JavaScript + Wasm compilation target | [PLANNED] |
