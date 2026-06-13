@@ -2,10 +2,11 @@
 
 firescript follows [Semantic Versioning](https://semver.org/). This makes it easier to understand the impact of changes in each release.
 
-## Currently in development
+## 0.5.0 - Kirin (Currently in Development)
+*June 2026*
 
 ### New Language Features
-- Added generator functions with `generator<T>` syntax: lazy iterables that produce values on demand via `yield`. Generators compile to C state-machine structs. User-defined generators and `for-in` loops over generators are both supported.
+- Added generator functions with `generator<T>` syntax: lazy iterables that produce values on demand via `yield`. Generators compile to state-machine structs with resumable next-functions. User-defined generators and `for-in` loops over generators are both supported.
 - Added `@firescript/std.ranges` standard library module with `range(end)`, `rangeFrom(start, end)`, and `rangeStep(start, end, step)` generators, enabling `for (int32 i in range(5))` style loops.
 - Added `char` type — a copyable, stack-allocated scalar representing a single character. Initialized with single-character string literals (`char c = "A"`).
 - Added character literal syntax with single quotes (`'A'`, `'\n'`).

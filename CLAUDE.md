@@ -151,6 +151,10 @@ The table below reflects the **current implementation status** of major language
 | Generator functions (`generator<T>`, `yield`) | [IMPLEMENTED] |
 | `for-in` over generators | [IMPLEMENTED] |
 | `@firescript/std.ranges` (`range`, `rangeFrom`, `rangeStep`) | [IMPLEMENTED] |
+| FIR + FLIR pipeline (AST → FIR → FLIR → native code) | [IMPLEMENTED] |
+| Native x86-64 backend (Windows x64; freestanding, kernel32-only) | [IMPLEMENTED] |
+| firescript-implemented runtime (`std/internal/runtime.fire`) | [IMPLEMENTED] |
+| Linux / macOS native targets | [PLANNED] |
 | JavaScript + Wasm compilation target | [PLANNED] |
 | Dynamic arrays (stdlib) | [PLANNED] |
 | Built-in `input()` function | Removed in current dev cycle |

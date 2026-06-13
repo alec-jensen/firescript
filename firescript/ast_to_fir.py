@@ -16,6 +16,7 @@ Naming conventions in the produced module:
 from __future__ import annotations
 
 import logging
+import os
 from typing import Optional
 
 from enums import NodeTypes
@@ -161,6 +162,38 @@ COMPOUND_OP_MAP = {
     "MODULO_ASSIGN": "%",
 }
 
+# Bare intrinsic calls gated behind a directive: the calling file must
+# enable the directive (std modules carry their own; user code without it
+# is rejected). The `.length()` method etc. do not route through here.
+_LOWLEVEL_RUNTIME_INTRINSICS = frozenset(
+    {
+        "f64_bits", "mem_load_u8", "mem_store_u8", "mem_load_u64", "mem_store_u64",
+        "mem_copy", "str_to_addr", "addr_to_str", "runtime_state_get", "runtime_state_set",
+        "win_get_process_heap", "win_heap_alloc", "win_heap_free", "win_get_std_handle",
+        "win_write_file", "win_read_file", "win_create_file_a", "win_close_handle",
+        "win_delete_file_a", "win_move_file_ex_a", "win_copy_file_a", "win_get_last_error",
+        "win_get_command_line_a", "win_get_file_size", "win_set_file_pointer", "win_exit_process",
+    }
+)
+
+DIRECTIVE_GATED_INTRINSICS: dict[str, str] = {
+    "stdout": "enable_lowlevel_stdout",
+    "process_argc": "enable_process_args",
+    "process_argv_at": "enable_process_args",
+    "str_length": "enable_process_args",
+    "str_char_at": "enable_process_args",
+    "str_index_of": "enable_process_args",
+    "str_slice": "enable_process_args",
+    "syscall_open": "enable_syscalls",
+    "syscall_read": "enable_syscalls",
+    "syscall_write": "enable_syscalls",
+    "syscall_close": "enable_syscalls",
+    "syscall_remove": "enable_syscalls",
+    "syscall_rename": "enable_syscalls",
+    "syscall_move": "enable_syscalls",
+    **{name: "enable_lowlevel_runtime" for name in _LOWLEVEL_RUNTIME_INTRINSICS},
+}
+
 
 class FIRConversionError(Exception):
     """Raised when the converter meets an AST shape it cannot translate."""
@@ -209,6 +242,24 @@ class ASTToFIRConverter:
         self._used_local_names: set[str] = set()
         # (continue_target_block_id, break_target_block_id)
         self.loop_stack: list[tuple[str, str]] = []
+
+        # Directive gating: file path -> set of enabled directive names.
+        # Nodes carry source_file when merged from imports; single-file
+        # compiles leave it unset, so both directives and calls share the
+        # None ("entry") bucket.
+        self.file_directives: dict[Optional[str], set[str]] = {}
+        has_imports = any(
+            c.node_type == NodeTypes.IMPORT_STATEMENT for c in (ast.children or [])
+        )
+        for child in ast.children or []:
+            if child.node_type == NodeTypes.DIRECTIVE:
+                src = self._norm_source(getattr(child, "source_file", None))
+                self.file_directives.setdefault(src, set()).add(child.name)
+                if not has_imports:
+                    # Single-file compile: call nodes are never import-merge
+                    # annotated, so they resolve to the None bucket. All
+                    # directives belong to this one file.
+                    self.file_directives.setdefault(None, set()).add(child.name)
 
     # ------------------------------------------------------------------
     # Entry point
@@ -1437,8 +1488,33 @@ class ASTToFIRConverter:
             return self.builder.null_literal(null_type)
         raise FIRConversionError(f"Unsupported literal token {token_type}", node)
 
+    @staticmethod
+    def _norm_source(source: Optional[str]) -> Optional[str]:
+        if not source:
+            return None
+        try:
+            return os.path.normcase(os.path.abspath(source))
+        except Exception:
+            return source
+
+    def _check_directive(self, node: ASTNode) -> None:
+        """Reject directive-gated intrinsics called without the directive
+        enabled in the calling file (matches the legacy codegen contract)."""
+        required = DIRECTIVE_GATED_INTRINSICS.get(node.name)
+        if required is None:
+            return
+        src = self._norm_source(getattr(node, "source_file", None))
+        if required in self.file_directives.get(src, set()):
+            return
+        raise FIRConversionError(
+            f"{node.name}() is not available. Use 'directive {required};' "
+            f"in this file to enable it.",
+            node,
+        )
+
     def _convert_function_call(self, node: ASTNode, as_statement: bool) -> Optional[Value]:
         name = node.name
+        self._check_directive(node)
 
         if name == "drop":
             target = node.children[0]
