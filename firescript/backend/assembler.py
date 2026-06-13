@@ -841,6 +841,15 @@ class _Assembler:
                 raise AssemblerError(f"unresolved symbol: {fx.target}")
 
 
+import locale as _locale
+
+# The backend reads source files and writes the .s with the locale codec, so
+# `as` would assemble the original source bytes. The assembler consumes the
+# in-memory .s text, so it must encode literal characters with the same codec
+# to reproduce those exact bytes.
+_LOCALE_ENCODING = _locale.getpreferredencoding(False) or "utf-8"
+
+
 def _decode_gas_string(s: str) -> bytes:
     """Decode a GAS .asciz string body (backslash escapes) to raw bytes."""
     out = bytearray()
@@ -849,13 +858,18 @@ def _decode_gas_string(s: str) -> bytes:
         c = s[i]
         if c == "\\" and i + 1 < len(s):
             n = s[i + 1]
-            simple = {"n": 10, "t": 9, "r": 13, "0": 0, "\\": 92, '"': 34, "'": 39}
-            if n in simple:
-                out.append(simple[n]); i += 2; continue
+            # Octal escapes take precedence: \012 is one byte (0x0A), not
+            # \0 (NUL) followed by "12". GAS reads 1-3 octal digits.
             if n in "01234567":
                 m = re.match(r"[0-7]{1,3}", s[i + 1:])
                 val = int(m.group(0), 8); out.append(val & 0xFF); i += 1 + len(m.group(0)); continue
+            simple = {"n": 10, "t": 9, "r": 13, "\\": 92, '"': 34, "'": 39}
+            if n in simple:
+                out.append(simple[n]); i += 2; continue
             out.append(ord(n)); i += 2; continue
-        out += c.encode("utf-8")
+        try:
+            out += c.encode(_LOCALE_ENCODING)
+        except UnicodeEncodeError:
+            out += c.encode("utf-8")
         i += 1
     return bytes(out)

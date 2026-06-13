@@ -164,9 +164,11 @@ def check_kernel32_only(binary: str) -> Optional[str]:
     return None
 
 
-def compile_fire(src: str, timeout: Optional[float]) -> None:
+def compile_fire(src: str, timeout: Optional[float], toolchain: str = "binutils") -> None:
     # Invoke the firescript compiler to build the native binary into build/<basename>
     cmd = [sys.executable, os.path.join(REPO_ROOT, "firescript", "main.py"), src]
+    if toolchain != "binutils":
+        cmd.extend(["--toolchain", toolchain])
     try:
         code, out, err = run_cmd(cmd, cwd=REPO_ROOT, check=False, timeout=timeout)
     except subprocess.TimeoutExpired as e:
@@ -265,6 +267,7 @@ def run_golden(
     compile_timeout: Optional[float],
     jobs: int,
     return_stats: bool = False,
+    toolchain: str = "binutils",
 ) -> int | Tuple[int, SuiteStats]:
 
     def run_one(tc: TestCase):
@@ -272,7 +275,7 @@ def run_golden(
             _log("CASE", tc.source, color_code="36")  # cyan
             if verbose:
                 _log("BUILD", tc.source, color_code="90")  # dim
-            compile_fire(tc.source, timeout=compile_timeout)
+            compile_fire(tc.source, timeout=compile_timeout, toolchain=toolchain)
             import_error = check_kernel32_only(tc.binary)
             if import_error:
                 return (tc, "FAIL", "<kernel32-only imports>", import_error)
@@ -386,6 +389,12 @@ def main():
         default=max(1, os.cpu_count() or 1),
         help="Number of parallel test workers (default: number of processors)",
     )
+    ap.add_argument(
+        "--toolchain",
+        choices=["binutils", "self"],
+        default="binutils",
+        help="Assembler/linker to exercise (interim during self-hosted bringup)",
+    )
     args = ap.parse_args()
 
     patterns = args.glob if args.glob else DEFAULT_SEARCH
@@ -408,6 +417,7 @@ def main():
         timeout=args.timeout,
         compile_timeout=args.compile_timeout,
         jobs=args.jobs,
+        toolchain=args.toolchain,
     )
     if isinstance(rc, tuple):
         rc = rc[0]

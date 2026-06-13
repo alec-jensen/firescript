@@ -111,9 +111,12 @@ def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
         return final_asm
 
     if toolchain == "self":
+        import_dll_map = {
+            sym: info[0] for sym, info in getattr(flir_module, "externs", {}).items()
+        }
         return _compile_asm_self(
             asm_text, file_path, out_path, start_time, stage_start,
-            emit=emit, no_link=no_link,
+            emit=emit, no_link=no_link, import_dll_map=import_dll_map,
         )
 
     assembler = _find_binutil("as")
@@ -175,16 +178,42 @@ def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
 
 
 def _compile_asm_self(asm_text, file_path, out_path, start_time, stage_start,
-                      emit="bin", no_link=False):
-    """Self-hosted path: Python x86-64 assembler + PE32+ writer, no subprocess.
+                      emit="bin", no_link=False, import_dll_map=None):
+    """Self-hosted path: Python x86-64 assembler + PE32+ writer, no subprocess."""
+    from backend.assembler import assemble, AssemblerError
+    from backend.pe import write_pe
 
-    Bringup stub — the assembler (A1) and PE writer (A2) land next.
-    """
-    logging.error(
-        "The self-hosted toolchain (--toolchain self) is not implemented yet; "
-        "use --toolchain binutils"
+    base_name = os.path.splitext(os.path.basename(file_path))[0]
+    try:
+        obj = assemble(asm_text)
+    except AssemblerError as e:
+        logging.error(f"Assembly failed: {e}")
+        return False
+    stage_start = _log_stage_duration("Assemble (self)", stage_start)
+
+    if emit == "obj" or no_link:
+        logging.error("--emit obj / --no-link is not supported by --toolchain self")
+        return False
+
+    os.makedirs("build", exist_ok=True)
+    final_out = out_path if out_path else os.path.join("build", base_name + ".exe")
+    if not final_out.lower().endswith(".exe"):
+        final_out += ".exe"
+    try:
+        write_pe(obj, final_out, import_dll_map=import_dll_map or {})
+    except Exception as e:  # noqa: BLE001
+        logging.error(f"PE writing failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+    _log_stage_duration("Link (self)", stage_start)
+
+    end_time = time.perf_counter_ns()
+    logging.info(
+        f"Compilation of {file_path} completed successfully in {(end_time - start_time) / 1_000_000:.2f} ms"
     )
-    return False
+    logging.info(f"Binary written to {os.path.abspath(final_out)}")
+    return final_out
 
 
 _RUNTIME_FIR_CACHE = None
