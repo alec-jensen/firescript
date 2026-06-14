@@ -4,7 +4,7 @@
 
 # firescript
 
-firescript is a statically and strongly typed programming language that compiles natively or to JavaScript + Wasm (planned, not yet implemented). It is designed to be simple, powerful, and easy to learn while remaining expressive for advanced applications.
+firescript is a statically and strongly typed programming language designed to be simple, explicit, and prevent bugs at compile time. It prioritizes readability, predictable behavior, and safety through its type system and ownership model. As part of that vision, firescript is building toward an **entirely self-hosted toolchain** — the compiler front-end, codegen backend, x86-64 assembler, PE and ELF writers, FCL configuration language, kiln build system, and package registry are all implemented in firescript itself, depending on nothing but the OS kernel.
 
 *Disclaimer: firescript is currently in development and is not yet feature-complete. The language and compiler are subject to change. Not everything described in this document is implemented or working. Current builds may leak resources; the design goal is deterministic destruction via an ownership model.*
 
@@ -13,9 +13,11 @@ firescript is a statically and strongly typed programming language that compiles
 - **Static & Strong Typing:** Enhances code readability and reliability.
 - **Simple Syntax:** Combines the best of C, Java, JavaScript, and Python.
 - **Everything is Explicit:** No implicit conversions or hidden behavior.
-- **Versatile Compilation:** Supports native binaries and JavaScript output.
+- **Self-Hosted Toolchain:** The x86-64 assembler, PE/ELF writers, FCL config language parser, and kiln build system are all implemented in firescript itself. The compiler compiles itself end-to-end with no Python invoked in the compile path.
+- **Zero External Dependencies:** The compiler produces native executables using only the Python standard library — no C compiler, no assembler, no linker, no third-party packages. Compiled binaries are freestanding and import only `kernel32.dll` (Windows) or use raw syscalls (Linux).
+- **Native Code Generation:** Compiles through its own intermediate representations (FIR → FLIR) directly to x86-64 machine code. JavaScript + Wasm output is planned.
 - **Cohesive Design:** All parts of the language work seamlessly together.
-- **Deterministic Ownership Model (planned):** Ownership, moves, borrows, and explicit cloning instead of a tracing garbage collector. See the [Memory Management Model](docs/reference/memory_management.md).
+- **Deterministic Ownership Model:** Ownership, moves, borrows, and explicit cloning instead of a tracing garbage collector. See the [Memory Management Model](docs/reference/memory_management.md).
 
 ## Example
 
@@ -36,15 +38,32 @@ for (int8 i=0i8; i < 10i8; i++) {
 }
 ```
 
+## Self-Hosting Vision
+
+firescript is built to compile itself. The entire toolchain is implemented in firescript code:
+
+| Layer | Implementation | Status |
+|---|---|---|
+| Lexer, parser, semantic analysis | `firescript/std/compiler/*.fire` | [IN DEVELOPMENT] |
+| FIR → FLIR lowering | `firescript/std/compiler/codegen.fire` | [PLANNED] |
+| x86-64 assembler | `firescript/std/compiler/assembler.fire` | [PLANNED] |
+| PE32+ writer (Windows) | `firescript/std/compiler/pe_writer.fire` | [PLANNED] |
+| ELF64 writer (Linux) | `firescript/std/compiler/elf_writer.fire` | [PLANNED] |
+| FCL config language | `firescript/std/fcl/` | [IN DEVELOPMENT] |
+| kiln build system | `firescript/tools/kiln/` | [PLANNED] |
+| Package registry | `firescript/tools/kiln/` | [PLANNED] |
+
+The Python compiler is a bootstrap seed. At 1.0, it is retired and the firescript compiler is the only compiler.
+
 ## Platforms
 
-firescript compiles directly to native x86-64 machine code through its own intermediate representations (FIR and FLIR), with its own x86-64 assembler and PE writer — **no external toolchain of any kind**. Native compilation currently targets Windows x64; Linux and macOS targets are planned, as is a future JavaScript + Wasm target for browser and Node.js environments.
+firescript compiles directly to native x86-64 machine code through its own intermediate representations (FIR and FLIR), with its own assembler and object-file writers — **no external toolchain of any kind**. Native compilation currently targets Windows x64; Linux x64 support is in development. A future JavaScript + Wasm target is planned for browser and Node.js environments.
 
-## Build and Test Requirements
+## Build Requirements
 
-- **Required:** Python 3.13+. That's it.
+- **Required:** Python 3.13+ (bootstrap only; removed at 1.0).
 
-The compiler assembles machine code and writes the executable itself; it invokes no external programs. Compiled binaries are freestanding and import only `kernel32.dll` — the entire language runtime is written in firescript. No C compiler, no assembler, no linker, and no third-party Python packages are needed.
+The compiler assembles machine code and writes the executable itself; it invokes no external programs. Compiled binaries are freestanding (Windows: `kernel32.dll` only; Linux: raw syscalls). The entire language runtime is written in firescript. No C compiler, no assembler, no linker, and no third-party Python packages are needed.
 
 ## Getting Started
 
