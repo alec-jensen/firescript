@@ -8,7 +8,7 @@
       
       
       
-        <link rel="canonical" href="https://firescript.alecj.com/internal/">
+        <link rel="canonical" href="https://firescript.alecj.com/internal/development/native_toolchain/">
       
       
       
@@ -16,19 +16,19 @@
         
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Internal Documentation - firescript</title>
+        <title>Native Toolchain (self-hosted assembler + PE writer) [IMPLEMENTED] - firescript</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -47,7 +47,7 @@
       
     
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#internal-documentation" class="md-skip">
+        <a href="#native-toolchain-self-hosted-assembler-pe-writer-implemented" class="md-skip">
           Skip to content
         </a>
       
@@ -86,7 +86,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
+    <a href="../../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Internal Documentation
+              Native Toolchain (self-hosted assembler + PE writer) [IMPLEMENTED]
             
           </span>
         </div>
@@ -219,7 +219,7 @@
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -240,7 +240,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../reference/overview/" class="md-tabs__link">
+        <a href="../../../reference/overview/" class="md-tabs__link">
           
   
   
@@ -258,7 +258,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../glossary/" class="md-tabs__link">
+      <a href="../../../glossary/" class="md-tabs__link">
         
   
   
@@ -277,7 +277,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../changelog/" class="md-tabs__link">
+      <a href="../../../changelog/" class="md-tabs__link">
         
   
   
@@ -296,7 +296,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../benchmarks/" class="md-tabs__link">
+      <a href="../../../benchmarks/" class="md-tabs__link">
         
   
   
@@ -331,7 +331,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
+    <a href="../../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -361,7 +361,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -438,7 +438,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/overview/" class="md-nav__link">
+      <a href="../../../reference/overview/" class="md-nav__link">
         
   
   
@@ -466,7 +466,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/variables/" class="md-nav__link">
+      <a href="../../../reference/variables/" class="md-nav__link">
         
   
   
@@ -494,7 +494,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/operators/" class="md-nav__link">
+      <a href="../../../reference/operators/" class="md-nav__link">
         
   
   
@@ -522,7 +522,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/arrays/" class="md-nav__link">
+      <a href="../../../reference/arrays/" class="md-nav__link">
         
   
   
@@ -550,7 +550,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/control_flow/" class="md-nav__link">
+      <a href="../../../reference/control_flow/" class="md-nav__link">
         
   
   
@@ -578,7 +578,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/functions/" class="md-nav__link">
+      <a href="../../../reference/functions/" class="md-nav__link">
         
   
   
@@ -606,7 +606,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/classes/" class="md-nav__link">
+      <a href="../../../reference/classes/" class="md-nav__link">
         
   
   
@@ -634,7 +634,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/scoping/" class="md-nav__link">
+      <a href="../../../reference/scoping/" class="md-nav__link">
         
   
   
@@ -662,7 +662,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/type_system/" class="md-nav__link">
+      <a href="../../../reference/type_system/" class="md-nav__link">
         
   
   
@@ -690,7 +690,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/memory_management/" class="md-nav__link">
+      <a href="../../../reference/memory_management/" class="md-nav__link">
         
   
   
@@ -718,7 +718,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/error_handling/" class="md-nav__link">
+      <a href="../../../reference/error_handling/" class="md-nav__link">
         
   
   
@@ -746,7 +746,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/modules/" class="md-nav__link">
+      <a href="../../../reference/modules/" class="md-nav__link">
         
   
   
@@ -774,7 +774,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/imports/" class="md-nav__link">
+      <a href="../../../reference/imports/" class="md-nav__link">
         
   
   
@@ -852,7 +852,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/std/overview/" class="md-nav__link">
+      <a href="../../../reference/std/overview/" class="md-nav__link">
         
   
   
@@ -880,7 +880,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/std/io/" class="md-nav__link">
+      <a href="../../../reference/std/io/" class="md-nav__link">
         
   
   
@@ -908,7 +908,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/std/fs/" class="md-nav__link">
+      <a href="../../../reference/std/fs/" class="md-nav__link">
         
   
   
@@ -936,7 +936,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/std/math/" class="md-nav__link">
+      <a href="../../../reference/std/math/" class="md-nav__link">
         
   
   
@@ -964,7 +964,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/std/regex/" class="md-nav__link">
+      <a href="../../../reference/std/regex/" class="md-nav__link">
         
   
   
@@ -992,7 +992,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/std/cli_args/" class="md-nav__link">
+      <a href="../../../reference/std/cli_args/" class="md-nav__link">
         
   
   
@@ -1020,7 +1020,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/std/types/" class="md-nav__link">
+      <a href="../../../reference/std/types/" class="md-nav__link">
         
   
   
@@ -1106,7 +1106,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/kiln/overview/" class="md-nav__link">
+      <a href="../../../reference/kiln/overview/" class="md-nav__link">
         
   
   
@@ -1134,7 +1134,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/kiln/manifest/" class="md-nav__link">
+      <a href="../../../reference/kiln/manifest/" class="md-nav__link">
         
   
   
@@ -1177,7 +1177,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../glossary/" class="md-nav__link">
+      <a href="../../../glossary/" class="md-nav__link">
         
   
   
@@ -1204,7 +1204,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../changelog/" class="md-nav__link">
+      <a href="../../../changelog/" class="md-nav__link">
         
   
   
@@ -1231,7 +1231,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../benchmarks/" class="md-nav__link">
+      <a href="../../../benchmarks/" class="md-nav__link">
         
   
   
@@ -1278,10 +1278,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-future-of-firescript" class="md-nav__link">
+  <a href="#assembler-firescriptbackendassemblerpy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The future of firescript
+        Assembler (firescript/backend/assembler.py)
       
     </span>
   </a>
@@ -1289,10 +1289,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#directives" class="md-nav__link">
+  <a href="#pe-writer-firescriptbackendpepy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Directives
+        PE writer (firescript/backend/pe.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-text-inassembler-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why text-in/assembler-out
       
     </span>
   </a>
@@ -1324,7 +1335,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/README.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/development/native_toolchain.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1332,17 +1343,76 @@
   
 
 
-<h1 id="internal-documentation">Internal Documentation<a class="headerlink" href="#internal-documentation" title="Permanent link">&para;</a></h1>
-<p>This is documentation for internal language features intended for use in the compiler and standard library. These are not intended for use in user code, as these features require careful handling to be used safely and correctly.</p>
-<h2 id="the-future-of-firescript">The future of firescript<a class="headerlink" href="#the-future-of-firescript" title="Permanent link">&para;</a></h2>
-<p>The following are documents for planning the future of firescript.</p>
-<p><a href="ecosystem_roadmap/">Ecosystem Roadmap</a> - Overview of planned ecosystem features, including language features, standard library additions, tooling, and ecosystem growth initiatives.</p>
-<p><a href="development/FIR_impl_plan/">FIR Implementation Plan</a> - Details a plan to replace the current AST-based codegen with a new FIR (Firescript Intermediate Representation) and FLIR (Firescript Lowered Intermediate Representation) pipeline. This includes design notes, implementation plans, and testing strategies. <strong>[IMPLEMENTED]</strong></p>
-<p><a href="development/selfhost_toolchain_and_float128_build_prompt/">Self-Hosted Toolchain + binary128 Build Prompt</a> - Spec for removing the last external dependencies (the MinGW <code>as</code>/<code>ld</code> assembler and linker) by writing a pure-Python x86-64 assembler and PE32+ writer, and for implementing true IEEE binary128 <code>float128</code>. Includes phased gates and completion criteria. Track A (self-hosted toolchain) is <strong>[IMPLEMENTED]</strong>; Track B (binary128) is <strong>[IN DEVELOPMENT]</strong>.</p>
-<p><a href="development/native_toolchain/">Native Toolchain</a> - How the self-hosted x86-64 assembler and PE32+ writer work (the implemented Track A). <strong>[IMPLEMENTED]</strong></p>
-<h2 id="directives">Directives<a class="headerlink" href="#directives" title="Permanent link">&para;</a></h2>
-<p><a href="directives/">Directives</a> - Internal directives for controlling compiler behavior, used in the standard library and for testing. Not intended for user code.</p>
-<p><a href="syscalls/">Syscall Directive</a> - Internal directive for defining syscalls, used in the standard library to define OS-level syscalls. Not intended for user code.</p>
+<h1 id="native-toolchain-self-hosted-assembler-pe-writer-implemented">Native Toolchain (self-hosted assembler + PE writer) [IMPLEMENTED]<a class="headerlink" href="#native-toolchain-self-hosted-assembler-pe-writer-implemented" title="Permanent link">&para;</a></h1>
+<p>firescript produces native Windows x64 executables with <strong>no external tools</strong> —
+no <code>as</code>, <code>ld</code>, <code>objdump</code>, gcc, or clang, and no third-party Python packages. The
+back of the pipeline is:</p>
+<pre><code>FLIR → codegen/flir_to_asm.py → x86-64 GAS text
+     → backend/assembler.py    → object image (bytes + symbols + relocs)
+     → backend/pe.py           → PE32+ .exe importing only kernel32.dll
+</code></pre>
+<p>Everything runs in-process from <code>main.py:_compile_asm</code>.</p>
+<h2 id="assembler-firescriptbackendassemblerpy">Assembler (<code>firescript/backend/assembler.py</code>)<a class="headerlink" href="#assembler-firescriptbackendassemblerpy" title="Permanent link">&para;</a></h2>
+<p><code>assemble(text) -&gt; ObjectImage</code> parses the exact Intel-syntax grammar that
+<code>flir_to_asm.py</code> emits — a closed, controlled set — and encodes it to machine
+code. Anything outside the grammar raises <code>AssemblerError</code> so a new backend form
+can't be silently miscompiled.</p>
+<ul>
+<li><strong>Coverage</strong>: mov family (incl. <code>movabs</code>, byte/word/dword/qword memory and
+  immediates, the accumulator imm32 short forms), add/sub/and/or/xor/cmp,
+  imul (2- and 3-operand), idiv/div/neg/not/inc/dec, test, lea, push/pop,
+  ret/cqo/int3, jmp/jcc, call, setcc, movzx/movsx/movsxd, and the SSE2 scalar
+  set (<code>mov{ss,sd}</code>, add/sub/mul/div, <code>comis{s,d}</code>, <code>cvt*</code>, <code>xorp{s,d}</code>,
+  movd/movq). Addressing: register, <code>[base+disp]</code>, <code>[base+index*scale±disp]</code>
+  (SIB), and <code>[rip+label]</code>, with correct REX.W/R/X/B, ModRM, and SIB bytes.</li>
+<li><strong>Deterministic, relaxation-free</strong>: jmp/jcc/call always use the rel32 form and
+  RIP-relative data references always use disp32, so instruction lengths are
+  fixed at parse time (no branch relaxation pass). base+disp uses disp8 when it
+  fits, else disp32; rbp/r13 always carry a displacement, rsp/r12 always use a
+  SIB byte.</li>
+<li><strong>Two passes</strong>: encode to bytes recording label offsets and fixups; then patch
+  intra-<code>.text</code> rel32 fixups (named labels and GAS numeric <code>Nf</code>/<code>Nb</code> locals).
+  Cross-section RIP references (to <code>.rdata</code>/<code>.bss</code>) and import calls become
+  <code>Reloc</code> entries the PE writer resolves at layout time.</li>
+<li><strong>Import calls</strong>: <code>call &lt;kernel32 fn&gt;</code> is encoded as <code>FF /2</code> RIP-indirect
+  through the IAT (<code>call [rip+slot]</code>) with a <code>RIP32_IMPORT</code> reloc — keeping the
+  code position-independent.</li>
+<li><strong>String bytes</strong>: <code>.asciz</code> literals are decoded with the locale codec (matching
+  how the backend writes, and <code>as</code> would read, the <code>.s</code>), and octal escapes
+  (<code>\012</code>) take precedence over the <code>\0</code> NUL escape — both were real parity bugs
+  found by the differential test.</li>
+</ul>
+<p>Validation: <code>tests/asm_encoding_tests.py</code> differentially byte-compares 87
+instruction forms against MinGW <code>as</code> when present (and skips cleanly when not,
+so the suite needs only Python).</p>
+<h2 id="pe-writer-firescriptbackendpepy">PE writer (<code>firescript/backend/pe.py</code>)<a class="headerlink" href="#pe-writer-firescriptbackendpepy" title="Permanent link">&para;</a></h2>
+<p><code>write_pe(obj, out_path, import_dll_map)</code> lays out sections and writes a PE32+
+console executable by hand:</p>
+<ul>
+<li>Sections: <code>.text</code> (RX), <code>.rdata</code> (R; also holds the import directory, ILT/IAT,
+  and hint/name table), and <code>.data</code> (RW, uninitialized) for mutable globals.</li>
+<li>Import table built from the module's externs (only <code>kernel32.dll</code> today):
+  one descriptor per DLL, ILT + IAT thunks pointing at hint/name entries; the
+  assembler's import-call sites are fixed up to the IAT slot RVAs.</li>
+<li>Relocations: the backend's code is fully position-independent (RIP-relative
+  data refs, IAT-indirect calls), so the image has <strong>no absolute addresses and
+  no base relocations</strong>. It is still marked
+  <code>DYNAMICBASE | NXCOMPAT | HIGH_ENTROPY_VA</code> with <code>RELOCS_STRIPPED</code> clear, so the
+  loader treats it as a normal relocatable, ASLR-eligible, DEP-compatible
+  program — important for antivirus friendliness.</li>
+<li>Headers: PE32+ optional header, console subsystem, entry point at
+  <code>firescript_entry</code>, ImageBase <code>0x140000000</code>, SectionAlignment <code>0x1000</code>,
+  FileAlignment <code>0x200</code>, import + IAT data directories.</li>
+</ul>
+<p>Output is byte-deterministic. <code>backend/pe_inspect.py</code> is a stdlib-only PE import
+reader used by the test suite (replacing <code>objdump</code>) to assert binaries import
+only kernel32.</p>
+<h2 id="why-text-inassembler-out">Why text-in/assembler-out<a class="headerlink" href="#why-text-inassembler-out" title="Permanent link">&para;</a></h2>
+<p>The backend keeps emitting GAS text (unchanged, tested at parity), and the
+assembler consumes it. During bringup this made validation apples-to-apples: the
+<em>same</em> <code>.s</code> had to turn into a working binary through both <code>as</code>+<code>ld</code> and our
+toolchain. The interim <code>--toolchain {binutils,self}</code> flag is gone now that the
+self toolchain is the only path.</p>
 
 
 
@@ -1398,10 +1468,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

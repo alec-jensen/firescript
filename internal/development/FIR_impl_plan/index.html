@@ -21,7 +21,7 @@
     
     
       
-        <title>FIR Implementation Plan - firescript</title>
+        <title>FIR Implementation Plan [IMPLEMENTED] - firescript</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#fir-implementation-plan" class="md-skip">
+        <a href="#fir-implementation-plan-implemented" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              FIR Implementation Plan
+              FIR Implementation Plan [IMPLEMENTED]
             
           </span>
         </div>
@@ -1302,7 +1302,8 @@
   
 
 
-<h1 id="fir-implementation-plan">FIR Implementation Plan<a class="headerlink" href="#fir-implementation-plan" title="Permanent link">&para;</a></h1>
+<h1 id="fir-implementation-plan-implemented">FIR Implementation Plan [IMPLEMENTED]<a class="headerlink" href="#fir-implementation-plan-implemented" title="Permanent link">&para;</a></h1>
+<p><strong>Status: the FIR + FLIR pipeline is implemented and is the compiler's only pipeline.</strong> The legacy AST → C backend, the C runtime, and the interim FLIR → C differential backend have been removed. The compiler lowers AST → FIR → FLIR → x86-64 assembly (Windows x64, MinGW binutils, freestanding binaries importing only kernel32.dll), and the language runtime is implemented in firescript (<code>std/internal/runtime.fire</code>).</p>
 <p>This is the short index for the FIR + FLIR design docs. The full details are split into smaller files so each page stays manageable.</p>
 <p>Internal pages:</p>
 <ul>
@@ -1310,10 +1311,11 @@
 <li><a href="../FIR_fir_spec/">FIR specification</a></li>
 <li><a href="../FIR_flir_spec/">FLIR specification</a></li>
 <li><a href="../FIR_roadmap_and_migration/">Roadmap, migration, and testing</a></li>
+<li><a href="../FIR_migration_build_prompt/">Migration build prompt (no C backend)</a> — the executed migration plan, kept for reference</li>
 </ul>
 <p>Warning: internal docs for compiler and language developers only.</p>
 <p>Use <code>--emit-fir</code> and <code>--emit-flir</code> when debugging the pipeline.</p>
-<p>TODO: should FIR+FLIR be held off until the compiler is bootstrapped, since the bootstrapping process will already necessitate a compiler rewrite? Or is it better to implement FIR+FLIR early so the bootstrapping process can be done in terms of FIR+FLIR from the start?</p>
+<p>Resolved: FIR+FLIR landed before bootstrapping. Any future self-hosting work is written against FIR/FLIR (the bootstrap compiler can target FLIR directly).</p>
 
 
 

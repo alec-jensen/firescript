@@ -1406,9 +1406,10 @@
 
 <h1 id="fir-overview-and-architecture">FIR Overview and Architecture<a class="headerlink" href="#fir-overview-and-architecture" title="Permanent link">&para;</a></h1>
 <h2 id="executive-summary">Executive Summary<a class="headerlink" href="#executive-summary" title="Permanent link">&para;</a></h2>
-<p>This document summarizes the FIR+FLIR design for the firescript compiler and describes the current compiler state and motivations for adding a two-level IR.</p>
-<p><strong>Current State</strong>: Compiler uses direct AST → C translation.
-<strong>Target State</strong>: AST → FIR → [Optimization Passes] → FLIR → [C | Assembly | JS/WASM]</p>
+<p>This document summarizes the FIR+FLIR design for the firescript compiler and describes the original compiler state and motivations for adding a two-level IR.</p>
+<p><strong>Status</strong>: implemented. The compiler pipeline is AST → FIR → FLIR → x86-64 assembly; the direct AST → C translation described below as "current state" has been removed. Optimization passes are follow-up work.</p>
+<p><strong>Original State</strong>: Compiler uses direct AST → C translation.
+<strong>Target State (reached)</strong>: AST → FIR → [Optimization Passes] → FLIR → [Assembly | future targets]</p>
 <h2 id="current-compiler-architecture-analysis">Current Compiler Architecture Analysis<a class="headerlink" href="#current-compiler-architecture-analysis" title="Permanent link">&para;</a></h2>
 <h3 id="existing-pipeline">Existing Pipeline<a class="headerlink" href="#existing-pipeline" title="Permanent link">&para;</a></h3>
 <pre><code>Source Text

@@ -1350,6 +1350,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#implemented-representation-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implemented Representation Decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#abi-backend-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1485,6 +1496,42 @@ function unwrap_or_default_Box_String(box: *Box_String, fallback: *String) -&gt;
 }
 </code></pre>
 <p>These examples show the key FLIR rule: every high-level language feature that would complicate backend code is already resolved into concrete loads, stores, calls, and jumps.</p>
+<h2 id="implemented-representation-decisions">Implemented Representation Decisions<a class="headerlink" href="#implemented-representation-decisions" title="Permanent link">&para;</a></h2>
+<p>These are the concrete layouts the implemented lowering uses:</p>
+<ul>
+<li><strong>Strings</strong>: <code>ptr&lt;i8&gt;</code> to a NUL-terminated, heap-allocated byte buffer.
+  Literals live in read-only data (<code>strconst</code>); binding a literal to a local
+  duplicates it (<code>fs_rt_str_dup</code>). Concatenation/equality go through
+  <code>fs_rt_str_concat</code> / <code>fs_rt_str_eq</code>. No refcount header (matches the
+  legacy backend's plain <code>char*</code> representation).</li>
+<li><strong>Arrays</strong>: <code>ptr</code> to a heap buffer of elements; no length header. Lengths
+  are tracked statically per binding; array-typed function parameters get an
+  implicit trailing <code>&lt;name&gt;_len: i32</code> parameter (legacy ABI). Generic
+  instantiations do not take length parameters (legacy parity).</li>
+<li><strong>Classes</strong>: fields in declaration order, inherited (base-chain) fields
+  first; natural alignment with padding; struct size padded to max field
+  alignment. Owned classes are heap pointers (<code>ptr&lt;Struct&gt;</code>), copyable
+  classes are by-value structs. Classes with owned fields get a generated
+  <code>&lt;Struct&gt;__destroy</code> function (null-checks each owned field, recursing into
+  owned class fields, then frees self).</li>
+<li><strong>Monomorphization</strong>: deterministic name mangling <code>base__arg1_arg2</code> (e.g.
+  <code>Pair__int32_string</code>, <code>println__int32</code>); methods are <code>Class__T__method</code>.
+  Reachability-driven from non-generic roots via a FIFO worklist.</li>
+<li><strong>Generators</strong>: a frame struct <code>__gen_&lt;name&gt;</code> (<code>_state: i32</code>, params,
+  locals) plus <code>&lt;name&gt;__init(frame, args)</code> and
+  <code>&lt;name&gt;__next(frame, out) -&gt; bool</code>. <code>_state</code> is 0 initially, k after the
+  k-th yield (the dispatch chain jumps to the matching resume block), and -1
+  when exhausted. Frames live in caller stack slots; <code>for-in</code> drives
+  GenNew/GenNext/GenValue.</li>
+<li><strong>SyscallResult</strong>: compiler-internal copyable struct
+  <code>{ status: i32 @ 0, data: ptr&lt;i8&gt; @ 8 }</code>, returned by value from the
+  <code>fs_rt_syscall_*</code> runtime calls.</li>
+<li><strong>Runtime ABI</strong>: all runtime entry points are <code>fs_rt_*</code> (alloc/free,
+  string ops, numeric&lt;-&gt;string conversions, pow, stdout, process args,
+  syscalls). Backends bind these names to the runtime implementation.</li>
+<li><strong>Entry</strong>: the user/synthetic <code>main</code> lowers to <code>fs_main</code>; backends emit a
+  host entry that sets process args, calls <code>fs_main</code>, and exits 0.</li>
+</ul>
 <h2 id="abi-backend-notes">ABI &amp; Backend Notes<a class="headerlink" href="#abi-backend-notes" title="Permanent link">&para;</a></h2>
 <p>FLIR must include stable ABI data (field offsets, sizes, alignments, calling conventions) so that backends can emit correct code without re-evaluating high-level semantics.</p>
 <h2 id="optional-advanced-path">Optional Advanced Path<a class="headerlink" href="#optional-advanced-path" title="Permanent link">&para;</a></h2>

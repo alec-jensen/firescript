@@ -1384,7 +1384,13 @@
 <li><code>enable_lowlevel_stdout</code>: Allows the use of low-level stdout function.</li>
 <li><code>enable_lowlevel_stdin</code>: Allows the use of low-level stdin function.</li>
 <li><code>enable_process_args</code>: Allows use of process argument intrinsics (<code>process_argc()</code> and <code>process_argv_at(index)</code>) and low-level string helper intrinsics (<code>str_length</code>, <code>str_char_at</code>, <code>str_index_of</code>, <code>str_slice</code>) in the file. This is intended for standard library internals (for example, <code>std.cli.args</code>).</li>
+<li><code>enable_lowlevel_runtime</code>: Allows use of the runtime-implementation primitives. <strong>Exclusively for <code>firescript/std/internal/runtime.fire</code></strong> (the firescript-implemented runtime merged into every program built with the FIR backends). Primitives:</li>
+<li>Raw memory: <code>mem_load_u8(addr) -&gt; uint8</code>, <code>mem_store_u8(addr, v)</code>, <code>mem_load_u64(addr) -&gt; uint64</code>, <code>mem_store_u64(addr, v)</code>, <code>mem_copy(dst, src, n)</code> — addresses are <code>uint64</code>.</li>
+<li>Bitcasts: <code>str_to_addr(string) -&gt; uint64</code>, <code>addr_to_str(uint64) -&gt; string</code>.</li>
+<li>Runtime state: <code>runtime_state_get() -&gt; uint64</code> / <code>runtime_state_set(uint64)</code> — a single mutable pointer-sized cell holding the runtime's root state block.</li>
+<li>Win32 externs (lower to kernel32.dll imports): <code>win_get_process_heap</code>, <code>win_heap_alloc</code>, <code>win_heap_free</code>, <code>win_get_std_handle</code>, <code>win_write_file</code>, <code>win_read_file</code>, <code>win_create_file_a</code>, <code>win_close_handle</code>, <code>win_delete_file_a</code>, <code>win_move_file_ex_a</code>, <code>win_copy_file_a</code>, <code>win_get_last_error</code>, <code>win_get_command_line_a</code>, <code>win_get_file_size</code>, <code>win_exit_process</code>. Handles and pointers are <code>uint64</code>.</li>
 </ul>
+<p>Functions in the runtime module named <code>fs_rt_*</code> implement the FLIR runtime ABI; the FIR lowering routes runtime calls to them when defined, falling back to backend-provided shims otherwise (which allows incremental porting).</p>
 
 
 

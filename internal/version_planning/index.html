@@ -1,0 +1,2571 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://firescript.alecj.com/internal/version_planning/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>firescript version planning - firescript</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lexend:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Lexend";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#firescript-version-planning" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            firescript
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              firescript version planning
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/overview/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../glossary/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Glossary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../benchmarks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Benchmarks
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    firescript
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types & Variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/control_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions & Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes & Inheritance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/scoping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scoping Rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/type_system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/memory_management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/imports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Standard Library
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Standard Library
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/std/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/std/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/std/fs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/std/math/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Math
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/std/regex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/std/cli_args/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-Line Arguments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/std/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    kiln
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    kiln
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/kiln/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/kiln/manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../benchmarks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#guiding-vision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guiding Vision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#050-kirin-current-in-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.5.0 — Kirin (Current, in development)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.5.0 — Kirin (Current, in development)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#already-complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Already complete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remaining-for-kirin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining for Kirin
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#060-griffin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.6.0 — Griffin
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.6.0 — Griffin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#language-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Language features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#standard-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standard library
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compiler-improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test coverage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#070-wyvern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.7.0 — Wyvern
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.7.0 — Wyvern">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#language-features_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Language features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fcl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FCL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compiler-improvements_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-coverage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test coverage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gate_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#080-dragon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.8.0 — Dragon
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.8.0 — Dragon">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#firescriptstdcompilerlexerfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        firescript/std/compiler/lexer.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#firescriptstdcompilerparserfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        firescript/std/compiler/parser.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#firescriptstdcompilersemanticfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        firescript/std/compiler/semantic.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#firescriptstdcompilerfir_builderfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        firescript/std/compiler/fir_builder.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compiler-improvements-python-side" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler improvements (Python side)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-coverage_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test coverage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gate_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#090-behemoth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.9.0 — Behemoth
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.9.0 — Behemoth">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#firescriptstdcompilercodegenfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        firescript/std/compiler/codegen.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#firescriptstdcompilerassemblerfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        firescript/std/compiler/assembler.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#firescriptstdcompilerpe_writerfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        firescript/std/compiler/pe_writer.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bootstrap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bootstrap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compiler-improvements-python-side_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler improvements (Python side)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-coverage_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test coverage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gate_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0100-chimera" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.10.0 — Chimera
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.10.0 — Chimera">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#track-a-linux-x64-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Track A: Linux x64 target
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Track A: Linux x64 target">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#firescriptstdcompilerelf_writerfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        firescript/std/compiler/elf_writer.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#python-backend-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python backend support
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#track-b-kiln-foundations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Track B: kiln foundations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Track B: kiln foundations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#package-manifest-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package manifest format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compiler-improvements-python-side_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler improvements (Python side)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-coverage_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test coverage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gate_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0110-leviathan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.11.0 — Leviathan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.11.0 — Leviathan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#firescriptstdnet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        @firescript/std.net
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kiln-networking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kiln networking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compiler-improvements_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-coverage_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test coverage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gate_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#100-titan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.0.0 — Titan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.0 — Titan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#language-and-stdlib-stabilization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Language and stdlib stabilization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tooling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tooling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compiler-retirement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler retirement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#release-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release criteria
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#post-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post-1.0
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Post-1.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#high-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        High priority
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medium-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medium priority
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lower-priority-stretch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lower priority / stretch
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/version_planning.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="firescript-version-planning">firescript version planning<a class="headerlink" href="#firescript-version-planning" title="Permanent link">&para;</a></h1>
+<p>Planning for future versions toward <strong>1.0.0 — Titan</strong>, the self-hosted release.</p>
+<h2 id="guiding-vision">Guiding Vision<a class="headerlink" href="#guiding-vision" title="Permanent link">&para;</a></h2>
+<p>The goal of firescript 1.0 is a <strong>self-hosted compiler</strong>: a firescript compiler written in
+firescript that can compile itself. Every version from 0.6.0 onward builds explicitly toward
+this end state.</p>
+<p>The bootstrap path has three phases:
+1. <strong>Stdlib foundation</strong> — give firescript the data structures and string utilities a compiler
+   needs (Vec, HashMap, StringBuilder, enums, pattern matching)
+2. <strong>Language maturity</strong> — traits, ownership ergonomics, diagnostics infrastructure — so the
+   firescript compiler code is clean and idiomatic
+3. <strong>Self-hosted implementation</strong> — write the compiler front-end, then the backend, in
+   firescript, culminating in a full bootstrap</p>
+<hr />
+<h2 id="050-kirin-current-in-development">0.5.0 — Kirin (Current, in development)<a class="headerlink" href="#050-kirin-current-in-development" title="Permanent link">&para;</a></h2>
+<p><em>FIR + FLIR pipeline, self-hosted native toolchain, runtime in firescript, generators, char,
+<code>&amp;mut this</code>, module exports, generic classes, stdlib expansion, true float128.</em></p>
+<h3 id="already-complete">Already complete<a class="headerlink" href="#already-complete" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>FIR + FLIR pipeline</strong> — AST → FIR → FLIR → x86-64 assembly is the only pipeline</li>
+<li><strong>Self-hosted native toolchain</strong> — pure-Python x86-64 assembler and PE32+ writer;
+  no external tools, no MinGW binutils, zero subprocess calls</li>
+<li><strong>firescript runtime</strong> — <code>std/internal/runtime.fire</code> implements strings, arrays, numeric
+  formatting and parsing, process arguments, file syscalls in firescript</li>
+<li>Generators (<code>generator&lt;T&gt;</code>, <code>yield</code>), <code>for-in</code> over generators, <code>std.ranges</code></li>
+<li><code>char</code> type and character literal syntax (<code>'A'</code>, <code>'\n'</code>)</li>
+<li><code>&amp;mut this</code> receiver syntax</li>
+<li>Module exports (private by default)</li>
+<li>Generic classes (<code>class Pair&lt;T, U&gt;</code>)</li>
+<li>String methods (<code>length</code>, string iteration)</li>
+<li>String-to-numeric casting</li>
+<li><code>std.types</code> (<code>Tuple</code>, <code>Option</code>, <code>CopyableTuple</code>, <code>CopyableOption</code>)</li>
+<li><code>std.fs</code> (file I/O), <code>std.regex</code>, <code>std.cli.args</code> (expanded), <code>std.fcl</code></li>
+<li>Logical operators (<code>&amp;&amp;</code>, <code>||</code>, <code>!</code>), exponentiation (<code>**</code>), compound assignment,
+  increment/decrement</li>
+<li>Sized array declarations with optional initializers, negative indexing, utility methods</li>
+<li>LSP server, VS Code extension</li>
+<li>Unified structured diagnostics</li>
+</ul>
+<h3 id="remaining-for-kirin">Remaining for Kirin<a class="headerlink" href="#remaining-for-kirin" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>True <code>float128</code> (IEEE binary128)</strong></td>
+<td>16-byte soft-float over <code>uint64</code> pairs; correctly-rounded literal parsing, exact decimal formatting, full arithmetic/comparison/conversion set. Pending implementation.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="060-griffin">0.6.0 — Griffin<a class="headerlink" href="#060-griffin" title="Permanent link">&para;</a></h2>
+<p><strong>Theme: Standard library foundations for compiler writing.</strong></p>
+<p>The firescript compiler needs rich collections and string utilities that are simply not
+expressible with fixed-size arrays alone. This release fills those gaps so the subsequent
+self-hosting work is not blocked by missing data structures.</p>
+<h3 id="language-features">Language features<a class="headerlink" href="#language-features" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enum</code> / sum types with data payloads</td>
+<td>AST node types, tokens, and type variants map naturally to enums. Without them the compiler code is class hierarchies and manual dispatch.</td>
+</tr>
+<tr>
+<td><code>match</code> expressions</td>
+<td>Ergonomic destructuring of enums. Without match, working with enums is verbose if-else chains.</td>
+</tr>
+<tr>
+<td><code>Vec&lt;T&gt;</code> in <code>@firescript/std.collections</code></td>
+<td>Dynamic arrays are the single most critical missing collection — needed for token lists, AST child lists, symbol tables, etc.</td>
+</tr>
+<tr>
+<td><code>HashMap&lt;K,V&gt;</code> in <code>@firescript/std.collections</code></td>
+<td>Symbol tables, type environments, and identifier lookups require associative maps.</td>
+</tr>
+<tr>
+<td><code>StringBuilder</code> in <code>@firescript/std.text</code></td>
+<td>Code generation and error message formatting need efficient string accumulation.</td>
+</tr>
+<tr>
+<td>Extended string methods: <code>split</code>, <code>substring</code>, <code>indexOf</code>, <code>startsWith</code>, <code>endsWith</code>, <code>trim</code>, <code>toLower</code>, <code>toUpper</code>, <code>replace</code></td>
+<td>Lexing and string processing require these — cannot write a parser without substring search and splitting.</td>
+</tr>
+<tr>
+<td><code>Result&lt;T,E&gt;</code> proper error type</td>
+<td>Compiler phases propagate errors; a well-typed Result is essential for ergonomic error handling in firescript code.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="standard-library">Standard library<a class="headerlink" href="#standard-library" title="Permanent link">&para;</a></h3>
+<ul>
+<li>New module <code>@firescript/std.collections</code> — <code>Vec&lt;T&gt;</code>, <code>HashMap&lt;K,V&gt;</code> (and later <code>Stack&lt;T&gt;</code>,
+  <code>Queue&lt;T&gt;</code>, <code>Deque&lt;T&gt;</code>)</li>
+<li>New module <code>@firescript/std.text</code> — <code>StringBuilder</code></li>
+<li>Enhanced <code>@firescript/std.types</code> — <code>Result&lt;T,E&gt;</code> with <code>Ok</code>, <code>Err</code> variants and combinators</li>
+<li><strong><code>@firescript/std.regex</code></strong> — full regex matching engine (lexer, parser, NFA/DFA
+  compilation, matching over strings). Required by FCL and by compiler string-processing
+  needs. (Existing stub needs real implementation.)</li>
+</ul>
+<h3 id="compiler-improvements">Compiler improvements<a class="headerlink" href="#compiler-improvements" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Support <code>enum</code> and <code>match</code> in the front-end pipeline (lexer, parser, semantic analysis,
+  FIR lowering)</li>
+<li>Support <code>Vec&lt;T&gt;</code>, <code>HashMap&lt;K,V&gt;</code>, <code>StringBuilder</code>, and <code>Result&lt;T,E&gt;</code> as stdlib modules
+  with appropriate compiler intrinsics where needed</li>
+<li>Implement <code>@firescript/std.regex</code> with necessary runtime support</li>
+<li>Regenerate and freeze goldens for all new features</li>
+</ul>
+<h3 id="test-coverage">Test coverage<a class="headerlink" href="#test-coverage" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Comprehensive golden tests for enums and match</li>
+<li>Comprehensive golden tests for Vec, HashMap, StringBuilder operations</li>
+<li>Golden tests for new string methods</li>
+<li>Comprehensive golden tests for regex (matching, capture groups, anchors, character
+  classes, alternation, quantifiers)</li>
+<li>Error tests for invalid enum/match usage</li>
+<li>Error tests for invalid regex patterns</li>
+</ul>
+<h3 id="gate">Gate<a class="headerlink" href="#gate" title="Permanent link">&para;</a></h3>
+<p>All stdlib modules are usable from firescript code. Vec, HashMap, string methods, and regex
+are thoroughly tested. Enum and match work across the full pipeline (no FIR/FLIR gaps).</p>
+<hr />
+<h2 id="070-wyvern">0.7.0 — Wyvern<a class="headerlink" href="#070-wyvern" title="Permanent link">&para;</a></h2>
+<p><strong>Theme: Language maturity + FCL configuration system.</strong></p>
+<p>With basic collections and regex in place, this release adds the abstraction features that
+make a firescript compiler readable and maintainable, and delivers FCL — the config language
+that kiln will use for package manifests.</p>
+<h3 id="language-features_1">Language features<a class="headerlink" href="#language-features_1" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trait / interface system</td>
+<td>Abstraction over AST node types, type representations, and backends. Essential for a modular compiler architecture.</td>
+</tr>
+<tr>
+<td>Ownership-aware generic constraints (<code>Owned</code>, <code>Copyable</code>)</td>
+<td>Generic compiler code (e.g., a <code>Vec&lt;T&gt;</code> used with both owned and copyable types) needs constraint clarity.</td>
+</tr>
+<tr>
+<td><code>move()</code> and <code>borrow()</code> call-site syntax</td>
+<td>Explicit ownership operations make compiler code self-documenting and catch ownership bugs at compile time.</td>
+</tr>
+<tr>
+<td>Improved error messages / diagnostic infrastructure</td>
+<td>The firescript compiler should produce rich, helpful diagnostics. Implementing this in firescript requires the same.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fcl">FCL<a class="headerlink" href="#fcl" title="Permanent link">&para;</a></h3>
+<p>FCL (firescript config language) is a typed configuration DSL that kiln will use for
+package manifests and project configuration. It is a mini-compiler: lexer, parser,
+typechecker, and (eventually) interpreter. Implementing FCL in firescript serves as
+a crucible for the self-hosting work in 0.8.0 — the same patterns (enums for tokens/AST,
+recursive-descent parsing, trait-based visitors) are exercised here at smaller scale
+before tackling the full firescript compiler.</p>
+<ul>
+<li>Lexer (tokenizer) — builds on the existing <code>std/fcl/lexer.fire</code> stub</li>
+<li>Parser — recursive-descent over FCL syntax, producing typed AST (enum-based)</li>
+<li>Typechecker — validates structure against expected types</li>
+<li>Runtime interpreter — evaluates FCL expressions and produces config values</li>
+<li>Compile-time import support for <code>.fcl</code> files in firescript source</li>
+<li>Document <code>.fcl</code> format and FCL import mechanism</li>
+</ul>
+<h3 id="compiler-improvements_1">Compiler improvements<a class="headerlink" href="#compiler-improvements_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add trait parsing, semantic checking, and FIR/FLIR lowering (monomorphization-based;
+  no vtables unless needed)</li>
+<li>Add <code>move(expr)</code> / <code>borrow(expr)</code> as expression forms with semantic enforcement</li>
+<li>Generalize generic constraint system to accept <code>Owned</code> and <code>Copyable</code> as built-in
+  constraint kinds</li>
+<li>Deprecation warning path for implicit moves (prepare for future mandatory explicit
+  move/borrow)</li>
+<li>Implement FCL pipeline in the firescript compiler (recognize <code>.fcl</code> imports, invoke
+  FCL interpreter, merge results into the FIR module)</li>
+<li>Optional: initial trait-based standard library abstractions (<code>Iterable&lt;T&gt;</code>, <code>Cloneable</code>)</li>
+</ul>
+<h3 id="test-coverage_1">Test coverage<a class="headerlink" href="#test-coverage_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Comprehensive golden tests for traits (impl, bounds, generic functions with trait bounds)</li>
+<li>Tests for <code>move()</code> / <code>borrow()</code> at call sites</li>
+<li>Ownership-aware generic constraint tests</li>
+<li>Comprehensive FCL golden tests (valid config files produce expected output)</li>
+<li>FCL error tests (invalid config syntax, type mismatches, missing values)</li>
+<li>End-to-end tests for <code>.fcl</code> imports in firescript source</li>
+</ul>
+<h3 id="gate_1">Gate<a class="headerlink" href="#gate_1" title="Permanent link">&para;</a></h3>
+<p>Traits, ownership-aware generics, and explicit move/borrow all work across the pipeline.
+FCL is usable: valid <code>.fcl</code> files produce correct config values; invalid ones report clear
+diagnostics. The compiler can import and consume FCL configuration. The language is mature
+enough to begin writing a compiler front-end.</p>
+<hr />
+<h2 id="080-dragon">0.8.0 — Dragon<a class="headerlink" href="#080-dragon" title="Permanent link">&para;</a></h2>
+<p><strong>Theme: Self-hosted compiler front-end.</strong></p>
+<p>Write the firescript compiler's front-end (lexer, parser, semantic analysis, FIR
+construction) in firescript. The Python compiler remains the bootstrap compiler; the
+firescript front-end is developed alongside it and tested against the same test suite.</p>
+<h3 id="firescriptstdcompilerlexerfire">firescript/std/compiler/lexer.fire<a class="headerlink" href="#firescriptstdcompilerlexerfire" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Token type definitions (enum-based)</li>
+<li>Source text → token stream conversion</li>
+<li>Character classification, string/number literal lexing, keyword recognition</li>
+<li>Error reporting with source locations</li>
+</ul>
+<h3 id="firescriptstdcompilerparserfire">firescript/std/compiler/parser.fire<a class="headerlink" href="#firescriptstdcompilerparserfire" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Recursive-descent parser producing AST nodes (enum-based)</li>
+<li>Expression, statement, type, and declaration parsing</li>
+<li>Operator precedence handling</li>
+<li>Error recovery / syntax error reporting</li>
+</ul>
+<h3 id="firescriptstdcompilersemanticfire">firescript/std/compiler/semantic.fire<a class="headerlink" href="#firescriptstdcompilersemanticfire" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Scope and binding analysis</li>
+<li>Type checking and type inference</li>
+<li>Ownership tracking (VALID/MOVED/MAYBE_MOVED/BORROWED/DROPPED)</li>
+<li>Generic monomorphization resolution</li>
+<li>Drop point / destructor insertion</li>
+</ul>
+<h3 id="firescriptstdcompilerfir_builderfire">firescript/std/compiler/fir_builder.fire<a class="headerlink" href="#firescriptstdcompilerfir_builderfire" title="Permanent link">&para;</a></h3>
+<ul>
+<li>FIR type definitions</li>
+<li>AST → FIR lowering</li>
+<li>FIR textual dump (for round-trip testing against Python FIR dumps)</li>
+</ul>
+<h3 id="integration">Integration<a class="headerlink" href="#integration" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>python firescript/main.py --frontend firescript</code> toggle to use the firescript
+  front-end instead of the Python front-end</li>
+<li>Run full test suite through firescript front-end, compare FIR snapshots</li>
+<li>Incremental rollout: lexer first, then parser, then semantic analysis, then FIR</li>
+<li>Firescript front-end modules live under <code>firescript/std/compiler/</code> so they are
+  importable like standard library modules</li>
+</ul>
+<h3 id="compiler-improvements-python-side">Compiler improvements (Python side)<a class="headerlink" href="#compiler-improvements-python-side" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Expose whatever compiler intrinsics or ABI hooks the firescript front-end needs
+  (e.g., internal type representations, memory allocation patterns)</li>
+<li>Add <code>--frontend {python,firescript}</code> flag to <code>main.py</code></li>
+</ul>
+<h3 id="test-coverage_2">Test coverage<a class="headerlink" href="#test-coverage_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Firescript lexer produces identical token streams to Python lexer across all test files</li>
+<li>Firescript parser produces identical ASTs across all test files</li>
+<li>Firescript semantic analysis passes all golden and error tests (output-identical)</li>
+<li>Firescript FIR builder produces FIR dumps matching Python FIR dumps (deterministic)</li>
+</ul>
+<h3 id="gate_2">Gate<a class="headerlink" href="#gate_2" title="Permanent link">&para;</a></h3>
+<p>Firescript front-end passes 100% of the existing test suite with output-identical results
+when run via <code>--frontend firescript</code>. The Python front-end is still the default, but the
+firescript front-end is feature-complete.</p>
+<hr />
+<h2 id="090-behemoth">0.9.0 — Behemoth<a class="headerlink" href="#090-behemoth" title="Permanent link">&para;</a></h2>
+<p><strong>Theme: Self-hosted backend and bootstrap (Windows).</strong></p>
+<p>Write the code generator (FLIR lowering, assembly emission) and the self-hosted toolchain
+(assembler, PE writer) in firescript. The firescript compiler compiles itself end-to-end
+on Windows x64.</p>
+<h3 id="firescriptstdcompilercodegenfire">firescript/std/compiler/codegen.fire<a class="headerlink" href="#firescriptstdcompilercodegenfire" title="Permanent link">&para;</a></h3>
+<ul>
+<li>FIR → FLIR lowering (monomorphization, class lowering, generator lowering)</li>
+<li>FLIR → x86-64 assembly text emission</li>
+<li>Support for all FLIR ops the Python backend emits (must achieve byte-identical assembly)</li>
+</ul>
+<h3 id="firescriptstdcompilerassemblerfire">firescript/std/compiler/assembler.fire<a class="headerlink" href="#firescriptstdcompilerassemblerfire" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Pure-firescript x86-64 assembler consuming the same GAS Intel text format</li>
+<li>Object image production (sections, symbols, relocations)</li>
+<li>Must produce byte-identical output to Python <code>backend/assembler.py</code></li>
+</ul>
+<h3 id="firescriptstdcompilerpe_writerfire">firescript/std/compiler/pe_writer.fire<a class="headerlink" href="#firescriptstdcompilerpe_writerfire" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Pure-firescript PE32+ writer</li>
+<li>DOS header, COFF header, optional header, section layout, import directory, IAT</li>
+<li>Must produce byte-identical output to Python <code>backend/pe.py</code></li>
+</ul>
+<h3 id="bootstrap">Bootstrap<a class="headerlink" href="#bootstrap" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>python firescript/main.py --compiler firescript</code> toggle uses the firescript
+  compiler (front-end + backend) end-to-end</li>
+<li>The firescript compiler compiles itself: <code>python firescript/main.py --compiler firescript
+  firescript/std/compiler/...</code> produces a working firescript compiler binary</li>
+<li><strong>First-stage bootstrap</strong>: use the resulting binary to compile itself again:
+  <code>./build/compiler.exe firescript/std/compiler/...</code> produces a byte-identical binary
+  (or semantically equivalent)</li>
+<li>Document the bootstrap procedure in <code>docs/internal/development/bootstrap.md</code></li>
+</ul>
+<h3 id="compiler-improvements-python-side_1">Compiler improvements (Python side)<a class="headerlink" href="#compiler-improvements-python-side_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add <code>--compiler {python,firescript}</code> flag to <code>main.py</code></li>
+<li>Expose any remaining intrinsics or runtime hooks the firescript backend needs</li>
+<li>Remove <code>--frontend</code> flag (superseded by <code>--compiler</code>)</li>
+</ul>
+<h3 id="test-coverage_3">Test coverage<a class="headerlink" href="#test-coverage_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Firescript codegen passes all golden tests (output-identical)</li>
+<li>Firescript assembler + PE writer pass <code>tests/asm_encoding_tests.py</code></li>
+<li>Bootstrap binary passes full test suite on its own</li>
+<li>Determinism test: bootstrap binary is byte-identical on repeated compilations</li>
+</ul>
+<h3 id="gate_3">Gate<a class="headerlink" href="#gate_3" title="Permanent link">&para;</a></h3>
+<p><code>python firescript/main.py --compiler firescript &lt;file&gt;.fire</code> produces a working binary
+for any test source (Windows x64). The firescript compiler can compile itself end-to-end.
+The resulting binary, when run on the firescript compiler sources, produces a byte-identical
+(or semantically equivalent) copy of itself.</p>
+<hr />
+<h2 id="0100-chimera">0.10.0 — Chimera<a class="headerlink" href="#0100-chimera" title="Permanent link">&para;</a></h2>
+<p><strong>Theme: Linux x64 target + kiln foundations.</strong></p>
+<p>Two parallel tracks: (A) port the compiler to Linux x64 with ELF output, and (B) build
+kiln basics on top of FCL. Chimera is the hybrid beast — fitting for a hybrid-platform,
+hybrid-tool release.</p>
+<h3 id="track-a-linux-x64-target">Track A: Linux x64 target<a class="headerlink" href="#track-a-linux-x64-target" title="Permanent link">&para;</a></h3>
+<h4 id="firescriptstdcompilerelf_writerfire">firescript/std/compiler/elf_writer.fire<a class="headerlink" href="#firescriptstdcompilerelf_writerfire" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Pure-firescript ELF64 writer for Linux x64</li>
+<li>ELF header, program headers, section headers, symbol table, relocation handling</li>
+<li>Linux x86-64 syscall ABI (instead of kernel32.dll imports)</li>
+<li>System V AMD64 calling convention differences from Win64</li>
+</ul>
+<h4 id="python-backend-support">Python backend support<a class="headerlink" href="#python-backend-support" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Add ELF64 writer to the Python backend (<code>backend/elf.py</code>)</li>
+<li>Add Linux x86-64 syscall ABI to the codegen (<code>codegen/flir_to_asm.py</code> already emits
+  target-neutral assembly; add <code>--target</code> flag to select Win64 vs System V ABI)</li>
+<li>Runtime: Linux syscall wrappers for heap (brk/mmap), I/O (read/write), process exit</li>
+<li><code>--target {windows-x64,linux-x64}</code> flag in <code>main.py</code></li>
+<li>Firescript-on-Linux CI (GitHub Actions) runs the golden suite under native Linux build</li>
+<li>Update <code>tests/golden_runner.py</code> to support cross-target testing</li>
+</ul>
+<h3 id="track-b-kiln-foundations">Track B: kiln foundations<a class="headerlink" href="#track-b-kiln-foundations" title="Permanent link">&para;</a></h3>
+<h4 id="package-manifest-format">Package manifest format<a class="headerlink" href="#package-manifest-format" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Define FCL-based package manifest format (<code>firescript.toml</code> or equivalent <code>.fcl</code> schema)</li>
+<li>Define lockfile format for deterministic dependency resolution</li>
+</ul>
+<h4 id="commands">Commands<a class="headerlink" href="#commands" title="Permanent link">&para;</a></h4>
+<ul>
+<li><code>kiln init</code> — scaffold a new project with a valid manifest</li>
+<li><code>kiln build</code> — invoke the compiler on a project</li>
+<li><code>kiln run</code> — build and execute a project</li>
+<li>Local-only dependency resolution (path/workspace deps; no network yet)</li>
+</ul>
+<h4 id="integration_1">Integration<a class="headerlink" href="#integration_1" title="Permanent link">&para;</a></h4>
+<ul>
+<li>kiln is implemented in firescript (uses <code>std.cli.args</code>, <code>std.fs</code>, FCL)</li>
+<li>Python driver initially shells out to the firescript binary, later self-hosted</li>
+<li>kiln source lives at <code>firescript/tools/kiln/</code></li>
+</ul>
+<h3 id="compiler-improvements-python-side_2">Compiler improvements (Python side)<a class="headerlink" href="#compiler-improvements-python-side_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add any compiler API hooks needed by <code>kiln build</code> (compile a project given a root
+  module, collect diagnostics, output binary to a specified path)</li>
+</ul>
+<h3 id="test-coverage_4">Test coverage<a class="headerlink" href="#test-coverage_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>ELF validity checks (readelf or pure-Python ELF inspector) on Linux target builds</li>
+<li>Linux target golden suite runs on CI (native Linux)</li>
+<li>Cross-target tests: same source produces equivalent output on both targets</li>
+<li>Kiln end-to-end CLI tests for <code>init</code>, <code>build</code>, <code>run</code> on a smoke project</li>
+<li>Kiln negative tests: invalid manifest, missing source, build failures</li>
+<li>Lockfile determinism tests</li>
+</ul>
+<h3 id="gate_4">Gate<a class="headerlink" href="#gate_4" title="Permanent link">&para;</a></h3>
+<p><code>--target linux-x64</code> produces a working native ELF binary for all test sources. Kiln can
+<code>init</code>, <code>build</code>, and <code>run</code> a simple project with local-only dependencies. Both targets
+pass their golden suites on CI.</p>
+<hr />
+<h2 id="0110-leviathan">0.11.0 — Leviathan<a class="headerlink" href="#0110-leviathan" title="Permanent link">&para;</a></h2>
+<p><strong>Theme: std.net + kiln networking.</strong></p>
+<p>Leviathan is the primordial sea beast — the vast network ocean. This release delivers
+networking primitives and connects kiln to the world with registry support.</p>
+<h3 id="firescriptstdnet">@firescript/std.net<a class="headerlink" href="#firescriptstdnet" title="Permanent link">&para;</a></h3>
+<ul>
+<li>TCP socket primitives (connect, listen, accept, send, receive, close)</li>
+<li>UDP socket primitives (sendto, recvfrom)</li>
+<li>Address and endpoint abstractions for IPv4/IPv6</li>
+<li>Non-blocking I/O and timeout semantics</li>
+<li>Consistent error model with clear diagnostics</li>
+<li>Backed by kernel32 sockets (Winsock) on Windows, POSIX sockets on Linux</li>
+</ul>
+<h3 id="kiln-networking">kiln networking<a class="headerlink" href="#kiln-networking" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Registry protocol definition (HTTP-based)</li>
+<li><code>kiln publish</code> — package a project to a registry</li>
+<li><code>kiln add</code> — add a dependency from a registry</li>
+<li><code>kiln update</code> / <code>kiln sync</code> — resolve and lock dependencies from registries</li>
+<li>Install/cache layout for reproducible restores</li>
+</ul>
+<h3 id="compiler-improvements_2">Compiler improvements<a class="headerlink" href="#compiler-improvements_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add <code>--target {windows-x64,linux-x64}</code> to the firescript backend (mirrors Python flag)</li>
+<li>Ensure std.net compiles and runs on both targets</li>
+</ul>
+<h3 id="test-coverage_5">Test coverage<a class="headerlink" href="#test-coverage_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Loopback TCP client/server golden tests</li>
+<li>UDP send/receive tests</li>
+<li>Connection error, timeout, and invalid endpoint tests</li>
+<li>Kiln end-to-end tests for <code>publish</code>, <code>add</code>, <code>sync</code>, <code>update</code></li>
+<li>Kiln lockfile determinism tests with registry fixtures</li>
+<li>Cross-target networking tests where applicable</li>
+</ul>
+<h3 id="gate_5">Gate<a class="headerlink" href="#gate_5" title="Permanent link">&para;</a></h3>
+<p><code>std.net</code> provides working TCP/UDP on both Windows and Linux. Kiln supports the full
+development lifecycle: init, build, run, test, publish, add, sync, update.</p>
+<hr />
+<h2 id="100-titan">1.0.0 — Titan<a class="headerlink" href="#100-titan" title="Permanent link">&para;</a></h2>
+<p><strong>Theme: Stabilization, polish, and release.</strong></p>
+<p>With the compiler self-hosted, running on both Windows and Linux, the full kiln toolchain
+available, and the standard library covering networking, the 1.0.0 release focuses on
+making firescript production-ready and retiring the Python compiler.</p>
+<h3 id="language-and-stdlib-stabilization">Language and stdlib stabilization<a class="headerlink" href="#language-and-stdlib-stabilization" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Finalize all language features for 1.0 (no breaking changes after this)</li>
+<li>Complete standard library documentation across all modules</li>
+<li>Performance profiling and optimization of the self-hosted compiler</li>
+<li><code>@firescript/std.cli.args</code> final API surface</li>
+</ul>
+<h3 id="tooling">Tooling<a class="headerlink" href="#tooling" title="Permanent link">&para;</a></h3>
+<ul>
+<li>kiln documentation: manifest format, command reference, tutorial</li>
+<li>LSP and VS Code extension polished and tested with the self-hosted compiler</li>
+</ul>
+<h3 id="compiler-retirement">Compiler retirement<a class="headerlink" href="#compiler-retirement" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Remove <code>--compiler python</code> flag; the firescript compiler is the only compiler</li>
+<li>Remove <code>--frontend</code> flag (long superseded)</li>
+<li>Remove Python test-runner dependency: test runners rewritten in firescript or
+  kept as lightweight Python wrappers with no compiler logic</li>
+<li>Firescript compiler source becomes the canonical implementation</li>
+</ul>
+<h3 id="release-criteria">Release criteria<a class="headerlink" href="#release-criteria" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Firescript compiler is fully self-hosted — compiles itself end-to-end with no Python
+   compiler code invoked in the compile path</li>
+<li>100% test suite passes on the self-hosted compiler across both target platforms</li>
+<li>Compiler runs on <strong>Windows x64</strong> (Tier 1) and <strong>Linux x64</strong> (Tier 1, CI-tested every
+   commit)</li>
+<li>kiln provides <code>init</code>, <code>build</code>, <code>run</code>, <code>test</code>, <code>publish</code>, <code>add</code>, <code>sync</code>, <code>update</code></li>
+<li>Standard library is documented, stable, and tested (<code>std.collections</code>, <code>std.text</code>,
+   <code>std.types</code>, <code>std.io</code>, <code>std.math</code>, <code>std.fs</code>, <code>std.regex</code>, <code>std.fcl</code>, <code>std.ranges</code>,
+   <code>std.cli.args</code>, <code>std.net</code>)</li>
+<li>Changelog is complete; migration guide documents any breaking changes from 0.x</li>
+<li>No feature in <code>docs/</code> carries <code>[IN DEVELOPMENT]</code>; <code>[PLANNED]</code> items are explicitly
+   marked for post-1.0</li>
+<li>The Python compiler is removed; <code>python firescript/main.py</code> is a thin shim or gone</li>
+</ol>
+<h2 id="post-10">Post-1.0<a class="headerlink" href="#post-10" title="Permanent link">&para;</a></h2>
+<p>Features deferred beyond 1.0, prioritized for subsequent releases:</p>
+<h3 id="high-priority">High priority<a class="headerlink" href="#high-priority" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>@firescript/std.math.linalg</code></strong> — vectors, matrices, core linear algebra</li>
+<li><strong>macOS x64</strong> Mach-O target</li>
+</ul>
+<h3 id="medium-priority">Medium priority<a class="headerlink" href="#medium-priority" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>@firescript/std.io.input</code></strong> — keyboard/mouse/gamepad input APIs</li>
+<li><strong>Performance optimization</strong> — codegen optimizations (constant folding, DCE, CSE)</li>
+</ul>
+<h3 id="lower-priority-stretch">Lower priority / stretch<a class="headerlink" href="#lower-priority-stretch" title="Permanent link">&para;</a></h3>
+<ul>
+<li>JavaScript + Wasm compilation target</li>
+<li>Async/await</li>
+<li>Advanced generic features (higher-kinded types, GATs)</li>
+<li>Macro system</li>
+<li><code>@firescript/window</code> and <code>@firescript/graphics</code> packages</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Alec Jensen
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

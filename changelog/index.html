@@ -1270,15 +1270,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#currently-in-development" class="md-nav__link">
+  <a href="#050-kirin-currently-in-development" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Currently in development
+        0.5.0 - Kirin (Currently in Development)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Currently in development">
+    <nav class="md-nav" aria-label="0.5.0 - Kirin (Currently in Development)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1598,15 +1598,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#currently-in-development" class="md-nav__link">
+  <a href="#050-kirin-currently-in-development" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Currently in development
+        0.5.0 - Kirin (Currently in Development)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Currently in development">
+    <nav class="md-nav" aria-label="0.5.0 - Kirin (Currently in Development)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1899,10 +1899,11 @@
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
 <p>firescript follows <a href="https://semver.org/">Semantic Versioning</a>. This makes it easier to understand the impact of changes in each release.</p>
-<h2 id="currently-in-development">Currently in development<a class="headerlink" href="#currently-in-development" title="Permanent link">&para;</a></h2>
+<h2 id="050-kirin-currently-in-development">0.5.0 - Kirin (Currently in Development)<a class="headerlink" href="#050-kirin-currently-in-development" title="Permanent link">&para;</a></h2>
+<p><em>June 2026</em></p>
 <h3 id="new-language-features">New Language Features<a class="headerlink" href="#new-language-features" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Added generator functions with <code>generator&lt;T&gt;</code> syntax: lazy iterables that produce values on demand via <code>yield</code>. Generators compile to C state-machine structs. User-defined generators and <code>for-in</code> loops over generators are both supported.</li>
+<li>Added generator functions with <code>generator&lt;T&gt;</code> syntax: lazy iterables that produce values on demand via <code>yield</code>. Generators compile to state-machine structs with resumable next-functions. User-defined generators and <code>for-in</code> loops over generators are both supported.</li>
 <li>Added <code>@firescript/std.ranges</code> standard library module with <code>range(end)</code>, <code>rangeFrom(start, end)</code>, and <code>rangeStep(start, end, step)</code> generators, enabling <code>for (int32 i in range(5))</code> style loops.</li>
 <li>Added <code>char</code> type — a copyable, stack-allocated scalar representing a single character. Initialized with single-character string literals (<code>char c = "A"</code>).</li>
 <li>Added character literal syntax with single quotes (<code>'A'</code>, <code>'\n'</code>).</li>
@@ -1925,16 +1926,23 @@
 </ul>
 <h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
 <ul>
+<li><strong>firescript now compiles with zero external dependencies — Python only.</strong> The compiler lowers source through its own intermediate representations (FIR and FLIR), then assembles x86-64 machine code and writes the PE32+ executable itself: no C compiler, no assembler, no linker, no external programs are invoked at any stage. GCC/Clang and MinGW binutils (<code>as</code>/<code>ld</code>) are no longer used or required; the <code>--cc</code> flag and the <code>CC</code> environment variable have been removed, and <code>--emit c</code> is replaced by <code>--emit asm</code>.</li>
+<li>Native compilation currently targets <strong>Windows x64 only</strong>. Compiled binaries are freestanding, position-independent, ASLR-compatible (DYNAMICBASE/NXCOMPAT) PE32+ executables that import only <code>kernel32.dll</code>. Linux and macOS native targets are planned for a future release.</li>
+<li>The language runtime (strings, arrays, numeric formatting and parsing, process arguments, file syscalls) is now implemented in firescript itself (<code>std/internal/runtime.fire</code>) and compiled into every program.</li>
+<li><code>float128</code> is currently an alias of <code>float64</code> (64-bit precision). Values declared as <code>float128</code> no longer carry extended precision, and converting a <code>float128</code> value to a string now produces the standard <code>float64</code> formatting (e.g. <code>4.000000</code> instead of <code>4.0000000000</code>). True 128-bit floating point support is planned for a future release.</li>
 <li>Removed built-in <code>input()</code> function.</li>
 <li>Modules now need to explicitly export symbols to be imported by other modules. Top-level declarations are private by default.</li>
 <li>String concatenation no longer performs implicit type conversion. Both operands must be strings; use explicit <code>as</code> casting for non-string values.</li>
 </ul>
 <h3 id="compiler-improvements">Compiler improvements<a class="headerlink" href="#compiler-improvements" title="Permanent link">&para;</a></h3>
 <ul>
+<li>Added <code>--emit-fir</code> and <code>--emit-flir</code> flags to dump the compiler's intermediate representations (FIR and FLIR) for debugging.</li>
+<li>firescript binaries no longer link against GMP and MPFR; the libraries are no longer build dependencies.</li>
 <li>Standard library modules can now import sibling modules using short relative paths (e.g., <code>import tuple.Tuple;</code>).</li>
 <li>Golden runner now supports per-test command-line argument sidecars placed next to each source file (<code>tests/sources/&lt;name&gt;.args</code>).</li>
 <li>Compiler diagnostics are now unified under structured compile-time error objects across parser, semantic analysis, code generation, and <code>lint_text(...)</code>; this improves consistency of reported locations and diagnostics integrations (for example LSP).</li>
 <li>Bug fixes</li>
+<li>Fixed float-to-string conversion silently truncating at 31 characters for large magnitudes (e.g. <code>1e100 as string</code> now produces the full fixed-notation digits instead of a truncated prefix).</li>
 <li>Fixed <code>for-in</code> loops and <code>length()</code> calls on array function parameters.</li>
 <li>Fixed error caret positions for indented code.</li>
 <li>Semantic analysis errors now report exact source location with a caret.</li>
