@@ -217,6 +217,19 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
                             _remove_from_scope_stack(arg.name)
                         break
 
+    def _move_source_identifier(rhs: Optional[ASTNode]) -> None:
+        """If `rhs` is a bare identifier naming an owned local, it is being moved
+        (e.g. `Point p2 = p1;` or `p2 = p1;`); remove it from the scope_stack so it
+        is not dropped — ownership has transferred to the destination."""
+        if rhs is None or rhs.node_type != NodeTypes.IDENTIFIER:
+            return
+        for frame in reversed(var_maps):
+            if rhs.name in frame:
+                vt, ia, origin = frame[rhs.name]
+                if origin != "param" and is_owned(vt, ia):
+                    _remove_from_scope_stack(rhs.name)
+                return
+
     def process_node(node: ASTNode) -> ASTNode:
         # Variable declaration: track owned locals by name
         if node.node_type == NodeTypes.VARIABLE_DECLARATION:
@@ -228,6 +241,8 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
             for c in node.children:
                 new_children.append(process_node(c) if c is not None else None)
             node.children = new_children
+            # A bare-identifier initializer of an owned local is a move.
+            _move_source_identifier(node.children[0] if node.children else None)
             return node
 
         # Variable assignment: drop old value if assigning to an Owned local
@@ -242,6 +257,8 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
             for c in node.children:
                 new_children.append(process_node(c) if c is not None else None)
             node.children = new_children
+            # A bare-identifier RHS that names an owned local is a move.
+            _move_source_identifier(node.children[0] if node.children else None)
             if sym is not None:
                 vt, ia, origin = sym
                 if origin != "param" and is_owned(vt, ia):

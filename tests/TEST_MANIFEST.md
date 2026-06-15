@@ -135,6 +135,7 @@ The golden runner also verifies every compiled binary imports only `kernel32.dll
 - **memory_break_continue_owned.fire** - Owned vars correctly dropped on break/continue
 - **memory_class_owned_fields.fire** - Classes with owned fields (string) use generated destructors
 - **memory_constructor_move.fire** - Owned objects moved into a constructor not double-freed
+- **memory_move_no_use_after_free.fire** - Moving an owned value via declaration/assignment does not drop the moved-from variable (no use-after-free / double-drop)
 - **memory_early_return.fire** - Memory with early returns
 - **memory_reassign.fire** - Memory during reassignment (int and string)
 - **memory_scopes.fire** - Memory in different scopes

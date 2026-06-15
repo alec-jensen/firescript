@@ -1,0 +1,25 @@
+import @firescript/std.io.println;
+
+// Regression: moving an owned value via declaration/assignment must NOT drop
+// the moved-from variable. Previously `Box b = a;` left `a` scheduled for a
+// drop, freeing the shared heap block; a subsequent same-size allocation then
+// reused that block, so `b` aliased fresh data (use-after-free). With the fix,
+// `a`'s storage is owned solely by `b` and is not freed early.
+
+class Box {
+    int32 v;
+}
+
+Box a = Box(111i32);
+Box b = a;              // move: ownership transfers to b; a must not be dropped
+Box c = Box(222i32);   // must get its own block, not reuse b's
+println(b.v);          // 111  (would be 222 under the use-after-free bug)
+println(c.v);          // 222
+
+// Move via plain assignment to an existing owned variable.
+Box d = Box(333i32);
+Box e = Box(444i32);
+e = d;                 // move d into e (old e dropped); d must not be dropped
+Box f = Box(555i32);   // must not reuse d's block
+println(e.v);          // 333
+println(f.v);          // 555
