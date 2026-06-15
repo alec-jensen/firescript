@@ -1237,9 +1237,21 @@ SyscallResult fs_rt_syscall_open(&string path, &string mode) {
     } else {
         return SyscallResult(-22, ""); // -EINVAL
     }
+    fs_rt_stdout("DBGopen mode=");
+    fs_rt_stdout(mode);
+    fs_rt_stdout(" addr=");
+    fs_rt_stdout(fs_rt_u64_to_str(str_to_addr(path)));
+    fs_rt_stdout(" len=");
+    fs_rt_stdout(fs_rt_u64_to_str(rt_str_len_addr(str_to_addr(path))));
+    fs_rt_stdout(" path=[");
+    fs_rt_stdout(path);
+    fs_rt_stdout("]\n");
     uint64 handle = win_create_file_a(
         str_to_addr(path), access, 3u32, 0u64, disposition, 128u32, 0u64
     );
+    fs_rt_stdout("DBGopen handle=");
+    fs_rt_stdout(fs_rt_u64_to_str(handle));
+    fs_rt_stdout("\n");
     if (handle == 18446744073709551615u64) { // INVALID_HANDLE_VALUE
         return SyscallResult(rt_win_err(), "");
     }
