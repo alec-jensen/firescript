@@ -121,34 +121,62 @@ def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
 _RUNTIME_FIR_CACHE = None
 
 
+def _compile_runtime_file(path: str) -> "FIRModule":
+    """Compile a single runtime .fire file to a FIR module (no caching)."""
+    from ast_to_fir import ASTToFIRConverter
+
+    with open(path, "r", encoding="utf-8") as f:
+        source = f.read()
+    rel = os.path.relpath(path)
+    pipeline = CompilerPipeline(source, rel, path)
+    ast = pipeline.parse()
+    if pipeline.parser_errors:
+        raise RuntimeError(
+            f"{rel} failed to parse: {len(pipeline.parser_errors)} errors"
+        )
+    ast = pipeline.preprocess()
+    analyzer = pipeline.analyze_semantics()
+    if analyzer.errors:
+        analyzer.report_errors()
+        raise RuntimeError(
+            f"{rel} failed semantic analysis: {len(analyzer.errors)} errors"
+        )
+    converter = ASTToFIRConverter(ast, module_name="fs_runtime", is_runtime_module=True)
+    return converter.convert()
+
+
+def _merge_fir_modules(base, *extras) -> "FIRModule":
+    """Merge functions and types from extra FIR modules into base (in-place)."""
+    for extra in extras:
+        for func in extra.functions:
+            # Only add functions not already in base (base takes precedence).
+            if not any(f.name == func.name for f in base.functions):
+                base.functions.append(func)
+        for td in extra.types:
+            if not any(t.name == td.name for t in base.types):
+                base.types.append(td)
+        for c in extra.constants:
+            if not any(x.name == c.name for x in base.constants):
+                base.constants.append(c)
+    return base
+
+
 def _runtime_fir_module():
-    """Compile std/internal/runtime.fire (the firescript-implemented
-    runtime) to a FIR module, cached per process. Lowering routes fs_rt_*
-    calls to these implementations."""
+    """Compile std/internal/runtime.fire and std/internal/float128.fire
+    (the firescript-implemented runtime + float128 stubs) to a merged FIR
+    module, cached per process. Lowering routes fs_rt_* calls here."""
     global _RUNTIME_FIR_CACHE
     if _RUNTIME_FIR_CACHE is None:
-        from ast_to_fir import ASTToFIRConverter
-
-        runtime_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "std", "internal", "runtime.fire"
+        internal_dir = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "std", "internal"
         )
-        with open(runtime_path, "r", encoding="utf-8") as f:
-            runtime_source = f.read()
-        pipeline = CompilerPipeline(runtime_source, os.path.relpath(runtime_path), runtime_path)
-        runtime_ast = pipeline.parse()
-        if pipeline.parser_errors:
-            raise RuntimeError(
-                f"runtime module failed to parse: {len(pipeline.parser_errors)} errors"
-            )
-        runtime_ast = pipeline.preprocess()
-        analyzer = pipeline.analyze_semantics()
-        if analyzer.errors:
-            analyzer.report_errors()
-            raise RuntimeError(
-                f"runtime module failed semantic analysis: {len(analyzer.errors)} errors"
-            )
-        converter = ASTToFIRConverter(runtime_ast, module_name="fs_runtime", is_runtime_module=True)
-        _RUNTIME_FIR_CACHE = converter.convert()
+        runtime_mod = _compile_runtime_file(
+            os.path.join(internal_dir, "runtime.fire")
+        )
+        float128_mod = _compile_runtime_file(
+            os.path.join(internal_dir, "float128.fire")
+        )
+        _RUNTIME_FIR_CACHE = _merge_fir_modules(runtime_mod, float128_mod)
     return _RUNTIME_FIR_CACHE
 
 

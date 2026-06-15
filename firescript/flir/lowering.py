@@ -17,7 +17,153 @@ backend maps them onto the runtime implementation.
 from __future__ import annotations
 
 import logging
+from fractions import Fraction
 from typing import Optional
+
+
+def _decimal_to_f128_bits(text: str) -> tuple[int, int]:
+    """Convert a decimal float string to IEEE binary128 (lo, hi) qword pair.
+
+    Uses exact big-integer arithmetic (fractions.Fraction) — no binary64
+    intermediate, no third-party packages. Implements round-to-nearest-even.
+
+    Returns (lo_bits, hi_bits) as unsigned 64-bit integers where:
+      lo_bits = significand bits [63:0]  (bytes 0..7)
+      hi_bits = (sign << 63) | (exponent << 48) | (significand bits [111:64])
+                                                    (bytes 8..15)
+    """
+    # Normalize the text: strip the f128 suffix if present, handle sign.
+    s = text.strip()
+    # Strip any trailing type suffix (f128, etc.)
+    for suf in ("f128", "f64", "f32", "f16"):
+        if s.lower().endswith(suf):
+            s = s[:-len(suf)]
+            break
+
+    sign = 0
+    if s.startswith("-"):
+        sign = 1
+        s = s[1:]
+    elif s.startswith("+"):
+        s = s[1:]
+
+    s_lower = s.lower()
+
+    # Handle special values.
+    if s_lower in ("inf", "infinity", "nan"):
+        if s_lower == "nan":
+            # quiet NaN: exp=0x7FFF, sig nonzero
+            hi = (sign << 63) | (0x7FFF << 48) | (1 << 47)
+            return (0, hi)
+        else:
+            # infinity: exp=0x7FFF, sig=0
+            hi = (sign << 63) | (0x7FFF << 48)
+            return (0, hi)
+
+    # Parse the value as an exact Fraction.
+    try:
+        if "e" in s_lower:
+            # Scientific notation: split mantissa and exponent.
+            m_str, e_str = s_lower.split("e")
+            exp10 = int(e_str)
+            frac = Fraction(m_str) * Fraction(10) ** exp10
+        else:
+            frac = Fraction(s)
+    except (ValueError, ZeroDivisionError):
+        # Fall back to zero.
+        return (0, 0)
+
+    if frac == 0:
+        return (0, sign << 63)
+
+    # The value is frac = sign * frac (positive here).
+    # Find the exponent e such that 2^e <= frac < 2^(e+1).
+    # Then the significand is frac / 2^e in [1, 2).
+    # binary128: 113 effective significand bits (1 hidden + 112 stored).
+    # exponent bias = 16383; stored exp = e + 16383.
+    # Stored significand = round((frac / 2^e - 1) * 2^112), 112 bits.
+
+    EXP_BIAS = 16383
+    SIG_BITS = 112   # stored significand bits
+    EXP_MAX = 0x7FFE  # max normal biased exponent (0x7FFF is inf/nan)
+    EXP_MIN_NORMAL = 1  # minimum normal biased exponent (unbiased = 1 - 16383 = -16382)
+
+    # Find unbiased exponent.
+    # We need floor(log2(frac)).  Use integer bit_length on numerator/denominator.
+    num = frac.numerator
+    den = frac.denominator
+    # frac = num/den.  floor(log2(num/den)) = bit_length(num) - bit_length(den) - correction.
+    e = (num).bit_length() - (den).bit_length()
+    # Adjust: 2^e <= frac/2^e could be slightly off by 1.
+    pow2_e = Fraction(2) ** e
+    if frac < pow2_e:
+        e -= 1
+        pow2_e = pow2_e / 2
+    elif frac >= pow2_e * 2:
+        e += 1
+        pow2_e = pow2_e * 2
+
+    biased_exp = e + EXP_BIAS
+
+    if biased_exp > EXP_MAX:
+        # Overflow to infinity.
+        hi = (sign << 63) | (0x7FFF << 48)
+        return (0, hi)
+
+    if biased_exp <= 0:
+        # Subnormal or underflow-to-zero.
+        # Subnormal: biased_exp == 0, significand has no implicit leading 1.
+        # Shift: stored = round(frac * 2^(SIG_BITS - 1 + EXP_BIAS - 1))
+        # i.e., round(frac / 2^(1 - EXP_BIAS - SIG_BITS))
+        # = round(frac * 2^(EXP_BIAS + SIG_BITS - 1))
+        shift = EXP_BIAS + SIG_BITS - 1  # = 16383 + 112 - 1 = 16494
+        # Multiply frac by 2^shift (exact).
+        scaled = frac * Fraction(2) ** shift
+        # Round-to-nearest-even.
+        sig = _round_half_even(scaled)
+        if sig == 0:
+            return (0, sign << 63)
+        # sig must fit in 112 bits; if it overflowed to 2^112, clamp to max subnormal.
+        sig = min(sig, (1 << SIG_BITS) - 1)
+        lo = sig & 0xFFFFFFFFFFFFFFFF
+        hi = (sign << 63) | ((sig >> 64) & 0xFFFF_FFFF_FFFF)
+        return (lo, hi)
+
+    # Normal value.
+    # significand fraction = frac / 2^e; subtract 1 for the implicit leading bit.
+    sig_frac = frac / pow2_e - 1  # in [0, 1)
+    # Stored significand: round(sig_frac * 2^SIG_BITS) with 112 bits.
+    scaled_sig = sig_frac * Fraction(2) ** SIG_BITS
+    sig = _round_half_even(scaled_sig)
+
+    # If rounding carried into bit 112, increment exponent.
+    if sig == (1 << SIG_BITS):
+        sig = 0
+        biased_exp += 1
+        if biased_exp > EXP_MAX:
+            # Overflow to infinity after rounding.
+            hi = (sign << 63) | (0x7FFF << 48)
+            return (0, hi)
+
+    # Pack: lo = sig[63:0], hi = sign|exp<<48|sig[111:64]
+    lo = sig & 0xFFFFFFFFFFFFFFFF
+    hi = (sign << 63) | (biased_exp << 48) | ((sig >> 64) & 0xFFFF_FFFF_FFFF)
+    return (lo, hi)
+
+
+def _round_half_even(x: Fraction) -> int:
+    """Round x to the nearest integer, with ties going to even (round-half-even)."""
+    floor_x = int(x)
+    frac_part = x - floor_x
+    half = Fraction(1, 2)
+    if frac_part < half:
+        return floor_x
+    if frac_part > half:
+        return floor_x + 1
+    # Exactly halfway: round to even.
+    if floor_x % 2 == 0:
+        return floor_x
+    return floor_x + 1
 
 from fir.ir_module import FIRFunction, FIRModule, TypeDef
 from fir.ir_node import (
@@ -75,6 +221,7 @@ from flir.ir import (
     Call,
     GlobalLoad,
     ConstBool,
+    ConstF128,
     ConstFloat,
     ConstInt,
     ConstNull,
@@ -82,6 +229,8 @@ from flir.ir import (
     Cvt,
     F32,
     F64,
+    F128,
+    F128_STRUCT_NAME,
     FInst,
     FLIRBlock,
     FLIRFunction,
@@ -112,6 +261,7 @@ from flir.ir import (
     U64,
     Unreachable,
     VOID,
+    ensure_f128_struct,
     ptr_to,
     struct_type,
 )
@@ -127,7 +277,7 @@ _SCALARS: dict[str, FLIRType] = {
     "uint64": U64,
     "float32": F32,
     "float64": F64,
-    "float128": F64,  # alias of float64
+    "float128": F128,  # true 16-byte IEEE binary128 (by-value struct)
     "bool": BOOL,
     "char": I8,
     "void": VOID,
@@ -234,12 +384,19 @@ class FIRToFLIRLowering:
             return type_map[type_str]
         return type_str
 
+    def _ensure_f128(self) -> FLIRType:
+        """Ensure the __f128 builtin struct exists in the FLIR module and return its type."""
+        ensure_f128_struct(self.flir)
+        return F128
+
     def lower_type(self, t: FIRType, type_map: dict[str, str]) -> FLIRType:
         if isinstance(t, SimpleType):
             name = self.subst(t.name, type_map)
             if name.endswith("[]"):
                 return PTR
             if name in _SCALARS:
+                if name == "float128":
+                    return self._ensure_f128()
                 return _SCALARS[name]
             if name == "string":
                 return ptr_to("i8")
@@ -289,6 +446,8 @@ class FIRToFLIRLowering:
         if type_str.endswith("[]"):
             return PTR
         if type_str in _SCALARS:
+            if type_str == "float128":
+                return self._ensure_f128()
             return _SCALARS[type_str]
         if type_str == "string":
             return ptr_to("i8")
@@ -539,7 +698,12 @@ class FIRToFLIRLowering:
             self.set_val(inst, ctx.emit(ConstInt(inst.text, self.lower_type(inst.result_type, ctx.type_map))), ctx)
             return
         if isinstance(inst, FloatLiteralInst):
-            self.set_val(inst, ctx.emit(ConstFloat(inst.text, self.lower_type(inst.result_type, ctx.type_map))), ctx)
+            lowered_type = self.lower_type(inst.result_type, ctx.type_map)
+            if lowered_type == F128:
+                lo, hi = _decimal_to_f128_bits(inst.text)
+                self.set_val(inst, ctx.emit(ConstF128(lo, hi, lowered_type)), ctx)
+            else:
+                self.set_val(inst, ctx.emit(ConstFloat(inst.text, lowered_type)), ctx)
             return
         if isinstance(inst, BoolLiteralInst):
             self.set_val(inst, ctx.emit(ConstBool(inst.value)), ctx)
@@ -715,6 +879,26 @@ class FIRToFLIRLowering:
         if operand_type.kind == "ptr":
             operand_type = PTR  # pointer compares (null checks)
 
+        # float128 arithmetic and comparisons are routed to soft-float runtime.
+        if operand_type == F128:
+            f128_rt = {
+                "==": "fs_rt_f128_eq",
+                "!=": "fs_rt_f128_ne",
+                "<":  "fs_rt_f128_lt",
+                "<=": "fs_rt_f128_le",
+                ">":  "fs_rt_f128_gt",
+                ">=": "fs_rt_f128_ge",
+                "+":  "fs_rt_f128_add",
+                "-":  "fs_rt_f128_sub",
+                "*":  "fs_rt_f128_mul",
+                "/":  "fs_rt_f128_div",
+            }.get(op)
+            if f128_rt is None:
+                raise LoweringError(f"unsupported float128 operator {op}")
+            ret_type = BOOL if op in _CMP_OPS else F128
+            self.set_val(inst, self.rt_call(f128_rt, [lhs, rhs], ret_type, ctx), ctx)
+            return
+
         if op in _CMP_OPS:
             self.set_val(inst, ctx.emit(BinOp(_CMP_OPS[op], operand_type, lhs, rhs, BOOL)), ctx)
             return
@@ -757,6 +941,9 @@ class FIRToFLIRLowering:
             return
         if inst.op == "-":
             result_type = self.lower_type(inst.result_type, ctx.type_map)
+            if result_type == F128:
+                self.set_val(inst, self.rt_call("fs_rt_f128_neg", [operand], F128, ctx), ctx)
+                return
             self.set_val(inst, ctx.emit(Neg(operand, result_type)), ctx)
             return
         if inst.op == "+":
@@ -788,6 +975,10 @@ class FIRToFLIRLowering:
                 parsed = self.rt_call("fs_rt_str_to_i32", [value], I32, ctx)
                 self.set_val(inst, self._cvt_to(parsed, I32, target_type, ctx), ctx)
                 return
+            if target_str == "float128":
+                result = self.rt_call("fs_rt_str_to_f128", [value], F128, ctx)
+                self.set_val(inst, result, ctx)
+                return
             if target_str in float_targets:
                 parsed = self.rt_call("fs_rt_str_to_f64", [value], F64, ctx)
                 self.set_val(inst, self._cvt_to(parsed, F64, target_type, ctx), ctx)
@@ -801,6 +992,44 @@ class FIRToFLIRLowering:
                 return
 
         source_type = self.lower_type_str(source_str, ctx.type_map)
+
+        # float128 casts: route through runtime.
+        if source_str == "float128" and target_str in int_targets:
+            if target_str in ("int64", "uint64"):
+                rt = "fs_rt_f128_to_i64" if target_str == "int64" else "fs_rt_f128_to_u64"
+                result = self.rt_call(rt, [value], I64 if target_str == "int64" else U64, ctx)
+                self.set_val(inst, result, ctx)
+            else:
+                # Narrow int: go via i64.
+                i64v = self.rt_call("fs_rt_f128_to_i64", [value], I64, ctx)
+                self.set_val(inst, self._cvt_to(i64v, I64, target_type, ctx), ctx)
+            return
+        if source_str == "float128" and target_str == "float64":
+            self.set_val(inst, self.rt_call("fs_rt_f128_to_f64", [value], F64, ctx), ctx)
+            return
+        if source_str == "float128" and target_str == "float32":
+            f64v = self.rt_call("fs_rt_f128_to_f64", [value], F64, ctx)
+            self.set_val(inst, self._cvt_to(f64v, F64, F32, ctx), ctx)
+            return
+
+        if target_str == "float128" and source_str in int_targets:
+            if source_str in ("int64", "uint64"):
+                rt = "fs_rt_i64_to_f128" if source_str == "int64" else "fs_rt_u64_to_f128"
+                result = self.rt_call(rt, [value], F128, ctx)
+                self.set_val(inst, result, ctx)
+            else:
+                # Widen to i64 first.
+                i64v = self._cvt_to(value, source_type, I64, ctx)
+                self.set_val(inst, self.rt_call("fs_rt_i64_to_f128", [i64v], F128, ctx), ctx)
+            return
+        if target_str == "float128" and source_str == "float64":
+            self.set_val(inst, self.rt_call("fs_rt_f64_to_f128", [value], F128, ctx), ctx)
+            return
+        if target_str == "float128" and source_str == "float32":
+            f64v = self._cvt_to(value, source_type, F64, ctx)
+            self.set_val(inst, self.rt_call("fs_rt_f64_to_f128", [f64v], F128, ctx), ctx)
+            return
+
         self.set_val(inst, self._cvt_to(value, source_type, target_type, ctx), ctx)
 
     def _to_string(self, value: FValue, source_str: str, source_fir: Value, ctx: _FuncCtx) -> FValue:
@@ -825,8 +1054,10 @@ class FIRToFLIRLowering:
                 return self.rt_call("fs_rt_u64_to_str", [value], ptr_to("i8"), ctx)
             case "float32":
                 return self.rt_call("fs_rt_f32_to_str", [value], ptr_to("i8"), ctx)
-            case "float64" | "float128":
+            case "float64":
                 return self.rt_call("fs_rt_f64_to_str", [value], ptr_to("i8"), ctx)
+            case "float128":
+                return self.rt_call("fs_rt_f128_to_str", [value], ptr_to("i8"), ctx)
         raise LoweringError(f"cannot convert {source_str} to string")
 
     def _array_to_string(self, array: FValue, elem_str: str, source_fir: Value, ctx: _FuncCtx) -> FValue:
@@ -1082,6 +1313,9 @@ class FIRToFLIRLowering:
         if lowered_type.is_float():
             return ctx.emit(ConstFloat("0", lowered_type))
         if lowered_type.kind == "struct":
+            if lowered_type.struct_name == F128_STRUCT_NAME:
+                # float128 zero: both halves are zero.
+                return ctx.emit(ConstF128(0, 0, lowered_type))
             return None  # left unset; Allocate handles zeroing
         if lowered_type.kind == "void":
             return None
@@ -1256,6 +1490,40 @@ class FIRToFLIRLowering:
             # Bit-pattern reinterpretation; primitive (C: union punning,
             # asm: movq xmm -> gpr).
             self.set_val(inst, ctx.emit(Call("fs_rt_f64_bits", [args[0]], U64)), ctx)
+            return True
+        if name == "f128_lo":
+            # f128_lo(x: float128) -> uint64: load LO qword (bytes 0..7).
+            # x is passed by pointer (struct); load offset 0 as u64.
+            ensure_f128_struct(self.flir)
+            x = args[0]  # struct value (f128)
+            # Spill to a temp slot, take its address, load offset 0.
+            spill = ctx.temp("f128lo")
+            self.ensure_slot(spill, F128, ctx)
+            ctx.emit(SlotStore(spill, x))
+            base = ctx.emit(SlotAddr(spill, F128_STRUCT_NAME))
+            self.set_val(inst, ctx.emit(Load(U64, base, 0)), ctx)
+            return True
+        if name == "f128_hi":
+            # f128_hi(x: float128) -> uint64: load HI qword (bytes 8..15).
+            ensure_f128_struct(self.flir)
+            x = args[0]
+            spill = ctx.temp("f128hi")
+            self.ensure_slot(spill, F128, ctx)
+            ctx.emit(SlotStore(spill, x))
+            base = ctx.emit(SlotAddr(spill, F128_STRUCT_NAME))
+            self.set_val(inst, ctx.emit(Load(U64, base, 8)), ctx)
+            return True
+        if name == "f128_from_halves":
+            # f128_from_halves(lo: uint64, hi: uint64) -> float128.
+            ensure_f128_struct(self.flir)
+            lo_val = args[0]
+            hi_val = args[1]
+            spill = ctx.temp("f128fh")
+            self.ensure_slot(spill, F128, ctx)
+            base = ctx.emit(SlotAddr(spill, F128_STRUCT_NAME))
+            ctx.emit(Store(U64, base, 0, lo_val))
+            ctx.emit(Store(U64, base, 8, hi_val))
+            self.set_val(inst, ctx.emit(SlotLoad(spill, F128)), ctx)
             return True
         if name == "str_to_addr":
             self.set_val(inst, ctx.emit(Cvt(args[0], ptr_to("i8"), U64)), ctx)

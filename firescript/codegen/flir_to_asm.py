@@ -31,11 +31,13 @@ from flir.ir import (
     Br,
     Call,
     ConstBool,
+    ConstF128,
     ConstFloat,
     ConstInt,
     ConstNull,
     ConstStr,
     Cvt,
+    F128_STRUCT_NAME,
     FLIRFunction,
     FLIRModule,
     FLIRType,
@@ -87,8 +89,24 @@ class FLIRToAsmBackend:
         self.out: list[str] = []
         self.rodata: list[str] = []
         self.str_labels: dict[str, str] = {}
+        self.f128_labels: dict[tuple[int, int], str] = {}  # (lo, hi) -> label
         self.label_counter = 0
         self.cc = Win64Convention()
+
+    def _f128_label(self, lo_bits: int, hi_bits: int) -> str:
+        """Emit a 16-byte float128 constant to .rdata and return its label."""
+        key = (lo_bits, hi_bits)
+        if key in self.f128_labels:
+            return self.f128_labels[key]
+        label = f".Lf128_{len(self.f128_labels)}"
+        self.f128_labels[key] = label
+        # Align to 16 bytes (assembler ignores .align but it's correct for as).
+        self.rodata.append(f"    .align 16")
+        self.rodata.append(f"{label}:")
+        # Little-endian layout: lo qword first (bytes 0..7), hi qword second (bytes 8..15).
+        self.rodata.append(f"    .quad {lo_bits}")
+        self.rodata.append(f"    .quad {hi_bits}")
+        return label
 
     # ------------------------------------------------------------------
 
@@ -172,6 +190,14 @@ class FLIRToAsmBackend:
         for name, gtype, literal in self.module.globals:
             label = f"fsg_{name}"
             self.rodata.append(f"{label}:")
+            # float128 global constant: emit two quads from the parsed literal.
+            if gtype.kind == "struct" and gtype.struct_name == F128_STRUCT_NAME:
+                from flir.lowering import _decimal_to_f128_bits
+                lo, hi = _decimal_to_f128_bits(literal)
+                self.rodata.append(f"    .align 16")
+                self.rodata.append(f"    .quad {lo}")
+                self.rodata.append(f"    .quad {hi}")
+                continue
             # Globals are loaded as full qwords; store f32 bits in the low half.
             if gtype.kind == "f32":
                 bits32 = _struct.unpack("<I", _struct.pack("<f", float(literal)))[0]
@@ -433,6 +459,15 @@ class FLIRToAsmBackend:
             off = ctx.value_offsets[id(inst)]
             out.append(f"    mov rax, {bits}")
             out.append(f"    mov qword ptr [rbp{off:+d}], rax")
+            return
+
+        if isinstance(inst, ConstF128):
+            # Load 16-byte float128 constant from .rdata into the struct slot.
+            label = self._f128_label(inst.lo_bits, inst.hi_bits)
+            off = ctx.value_offsets[id(inst)]
+            out.append(f"    lea r10, [rip + {label}]")
+            out.append(f"    lea r11, [rbp{off:+d}]")
+            self._emit_copy_regs(16)
             return
 
         if isinstance(inst, ConstBool):

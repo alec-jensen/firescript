@@ -189,6 +189,7 @@ The golden runner also verifies every compiled binary imports only `kernel32.dll
 
 #### Special Types
 - **float128_test.fire** - 128-bit float testing
+- **float128_ops.fire** - binary128 soft-float: arithmetic (`+ - * /`, unary `-`), comparisons, and conversions (int, float64, string parse)
 
 #### Utility Modules (not standalone tests)
 - **utils.fire** - Utility functions for other tests

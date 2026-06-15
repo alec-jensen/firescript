@@ -8,6 +8,11 @@ extern @WriteFile(u64, u64, u32, u64, u64) -> i32 from "kernel32.dll"
 
 global mut __fs_runtime_state: u64 = 0
 
+struct __f128 { size: 16, align: 16, kind: builtin
+  lo: u64 @ 0
+  hi: u64 @ 8
+}
+
 func @fs_main() -> void {
   L0:
     %0 = strconst "-- numeric casts --"
@@ -72,10 +77,11 @@ func @fs_main() -> void {
     %29 = slotload.f64 f64
     call.void @println__float64(%29)
     %30 = fconst.f64 3.25
-    slot f128: f64
-    slotstore f128, %30
-    %31 = slotload.f64 f128
-    call.void @println__float128(%31)
+    %31 = call.%__f128 @impl_fs_rt_f64_to_f128(%30)
+    slot f128: %__f128
+    slotstore f128, %31
+    %32 = slotload.%__f128 f128
+    call.void @println__float128(%32)
     ret
 }
 
@@ -193,10 +199,16 @@ func @println__float64(value: f64) -> void {
     ret
 }
 
-func @println__float128(value: f64) -> void {
+func @impl_fs_rt_f64_to_f128(x: f64) -> %__f128 {
   L0:
-    %0 = slotload.f64 value
-    %1 = call.ptr<i8> @impl_fs_rt_f64_to_str(%0)
+    %0 = f128const 0x0000000000000000:0000000000000000
+    ret %0
+}
+
+func @println__float128(value: %__f128) -> void {
+  L0:
+    %0 = slotload.%__f128 value
+    %1 = call.ptr<i8> @impl_fs_rt_f128_to_str(%0)
     %2 = strconst "\n"
     %3 = call.ptr<i8> @impl_fs_rt_str_concat(%1, %2)
     call.void @impl_fs_rt_stdout(%3)
@@ -717,6 +729,19 @@ func @impl_fs_rt_f64_to_str(value: f64) -> ptr<i8> {
     %159 = load.u8 %158, 0
     slotstore d, %159
     jmp L24
+}
+
+func @impl_fs_rt_f128_to_str(x: %__f128) -> ptr<i8> {
+  L0:
+    %0 = slotload.%__f128 x
+    slot __f128hi1: %__f128
+    slotstore __f128hi1, %0
+    %1 = slotaddr __f128hi1
+    %2 = load.u64 %1, 8
+    slot hi: u64
+    slotstore hi, %2
+    %3 = strconst "<f128>"
+    ret %3
 }
 
 func @rt_str_len_addr(addr: u64) -> u64 {

@@ -34,6 +34,9 @@ _SCALAR_SIZES = {
     "void": 0,
 }
 
+# Name of the builtin 16-byte struct that represents a float128 value.
+F128_STRUCT_NAME = "__f128"
+
 
 class FLIRType:
     """A FLIR value type: scalar, pointer, or by-value struct."""
@@ -96,6 +99,8 @@ F64 = FLIRType("f64")
 BOOL = FLIRType("bool")
 PTR = FLIRType("ptr")
 VOID = FLIRType("void")
+# float128 lives as a 16-byte by-value struct in FLIR.
+F128 = FLIRType("struct", struct_name=F128_STRUCT_NAME)
 
 
 def ptr_to(pointee: str) -> FLIRType:
@@ -104,6 +109,18 @@ def ptr_to(pointee: str) -> FLIRType:
 
 def struct_type(name: str) -> FLIRType:
     return FLIRType("struct", struct_name=name)
+
+
+def ensure_f128_struct(module: "FLIRModule") -> None:
+    """Ensure the __f128 struct (16-byte, align 16) exists in the module."""
+    if module.has_struct(F128_STRUCT_NAME):
+        return
+    s = FLIRStruct(F128_STRUCT_NAME, kind="builtin")
+    module.add_struct(s)
+    # Two uint64 fields: lo (bytes 0..7) and hi (bytes 8..15).
+    s.fields = [("lo", U64, 0), ("hi", U64, 8)]
+    s.size = 16
+    s.align = 16
 
 
 def align_up(value: int, alignment: int) -> int:
@@ -203,6 +220,22 @@ class ConstFloat(FInst):
 
     def format(self, resolve: Resolver) -> str:
         return f"fconst.{self.result_type.kind} {self.text}"
+
+
+class ConstF128(FInst):
+    """A float128 literal: stores the 16 raw bytes (lo_bits: int, hi_bits: int)
+    where lo_bits = LO qword (bytes 0..7) and hi_bits = HI qword (bytes 8..15),
+    both as unsigned 64-bit integers matching the IEEE binary128 representation."""
+
+    opcode = "f128const"
+
+    def __init__(self, lo_bits: int, hi_bits: int, struct_type_val: "FLIRType"):
+        super().__init__(result_type=struct_type_val)
+        self.lo_bits = lo_bits  # unsigned 64-bit LO qword
+        self.hi_bits = hi_bits  # unsigned 64-bit HI qword
+
+    def format(self, resolve: Resolver) -> str:
+        return f"f128const 0x{self.lo_bits:016x}:{self.hi_bits:016x}"
 
 
 class ConstBool(FInst):

@@ -68,6 +68,9 @@ INTRINSIC_FUNCTIONS = frozenset(
         "f32_to_str",
         # Low-level runtime primitives (enable_lowlevel_runtime)
         "f64_bits",
+        "f128_lo",
+        "f128_hi",
+        "f128_from_halves",
         "mem_load_u8",
         "mem_store_u8",
         "mem_load_u64",
@@ -127,6 +130,9 @@ INTRINSIC_RETURN_TYPES: dict[str, str] = {
     "f64_to_str": "string",
     "f32_to_str": "string",
     "f64_bits": "uint64",
+    "f128_lo": "uint64",
+    "f128_hi": "uint64",
+    "f128_from_halves": "float128",
     "mem_load_u8": "uint8",
     "mem_store_u8": "void",
     "mem_load_u64": "uint64",
@@ -167,7 +173,8 @@ COMPOUND_OP_MAP = {
 # is rejected). The `.length()` method etc. do not route through here.
 _LOWLEVEL_RUNTIME_INTRINSICS = frozenset(
     {
-        "f64_bits", "mem_load_u8", "mem_store_u8", "mem_load_u64", "mem_store_u64",
+        "f64_bits", "f128_lo", "f128_hi", "f128_from_halves",
+        "mem_load_u8", "mem_store_u8", "mem_load_u64", "mem_store_u64",
         "mem_copy", "str_to_addr", "addr_to_str", "runtime_state_get", "runtime_state_set",
         "win_get_process_heap", "win_heap_alloc", "win_heap_free", "win_get_std_handle",
         "win_write_file", "win_read_file", "win_create_file_a", "win_close_handle",

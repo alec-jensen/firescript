@@ -24,11 +24,14 @@ from flir.ir import (
     U64,
     F32,
     F64,
+    F128,
     BOOL,
     PTR,
     VOID,
     ptr_to,
     struct_type,
+    ensure_f128_struct,
+    F128_STRUCT_NAME,
 )
 from flir.textual import dump_flir_module
 from flir.lowering import FIRToFLIRLowering
