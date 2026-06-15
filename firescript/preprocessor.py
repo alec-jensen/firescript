@@ -362,7 +362,11 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
 
         # Call sites: apply move semantics to arguments of owned types
         if node.node_type == NodeTypes.FUNCTION_CALL:
+            # A bare `ClassName(args)` may be parsed as a function call; fall back
+            # to the constructor signature so owned arguments are still moved.
             flags = func_sigs.get(node.name)
+            if flags is None:
+                flags = ctor_sigs.get(node.name)
             new_children = [process_node(c) if c is not None else None for c in node.children]
             node.children = new_children
             _apply_move_semantics(new_children, flags)
