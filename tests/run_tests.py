@@ -3,12 +3,14 @@
 Unified test runner for firescript.
 
 Runs golden tests and error tests from a single entrypoint.
+Always measures and reports compiler coverage after tests finish.
 """
 from __future__ import annotations
 
 import argparse
 import os
 import sys
+import glob
 from typing import List
 
 
@@ -19,8 +21,48 @@ TESTS_DIR = os.path.join(REPO_ROOT, "tests")
 if TESTS_DIR not in sys.path:
     sys.path.insert(0, TESTS_DIR)
 
-from golden_runner import DEFAULT_SEARCH, discover_cases, run_golden  # noqa: E402
-from error_runner import discover_error_tests, run_error_tests  # noqa: E402
+COVERAGERC = os.path.join(REPO_ROOT, ".coveragerc")
+
+
+def _coverage_available() -> bool:
+    try:
+        import coverage  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
+def _start_coverage():
+    """Start in-process coverage and set env var for compiler subprocesses."""
+    if not _coverage_available():
+        return None
+    import coverage as coverage_mod
+    # Clean up stale parallel data files from previous runs
+    for f in glob.glob(os.path.join(REPO_ROOT, ".coverage.*")):
+        try:
+            os.remove(f)
+        except OSError:
+            pass
+    os.environ["COVERAGE_PROCESS_START"] = COVERAGERC
+    cov = coverage_mod.Coverage(config_file=COVERAGERC)
+    cov.start()
+    return cov
+
+
+def _finish_coverage(cov, uncovered_only: bool) -> None:
+    if cov is None:
+        print("\n(coverage not available — install 'coverage' for coverage reporting)")
+        return
+    cov.stop()
+    cov.save()
+    cov.combine(keep=False)
+    print()
+    cov.report(
+        include=["firescript/*"],
+        omit=["firescript/lsp_server.py", "firescript/lsp/*"],
+        show_missing=uncovered_only,
+        skip_covered=uncovered_only,
+    )
 
 
 def _supports_color() -> bool:
@@ -57,11 +99,17 @@ def main() -> int:
     )
     parser.add_argument("--timeout", type=float, default=20.0, help="Golden runner per-test runtime timeout in seconds")
     parser.add_argument("--compile-timeout", type=float, default=120.0, help="Golden runner compile timeout in seconds")
+    parser.add_argument("--uncovered", action="store_true", help="Show only uncovered lines in the coverage report")
     args = parser.parse_args()
 
     if args.golden_only and args.error_only:
         print("Cannot use --golden-only and --error-only together.")
         return 2
+
+    cov = _start_coverage()
+
+    from golden_runner import DEFAULT_SEARCH, discover_cases, run_golden  # noqa: E402
+    from error_runner import discover_error_tests, run_error_tests  # noqa: E402
 
     should_run_golden = not args.error_only
     should_run_error = not args.golden_only
@@ -137,10 +185,13 @@ def main() -> int:
 
     if overall_failures == 0:
         print(_colorize("\nUnified summary: all selected suites passed.", "32"))
-        return 0
+    else:
+        print(_colorize("\nUnified summary: one or more suites failed.", "31"))
 
-    print(_colorize("\nUnified summary: one or more suites failed.", "31"))
-    return 1
+    print(_colorize("\n== Coverage ==", "36"))
+    _finish_coverage(cov, uncovered_only=args.uncovered)
+
+    return 0 if overall_failures == 0 else 1
 
 
 if __name__ == "__main__":

@@ -1,0 +1,25 @@
+import @firescript/std.io.println;
+
+// Basic char literal
+char a = 'A';
+println(a as string);
+
+// Escape char literals
+char tab = '\t';
+char newline = '\n';
+char backslash = '\\';
+println("t:" + tab as string + "|");
+println("n:" + newline as string + "|");
+println("bs:" + backslash as string + "|");
+
+// Char is copyable
+char b = a;
+println(b as string);
+
+// Digit char
+char zero = '0';
+char nine = '9';
+println(zero as string);
+println(nine as string);
+
+return 0;

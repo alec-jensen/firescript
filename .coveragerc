@@ -1,0 +1,11 @@
+[run]
+source = firescript
+parallel = true
+omit =
+    firescript/lsp_server.py
+    firescript/lsp/*
+    firescript/__pycache__/*
+
+[report]
+show_missing = false
+skip_covered = false

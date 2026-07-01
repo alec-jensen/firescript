@@ -1,0 +1,13 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.is_match;
+
+// Direct anchor tests
+println(is_match("^abc", "abc"));
+println(is_match("abc$", "abc"));
+println(is_match("^abc$", "abc"));
+
+// Simple pattern without anchors
+println(is_match("abc", "abc"));
+
+// Test to ensure validation works
+println(is_match("[ab", "ab"));  // Should be false due to validation error

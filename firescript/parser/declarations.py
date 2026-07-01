@@ -164,13 +164,13 @@ class DeclarationsMixin(TypeSystemMixin):
                 if self.current_token and self.current_token.type == "OWNED":
                     p_is_owned = True
                     self.advance()
-                
+
                 # Check for '&' borrow marker
                 p_is_borrowed = False
                 if self.current_token and self.current_token.type == "AMPERSAND":
                     p_is_borrowed = True
                     self.advance()
-                
+
                 # Allow both built-in types and user-defined class types
                 if not (self.current_token and (self._is_type_token(self.current_token) or (
                     self.current_token.type == "IDENTIFIER" and self.current_token.value in self.user_types
@@ -218,6 +218,8 @@ class DeclarationsMixin(TypeSystemMixin):
                 )
                 # Mark parameter as borrowed
                 setattr(param_node, "is_borrowed", p_is_borrowed)
+                if p_is_owned:
+                    setattr(param_node, "is_owned", True)
                 params.append(param_node)
                 if self.current_token and self.current_token.type == "COMMA":
                     self.advance()

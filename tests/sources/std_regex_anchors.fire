@@ -1,0 +1,25 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.find_at;
+import @firescript/std.regex.is_match;
+
+// Test find_at with position-aware matching
+println(find_at("abc", "abc", 0));        // 3: full match at position 0
+println(find_at("abc", "xabc", 1));       // 3: match at position 1
+println(find_at("abc", "xabc", 0));       // -1: no match at position 0
+
+// Test anchors
+println(is_match("^abc", "abc"));         // true: starts with abc
+println(is_match("^abc", "xabc"));        // false: doesn't start with abc
+println(is_match("abc$", "abc"));         // true: ends with abc
+println(is_match("abc$", "abcx"));        // false: doesn't end with abc
+println(is_match("^abc$", "abc"));        // true: exactly abc
+println(is_match("^abc$", "xabcx"));      // false: not exactly abc
+
+// Test alternation with find_at (for lexer-style matching)
+println(find_at("if|else|while", "if x", 0));     // 2: matches "if"
+println(find_at("if|else|while", "else x", 0));   // 4: matches "else"
+println(find_at("if|else|while", "while x", 0));  // 5: matches "while"
+println(find_at("if|else|while", "for x", 0));    // -1: no match
+
+// Test find_at doesn't match beyond what's available
+println(find_at("abc", "ab", 0));        // -1: text too short

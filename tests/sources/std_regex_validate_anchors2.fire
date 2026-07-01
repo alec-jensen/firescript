@@ -1,0 +1,19 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.last_error;
+
+// Check validation of patterns with anchors
+string e1 = last_error("^abc");
+println("Error 1:");
+println(e1);
+
+string e2 = last_error("abc$");
+println("Error 2:");
+println(e2);
+
+string e3 = last_error("^abc$");
+println("Error 3:");
+println(e3);
+
+string e4 = last_error("abc");
+println("Error 4:");
+println(e4);

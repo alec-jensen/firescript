@@ -1,0 +1,13 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.find_at;
+
+// Test find_at with ^ anchor
+println(find_at("^abc", "abc", 0));       // Should be 3
+println(find_at("^abc", "abc", 1));       // Should be -1 (anchor only at start)
+
+// Test find_at with $ anchor
+println(find_at("abc$", "abc", 0));       // Should be 3
+println(find_at("abc$", "ab", 0));        // Should be -1 (doesn't reach end)
+
+// Test without anchors
+println(find_at("ab", "cab", 1));         // Should be 2

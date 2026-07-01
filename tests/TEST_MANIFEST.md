@@ -97,21 +97,19 @@ The golden runner also verifies every compiled binary imports only `kernel32.dll
 - **types_numeric_comprehensive.fire** - All numeric types (int8/16/32/64, uint8/16/32/64, float32/64/128), min/max values, overflow behavior
 - **types_tests.fire** - Basic type operations and comparisons
 - **types_deep.fire** - Deep type testing
+- **char_type.fire** - `char` type: literals (`'A'`, escape chars `'\t'` `'\n'` `'\\'`), copyability, cast to string
 
 #### Type Conversions
 - **conversions_comprehensive.fire** - Explicit casting with 'as' keyword, int-to-int, int-to-float, float-to-int, signed/unsigned conversions
 - **numeric_casts.fire** - Numeric type casting
-- **simple_cast_test.fire** - Simple casting examples
 - **string_cast_test.fire** - String casting operations
 
 #### Strings
 - **string_operations_comprehensive.fire** - String declaration, concatenation, comparison, length, special characters, unicode
-- **test_string_heap.fire** - String heap allocation testing
 
 #### Arrays
 - **array_operations_comprehensive.fire** - Array declaration, indexing, length, iteration, multi-dimensional arrays, array functions
 - **array_tests.fire** - Basic array operations
-- **test_array_string.fire** - Array of strings
 
 #### Functions
 - **functions_comprehensive.fire** - Function declaration, parameters, return values, recursion, array parameters/returns, void functions, early returns
@@ -141,16 +139,9 @@ The golden runner also verifies every compiled binary imports only `kernel32.dll
 - **memory_scopes.fire** - Memory in different scopes
 - **ownership_demo.fire** - Ownership model demonstration
 - **ownership_test.fire** - Ownership testing
-- **ownership_simple.fire** - Simple ownership examples
 - **move_semantics_test.fire** - Move semantics
 - **borrow_test.fire** - Borrowing tests
-- **test_borrow_to_owned.fire** - Borrow to owned conversions
 - **copyable_test.fire** - Copyable type testing
-- **use_after_move_test.fire** - Use after move error testing
-
-#### Heap Management
-- **test_heap_comprehensive.fire** - Comprehensive heap testing
-- **test_heap_verify.fire** - Heap verification
 
 #### Classes and OOP
 - **classes_smoke.fire** - Basic class smoke tests
@@ -167,7 +158,6 @@ The golden runner also verifies every compiled binary imports only `kernel32.dll
 - **generics_clamp.fire** - Generic clamp function
 - **generics_constraint.fire** - Type constraints on generics
 - **generics_swap.fire** - Generic swap function
-- **generics_no_comments.fire** - Generics without comments
 - **constraint_alias_test.fire** - Constraint aliases
 - **nested_constraint_test.fire** - Nested constraints
 - **math_with_constraints.fire** - Math operations with constraints
@@ -180,10 +170,6 @@ The golden runner also verifies every compiled binary imports only `kernel32.dll
 
 #### Built-in Functions
 - **io_test.fire** - Input/output functions
-
-#### Compiler Features
-- **directive_enabled_test.fire** - Compiler directives when enabled
-- **directive_isolation_test.fire** - Directive isolation
 
 #### Performance Tests
 - **fibonacci.fire** - Recursive fibonacci (also used for benchmarking)

@@ -1,0 +1,11 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.last_error;
+
+// Check validation of patterns with anchors
+println(last_error("^abc"));    // Should be ""
+println(last_error("abc$"));    // Should be ""
+println(last_error("^abc$"));   // Should be ""
+println(last_error("^"));       // Should be "" (just anchor) or error
+
+// Control: pattern without anchors
+println(last_error("abc"));     // Should be ""
