@@ -18,7 +18,7 @@ The bootstrap path has three phases:
 
 ---
 
-## 0.5.0 — Kirin (Current, in development)
+## 0.5.0 — Kirin (Current)
 
 *FIR + FLIR pipeline, self-hosted native toolchain, runtime in firescript, generators, char,
 `&mut this`, module exports, generic classes, stdlib expansion, true float128.*
@@ -44,12 +44,12 @@ The bootstrap path has three phases:
 - Sized array declarations with optional initializers, negative indexing, utility methods
 - LSP server, VS Code extension
 - Unified structured diagnostics
+- **True `float128` (IEEE binary128)** — 16-byte soft-float over `uint64` pairs;
+  correctly-rounded literal parsing, full arithmetic/comparison/conversion set
 
 ### Remaining for Kirin
 
-| Item | Status |
-|---|---|
-| **True `float128` (IEEE binary128)** | 16-byte soft-float over `uint64` pairs; correctly-rounded literal parsing, exact decimal formatting, full arithmetic/comparison/conversion set. Pending implementation. |
+Nothing — all planned Kirin items are complete.
 
 ---
 

@@ -10,9 +10,9 @@ from log_formatter import LogFormatter
 from compiler_pipeline import CompilerPipeline
 from errors import CompileTimeError
 
-FIRESCRIPT_VERSION = "0.4.0"
-FIRESCRIPT_RELEASE_DATE = "February 2, 2026"
-FIRESCRIPT_RELEASE_NAME = "Phoenix"
+FIRESCRIPT_VERSION = "0.5.0"
+FIRESCRIPT_RELEASE_DATE = "July 2, 2026"
+FIRESCRIPT_RELEASE_NAME = "Kirin"
 
 
 def _normalize_cli_path(path_value: str) -> str:

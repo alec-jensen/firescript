@@ -1,0 +1,31 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.is_match;
+
+// Regression: is_match previously hard-coded results for the exact patterns
+// "ab?c", "(ab)+c", and "[a-c]+" instead of relying on the generic matcher.
+// These near-miss patterns exercise the same quantifier, group, and
+// character-class logic through the generic matching path.
+
+// optional atom
+println(is_match("xy?z", "xz"));
+println(is_match("xy?z", "xyz"));
+println(is_match("xy?z", "xyyz"));
+println(is_match("xy?z", "xy"));
+
+// one-or-more group
+println(is_match("(cd)+e", "cde"));
+println(is_match("(cd)+e", "cdcde"));
+println(is_match("(cd)+e", "ce"));
+println(is_match("(cd)+e", "cdcd"));
+println(is_match("(cd)+e", "cdce"));
+
+// one-or-more character class range
+println(is_match("[b-d]+", "bcd"));
+println(is_match("[b-d]+", "dcbbcd"));
+println(is_match("[b-d]+", "bcad"));
+println(is_match("[b-d]+", ""));
+
+// zero-or-more with trailing literal
+println(is_match("x*z", "z"));
+println(is_match("x*z", "xxxz"));
+println(is_match("x*z", "xxy"));

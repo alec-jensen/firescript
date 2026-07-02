@@ -2,8 +2,8 @@
 
 firescript follows [Semantic Versioning](https://semver.org/). This makes it easier to understand the impact of changes in each release.
 
-## 0.5.0 - Kirin (Currently in Development)
-*June 2026*
+## 0.5.0 - Kirin
+*July 2, 2026*
 
 ### New Language Features
 - Added generator functions with `generator<T>` syntax: lazy iterables that produce values on demand via `yield`. Generators compile to state-machine structs with resumable next-functions. User-defined generators and `for-in` loops over generators are both supported.
@@ -17,7 +17,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - Added generic classes with multiple type parameters (e.g., `class Pair<T, U> { ... }`). Monomorphization is performed automatically at each use site.
 - `Tuple<T, U>`, `CopyableTuple<T, U>`, `Option<T>`, and `CopyableOption<T>` are now provided by the standard library (`@firescript/std.types`).
 - Added `@firescript/std.fs` with class-based file I/O centered on `File` objects and `FileResult` values, including `File` methods (`read`, `readBytes`, `writeAll`, `appendAll`, `exists`, `remove`, `renameTo`, `moveTo`) and result helpers (`ok`, `err_code`, `result_status`, `result_data`).
-- Added `@firescript/std.regex` for full-string regular-expression matching with `is_match(pattern, text)`, `match(pattern, text)`, and `last_error(pattern)`. Current syntax supports literals, escapes, `.`, grouping `(...)`, alternation `|`, quantifiers `* + ?`, and character classes (`[...]`, `[^...]`, basic ranges like `[a-z]`).
+- Added `@firescript/std.regex` for regular-expression matching with `is_match(pattern, text)`, `match(pattern, text)`, `find_at(pattern, text, start_pos)`, and `last_error(pattern)`. The module also exports the `RegexPattern` class for constructing a pattern once and matching it repeatedly. Current syntax supports literals, escapes, `.`, anchors (`^`, `$`), grouping `(...)`, alternation `|`, quantifiers `* + ?`, and character classes (`[...]`, `[^...]`, basic ranges like `[a-z]`). `find_at` performs position-aware matching, returning the length of the match starting at `start_pos`, or `-1` if there is no match.
 - Added `syscall_*` intrinsics (`syscall_open`, `syscall_read`, `syscall_write`, `syscall_close`, `syscall_remove`, `syscall_rename`, `syscall_move`) behind `directive enable_syscalls`. For standard library use only.
 - Expanded `@firescript/std.cli.args` parsing helpers to support grouped short flags (for example `-abc`), `--name=value` / `-n=value` option forms, `--` terminator handling, and parsed positional value lookup.
 - Added support for logical operators `&&`, `||`, and unary `!` in expressions and conditions.
@@ -42,7 +42,14 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - Standard library modules can now import sibling modules using short relative paths (e.g., `import tuple.Tuple;`).
 - Golden runner now supports per-test command-line argument sidecars placed next to each source file (`tests/sources/<name>.args`).
 - Compiler diagnostics are now unified under structured compile-time error objects across parser, semantic analysis, code generation, and `lint_text(...)`; this improves consistency of reported locations and diagnostics integrations (for example LSP).
-- Bug fixes
+- Added negative array indexing support for fixed-size arrays (currently for array literals and explicit array parameters) so `arr[-1]` resolves to the last element.
+- Added fixed-size array utility methods `index(value)` and `count(value)`.
+- Added class static methods via `static` declarations and `Type.method(...)` calls.
+- Added `lint_text(source_text, file_path)` API for in-memory diagnostics without code generation.
+- Added LSP implementation (`firescript/lsp_server.py`) via `pygls`.
+- Added VS Code extension with syntax highlighting, bracket matching, comment toggling, and LSP diagnostics.
+
+### Bug Fixes
 - Fixed float-to-string conversion silently truncating at 31 characters for large magnitudes (e.g. `1e100 as string` now produces the full fixed-notation digits instead of a truncated prefix).
 - Fixed `for-in` loops and `length()` calls on array function parameters.
 - Fixed error caret positions for indented code.
@@ -54,12 +61,6 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - Semantic analysis now rejects attempts to move borrowed values into owned variables or owned parameters.
 - Semantic analysis now rejects returning direct borrowed projections (for example borrowed identifiers, field projections, and array projections) when they would escape callable scope as Owned values.
 - Semantic analysis now enforces ownership moves for class constructor arguments in both `Type(args)` and `new Type(args)` forms.
-- Added negative array indexing support for fixed-size arrays (currently for array literals and explicit array parameters) so `arr[-1]` resolves to the last element.
-- Added fixed-size array utility methods `index(value)` and `count(value)`.
-- Added class static methods via `static` declarations and `Type.method(...)` calls.
-- Added `lint_text(source_text, file_path)` API for in-memory diagnostics without code generation.
-- Added LSP implementation (`firescript/lsp_server.py`) via `pygls`.
-- Added VS Code extension with syntax highlighting, bracket matching, comment toggling, and LSP diagnostics.
 
 ## 0.4.0 - Phoenix
 *February 2, 2026*

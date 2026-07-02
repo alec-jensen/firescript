@@ -178,6 +178,13 @@ The golden runner also verifies every compiled binary imports only `kernel32.dll
 - **float128_test.fire** - 128-bit float testing
 - **float128_ops.fire** - binary128 soft-float: arithmetic (`+ - * /`, unary `-`), comparisons, and conversions (int, float64, string parse)
 
+#### Standard Library: regex
+- **std_regex_basic.fire** - `is_match` over literals, `.`, alternation, quantifiers (`* + ?`), groups, character classes (including ranges and negation), and `last_error` for invalid patterns
+- **std_regex_anchor_simple.fire** / **std_regex_anchors.fire** - Anchor handling (`^`, `$`) in `is_match`
+- **std_regex_find_at.fire** / **std_regex_find_at_anchors.fire** - Position-aware matching via `find_at`, with and without anchors
+- **std_regex_validate_anchors.fire** / **std_regex_validate_anchors2.fire** - Pattern validation with anchors
+- **std_regex_regression_generic_matcher.fire** - Regression: quantifier/group/class patterns (`xy?z`, `(cd)+e`, `[b-d]+`, `x*z`) must go through the generic matcher; guards against reintroducing per-pattern hard-coded results in `is_match`
+
 #### Utility Modules (not standalone tests)
 - **utils.fire** - Utility functions for other tests
 - **math_utils.fire** - Math utility functions

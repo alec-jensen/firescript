@@ -181,57 +181,6 @@ export class RegexPattern {
         return matched;
     }
 
-    bool _match_ab_optional_c(&this, string &text) {
-        return text == "ac" || text == "abc";
-    }
-
-    bool _match_one_or_more_ab_then_c(&this, string &text) {
-        int32 n = str_length(text);
-        if (n < 3) {
-            return false;
-        }
-
-        if (str_char_at(text, n - 1) != "c") {
-            return false;
-        }
-
-        int32 prefix_len = n - 1;
-        if ((prefix_len % 2) != 0) {
-            return false;
-        }
-
-        int32 i = 0;
-        while (i < prefix_len) {
-            if (str_char_at(text, i) != "a") {
-                return false;
-            }
-            if (str_char_at(text, i + 1) != "b") {
-                return false;
-            }
-            i = i + 2;
-        }
-
-        return true;
-    }
-
-    bool _match_one_or_more_a_to_c(&this, string &text) {
-        int32 n = str_length(text);
-        if (n <= 0) {
-            return false;
-        }
-
-        int32 i = 0;
-        while (i < n) {
-            string ch = str_char_at(text, i);
-            if (ch != "a" && ch != "b" && ch != "c") {
-                return false;
-            }
-            i = i + 1;
-        }
-
-        return true;
-    }
-
     int32 _match_one_atom(&this, int32 atom_start, int32 atom_end, string &text, int32 cur, int32 t_len) {
         if (cur >= t_len) {
             return -1;
@@ -506,17 +455,6 @@ export class RegexPattern {
         string err = this._validate_pattern();
         if (err != "") {
             return false;
-        }
-
-        // Keep these hot paths deterministic while the generic matcher is refined.
-        if (this.pattern == "ab?c") {
-            return this._match_ab_optional_c(text);
-        }
-        if (this.pattern == "(ab)+c") {
-            return this._match_one_or_more_ab_then_c(text);
-        }
-        if (this.pattern == "[a-c]+") {
-            return this._match_one_or_more_a_to_c(text);
         }
 
         return this._match_full(text);
