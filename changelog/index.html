@@ -1270,15 +1270,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#050-kirin-currently-in-development" class="md-nav__link">
+  <a href="#050-kirin" class="md-nav__link">
     <span class="md-ellipsis">
       
-        0.5.0 - Kirin (Currently in Development)
+        0.5.0 - Kirin
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="0.5.0 - Kirin (Currently in Development)">
+    <nav class="md-nav" aria-label="0.5.0 - Kirin">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1308,6 +1308,17 @@
     <span class="md-ellipsis">
       
         Compiler improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug Fixes
       
     </span>
   </a>
@@ -1443,7 +1454,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes" class="md-nav__link">
+  <a href="#bug-fixes_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug Fixes
@@ -1493,7 +1504,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes_1" class="md-nav__link">
+  <a href="#bug-fixes_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug Fixes
@@ -1598,15 +1609,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#050-kirin-currently-in-development" class="md-nav__link">
+  <a href="#050-kirin" class="md-nav__link">
     <span class="md-ellipsis">
       
-        0.5.0 - Kirin (Currently in Development)
+        0.5.0 - Kirin
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="0.5.0 - Kirin (Currently in Development)">
+    <nav class="md-nav" aria-label="0.5.0 - Kirin">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1636,6 +1647,17 @@
     <span class="md-ellipsis">
       
         Compiler improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug Fixes
       
     </span>
   </a>
@@ -1771,7 +1793,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes" class="md-nav__link">
+  <a href="#bug-fixes_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug Fixes
@@ -1821,7 +1843,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes_1" class="md-nav__link">
+  <a href="#bug-fixes_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug Fixes
@@ -1899,8 +1921,8 @@
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
 <p>firescript follows <a href="https://semver.org/">Semantic Versioning</a>. This makes it easier to understand the impact of changes in each release.</p>
-<h2 id="050-kirin-currently-in-development">0.5.0 - Kirin (Currently in Development)<a class="headerlink" href="#050-kirin-currently-in-development" title="Permanent link">&para;</a></h2>
-<p><em>June 2026</em></p>
+<h2 id="050-kirin">0.5.0 - Kirin<a class="headerlink" href="#050-kirin" title="Permanent link">&para;</a></h2>
+<p><em>July 2, 2026</em></p>
 <h3 id="new-language-features">New Language Features<a class="headerlink" href="#new-language-features" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Added generator functions with <code>generator&lt;T&gt;</code> syntax: lazy iterables that produce values on demand via <code>yield</code>. Generators compile to state-machine structs with resumable next-functions. User-defined generators and <code>for-in</code> loops over generators are both supported.</li>
@@ -1914,7 +1936,7 @@
 <li>Added generic classes with multiple type parameters (e.g., <code>class Pair&lt;T, U&gt; { ... }</code>). Monomorphization is performed automatically at each use site.</li>
 <li><code>Tuple&lt;T, U&gt;</code>, <code>CopyableTuple&lt;T, U&gt;</code>, <code>Option&lt;T&gt;</code>, and <code>CopyableOption&lt;T&gt;</code> are now provided by the standard library (<code>@firescript/std.types</code>).</li>
 <li>Added <code>@firescript/std.fs</code> with class-based file I/O centered on <code>File</code> objects and <code>FileResult</code> values, including <code>File</code> methods (<code>read</code>, <code>readBytes</code>, <code>writeAll</code>, <code>appendAll</code>, <code>exists</code>, <code>remove</code>, <code>renameTo</code>, <code>moveTo</code>) and result helpers (<code>ok</code>, <code>err_code</code>, <code>result_status</code>, <code>result_data</code>).</li>
-<li>Added <code>@firescript/std.regex</code> for full-string regular-expression matching with <code>is_match(pattern, text)</code>, <code>match(pattern, text)</code>, and <code>last_error(pattern)</code>. Current syntax supports literals, escapes, <code>.</code>, grouping <code>(...)</code>, alternation <code>|</code>, quantifiers <code>* + ?</code>, and character classes (<code>[...]</code>, <code>[^...]</code>, basic ranges like <code>[a-z]</code>).</li>
+<li>Added <code>@firescript/std.regex</code> for regular-expression matching with <code>is_match(pattern, text)</code>, <code>match(pattern, text)</code>, <code>find_at(pattern, text, start_pos)</code>, and <code>last_error(pattern)</code>. The module also exports the <code>RegexPattern</code> class for constructing a pattern once and matching it repeatedly. Current syntax supports literals, escapes, <code>.</code>, anchors (<code>^</code>, <code>$</code>), grouping <code>(...)</code>, alternation <code>|</code>, quantifiers <code>* + ?</code>, and character classes (<code>[...]</code>, <code>[^...]</code>, basic ranges like <code>[a-z]</code>). <code>find_at</code> performs position-aware matching, returning the length of the match starting at <code>start_pos</code>, or <code>-1</code> if there is no match.</li>
 <li>Added <code>syscall_*</code> intrinsics (<code>syscall_open</code>, <code>syscall_read</code>, <code>syscall_write</code>, <code>syscall_close</code>, <code>syscall_remove</code>, <code>syscall_rename</code>, <code>syscall_move</code>) behind <code>directive enable_syscalls</code>. For standard library use only.</li>
 <li>Expanded <code>@firescript/std.cli.args</code> parsing helpers to support grouped short flags (for example <code>-abc</code>), <code>--name=value</code> / <code>-n=value</code> option forms, <code>--</code> terminator handling, and parsed positional value lookup.</li>
 <li>Added support for logical operators <code>&amp;&amp;</code>, <code>||</code>, and unary <code>!</code> in expressions and conditions.</li>
@@ -1941,7 +1963,15 @@
 <li>Standard library modules can now import sibling modules using short relative paths (e.g., <code>import tuple.Tuple;</code>).</li>
 <li>Golden runner now supports per-test command-line argument sidecars placed next to each source file (<code>tests/sources/&lt;name&gt;.args</code>).</li>
 <li>Compiler diagnostics are now unified under structured compile-time error objects across parser, semantic analysis, code generation, and <code>lint_text(...)</code>; this improves consistency of reported locations and diagnostics integrations (for example LSP).</li>
-<li>Bug fixes</li>
+<li>Added negative array indexing support for fixed-size arrays (currently for array literals and explicit array parameters) so <code>arr[-1]</code> resolves to the last element.</li>
+<li>Added fixed-size array utility methods <code>index(value)</code> and <code>count(value)</code>.</li>
+<li>Added class static methods via <code>static</code> declarations and <code>Type.method(...)</code> calls.</li>
+<li>Added <code>lint_text(source_text, file_path)</code> API for in-memory diagnostics without code generation.</li>
+<li>Added LSP implementation (<code>firescript/lsp_server.py</code>) via <code>pygls</code>.</li>
+<li>Added VS Code extension with syntax highlighting, bracket matching, comment toggling, and LSP diagnostics.</li>
+</ul>
+<h3 id="bug-fixes">Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">&para;</a></h3>
+<ul>
 <li>Fixed float-to-string conversion silently truncating at 31 characters for large magnitudes (e.g. <code>1e100 as string</code> now produces the full fixed-notation digits instead of a truncated prefix).</li>
 <li>Fixed <code>for-in</code> loops and <code>length()</code> calls on array function parameters.</li>
 <li>Fixed error caret positions for indented code.</li>
@@ -1953,12 +1983,6 @@
 <li>Semantic analysis now rejects attempts to move borrowed values into owned variables or owned parameters.</li>
 <li>Semantic analysis now rejects returning direct borrowed projections (for example borrowed identifiers, field projections, and array projections) when they would escape callable scope as Owned values.</li>
 <li>Semantic analysis now enforces ownership moves for class constructor arguments in both <code>Type(args)</code> and <code>new Type(args)</code> forms.</li>
-<li>Added negative array indexing support for fixed-size arrays (currently for array literals and explicit array parameters) so <code>arr[-1]</code> resolves to the last element.</li>
-<li>Added fixed-size array utility methods <code>index(value)</code> and <code>count(value)</code>.</li>
-<li>Added class static methods via <code>static</code> declarations and <code>Type.method(...)</code> calls.</li>
-<li>Added <code>lint_text(source_text, file_path)</code> API for in-memory diagnostics without code generation.</li>
-<li>Added LSP implementation (<code>firescript/lsp_server.py</code>) via <code>pygls</code>.</li>
-<li>Added VS Code extension with syntax highlighting, bracket matching, comment toggling, and LSP diagnostics.</li>
 </ul>
 <h2 id="040-phoenix">0.4.0 - Phoenix<a class="headerlink" href="#040-phoenix" title="Permanent link">&para;</a></h2>
 <p><em>February 2, 2026</em></p>
@@ -2115,7 +2139,7 @@
 </ul>
 </li>
 </ul>
-<h3 id="bug-fixes">Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">&para;</a></h3>
+<h3 id="bug-fixes_1">Bug Fixes<a class="headerlink" href="#bug-fixes_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Fixed parser issue causing incorrect handling of complex nested expressions</li>
 <li>Addressed memory leak in string operations when concatenating multiple strings</li>
@@ -2170,7 +2194,7 @@
 </ul>
 </li>
 </ul>
-<h3 id="bug-fixes_1">Bug Fixes<a class="headerlink" href="#bug-fixes_1" title="Permanent link">&para;</a></h3>
+<h3 id="bug-fixes_2">Bug Fixes<a class="headerlink" href="#bug-fixes_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Resolved parsing issues for nested expressions</li>
 <li>Fixed incorrect operator precedence in complex expressions</li>
