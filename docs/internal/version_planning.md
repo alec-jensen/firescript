@@ -18,7 +18,7 @@ The bootstrap path has three phases:
 
 ---
 
-## 0.5.0 — Kirin (Current)
+## 0.5.0 — Kirin
 
 *FIR + FLIR pipeline, self-hosted native toolchain, runtime in firescript, generators, char,
 `&mut this`, module exports, generic classes, stdlib expansion, true float128.*
@@ -53,7 +53,7 @@ Nothing — all planned Kirin items are complete.
 
 ---
 
-## 0.6.0 — Griffin
+## 0.6.0 — Griffin (Current)
 
 **Theme: Standard library foundations for compiler writing.**
 

@@ -1,6 +1,6 @@
-# FLIR Specification (Lowered IR)
+# FLIR Specification (Lowered IR) [IMPLEMENTED]
 
-FLIR (Firescript Lowered IR) is the machine-like IR produced by lowering FIR. It is intended to be backend-ready and minimal.
+FLIR (Firescript Lowered IR) is the machine-like IR produced by lowering FIR. It is defined in `firescript/flir/` (`ir.py`, `lowering.py`, `textual.py`) and consumed by `firescript/codegen/flir_to_asm.py`, the only backend. Dump it for a given source file with `--emit-flir`.
 
 ## Purpose
 
@@ -27,7 +27,6 @@ Functions have primitive or pointer parameters only and are monomorphized.
 
 ## Lowering Examples
 
-See the main plan for FIR→FLIR lowering examples. In short:
 - `LoadField(obj, "x")` → `load(obj, offset)`
 - `Allocate(Point, ...)` → `allocate(sizeof(Point))` + field stores
 - `Drop(x)` → `free(x)`
@@ -137,8 +136,4 @@ These are the concrete layouts the implemented lowering uses:
 
 ## ABI & Backend Notes
 
-FLIR must include stable ABI data (field offsets, sizes, alignments, calling conventions) so that backends can emit correct code without re-evaluating high-level semantics.
-
-## Optional Advanced Path
-
-If a native backend needs advanced register allocation or SSA-based optimizations, implement an optional `flir_to_ssa(flir_module)` or a translator from FLIR to Cranelift/LLVM IR. This is opt-in; default FLIR remains simple.
+FLIR carries the stable ABI data (field offsets, sizes, alignments, calling conventions) that `flir_to_asm.py` needs to emit correct code without re-evaluating high-level semantics.

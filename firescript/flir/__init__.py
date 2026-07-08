@@ -5,7 +5,7 @@ struct layouts with explicit offsets, generics are monomorphized,
 ownership ops become explicit allocation/free/runtime calls, and
 generators become state-machine structs with resume functions.
 
-See docs/internal/development/FIR_flir_spec.md for the specification.
+See docs/internal/development/flir_spec.md for the specification.
 """
 
 from flir.ir import (

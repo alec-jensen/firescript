@@ -34,7 +34,7 @@ def check(name: str, condition: bool, detail: str = "") -> None:
 
 
 def build_bump_or_reset() -> FIRModule:
-    """Build the bump_or_reset example from FIR_fir_spec.md by hand."""
+    """Build the bump_or_reset example from fir_spec.md by hand."""
     int32 = make_simple("int32")
     bool_t = make_simple("bool")
     counter_t = make_simple("Counter")

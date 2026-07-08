@@ -61,7 +61,7 @@ Expected error files are stored in `tests/expected_errors/` with `.err` extensio
 python tests/fir_unit_tests.py
 ```
 
-- **fir_unit_tests.py** - Unit tests for `firescript/fir/`: FIRBuilder construction, textual dump format (verified against the spec example in `docs/internal/development/FIR_fir_spec.md`), dump determinism, structural validation (terminators, branch targets, cross-function value use)
+- **fir_unit_tests.py** - Unit tests for `firescript/fir/`: FIRBuilder construction, textual dump format (verified against the spec example in `docs/internal/development/fir_spec.md`), dump determinism, structural validation (terminators, branch targets, cross-function value use)
 
 ```bash
 # FIR snapshot tests (AST->FIR conversion goldens)

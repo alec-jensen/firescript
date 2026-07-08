@@ -4,7 +4,7 @@ FIR is the high-level, typed IR produced from the semantic-analyzed AST.
 It preserves classes, generics, and ownership so optimization passes can
 reason about language semantics before lowering to FLIR.
 
-See docs/internal/development/FIR_fir_spec.md for the specification.
+See docs/internal/development/fir_spec.md for the specification.
 """
 
 from fir.ir_types import (

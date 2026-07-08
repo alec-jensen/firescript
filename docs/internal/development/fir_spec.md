@@ -1,6 +1,6 @@
-# FIR Specification (High-Level IR)
+# FIR Specification (High-Level IR) [IMPLEMENTED]
 
-This document describes the Firescript IR (FIR): a compact, typed high-level IR used for analysis and optimization before lowering to FLIR.
+This document describes the Firescript IR (FIR): a compact, typed high-level IR used for analysis and optimization before lowering to FLIR. It is defined in `firescript/fir/` (`ir_types.py`, `ir_node.py`, `ir_module.py`, `ownership.py`, `ir_builder.py`, `textual.py`) and produced from the semantic-analyzed AST by `firescript/ast_to_fir.py`. Dump it for a given source file with `--emit-fir`.
 
 ## Design Principles
 
@@ -133,6 +133,6 @@ In FIR, the type parameter `T` is still present. That means passes can still rea
 
 ## Ownership & Optimization Notes
 
-FIR preserves ownership information coming from the semantic analyzer. Optimization passes (dead code elimination, constant folding, CSE) operate on FIR while type/ownership info is still available.
+FIR preserves ownership information coming from the semantic analyzer. No FIR-level optimization passes (dead code elimination, constant folding, CSE) are implemented yet; FIR is lowered to FLIR as-is.
 
-For details on lowering and FLIR, see `FIR_flir_spec.md`.
+For details on lowering and FLIR, see `flir_spec.md`.
