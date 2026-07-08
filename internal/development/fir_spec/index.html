@@ -8,7 +8,7 @@
       
       
       
-        <link rel="canonical" href="https://firescript.alecj.com/internal/development/FIR_impl_plan/">
+        <link rel="canonical" href="https://firescript.alecj.com/internal/development/fir_spec/">
       
       
       
@@ -21,7 +21,7 @@
     
     
       
-        <title>FIR Implementation Plan [IMPLEMENTED] - firescript</title>
+        <title>FIR Specification (High-Level IR) [IMPLEMENTED] - firescript</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#fir-implementation-plan-implemented" class="md-skip">
+        <a href="#fir-specification-high-level-ir-implemented" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              FIR Implementation Plan [IMPLEMENTED]
+              FIR Specification (High-Level IR) [IMPLEMENTED]
             
           </span>
         </div>
@@ -1271,6 +1271,125 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Principles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Concepts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-structures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Structures
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#instruction-set-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instruction Set (summary)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Instruction Set (summary)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dump-format-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dump format rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#textual-representation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Textual Representation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Textual Representation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#larger-fir-example-ownership-branching-and-a-method-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Larger FIR Example: Ownership, Branching, and a Method Call
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#larger-fir-example-generic-function-before-monomorphization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Larger FIR Example: Generic Function Before Monomorphization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ownership-optimization-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ownership &amp; Optimization Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1294,7 +1413,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/development/FIR_impl_plan.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/development/fir_spec.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1302,20 +1421,124 @@
   
 
 
-<h1 id="fir-implementation-plan-implemented">FIR Implementation Plan [IMPLEMENTED]<a class="headerlink" href="#fir-implementation-plan-implemented" title="Permanent link">&para;</a></h1>
-<p><strong>Status: the FIR + FLIR pipeline is implemented and is the compiler's only pipeline.</strong> The legacy AST → C backend, the C runtime, and the interim FLIR → C differential backend have been removed. The compiler lowers AST → FIR → FLIR → x86-64 assembly (Windows x64, MinGW binutils, freestanding binaries importing only kernel32.dll), and the language runtime is implemented in firescript (<code>std/internal/runtime.fire</code>).</p>
-<p>This is the short index for the FIR + FLIR design docs. The full details are split into smaller files so each page stays manageable.</p>
-<p>Internal pages:</p>
+<h1 id="fir-specification-high-level-ir-implemented">FIR Specification (High-Level IR) [IMPLEMENTED]<a class="headerlink" href="#fir-specification-high-level-ir-implemented" title="Permanent link">&para;</a></h1>
+<p>This document describes the Firescript IR (FIR): a compact, typed high-level IR used for analysis and optimization before lowering to FLIR. It is defined in <code>firescript/fir/</code> (<code>ir_types.py</code>, <code>ir_node.py</code>, <code>ir_module.py</code>, <code>ownership.py</code>, <code>ir_builder.py</code>, <code>textual.py</code>) and produced from the semantic-analyzed AST by <code>firescript/ast_to_fir.py</code>. Dump it for a given source file with <code>--emit-fir</code>.</p>
+<h2 id="design-principles">Design Principles<a class="headerlink" href="#design-principles" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../FIR_overview/">Overview and architecture</a></li>
-<li><a href="../FIR_fir_spec/">FIR specification</a></li>
-<li><a href="../FIR_flir_spec/">FLIR specification</a></li>
-<li><a href="../FIR_roadmap_and_migration/">Roadmap, migration, and testing</a></li>
-<li><a href="../FIR_migration_build_prompt/">Migration build prompt (no C backend)</a> — the executed migration plan, kept for reference</li>
+<li>Preserve all type information (classes, generics, ownership)</li>
+<li>Keep structure simple (no SSA, no φ-functions)</li>
+<li>Provide human-readable textual dumps for debugging</li>
+<li>Support ownership ops explicitly (Move/Borrow/Drop)</li>
 </ul>
-<p>Warning: internal docs for compiler and language developers only.</p>
-<p>Use <code>--emit-fir</code> and <code>--emit-flir</code> when debugging the pipeline.</p>
-<p>Resolved: FIR+FLIR landed before bootstrapping. Any future self-hosting work is written against FIR/FLIR (the bootstrap compiler can target FLIR directly).</p>
+<h2 id="core-concepts">Core Concepts<a class="headerlink" href="#core-concepts" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Instructions: <code>op(args) → result_type</code></li>
+<li>Value categories: <code>copyable</code> | <code>owned</code></li>
+<li>Basic blocks: sequences of instructions + terminator (no block parameters)</li>
+<li>OwnershipMap: binding → VALID/MOVED/MAYBE_MOVED/BORROWED</li>
+</ul>
+<h2 id="data-structures">Data Structures<a class="headerlink" href="#data-structures" title="Permanent link">&para;</a></h2>
+<pre><code>FIRModule
+  ├─ TypeDefinitions (classes with fields)
+  ├─ FunctionDefinitions
+  │   ├─ Signature (params, return type, generic params if any)
+  │   ├─ BasicBlocks
+  │   │   ├─ Instructions (simple sequence)
+  │   │   │   └─ op, args, result_type
+  │   │   └─ Terminator (Branch, Jump, Return)
+  │   └─ OwnershipMap (variable → OwnershipState)
+  └─ GlobalConstants
+</code></pre>
+<h2 id="instruction-set-summary">Instruction Set (summary)<a class="headerlink" href="#instruction-set-summary" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Literals: <code>IntLiteral</code>, <code>FloatLiteral</code>, <code>StringLiteral</code>, <code>CharLiteral</code>, <code>BoolLiteral</code>, <code>NullLiteral</code>, <code>ArrayLiteral</code></li>
+<li>Arithmetic: <code>BinaryOp</code>, <code>UnaryOp</code>, <code>Cast</code></li>
+<li>Memory: <code>Allocate</code>, <code>LoadField</code>, <code>StoreField</code>, <code>IndexArray</code>, <code>StoreArray</code></li>
+<li>Locals: <code>DeclareLocal</code>, <code>LoadVar</code>, <code>StoreVar</code> (FIR is not SSA; mutable locals are explicit named slots instead of block parameters)</li>
+<li>Ownership: <code>Move</code>, <code>Borrow</code>, <code>Clone</code>, <code>Drop</code></li>
+<li>Calls: <code>Call</code>, <code>MethodCall</code></li>
+<li>Generators: <code>Yield</code>, <code>GenNew(name, [args]) -&gt; generator&lt;T&gt;</code>, <code>GenNext(gen) -&gt; bool</code>, <code>GenValue(gen) -&gt; T</code> (generator functions render with the <code>generator</code> keyword instead of <code>function</code>; <code>for-in</code> over a generator converts to a GenNew/GenNext/GenValue loop)</li>
+<li>Control: <code>Branch</code>, <code>Jump</code>, <code>Return</code>, <code>Unreachable</code></li>
+</ul>
+<h3 id="dump-format-rules">Dump format rules<a class="headerlink" href="#dump-format-rules" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Value numbers <code>%N</code> are assigned in (block order, instruction order) within each function; dumps are deterministic.</li>
+<li>Instructions that produce no value (<code>StoreField</code>, <code>StoreArray</code>, <code>StoreVar</code>, <code>DeclareLocal</code>, <code>Drop</code>, <code>Yield</code>, void <code>Call</code>s) are not numbered.</li>
+<li>Function parameters are referenced by name in operand position.</li>
+<li>Parameter passing modes render as <code>name: T</code> (owned), <code>name: &amp;T</code> (borrow), <code>name: &amp;mut T</code> (mutable borrow).</li>
+<li><code>Call</code>/<code>MethodCall</code> render their argument modes and, when non-void, a trailing <code>-&gt; type</code>.</li>
+</ul>
+<h2 id="textual-representation">Textual Representation<a class="headerlink" href="#textual-representation" title="Permanent link">&para;</a></h2>
+<p>FIR is designed to be directly dumpable for debugging. Example:</p>
+<pre><code>module firescript
+
+type Point copyable {
+  x: int32
+  y: int32
+}
+
+function main() -&gt; void {
+  block_0:
+    %0 = IntLiteral(10, int32)
+    %1 = IntLiteral(20, int32)
+    %2 = Allocate(Point, [%0, %1])
+    %3 = LoadField(%2, &quot;x&quot;)
+    %4 = Call(distance, [%3, %3]) -&gt; int32
+    %5 = Call(println, [%4]) -&gt; void
+    Drop(%2)
+    Return()
+}
+</code></pre>
+<h3 id="larger-fir-example-ownership-branching-and-a-method-call">Larger FIR Example: Ownership, Branching, and a Method Call<a class="headerlink" href="#larger-fir-example-ownership-branching-and-a-method-call" title="Permanent link">&para;</a></h3>
+<p>This example keeps classes, ownership, and control flow visible in FIR:</p>
+<pre><code>module firescript
+
+type Counter owned {
+  value: int32
+}
+
+function bump_or_reset(counter: Counter, should_reset: bool) -&gt; int32 {
+  block_0:
+    %0 = LoadField(counter, &quot;value&quot;)
+    Branch(should_reset, block_1, block_2)
+
+  block_1:
+    %1 = IntLiteral(0, int32)
+    StoreField(counter, &quot;value&quot;, %1)
+    Drop(counter)
+    Return(%1)
+
+  block_2:
+    %2 = IntLiteral(1, int32)
+    %3 = BinaryOp(&quot;+&quot;, %0, %2)
+    StoreField(counter, &quot;value&quot;, %3)
+    Call(println, [%3], [&quot;borrow&quot;])
+    Return(%3)
+}
+</code></pre>
+<h3 id="larger-fir-example-generic-function-before-monomorphization">Larger FIR Example: Generic Function Before Monomorphization<a class="headerlink" href="#larger-fir-example-generic-function-before-monomorphization" title="Permanent link">&para;</a></h3>
+<p>FIR keeps the generic type parameter intact so optimization can still see the original shape of the program:</p>
+<pre><code>type Box&lt;T&gt; owned {
+  value: T
+}
+
+function&lt;T&gt; unwrap_or_default(box: Box&lt;T&gt;, fallback: T) -&gt; T {
+  block_0:
+    %0 = LoadField(box, &quot;value&quot;)
+    %1 = Call(is_default, [%0]) -&gt; bool
+    Branch(%1, block_1, block_2)
+
+  block_1:
+    Return(fallback)
+
+  block_2:
+    Return(%0)
+}
+</code></pre>
+<p>In FIR, the type parameter <code>T</code> is still present. That means passes can still reason about ownership, field access, and control flow before lowering specializes the function.</p>
+<h2 id="ownership-optimization-notes">Ownership &amp; Optimization Notes<a class="headerlink" href="#ownership-optimization-notes" title="Permanent link">&para;</a></h2>
+<p>FIR preserves ownership information coming from the semantic analyzer. No FIR-level optimization passes (dead code elimination, constant folding, CSE) are implemented yet; FIR is lowered to FLIR as-is.</p>
+<p>For details on lowering and FLIR, see <code>flir_spec.md</code>.</p>
 
 
 

@@ -21,7 +21,7 @@
     
     
       
-        <title>FIR Development Quick Reference - firescript</title>
+        <title>FIR Development Quick Reference [IMPLEMENTED] - firescript</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#fir-development-quick-reference" class="md-skip">
+        <a href="#fir-development-quick-reference-implemented" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              FIR Development Quick Reference
+              FIR Development Quick Reference [IMPLEMENTED]
             
           </span>
         </div>
@@ -1278,18 +1278,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#part-1-fir-module-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Part 1: FIR Module Structure
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Part 1: FIR Module Structure">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#directory-layout" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1299,40 +1287,24 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#file-responsibilities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        File Responsibilities
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
       
         <li class="md-nav__item">
-  <a href="#part-2-key-classes-and-interfaces" class="md-nav__link">
+  <a href="#key-classes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Part 2: Key Classes and Interfaces
+        Key Classes
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Part 2: Key Classes and Interfaces">
+    <nav class="md-nav" aria-label="Key Classes">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#firtype-system" class="md-nav__link">
+  <a href="#fir-types-firir_typespy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        FIRType System
+        FIR types (fir/ir_types.py)
       
     </span>
   </a>
@@ -1340,10 +1312,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#instructions-values" class="md-nav__link">
+  <a href="#instructions-and-values-firir_nodepy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Instructions &amp; Values
+        Instructions and values (fir/ir_node.py)
       
     </span>
   </a>
@@ -1351,10 +1323,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fir-builder" class="md-nav__link">
+  <a href="#ownership-tracking-firownershippy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        FIR Builder
+        Ownership tracking (fir/ownership.py)
       
     </span>
   </a>
@@ -1362,10 +1334,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#ownership-tracking" class="md-nav__link">
+  <a href="#building-fir-firir_builderpy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Ownership Tracking
+        Building FIR (fir/ir_builder.py)
       
     </span>
   </a>
@@ -1378,121 +1350,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#part-3-ast-fir-conversion-template" class="md-nav__link">
+  <a href="#debugging" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Part 3: AST → FIR Conversion Template
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#part-4-fir-c-backend-template" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Part 4: FIR → C Backend Template
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#part-5-testing-strategy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Part 5: Testing Strategy
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Part 5: Testing Strategy">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#test-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Test Structure
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#comparison-matrix" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Comparison Matrix
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#part-6-debugging-introspection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Part 6: Debugging &amp; Introspection
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Part 6: Debugging &amp; Introspection">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#dumping-fir-for-debugging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dumping FIR for Debugging
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#comparing-generated-c" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Comparing Generated C
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#part-7-common-pitfalls-solutions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Part 7: Common Pitfalls &amp; Solutions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#conclusion" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Conclusion
+        Debugging
       
     </span>
   </a>
@@ -1532,861 +1393,62 @@
   
 
 
-<h1 id="fir-development-quick-reference">FIR Development Quick Reference<a class="headerlink" href="#fir-development-quick-reference" title="Permanent link">&para;</a></h1>
-<p>This document provides practical guidance for developers implementing FIR and the FIR → C backend.</p>
-<hr />
-<h2 id="part-1-fir-module-structure">Part 1: FIR Module Structure<a class="headerlink" href="#part-1-fir-module-structure" title="Permanent link">&para;</a></h2>
-<h3 id="directory-layout">Directory Layout<a class="headerlink" href="#directory-layout" title="Permanent link">&para;</a></h3>
+<h1 id="fir-development-quick-reference-implemented">FIR Development Quick Reference [IMPLEMENTED]<a class="headerlink" href="#fir-development-quick-reference-implemented" title="Permanent link">&para;</a></h1>
+<p>Practical guidance for working with the FIR/FLIR code, complementing the specs in
+<a href="../fir_spec/">fir_spec.md</a> and <a href="../flir_spec/">flir_spec.md</a>.</p>
+<h2 id="directory-layout">Directory Layout<a class="headerlink" href="#directory-layout" title="Permanent link">&para;</a></h2>
 <pre><code>firescript/
-├── fir/                           # NEW: FIR system
-│   ├── __init__.py               # Package initialization
-│   ├── ir_types.py               # Type system (FIRType, SimpleType, etc.)
-│   ├── ir_node.py                # IR nodes (Instruction, BasicBlock, etc.)
-│   ├── ir_module.py              # Module structure (FIRModule, FIRFunction, etc.)
-│   ├── ownership.py              # Ownership tracking (OwnershipState, OwnershipMap)
-│   ├── ir_builder.py             # Helper class for building FIR
-│   ├── textual.py                # Serialize FIR to human-readable form
-│   └── __pycache__/
+├── fir/
+│   ├── ir_types.py      # FIRType, SimpleType, ArrayType, GenericInstanceType,
+│   │                    #   GeneratorType, FunctionType
+│   ├── ir_node.py       # Value, ParamValue, FIRValue, Instruction, Terminator, BasicBlock
+│   ├── ir_module.py     # FIRModule, FIRFunction, TypeDef, GlobalConstant
+│   ├── ownership.py     # OwnershipState, OwnershipMap
+│   ├── ir_builder.py    # FIRBuilder — helper for constructing FIR
+│   └── textual.py       # dump_module() — deterministic textual FIR dumps
 │
-├── ast_to_fir.py                 # AST → FIR converter (NEW)
+├── ast_to_fir.py         # AST → FIR converter
+│
+├── flir/
+│   ├── ir.py             # FLIR types/nodes (structs, pointers, primitive ops)
+│   ├── lowering.py        # FIR → FLIR lowering (monomorphization, class/ownership lowering)
+│   └── textual.py         # Deterministic textual FLIR dumps
 │
 ├── codegen/
-│   ├── fir_to_c.py               # FIR → C backend (NEW; replaces generator.py)
-│   ├── generator.py              # (Keep for reference; deprecated)
-│   └── ... (other files)
+│   └── flir_to_asm.py    # FLIR → x86-64 GAS-syntax assembly (the only backend)
 │
-└── ... (existing files)
+└── backend/
+    ├── assembler.py       # x86-64 assembler: GAS text → object image
+    └── pe.py              # PE32+ writer: object image → freestanding .exe
 </code></pre>
-<h3 id="file-responsibilities">File Responsibilities<a class="headerlink" href="#file-responsibilities" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>File</th>
-<th>Responsibility</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>fir/ir_types.py</code></td>
-<td>Define <code>FIRType</code>, <code>SimpleType</code>, <code>ArrayType</code>, <code>FunctionType</code> classes</td>
-</tr>
-<tr>
-<td><code>fir/ir_node.py</code></td>
-<td>Define <code>Instruction</code>, <code>BasicBlock</code>, <code>FIRValue</code>, <code>Terminator</code> classes</td>
-</tr>
-<tr>
-<td><code>fir/ir_module.py</code></td>
-<td>Define <code>FIRModule</code>, <code>FIRFunction</code>, <code>TypeDef</code> classes</td>
-</tr>
-<tr>
-<td><code>fir/ownership.py</code></td>
-<td>Define <code>OwnershipState</code>, <code>OwnershipMap</code>, ownership tracking logic</td>
-</tr>
-<tr>
-<td><code>fir/ir_builder.py</code></td>
-<td>Provide <code>FIRBuilder</code> class for convenient FIR construction</td>
-</tr>
-<tr>
-<td><code>fir/textual.py</code></td>
-<td>Serialize FIR to debug text format (like <code>zig ast-check -t</code>)</td>
-</tr>
-<tr>
-<td><code>ast_to_fir.py</code></td>
-<td>Implement <code>ASTToFIRConverter</code> class</td>
-</tr>
-<tr>
-<td><code>codegen/fir_to_c.py</code></td>
-<td>Implement <code>FIRToCBackend</code> class</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="part-2-key-classes-and-interfaces">Part 2: Key Classes and Interfaces<a class="headerlink" href="#part-2-key-classes-and-interfaces" title="Permanent link">&para;</a></h2>
-<h3 id="firtype-system">FIRType System<a class="headerlink" href="#firtype-system" title="Permanent link">&para;</a></h3>
-<pre><code class="language-python"># ir_types.py
-
-class FIRType:
-    &quot;&quot;&quot;Base class for all FIR types.&quot;&quot;&quot;
-    pass
-
-class SimpleType(FIRType):
-    &quot;&quot;&quot;Scalar type: int32, float64, bool, string, or custom class.&quot;&quot;&quot;
-    name: str              # &quot;int32&quot;, &quot;string&quot;, &quot;Point&quot;, etc.
-    category: str          # &quot;copyable&quot; or &quot;owned&quot;
-    is_nullable: bool      # For future null safety
-    metadata: Dict         # Additional info (for classes: fields)
-
-    def __init__(self, name: str, category: str = &quot;owned&quot;, metadata=None):
-        self.name = name
-        self.category = category
-        self.is_nullable = False
-        self.metadata = metadata or {}
-
-    def is_owned(self) -&gt; bool:
-        return self.category == &quot;owned&quot;
-
-    def is_copyable(self) -&gt; bool:
-        return self.category == &quot;copyable&quot;
-
-class ArrayType(FIRType):
-    &quot;&quot;&quot;Array type: T[].&quot;&quot;&quot;
-    element_type: FIRType
-    size: Optional[int]    # None for dynamic/unknown
-
-    def __init__(self, element_type: FIRType, size=None):
-        self.element_type = element_type
-        self.size = size
-        # Arrays are always owned
-        self.category = &quot;owned&quot;
-
-class FunctionType(FIRType):
-    &quot;&quot;&quot;Function type: (T1, T2) -&gt; ReturnType.&quot;&quot;&quot;
-    param_types: List[FIRType]
-    param_borrowing: List[bool]  # True if param is borrowed
-    return_type: Optional[FIRType]
-
-    def __init__(self, params: List[FIRType], return_type=None, borrowing=None):
-        self.param_types = params
-        self.return_type = return_type
-        self.param_borrowing = borrowing or [False] * len(params)
+<h2 id="key-classes">Key Classes<a class="headerlink" href="#key-classes" title="Permanent link">&para;</a></h2>
+<h3 id="fir-types-firir_typespy">FIR types (<code>fir/ir_types.py</code>)<a class="headerlink" href="#fir-types-firir_typespy" title="Permanent link">&para;</a></h3>
+<p><code>FIRType</code> is the base class; every subtype carries a <code>category</code> of <code>"owned"</code> or <code>"copyable"</code>.
+<code>SimpleType</code> covers scalars and named classes, <code>ArrayType</code> fixed-size arrays,
+<code>GenericInstanceType</code> a generic class applied to type arguments (e.g. <code>Box&lt;int32&gt;</code>),
+<code>GeneratorType</code> <code>generator&lt;T&gt;</code>, and <code>FunctionType</code> a signature (not a value). <code>make_simple()</code>
+builds a <code>SimpleType</code>, inferring <code>copyable</code> for the built-in numeric/bool/char types and
+<code>owned</code> otherwise.</p>
+<h3 id="instructions-and-values-firir_nodepy">Instructions and values (<code>fir/ir_node.py</code>)<a class="headerlink" href="#instructions-and-values-firir_nodepy" title="Permanent link">&para;</a></h3>
+<p><code>Value</code> is the base operand type: either a <code>ParamValue</code> (a function parameter, rendered by
+name) or a <code>FIRValue</code> (the result of an <code>Instruction</code>, rendered as <code>%N</code>). Every <code>Instruction</code>
+formats itself deterministically via <code>format(resolve)</code>, where <code>resolve</code> maps a <code>Value</code> to its
+dump name — this is what makes FIR/FLIR dumps stable and diffable.</p>
+<h3 id="ownership-tracking-firownershippy">Ownership tracking (<code>fir/ownership.py</code>)<a class="headerlink" href="#ownership-tracking-firownershippy" title="Permanent link">&para;</a></h3>
+<p><code>OwnershipMap</code> tracks each binding's <code>OwnershipState</code> (<code>VALID</code>, <code>MOVED</code>, <code>MAYBE_MOVED</code>,
+<code>BORROWED</code>) as FIR is built, carrying forward the ownership analysis already computed during
+semantic analysis instead of discarding it before codegen.</p>
+<h3 id="building-fir-firir_builderpy">Building FIR (<code>fir/ir_builder.py</code>)<a class="headerlink" href="#building-fir-firir_builderpy" title="Permanent link">&para;</a></h3>
+<p><code>FIRBuilder</code> wraps a <code>BasicBlock</code> and exposes one method per instruction kind (<code>int_literal</code>,
+<code>binary_op</code>, <code>move</code>, <code>borrow</code>, <code>call</code>, <code>drop</code>, <code>ret</code>, <code>branch</code>, ...). <code>ast_to_fir.py</code> uses it to
+turn each AST node into FIR instructions without touching <code>BasicBlock</code> internals directly.</p>
+<h2 id="debugging">Debugging<a class="headerlink" href="#debugging" title="Permanent link">&para;</a></h2>
+<pre><code>python firescript/main.py example.fire --emit-fir    # dump FIR
+python firescript/main.py example.fire --emit-flir   # dump FLIR
+python firescript/main.py example.fire --emit asm     # dump the generated x86-64 assembly
 </code></pre>
-<h3 id="instructions-values">Instructions &amp; Values<a class="headerlink" href="#instructions-values" title="Permanent link">&para;</a></h3>
-<pre><code class="language-python"># ir_node.py
-
-class FIRValue:
-    &quot;&quot;&quot;Represents a value produced by an instruction.&quot;&quot;&quot;
-    instruction: &quot;Instruction&quot;
-    block: &quot;BasicBlock&quot;
-    index: int            # Index of value in block
-
-    def __init__(self, instruction, block, index):
-        self.instruction = instruction
-        self.block = block
-        self.index = index
-
-class Instruction:
-    &quot;&quot;&quot;Base class for all instructions.&quot;&quot;&quot;
-    opcode: str           # &quot;IntLiteral&quot;, &quot;BinaryOp&quot;, etc.
-    operands: List[FIRValue]  # Input values
-    result_type: FIRType  # Type of produced value
-    metadata: Dict        # Line number, source location, etc.
-
-    def __init__(self, opcode: str, operands=None, result_type=None):
-        self.opcode = opcode
-        self.operands = operands or []
-        self.result_type = result_type
-        self.metadata = {}
-
-    def result(self) -&gt; FIRValue:
-        &quot;&quot;&quot;Get the value produced by this instruction.&quot;&quot;&quot;
-        pass
-
-class IntLiteralInst(Instruction):
-    &quot;&quot;&quot;IntLiteral(value, target_type) -&gt; int_type.&quot;&quot;&quot;
-    value: int
-
-    def __init__(self, value: int, target_type: FIRType):
-        super().__init__(&quot;IntLiteral&quot;, result_type=target_type)
-        self.value = value
-
-class BinaryOpInst(Instruction):
-    &quot;&quot;&quot;BinaryOp(op, lhs, rhs) -&gt; result_type.&quot;&quot;&quot;
-    op: str  # &quot;+&quot;, &quot;-&quot;, &quot;*&quot;, &quot;/&quot;, etc.
-
-    def __init__(self, op: str, lhs: FIRValue, rhs: FIRValue, result_type: FIRType):
-        super().__init__(&quot;BinaryOp&quot;, [lhs, rhs], result_type)
-        self.op = op
-
-class MoveInst(Instruction):
-    &quot;&quot;&quot;Move(value) -&gt; value_type (marks source as MOVED).&quot;&quot;&quot;
-
-    def __init__(self, value: FIRValue):
-        super().__init__(&quot;Move&quot;, [value], value.instruction.result_type)
-
-class BorrowInst(Instruction):
-    &quot;&quot;&quot;Borrow(value) -&gt; reference_type (source remains VALID).&quot;&quot;&quot;
-
-    def __init__(self, value: FIRValue):
-        # Result type is same as operand (conceptually a reference)
-        super().__init__(&quot;Borrow&quot;, [value], value.instruction.result_type)
-
-class DropInst(Instruction):
-    &quot;&quot;&quot;Drop(value) -&gt; void (destructs owned value).&quot;&quot;&quot;
-
-    def __init__(self, value: FIRValue):
-        super().__init__(&quot;Drop&quot;, [value])  # No result type
-
-class CallInst(Instruction):
-    &quot;&quot;&quot;Call(function, args, modes) -&gt; return_type.&quot;&quot;&quot;
-    function_ref: str     # Function name or reference
-    arg_modes: List[str]  # [&quot;own&quot;, &quot;borrow&quot;, &quot;own&quot;, ...]
-
-    def __init__(self, function_ref: str, args: List[FIRValue], 
-                 arg_modes: List[str], return_type: Optional[FIRType]):
-        super().__init__(&quot;Call&quot;, args, return_type)
-        self.function_ref = function_ref
-        self.arg_modes = arg_modes
-
-class Terminator(Instruction):
-    &quot;&quot;&quot;Base class for block-terminating instructions.&quot;&quot;&quot;
-    pass
-
-class ReturnInst(Terminator):
-    &quot;&quot;&quot;Return(value?) -&gt; (terminates).&quot;&quot;&quot;
-
-    def __init__(self, value: Optional[FIRValue] = None):
-        super().__init__(&quot;Return&quot;, [value] if value else [])
-
-class BranchInst(Terminator):
-    &quot;&quot;&quot;Branch(cond, true_block, false_block) -&gt; (terminates).&quot;&quot;&quot;
-    true_block: str       # Block name
-    false_block: str      # Block name
-
-    def __init__(self, cond: FIRValue, true_block: str, false_block: str):
-        super().__init__(&quot;Branch&quot;, [cond])
-        self.true_block = true_block
-        self.false_block = false_block
-
-class BasicBlock:
-    &quot;&quot;&quot;Sequence of instructions with single entry/exit.&quot;&quot;&quot;
-    id: str               # &quot;block_0&quot;, &quot;block_1&quot;, etc.
-    params: List[(str, FIRType)]  # Block parameters (for joins)
-    instructions: List[Instruction]
-    terminator: Terminator
-
-    def __init__(self, block_id: str, params=None):
-        self.id = block_id
-        self.params = params or []
-        self.instructions = []
-        self.terminator = None
-
-    def add_instruction(self, inst: Instruction) -&gt; FIRValue:
-        &quot;&quot;&quot;Add instruction to block, return produced value.&quot;&quot;&quot;
-        self.instructions.append(inst)
-        return FIRValue(inst, self, len(self.instructions) - 1)
-
-    def set_terminator(self, term: Terminator):
-        &quot;&quot;&quot;Set block's terminating instruction.&quot;&quot;&quot;
-        self.terminator = term
-</code></pre>
-<h3 id="fir-builder">FIR Builder<a class="headerlink" href="#fir-builder" title="Permanent link">&para;</a></h3>
-<pre><code class="language-python"># ir_builder.py
-
-class FIRBuilder:
-    &quot;&quot;&quot;Helper class for building FIR instructions.&quot;&quot;&quot;
-
-    current_block: BasicBlock
-    function: &quot;FIRFunction&quot;
-
-    def __init__(self, function: &quot;FIRFunction&quot;, block: BasicBlock):
-        self.function = function
-        self.current_block = block
-
-    # Instruction builders
-
-    def int_literal(self, value: int, target_type: FIRType) -&gt; FIRValue:
-        &quot;&quot;&quot;Build IntLiteral instruction.&quot;&quot;&quot;
-        inst = IntLiteralInst(value, target_type)
-        return self.current_block.add_instruction(inst)
-
-    def binary_op(self, op: str, lhs: FIRValue, rhs: FIRValue) -&gt; FIRValue:
-        &quot;&quot;&quot;Build BinaryOp instruction.&quot;&quot;&quot;
-        # Infer result type from operands
-        result_type = lhs.instruction.result_type
-        inst = BinaryOpInst(op, lhs, rhs, result_type)
-        return self.current_block.add_instruction(inst)
-
-    def move(self, value: FIRValue) -&gt; FIRValue:
-        &quot;&quot;&quot;Build Move instruction.&quot;&quot;&quot;
-        inst = MoveInst(value)
-        return self.current_block.add_instruction(inst)
-
-    def borrow(self, value: FIRValue) -&gt; FIRValue:
-        &quot;&quot;&quot;Build Borrow instruction.&quot;&quot;&quot;
-        inst = BorrowInst(value)
-        return self.current_block.add_instruction(inst)
-
-    def call(self, func_name: str, args: List[FIRValue], 
-             modes: List[str], return_type: Optional[FIRType]) -&gt; FIRValue:
-        &quot;&quot;&quot;Build Call instruction.&quot;&quot;&quot;
-        inst = CallInst(func_name, args, modes, return_type)
-        return self.current_block.add_instruction(inst)
-
-    def drop(self, value: FIRValue):
-        &quot;&quot;&quot;Build Drop instruction (has no result).&quot;&quot;&quot;
-        inst = DropInst(value)
-        self.current_block.add_instruction(inst)
-
-    def ret(self, value: Optional[FIRValue] = None):
-        &quot;&quot;&quot;Set block terminator to Return.&quot;&quot;&quot;
-        term = ReturnInst(value)
-        self.current_block.set_terminator(term)
-
-    def branch(self, cond: FIRValue, true_block: str, false_block: str):
-        &quot;&quot;&quot;Set block terminator to Branch.&quot;&quot;&quot;
-        term = BranchInst(cond, true_block, false_block)
-        self.current_block.set_terminator(term)
-</code></pre>
-<h3 id="ownership-tracking">Ownership Tracking<a class="headerlink" href="#ownership-tracking" title="Permanent link">&para;</a></h3>
-<pre><code class="language-python"># ownership.py
-
-class OwnershipState(Enum):
-    &quot;&quot;&quot;State of a binding in ownership tracking.&quot;&quot;&quot;
-    VALID = &quot;valid&quot;           # Binding can be used
-    MOVED = &quot;moved&quot;           # Ownership transferred; invalid
-    MAYBE_MOVED = &quot;maybe_moved&quot;  # Moved on some paths
-    BORROWED = &quot;borrowed&quot;     # Currently borrowed
-
-class OwnershipMap:
-    &quot;&quot;&quot;Tracks ownership state of values in a function.&quot;&quot;&quot;
-
-    binding_states: Dict[str, OwnershipState]  # var_name -&gt; state
-    move_invalidations: Dict[FIRValue, str]    # Move(x) -&gt; var_name
-
-    def __init__(self):
-        self.binding_states = {}
-        self.move_invalidations = {}
-        self.borrow_lifetimes = {}
-
-    def record_move(self, source_var: str, move_value: FIRValue):
-        &quot;&quot;&quot;Record that source_var was moved.&quot;&quot;&quot;
-        self.binding_states[source_var] = OwnershipState.MOVED
-        self.move_invalidations[move_value] = source_var
-
-    def record_borrow(self, source_var: str, borrow_start_block, borrow_end_block):
-        &quot;&quot;&quot;Record that source_var is borrowed in range.&quot;&quot;&quot;
-        self.binding_states[source_var] = OwnershipState.BORROWED
-        self.borrow_lifetimes[source_var] = (borrow_start_block, borrow_end_block)
-
-    def is_valid(self, var: str) -&gt; bool:
-        &quot;&quot;&quot;Check if variable is in VALID state.&quot;&quot;&quot;
-        return self.binding_states.get(var) == OwnershipState.VALID
-</code></pre>
-<hr />
-<h2 id="part-3-ast-fir-conversion-template">Part 3: AST → FIR Conversion Template<a class="headerlink" href="#part-3-ast-fir-conversion-template" title="Permanent link">&para;</a></h2>
-<pre><code class="language-python"># ast_to_fir.py
-
-class ASTToFIRConverter:
-    &quot;&quot;&quot;Convert semantic-analyzed AST to FIR.&quot;&quot;&quot;
-
-    def __init__(self, ast: ASTNode, parser_instance, source_code: str):
-        self.ast = ast
-        self.parser = parser_instance
-        self.source_code = source_code
-        self.fir_module = FIRModule()
-        self.current_function: Optional[FIRFunction] = None
-        self.current_block: Optional[BasicBlock] = None
-        self.builder: Optional[FIRBuilder] = None
-        self.value_map: Dict[ASTNode, FIRValue] = {}  # AST node -&gt; FIR value
-        self.block_counter = 0
-
-    def convert(self) -&gt; FIRModule:
-        &quot;&quot;&quot;Convert AST to FIR module.&quot;&quot;&quot;
-        for child in self.ast.children:
-            if child.node_type == NodeTypes.FUNCTION_DEFINITION:
-                self._convert_function(child)
-            elif child.node_type == NodeTypes.CLASS_DEFINITION:
-                self._convert_class(child)
-        return self.fir_module
-
-    def _convert_function(self, node: ASTNode) -&gt; FIRFunction:
-        &quot;&quot;&quot;Convert function definition to FIR.&quot;&quot;&quot;
-        func_name = node.name
-
-        # Extract parameters
-        params = []
-        param_borrowing = []
-        for param in node.children:
-            if param.node_type == NodeTypes.PARAMETER:
-                param_name = param.name
-                param_type = self._convert_type(param)
-                is_borrowed = param.is_borrowed if hasattr(param, 'is_borrowed') else False
-                params.append((param_name, param_type))
-                param_borrowing.append(is_borrowed)
-
-        # Return type
-        return_type = self._convert_type(node) if node.var_type else None
-
-        # Create FIR function
-        fir_func = FIRFunction(func_name, params, return_type)
-        self.current_function = fir_func
-
-        # Create entry block
-        entry_block = self._create_block()
-        self.current_block = entry_block
-        self.builder = FIRBuilder(fir_func, entry_block)
-
-        # Convert function body
-        for stmt in node.children:
-            if stmt.node_type in [NodeTypes.STATEMENT, NodeTypes.BLOCK]:
-                self._convert_statement(stmt)
-
-        # Ensure block has terminator
-        if self.current_block.terminator is None:
-            self.builder.ret(None)
-
-        fir_func.blocks.append(entry_block)
-        self.fir_module.functions.append(fir_func)
-
-        return fir_func
-
-    def _convert_expression(self, node: ASTNode) -&gt; FIRValue:
-        &quot;&quot;&quot;Convert expression to FIR value.&quot;&quot;&quot;
-        if node.node_type == NodeTypes.INTEGER_LITERAL:
-            target_type = self._convert_type(node)
-            return self.builder.int_literal(int(node.value), target_type)
-
-        elif node.node_type == NodeTypes.BINARY_OPERATION:
-            lhs = self._convert_expression(node.children[0])
-            rhs = self._convert_expression(node.children[1])
-            op = node.operator
-            return self.builder.binary_op(op, lhs, rhs)
-
-        elif node.node_type == NodeTypes.FUNCTION_CALL:
-            func_name = node.name
-            args = []
-            modes = []  # &quot;own&quot;, &quot;borrow&quot;, etc.
-
-            for arg in node.children:
-                arg_value = self._convert_expression(arg)
-                args.append(arg_value)
-                # Determine if borrowed or owned based on function signature
-                # For now, assume owned
-                modes.append(&quot;own&quot;)
-
-            return_type = self._convert_type(node)
-            return self.builder.call(func_name, args, modes, return_type)
-
-        elif node.node_type == NodeTypes.IDENTIFIER:
-            # Look up variable in value_map or create reference
-            if node in self.value_map:
-                return self.value_map[node]
-            else:
-                # Create reference to parameter or local variable
-                var_name = node.name
-                var_type = self._convert_type(node)
-                # Placeholder: should track value from parameter
-                raise NotImplementedError(f&quot;Variable lookup for {var_name}&quot;)
-
-        else:
-            raise NotImplementedError(f&quot;Expression type {node.node_type}&quot;)
-
-    def _convert_statement(self, node: ASTNode):
-        &quot;&quot;&quot;Convert statement to FIR instructions.&quot;&quot;&quot;
-        if node.node_type == NodeTypes.RETURN_STATEMENT:
-            value = None
-            if node.children:
-                value = self._convert_expression(node.children[0])
-            self.builder.ret(value)
-
-        elif node.node_type == NodeTypes.IF_STATEMENT:
-            cond = self._convert_expression(node.children[0])
-            true_block = self._create_block()
-            false_block = self._create_block()
-            join_block = self._create_block()
-
-            self.builder.branch(cond, true_block.id, false_block.id)
-
-            # Convert true branch
-            self.current_block = true_block
-            self.builder = FIRBuilder(self.current_function, true_block)
-            # ... convert body
-            if true_block.terminator is None:
-                true_block.set_terminator(JumpInst(join_block.id))
-
-            # Convert false branch (if exists)
-            # ...
-
-            # Continue at join block
-            self.current_block = join_block
-            self.builder = FIRBuilder(self.current_function, join_block)
-
-        else:
-            raise NotImplementedError(f&quot;Statement type {node.node_type}&quot;)
-
-    def _convert_type(self, node: ASTNode) -&gt; FIRType:
-        &quot;&quot;&quot;Convert AST type to FIR type.&quot;&quot;&quot;
-        type_name = node.var_type
-        is_array = node.is_array if hasattr(node, 'is_array') else False
-
-        if is_array:
-            element_type = SimpleType(type_name, category=&quot;owned&quot;)
-            return ArrayType(element_type)
-        else:
-            # Determine if owned or copyable
-            category = &quot;owned&quot;  # Default
-            if type_name in [&quot;int32&quot;, &quot;float64&quot;, &quot;bool&quot;]:
-                category = &quot;copyable&quot;
-
-            return SimpleType(type_name, category=category)
-
-    def _create_block(self) -&gt; BasicBlock:
-        &quot;&quot;&quot;Create a new basic block.&quot;&quot;&quot;
-        block_id = f&quot;block_{self.block_counter}&quot;
-        self.block_counter += 1
-        return BasicBlock(block_id)
-</code></pre>
-<hr />
-<h2 id="part-4-fir-c-backend-template">Part 4: FIR → C Backend Template<a class="headerlink" href="#part-4-fir-c-backend-template" title="Permanent link">&para;</a></h2>
-<pre><code class="language-python"># codegen/fir_to_c.py
-
-class FIRToCBackend:
-    &quot;&quot;&quot;Convert FIR to C source code.&quot;&quot;&quot;
-
-    def __init__(self, fir_module: FIRModule):
-        self.module = fir_module
-        self.output = []
-
-    def generate(self) -&gt; str:
-        &quot;&quot;&quot;Generate complete C source.&quot;&quot;&quot;
-        self._emit_includes()
-        self._emit_type_defs()
-        self._emit_functions()
-        return &quot;\n&quot;.join(self.output)
-
-    def _emit_includes(self):
-        &quot;&quot;&quot;Emit C includes.&quot;&quot;&quot;
-        self.output.append(&quot;#include &lt;stdio.h&gt;&quot;)
-        self.output.append(&quot;#include &lt;stdint.h&gt;&quot;)
-        self.output.append(&quot;#include &lt;stdbool.h&gt;&quot;)
-        self.output.append(&quot;#include &lt;string.h&gt;&quot;)
-        self.output.append('#include &quot;firescript/runtime/runtime.h&quot;')
-        self.output.append(&quot;&quot;)
-
-    def _emit_type_defs(self):
-        &quot;&quot;&quot;Emit C struct typedefs for classes.&quot;&quot;&quot;
-        for type_def in self.module.types:
-            self._emit_type_def(type_def)
-        self.output.append(&quot;&quot;)
-
-    def _emit_type_def(self, type_def: TypeDef):
-        &quot;&quot;&quot;Emit single type definition.&quot;&quot;&quot;
-        # Generate C struct
-        struct_name = f&quot;_firescript_{type_def.name}&quot;
-        self.output.append(f&quot;typedef struct {struct_name} {{&quot;)
-
-        # Fields
-        for field_name, field_type in type_def.fields:
-            c_type = self._fir_type_to_c(field_type)
-            self.output.append(f&quot;    {c_type} {field_name};&quot;)
-
-        self.output.append(f&quot;}} {struct_name};&quot;)
-
-    def _emit_functions(self):
-        &quot;&quot;&quot;Emit all FIR functions as C functions.&quot;&quot;&quot;
-        for fir_func in self.module.functions:
-            self._emit_function(fir_func)
-
-    def _emit_function(self, fir_func: FIRFunction):
-        &quot;&quot;&quot;Emit single FIR function as C function.&quot;&quot;&quot;
-        # Function signature
-        return_type = self._fir_type_to_c(fir_func.return_type or SimpleType(&quot;void&quot;))
-        func_name = f&quot;_firescript_{fir_func.name}&quot;
-
-        params_c = []
-        for param_name, param_type in fir_func.parameters:
-            c_type = self._fir_type_to_c(param_type)
-            params_c.append(f&quot;{c_type} {param_name}&quot;)
-
-        params_str = &quot;, &quot;.join(params_c) if params_c else &quot;void&quot;
-        self.output.append(f&quot;{return_type} {func_name}({params_str}) {{&quot;)
-
-        # Function body
-        for block in fir_func.blocks:
-            self._emit_block(block)
-
-        self.output.append(&quot;}&quot;)
-        self.output.append(&quot;&quot;)
-
-    def _emit_block(self, block: BasicBlock):
-        &quot;&quot;&quot;Emit block label and instructions.&quot;&quot;&quot;
-        # Skip label for entry block (block_0)
-        if block.id != &quot;block_0&quot;:
-            self.output.append(f&quot;{block.id}:&quot;)
-
-        for instr in block.instructions:
-            self._emit_instruction(instr)
-
-        if block.terminator:
-            self._emit_terminator(block.terminator)
-
-    def _emit_instruction(self, instr: Instruction):
-        &quot;&quot;&quot;Emit single instruction as C statement.&quot;&quot;&quot;
-        if instr.opcode == &quot;IntLiteral&quot;:
-            # %0 = IntLiteral(42, int32) → int32_t %0 = 42;
-            var_name = self._value_name(instr)
-            c_type = self._fir_type_to_c(instr.result_type)
-            self.output.append(f&quot;    {c_type} {var_name} = {instr.value};&quot;)
-
-        elif instr.opcode == &quot;BinaryOp&quot;:
-            # %0 = BinaryOp(&quot;+&quot;, %1, %2) → int32_t %0 = (%1 + %2);
-            var_name = self._value_name(instr)
-            c_type = self._fir_type_to_c(instr.result_type)
-            lhs = self._operand_name(instr.operands[0])
-            rhs = self._operand_name(instr.operands[1])
-            self.output.append(f&quot;    {c_type} {var_name} = ({lhs} {instr.op} {rhs});&quot;)
-
-        elif instr.opcode == &quot;Drop&quot;:
-            # Drop(x) → drop_X(x) or free(x)
-            operand = self._operand_name(instr.operands[0])
-            self.output.append(f&quot;    free({operand});&quot;)
-
-        elif instr.opcode == &quot;Call&quot;:
-            # Call(func, args, modes) → result = func(args);
-            func_name = f&quot;_firescript_{instr.function_ref}&quot;
-            args_c = [self._operand_name(arg) for arg in instr.operands]
-            args_str = &quot;, &quot;.join(args_c)
-
-            if instr.result_type:
-                var_name = self._value_name(instr)
-                c_type = self._fir_type_to_c(instr.result_type)
-                self.output.append(f&quot;    {c_type} {var_name} = {func_name}({args_str});&quot;)
-            else:
-                self.output.append(f&quot;    {func_name}({args_str});&quot;)
-
-        else:
-            # Placeholder for other instructions
-            pass
-
-    def _emit_terminator(self, term: Terminator):
-        &quot;&quot;&quot;Emit terminating instruction.&quot;&quot;&quot;
-        if term.opcode == &quot;Return&quot;:
-            if term.operands:
-                value = self._operand_name(term.operands[0])
-                self.output.append(f&quot;    return {value};&quot;)
-            else:
-                self.output.append(&quot;    return;&quot;)
-
-        elif term.opcode == &quot;Branch&quot;:
-            cond = self._operand_name(term.operands[0])
-            self.output.append(f&quot;    if ({cond}) {{&quot;)
-            self.output.append(f&quot;        goto {term.true_block};&quot;)
-            self.output.append(&quot;    } else {&quot;)
-            self.output.append(f&quot;        goto {term.false_block};&quot;)
-            self.output.append(&quot;    }&quot;)
-
-        elif term.opcode == &quot;Jump&quot;:
-            self.output.append(f&quot;    goto {term.target_block};&quot;)
-
-    def _fir_type_to_c(self, fir_type: FIRType) -&gt; str:
-        &quot;&quot;&quot;Convert FIR type to C type string.&quot;&quot;&quot;
-        if isinstance(fir_type, SimpleType):
-            type_map = {
-                &quot;int8&quot;: &quot;int8_t&quot;,
-                &quot;int16&quot;: &quot;int16_t&quot;,
-                &quot;int32&quot;: &quot;int32_t&quot;,
-                &quot;int64&quot;: &quot;int64_t&quot;,
-                &quot;float32&quot;: &quot;float&quot;,
-                &quot;float64&quot;: &quot;double&quot;,
-                &quot;bool&quot;: &quot;bool&quot;,
-                &quot;string&quot;: &quot;char*&quot;,
-                &quot;void&quot;: &quot;void&quot;,
-            }
-            if fir_type.name in type_map:
-                return type_map[fir_type.name]
-            else:
-                # Custom class (owned)
-                if fir_type.is_owned():
-                    return f&quot;_firescript_{fir_type.name}*&quot;
-                else:
-                    return f&quot;_firescript_{fir_type.name}&quot;
-
-        elif isinstance(fir_type, ArrayType):
-            element_c = self._fir_type_to_c(fir_type.element_type)
-            return f&quot;{element_c}*&quot;
-
-        else:
-            return &quot;void&quot;
-
-    def _value_name(self, instr: Instruction) -&gt; str:
-        &quot;&quot;&quot;Generate C variable name for instruction result.&quot;&quot;&quot;
-        # Simple approach: use instruction address as unique ID
-        return f&quot;_v{id(instr)}&quot;
-
-    def _operand_name(self, operand: FIRValue) -&gt; str:
-        &quot;&quot;&quot;Get C name for operand.&quot;&quot;&quot;
-        return self._value_name(operand.instruction)
-</code></pre>
-<hr />
-<h2 id="part-5-testing-strategy">Part 5: Testing Strategy<a class="headerlink" href="#part-5-testing-strategy" title="Permanent link">&para;</a></h2>
-<h3 id="test-structure">Test Structure<a class="headerlink" href="#test-structure" title="Permanent link">&para;</a></h3>
-<pre><code class="language-python"># tests/fir_runner.py (NEW)
-
-import subprocess
-import os
-from pathlib import Path
-
-class FIRTestRunner:
-    &quot;&quot;&quot;Run tests using AST → FIR → C backend.&quot;&quot;&quot;
-
-    def run_test(self, source_file: str) -&gt; bool:
-        &quot;&quot;&quot;
-        Compile with FIR backend, compare output to expected.
-        &quot;&quot;&quot;
-        # 1. Compile with FIR backend
-        result = subprocess.run(
-            [&quot;python&quot;, &quot;firescript/main.py&quot;, source_file, &quot;--use-fir&quot;],
-            capture_output=True
-        )
-
-        if result.returncode != 0:
-            print(f&quot;Compilation failed: {result.stderr}&quot;)
-            return False
-
-        # 2. Run compiled binary
-        binary_path = source_file.replace(&quot;.fire&quot;, &quot;&quot;)
-        output = subprocess.run([binary_path], capture_output=True).stdout.decode()
-
-        # 3. Compare to expected output
-        expected_path = f&quot;tests/expected/{Path(source_file).stem}.out&quot;
-        with open(expected_path) as f:
-            expected = f.read()
-
-        if output == expected:
-            return True
-        else:
-            print(f&quot;Output mismatch in {source_file}&quot;)
-            print(f&quot;Expected:\n{expected}&quot;)
-            print(f&quot;Got:\n{output}&quot;)
-            return False
-
-# Run parallel tests
-def run_all_tests():
-    runner_old = OldCompilerTestRunner()  # Current backend
-    runner_fir = FIRTestRunner()          # FIR backend
-
-    for test_file in glob(&quot;tests/sources/*.fire&quot;):
-        old_result = runner_old.run_test(test_file)
-        fir_result = runner_fir.run_test(test_file)
-
-        if old_result and fir_result:
-            print(f&quot;✓ {test_file}&quot;)
-        elif old_result and not fir_result:
-            print(f&quot;✗ {test_file} (FIR FAILED)&quot;)
-        else:
-            print(f&quot;? {test_file} (Old also failed)&quot;)
-</code></pre>
-<h3 id="comparison-matrix">Comparison Matrix<a class="headerlink" href="#comparison-matrix" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Test</th>
-<th>Old Backend</th>
-<th>FIR Backend</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>functions.fire</code></td>
-<td>✓</td>
-<td>✓</td>
-<td>Both pass</td>
-</tr>
-<tr>
-<td><code>ownership_demo.fire</code></td>
-<td>✓</td>
-<td>(Testing)</td>
-<td>Check ownership handling</td>
-</tr>
-<tr>
-<td><code>classes_smoke.fire</code></td>
-<td>✓</td>
-<td>(Testing)</td>
-<td>Check class codegen</td>
-</tr>
-<tr>
-<td><code>generics_basic.fire</code></td>
-<td>✓</td>
-<td>(Testing)</td>
-<td>Check monomorphization</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="part-6-debugging-introspection">Part 6: Debugging &amp; Introspection<a class="headerlink" href="#part-6-debugging-introspection" title="Permanent link">&para;</a></h2>
-<h3 id="dumping-fir-for-debugging">Dumping FIR for Debugging<a class="headerlink" href="#dumping-fir-for-debugging" title="Permanent link">&para;</a></h3>
-<pre><code class="language-python"># Enable FIR dump with flag
-
-$ python firescript/main.py example.fire --dump-fir
-
-# Output:
-module firescript_example
-
-type Point copyable {
-  x: int32
-  y: int32
-}
-
-function main() -&gt; void {
-  block_0:
-    %0 = IntLiteral(10, int32)
-    %1 = IntLiteral(20, int32)
-    %2 = Allocate(Point, [%0, %1])
-    %3 = Borrow(%2)
-    %4 = Call(distance, [%3, %3], [&quot;borrow&quot;, &quot;borrow&quot;]) -&gt; int32
-    Drop(%2)
-    Return()
-}
-</code></pre>
-<h3 id="comparing-generated-c">Comparing Generated C<a class="headerlink" href="#comparing-generated-c" title="Permanent link">&para;</a></h3>
-<pre><code class="language-python"># Side-by-side comparison of old vs. new generated C
-
-$ python scripts/compare_codegen.py example.fire
-
-# Output shows:
-# - Differences in generated C
-# - Functionality should be identical
-# - Structure may differ (acceptable)
-</code></pre>
-<hr />
-<h2 id="part-7-common-pitfalls-solutions">Part 7: Common Pitfalls &amp; Solutions<a class="headerlink" href="#part-7-common-pitfalls-solutions" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Issue</th>
-<th>Cause</th>
-<th>Solution</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>"Variable not found in value_map"</td>
-<td>Accessing parameter before creating FIRValue</td>
-<td>Track all parameters in value_map during function setup</td>
-</tr>
-<tr>
-<td>"Block has no terminator"</td>
-<td>Forgot to add return/branch at block end</td>
-<td>Always set terminator before moving to next block</td>
-</tr>
-<tr>
-<td>"Type mismatch in BinaryOp"</td>
-<td>Operand types differ</td>
-<td>Enforce type checking; both must be same type</td>
-</tr>
-<tr>
-<td>"Orphaned instruction"</td>
-<td>Instruction not added to block</td>
-<td>Use <code>builder.add_instruction()</code>, not direct construction</td>
-</tr>
-<tr>
-<td>"Dangling reference after block merge"</td>
-<td>Borrow lifetime escapes merge point</td>
-<td>Track borrow lifetimes in OwnershipMap</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
-<p>This quick reference provides the foundational structures and patterns needed to implement FIR. Refer back to the main FIR_impl_plan.md for detailed specification and rationale.</p>
-<p>Key takeaways:
-1. <strong>Modularize</strong>: Separate FIR IR design, AST conversion, and code generation
-2. <strong>Test Early</strong>: Compare outputs between old and new backends continuously
-3. <strong>Use Builders</strong>: FIRBuilder makes instruction construction cleaner
-4. <strong>Track Ownership</strong>: OwnershipMap is critical for correctness
-5. <strong>Debug Friendly</strong>: Textual FIR serialization helps identify issues</p>
-<p>Good luck with the implementation!</p>
+<p>Dumps are deterministic (value numbers follow block order, then instruction order), so they
+diff cleanly across compiler changes.</p>
 
 
 

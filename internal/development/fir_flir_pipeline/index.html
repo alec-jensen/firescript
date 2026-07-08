@@ -8,7 +8,7 @@
       
       
       
-        <link rel="canonical" href="https://firescript.alecj.com/internal/development/FIR_overview/">
+        <link rel="canonical" href="https://firescript.alecj.com/internal/development/fir_flir_pipeline/">
       
       
       
@@ -21,7 +21,7 @@
     
     
       
-        <title>FIR Overview and Architecture - firescript</title>
+        <title>FIR + FLIR Pipeline [IMPLEMENTED] - firescript</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#fir-overview-and-architecture" class="md-skip">
+        <a href="#fir-flir-pipeline-implemented" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              FIR Overview and Architecture
+              FIR + FLIR Pipeline [IMPLEMENTED]
             
           </span>
         </div>
@@ -1271,108 +1271,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#executive-summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Executive Summary
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#current-compiler-architecture-analysis" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Current Compiler Architecture Analysis
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Current Compiler Architecture Analysis">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#existing-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Existing Pipeline
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#proposed-firflir-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Proposed FIR+FLIR Pipeline
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#proposed-pipeline-stages" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Proposed Pipeline Stages
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#type-system-summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Type System Summary
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#memory-semantic-analysis" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Memory &amp; Semantic Analysis
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#strengths-weaknesses" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Strengths &amp; Weaknesses
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -1396,7 +1294,7 @@
 
 
   
-    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/development/FIR_overview.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/development/fir_flir_pipeline.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1404,84 +1302,23 @@
   
 
 
-<h1 id="fir-overview-and-architecture">FIR Overview and Architecture<a class="headerlink" href="#fir-overview-and-architecture" title="Permanent link">&para;</a></h1>
-<h2 id="executive-summary">Executive Summary<a class="headerlink" href="#executive-summary" title="Permanent link">&para;</a></h2>
-<p>This document summarizes the FIR+FLIR design for the firescript compiler and describes the original compiler state and motivations for adding a two-level IR.</p>
-<p><strong>Status</strong>: implemented. The compiler pipeline is AST → FIR → FLIR → x86-64 assembly; the direct AST → C translation described below as "current state" has been removed. Optimization passes are follow-up work.</p>
-<p><strong>Original State</strong>: Compiler uses direct AST → C translation.
-<strong>Target State (reached)</strong>: AST → FIR → [Optimization Passes] → FLIR → [Assembly | future targets]</p>
-<h2 id="current-compiler-architecture-analysis">Current Compiler Architecture Analysis<a class="headerlink" href="#current-compiler-architecture-analysis" title="Permanent link">&para;</a></h2>
-<h3 id="existing-pipeline">Existing Pipeline<a class="headerlink" href="#existing-pipeline" title="Permanent link">&para;</a></h3>
-<pre><code>Source Text
-    ↓
-Lexer + Parser → AST
-    ↓
-Import Resolution → Merged AST
-    ↓
-Preprocessing → Annotated AST
-    ↓
-Semantic Analysis → Type-checked, Ownership-validated AST
-    ↓
-Code Generation → C Source
-    ↓
-C Compiler → Native Binary
-</code></pre>
-<h3 id="proposed-firflir-pipeline">Proposed FIR+FLIR Pipeline<a class="headerlink" href="#proposed-firflir-pipeline" title="Permanent link">&para;</a></h3>
-<pre><code>Source Text
-    ↓
-Lexer + Parser → AST
-    ↓
-Import Resolution → Merged AST
-    ↓
-Preprocessing → Annotated AST
-    ↓
-Semantic Analysis → Type-checked, ownership-validated AST
-    ↓
-AST → FIR Converter → FIR
-    ↓
-[FIR Optimization Passes]
-    • Constant folding
-    • Dead code elimination
-    • Common subexpression elimination
-    ↓
-FIR → FLIR Lowering → FLIR
-    ↓
-[Backend Selection]
-    ├─ FLIR → C
-    ├─ FLIR → Assembly
-    └─ FLIR → JS/WASM
-</code></pre>
-<h3 id="proposed-pipeline-stages">Proposed Pipeline Stages<a class="headerlink" href="#proposed-pipeline-stages" title="Permanent link">&para;</a></h3>
+<h1 id="fir-flir-pipeline-implemented">FIR + FLIR Pipeline [IMPLEMENTED]<a class="headerlink" href="#fir-flir-pipeline-implemented" title="Permanent link">&para;</a></h1>
+<p>The FIR + FLIR pipeline is implemented and is the compiler's only pipeline. The legacy AST →
+C backend, the C runtime, and the interim FLIR → C differential backend used during migration
+have all been removed. The compiler lowers AST → FIR → FLIR → x86-64 assembly (Windows x64,
+self-hosted assembler and PE writer, freestanding binaries importing only kernel32.dll), and
+the language runtime is implemented in firescript (<code>std/internal/runtime.fire</code>).</p>
+<p>This is the short index for the FIR + FLIR design docs. The full details are split into
+smaller files so each page stays manageable.</p>
+<p>Internal pages:</p>
 <ul>
-<li><strong>AST stage</strong>: parser output plus import and preprocessing passes, with source structure still intact.</li>
-<li><strong>Semantic stage</strong>: validates types, ownership, borrows, and drops while the tree is still high-level.</li>
-<li><strong>FIR stage</strong>: preserves classes, generics, and ownership so optimization passes can still use language semantics.</li>
-<li><strong>Optimization stage</strong>: runs high-level IR passes before lowering removes useful type information.</li>
-<li><strong>FLIR stage</strong>: erases high-level constructs into structs, pointers, primitive operations, and ABI-aware layouts.</li>
-<li><strong>Backend stage</strong>: emits C, assembly, or other backend targets from the lowered IR.</li>
+<li><a href="../fir_flir_overview/">Overview and architecture</a></li>
+<li><a href="../fir_spec/">FIR specification</a></li>
+<li><a href="../flir_spec/">FLIR specification</a></li>
+<li><a href="../fir_developer_reference/">Developer quick reference</a></li>
 </ul>
-<p>The main rule is that FIR stays simple and semantic, while FLIR is the lowering boundary for backend-specific code generation.</p>
-<h3 id="type-system-summary">Type System Summary<a class="headerlink" href="#type-system-summary" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Copyable types: numeric, float, bool, user-defined copyable classes</li>
-<li>Owned types: strings, arrays, user-defined classes (default), generics</li>
-</ul>
-<h3 id="memory-semantic-analysis">Memory &amp; Semantic Analysis<a class="headerlink" href="#memory-semantic-analysis" title="Permanent link">&para;</a></h3>
-<p>The <code>SemanticAnalyzer</code> tracks binding scope, ownership states (VALID/MOVED/MAYBE_MOVED/BORROWED), borrow validation and drop points. Currently this information is not preserved in a reusable IR and is lost once codegen begins.</p>
-<h3 id="strengths-weaknesses">Strengths &amp; Weaknesses<a class="headerlink" href="#strengths-weaknesses" title="Permanent link">&para;</a></h3>
-<p>Strengths:
-- Clear ownership semantics
-- Readable AST and error reporting
-- Working module and generic support</p>
-<p>Weaknesses:
-- No IR for multi-backend reuse
-- Late monomorphization and tight coupling of semantic analysis to codegen
-- No IR-level optimizations</p>
-<hr />
-<p>For detailed FIR and FLIR specifications, see:
-- FIR spec: <code>FIR_fir_spec.md</code>
-- FLIR spec: <code>FIR_flir_spec.md</code>
-- Roadmap and migration: <code>FIR_roadmap_and_migration.md</code></p>
+<p>Warning: internal docs for compiler and language developers only.</p>
+<p>Use <code>--emit-fir</code> and <code>--emit-flir</code> when debugging the pipeline.</p>
 
 
 
