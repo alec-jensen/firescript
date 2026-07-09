@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../benchmarks/" class="md-tabs__link">
+      <a href="../../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -1518,7 +1518,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../benchmarks/" class="md-nav__link">
+      <a href="../../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1890,7 +1890,7 @@
 <pre><code class="language-firescript">class File {
     string path;
 
-    File(&amp;this, string path);
+    File(&amp;mut this, string path);
 
     FileResult read(&amp;this);
     FileResult readBytes(&amp;this, int32 bytes);
@@ -1898,12 +1898,12 @@
     FileResult appendAll(&amp;this, string data);
     bool exists(&amp;this);
     FileResult remove(&amp;this);
-    FileResult renameTo(&amp;this, string new_path);
-    FileResult moveTo(&amp;this, string dst_path);
+    FileResult renameTo(&amp;mut this, string new_path);
+    FileResult moveTo(&amp;mut this, string dst_path);
 }
 </code></pre>
 <p><strong>Constructor:</strong></p>
-<pre><code class="language-firescript">File(&amp;this, string path)
+<pre><code class="language-firescript">File(&amp;mut this, string path)
 </code></pre>
 <p>Create a <code>File</code> instance for the given path. The path is stored but the file is not opened until an operation is called.</p>
 <p><strong>Parameters:</strong>
@@ -1921,10 +1921,10 @@ File myFile = File(&quot;hello.txt&quot;);
 
     FileResult(int32 status, string data);
 
-    bool ok(&amp;FileResult this);
-    int32 err_code(&amp;FileResult this);
-    int32 result_status(&amp;FileResult this);
-    string result_data(&amp;FileResult this);
+    bool ok(&amp;this);
+    int32 err_code(&amp;this);
+    int32 result_status(&amp;this);
+    string result_data(&amp;this);
 }
 </code></pre>
 <p><strong>Fields:</strong>
@@ -1939,6 +1939,8 @@ File myFile = File(&quot;hello.txt&quot;);
 <p><strong>Returns:</strong> <code>FileResult</code> with status = bytes read (on success) or negative error code</p>
 <p><strong>Example:</strong></p>
 <pre><code class="language-firescript">import @firescript/std.fs.File;
+import @firescript/std.io.println;
+
 File f = File(&quot;data.txt&quot;);
 FileResult r = f.read();
 if (r.ok()) {
@@ -1994,7 +1996,7 @@ if (r.ok()) {
 <pre><code class="language-firescript">f.remove();
 </code></pre>
 <h3 id="renametostring-new_path"><code>renameTo(string new_path)</code><a class="headerlink" href="#renametostring-new_path" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">FileResult renameTo(&amp;this, string new_path)
+<pre><code class="language-firescript">FileResult renameTo(&amp;mut this, string new_path)
 </code></pre>
 <p>Rename (or move within same filesystem) to a new path. Updates the <code>File</code> path on success.</p>
 <p><strong>Parameters:</strong>
@@ -2004,7 +2006,7 @@ if (r.ok()) {
 <pre><code class="language-firescript">f.renameTo(&quot;newname.txt&quot;);
 </code></pre>
 <h3 id="movetostring-dst_path"><code>moveTo(string dst_path)</code><a class="headerlink" href="#movetostring-dst_path" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">FileResult moveTo(&amp;this, string dst_path)
+<pre><code class="language-firescript">FileResult moveTo(&amp;mut this, string dst_path)
 </code></pre>
 <p>Move file to a new location with cross-filesystem fallback. On cross-device moves, automatically falls back to copy + delete.
 Updates the <code>File</code> path on success.</p>
@@ -2016,7 +2018,7 @@ Updates the <code>File</code> path on success.</p>
 </code></pre>
 <h2 id="fileresult-methods">FileResult Methods<a class="headerlink" href="#fileresult-methods" title="Permanent link">&para;</a></h2>
 <h3 id="ok"><code>ok()</code><a class="headerlink" href="#ok" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">bool ok(&amp;FileResult this)
+<pre><code class="language-firescript">bool ok(&amp;this)
 </code></pre>
 <p>Check if operation succeeded (status &gt;= 0).</p>
 <p><strong>Example:</strong></p>
@@ -2025,21 +2027,21 @@ Updates the <code>File</code> path on success.</p>
 }
 </code></pre>
 <h3 id="err_code"><code>err_code()</code><a class="headerlink" href="#err_code" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int32 err_code(&amp;FileResult this)
+<pre><code class="language-firescript">int32 err_code(&amp;this)
 </code></pre>
 <p>Extract the error code (positive errno value). Returns 0 if operation succeeded.</p>
 <p><strong>Example:</strong></p>
 <pre><code class="language-firescript">int32 err = result.err_code();
 if (err &gt; 0) {
-    println(&quot;Error: &quot; + err);
+    println(&quot;Error: &quot; + (err as string));
 }
 </code></pre>
 <h3 id="result_status"><code>result_status()</code><a class="headerlink" href="#result_status" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int32 result_status(&amp;FileResult this)
+<pre><code class="language-firescript">int32 result_status(&amp;this)
 </code></pre>
 <p>Get the raw status field (positive on success, negative errno on failure).</p>
 <h3 id="result_data"><code>result_data()</code><a class="headerlink" href="#result_data" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">string result_data(&amp;FileResult this)
+<pre><code class="language-firescript">string result_data(&amp;this)
 </code></pre>
 <p>Get the data field (file contents for reads, empty for writes).</p>
 <h2 id="error-codes">Error Codes<a class="headerlink" href="#error-codes" title="Permanent link">&para;</a></h2>

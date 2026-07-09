@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../benchmarks/" class="md-tabs__link">
+      <a href="../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -1421,7 +1421,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
+      <a href="../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1730,8 +1730,9 @@ int32 rem  = a % b;   // 1
 int32 pow  = a ** b;  // 1000
 </code></pre>
 <p>Integer division truncates toward zero. Modulo returns the remainder with the same sign as the dividend (C-style, not Python-style).</p>
-<p>The <code>+</code> operator is also used for string concatenation. When one operand is a <code>string</code>, the other is implicitly converted to a string. This is the only implicit conversion in the language.</p>
-<pre><code class="language-firescript">string msg = &quot;Value: &quot; + 42;  // &quot;Value: 42&quot;
+<p>The <code>+</code> operator is also used for string concatenation. Both operands must be strings — there is no implicit conversion. Cast non-string values explicitly with <code>as</code>:</p>
+<pre><code class="language-firescript">string msg = &quot;Value: &quot; + (42 as string);  // &quot;Value: 42&quot;
+// string bad = &quot;Value: &quot; + 42;           // ❌ Error: cannot concatenate string and int32
 </code></pre>
 <h2 id="assignment-operators">Assignment Operators<a class="headerlink" href="#assignment-operators" title="Permanent link">&para;</a></h2>
 <p>The basic assignment operator <code>=</code> stores a value in a variable. For Owned types (strings, arrays, user-defined classes), assignment performs a <strong>move</strong> — the source is invalidated. For Copyable types (<code>intN</code>, <code>floatN</code>, <code>bool</code>), assignment performs a bitwise copy.</p>
@@ -1916,10 +1917,10 @@ bool fallback = hasCache() || loadFromDisk();
 <p>Supported conversions:</p>
 <ul>
 <li>Between any numeric types (<code>intN</code>, <code>uintN</code>, <code>floatN</code>)</li>
-<li>Numeric to <code>string</code> and <code>string</code> to numeric</li>
-<li>Numeric to <code>bool</code> (zero → <code>false</code>, non-zero → <code>true</code>)</li>
-<li><code>string</code> to <code>bool</code> (<code>"true"</code> → <code>true</code>, anything else → <code>false</code>)</li>
+<li><code>string</code> to numeric</li>
+<li>Built-in types to <code>string</code> (numeric types, <code>bool</code>, <code>char</code>)</li>
 </ul>
+<p>Casts <em>to</em> <code>bool</code> or <code>char</code> are not supported.</p>
 <pre><code class="language-firescript">int16 small  = 300i16;
 int32 wide   = small as int32;   // widening: 300
 int8  narrow = small as int8;    // narrowing: truncates to fit
@@ -1930,17 +1931,17 @@ int32   ipi = pi as int32;       // 3 (truncates toward zero)
 string s = 42 as string;         // &quot;42&quot;
 int32  n = &quot;100&quot; as int32;       // 100
 
-bool fromInt = 1 as bool;        // true
-bool fromStr = &quot;true&quot; as bool;   // true
+string t = true as string;       // &quot;true&quot;
 </code></pre>
 <p>⚠️ <strong>Note:</strong> Java/C-style casts (<code>(int32)value</code>) are not supported. Always use the postfix <code>as</code> form.</p>
 <h2 id="ternary-operator">Ternary Operator<a class="headerlink" href="#ternary-operator" title="Permanent link">&para;</a></h2>
-<p>❌ <strong>Not yet implemented.</strong></p>
-<p>The ternary operator is planned with the following syntax:</p>
-<pre><code class="language-firescript">condition ? trueValue : falseValue
+<p><strong>[PLANNED] — not yet implemented.</strong></p>
+<p>A ternary expression is planned using the reserved <code>ternary</code> keyword:</p>
+<pre><code class="language-firescript">// Future syntax
+int8 max = ternary a &gt; b then a else b;
 </code></pre>
 <p>Use an <code>if/else</code> block in the meantime:</p>
-<pre><code class="language-firescript">// Instead of: int32 abs = x &lt; 0 ? -x : x;
+<pre><code class="language-firescript">// Instead of a ternary expression:
 int32 abs = 0;
 if (x &lt; 0) {
     abs = -x;
@@ -1949,7 +1950,7 @@ if (x &lt; 0) {
 }
 </code></pre>
 <h2 id="bitwise-operators">Bitwise Operators<a class="headerlink" href="#bitwise-operators" title="Permanent link">&para;</a></h2>
-<p>❌ <strong>Not yet implemented.</strong></p>
+<p><strong>[PLANNED] — not yet implemented.</strong></p>
 <p>The following bitwise operators are planned for integer types:</p>
 <table>
 <thead>
@@ -1998,47 +1999,47 @@ if (x &lt; 0) {
 <tbody>
 <tr>
 <td>1 (highest)</td>
+<td><code>as</code> (postfix cast)</td>
+<td>Left</td>
+</tr>
+<tr>
+<td>2</td>
 <td><code>!</code> <code>-</code> <code>+</code> (unary)</td>
 <td>Right</td>
 </tr>
 <tr>
-<td>2</td>
+<td>3</td>
 <td><code>**</code></td>
 <td>Right</td>
 </tr>
 <tr>
-<td>3</td>
+<td>4</td>
 <td><code>*</code> <code>/</code> <code>%</code></td>
 <td>Left</td>
 </tr>
 <tr>
-<td>4</td>
+<td>5</td>
 <td><code>+</code> <code>-</code></td>
 <td>Left</td>
 </tr>
 <tr>
-<td>5</td>
+<td>6</td>
 <td><code>&lt;</code> <code>&gt;</code> <code>&lt;=</code> <code>&gt;=</code></td>
 <td>Left</td>
 </tr>
 <tr>
-<td>6</td>
+<td>7</td>
 <td><code>==</code> <code>!=</code></td>
 <td>Left</td>
 </tr>
 <tr>
-<td>7</td>
+<td>8</td>
 <td><code>&amp;&amp;</code></td>
 <td>Left</td>
 </tr>
 <tr>
-<td>8</td>
-<td><code>\|\|</code></td>
-<td>Left</td>
-</tr>
-<tr>
 <td>9</td>
-<td><code>as</code></td>
+<td><code>\|\|</code></td>
 <td>Left</td>
 </tr>
 <tr>
@@ -2055,7 +2056,7 @@ int32 result = (2 + 3) * 4;        // 20
 bool check = a + 1 &gt; b &amp;&amp; c != 0;  // ((a + 1) &gt; b) &amp;&amp; (c != 0)
 </code></pre>
 <h2 id="array-operators">Array Operators<a class="headerlink" href="#array-operators" title="Permanent link">&para;</a></h2>
-<p>❌ <strong>Not yet implemented.</strong></p>
+<p><strong>[PLANNED] — not yet implemented.</strong></p>
 <p>The following operators are planned for arrays:</p>
 <pre><code class="language-firescript">// Future syntax
 int8[3] a = [1, 2, 3];
@@ -2099,43 +2100,43 @@ int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
 <tbody>
 <tr>
 <td>Arithmetic (<code>+</code> <code>-</code> <code>*</code> <code>/</code> <code>%</code> <code>**</code>)</td>
-<td>✅ Implemented</td>
+<td>[IMPLEMENTED]</td>
 </tr>
 <tr>
 <td>Assignment (<code>=</code>)</td>
-<td>✅ Implemented</td>
+<td>[IMPLEMENTED]</td>
 </tr>
 <tr>
 <td>Compound assignment (<code>+=</code> <code>-=</code> <code>*=</code> <code>/=</code> <code>%=</code> <code>**=</code>)</td>
-<td>✅ Implemented</td>
+<td>[IMPLEMENTED]</td>
 </tr>
 <tr>
 <td>Increment / decrement (<code>++</code> <code>--</code>)</td>
-<td>✅ Implemented</td>
+<td>[IMPLEMENTED]</td>
 </tr>
 <tr>
 <td>Comparison (<code>==</code> <code>!=</code> <code>&lt;</code> <code>&gt;</code> <code>&lt;=</code> <code>&gt;=</code>)</td>
-<td>✅ Implemented</td>
+<td>[IMPLEMENTED]</td>
 </tr>
 <tr>
 <td>Logical (<code>&amp;&amp;</code> <code>\|\|</code> <code>!</code>)</td>
-<td>✅ Implemented</td>
+<td>[IMPLEMENTED]</td>
 </tr>
 <tr>
 <td>Cast (<code>as</code>)</td>
-<td>✅ Implemented</td>
+<td>[IMPLEMENTED]</td>
 </tr>
 <tr>
-<td>Ternary (<code>? :</code>)</td>
-<td>❌ Planned</td>
+<td>Ternary</td>
+<td>[PLANNED]</td>
 </tr>
 <tr>
 <td>Bitwise (<code>&amp;</code> <code>\|</code> <code>^</code> <code>~</code> <code>&lt;&lt;</code> <code>&gt;&gt;</code>)</td>
-<td>❌ Planned</td>
+<td>[PLANNED]</td>
 </tr>
 <tr>
 <td>Array operators (<code>+</code> <code>-</code> <code>*</code> <code>/</code> <code>.</code>)</td>
-<td>❌ Planned</td>
+<td>[PLANNED]</td>
 </tr>
 </tbody>
 </table>

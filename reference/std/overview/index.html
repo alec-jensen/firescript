@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../benchmarks/" class="md-tabs__link">
+      <a href="../../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -1335,7 +1335,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../benchmarks/" class="md-nav__link">
+      <a href="../../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1522,17 +1522,18 @@
 <ul>
 <li><a href="../io/">I/O</a>: Formatted output with <code>print</code> and <code>println</code></li>
 <li><a href="../fs/">File System</a>: File operations via the <code>File</code> class and <code>FileResult</code> helpers</li>
-<li><a href="../math/">Math</a>: Mathematical constants and functions</li>
-<li><a href="../regex/">Regex</a>: Full-string regular-expression matching and pattern validation</li>
+<li><a href="../math/">Math</a>: Mathematical functions</li>
+<li><a href="../regex/">Regex</a>: Regular-expression matching, anchors, and pattern validation</li>
 <li><a href="../cli_args/">Command-Line Arguments</a>: Argument parsing for CLI programs</li>
 <li><a href="../types/">Types</a>: Generic container types (<code>Tuple</code>, <code>Option</code>)</li>
-<li>FCL Lexer: Lexer for parsing FireScript Configuration Language (FCL) data</li>
+<li>Ranges: <code>range</code>, <code>rangeFrom</code>, and <code>rangeStep</code> generators for counting loops (<code>@firescript/std.ranges</code>)</li>
+<li>FCL Lexer: Lexer for parsing firescript config language (FCL) data (<code>@firescript/std.fcl</code>)</li>
 </ul>
 <h2 id="importing">Importing<a class="headerlink" href="#importing" title="Permanent link">&para;</a></h2>
 <p>Standard library modules are imported using <code>@firescript/std</code> namespace syntax:</p>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 import @firescript/std.fs.File;
-import @firescript/std.math.PI64;
+import @firescript/std.math.max;
 import @firescript/std.fcl.next_token;  // FCL lexer
 </code></pre>
 <p>You can also import at the module level:</p>

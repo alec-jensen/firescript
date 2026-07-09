@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../benchmarks/" class="md-tabs__link">
+      <a href="../../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -1207,15 +1207,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#package-manifest-kilntoml" class="md-nav__link">
+  <a href="#package-manifest-kilnfcl" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Package Manifest (kiln.toml)
+        Package Manifest (kiln.fcl)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Package Manifest (kiln.toml)">
+    <nav class="md-nav" aria-label="Package Manifest (kiln.fcl)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1363,7 +1363,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../benchmarks/" class="md-nav__link">
+      <a href="../../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1410,15 +1410,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#package-manifest-kilntoml" class="md-nav__link">
+  <a href="#package-manifest-kilnfcl" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Package Manifest (kiln.toml)
+        Package Manifest (kiln.fcl)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Package Manifest (kiln.toml)">
+    <nav class="md-nav" aria-label="Package Manifest (kiln.fcl)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1573,55 +1573,41 @@
 
 
 <h1 id="kiln-manifest-and-configuration-format">kiln Manifest and Configuration Format<a class="headerlink" href="#kiln-manifest-and-configuration-format" title="Permanent link">&para;</a></h1>
-<p>The Firescript package manager, <code>kiln</code>, uses TOML (Tom's Obvious, Minimal Language) for its configuration. The primary file is <code>kiln.toml</code>, which must be located at the root of a kiln-managed project alongside the source code.</p>
-<h2 id="package-manifest-kilntoml">Package Manifest (<code>kiln.toml</code>)<a class="headerlink" href="#package-manifest-kilntoml" title="Permanent link">&para;</a></h2>
-<p>The <code>kiln.toml</code> file defines your project's metadata, dependencies, and build profiles. It acts as the source of truth for the package manager.</p>
-<pre><code class="language-toml">[package]
-name = &quot;my_project&quot;
-version = &quot;0.1.0&quot;
-description = &quot;A sample Firescript executable project&quot;
-authors = [&quot;Jane Doe &lt;jane@example.com&gt;&quot;]
+<blockquote>
+<p>Status: [PLANNED]. The kiln manifest format is <a href="../../fcl/overview/">FCL (firescript config language)</a>, which is itself in development. The exact manifest schema below is illustrative design direction and will be finalized alongside kiln in the 0.10.0 release. (An earlier design used TOML; that has been superseded by FCL.)</p>
+</blockquote>
+<p>The firescript package manager, <code>kiln</code>, uses FCL for its configuration. The primary file is <code>kiln.fcl</code>, which must be located at the root of a kiln-managed project alongside the source code.</p>
+<h2 id="package-manifest-kilnfcl">Package Manifest (<code>kiln.fcl</code>)<a class="headerlink" href="#package-manifest-kilnfcl" title="Permanent link">&para;</a></h2>
+<p>The <code>kiln.fcl</code> file defines your project's metadata, dependencies, and build profiles. It acts as the source of truth for the package manager.</p>
+<pre><code class="language-fcl">// Illustrative future schema
+class Package {
+    string name = &quot;my_project&quot;
+    string version = &quot;0.1.0&quot;
+    string description = &quot;A sample firescript executable project&quot;
+    [string] authors = [&quot;Jane Doe &lt;jane@example.com&gt;&quot;]
 
-# The compiler this package is built for (defaults to &quot;firescript&quot;)
-compiler = &quot;firescript&quot;
+    // The compiler this package is built for (defaults to &quot;firescript&quot;)
+    string compiler = &quot;firescript&quot;
 
-# Entry point of the package. 
-# Defaults to &quot;src/main.fire&quot; for binaries or &quot;src/lib.fire&quot; for libraries.
-entry = &quot;src/main.fire&quot;
+    // Entry point of the package.
+    // Defaults to &quot;src/main.fire&quot; for binaries or &quot;src/lib.fire&quot; for libraries.
+    string entry = &quot;src/main.fire&quot;
 
-# Path to the license file
-license-file = &quot;LICENSE&quot;
+    // Path to the license file
+    string licenseFile = &quot;LICENSE&quot;
+}
 </code></pre>
 <h3 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">&para;</a></h3>
-<p>The <code>[dependencies]</code> section specifies packages and libraries your project requires to build and run. kiln supports semantic versioning (<code>semver</code>) for package resolution.</p>
-<pre><code class="language-toml">[dependencies]
-# Pull a specific version from the default package registry
-http = &quot;1.2.0&quot;
-
-# Pull a dependency directly from a local path relative to kiln.toml
-utils = { path = &quot;../utils&quot; }
-
-# Pull a dependency directly from a Git repository
-json = { git = &quot;https://github.com/example/json.fire&quot;, branch = &quot;main&quot; }
-</code></pre>
+<p>The dependencies section will specify packages and libraries your project requires to build and run. kiln will support semantic versioning (<code>semver</code>) for package resolution, plus local-path and Git dependencies:</p>
+<ul>
+<li>A specific version from the default package registry (e.g., <code>http = "1.2.0"</code>)</li>
+<li>A local path relative to <code>kiln.fcl</code></li>
+<li>A Git repository URL with a branch or tag</li>
+</ul>
 <h3 id="development-dependencies">Development Dependencies<a class="headerlink" href="#development-dependencies" title="Permanent link">&para;</a></h3>
-<p>The <code>[dev-dependencies]</code> section lists packages only required for testing or local development. These dependencies <strong>will not</strong> be bundled or forwarded when another project depends on your package.</p>
-<pre><code class="language-toml">[dev-dependencies]
-testing_tools = &quot;0.5.0&quot;
-</code></pre>
+<p>Dev-dependencies list packages only required for testing or local development. These dependencies <strong>will not</strong> be bundled or forwarded when another project depends on your package.</p>
 <h3 id="build-profiles">Build Profiles<a class="headerlink" href="#build-profiles" title="Permanent link">&para;</a></h3>
-<p>kiln allows you to configure default compiler arguments for different environments (<code>[profile.dev]</code> and <code>[profile.release]</code>). If omitted, <code>kiln</code> falls back to sane defaults.</p>
-<pre><code class="language-toml">[profile.dev]
-# These flags map directly to internal compiler arguments during local runs
-emit_deps = true 
-check = false
-link_args = []
-
-[profile.release]
-# Useful for overriding release behavior, such as stripping symbols
-emit_deps = false
-link_args = [&quot;-Wl,--strip-all&quot;]
-</code></pre>
+<p>kiln will allow configuring default compiler arguments for different environments (dev and release profiles). If omitted, <code>kiln</code> falls back to sane defaults.</p>
 <h2 id="lockfile-kilnlock">Lockfile (<code>kiln.lock</code>)<a class="headerlink" href="#lockfile-kilnlock" title="Permanent link">&para;</a></h2>
 <p>When kiln resolves dependencies, it calculates hashes and exact semantic versions, writing them to an auto-generated <code>kiln.lock</code> file.</p>
 <ul>
@@ -1632,7 +1618,7 @@ link_args = [&quot;-Wl,--strip-all&quot;]
 <h2 id="expected-project-layout">Expected Project Layout<a class="headerlink" href="#expected-project-layout" title="Permanent link">&para;</a></h2>
 <p>kiln enforces standard conventions for directory layout to minimize the need for manual configuration.</p>
 <pre><code class="language-text">my_project/
-├── kiln.toml          # The package manifest
+├── kiln.fcl           # The package manifest
 ├── kiln.lock          # Auto-generated lockfile (after running `kiln build`)
 ├── src/               # Main source code directory
 │   ├── main.fire      # Default entry point for executables

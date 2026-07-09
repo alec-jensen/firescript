@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../benchmarks/" class="md-tabs__link">
+      <a href="../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -1411,7 +1411,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
+      <a href="../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1693,7 +1693,7 @@ int32 int32 = 0;     // reserved type name
 <tbody>
 <tr>
 <td>Control flow</td>
-<td><code>if</code> <code>elif</code> <code>else</code> <code>while</code> <code>for</code> <code>in</code> <code>break</code> <code>continue</code> <code>return</code> <code>ternary</code></td>
+<td><code>if</code> <code>elif</code> <code>else</code> <code>while</code> <code>for</code> <code>in</code> <code>break</code> <code>continue</code> <code>return</code> <code>ternary</code> <code>yield</code></td>
 </tr>
 <tr>
 <td>Declarations</td>
@@ -1701,11 +1701,11 @@ int32 int32 = 0;     // reserved type name
 </tr>
 <tr>
 <td>Modifiers</td>
-<td><code>const</code> <code>nullable</code> <code>copyable</code> <code>static</code></td>
+<td><code>const</code> <code>nullable</code> <code>copyable</code> <code>static</code> <code>mut</code> <code>owned</code></td>
 </tr>
 <tr>
 <td>Other keywords</td>
-<td><code>import</code> <code>from</code> <code>as</code> <code>new</code></td>
+<td><code>import</code> <code>export</code> <code>from</code> <code>as</code> <code>new</code></td>
 </tr>
 <tr>
 <td>Primitive types</td>
@@ -1717,6 +1717,7 @@ int32 int32 = 0;     // reserved type name
 </tr>
 </tbody>
 </table>
+<p>The <code>char</code> type name is also reserved in type positions.</p>
 <h2 id="declaration-and-initialization">Declaration and Initialization<a class="headerlink" href="#declaration-and-initialization" title="Permanent link">&para;</a></h2>
 <p>Variables in firescript must be declared with an explicit type and initialized in the same statement:</p>
 <pre><code class="language-firescript">int8 age = 30;
@@ -1743,7 +1744,9 @@ PI = 3.14159;  // Error: cannot reassign a constant
 string password = null;           // Invalid - non-nullable type cannot hold null
 </code></pre>
 <p>Attempting to use a nullable variable without checking for null may result in runtime errors:</p>
-<pre><code class="language-firescript">import @firescript/std.io.print;\n\nnullable string message = null;
+<pre><code class="language-firescript">import @firescript/std.io.print;
+
+nullable string message = null;
 
 // Safe access pattern
 if (message != null) {

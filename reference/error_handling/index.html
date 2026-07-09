@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#runtime-error-handling" class="md-skip">
+        <a href="#error-handling" class="md-skip">
           Skip to content
         </a>
       
@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../benchmarks/" class="md-tabs__link">
+      <a href="../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -800,10 +800,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
+  <a href="#current-behavior-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Error Handling
+        Current Behavior [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Current Behavior [IMPLEMENTED]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#compile-time-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compile-Time Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-traps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime Traps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result-types-in-the-standard-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result Types in the Standard Library
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#planned-error-handling-features-planned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planned Error Handling Features [PLANNED]
       
     </span>
   </a>
@@ -1322,7 +1372,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
+      <a href="../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1380,10 +1430,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
+  <a href="#current-behavior-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Error Handling
+        Current Behavior [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Current Behavior [IMPLEMENTED]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#compile-time-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compile-Time Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-traps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime Traps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result-types-in-the-standard-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result Types in the Standard Library
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#planned-error-handling-features-planned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planned Error Handling Features [PLANNED]
       
     </span>
   </a>
@@ -1474,38 +1574,70 @@
   
 
 
-<h1 id="runtime-error-handling">Runtime Error Handling<a class="headerlink" href="#runtime-error-handling" title="Permanent link">&para;</a></h1>
-<p>firescript is designed in a way that minimizes runtime errors through static type checking and compile-time validation. However, some errors may still occur during execution, such as division by zero or out-of-bounds array access.</p>
+<h1 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h1>
+<p>firescript is designed in a way that minimizes runtime errors through static type checking and compile-time validation. However, some errors can still occur during execution, such as division by zero or out-of-bounds array access.</p>
 <h2 id="error-types">Error Types<a class="headerlink" href="#error-types" title="Permanent link">&para;</a></h2>
 <ol>
 <li><strong>Syntax Errors</strong>: Caught at compile-time, these errors occur when the code is not well-formed.</li>
 <li><strong>Type Errors</strong>: Also caught at compile-time, these occur when operations are applied to incompatible types.</li>
+<li><strong>Ownership Errors</strong>: Caught at compile-time — use-after-move, illegal borrows, and borrow escapes are rejected by the compiler (see <a href="../memory_management/">Memory Management</a>).</li>
 <li><strong>Runtime Errors</strong>: These occur during execution and can include:</li>
+<li>Integer overflow and underflow</li>
 <li>Division by zero</li>
 <li>Null reference access</li>
 <li>Array index out of bounds</li>
 </ol>
-<h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
-<p>firescript provides a way to handle runtime errors gracefully:</p>
+<h2 id="current-behavior-implemented">Current Behavior [IMPLEMENTED]<a class="headerlink" href="#current-behavior-implemented" title="Permanent link">&para;</a></h2>
+<h3 id="compile-time-diagnostics">Compile-Time Diagnostics<a class="headerlink" href="#compile-time-diagnostics" title="Permanent link">&para;</a></h3>
+<p>Most errors are caught before the program ever runs. The compiler reports structured diagnostics with exact source locations:</p>
+<pre><code class="language-text">[ERROR] --- Cannot assign string to variable of type int8
+&gt; int8 age = &quot;thirty&quot;;
+             ^
+(main.fire:3:12)
+</code></pre>
+<h3 id="runtime-traps">Runtime Traps<a class="headerlink" href="#runtime-traps" title="Permanent link">&para;</a></h3>
+<p>Runtime errors terminate the program with an error. For example, arithmetic on fixed-size integers that exceeds the representable range traps at runtime rather than silently wrapping:</p>
+<pre><code class="language-firescript">int8 max = 127i8;
+int8 overflow = max + 1i8;  // Runtime error: integer overflow
+</code></pre>
+<p>Overflows that can be detected at compile time (constant expressions) are reported as compile-time errors instead.</p>
+<h3 id="result-types-in-the-standard-library">Result Types in the Standard Library<a class="headerlink" href="#result-types-in-the-standard-library" title="Permanent link">&para;</a></h3>
+<p>For recoverable errors — currently file-system operations — the standard library uses result values instead of exceptions. Operations return a result object whose status you check explicitly:</p>
+<pre><code class="language-firescript">import @firescript/std.fs.File;
+import @firescript/std.io.println;
+
+File f = File(&quot;data.txt&quot;);
+FileResult r = f.read();
+if (r.ok()) {
+    println(r.result_data());
+} else {
+    println(&quot;read failed with error code &quot; + (r.err_code() as string));
+}
+</code></pre>
+<p>See <a href="../std/fs/">File System (<code>std.fs</code>)</a> for details. A general-purpose <code>Result&lt;T, E&gt;</code> type for the standard library is planned.</p>
+<h2 id="planned-error-handling-features-planned">Planned Error Handling Features [PLANNED]<a class="headerlink" href="#planned-error-handling-features-planned" title="Permanent link">&para;</a></h2>
+<p>The following mechanisms are designed but <strong>not yet implemented</strong> — this code will not compile today:</p>
 <ul>
-<li><strong>Try/Catch Blocks</strong>: You can wrap code that may throw an error in a try block, and handle the error in a catch block.</li>
+<li><strong>Try/Catch Blocks</strong>:</li>
 </ul>
-<pre><code class="language-firescript">try {
+<pre><code class="language-firescript">// Future syntax
+try {
     int8 result = 10 / 0;
 } catch (DivisionByZeroError e) {
     print(&quot;Error: &quot; + e.message);
 }
 </code></pre>
 <ul>
-<li><strong>Assertions</strong>: Use the <code>assert</code> function to check for conditions that must be true. If the condition is false, an error is raised.</li>
+<li><strong>Assertions</strong>:</li>
 </ul>
-<pre><code class="language-firescript">assert(x &gt; 0, &quot;x must be positive&quot;);
+<pre><code class="language-firescript">// Future syntax
+assert(x &gt; 0, &quot;x must be positive&quot;);
 </code></pre>
 <h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Always validate user input to prevent errors.</li>
-<li>Use try/catch blocks to handle potential runtime errors.</li>
-<li>Write unit tests to catch errors early in the development process.</li>
+<li>Check result statuses (e.g., <code>FileResult.ok()</code>) after fallible operations.</li>
+<li>Write tests to catch errors early in the development process.</li>
 </ul>
 
 

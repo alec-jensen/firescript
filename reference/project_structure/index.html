@@ -296,7 +296,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../benchmarks/" class="md-tabs__link">
+      <a href="../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -1231,7 +1231,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
+      <a href="../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1379,19 +1379,20 @@
 │       ├── init.fire
 │       └── constants.fire</p>
 <pre><code>
-The `init.fire` file could look like this:
+The `init.fire` file could look like this (the function must be exported to be importable — module symbols are private by default):
 
 ```firescript
 // math/init.fire
-int32 add(int32 a, int32 b) {
+export int32 add(int32 a, int32 b) {
     return a + b;
 }
 </code></pre>
 <p>Now, in your <code>main.fire</code>, you can import the <code>math</code> module and use the <code>add</code> function directly:</p>
-<p>```firescript// main.fire
-import math.add;</p>
-<p>int32 result = add(5, 10);
-```</p>
+<pre><code class="language-firescript">// main.fire
+import math.add;
+
+int32 result = add(5, 10);
+</code></pre>
 
 
 

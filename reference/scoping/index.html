@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../benchmarks/" class="md-tabs__link">
+      <a href="../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -794,10 +794,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#6-nested-function-scopes-future-feature" class="md-nav__link">
+  <a href="#6-nested-function-scopes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Nested Function Scopes (Future Feature)
+        6. Nested Function Scopes
       
     </span>
   </a>
@@ -832,10 +832,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#interaction-with-ownership-planned" class="md-nav__link">
+  <a href="#interaction-with-ownership" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Interaction With Ownership (Planned)
+        Interaction With Ownership
       
     </span>
   </a>
@@ -1510,7 +1510,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
+      <a href="../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1646,10 +1646,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#6-nested-function-scopes-future-feature" class="md-nav__link">
+  <a href="#6-nested-function-scopes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Nested Function Scopes (Future Feature)
+        6. Nested Function Scopes
       
     </span>
   </a>
@@ -1684,10 +1684,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#interaction-with-ownership-planned" class="md-nav__link">
+  <a href="#interaction-with-ownership" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Interaction With Ownership (Planned)
+        Interaction With Ownership
       
     </span>
   </a>
@@ -1852,7 +1852,7 @@
 
 <h1 id="scoping-in-firescript">Scoping in firescript<a class="headerlink" href="#scoping-in-firescript" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>Status: This section references planned ownership semantics. See <a href="../memory_management/#overview">Memory Management</a> for authoritative definitions.</p>
+<p>Status: Scoping rules are [IMPLEMENTED]. See <a href="../memory_management/#overview">Memory Management</a> for authoritative ownership definitions.</p>
 </blockquote>
 <p>In firescript, scopes define the visibility and lifetime of variables. Understanding how scopes work is crucial for writing correct and predictable code.</p>
 <h2 id="scope-creation">Scope Creation<a class="headerlink" href="#scope-creation" title="Permanent link">&para;</a></h2>
@@ -1867,11 +1867,11 @@
 
 // Global scope
 
-int globalVar = 10;
+int32 globalVar = 10;
 
 if (globalVar &gt; 5) {
     // Inner scope 1 (if body)
-    int innerVar1 = 20;
+    int32 innerVar1 = 20;
     print(globalVar);  // Accessing outer scope variable: OK (prints 10)
     print(innerVar1);  // Accessing current scope variable: OK (prints 20)
 }
@@ -1880,13 +1880,13 @@ if (globalVar &gt; 5) {
 
 {
     // Inner scope 2 (bare braces)
-    int innerVar2 = 30;
+    int32 innerVar2 = 30;
     print(globalVar);  // Accessing outer scope variable: OK (prints 10)
     print(innerVar2);  // Accessing current scope variable: OK (prints 30)
 
     if (true) {
         // Inner scope 3 (nested if body)
-        int innerVar3 = 40;
+        int32 innerVar3 = 40;
         print(globalVar);  // OK (prints 10)
         print(innerVar2);  // OK (prints 30)
         print(innerVar3);  // OK (prints 40)
@@ -1908,14 +1908,14 @@ if (globalVar &gt; 5) {
 <pre><code class="language-firescript">import @firescript/std.io.print;
 
 {
-    int x = 5;  // x is declared and initialized
+    int32 x = 5;  // x is declared and initialized
 
     {
         // New inner scope
         print(x);  // Accessible, prints 5
 
-        // int x = 10;  // ERROR: Cannot redeclare 'x' - shadowing is not allowed
-        int y = 15;  // y is only accessible in this scope
+        // int32 x = 10;  // ERROR: Cannot redeclare 'x' - shadowing is not allowed
+        int32 y = 15;  // y is only accessible in this scope
     }
 
     // print(y)  // ERROR: y is not defined in this scope
@@ -1923,15 +1923,15 @@ if (globalVar &gt; 5) {
 // print(x)  // ERROR: x is not defined in this scope
 </code></pre>
 <h3 id="2-variable-lifetime">2. Variable Lifetime<a class="headerlink" href="#2-variable-lifetime" title="Permanent link">&para;</a></h3>
-<p>Variables exist only from the point of their declaration to the end of their containing scope:</p>
+<p>Variables exist only from the point32 of their declaration to the end of their containing scope:</p>
 <pre><code class="language-firescript">{
     // print(a)  // ERROR: Cannot use 'a' before declaration
 
-    int a = 1;
+    int32 a = 1;
     print(a);  // OK: 'a' exists here
 
     {
-        int b = 2;
+        int32 b = 2;
         print(a);  // OK: 'a' from outer scope
         print(b);  // OK: 'b' from current scope
     }  // 'b' is destroyed here
@@ -1941,7 +1941,7 @@ if (globalVar &gt; 5) {
 </code></pre>
 <h3 id="3-global-scope">3. Global Scope<a class="headerlink" href="#3-global-scope" title="Permanent link">&para;</a></h3>
 <p>Variables declared outside any braces are in the global scope and are accessible throughout the entire program:</p>
-<pre><code class="language-firescript">int globalValue = 100;  // Global variable
+<pre><code class="language-firescript">int32 globalValue = 100;  // Global variable
 
 {
     print(globalValue);  // Accessible anywhere in the program
@@ -1951,15 +1951,14 @@ if (globalVar &gt; 5) {
     }
 }
 
-// User-defined functions would also have access to global variables
-// when this feature is implemented
+// User-defined functions also have access to global variables
 </code></pre>
 <h3 id="4-loop-scopes">4. Loop Scopes<a class="headerlink" href="#4-loop-scopes" title="Permanent link">&para;</a></h3>
 <p>Each iteration of a loop has its own scope:</p>
-<pre><code class="language-firescript">int i = 0;
+<pre><code class="language-firescript">int32 i = 0;
 while (i &lt; 3) {
     // New scope for each loop iteration
-    int temp = i * 10;
+    int32 temp = i * 10;
     print(temp);  // Prints 0, 10, 20
     i = i + 1;
 }  // 'temp' is destroyed at the end of each iteration
@@ -1968,38 +1967,37 @@ while (i &lt; 3) {
 </code></pre>
 <h3 id="5-conditional-scopes">5. Conditional Scopes<a class="headerlink" href="#5-conditional-scopes" title="Permanent link">&para;</a></h3>
 <p>Each branch of a conditional statement creates its own scope. This pattern prevents runtime issues where a variable may or may not be defined depending on the execution path:</p>
-<pre><code class="language-firescript">int value = 5;
+<pre><code class="language-firescript">int32 value = 5;
 
 if (value &gt; 10) {
     // Scope A
-    int result = value * 2;
+    int32 result = value * 2;
     print(result);
 } else if (value &gt; 0) {
     // Scope B (different from Scope A)
-    int result = value + 10;  // OK to reuse the name 'result' here
+    int32 result = value + 10;  // OK to reuse the name 'result' here
     print(result);  // Prints 15
 } else {
     // Scope C (different from Scopes A and B)
-    int result = 0;
+    int32 result = 0;
     print(result);
 }
 
 // print(result)  // ERROR: 'result' is not accessible here
 </code></pre>
-<h3 id="6-nested-function-scopes-future-feature">6. Nested Function Scopes (Future Feature)<a class="headerlink" href="#6-nested-function-scopes-future-feature" title="Permanent link">&para;</a></h3>
-<p>When user-defined functions are implemented, they will create their own scopes:</p>
+<h3 id="6-nested-function-scopes">6. Nested Function Scopes<a class="headerlink" href="#6-nested-function-scopes" title="Permanent link">&para;</a></h3>
+<p>Functions create their own scopes:</p>
 <pre><code class="language-firescript">// Global scope
-int globalVar = 10;
+int32 globalVar = 10;
 
-// Future syntax when functions are implemented
 void exampleFunction() {
     // Function scope
-    int functionVar = 20;
+    int32 functionVar = 20;
     print(globalVar);  // OK: access to global scope
 
     {
         // Inner scope within the function
-        int innerVar = 30;
+        int32 innerVar = 30;
         print(functionVar);  // OK: access to containing function scope
         print(globalVar);    // OK: access to global scope
     }
@@ -2011,14 +2009,13 @@ void exampleFunction() {
 </code></pre>
 <h2 id="variable-scope-vs-object-lifetime">Variable Scope vs. Object Lifetime<a class="headerlink" href="#variable-scope-vs-object-lifetime" title="Permanent link">&para;</a></h2>
 <p>It's important to distinguish between a variable's scope (where it can be accessed) and an object's lifetime (how long it exists in memory and when it is dropped):</p>
-<pre><code class="language-firescript">// When object-oriented features are implemented:
-{
+<pre><code class="language-firescript">{
     // myObj variable is scoped to this block
     Person myObj = Person(&quot;John&quot;, 30);
 
-    // myObj reference goes out of scope here
-    // The Person object will be dropped (its destructor run) when its final owner goes out of scope.
-    // (Deterministic planned behavior – see Memory Management.)
+    // myObj goes out of scope here
+    // The Person object is dropped when its final owner goes out of scope
+    // (deterministic behavior – see Memory Management).
 }
 </code></pre>
 <h2 id="best-practices-for-effective-scoping">Best Practices for Effective Scoping<a class="headerlink" href="#best-practices-for-effective-scoping" title="Permanent link">&para;</a></h2>
@@ -2036,7 +2033,7 @@ void exampleFunction() {
 <p><code>firescript
    {
        // Temporary calculation scope
-       int temp = complexCalculation();
+       int32 temp = complexCalculation();
        result = temp * 2;
    }  // 'temp' is no longer accessible, reducing scope pollution</code></p>
 <ol>
@@ -2047,7 +2044,7 @@ void exampleFunction() {
 <p><strong>Avoid deeply nested scopes</strong>: Excessive nesting can make code harder to read and understand.</p>
 </li>
 </ol>
-<h2 id="interaction-with-ownership-planned">Interaction With Ownership (Planned)<a class="headerlink" href="#interaction-with-ownership-planned" title="Permanent link">&para;</a></h2>
+<h2 id="interaction-with-ownership">Interaction With Ownership<a class="headerlink" href="#interaction-with-ownership" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Scope exit triggers deterministic drop of all still-owned values declared in that scope.</li>
 <li>A move transfers ownership; the original variable becomes invalid immediately after the move.</li>
@@ -2085,11 +2082,11 @@ int8 result = 42;
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <p>Scope handling in firescript is fully implemented:</p>
 <ul>
-<li>✅ Block scopes with curly braces</li>
-<li>✅ Variable visibility rules</li>
-<li>✅ Prohibition of variable shadowing</li>
-<li>✅ Scope nesting and hierarchy</li>
-<li>✅ Variable lifetime management</li>
+<li>[IMPLEMENTED] Block scopes with curly braces</li>
+<li>[IMPLEMENTED] Variable visibility rules</li>
+<li>[IMPLEMENTED] Prohibition of variable shadowing</li>
+<li>[IMPLEMENTED] Scope nesting and hierarchy</li>
+<li>[IMPLEMENTED] Variable lifetime management</li>
 </ul>
 
 

@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../benchmarks/" class="md-tabs__link">
+      <a href="../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -1344,7 +1344,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
+      <a href="../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1544,38 +1544,38 @@
 <tbody>
 <tr>
 <td>Copyable Types</td>
-<td>⚠️ Partial</td>
+<td>[IMPLEMENTED]</td>
 <td><code>bool</code>, <code>char</code>, <code>intN</code>, <code>floatN</code> (stack-allocated scalars)</td>
 </tr>
 <tr>
 <td>Owned Types</td>
-<td>⚠️ Partial</td>
-<td><code>string</code>, arrays (heap-allocated with move semantics)</td>
+<td>[IMPLEMENTED]</td>
+<td><code>string</code>, arrays, user-defined classes (heap-allocated with move semantics)</td>
 </tr>
 <tr>
 <td>Memory Model</td>
-<td>⚠️ In Progress</td>
-<td>Ownership model documented; compiler enforcement WIP. Arrays are targeted as the first Owned type. See <a href="../memory_management/">Memory Management</a>.</td>
+<td>[IMPLEMENTED]</td>
+<td>Ownership, moves, borrows, and deterministic drop insertion are enforced by the compiler. See <a href="../memory_management/">Memory Management</a>.</td>
 </tr>
 <tr>
 <td>Control Flow</td>
-<td>⚠️ Partial</td>
-<td><code>if/else</code>, <code>while</code> &amp; <code>for</code> loops work, <code>range()</code> loops planned</td>
+<td>[IMPLEMENTED]</td>
+<td><code>if</code>/<code>else if</code>/<code>else</code>, <code>while</code>, C-style <code>for</code>, <code>for-in</code> (arrays, strings, generators), <code>break</code>/<code>continue</code>. Range loops via <code>@firescript/std.ranges</code>.</td>
 </tr>
 <tr>
 <td>Functions</td>
-<td>⚠️ Partial</td>
-<td>Functions can be defined and used but lack some planned features</td>
+<td>[IMPLEMENTED]</td>
+<td>Parameters, return values, recursion, generic functions, generators</td>
 </tr>
 <tr>
 <td>Classes</td>
-<td>⚠️ Partial</td>
-<td>Object-oriented features planned for future versions</td>
+<td>[IMPLEMENTED]</td>
+<td>Fields, methods, constructors, inheritance, static methods, generic classes</td>
 </tr>
 <tr>
 <td>Modules</td>
-<td>⚠️ Partial</td>
-<td>Import/module organization exists; explicit export visibility is documented as the module boundary</td>
+<td>[IMPLEMENTED]</td>
+<td>Imports with explicit export visibility (private by default)</td>
 </tr>
 </tbody>
 </table>
@@ -1592,21 +1592,23 @@
 <ul>
 <li><a href="../type_system/">Type System</a> - Comprehensive information about the firescript type system</li>
 <li><a href="../scoping/">Scoping Rules</a> - How variable scoping works</li>
-<li><a href="../classes/">Classes &amp; Inheritance</a> - Object-oriented programming (future)</li>
+<li><a href="../classes/">Classes &amp; Inheritance</a> - Object-oriented programming</li>
 </ul>
 <h2 id="example-code">Example Code<a class="headerlink" href="#example-code" title="Permanent link">&para;</a></h2>
-<pre><code class="language-firescript">// Calculate fibonacci numbers
-int8 i = 0;
-int8 j = 1;
-int8 count = 10;
+<pre><code class="language-firescript">import @firescript/std.io.println;
 
-print(&quot;Fibonacci Sequence:&quot;);
-print(i);
-print(j);
+// Calculate fibonacci numbers
+int32 i = 0;
+int32 j = 1;
+int32 count = 10;
+
+println(&quot;Fibonacci Sequence:&quot;);
+println(i);
+println(j);
 
 while (count &gt; 0) {
-    int8 next = i + j;
-    print(next);
+    int32 next = i + j;
+    println(next);
     i = j;
     j = next;
     count = count - 1;

@@ -14,8 +14,6 @@
         <link rel="prev" href="../glossary/">
       
       
-        <link rel="next" href="../benchmarks/">
-      
       
         
       
@@ -302,7 +300,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../benchmarks/" class="md-tabs__link">
+      <a href="../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -1270,6 +1268,34 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#060-griffin-currently-in-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.6.0 - Griffin (Currently in Development)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.6.0 - Griffin (Currently in Development)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-language-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New Language Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#050-kirin" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1282,7 +1308,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#new-language-features" class="md-nav__link">
+  <a href="#new-language-features_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         New Language Features
@@ -1354,7 +1380,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#new-language-features_1" class="md-nav__link">
+  <a href="#new-language-features_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         New Language Features
@@ -1562,7 +1588,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../benchmarks/" class="md-nav__link">
+      <a href="../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1609,6 +1635,34 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#060-griffin-currently-in-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.6.0 - Griffin (Currently in Development)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.6.0 - Griffin (Currently in Development)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-language-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New Language Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#050-kirin" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1621,7 +1675,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#new-language-features" class="md-nav__link">
+  <a href="#new-language-features_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         New Language Features
@@ -1693,7 +1747,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#new-language-features_1" class="md-nav__link">
+  <a href="#new-language-features_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         New Language Features
@@ -1921,9 +1975,15 @@
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
 <p>firescript follows <a href="https://semver.org/">Semantic Versioning</a>. This makes it easier to understand the impact of changes in each release.</p>
+<h2 id="060-griffin-currently-in-development">0.6.0 - Griffin (Currently in Development)<a class="headerlink" href="#060-griffin-currently-in-development" title="Permanent link">&para;</a></h2>
+<h3 id="new-language-features">New Language Features<a class="headerlink" href="#new-language-features" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added <code>enum</code> declarations with tag-only (no data payload) variants, e.g. <code>enum Color { Red, Green, Blue }</code>. Variants are constructed with <code>EnumName.Variant</code> syntax (e.g. <code>Color.Red</code>). Enums are owned types (heap-allocated, like classes without an explicit <code>copyable</code> annotation). Generic enums (<code>enum Foo&lt;T&gt;</code>) are not yet supported and produce a clear compile error rather than miscompiling; <code>match</code> expressions for destructuring enums are also not yet implemented. See <code>docs/internal/development/version_planning.md</code> (0.6.0 "Griffin") for the full planned feature.</li>
+<li>Enum variants can now declare positional data payloads, e.g. <code>enum Shape { Circle(float64), Rectangle(float64, float64), Point }</code>, constructed as <code>Shape.Circle(3.0)</code>. Payload types are currently limited to copyable scalars (owned payload data — strings, classes — is not yet dropped correctly on scope exit; that support, along with <code>match</code> for reading payload fields back out, is planned for a later stage of 0.6.0 "Griffin").</li>
+</ul>
 <h2 id="050-kirin">0.5.0 - Kirin<a class="headerlink" href="#050-kirin" title="Permanent link">&para;</a></h2>
 <p><em>July 2, 2026</em></p>
-<h3 id="new-language-features">New Language Features<a class="headerlink" href="#new-language-features" title="Permanent link">&para;</a></h3>
+<h3 id="new-language-features_1">New Language Features<a class="headerlink" href="#new-language-features_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Added generator functions with <code>generator&lt;T&gt;</code> syntax: lazy iterables that produce values on demand via <code>yield</code>. Generators compile to state-machine structs with resumable next-functions. User-defined generators and <code>for-in</code> loops over generators are both supported.</li>
 <li>Added <code>@firescript/std.ranges</code> standard library module with <code>range(end)</code>, <code>rangeFrom(start, end)</code>, and <code>rangeStep(start, end, step)</code> generators, enabling <code>for (int32 i in range(5))</code> style loops.</li>
@@ -1949,7 +2009,7 @@
 <h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>firescript now compiles with zero external dependencies — Python only.</strong> The compiler lowers source through its own intermediate representations (FIR and FLIR), then assembles x86-64 machine code and writes the PE32+ executable itself: no C compiler, no assembler, no linker, no external programs are invoked at any stage. GCC/Clang and MinGW binutils (<code>as</code>/<code>ld</code>) are no longer used or required; the <code>--cc</code> flag and the <code>CC</code> environment variable have been removed, and <code>--emit c</code> is replaced by <code>--emit asm</code>.</li>
-<li>Native compilation currently targets <strong>Windows x64 only</strong>. Compiled binaries are freestanding, position-independent, ASLR-compatible (DYNAMICBASE/NXCOMPAT) PE32+ executables that import only <code>kernel32.dll</code>. Linux and macOS native targets are planned for a future release.</li>
+<li>Native compilation currently targets <strong>Windows x86_64 only</strong>. Compiled binaries are freestanding, position-independent, ASLR-compatible (DYNAMICBASE/NXCOMPAT) PE32+ executables that import only <code>kernel32.dll</code>. Linux and macOS native targets are planned for a future release.</li>
 <li>The language runtime (strings, arrays, numeric formatting and parsing, process arguments, file syscalls) is now implemented in firescript itself (<code>std/internal/runtime.fire</code>) and compiled into every program.</li>
 <li><code>float128</code> is now a true 16-byte IEEE 754 binary128 (quad-precision) type, implemented as a self-hosted soft-float runtime over pairs of 64-bit integers (no external libraries). Arithmetic (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, unary <code>-</code>), comparisons, and conversions to/from <code>float64</code>, integers, and decimal strings are correctly rounded (round-to-nearest-even), with full support for subnormals, signed zero, infinity, and NaN. Converting a <code>float128</code> to a string uses printf <code>%f</code> formatting with 6 fraction digits (e.g. <code>4.000000</code>).</li>
 <li>Removed built-in <code>input()</code> function.</li>
@@ -2002,7 +2062,7 @@
 <li>Arrays are now fixed-size. Future dynamic arrays will be in the standard library.</li>
 <li>Beginning of memory management implementation. See <a href="docs/memory_management.md">Memory Management</a> for details.</li>
 </ul>
-<h3 id="new-language-features_1">New Language Features<a class="headerlink" href="#new-language-features_1" title="Permanent link">&para;</a></h3>
+<h3 id="new-language-features_2">New Language Features<a class="headerlink" href="#new-language-features_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Fixed-width numeric types across the board:<ul>
 <li>Integers: <code>int8</code>, <code>int16</code>, <code>int32</code>, <code>int64</code>, <code>uint8</code>, <code>uint16</code>, <code>uint32</code>, <code>uint64</code>.</li>
@@ -2271,22 +2331,6 @@
             </div>
           </a>
         
-        
-          
-          <a href="../benchmarks/" class="md-footer__link md-footer__link--next" aria-label="Next: Benchmarks">
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              <div class="md-ellipsis">
-                Benchmarks
-              </div>
-            </div>
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
-            </div>
-          </a>
         
       </nav>
     

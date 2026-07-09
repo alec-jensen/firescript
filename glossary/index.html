@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../benchmarks/" class="md-tabs__link">
+      <a href="../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -1312,7 +1312,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../benchmarks/" class="md-nav__link">
+      <a href="../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1474,7 +1474,7 @@
 <li><strong>Owned:</strong> Includes user-defined objects, closures, arrays, and strings. These values are stored on the heap with pointers on the stack. Ownership is unique unless an explicit sharing container (future <code>Rc</code>, <code>Arc</code>) is used.</li>
 <li><strong>Move:</strong> Occurs on assignment, passing to a parameter of owned type, or returning a value. After a move, the source binding cannot be used (use-after-move error).</li>
 <li><strong>Borrow:</strong> Lightweight, read-only access. Cannot be stored in owned fields or escape its originating scope/call. Does not incur runtime overhead.</li>
-<li><strong>Clone:</strong> Creates an independent owned value. Semantics (deep vs copy-on-write) determined by the type implementation but always preserves logical independence.</li>
+<li><strong>Clone:</strong> Creates an independent owned value (planned; explicit <code>.clone()</code> is not yet implemented). Semantics (deep vs copy-on-write) determined by the type implementation but always preserves logical independence.</li>
 <li><strong>Drop:</strong> Compiler-inserted destructor invocation (<code>drop(this)</code>) ensuring timely resource release (files, sockets, buffers) without tracing GC.</li>
 <li><strong>Module:</strong> A single <code>.fire</code> file or a collection of files that can be imported. Modules encapsulate code and can expose public APIs.</li>
 <li><strong>Package:</strong> A distributable unit of code, often hosted in a package registry. Packages can contain multiple modules and dependencies.</li>

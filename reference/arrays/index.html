@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../benchmarks/" class="md-tabs__link">
+      <a href="../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -1444,7 +1444,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
+      <a href="../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1725,11 +1725,14 @@
 <h2 id="array-basics">Array Basics<a class="headerlink" href="#array-basics" title="Permanent link">&para;</a></h2>
 <p>In firescript, arrays are fixed-size, ordered collections of elements that all share the same type. Arrays are Owned types—they are stored on the heap with pointers on the stack and use move semantics. Arrays are declared using square brackets and the size after the type.</p>
 <h2 id="declaration-and-initialization">Declaration and Initialization<a class="headerlink" href="#declaration-and-initialization" title="Permanent link">&para;</a></h2>
-<p>Arrays are declared by appending <code>[N]</code> to any valid type, where <code>N</code> is the fixed size. Arrays can be initialized with values in square brackets, or left uninitialized to be zero-initialized:</p>
+<p>Arrays are declared by appending <code>[N]</code> to any valid type, where <code>N</code> is the fixed size. Arrays can be initialized with values in square brackets, or left uninitialized to be zero-initialized. When an initializer is provided, the size may be omitted (<code>T[]</code>) and is inferred from the initializer:</p>
 <pre><code class="language-firescript">// Array initialization with explicit values
 int8[5] numbers = [10, 20, 30, 40, 50];
 string[3] names = [&quot;Alice&quot;, &quot;Bob&quot;, &quot;Charlie&quot;];
 bool[3] flags = [true, false, true];
+
+// Size inferred from the initializer
+int32[] inferred = [1, 2, 3, 4, 5];   // int32[5]
 
 // Array with declared size, zero-initialized
 int32[10] zeros = [];           // All elements are 0
@@ -1787,11 +1790,11 @@ for (string ch in text) {
 }
 </code></pre>
 <h3 id="array-as-function-arguments">Array as Function Arguments<a class="headerlink" href="#array-as-function-arguments" title="Permanent link">&para;</a></h3>
-<p>Arrays can be passed to functions. Function parameters can specify a fixed array size or use a size placeholder:</p>
-<pre><code class="language-firescript">// Function with sized array parameter
-int32 sum(&amp;int8[5] numbers) {
+<p>Arrays can be passed to functions. Array parameters may be unsized (<code>T[]</code>), accepting an array of any length:</p>
+<pre><code class="language-firescript">// Function with array parameter
+int32 sum(int32[] numbers) {
     int32 total = 0;
-    uint8 i = 0;
+    int32 i = 0;
     while (i &lt; numbers.length()) {
         total = total + numbers[i];
         i = i + 1;
@@ -1800,9 +1803,10 @@ int32 sum(&amp;int8[5] numbers) {
 }
 
 // Usage
-int8[5] values = [1, 2, 3, 4, 5];
+int32[] values = [1, 2, 3, 4, 5];
 int32 result = sum(values);  // 15
 </code></pre>
+<p>Arrays are Owned values, so passing one to an owned parameter moves it. Use a borrowed parameter (<code>&amp;int32[] numbers</code>) to keep using the array at the call site afterwards — see <a href="../memory_management/">Memory Management</a>.</p>
 <h3 id="nested-arrays">Nested Arrays<a class="headerlink" href="#nested-arrays" title="Permanent link">&para;</a></h3>
 <p>Arrays can contain other arrays (though this is not fully implemented yet):</p>
 <pre><code class="language-firescript">// 2D array example
@@ -1897,15 +1901,15 @@ int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <p>Arrays are functional but with limited operations in the current compiler:</p>
 <ul>
-<li>✅ Array declaration and initialization</li>
-<li>✅ Element access with positive indices</li>
-<li>✅ Negative index access for fixed-size arrays (<code>arr[-1]</code>)</li>
-<li>✅ <code>length()</code> method (including on array function parameters)</li>
-<li>✅ <code>index(value)</code> and <code>count(value)</code> on fixed-size arrays</li>
-<li>✅ <code>for-in</code> loop over arrays (including array function parameters)</li>
-<li>❌ Array slicing</li>
-<li>❌ Core fixed-size array <code>sort()</code> method (use standard library)</li>
-<li>❌ Multi-dimensional array operations</li>
+<li>[IMPLEMENTED] Array declaration and initialization (sized <code>T[N]</code> and inferred <code>T[]</code> forms)</li>
+<li>[IMPLEMENTED] Element access with positive indices</li>
+<li>[IMPLEMENTED] Negative index access for fixed-size arrays (<code>arr[-1]</code>)</li>
+<li>[IMPLEMENTED] <code>length()</code> method (including on array function parameters)</li>
+<li>[IMPLEMENTED] <code>index(value)</code> and <code>count(value)</code> on fixed-size arrays</li>
+<li>[IMPLEMENTED] <code>for-in</code> loop over arrays (including array function parameters)</li>
+<li>[PLANNED] Array slicing</li>
+<li>[PLANNED] Core fixed-size array <code>sort()</code> method (use standard library)</li>
+<li>[PLANNED] Multi-dimensional array operations</li>
 </ul>
 
 

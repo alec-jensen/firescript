@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../benchmarks/" class="md-tabs__link">
+      <a href="../../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -1115,10 +1115,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#optiont" class="md-nav__link">
+  <a href="#optiont-in-development" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Option&lt;T&gt;
+        Option&lt;T&gt; [IN DEVELOPMENT]
       
     </span>
   </a>
@@ -1126,10 +1126,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#copyableoptiont" class="md-nav__link">
+  <a href="#copyableoptiont-in-development" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CopyableOption&lt;T&gt;
+        CopyableOption&lt;T&gt; [IN DEVELOPMENT]
       
     </span>
   </a>
@@ -1357,7 +1357,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../benchmarks/" class="md-nav__link">
+      <a href="../../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1426,10 +1426,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#optiont" class="md-nav__link">
+  <a href="#optiont-in-development" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Option&lt;T&gt;
+        Option&lt;T&gt; [IN DEVELOPMENT]
       
     </span>
   </a>
@@ -1437,10 +1437,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#copyableoptiont" class="md-nav__link">
+  <a href="#copyableoptiont-in-development" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CopyableOption&lt;T&gt;
+        CopyableOption&lt;T&gt; [IN DEVELOPMENT]
       
     </span>
   </a>
@@ -1562,6 +1562,9 @@
 
 <h1 id="generic-types-stdtypes">Generic Types (<code>std.types</code>)<a class="headerlink" href="#generic-types-stdtypes" title="Permanent link">&para;</a></h1>
 <p>The <code>std.types</code> module provides generic container and utility types.</p>
+<blockquote>
+<p>Status: <code>Tuple</code> and <code>CopyableTuple</code> are [IMPLEMENTED] and tested. <code>Option</code> and <code>CopyableOption</code> are [IN DEVELOPMENT]: they compile, but <code>isSome()</code>/<code>isNone()</code> currently return incorrect results (a known bug in generic-class methods that compare a nullable field to <code>null</code>), so they should not be relied on yet.</p>
+</blockquote>
 <h2 id="tuplet-u"><code>Tuple&lt;T, U&gt;</code><a class="headerlink" href="#tuplet-u" title="Permanent link">&para;</a></h2>
 <p>A pair of values of potentially different types.</p>
 <pre><code class="language-firescript">class Tuple&lt;T, U&gt; {
@@ -1575,7 +1578,7 @@
 <pre><code class="language-firescript">import @firescript/std.types.Tuple;
 import @firescript/std.io.println;
 
-Tuple&lt;int32, string&gt; pair = Tuple(42, &quot;answer&quot;);
+Tuple&lt;int32, string&gt; pair = Tuple&lt;int32, string&gt;(42, &quot;answer&quot;);
 println(pair.first);   // 42
 println(pair.second);  // answer
 </code></pre>
@@ -1592,11 +1595,11 @@ println(pair.second);  // answer
 <p><strong>Example:</strong></p>
 <pre><code class="language-firescript">import @firescript/std.types.CopyableTuple;
 
-CopyableTuple&lt;float64, float64&gt; coord = CopyableTuple(3.14, 2.71);
+CopyableTuple&lt;float64, float64&gt; coord = CopyableTuple&lt;float64, float64&gt;(3.14, 2.71);
 CopyableTuple&lt;float64, float64&gt; copy = coord;  // copies
 </code></pre>
-<h2 id="optiont"><code>Option&lt;T&gt;</code><a class="headerlink" href="#optiont" title="Permanent link">&para;</a></h2>
-<p>An optional value of type <code>T</code>. Use this to represent potentially missing values without explicit nullability.</p>
+<h2 id="optiont-in-development"><code>Option&lt;T&gt;</code> [IN DEVELOPMENT]<a class="headerlink" href="#optiont-in-development" title="Permanent link">&para;</a></h2>
+<p>An optional value of type <code>T</code>. Use this to represent potentially missing values without explicit nullability. <strong>Known issue:</strong> <code>isSome()</code> and <code>isNone()</code> currently return incorrect results; prefer plain <code>nullable</code> variables until this is fixed.</p>
 <pre><code class="language-firescript">class Option&lt;nullable T&gt; {
     nullable T value;
 
@@ -1612,22 +1615,19 @@ CopyableTuple&lt;float64, float64&gt; copy = coord;  // copies
 <li><code>isNone()</code>: Returns <code>true</code> if no value is present</li>
 </ul>
 <p><strong>Example:</strong></p>
+<p>Intended usage (see the known issue above):</p>
 <pre><code class="language-firescript">import @firescript/std.types.Option;
 import @firescript/std.io.println;
 
-Option&lt;string&gt; maybe_name = Option(&quot;Alice&quot;);
-if (maybe_name.isSome()) {
-    println(&quot;Name: &quot; + maybe_name.value);
-}
-
-Option&lt;string&gt; none_name = Option(null);
-if (none_name.isNone()) {
-    println(&quot;No name provided&quot;);
+Option&lt;string&gt; maybe_name = Option&lt;string&gt;(&quot;Alice&quot;);
+bool present = maybe_name.isSome();
+if (present) {
+    println(maybe_name.value);
 }
 </code></pre>
 <p><strong>Note:</strong> <code>Option</code> is an Owned type; construct carefully with move semantics in mind.</p>
-<h2 id="copyableoptiont"><code>CopyableOption&lt;T&gt;</code><a class="headerlink" href="#copyableoptiont" title="Permanent link">&para;</a></h2>
-<p>A copyable variant of <code>Option</code> for copyable types.</p>
+<h2 id="copyableoptiont-in-development"><code>CopyableOption&lt;T&gt;</code> [IN DEVELOPMENT]<a class="headerlink" href="#copyableoptiont-in-development" title="Permanent link">&para;</a></h2>
+<p>A copyable variant of <code>Option</code> for copyable types. Subject to the same known issue as <code>Option</code>.</p>
 <pre><code class="language-firescript">copyable class CopyableOption&lt;nullable T&gt; {
     nullable T value;
 
@@ -1638,11 +1638,14 @@ if (none_name.isNone()) {
 }
 </code></pre>
 <p><strong>Example:</strong></p>
+<p>Intended usage (see the known issue above):</p>
 <pre><code class="language-firescript">import @firescript/std.types.CopyableOption;
+import @firescript/std.io.println;
 
-CopyableOption&lt;int32&gt; maybe_count = CopyableOption(5);
-if (maybe_count.isSome()) {
-    println(&quot;Count: &quot; + maybe_count.value);
+CopyableOption&lt;int32&gt; maybe_count = CopyableOption&lt;int32&gt;(5);
+bool present = maybe_count.isSome();
+if (present) {
+    println(maybe_count.value);
 }
 </code></pre>
 <h2 id="usage-notes">Usage Notes<a class="headerlink" href="#usage-notes" title="Permanent link">&para;</a></h2>
@@ -1653,18 +1656,12 @@ if (maybe_count.isSome()) {
 </ul>
 <h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
 <pre><code class="language-firescript">import @firescript/std.types.Tuple;
-import @firescript/std.types.Option;
 import @firescript/std.io.println;
 
 // Tuple usage
-Tuple&lt;int32, string&gt; user = Tuple(1, &quot;alice&quot;);
-println(&quot;User ID: &quot; + user.first);
-
-// Option usage
-Option&lt;string&gt; bio = Option(&quot;Software engineer&quot;);
-if (bio.isSome()) {
-    println(&quot;Bio: &quot; + bio.value);
-}
+Tuple&lt;int32, string&gt; user = Tuple&lt;int32, string&gt;(1, &quot;alice&quot;);
+println(&quot;User ID: &quot; + (user.first as string));
+println(user.second);
 </code></pre>
 
 

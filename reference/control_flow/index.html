@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../benchmarks/" class="md-tabs__link">
+      <a href="../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -805,6 +805,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#range-loops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Range Loops
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iterating-over-generators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Iterating Over Generators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#break-and-continue-in-for-loops" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -831,17 +853,6 @@
   
     <nav class="md-nav" aria-label="Future Control Flow Features">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#range-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Range Loops
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#ternary-operator" class="md-nav__link">
@@ -1561,7 +1572,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
+      <a href="../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1792,6 +1803,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#range-loops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Range Loops
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iterating-over-generators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Iterating Over Generators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#break-and-continue-in-for-loops" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1818,17 +1851,6 @@
   
     <nav class="md-nav" aria-label="Future Control Flow Features">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#range-loops" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Range Loops
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#ternary-operator" class="md-nav__link">
@@ -1953,7 +1975,7 @@
 
 
 <h1 id="control-flow">Control Flow<a class="headerlink" href="#control-flow" title="Permanent link">&para;</a></h1>
-<p>firescript supports several control flow structures: conditional statements (<code>if</code>/<code>else</code>), while loops, C-style for loops, and for-in loops. Range loops and the ternary operator are not yet supported by the compiler.</p>
+<p>firescript supports several control flow structures: conditional statements (<code>if</code>/<code>else</code>), while loops, C-style for loops, and for-in loops (over arrays, strings, and generators). Range-style loops are provided by the <code>@firescript/std.ranges</code> module. The ternary operator is not yet supported by the compiler.</p>
 <h2 id="introduction-to-control-flow">Introduction to Control Flow<a class="headerlink" href="#introduction-to-control-flow" title="Permanent link">&para;</a></h2>
 <p>Control flow structures determine the order in which statements are executed in a program. They allow for conditional execution (if/else) and repeated execution (loops) of code blocks. In firescript, control flow constructs use curly braces <code>{}</code> to define code blocks.</p>
 <h2 id="conditional-statements">Conditional Statements<a class="headerlink" href="#conditional-statements" title="Permanent link">&para;</a></h2>
@@ -2063,7 +2085,7 @@ if (!(age &lt; 18 || !hasLicense)) {
 }
 </code></pre>
 <h2 id="loops">Loops<a class="headerlink" href="#loops" title="Permanent link">&para;</a></h2>
-<p>Loops allow for repeated execution of a block of code. firescript supports <code>while</code> loops and plans to support various forms of <code>for</code> loops in the future.</p>
+<p>Loops allow for repeated execution of a block of code. firescript supports <code>while</code> loops, C-style <code>for</code> loops, and <code>for-in</code> loops.</p>
 <h3 id="while-loops">While Loops<a class="headerlink" href="#while-loops" title="Permanent link">&para;</a></h3>
 <p>A <code>while</code> loop repeatedly executes a block of code as long as a specified condition is <code>true</code>:</p>
 <pre><code class="language-firescript">while (condition) {
@@ -2177,7 +2199,7 @@ for (int32 i = 0; i &lt; 3; i++) {
 }
 </code></pre>
 <h3 id="for-in-loops">For-In Loops<a class="headerlink" href="#for-in-loops" title="Permanent link">&para;</a></h3>
-<p>For-in loops iterate over elements in a collection (arrays or strings). The loop variable must be declared with a type:</p>
+<p>For-in loops iterate over elements in a collection (arrays, strings, or generators). The loop variable must be declared with a type:</p>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 
 int32[5] numbers = [1, 2, 3, 4, 5];
@@ -2198,6 +2220,41 @@ for (int32 value in [10, 20, 30, 40, 50]) {
 string text = &quot;hello&quot;;
 for (string ch in text) {
     println(ch);  // Prints each character: h, e, l, l, o
+}
+</code></pre>
+<h3 id="range-loops">Range Loops<a class="headerlink" href="#range-loops" title="Permanent link">&para;</a></h3>
+<p>Range-style counting loops are provided by the <code>@firescript/std.ranges</code> module, which exports the <code>range</code>, <code>rangeFrom</code>, and <code>rangeStep</code> generators:</p>
+<pre><code class="language-firescript">import @firescript/std.io.println;
+import @firescript/std.ranges.range;
+import @firescript/std.ranges.rangeFrom;
+import @firescript/std.ranges.rangeStep;
+
+for (int32 i in range(5)) {
+    println(i);  // 0, 1, 2, 3, 4
+}
+
+for (int32 i in rangeFrom(2, 6)) {
+    println(i);  // 2, 3, 4, 5
+}
+
+for (int32 i in rangeStep(0, 10, 3)) {
+    println(i);  // 0, 3, 6, 9
+}
+</code></pre>
+<h3 id="iterating-over-generators">Iterating Over Generators<a class="headerlink" href="#iterating-over-generators" title="Permanent link">&para;</a></h3>
+<p><code>for-in</code> also works over any generator function, including user-defined ones (see <a href="../functions/">Functions &amp; Methods</a> for generator definitions):</p>
+<pre><code class="language-firescript">import @firescript/std.io.println;
+
+generator&lt;int32&gt; countdown(int32 n) {
+    int32 i = n;
+    while (i &gt; 0) {
+        yield i;
+        i -= 1;
+    }
+}
+
+for (int32 v in countdown(3)) {
+    println(v);  // 3, 2, 1
 }
 </code></pre>
 <h3 id="break-and-continue-in-for-loops">Break and Continue in For Loops<a class="headerlink" href="#break-and-continue-in-for-loops" title="Permanent link">&para;</a></h3>
@@ -2222,20 +2279,6 @@ for (int32 i = 0; i &lt; 5; i++) {
 </code></pre>
 <h2 id="future-control-flow-features">Future Control Flow Features<a class="headerlink" href="#future-control-flow-features" title="Permanent link">&para;</a></h2>
 <p>The following control flow features are planned but not yet implemented in the current compiler:</p>
-<h3 id="range-loops">Range Loops<a class="headerlink" href="#range-loops" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">// Future syntax
-import @firescript/std.io.print;\n\nfor (uint8 i : range(5)) {
-    print(i); // 0, 1, 2, 3, 4
-}
-
-for (uint8 i : range(2, 8)) {
-    print(i); // 2, 3, 4, 5, 6, 7
-}
-
-for (uint8 i : range(1, 10, 2)) {
-    print(i); // 1, 3, 5, 7, 9
-}
-</code></pre>
 <h3 id="ternary-operator">Ternary Operator<a class="headerlink" href="#ternary-operator" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Future syntax
 int8 max = ternary a &gt; b then a else b;
@@ -2271,23 +2314,23 @@ switch (value) {
 <p><strong>Be careful with while loops</strong>: Always ensure that the condition will eventually become false to avoid infinite loops.</p>
 </li>
 <li>
-<p><strong>Use appropriate loop types</strong>: Once implemented, choose the right loop for the task: <code>while</code> for unknown iteration counts, <code>for</code> for counting, and <code>for-in</code> for collections.</p>
+<p><strong>Use appropriate loop types</strong>: Choose the right loop for the task: <code>while</code> for unknown iteration counts, <code>for</code> for counting, and <code>for-in</code> for collections.</p>
 </li>
 </ol>
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <p>The current firescript compiler supports:</p>
 <ul>
-<li>✅ <code>if</code>/<code>else</code>/<code>else if</code> conditional statements</li>
-<li>✅ <code>while</code> loops</li>
-<li>✅ C-style <code>for</code> loops</li>
-<li>✅ <code>for-in</code> loops (for arrays)</li>
-<li>✅ <code>break</code> and <code>continue</code> statements</li>
+<li>[IMPLEMENTED] <code>if</code>/<code>else</code>/<code>else if</code> conditional statements</li>
+<li>[IMPLEMENTED] <code>while</code> loops</li>
+<li>[IMPLEMENTED] C-style <code>for</code> loops</li>
+<li>[IMPLEMENTED] <code>for-in</code> loops (arrays, strings, and generators)</li>
+<li>[IMPLEMENTED] Range loops via <code>@firescript/std.ranges</code></li>
+<li>[IMPLEMENTED] <code>break</code> and <code>continue</code> statements</li>
 </ul>
 <p>Not yet implemented:</p>
 <ul>
-<li>❌ Range-based loops</li>
-<li>❌ Ternary operator</li>
-<li>❌ <code>switch</code>/<code>case</code> statements</li>
+<li>[PLANNED] Ternary operator</li>
+<li>[PLANNED] <code>switch</code>/<code>case</code> statements</li>
 </ul>
 
 

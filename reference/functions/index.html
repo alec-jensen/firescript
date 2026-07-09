@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../benchmarks/" class="md-tabs__link">
+      <a href="../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -672,10 +672,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#ownership-notes-planned-semantics" class="md-nav__link">
+  <a href="#ownership-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Ownership Notes (Planned Semantics)
+        Ownership Notes
       
     </span>
   </a>
@@ -688,10 +688,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methods-planned-not-implemented" class="md-nav__link">
+  <a href="#generic-functions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Methods (Planned, Not Implemented)
+        Generic Functions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generator-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generator Functions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods
       
     </span>
   </a>
@@ -1372,7 +1394,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
+      <a href="../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1442,10 +1464,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#ownership-notes-planned-semantics" class="md-nav__link">
+  <a href="#ownership-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Ownership Notes (Planned Semantics)
+        Ownership Notes
       
     </span>
   </a>
@@ -1458,10 +1480,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methods-planned-not-implemented" class="md-nav__link">
+  <a href="#generic-functions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Methods (Planned, Not Implemented)
+        Generic Functions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generator-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generator Functions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods
       
     </span>
   </a>
@@ -1593,7 +1637,7 @@ void greet(string name) {
     print(&quot;Hello, &quot; + name);
 }
 
-float calculateAverage(int32[] numbers) {
+float32 calculateAverage(&amp;int32[] numbers) {
     int32 sum = 0;
     int32 i = 0;
     while (i &lt; numbers.length()) {
@@ -1603,31 +1647,59 @@ float calculateAverage(int32[] numbers) {
     return (sum as float32) / (numbers.length() as float32);
 }
 </code></pre>
-<h3 id="ownership-notes-planned-semantics">Ownership Notes (Planned Semantics)<a class="headerlink" href="#ownership-notes-planned-semantics" title="Permanent link">&para;</a></h3>
+<p>Functions support parameters, return values, and recursion.</p>
+<h3 id="ownership-notes">Ownership Notes<a class="headerlink" href="#ownership-notes" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Parameters of owned types (strings, arrays, user-defined objects) move into the function. After a call, an argument of an owned type is no longer valid unless the function returns it.</li>
-<li>Future explicit borrow syntax (<code>&amp;T</code>) will allow passing a read-only view without moving ownership. Borrowed arguments remain valid after the call.</li>
+<li>Parameters of Owned types (strings, arrays, user-defined objects) move into the function. After a call, an argument of an owned type is no longer valid unless the function returns it.</li>
+<li>Borrow syntax (<code>&amp;T</code>) passes a read-only view without moving ownership. Borrowed arguments remain valid after the call.</li>
 <li>For Copyable types (e.g., <code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>), calls pass by value; borrowing is not defined for Copyable types.</li>
-<li><code>toString()</code> and string concatenation produce new <code>string</code> values. Strings are Owned and use move semantics.</li>
+<li>String concatenation produces new <code>string</code> values. Strings are Owned and use move semantics.</li>
 <li>Arrays are Owned and use move semantics.</li>
-<li>Cloning is explicit for Owned values (needed for <code>string</code>, arrays, and user-defined objects).</li>
-<li>Examples currently show simple pass semantics until borrow syntax is implemented.</li>
 </ul>
-<h2 id="methods-planned-not-implemented">Methods (Planned, Not Implemented)<a class="headerlink" href="#methods-planned-not-implemented" title="Permanent link">&para;</a></h2>
-<p>Methods are functions that belong to objects. This feature is planned but <strong>not yet implemented</strong>:</p>
-<pre><code class="language-firescript">class Person {
-    string name
-    int age
+<p>See <a href="../memory_management/">Memory Management</a> for the full rules.</p>
+<h2 id="generic-functions">Generic Functions<a class="headerlink" href="#generic-functions" title="Permanent link">&para;</a></h2>
+<p>Functions can declare type parameters in angle brackets after the function name. The compiler monomorphizes each unique instantiation at compile time. Type parameters can be constrained with type unions or named constraint aliases (see <a href="../type_system/#generics">Type System — Generics</a>):</p>
+<pre><code class="language-firescript">T max&lt;T: int32 | int64&gt;(T a, T b) {
+    if (a &gt; b) {
+        return a;
+    }
+    return b;
+}
 
-    // Constructor method
-    Person(&amp;this, string name, int age) {
+int32 larger = max(10, 20);  // T inferred as int32
+</code></pre>
+<h2 id="generator-functions">Generator Functions<a class="headerlink" href="#generator-functions" title="Permanent link">&para;</a></h2>
+<p>A generator function produces a lazy sequence of values with <code>yield</code>. Generators are declared with the <code>generator&lt;T&gt;</code> return type and are consumed with <code>for-in</code> loops:</p>
+<pre><code class="language-firescript">import @firescript/std.io.println;
+
+generator&lt;int32&gt; countdown(int32 n) {
+    int32 i = n;
+    while (i &gt; 0) {
+        yield i;
+        i -= 1;
+    }
+}
+
+for (int32 v in countdown(3)) {
+    println(v);  // 3, 2, 1
+}
+</code></pre>
+<p>The standard library's <code>@firescript/std.ranges</code> module provides ready-made <code>range</code>, <code>rangeFrom</code>, and <code>rangeStep</code> generators.</p>
+<h2 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h2>
+<p>Methods are functions that belong to class instances. Methods declare a receiver: <code>&amp;this</code> for read-only access, <code>&amp;mut this</code> for mutable access. Static methods belong to the class itself and take no receiver:</p>
+<pre><code class="language-firescript">class Person {
+    string name;
+    int32 age;
+
+    // Constructor
+    Person(&amp;mut this, string name, int32 age) {
         this.name = name;
         this.age = age;
     }
 
-    // Instance method
+    // Instance method (read-only receiver)
     string introduce(&amp;this) {
-        return &quot;My name is &quot; + this.name + &quot; and I'm &quot; + toString(this.age) + &quot; years old&quot;;
+        return &quot;My name is &quot; + this.name + &quot; and I'm &quot; + (this.age as string) + &quot; years old&quot;;
     }
 
     // Static method
@@ -1636,8 +1708,8 @@ float calculateAverage(int32[] numbers) {
     }
 }
 </code></pre>
+<p>See <a href="../classes/">Classes &amp; Inheritance</a> for full details on methods, constructors, and receivers.</p>
 <h2 id="best-practices-for-functions">Best Practices for Functions<a class="headerlink" href="#best-practices-for-functions" title="Permanent link">&para;</a></h2>
-<p>Although user-defined functions aren't implemented yet, here are best practices to follow when they become available:</p>
 <ol>
 <li>
 <p><strong>Single responsibility</strong>: Each function should perform a single, well-defined task.</p>
@@ -1675,9 +1747,9 @@ calculateRectangle(width: 10, height: 20);
 <li>Variadic parameters (variable number of arguments):</li>
 </ul>
 <pre><code class="language-firescript">// Future syntax
-int sum(int... numbers) {
-    int total = 0;
-    for (int num : numbers) {
+int32 sum(int32... numbers) {
+    int32 total = 0;
+    for (int32 num in numbers) {
         total = total + num;
     }
     return total;
@@ -1687,20 +1759,22 @@ int sum(int... numbers) {
 <li>Function overloading:</li>
 </ul>
 <pre><code class="language-firescript">// Future syntax
-int add(int a, int b) {
+int32 add(int32 a, int32 b) {
     return a + b;
 }
 
-float add(float a, float b) {
+float32 add(float32 a, float32 b) {
     return a + b;
 }
 </code></pre>
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <ul>
-<li>✅ User-defined function definitions</li>
-<li>✅ Methods on objects</li>
-<li>❌ Optional, named, or variadic parameters</li>
-<li>❌ Function overloading</li>
+<li>[IMPLEMENTED] User-defined function definitions (parameters, return values, recursion)</li>
+<li>[IMPLEMENTED] Generic functions with constraints</li>
+<li>[IMPLEMENTED] Generator functions (<code>generator&lt;T&gt;</code>, <code>yield</code>)</li>
+<li>[IMPLEMENTED] Methods on classes (including static methods)</li>
+<li>[PLANNED] Optional, named, or variadic parameters</li>
+<li>[PLANNED] Function overloading</li>
 </ul>
 
 

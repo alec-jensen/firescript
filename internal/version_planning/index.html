@@ -296,7 +296,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../benchmarks/" class="md-tabs__link">
+      <a href="../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -1231,7 +1231,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
+      <a href="../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1683,15 +1683,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#track-a-linux-x64-target" class="md-nav__link">
+  <a href="#track-a-linux-x86_64-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Track A: Linux x64 target
+        Track A: Linux x86_64 target
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Track A: Linux x64 target">
+    <nav class="md-nav" aria-label="Track A: Linux x86_64 target">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2141,6 +2141,7 @@ self-hosting work is not blocked by missing data structures.</p>
   classes, alternation, quantifiers)</li>
 <li>Error tests for invalid enum/match usage</li>
 <li>Error tests for invalid regex patterns</li>
+<li>Improve overall test coverage</li>
 </ul>
 <h3 id="gate">Gate<a class="headerlink" href="#gate" title="Permanent link">&para;</a></h3>
 <p>All stdlib modules are usable from firescript code. Vec, HashMap, string methods, and regex
@@ -2260,7 +2261,7 @@ firescript front-end is developed alongside it and tested against the same test 
   front-end instead of the Python front-end</li>
 <li>Run full test suite through firescript front-end, compare FIR snapshots</li>
 <li>Incremental rollout: lexer first, then parser, then semantic analysis, then FIR</li>
-<li>Firescript front-end modules live under <code>firescript/std/compiler/</code> so they are
+<li>firescript front-end modules live under <code>firescript/std/compiler/</code> so they are
   importable like standard library modules</li>
 </ul>
 <h3 id="compiler-improvements-python-side">Compiler improvements (Python side)<a class="headerlink" href="#compiler-improvements-python-side" title="Permanent link">&para;</a></h3>
@@ -2271,13 +2272,13 @@ firescript front-end is developed alongside it and tested against the same test 
 </ul>
 <h3 id="test-coverage_2">Test coverage<a class="headerlink" href="#test-coverage_2" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Firescript lexer produces identical token streams to Python lexer across all test files</li>
-<li>Firescript parser produces identical ASTs across all test files</li>
-<li>Firescript semantic analysis passes all golden and error tests (output-identical)</li>
-<li>Firescript FIR builder produces FIR dumps matching Python FIR dumps (deterministic)</li>
+<li>firescript lexer produces identical token streams to Python lexer across all test files</li>
+<li>firescript parser produces identical ASTs across all test files</li>
+<li>firescript semantic analysis passes all golden and error tests (output-identical)</li>
+<li>firescript FIR builder produces FIR dumps matching Python FIR dumps (deterministic)</li>
 </ul>
 <h3 id="gate_2">Gate<a class="headerlink" href="#gate_2" title="Permanent link">&para;</a></h3>
-<p>Firescript front-end passes 100% of the existing test suite with output-identical results
+<p>firescript front-end passes 100% of the existing test suite with output-identical results
 when run via <code>--frontend firescript</code>. The Python front-end is still the default, but the
 firescript front-end is feature-complete.</p>
 <hr />
@@ -2285,7 +2286,7 @@ firescript front-end is feature-complete.</p>
 <p><strong>Theme: Self-hosted backend and bootstrap (Windows).</strong></p>
 <p>Write the code generator (FLIR lowering, assembly emission) and the self-hosted toolchain
 (assembler, PE writer) in firescript. The firescript compiler compiles itself end-to-end
-on Windows x64.</p>
+on Windows x86_64.</p>
 <h3 id="firescriptstdcompilercodegenfire">firescript/std/compiler/codegen.fire<a class="headerlink" href="#firescriptstdcompilercodegenfire" title="Permanent link">&para;</a></h3>
 <ul>
 <li>FIR → FLIR lowering (monomorphization, class lowering, generator lowering)</li>
@@ -2323,26 +2324,26 @@ on Windows x64.</p>
 </ul>
 <h3 id="test-coverage_3">Test coverage<a class="headerlink" href="#test-coverage_3" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Firescript codegen passes all golden tests (output-identical)</li>
-<li>Firescript assembler + PE writer pass <code>tests/asm_encoding_tests.py</code></li>
+<li>firescript codegen passes all golden tests (output-identical)</li>
+<li>firescript assembler + PE writer pass <code>tests/asm_encoding_tests.py</code></li>
 <li>Bootstrap binary passes full test suite on its own</li>
 <li>Determinism test: bootstrap binary is byte-identical on repeated compilations</li>
 </ul>
 <h3 id="gate_3">Gate<a class="headerlink" href="#gate_3" title="Permanent link">&para;</a></h3>
 <p><code>python firescript/main.py --compiler firescript &lt;file&gt;.fire</code> produces a working binary
-for any test source (Windows x64). The firescript compiler can compile itself end-to-end.
+for any test source (Windows x86_64). The firescript compiler can compile itself end-to-end.
 The resulting binary, when run on the firescript compiler sources, produces a byte-identical
 (or semantically equivalent) copy of itself.</p>
 <hr />
 <h2 id="0100-chimera">0.10.0 — Chimera<a class="headerlink" href="#0100-chimera" title="Permanent link">&para;</a></h2>
-<p><strong>Theme: Linux x64 target + kiln foundations.</strong></p>
-<p>Two parallel tracks: (A) port the compiler to Linux x64 with ELF output, and (B) build
+<p><strong>Theme: Linux x86_64 target + kiln foundations.</strong></p>
+<p>Two parallel tracks: (A) port the compiler to Linux x86_64 with ELF output, and (B) build
 kiln basics on top of FCL. Chimera is the hybrid beast — fitting for a hybrid-platform,
 hybrid-tool release.</p>
-<h3 id="track-a-linux-x64-target">Track A: Linux x64 target<a class="headerlink" href="#track-a-linux-x64-target" title="Permanent link">&para;</a></h3>
+<h3 id="track-a-linux-x86_64-target">Track A: Linux x86_64 target<a class="headerlink" href="#track-a-linux-x86_64-target" title="Permanent link">&para;</a></h3>
 <h4 id="firescriptstdcompilerelf_writerfire">firescript/std/compiler/elf_writer.fire<a class="headerlink" href="#firescriptstdcompilerelf_writerfire" title="Permanent link">&para;</a></h4>
 <ul>
-<li>Pure-firescript ELF64 writer for Linux x64</li>
+<li>Pure-firescript ELF64 writer for Linux x86_64</li>
 <li>ELF header, program headers, section headers, symbol table, relocation handling</li>
 <li>Linux x86-64 syscall ABI (instead of kernel32.dll imports)</li>
 <li>System V AMD64 calling convention differences from Win64</li>
@@ -2353,8 +2354,8 @@ hybrid-tool release.</p>
 <li>Add Linux x86-64 syscall ABI to the codegen (<code>codegen/flir_to_asm.py</code> already emits
   target-neutral assembly; add <code>--target</code> flag to select Win64 vs System V ABI)</li>
 <li>Runtime: Linux syscall wrappers for heap (brk/mmap), I/O (read/write), process exit</li>
-<li><code>--target {windows-x64,linux-x64}</code> flag in <code>main.py</code></li>
-<li>Firescript-on-Linux CI (GitHub Actions) runs the golden suite under native Linux build</li>
+<li><code>--target {windows-x86_64,linux-x86_64}</code> flag in <code>main.py</code></li>
+<li>firescript-on-Linux CI (GitHub Actions) runs the golden suite under native Linux build</li>
 <li>Update <code>tests/golden_runner.py</code> to support cross-target testing</li>
 </ul>
 <h3 id="track-b-kiln-foundations">Track B: kiln foundations<a class="headerlink" href="#track-b-kiln-foundations" title="Permanent link">&para;</a></h3>
@@ -2391,7 +2392,7 @@ hybrid-tool release.</p>
 <li>Lockfile determinism tests</li>
 </ul>
 <h3 id="gate_4">Gate<a class="headerlink" href="#gate_4" title="Permanent link">&para;</a></h3>
-<p><code>--target linux-x64</code> produces a working native ELF binary for all test sources. Kiln can
+<p><code>--target linux-x86_64</code> produces a working native ELF binary for all test sources. Kiln can
 <code>init</code>, <code>build</code>, and <code>run</code> a simple project with local-only dependencies. Both targets
 pass their golden suites on CI.</p>
 <hr />
@@ -2418,7 +2419,7 @@ networking primitives and connects kiln to the world with registry support.</p>
 </ul>
 <h3 id="compiler-improvements_2">Compiler improvements<a class="headerlink" href="#compiler-improvements_2" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Add <code>--target {windows-x64,linux-x64}</code> to the firescript backend (mirrors Python flag)</li>
+<li>Add <code>--target {windows-x86_64,linux-x86_64}</code> to the firescript backend (mirrors Python flag)</li>
 <li>Ensure std.net compiles and runs on both targets</li>
 </ul>
 <h3 id="test-coverage_5">Test coverage<a class="headerlink" href="#test-coverage_5" title="Permanent link">&para;</a></h3>
@@ -2457,14 +2458,14 @@ making firescript production-ready and retiring the Python compiler.</p>
 <li>Remove <code>--frontend</code> flag (long superseded)</li>
 <li>Remove Python test-runner dependency: test runners rewritten in firescript or
   kept as lightweight Python wrappers with no compiler logic</li>
-<li>Firescript compiler source becomes the canonical implementation</li>
+<li>firescript compiler source becomes the canonical implementation</li>
 </ul>
 <h3 id="release-criteria">Release criteria<a class="headerlink" href="#release-criteria" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Firescript compiler is fully self-hosted — compiles itself end-to-end with no Python
+<li>firescript compiler is fully self-hosted — compiles itself end-to-end with no Python
    compiler code invoked in the compile path</li>
 <li>100% test suite passes on the self-hosted compiler across both target platforms</li>
-<li>Compiler runs on <strong>Windows x64</strong> (Tier 1) and <strong>Linux x64</strong> (Tier 1, CI-tested every
+<li>Compiler runs on <strong>Windows x86_64</strong> (Tier 1) and <strong>Linux x86_64</strong> (Tier 1, CI-tested every
    commit)</li>
 <li>kiln provides <code>init</code>, <code>build</code>, <code>run</code>, <code>test</code>, <code>publish</code>, <code>add</code>, <code>sync</code>, <code>update</code></li>
 <li>Standard library is documented, stable, and tested (<code>std.collections</code>, <code>std.text</code>,
@@ -2480,7 +2481,7 @@ making firescript production-ready and retiring the Python compiler.</p>
 <h3 id="high-priority">High priority<a class="headerlink" href="#high-priority" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong><code>@firescript/std.math.linalg</code></strong> — vectors, matrices, core linear algebra</li>
-<li><strong>macOS x64</strong> Mach-O target</li>
+<li><strong>macOS x86_64</strong> Mach-O target</li>
 </ul>
 <h3 id="medium-priority">Medium priority<a class="headerlink" href="#medium-priority" title="Permanent link">&para;</a></h3>
 <ul>

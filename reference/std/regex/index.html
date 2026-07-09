@@ -302,7 +302,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../benchmarks/" class="md-tabs__link">
+      <a href="../../../benchmarks.md" class="md-tabs__link">
         
   
   
@@ -1082,10 +1082,32 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#int32-find_atstring-pattern-string-text-int32-start_pos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        int32 find_at(string pattern, string text, int32 start_pos)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#string-last_errorstring-pattern" class="md-nav__link">
     <span class="md-ellipsis">
       
         string last_error(string pattern)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regexpattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RegexPattern
       
     </span>
   </a>
@@ -1120,10 +1142,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#future-sections" class="md-nav__link">
+  <a href="#future-sections-planned" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Future Sections
+        Future Sections [PLANNED]
       
     </span>
   </a>
@@ -1385,7 +1407,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../benchmarks/" class="md-nav__link">
+      <a href="../../../benchmarks.md" class="md-nav__link">
         
   
   
@@ -1477,10 +1499,32 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#int32-find_atstring-pattern-string-text-int32-start_pos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        int32 find_at(string pattern, string text, int32 start_pos)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#string-last_errorstring-pattern" class="md-nav__link">
     <span class="md-ellipsis">
       
         string last_error(string pattern)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regexpattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RegexPattern
       
     </span>
   </a>
@@ -1515,10 +1559,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#future-sections" class="md-nav__link">
+  <a href="#future-sections-planned" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Future Sections
+        Future Sections [PLANNED]
       
     </span>
   </a>
@@ -1618,29 +1662,51 @@
 
 <h1 id="stdregex">std.regex<a class="headerlink" href="#stdregex" title="Permanent link">&para;</a></h1>
 <p><code>@firescript/std.regex</code> provides a small, pure firescript regular-expression helper module.</p>
-<p>This page is intentionally basic for now. It covers the current API and syntax that the module supports today, and it leaves room for future sections on captures, search helpers, replacements, and richer pattern syntax.</p>
+<p>This page covers the current API and syntax that the module supports today, and leaves room for future sections on captures, search helpers, replacements, and richer pattern syntax.</p>
 <h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 import @firescript/std.regex.is_match;
+import @firescript/std.regex.find_at;
 import @firescript/std.regex.last_error;
 
 println(is_match(&quot;(ab)+c&quot;, &quot;ababc&quot;));
 println(is_match(&quot;[a-z]+&quot;, &quot;firescript&quot;));
+println(is_match(&quot;^fire&quot;, &quot;firescript&quot;));
+println(find_at(&quot;script&quot;, &quot;firescript&quot;, 4));
 println(last_error(&quot;[ab&quot;));
 </code></pre>
 <h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
 <h3 id="bool-is_matchstring-pattern-string-text"><code>bool is_match(string pattern, string text)</code><a class="headerlink" href="#bool-is_matchstring-pattern-string-text" title="Permanent link">&para;</a></h3>
-<p>Returns <code>true</code> when the pattern matches the entire input text.</p>
+<p>Returns <code>true</code> when the pattern matches the input text. Without anchors, the pattern must match the entire input; <code>^</code> and <code>$</code> control anchoring explicitly.</p>
 <h3 id="bool-matchstring-pattern-string-text"><code>bool match(string pattern, string text)</code><a class="headerlink" href="#bool-matchstring-pattern-string-text" title="Permanent link">&para;</a></h3>
 <p>Alias of <code>is_match</code>.</p>
+<h3 id="int32-find_atstring-pattern-string-text-int32-start_pos"><code>int32 find_at(string pattern, string text, int32 start_pos)</code><a class="headerlink" href="#int32-find_atstring-pattern-string-text-int32-start_pos" title="Permanent link">&para;</a></h3>
+<p>Position-aware matching: returns the length of the match starting at <code>start_pos</code>, or <code>-1</code> if there is no match at that position.</p>
 <h3 id="string-last_errorstring-pattern"><code>string last_error(string pattern)</code><a class="headerlink" href="#string-last_errorstring-pattern" title="Permanent link">&para;</a></h3>
 <p>Validates a pattern and returns an empty string when the pattern is usable. If validation fails, it returns a short error message.</p>
+<h3 id="regexpattern"><code>RegexPattern</code><a class="headerlink" href="#regexpattern" title="Permanent link">&para;</a></h3>
+<p>The <code>RegexPattern</code> class (<code>@firescript/std.regex.pattern.RegexPattern</code>) lets you construct a pattern once and match it repeatedly:</p>
+<pre><code class="language-firescript">import @firescript/std.regex.pattern.RegexPattern;
+import @firescript/std.io.println;
+
+RegexPattern p = RegexPattern(&quot;[a-z]+&quot;);
+println(p.is_match(&quot;firescript&quot;));
+println(p.find_at(&quot;firescript&quot;, 4));
+</code></pre>
+<p>Methods:</p>
+<ul>
+<li><code>bool is_match(&amp;this, string &amp;text)</code> — match against the text</li>
+<li><code>bool matches(&amp;this, string &amp;text)</code> — alias of <code>is_match</code></li>
+<li><code>int32 find_at(&amp;this, string &amp;text, int32 start_pos)</code> — position-aware matching</li>
+<li><code>string last_error(&amp;this)</code> — pattern validation error, or empty string</li>
+</ul>
 <h2 id="supported-syntax">Supported Syntax<a class="headerlink" href="#supported-syntax" title="Permanent link">&para;</a></h2>
 <p>The current matcher supports:</p>
 <ul>
 <li>Literals like <code>abc</code></li>
 <li>Escapes like <code>\n</code>, <code>\t</code>, <code>\r</code>, and escaped metacharacters</li>
 <li>Wildcard <code>.</code></li>
+<li>Anchors <code>^</code> (start) and <code>$</code> (end)</li>
 <li>Grouping with <code>( ... )</code></li>
 <li>Alternation with <code>|</code></li>
 <li>Quantifiers <code>*</code>, <code>+</code>, and <code>?</code></li>
@@ -1648,18 +1714,17 @@ println(last_error(&quot;[ab&quot;));
 </ul>
 <h2 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Matching is full-string only.</li>
-<li>Counted quantifiers, lookarounds, non-greedy quantifiers, captures, and backreferences are not part of this first version.</li>
+<li>Pattern errors are reported at runtime via <code>last_error</code>; there is no compile-time pattern validation yet.</li>
+<li>Counted quantifiers (<code>{n,m}</code>), lookarounds, non-greedy quantifiers, captures, and backreferences are not supported yet.</li>
 <li>Character-class range ordering is intentionally simple and currently best suited to ASCII alphanumeric ranges.</li>
 </ul>
-<h2 id="future-sections">Future Sections<a class="headerlink" href="#future-sections" title="Permanent link">&para;</a></h2>
+<h2 id="future-sections-planned">Future Sections [PLANNED]<a class="headerlink" href="#future-sections-planned" title="Permanent link">&para;</a></h2>
 <p>These are good follow-up topics for later expansion:</p>
 <ul>
 <li>Capturing groups and submatch extraction</li>
 <li>Search helpers like <code>find_first</code> and <code>find_all</code></li>
 <li>Replacement helpers</li>
 <li>More complete character classes and escaping rules</li>
-<li>Anchors like <code>^</code> and <code>$</code></li>
 </ul>
 
 
