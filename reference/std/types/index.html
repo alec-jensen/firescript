@@ -1599,11 +1599,11 @@ CopyableTuple&lt;float64, float64&gt; coord = CopyableTuple&lt;float64, float64&
 CopyableTuple&lt;float64, float64&gt; copy = coord;  // copies
 </code></pre>
 <h2 id="optiont-in-development"><code>Option&lt;T&gt;</code> [IN DEVELOPMENT]<a class="headerlink" href="#optiont-in-development" title="Permanent link">&para;</a></h2>
-<p>An optional value of type <code>T</code>. Use this to represent potentially missing values without explicit nullability. <strong>Known issue:</strong> <code>isSome()</code> and <code>isNone()</code> currently return incorrect results; prefer plain <code>nullable</code> variables until this is fixed.</p>
-<pre><code class="language-firescript">class Option&lt;nullable T&gt; {
-    nullable T value;
+<p>An optional value of type <code>T</code>. Use this to represent potentially missing values without explicit nullability. <strong>Known issue:</strong> <code>isSome()</code> and <code>isNone()</code> currently return incorrect results; prefer plain nullable (<code>?</code>) variables until this is fixed.</p>
+<pre><code class="language-firescript">class Option&lt;T?&gt; {
+    T value?;
 
-    Option(nullable T value);
+    Option(T value?);
 
     bool isSome();
     bool isNone();
@@ -1628,10 +1628,10 @@ if (present) {
 <p><strong>Note:</strong> <code>Option</code> is an Owned type; construct carefully with move semantics in mind.</p>
 <h2 id="copyableoptiont-in-development"><code>CopyableOption&lt;T&gt;</code> [IN DEVELOPMENT]<a class="headerlink" href="#copyableoptiont-in-development" title="Permanent link">&para;</a></h2>
 <p>A copyable variant of <code>Option</code> for copyable types. Subject to the same known issue as <code>Option</code>.</p>
-<pre><code class="language-firescript">copyable class CopyableOption&lt;nullable T&gt; {
-    nullable T value;
+<pre><code class="language-firescript">copyable class CopyableOption&lt;T?&gt; {
+    T value?;
 
-    CopyableOption(nullable T value);
+    CopyableOption(T value?);
 
     bool isSome();
     bool isNone();

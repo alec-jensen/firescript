@@ -972,15 +972,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#nullability" class="md-nav__link">
+  <a href="#nullability-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Nullability
+        Nullability [IMPLEMENTED]
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Nullability">
+    <nav class="md-nav" aria-label="Nullability [IMPLEMENTED]">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2273,15 +2273,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#nullability" class="md-nav__link">
+  <a href="#nullability-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Nullability
+        Nullability [IMPLEMENTED]
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Nullability">
+    <nav class="md-nav" aria-label="Nullability [IMPLEMENTED]">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3010,10 +3010,10 @@ scores[1] = 95;  // Array becomes [85, 95, 78]
 // Array properties
 int32 count = scores.length();  // 3
 </code></pre>
-<h2 id="nullability">Nullability<a class="headerlink" href="#nullability" title="Permanent link">&para;</a></h2>
-<p>By default, variables cannot hold the value <code>null</code>. To allow a variable to be assigned <code>null</code>, you must explicitly declare it as <code>nullable</code>.</p>
+<h2 id="nullability-implemented">Nullability [IMPLEMENTED]<a class="headerlink" href="#nullability-implemented" title="Permanent link">&para;</a></h2>
+<p>By default, variables cannot hold the value <code>null</code>. To allow a variable to be assigned <code>null</code>, mark it nullable with a trailing <code>?</code> after its name.</p>
 <h3 id="declaring-nullable-variables">Declaring Nullable Variables<a class="headerlink" href="#declaring-nullable-variables" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">nullable string username = null;  // Allowed
+<pre><code class="language-firescript">string username? = null;  // Allowed
 string title = &quot;Default&quot;;
 
 // title = null;  // Error: Cannot assign null to non-nullable type 'string'
@@ -3024,7 +3024,7 @@ username = &quot;John&quot;;  // Can be assigned a non-null value later
 <p>When working with nullable variables, it's important to check for null before using them:</p>
 <pre><code class="language-firescript">import @firescript/std.io.print;
 
-nullable string data = null;
+string data? = null;
 
 // Safe pattern
 if (data != null) {
@@ -3385,7 +3385,7 @@ map&lt;string, int32&gt; scores = map&lt;string, int32&gt;();
 scores.set(&quot;Alice&quot;, 100);
 scores.set(&quot;Bob&quot;, 95);
 
-nullable int32 aliceScore = scores.get(&quot;Alice&quot;);  // 100
+int32 aliceScore? = scores.get(&quot;Alice&quot;);  // 100
 </code></pre>
 <h4 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h4>
 <p>Generics in firescript use <strong>monomorphization</strong> at compile time:</p>

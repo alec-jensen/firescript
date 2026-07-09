@@ -2006,6 +2006,7 @@
 <h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>match</code> is now a reserved keyword. <code>@firescript/std.regex</code>'s <code>match(pattern, text)</code> function (added in 0.5.0) has been renamed to <code>find_match(pattern, text)</code> to avoid the collision; <code>is_match</code> is unaffected.</li>
+<li>Nullable variables, fields, and parameters are now declared with a trailing <code>?</code> after the name instead of a leading <code>nullable</code> keyword: <code>int a? = null;</code> instead of <code>nullable int a = null;</code>. The <code>nullable</code> keyword has been removed. This also applies to the generic-parameter constraint form (<code>class Option&lt;T?&gt;</code> instead of <code>class Option&lt;nullable T&gt;</code>).</li>
 </ul>
 <h2 id="050-kirin">0.5.0 - Kirin<a class="headerlink" href="#050-kirin" title="Permanent link">&para;</a></h2>
 <p><em>July 2, 2026</em></p>

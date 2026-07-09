@@ -637,10 +637,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#nullability" class="md-nav__link">
+  <a href="#nullability-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Nullability
+        Nullability [IMPLEMENTED]
       
     </span>
   </a>
@@ -1558,10 +1558,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#nullability" class="md-nav__link">
+  <a href="#nullability-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Nullability
+        Nullability [IMPLEMENTED]
       
     </span>
   </a>
@@ -1701,7 +1701,7 @@ int32 int32 = 0;     // reserved type name
 </tr>
 <tr>
 <td>Modifiers</td>
-<td><code>const</code> <code>nullable</code> <code>copyable</code> <code>static</code> <code>mut</code> <code>owned</code></td>
+<td><code>const</code> <code>copyable</code> <code>static</code> <code>mut</code> <code>owned</code></td>
 </tr>
 <tr>
 <td>Other keywords</td>
@@ -1738,15 +1738,15 @@ const string APP_VERSION = &quot;1.0.0&quot;;
 <pre><code class="language-firescript">const float32 PI = 3.14;
 PI = 3.14159;  // Error: cannot reassign a constant
 </code></pre>
-<h2 id="nullability">Nullability<a class="headerlink" href="#nullability" title="Permanent link">&para;</a></h2>
-<p>By default, variables cannot be assigned <code>null</code>. The <code>nullable</code> keyword explicitly allows a variable to hold <code>null</code>:</p>
-<pre><code class="language-firescript">nullable string username = null;  // Valid
-string password = null;           // Invalid - non-nullable type cannot hold null
+<h2 id="nullability-implemented">Nullability [IMPLEMENTED]<a class="headerlink" href="#nullability-implemented" title="Permanent link">&para;</a></h2>
+<p>By default, variables cannot be assigned <code>null</code>. A trailing <code>?</code> after the variable name explicitly allows it to hold <code>null</code>:</p>
+<pre><code class="language-firescript">string username? = null;  // Valid
+string password = null;   // Invalid - non-nullable type cannot hold null
 </code></pre>
 <p>Attempting to use a nullable variable without checking for null may result in runtime errors:</p>
 <pre><code class="language-firescript">import @firescript/std.io.print;
 
-nullable string message = null;
+string message? = null;
 
 // Safe access pattern
 if (message != null) {
