@@ -26,6 +26,17 @@ def _hydrate_parser_symbols_from_merged_ast(parser_instance: Parser, merged_ast:
                 parser_instance.user_functions[node.name] = node.return_type
             continue
 
+        if node.node_type == NodeTypes.ENUM_DEFINITION:
+            enum_name = getattr(node, "name", None)
+            if enum_name:
+                parser_instance.user_types.add(enum_name)
+                parser_instance.user_enums[enum_name] = {
+                    child.name: list(getattr(child, "payload_types", []) or [])
+                    for child in (node.children or [])
+                    if child.node_type == NodeTypes.ENUM_VARIANT
+                }
+            continue
+
         if node.node_type != NodeTypes.CLASS_DEFINITION:
             continue
 

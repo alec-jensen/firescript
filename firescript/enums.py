@@ -41,6 +41,9 @@ class NodeTypes(Enum):
     SUPER_CALL = "SuperCall"
     GENERATOR_DEFINITION = "GeneratorDefinition"
     YIELD_STATEMENT = "YieldStatement"
+    ENUM_DEFINITION = "EnumDefinition"
+    ENUM_VARIANT = "EnumVariant"
+    ENUM_VARIANT_CONSTRUCT = "EnumVariantConstruct"
 
 
 class CompilerDirective(Enum):

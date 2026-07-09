@@ -1,4 +1,4 @@
-"""FLIR -> x86-64 assembly backend (Windows x64, GAS Intel syntax).
+"""FLIR -> x86-64 assembly backend (Windows x86_64, GAS Intel syntax).
 
 Strategy: simplest correct code. Every FLIR value and slot lives in a
 stack slot; each instruction loads its operands into volatile scratch

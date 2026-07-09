@@ -132,10 +132,15 @@ class FLIRStruct:
 
     def __init__(self, name: str, kind: str = "class"):
         self.name = name
-        self.kind = kind  # "class" | "generator_frame" | "builtin"
+        self.kind = kind  # "class" | "enum" | "generator_frame" | "builtin"
         self.fields: list[tuple[str, FLIRType, int]] = []  # (name, type, offset)
         self.size = 0
         self.align = 1
+        # For kind == "enum" only: variant name -> its payload fields, laid
+        # out independently starting at the shared payload region offset
+        # (different variants' fields may share the same byte offsets, like
+        # a C union of structs).
+        self.variant_layouts: dict[str, list[tuple[str, FLIRType, int]]] = {}
 
     def add_field(self, name: str, field_type: FLIRType, module: "FLIRModule") -> int:
         field_align = field_type.align(module)

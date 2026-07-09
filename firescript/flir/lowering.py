@@ -178,8 +178,11 @@ from fir.ir_node import (
     CastInst,
     CharLiteralInst,
     CloneInst,
+    ConstructVariantInst,
     DeclareLocalInst,
     DropInst,
+    ExtractPayloadFieldInst,
+    ExtractTagInst,
     FIRValue,
     FloatLiteralInst,
     GenNewInst,
@@ -261,6 +264,7 @@ from flir.ir import (
     U64,
     Unreachable,
     VOID,
+    align_up,
     ensure_f128_struct,
     ptr_to,
     struct_type,
@@ -508,6 +512,11 @@ class FIRToFLIRLowering:
             return struct_name
 
         type_map = dict(zip(type_def.generic_params, type_args))
+        if type_def.kind == "enum":
+            self._build_enum_struct(struct_name, type_def, type_map)
+            self.struct_sources[struct_name] = (type_def, type_map)
+            return struct_name
+
         struct = FLIRStruct(struct_name, kind="class")
         self.flir.add_struct(struct)  # add before fields to allow self-reference via ptr
         for fname, ftype in self.class_fields_full(type_def):
@@ -515,6 +524,51 @@ class FIRToFLIRLowering:
         struct.finalize()
         self.struct_sources[struct_name] = (type_def, type_map)
         return struct_name
+
+    def _layout_fields_from(
+        self, payload: list[FIRType], type_map: dict[str, str], start_offset: int
+    ) -> tuple[list[tuple[str, FLIRType, int]], int, int]:
+        """Lay out a variant's payload fields as if a standalone struct,
+        with offsets shifted by `start_offset`. Returns (fields, size, align)
+        where `size` is the payload's own size (not including start_offset)."""
+        size = 0
+        align = 1
+        fields: list[tuple[str, FLIRType, int]] = []
+        for i, ftype in enumerate(payload):
+            lowered = self.lower_type(ftype, type_map)
+            falign = lowered.align(self.flir)
+            fsize = lowered.size(self.flir)
+            offset = align_up(size, falign)
+            fields.append((f"_{i}", lowered, start_offset + offset))
+            size = offset + fsize
+            align = max(align, falign)
+        return fields, size, align
+
+    def _build_enum_struct(self, struct_name: str, type_def: TypeDef, type_map: dict[str, str]) -> None:
+        """Lower an enum to a tagged-union struct: a `tag` discriminant
+        followed by a payload region sized/aligned to the largest variant.
+        Each variant's fields are laid out independently starting at the
+        payload region's offset (like a C union of structs); different
+        variants' fields may therefore share the same byte offsets."""
+        struct = FLIRStruct(struct_name, kind="enum")
+        self.flir.add_struct(struct)
+        struct.add_field("tag", I32, self.flir)
+
+        payload_size = 0
+        payload_align = 1
+        for variant in type_def.variants:
+            _, vsize, valign = self._layout_fields_from(variant.payload, type_map, 0)
+            payload_size = max(payload_size, vsize)
+            payload_align = max(payload_align, valign)
+
+        payload_start = align_up(struct.size, payload_align)
+        for variant in type_def.variants:
+            fields, _, _ = self._layout_fields_from(variant.payload, type_map, payload_start)
+            struct.variant_layouts[variant.name] = fields
+
+        struct.size = payload_start + payload_size
+        struct.align = max(struct.align, payload_align)
+        struct.finalize()
 
     def is_copyable_class_str(self, type_str: str) -> bool:
         base = type_str.split("<")[0]
@@ -731,6 +785,15 @@ class FIRToFLIRLowering:
             return
         if isinstance(inst, AllocateInst):
             self.lower_allocate(inst, ctx)
+            return
+        if isinstance(inst, ConstructVariantInst):
+            self.lower_construct_variant(inst, ctx)
+            return
+        if isinstance(inst, ExtractTagInst):
+            self.lower_extract_tag(inst, ctx)
+            return
+        if isinstance(inst, ExtractPayloadFieldInst):
+            self.lower_extract_payload_field(inst, ctx)
             return
         if isinstance(inst, LoadFieldInst):
             self.lower_load_field(inst, ctx)
@@ -1146,6 +1209,40 @@ class FIRToFLIRLowering:
         for (fname, ftype, offset), value in zip(struct.fields, args):
             ctx.emit(Store(ftype, ptr, offset, value))
         self.set_val(inst, ptr, ctx)
+
+    def lower_construct_variant(self, inst: ConstructVariantInst, ctx: _FuncCtx) -> None:
+        enum_str = self.render_concrete(inst.result_type, ctx.type_map)
+        struct_name = self.struct_for_class_str(enum_str, ctx.type_map)
+        struct = self.flir.struct(struct_name)
+        type_def, _ = self.struct_sources[struct_name]
+        tag_index = next(i for i, v in enumerate(type_def.variants) if v.name == inst.variant_name)
+
+        args = [self.val(op, ctx) for op in inst.operands]
+
+        size = ctx.emit(ConstInt(str(struct.size), I64))
+        ptr = self.rt_call("fs_rt_alloc_zeroed", [size], ptr_to(struct_name), ctx)
+        _, tag_ftype, tag_offset = struct.field("tag")
+        tag_value = ctx.emit(ConstInt(str(tag_index), tag_ftype))
+        ctx.emit(Store(tag_ftype, ptr, tag_offset, tag_value))
+        for (fname, ftype, offset), value in zip(struct.variant_layouts.get(inst.variant_name, []), args):
+            ctx.emit(Store(ftype, ptr, offset, value))
+        self.set_val(inst, ptr, ctx)
+
+    def lower_extract_tag(self, inst: ExtractTagInst, ctx: _FuncCtx) -> None:
+        enum_value = self.val(inst.operands[0], ctx)
+        type_str = self.subst(self.fir_type_str_of(inst.operands[0], ctx), ctx.type_map)
+        struct_name = self.struct_for_class_str(type_str, ctx.type_map)
+        struct = self.flir.struct(struct_name)
+        _, ftype, offset = struct.field("tag")
+        self.set_val(inst, ctx.emit(Load(ftype, enum_value, offset)), ctx)
+
+    def lower_extract_payload_field(self, inst: ExtractPayloadFieldInst, ctx: _FuncCtx) -> None:
+        enum_value = self.val(inst.operands[0], ctx)
+        type_str = self.subst(self.fir_type_str_of(inst.operands[0], ctx), ctx.type_map)
+        struct_name = self.struct_for_class_str(type_str, ctx.type_map)
+        struct = self.flir.struct(struct_name)
+        _, ftype, offset = struct.variant_layouts[inst.variant_name][inst.field_index]
+        self.set_val(inst, ctx.emit(Load(ftype, enum_value, offset)), ctx)
 
     def _object_base(self, obj_fir: Value, obj_value: FValue, ctx: _FuncCtx) -> tuple[FValue, str]:
         """Pointer base + struct name for a field access."""

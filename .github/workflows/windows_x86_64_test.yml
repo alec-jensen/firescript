@@ -1,4 +1,4 @@
-name: Tests
+name: Windows x86_64 Test Suite
 
 permissions:
   contents: read
@@ -8,20 +8,20 @@ on:
     branches:
       - main
     paths:
-      - '.github/workflows/test.yml'
+      - '.github/workflows/windows_x86_64_test.yml'
       - 'firescript/**'
       - 'tests/**'
   pull_request:
     branches:
       - main
     paths:
-      - '.github/workflows/test.yml'
+      - '.github/workflows/windows_x86_64_test.yml'
       - 'firescript/**'
       - 'tests/**'
 
 jobs:
   test:
-    # firescript compiles directly to native Windows x64 executables with its
+    # firescript compiles directly to native Windows x86_64 executables with its
     # own assembler and PE writer — no external toolchain. Python is the only
     # requirement.
     runs-on: windows-latest

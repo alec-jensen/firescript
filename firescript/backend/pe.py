@@ -1,6 +1,6 @@
 """Pure-Python PE32+ writer/linker.
 
-Turns an assembler ObjectImage into a runnable Windows x64 console
+Turns an assembler ObjectImage into a runnable Windows x86_64 console
 executable, building the kernel32 import table by hand. No external tools.
 
 The backend emits fully position-independent code (RIP-relative data

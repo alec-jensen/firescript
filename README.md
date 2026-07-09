@@ -1,6 +1,6 @@
 <img src="assets/firescript-logo.svg" alt="firescript logo" width="200"/>
 
-[![Tests](https://github.com/alec-jensen/firescript/actions/workflows/test.yml/badge.svg)](https://github.com/alec-jensen/firescript/actions/workflows/test.yml)
+[![Tests](https://github.com/alec-jensen/firescript/actions/workflows/windows_x86_64_test.yml/badge.svg)](https://github.com/alec-jensen/firescript/actions/workflows/windows_x86_64_test.yml)
 
 # firescript
 
@@ -15,7 +15,7 @@ firescript is a statically and strongly typed programming language designed to b
 - **Everything is Explicit:** No implicit conversions or hidden behavior.
 - **Self-Hosted Toolchain:** The x86-64 assembler, PE/ELF writers, FCL config language parser, and kiln build system are all implemented in firescript itself. The compiler compiles itself end-to-end with no Python invoked in the compile path.
 - **Zero External Dependencies:** The compiler produces native executables using only the Python standard library — no C compiler, no assembler, no linker, no third-party packages. Compiled binaries are freestanding and import only `kernel32.dll` (Windows) or use raw syscalls (Linux).
-- **Native Code Generation:** Compiles through its own intermediate representations (FIR → FLIR) directly to x86-64 machine code. JavaScript + Wasm output is planned.
+- **Native Code Generation:** Compiles through its own intermediate representations (FIR → FLIR) directly to machine code.
 - **Cohesive Design:** All parts of the language work seamlessly together.
 - **Deterministic Ownership Model:** Ownership, moves, borrows, and explicit cloning instead of a tracing garbage collector. See the [Memory Management Model](docs/reference/memory_management.md).
 
@@ -26,15 +26,15 @@ import @firescript/std.io.println;
 
 // Define a function that returns the nth Fibonacci number
 int8 fibonacci(int8 n) {
-    if n <= 1 {
-        return n
+    if (n <= 1i8) {
+        return n;
     }
-    return fibonacci(n - 1i8) + fibonacci(n - 2i8)
+    return fibonacci(n - 1i8) + fibonacci(n - 2i8);
 }
 
 // Print the first 10 Fibonacci numbers
-for (int8 i=0i8; i < 10i8; i++) {
-    println(fibonacci(i))
+for (int8 i = 0i8; i < 10i8; i++) {
+    println(fibonacci(i));
 }
 ```
 
@@ -44,20 +44,25 @@ firescript is built to compile itself. The entire toolchain is implemented in fi
 
 | Layer | Implementation | Status |
 |---|---|---|
-| Lexer, parser, semantic analysis | `firescript/std/compiler/*.fire` | [IN DEVELOPMENT] |
+| Lexer, parser, semantic analysis | `firescript/std/compiler/*.fire` | [PLANNED] |
 | FIR → FLIR lowering | `firescript/std/compiler/codegen.fire` | [PLANNED] |
 | x86-64 assembler | `firescript/std/compiler/assembler.fire` | [PLANNED] |
 | PE32+ writer (Windows) | `firescript/std/compiler/pe_writer.fire` | [PLANNED] |
 | ELF64 writer (Linux) | `firescript/std/compiler/elf_writer.fire` | [PLANNED] |
 | FCL config language | `firescript/std/fcl/` | [IN DEVELOPMENT] |
-| kiln build system | `firescript/tools/kiln/` | [PLANNED] |
+| kiln build system | `firescript/tools/kiln/` | [IN DEVELOPMENT] |
 | Package registry | `firescript/tools/kiln/` | [PLANNED] |
 
 The Python compiler is a bootstrap seed. At 1.0, it is retired and the firescript compiler is the only compiler.
 
 ## Platforms
 
-firescript compiles directly to native x86-64 machine code through its own intermediate representations (FIR and FLIR), with its own assembler and object-file writers — **no external toolchain of any kind**. Native compilation currently targets Windows x64; Linux x64 support is in development. A future JavaScript + Wasm target is planned for browser and Node.js environments.
+| OS      | x86_64 | i686 | aarch64 | armv7 | riscv64 | riscv32 |
+|---------|--------|------|---------|-------|---------|---------|
+| Windows | ✅ current | ❌ | 🔜 planned | ❌ | ❌ | ❌ |
+| Linux   | 🔜 planned | ❌ | 🔜 planned | ❌ | 🔜 planned | ❌ |
+| macOS   | ❌ | ❌ | 🔜 planned | ❌ | ❌ | ❌ |
+| none (bare-metal) | 🔜 planned | 🔜 planned | 🔜 planned | 🔜 planned | 🔜 planned | 🔜 planned |
 
 ## Build Requirements
 

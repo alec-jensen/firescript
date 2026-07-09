@@ -285,6 +285,37 @@ class ExpressionsMixin(ParserBase):
             return self._parse_postfix_cast(node)
         elif token.type in ("IDENTIFIER", "AS", "OWNED") or token.value in self.builtin_functions:
             self.advance()
+            # Special-case: enum variant construction like EnumName.Variant
+            if token.value in self.user_enums and self.current_token and self.current_token.type == "DOT":
+                self.consume("DOT")
+                variant_tok = self.consume("IDENTIFIER")
+                if not variant_tok:
+                    self.expected_token_error("variant name after enum type '.'", self.current_token)
+                    return None
+                variant_payloads = self.user_enums[token.value]
+                if variant_tok.value not in variant_payloads:
+                    self.invalid_expression_error(
+                        f"Unknown variant '{variant_tok.value}' in enum '{token.value}'", variant_tok
+                    )
+                    expected_arity = 0
+                else:
+                    expected_arity = len(variant_payloads[variant_tok.value])
+                args: list[ASTNode] = []
+                if self.current_token and self.current_token.type == "OPEN_PAREN":
+                    self.advance()  # consume '('
+                    args = self._parse_argument_list()
+                if len(args) != expected_arity:
+                    self.invalid_expression_error(
+                        f"Variant '{token.value}.{variant_tok.value}' expects {expected_arity} "
+                        f"argument(s), got {len(args)}",
+                        variant_tok,
+                    )
+                node = ASTNode(
+                    NodeTypes.ENUM_VARIANT_CONSTRUCT, variant_tok, variant_tok.value, args, variant_tok.index
+                )
+                setattr(node, "class_name", token.value)
+                node.return_type = token.value
+                return self._parse_postfix_cast(node)
             # Special-case: type-level method call like Type.method(...)
             if token.value in self.user_types and self.current_token and self.current_token.type == "DOT":
                 self.consume("DOT")

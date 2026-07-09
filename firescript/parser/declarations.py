@@ -432,6 +432,16 @@ class DeclarationsMixin(TypeSystemMixin):
                     cls.parent = self.ast
                     self.ast.children.append(cls)
                 continue
+            # Enum definition
+            if self.current_token.type == "ENUM":
+                enum_node = self._parse_enum_definition()
+                if enum_node:
+                    if getattr(self, "_pending_export", False):
+                        setattr(enum_node, "is_exported", True)
+                        self._pending_export = False
+                    enum_node.parent = self.ast
+                    self.ast.children.append(enum_node)
+                continue
             # Constraint declaration
             if self.current_token.type == "CONSTRAINT":
                 if getattr(self, "_pending_export", False):
@@ -1412,3 +1422,90 @@ class DeclarationsMixin(TypeSystemMixin):
             register_class(name_tok.value, is_copyable)
 
         return cls_node
+
+    def _parse_enum_definition(self):
+        """Parse an enum definition: enum Name { Variant1, Variant2(Type, ...), ... }
+
+        Variant payloads are positional/tuple-style (no named fields).
+        """
+        enum_tok = self.consume("ENUM")
+        if enum_tok is None:
+            return None
+        name_tok = self.consume("IDENTIFIER")
+        if name_tok is None:
+            self.expected_token_error("enum name after 'enum'", self.current_token)
+            return None
+
+        if self.current_token and self.current_token.type == "LESS_THAN":
+            self.invalid_expression_error("Generic enums are not yet supported", self.current_token)
+            # Recover by skipping ahead to the enum body.
+            while self.current_token and self.current_token.type != "OPEN_BRACE":
+                self.advance()
+
+        if not self.consume("OPEN_BRACE"):
+            self.expected_token_error("'{' to start enum body", self.current_token)
+            return None
+
+        variants: list[ASTNode] = []
+        variant_payloads: dict[str, list[str]] = {}
+        while self.current_token and self.current_token.type != "CLOSE_BRACE":
+            if self.current_token.type in (
+                "SINGLE_LINE_COMMENT",
+                "MULTI_LINE_COMMENT_START",
+            ):
+                self._skip_comment()
+                continue
+            if self.current_token.type == "COMMA":
+                self.advance()
+                continue
+            variant_tok = self.consume("IDENTIFIER")
+            if variant_tok is None:
+                self.expected_token_error("variant name in enum body", self.current_token)
+                while self.current_token and self.current_token.type not in ("COMMA", "CLOSE_BRACE"):
+                    self.advance()
+                continue
+            if variant_tok.value in variant_payloads:
+                self.invalid_expression_error(
+                    f"Duplicate variant '{variant_tok.value}' in enum '{name_tok.value}'", variant_tok
+                )
+
+            payload_types: list[str] = []
+            if self.current_token and self.current_token.type == "OPEN_PAREN":
+                self.advance()  # consume '('
+                if self.current_token and self.current_token.type != "CLOSE_PAREN":
+                    while True:
+                        if not self._is_type_token(self.current_token):
+                            self.expected_token_error("payload type in enum variant", self.current_token)
+                            break
+                        type_tok = self.current_token
+                        self.advance()
+                        payload_types.append(self._normalize_type_name(type_tok))
+                        if self.current_token and self.current_token.type == "COMMA":
+                            self.advance()
+                            continue
+                        break
+                if not self.consume("CLOSE_PAREN"):
+                    self.expected_token_error("')' to close enum variant payload", self.current_token)
+
+            variant_node = ASTNode(NodeTypes.ENUM_VARIANT, variant_tok, variant_tok.value, [], variant_tok.index)
+            setattr(variant_node, "payload_types", payload_types)
+            variants.append(variant_node)
+            variant_payloads[variant_tok.value] = payload_types
+
+            if self.current_token and self.current_token.type == "COMMA":
+                self.advance()
+            elif self.current_token and self.current_token.type != "CLOSE_BRACE":
+                self.expected_token_error("',' or '}' after enum variant", self.current_token)
+
+        if not self.consume("CLOSE_BRACE"):
+            self.expected_token_error("'}' to close enum body", self.current_token)
+            return None
+
+        if not variant_payloads:
+            self.invalid_expression_error(f"Enum '{name_tok.value}' must declare at least one variant", name_tok)
+
+        self.user_types.add(name_tok.value)
+        self.user_enums[name_tok.value] = variant_payloads
+
+        enum_node = ASTNode(NodeTypes.ENUM_DEFINITION, name_tok, name_tok.value, variants, name_tok.index)
+        return enum_node

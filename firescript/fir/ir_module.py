@@ -9,8 +9,20 @@ from fir.ir_types import FIRType
 from fir.ownership import OwnershipMap
 
 
+class EnumVariantDef:
+    """One variant of an enum type: a name plus its positional payload fields.
+
+    `payload` is empty for tag-only variants; data-carrying variants are a
+    planned follow-up (payload fields are stored by position, not name).
+    """
+
+    def __init__(self, name: str, payload: Optional[list[FIRType]] = None):
+        self.name = name
+        self.payload = payload or []
+
+
 class TypeDef:
-    """A class definition preserved at the FIR level."""
+    """A class or enum definition preserved at the FIR level."""
 
     def __init__(
         self,
@@ -19,12 +31,16 @@ class TypeDef:
         fields: Optional[list[tuple[str, FIRType]]] = None,
         generic_params: Optional[list[str]] = None,
         base: Optional[str] = None,
+        kind: str = "class",
+        variants: Optional[list[EnumVariantDef]] = None,
     ):
         self.name = name
         self.category = category  # "owned" | "copyable"
         self.fields = fields or []
         self.generic_params = generic_params or []
         self.base = base  # name of the parent class, if any
+        self.kind = kind  # "class" | "enum"
+        self.variants = variants or []  # only meaningful when kind == "enum"
 
 
 class GlobalConstant:

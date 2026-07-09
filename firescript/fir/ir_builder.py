@@ -17,8 +17,11 @@ from fir.ir_node import (
     CastInst,
     CharLiteralInst,
     CloneInst,
+    ConstructVariantInst,
     DeclareLocalInst,
     DropInst,
+    ExtractPayloadFieldInst,
+    ExtractTagInst,
     FIRValue,
     FloatLiteralInst,
     GenNewInst,
@@ -110,6 +113,17 @@ class FIRBuilder:
 
     def store_field(self, obj: Value, field: str, value: Value) -> None:
         self.emit(StoreFieldInst(obj, field, value))
+
+    def construct_variant(self, enum_type: FIRType, variant_name: str, payload: list[Value]) -> FIRValue:
+        return self.emit(ConstructVariantInst(enum_type, variant_name, payload))
+
+    def extract_tag(self, enum_value: Value, result_type: FIRType) -> FIRValue:
+        return self.emit(ExtractTagInst(enum_value, result_type))
+
+    def extract_payload_field(
+        self, enum_value: Value, variant_name: str, field_index: int, result_type: FIRType
+    ) -> FIRValue:
+        return self.emit(ExtractPayloadFieldInst(enum_value, variant_name, field_index, result_type))
 
     def index_array(self, array: Value, index: Value, result_type: FIRType) -> FIRValue:
         return self.emit(IndexArrayInst(array, index, result_type))

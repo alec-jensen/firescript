@@ -23,7 +23,7 @@ from enums import NodeTypes
 from parser import ASTNode
 
 from fir.ir_builder import FIRBuilder
-from fir.ir_module import FIRFunction, FIRModule, GlobalConstant, TypeDef
+from fir.ir_module import EnumVariantDef, FIRFunction, FIRModule, GlobalConstant, TypeDef
 from fir.ir_node import Value
 from fir.ir_types import (
     ArrayType,
@@ -232,6 +232,10 @@ class ASTToFIRConverter:
         self.class_generic_params: dict[str, list[str]] = {}
         self.class_method_names: dict[str, set[str]] = {}
         self.class_method_defs: dict[tuple[str, str], ASTNode] = {}
+        # Enum registries: name -> [(variant name, payload FIRTypes), ...] in
+        # declaration order (tag = index into this list).
+        self.enum_variants: dict[str, list[tuple[str, list[FIRType]]]] = {}
+        self.enum_categories: dict[str, str] = {}
         self.function_defs: dict[str, ASTNode] = {}
         self.generic_functions: dict[str, list[str]] = {}
         self.generator_defs: dict[str, ASTNode] = {}
@@ -281,6 +285,9 @@ class ASTToFIRConverter:
         for child in self.ast.children:
             node_type = child.node_type
             if node_type in (NodeTypes.DIRECTIVE, NodeTypes.IMPORT_STATEMENT):
+                continue
+            if node_type == NodeTypes.ENUM_DEFINITION:
+                self._convert_enum(child)
                 continue
             if node_type == NodeTypes.CLASS_DEFINITION:
                 self._convert_class(child)
@@ -338,6 +345,17 @@ class ASTToFIRConverter:
                 self.class_categories[name] = "copyable" if is_copyable else "owned"
                 self.class_bases[name] = getattr(child, "base_class", None)
                 self.class_generic_params[name] = list(getattr(child, "type_params", []) or [])
+            elif child.node_type == NodeTypes.ENUM_DEFINITION:
+                name = child.name
+                self.enum_variants[name] = [
+                    (
+                        member.name,
+                        [self._fir_type(t) for t in getattr(member, "payload_types", []) or []],
+                    )
+                    for member in child.children
+                    if member.node_type == NodeTypes.ENUM_VARIANT
+                ]
+                self.enum_categories[name] = "owned"
             elif child.node_type == NodeTypes.FUNCTION_DEFINITION:
                 self.function_defs[child.name] = child
                 type_params = list(getattr(child, "type_params", []) or [])
@@ -378,6 +396,8 @@ class ASTToFIRConverter:
 
         if type_str in self.class_categories:
             return SimpleType(type_str, category=self.class_categories[type_str], nullable=nullable)
+        if type_str in self.enum_categories:
+            return SimpleType(type_str, category=self.enum_categories[type_str], nullable=nullable)
         return make_simple(type_str, nullable=nullable)
 
     @staticmethod
@@ -638,6 +658,18 @@ class ASTToFIRConverter:
         for member in node.children:
             if member.node_type == NodeTypes.CLASS_METHOD_DEFINITION:
                 self._convert_method(node.name, member)
+
+    def _convert_enum(self, node: ASTNode) -> None:
+        variants = [
+            EnumVariantDef(name, payload) for name, payload in self.enum_variants.get(node.name, [])
+        ]
+        type_def = TypeDef(
+            node.name,
+            category=self.enum_categories.get(node.name, "owned"),
+            kind="enum",
+            variants=variants,
+        )
+        self.module.add_type(type_def)
 
     def _function_params(self, node: ASTNode) -> tuple[list[tuple[str, FIRType]], list[str]]:
         params: list[tuple[str, FIRType]] = []
@@ -1441,7 +1473,30 @@ class ASTToFIRConverter:
         if node_type == NodeTypes.SUPER_CALL:
             return self._convert_super_call(node)
 
+        if node_type == NodeTypes.ENUM_VARIANT_CONSTRUCT:
+            return self._convert_enum_variant_construct(node)
+
         raise FIRConversionError(f"Unsupported expression node {node_type}", node)
+
+    def _convert_enum_variant_construct(self, node: ASTNode) -> Value:
+        """Construct an enum value: EnumName.Variant or EnumName.Variant(args...)."""
+        enum_name = getattr(node, "class_name", "")
+        variants = self.enum_variants.get(enum_name, [])
+        variant_payloads = dict(variants)
+        if node.name not in variant_payloads:
+            raise FIRConversionError(
+                f"Unknown variant '{node.name}' in enum '{enum_name}'", node
+            )
+        payload_types = variant_payloads[node.name]
+        if len(node.children) != len(payload_types):
+            raise FIRConversionError(
+                f"Variant '{enum_name}.{node.name}' expects {len(payload_types)} argument(s), "
+                f"got {len(node.children)}",
+                node,
+            )
+        args = [self._convert_expression(child) for child in node.children]
+        enum_type = self._fir_type(enum_name)
+        return self.builder.construct_variant(enum_type, node.name, args)
 
     def _convert_short_circuit(self, node: ASTNode) -> Value:
         """Lower && / || with C-style short-circuit evaluation via a temp local."""

@@ -34,6 +34,7 @@ class Lexer:
         "FROM": r"from\b",
         "NEW": r"new\b",
         "CLASS": r"class\b",
+        "ENUM": r"enum\b",
         "STATIC": r"static\b",
         "CONSTRAINT": r"constraint\b",
         "DIRECTIVE": r"directive\b",

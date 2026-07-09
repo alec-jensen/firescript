@@ -235,6 +235,56 @@ class StoreFieldInst(Instruction):
         )
 
 
+class ConstructVariantInst(Instruction):
+    """Construct an enum value with a given active variant and payload."""
+
+    opcode = "ConstructVariant"
+
+    def __init__(self, enum_type: FIRType, variant_name: str, payload: list[Value]):
+        super().__init__(operands=list(payload), result_type=enum_type)
+        self.variant_name = variant_name
+
+    def format(self, resolve: Resolver) -> str:
+        return (
+            f'ConstructVariant({self.result_type.render()}, "{self.variant_name}", '
+            f"{_fmt_value_list(self.operands, resolve)})"
+        )
+
+
+class ExtractTagInst(Instruction):
+    """Read the active-variant tag (discriminant) from an enum value."""
+
+    opcode = "ExtractTag"
+
+    def __init__(self, enum_value: Value, result_type: FIRType):
+        super().__init__(operands=[enum_value], result_type=result_type)
+
+    def format(self, resolve: Resolver) -> str:
+        return f"ExtractTag({resolve(self.operands[0])})"
+
+
+class ExtractPayloadFieldInst(Instruction):
+    """Read one payload field of a given variant from an enum value.
+
+    Only valid when the enum's active tag matches `variant_name` at
+    runtime; the compiler only emits this inside the corresponding match
+    arm block.
+    """
+
+    opcode = "ExtractPayloadField"
+
+    def __init__(self, enum_value: Value, variant_name: str, field_index: int, result_type: FIRType):
+        super().__init__(operands=[enum_value], result_type=result_type)
+        self.variant_name = variant_name
+        self.field_index = field_index
+
+    def format(self, resolve: Resolver) -> str:
+        return (
+            f'ExtractPayloadField({resolve(self.operands[0])}, "{self.variant_name}", '
+            f"{self.field_index})"
+        )
+
+
 class IndexArrayInst(Instruction):
     opcode = "IndexArray"
 
