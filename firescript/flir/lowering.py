@@ -269,6 +269,7 @@ from flir.ir import (
     ptr_to,
     struct_type,
 )
+from flir.runtime_abi import runtime_signature
 from platforms.windows import WINDOWS_RUNTIME_EXTERNS
 
 _SCALARS: dict[str, FLIRType] = {
@@ -1682,12 +1683,12 @@ class FIRToFLIRLowering:
         if name == "mem_copy":
             dst = ctx.emit(Cvt(args[0], U64, PTR))
             src = ctx.emit(Cvt(args[1], U64, PTR))
-            ctx.emit(Call("fs_rt_mem_copy", [dst, src, args[2]], VOID))
+            self.rt_call("fs_rt_mem_copy", [dst, src, args[2]], VOID, ctx)
             return True
         if name == "f64_bits":
             # Bit-pattern reinterpretation; primitive (C: union punning,
             # asm: movq xmm -> gpr).
-            self.set_val(inst, ctx.emit(Call("fs_rt_f64_bits", [args[0]], U64)), ctx)
+            self.set_val(inst, self.rt_call("fs_rt_f64_bits", [args[0]], U64, ctx), ctx)
             return True
         if name == "f128_lo":
             # f128_lo(x: float128) -> uint64: load LO qword (bytes 0..7).
@@ -1756,11 +1757,23 @@ class FIRToFLIRLowering:
 
     def rt_call(self, name: str, args: list[FValue], ret_type: FLIRType, ctx: _FuncCtx) -> Optional[FValue]:
         """Call a runtime entry point, preferring the firescript-implemented
-        version (std/internal/runtime.fire) when present in the module."""
+        version (std/internal/runtime.fire) when present in the module.
+
+        The registry (flir/runtime_abi.py) is the source of truth for
+        non-pointer return types -- callers must not disagree with it, so
+        we trust the registry over an ad hoc `ret_type` argument. Pointer
+        returns are the one exception: fs_rt_alloc_zeroed is a generic raw
+        allocator whose result is legitimately reinterpreted as ptr<S> for
+        whatever S the caller is allocating, so `ret_type` wins there.
+        """
+        sig = runtime_signature(name)
+        effective_ret = ret_type
+        if sig is not None and sig.ret.kind != "ptr":
+            effective_ret = sig.ret
         if name in self.fir_funcs:
             lowered = self.request_function(name, [])
-            return ctx.emit(Call(lowered, args, ret_type))
-        return ctx.emit(Call(name, args, ret_type))
+            return ctx.emit(Call(lowered, args, effective_ret))
+        return ctx.emit(Call(name, args, effective_ret))
 
     def lower_call(self, inst: CallInst, ctx: _FuncCtx) -> None:
         name = inst.function_ref

@@ -179,3 +179,32 @@ class InvalidSuperError(CompileTimeError):
     code = "FS-SEM-0016"
     category = ErrorCategory.SEMANTIC
     message_template = "{detail}"
+
+
+class IRVerificationError(Exception):
+    """Internal compiler error: generated IR violates a validity rule.
+
+    Not a CompileTimeError subclass: verifier failures have no source
+    line/column contract and must never be silently collected alongside
+    user diagnostics -- they abort compilation unconditionally. See
+    docs/internal/development/ir_verifier_spec.md section 3.3.
+    """
+
+    def __init__(self, ir_level: str, violations: list, function_dump: str = ""):
+        self.ir_level = ir_level
+        self.violations = violations
+        self.function_dump = function_dump
+        first_rule = violations[0].rule_id if violations else "?"
+        lines = [
+            f"internal compiler error: {ir_level} verification failed ({first_rule}): "
+            f"{len(violations)} violation(s) found in generated IR. This is a compiler "
+            "bug, not a problem with your source -- please file a bug report.",
+            "",
+        ]
+        for v in violations:
+            lines.append(v.format())
+        if function_dump:
+            lines.append("")
+            lines.append("-- first offending function --")
+            lines.append(function_dump)
+        super().__init__("\n".join(lines))
