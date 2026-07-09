@@ -161,11 +161,10 @@ def format_hover(node: ASTNode) -> str:
         mods = ""
         if getattr(node, "is_const", False):
             mods += "const "
-        if getattr(node, "is_nullable", False):
-            mods += "nullable "
         t = node.var_type or "?"
         arr = "[]" if getattr(node, "is_array", False) else ""
-        decl = f"{mods}{t}{arr} {node.name}"
+        name = f"{node.name}?" if getattr(node, "is_nullable", False) else node.name
+        decl = f"{mods}{t}{arr} {name}"
         if getattr(node, "is_const", False):
             value_node = next(
                 (c for c in (node.children or [])

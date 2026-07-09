@@ -54,13 +54,13 @@ CopyableTuple<float64, float64> copy = coord;  // copies
 
 ## `Option<T>` [IN DEVELOPMENT]
 
-An optional value of type `T`. Use this to represent potentially missing values without explicit nullability. **Known issue:** `isSome()` and `isNone()` currently return incorrect results; prefer plain `nullable` variables until this is fixed.
+An optional value of type `T`. Use this to represent potentially missing values without explicit nullability. **Known issue:** `isSome()` and `isNone()` currently return incorrect results; prefer plain nullable (`?`) variables until this is fixed.
 
 ```firescript
-class Option<nullable T> {
-    nullable T value;
+class Option<T?> {
+    T value?;
     
-    Option(nullable T value);
+    Option(T value?);
     
     bool isSome();
     bool isNone();
@@ -94,10 +94,10 @@ if (present) {
 A copyable variant of `Option` for copyable types. Subject to the same known issue as `Option`.
 
 ```firescript
-copyable class CopyableOption<nullable T> {
-    nullable T value;
+copyable class CopyableOption<T?> {
+    T value?;
     
-    CopyableOption(nullable T value);
+    CopyableOption(T value?);
     
     bool isSome();
     bool isNone();

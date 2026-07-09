@@ -39,7 +39,6 @@ class Lexer:
         "STATIC": r"static\b",
         "CONSTRAINT": r"constraint\b",
         "DIRECTIVE": r"directive\b",
-        "NULLABLE": r"nullable\b",
         "GENERATOR": r"generator\b",
         "YIELD": r"yield\b",
         "CONST": r"const\b",
@@ -84,6 +83,7 @@ class Lexer:
         "AT": r"\@",
         "GREATER_THAN": r"\>",
         "LESS_THAN": r"\<",
+        "QUESTION": r"\?",
     }
 
     operators: dict[str, str] = {

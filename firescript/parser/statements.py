@@ -84,13 +84,10 @@ class StatementsMixin(ExpressionsMixin):
         return if_node
 
     def parse_variable_declaration(self):
-        """Parse variable declarations like: [nullable] [const] type [ [] ] name = expr"""
+        """Parse variable declarations like: [const] type [ [] ] name[?] = expr"""
         is_nullable = False
         is_const = False
         # Modifiers
-        if self.current_token and self.current_token.type == "NULLABLE":
-            is_nullable = True
-            self.advance()
         if self.current_token and self.current_token.type == "CONST":
             is_const = True
             self.advance()
@@ -205,6 +202,11 @@ class StatementsMixin(ExpressionsMixin):
         if identifier is None:
             self.expected_token_error("variable name after type", self.current_token)
             return None
+
+        # Optional nullable marker: name?
+        if self.current_token and self.current_token.type == "QUESTION":
+            is_nullable = True
+            self.advance()
 
         # Assignment - optional when array size is explicitly declared
         if self.current_token and self.current_token.type == "ASSIGN":
@@ -642,8 +644,8 @@ class StatementsMixin(ExpressionsMixin):
         token_type = self.current_token.type
         next_token = self.peek()
 
-        # Variable Declaration: type tokens or nullable/const modifiers can start a declaration
-        if self._is_type_token(self.current_token) or token_type in ("NULLABLE", "CONST"):
+        # Variable Declaration: type tokens or const modifier can start a declaration
+        if self._is_type_token(self.current_token) or token_type == "CONST":
             return self.parse_variable_declaration()
 
         # Deferred-import mode: IDENT IDENT = ... is a named-type variable declaration

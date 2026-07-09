@@ -123,8 +123,8 @@ Fields can be nullable or const:
 
 ```firescript
 class Configuration {
-    const string APP_NAME;       // Constant field
-    nullable string lastUser;    // Can be null
+    const string APP_NAME;   // Constant field
+    string lastUser?;        // Can be null
 }
 ```
 

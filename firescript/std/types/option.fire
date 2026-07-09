@@ -1,7 +1,7 @@
-class Option<nullable T> {
-    nullable T value;
+class Option<T?> {
+    T value?;
 
-    Option(nullable T value) {
+    Option(T value?) {
         this.value = value;
     }
 
@@ -14,10 +14,10 @@ class Option<nullable T> {
     }
 }
 
-copyable class CopyableOption<nullable T> {
-    nullable T value;
+copyable class CopyableOption<T?> {
+    T value?;
 
-    CopyableOption(nullable T value) {
+    CopyableOption(T value?) {
         this.value = value;
     }
 

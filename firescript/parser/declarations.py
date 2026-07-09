@@ -913,15 +913,15 @@ class DeclarationsMixin(TypeSystemMixin):
         if self.current_token and self.current_token.type == "LESS_THAN":
             self.advance()  # consume <
             while True:
-                # Skip optional 'nullable' constraint annotation on type parameters
-                if self.current_token and self.current_token.type == "NULLABLE":
-                    self.advance()
                 if not (self.current_token and self.current_token.type == "IDENTIFIER"):
                     self.expected_token_error("type parameter name", self.current_token)
                     return None
                 tparam_tok = self.consume("IDENTIFIER")
                 if tparam_tok is None:
                     return None
+                # Skip optional 'nullable' constraint annotation on type parameters: T?
+                if self.current_token and self.current_token.type == "QUESTION":
+                    self.advance()
                 class_type_params.append(tparam_tok.value)
                 if self.current_token and self.current_token.type == "COMMA":
                     self.advance()
@@ -965,11 +965,6 @@ class DeclarationsMixin(TypeSystemMixin):
             local_is_static = False
             if self.current_token and self.current_token.type == "STATIC":
                 local_is_static = True
-                self.advance()
-            # Accept optional nullable modifier on field type or method return type
-            local_is_nullable = False
-            if self.current_token and self.current_token.type == "NULLABLE":
-                local_is_nullable = True
                 self.advance()
             # Accept types that are either known types or the current class name (for methods/fields/constructors)
             if not (self._is_type_token(self.current_token) or (
@@ -1074,12 +1069,6 @@ class DeclarationsMixin(TypeSystemMixin):
                                 p_is_borrowed = True
                                 self.advance()
                             
-                            # Check for nullable modifier on parameter type
-                            p_is_nullable = False
-                            if self.current_token and self.current_token.type == "NULLABLE":
-                                p_is_nullable = True
-                                self.advance()
-                            
                             # Parameter type: allow known types or current class name
                             if not (self.current_token and (self._is_type_token(self.current_token) or (
                                 self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
@@ -1099,6 +1088,11 @@ class DeclarationsMixin(TypeSystemMixin):
                             if pname_tok is None:
                                 self.expected_token_error("parameter name in method", self.current_token)
                                 return None
+                            # Check for nullable marker on parameter: name?
+                            p_is_nullable = False
+                            if self.current_token and self.current_token.type == "QUESTION":
+                                p_is_nullable = True
+                                self.advance()
                             param_node = ASTNode(
                                 NodeTypes.PARAMETER,
                                 pname_tok,
@@ -1159,6 +1153,11 @@ class DeclarationsMixin(TypeSystemMixin):
             if name_tok2 is None:
                 self.expected_token_error("identifier after type in class body", self.current_token)
                 break
+            # Optional nullable marker on field/method return type: name?
+            local_is_nullable = False
+            if self.current_token and self.current_token.type == "QUESTION":
+                local_is_nullable = True
+                self.advance()
             # Method definition
             if self.current_token and self.current_token.type == "OPEN_PAREN":
                 # Determine if this is a constructor: method name equals class name
@@ -1203,11 +1202,6 @@ class DeclarationsMixin(TypeSystemMixin):
                             params.append(recv)
                             seen_receiver = True
                         else:
-                            # Check for nullable modifier on parameter type
-                            p_is_nullable = False
-                            if self.current_token and self.current_token.type == "NULLABLE":
-                                p_is_nullable = True
-                                self.advance()
                             # Parameter type: allow known types or current class name
                             if not (self.current_token and (self._is_type_token(self.current_token) or (
                                 self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
@@ -1231,6 +1225,11 @@ class DeclarationsMixin(TypeSystemMixin):
                             if pname_tok is None:
                                 self.expected_token_error("parameter name in method", self.current_token)
                                 return None
+                            # Check for nullable marker on parameter: name?
+                            p_is_nullable = False
+                            if self.current_token and self.current_token.type == "QUESTION":
+                                p_is_nullable = True
+                                self.advance()
                             param_node = ASTNode(
                                 NodeTypes.PARAMETER,
                                 pname_tok,

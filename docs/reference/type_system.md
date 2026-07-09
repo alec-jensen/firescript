@@ -289,14 +289,14 @@ scores[1] = 95;  // Array becomes [85, 95, 78]
 int32 count = scores.length();  // 3
 ```
 
-## Nullability
+## Nullability [IMPLEMENTED]
 
-By default, variables cannot hold the value `null`. To allow a variable to be assigned `null`, you must explicitly declare it as `nullable`.
+By default, variables cannot hold the value `null`. To allow a variable to be assigned `null`, mark it nullable with a trailing `?` after its name.
 
 ### Declaring Nullable Variables
 
 ```firescript
-nullable string username = null;  // Allowed
+string username? = null;  // Allowed
 string title = "Default";
 
 // title = null;  // Error: Cannot assign null to non-nullable type 'string'
@@ -311,7 +311,7 @@ When working with nullable variables, it's important to check for null before us
 ```firescript
 import @firescript/std.io.print;
 
-nullable string data = null;
+string data? = null;
 
 // Safe pattern
 if (data != null) {
@@ -756,7 +756,7 @@ map<string, int32> scores = map<string, int32>();
 scores.set("Alice", 100);
 scores.set("Bob", 95);
 
-nullable int32 aliceScore = scores.get("Alice");  // 100
+int32 aliceScore? = scores.get("Alice");  // 100
 ```
 
 #### Implementation Notes

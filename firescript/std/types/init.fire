@@ -20,10 +20,10 @@ export copyable class CopyableTuple<T, U> {
 	}
 }
 
-export class Option<nullable T> {
-	nullable T value;
+export class Option<T?> {
+	T value?;
 
-	Option(nullable T value) {
+	Option(T value?) {
 		this.value = value;
 	}
 
@@ -36,10 +36,10 @@ export class Option<nullable T> {
 	}
 }
 
-export copyable class CopyableOption<nullable T> {
-	nullable T value;
+export copyable class CopyableOption<T?> {
+	T value?;
 
-	CopyableOption(nullable T value) {
+	CopyableOption(T value?) {
 		this.value = value;
 	}
 

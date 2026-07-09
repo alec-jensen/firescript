@@ -60,21 +60,16 @@ class ASTNode:
         # Build the display line differently for variable declarations.
         if self.node_type == NodeTypes.VARIABLE_DECLARATION:
             pre = []
-            if self.is_nullable:
-                pre.append("nullable")
             if self.is_const:
                 pre.append("const")
             if self.var_type:
                 pre.append(self.var_type)
 
-            post = []
-            # TODO: add post modifiers
+            display_name = f"{self.name}?" if self.is_nullable else self.name
 
             line_content = f"{self.node_type}"
             if pre:
-                line_content += f" {' '.join(pre)} {self.name}"
-            if post:
-                line_content += f" {' '.join(post)}"
+                line_content += f" {' '.join(pre)} {display_name}"
         else:
             line_content = f"{self.node_type} {self.name}"
 
