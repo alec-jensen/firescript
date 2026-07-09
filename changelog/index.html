@@ -1290,6 +1290,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1319,7 +1330,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#breaking-changes" class="md-nav__link">
+  <a href="#breaking-changes_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Breaking Changes
@@ -1369,7 +1380,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#breaking-changes_1" class="md-nav__link">
+  <a href="#breaking-changes_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Breaking Changes
@@ -1419,7 +1430,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#breaking-changes_2" class="md-nav__link">
+  <a href="#breaking-changes_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         Breaking Changes
@@ -1657,6 +1668,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1686,7 +1708,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#breaking-changes" class="md-nav__link">
+  <a href="#breaking-changes_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Breaking Changes
@@ -1736,7 +1758,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#breaking-changes_1" class="md-nav__link">
+  <a href="#breaking-changes_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Breaking Changes
@@ -1786,7 +1808,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#breaking-changes_2" class="md-nav__link">
+  <a href="#breaking-changes_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         Breaking Changes
@@ -1978,8 +2000,12 @@
 <h2 id="060-griffin-currently-in-development">0.6.0 - Griffin (Currently in Development)<a class="headerlink" href="#060-griffin-currently-in-development" title="Permanent link">&para;</a></h2>
 <h3 id="new-language-features">New Language Features<a class="headerlink" href="#new-language-features" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Added <code>enum</code> declarations with tag-only (no data payload) variants, e.g. <code>enum Color { Red, Green, Blue }</code>. Variants are constructed with <code>EnumName.Variant</code> syntax (e.g. <code>Color.Red</code>). Enums are owned types (heap-allocated, like classes without an explicit <code>copyable</code> annotation). Generic enums (<code>enum Foo&lt;T&gt;</code>) are not yet supported and produce a clear compile error rather than miscompiling; <code>match</code> expressions for destructuring enums are also not yet implemented. See <code>docs/internal/development/version_planning.md</code> (0.6.0 "Griffin") for the full planned feature.</li>
-<li>Enum variants can now declare positional data payloads, e.g. <code>enum Shape { Circle(float64), Rectangle(float64, float64), Point }</code>, constructed as <code>Shape.Circle(3.0)</code>. Payload types are currently limited to copyable scalars (owned payload data — strings, classes — is not yet dropped correctly on scope exit; that support, along with <code>match</code> for reading payload fields back out, is planned for a later stage of 0.6.0 "Griffin").</li>
+<li>Added <code>enum</code> declarations, e.g. <code>enum Shape { Circle(float64 radius), Rectangle(float64 width, float64 height), Point }</code>. Enums are owned types (heap-allocated, like classes without an explicit <code>copyable</code> annotation), lowered to a tagged-union layout where variants share the same payload storage. Variants are constructed with <code>EnumName.Variant</code> / <code>EnumName.Variant(args...)</code> syntax (e.g. <code>Color.Red</code>, <code>Shape.Circle(3.0)</code>); construction is positional, in declaration order. Payload fields may be any type, including owned types (<code>string</code>, classes, other enums) — owned payload data is correctly dropped when the active variant goes out of scope, and only the active variant's fields are ever freed. Generic enums (<code>enum Foo&lt;T&gt;</code>) are not yet supported and produce a clear compile error rather than miscompiling.</li>
+<li>Added <code>match</code> as a reserved keyword and <code>match &lt;expr&gt; { &lt;pattern&gt; -&gt; &lt;body&gt;, ... }</code> expressions, for destructuring <code>enum</code> values. Patterns match a bare <code>EnumName.Variant</code>, a payload-carrying <code>EnumName.Variant(bindings...)</code>, or a wildcard <code>_</code>. Payload bindings resolve by the variant's declared field name (<code>Circle(radius) -&gt; ...</code>), not position, and can be renamed with <code>field: local</code> (<code>Circle(radius: r) -&gt; ...</code>); a field can be left out of the pattern entirely if the arm doesn't need it. Match is exhaustiveness-checked at compile time: every variant must be covered by an arm, or a trailing <code>_</code> wildcard arm must be present; duplicate arms for the same variant, a wildcard arm followed by more arms, and patterns naming a field the variant doesn't declare (or binding the same field twice) are all compile errors. Payload bindings are read-only borrows scoped to their arm. <code>match</code> works both as a statement (arm bodies are <code>{ }</code> blocks) and, when every arm body is a plain expression, as a value-producing expression usable in a <code>return</code> or a variable initializer.</li>
+</ul>
+<h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>match</code> is now a reserved keyword. <code>@firescript/std.regex</code>'s <code>match(pattern, text)</code> function (added in 0.5.0) has been renamed to <code>find_match(pattern, text)</code> to avoid the collision; <code>is_match</code> is unaffected.</li>
 </ul>
 <h2 id="050-kirin">0.5.0 - Kirin<a class="headerlink" href="#050-kirin" title="Permanent link">&para;</a></h2>
 <p><em>July 2, 2026</em></p>
@@ -2006,7 +2032,7 @@
 <li>Added string-to-numeric type casting via <code>as</code> operator (e.g., <code>("42" as int32)</code>, <code>("3.14" as float64)</code>).</li>
 <li>Added <code>@firescript/std.fcl</code> standard library module with FCL (FireScript Configuration Language) lexer for parsing configuration data.</li>
 </ul>
-<h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
+<h3 id="breaking-changes_1">Breaking Changes<a class="headerlink" href="#breaking-changes_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>firescript now compiles with zero external dependencies — Python only.</strong> The compiler lowers source through its own intermediate representations (FIR and FLIR), then assembles x86-64 machine code and writes the PE32+ executable itself: no C compiler, no assembler, no linker, no external programs are invoked at any stage. GCC/Clang and MinGW binutils (<code>as</code>/<code>ld</code>) are no longer used or required; the <code>--cc</code> flag and the <code>CC</code> environment variable have been removed, and <code>--emit c</code> is replaced by <code>--emit asm</code>.</li>
 <li>Native compilation currently targets <strong>Windows x86_64 only</strong>. Compiled binaries are freestanding, position-independent, ASLR-compatible (DYNAMICBASE/NXCOMPAT) PE32+ executables that import only <code>kernel32.dll</code>. Linux and macOS native targets are planned for a future release.</li>
@@ -2047,7 +2073,7 @@
 <h2 id="040-phoenix">0.4.0 - Phoenix<a class="headerlink" href="#040-phoenix" title="Permanent link">&para;</a></h2>
 <p><em>February 2, 2026</em></p>
 <p>Starting with 0.4.0, releases will now be named.</p>
-<h3 id="breaking-changes_1">Breaking Changes<a class="headerlink" href="#breaking-changes_1" title="Permanent link">&para;</a></h3>
+<h3 id="breaking-changes_2">Breaking Changes<a class="headerlink" href="#breaking-changes_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Removed legacy numeric aliases: <code>int</code>, <code>float</code>, and <code>double</code>.<ul>
 <li>Use explicit-width types instead: <code>int8|16|32|64</code>, <code>uint8|16|32|64</code>, and <code>float32|64|128</code>.</li>
@@ -2099,7 +2125,7 @@
 </ul>
 <h2 id="030">0.3.0<a class="headerlink" href="#030" title="Permanent link">&para;</a></h2>
 <p><em>September 12, 2025</em></p>
-<h3 id="breaking-changes_2">Breaking Changes<a class="headerlink" href="#breaking-changes_2" title="Permanent link">&para;</a></h3>
+<h3 id="breaking-changes_3">Breaking Changes<a class="headerlink" href="#breaking-changes_3" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong><code>int</code> type is a native int again.</strong><ul>
 <li>The <code>int</code> type is now a native <code>int64_t</code> type in the generated C code.</li>

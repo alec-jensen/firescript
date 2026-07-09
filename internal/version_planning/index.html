@@ -2126,7 +2126,11 @@ self-hosting work is not blocked by missing data structures.</p>
 <h3 id="compiler-improvements">Compiler improvements<a class="headerlink" href="#compiler-improvements" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Support <code>enum</code> and <code>match</code> in the front-end pipeline (lexer, parser, semantic analysis,
-  FIR lowering)</li>
+  FIR lowering) — <strong>done</strong>: <code>enum</code> declarations (tag-only and named data-payload variants,
+  positional construction) and <code>match</code> expressions (name-based payload binding with
+  optional rename, exhaustiveness/duplicate/wildcard-order checks, statement and
+  value-producing forms, tag-dispatched destructors for owned payload data) work across the
+  full pipeline. Generic enums (<code>enum Option&lt;T&gt;</code>) remain a follow-up.</li>
 <li>Support <code>Vec&lt;T&gt;</code>, <code>HashMap&lt;K,V&gt;</code>, <code>StringBuilder</code>, and <code>Result&lt;T,E&gt;</code> as stdlib modules
   with appropriate compiler intrinsics where needed</li>
 <li>Implement <code>@firescript/std.regex</code> with necessary runtime support</li>
@@ -2134,18 +2138,21 @@ self-hosting work is not blocked by missing data structures.</p>
 </ul>
 <h3 id="test-coverage">Test coverage<a class="headerlink" href="#test-coverage" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Comprehensive golden tests for enums and match</li>
+<li>Comprehensive golden tests for enums and match — <strong>done</strong>: <code>tests/sources/enums/</code>,
+  <code>tests/sources/match/</code>, plus error tests in <code>tests/sources/invalid/enums/</code> and
+  <code>tests/sources/invalid/match/</code></li>
 <li>Comprehensive golden tests for Vec, HashMap, StringBuilder operations</li>
 <li>Golden tests for new string methods</li>
 <li>Comprehensive golden tests for regex (matching, capture groups, anchors, character
   classes, alternation, quantifiers)</li>
-<li>Error tests for invalid enum/match usage</li>
+<li>Error tests for invalid enum/match usage — <strong>done</strong></li>
 <li>Error tests for invalid regex patterns</li>
 <li>Improve overall test coverage</li>
 </ul>
 <h3 id="gate">Gate<a class="headerlink" href="#gate" title="Permanent link">&para;</a></h3>
 <p>All stdlib modules are usable from firescript code. Vec, HashMap, string methods, and regex
-are thoroughly tested. Enum and match work across the full pipeline (no FIR/FLIR gaps).</p>
+are thoroughly tested. Enum and match work across the full pipeline (no FIR/FLIR gaps) —
+<strong>done</strong>.</p>
 <hr />
 <h2 id="070-wyvern">0.7.0 — Wyvern<a class="headerlink" href="#070-wyvern" title="Permanent link">&para;</a></h2>
 <p><strong>Theme: Language maturity + FCL configuration system.</strong></p>

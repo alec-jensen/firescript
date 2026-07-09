@@ -1071,10 +1071,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bool-matchstring-pattern-string-text" class="md-nav__link">
+  <a href="#bool-find_matchstring-pattern-string-text" class="md-nav__link">
     <span class="md-ellipsis">
       
-        bool match(string pattern, string text)
+        bool find_match(string pattern, string text)
       
     </span>
   </a>
@@ -1488,10 +1488,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bool-matchstring-pattern-string-text" class="md-nav__link">
+  <a href="#bool-find_matchstring-pattern-string-text" class="md-nav__link">
     <span class="md-ellipsis">
       
-        bool match(string pattern, string text)
+        bool find_match(string pattern, string text)
       
     </span>
   </a>
@@ -1678,8 +1678,8 @@ println(last_error(&quot;[ab&quot;));
 <h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
 <h3 id="bool-is_matchstring-pattern-string-text"><code>bool is_match(string pattern, string text)</code><a class="headerlink" href="#bool-is_matchstring-pattern-string-text" title="Permanent link">&para;</a></h3>
 <p>Returns <code>true</code> when the pattern matches the input text. Without anchors, the pattern must match the entire input; <code>^</code> and <code>$</code> control anchoring explicitly.</p>
-<h3 id="bool-matchstring-pattern-string-text"><code>bool match(string pattern, string text)</code><a class="headerlink" href="#bool-matchstring-pattern-string-text" title="Permanent link">&para;</a></h3>
-<p>Alias of <code>is_match</code>.</p>
+<h3 id="bool-find_matchstring-pattern-string-text"><code>bool find_match(string pattern, string text)</code><a class="headerlink" href="#bool-find_matchstring-pattern-string-text" title="Permanent link">&para;</a></h3>
+<p>Alias of <code>is_match</code>. Named <code>match</code> prior to 0.6.0; renamed because <code>match</code> is now a reserved keyword.</p>
 <h3 id="int32-find_atstring-pattern-string-text-int32-start_pos"><code>int32 find_at(string pattern, string text, int32 start_pos)</code><a class="headerlink" href="#int32-find_atstring-pattern-string-text-int32-start_pos" title="Permanent link">&para;</a></h3>
 <p>Position-aware matching: returns the length of the match starting at <code>start_pos</code>, or <code>-1</code> if there is no match at that position.</p>
 <h3 id="string-last_errorstring-pattern"><code>string last_error(string pattern)</code><a class="headerlink" href="#string-last_errorstring-pattern" title="Permanent link">&para;</a></h3>
