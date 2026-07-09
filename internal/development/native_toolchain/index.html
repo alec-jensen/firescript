@@ -1278,10 +1278,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#assembler-firescriptbackendassemblerpy" class="md-nav__link">
+  <a href="#assembler-firescriptbackendx86_64assemblerpy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Assembler (firescript/backend/assembler.py)
+        Assembler (firescript/backend/x86_64/assembler.py)
       
     </span>
   </a>
@@ -1289,10 +1289,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pe-writer-firescriptbackendpepy" class="md-nav__link">
+  <a href="#pe-writer-firescriptbackendwindowspepy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PE writer (firescript/backend/pe.py)
+        PE writer (firescript/backend/windows/pe.py)
       
     </span>
   </a>
@@ -1347,12 +1347,15 @@
 <p>firescript produces native Windows x86_64 executables with <strong>no external tools</strong> —
 no <code>as</code>, <code>ld</code>, <code>objdump</code>, gcc, or clang, and no third-party Python packages. The
 back of the pipeline is:</p>
-<pre><code>FLIR → codegen/flir_to_asm.py → x86-64 GAS text
-     → backend/assembler.py    → object image (bytes + symbols + relocs)
-     → backend/pe.py           → PE32+ .exe importing only kernel32.dll
+<pre><code>FLIR → codegen/x86_64/flir_to_asm.py → x86-64 GAS text
+     → backend/x86_64/assembler.py    → object image (bytes + symbols + relocs)
+     → backend/windows/pe.py          → PE32+ .exe importing only kernel32.dll
 </code></pre>
-<p>Everything runs in-process from <code>main.py:_compile_asm</code>.</p>
-<h2 id="assembler-firescriptbackendassemblerpy">Assembler (<code>firescript/backend/assembler.py</code>)<a class="headerlink" href="#assembler-firescriptbackendassemblerpy" title="Permanent link">&para;</a></h2>
+<p>Everything runs in-process from <code>main.py:_compile_asm</code>. The path is split by
+concern (<code>backend/&lt;arch&gt;</code> encodes machine code, <code>backend/&lt;platform&gt;</code> writes the
+executable format) so a future target can add a sibling module instead of
+touching this one — see <code>firescript/targets.py</code> for the current support matrix.</p>
+<h2 id="assembler-firescriptbackendx86_64assemblerpy">Assembler (<code>firescript/backend/x86_64/assembler.py</code>)<a class="headerlink" href="#assembler-firescriptbackendx86_64assemblerpy" title="Permanent link">&para;</a></h2>
 <p><code>assemble(text) -&gt; ObjectImage</code> parses the exact Intel-syntax grammar that
 <code>flir_to_asm.py</code> emits — a closed, controlled set — and encodes it to machine
 code. Anything outside the grammar raises <code>AssemblerError</code> so a new backend form
@@ -1385,7 +1388,7 @@ can't be silently miscompiled.</p>
 <p>Validation: <code>tests/python/backend/test_asm_encoding.py</code> differentially byte-compares 87
 instruction forms against MinGW <code>as</code> when present (and skips cleanly when not,
 so the suite needs only Python).</p>
-<h2 id="pe-writer-firescriptbackendpepy">PE writer (<code>firescript/backend/pe.py</code>)<a class="headerlink" href="#pe-writer-firescriptbackendpepy" title="Permanent link">&para;</a></h2>
+<h2 id="pe-writer-firescriptbackendwindowspepy">PE writer (<code>firescript/backend/windows/pe.py</code>)<a class="headerlink" href="#pe-writer-firescriptbackendwindowspepy" title="Permanent link">&para;</a></h2>
 <p><code>write_pe(obj, out_path, import_dll_map)</code> lays out sections and writes a PE32+
 console executable by hand:</p>
 <ul>
@@ -1404,7 +1407,7 @@ console executable by hand:</p>
   <code>firescript_entry</code>, ImageBase <code>0x140000000</code>, SectionAlignment <code>0x1000</code>,
   FileAlignment <code>0x200</code>, import + IAT data directories.</li>
 </ul>
-<p>Output is byte-deterministic. <code>backend/pe_inspect.py</code> is a stdlib-only PE import
+<p>Output is byte-deterministic. <code>backend/windows/pe_inspect.py</code> is a stdlib-only PE import
 reader used by the test suite (replacing <code>objdump</code>) to assert binaries import
 only kernel32.</p>
 <h2 id="why-text-inassembler-out">Why text-in/assembler-out<a class="headerlink" href="#why-text-inassembler-out" title="Permanent link">&para;</a></h2>

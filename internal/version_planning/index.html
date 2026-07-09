@@ -2304,13 +2304,13 @@ on Windows x86_64.</p>
 <ul>
 <li>Pure-firescript x86-64 assembler consuming the same GAS Intel text format</li>
 <li>Object image production (sections, symbols, relocations)</li>
-<li>Must produce byte-identical output to Python <code>backend/assembler.py</code></li>
+<li>Must produce byte-identical output to Python <code>backend/x86_64/assembler.py</code></li>
 </ul>
 <h3 id="firescriptstdcompilerpe_writerfire">firescript/std/compiler/pe_writer.fire<a class="headerlink" href="#firescriptstdcompilerpe_writerfire" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Pure-firescript PE32+ writer</li>
 <li>DOS header, COFF header, optional header, section layout, import directory, IAT</li>
-<li>Must produce byte-identical output to Python <code>backend/pe.py</code></li>
+<li>Must produce byte-identical output to Python <code>backend/windows/pe.py</code></li>
 </ul>
 <h3 id="bootstrap">Bootstrap<a class="headerlink" href="#bootstrap" title="Permanent link">&para;</a></h3>
 <ul>
@@ -2357,11 +2357,15 @@ hybrid-tool release.</p>
 </ul>
 <h4 id="python-backend-support">Python backend support<a class="headerlink" href="#python-backend-support" title="Permanent link">&para;</a></h4>
 <ul>
-<li>Add ELF64 writer to the Python backend (<code>backend/elf.py</code>)</li>
-<li>Add Linux x86-64 syscall ABI to the codegen (<code>codegen/flir_to_asm.py</code> already emits
-  target-neutral assembly; add <code>--target</code> flag to select Win64 vs System V ABI)</li>
+<li>Add an ELF64 writer under <code>backend/linux/elf.py</code> (mirrors <code>backend/windows/pe.py</code>)</li>
+<li>Add a Linux runtime-extern table under <code>firescript/platforms/linux.py</code> (mirrors
+  <code>firescript/platforms/windows.py</code>), wired into <code>flir/lowering.py</code> for the Linux target</li>
+<li>Add a System V AMD64 calling convention to <code>codegen/x86_64/flir_to_asm.py</code> alongside
+  the existing <code>Win64Convention</code>, selected per-target</li>
 <li>Runtime: Linux syscall wrappers for heap (brk/mmap), I/O (read/write), process exit</li>
-<li><code>--target {windows-x86_64,linux-x86_64}</code> flag in <code>main.py</code></li>
+<li>Add <code>Target(Platform.LINUX, Arch.X86_64)</code> to <code>SUPPORTED_TARGETS</code> in <code>firescript/targets.py</code>
+  (already selectable on the CLI via <code>--platform linux --arch x86_64</code>, since the choices
+  mirror the full README support matrix — this just wires up the backend)</li>
 <li>firescript-on-Linux CI (GitHub Actions) runs the golden suite under native Linux build</li>
 <li>Update <code>tests/run.py</code>'s <code>run</code> kind / matrix engine to support cross-target testing</li>
 </ul>
@@ -2399,9 +2403,9 @@ hybrid-tool release.</p>
 <li>Lockfile determinism tests</li>
 </ul>
 <h3 id="gate_4">Gate<a class="headerlink" href="#gate_4" title="Permanent link">&para;</a></h3>
-<p><code>--target linux-x86_64</code> produces a working native ELF binary for all test sources. Kiln can
-<code>init</code>, <code>build</code>, and <code>run</code> a simple project with local-only dependencies. Both targets
-pass their golden suites on CI.</p>
+<p><code>--platform linux --arch x86_64</code> produces a working native ELF binary for all test sources.
+Kiln can <code>init</code>, <code>build</code>, and <code>run</code> a simple project with local-only dependencies. Both
+targets pass their golden suites on CI.</p>
 <hr />
 <h2 id="0110-leviathan">0.11.0 — Leviathan<a class="headerlink" href="#0110-leviathan" title="Permanent link">&para;</a></h2>
 <p><strong>Theme: std.net + kiln networking.</strong></p>
@@ -2426,7 +2430,7 @@ networking primitives and connects kiln to the world with registry support.</p>
 </ul>
 <h3 id="compiler-improvements_2">Compiler improvements<a class="headerlink" href="#compiler-improvements_2" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Add <code>--target {windows-x86_64,linux-x86_64}</code> to the firescript backend (mirrors Python flag)</li>
+<li>Add <code>--platform</code>/<code>--arch</code> flags to the firescript backend (mirrors the Python flags)</li>
 <li>Ensure std.net compiles and runs on both targets</li>
 </ul>
 <h3 id="test-coverage_5">Test coverage<a class="headerlink" href="#test-coverage_5" title="Permanent link">&para;</a></h3>

@@ -2028,6 +2028,7 @@
 <h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>match</code> is now a reserved keyword. <code>@firescript/std.regex</code>'s <code>match(pattern, text)</code> function (added in 0.5.0) has been renamed to <code>find_match(pattern, text)</code> to avoid the collision; <code>is_match</code> is unaffected.</li>
+<li>The <code>-t</code>/<code>--target</code> flag (<code>native</code>/<code>web</code>) has been removed. It is replaced by two separate flags, <code>--platform</code> (<code>windows</code>, <code>linux</code>, <code>macos</code>, <code>bare-metal</code>) and <code>--arch</code> (<code>x86_64</code>, <code>i686</code>, <code>aarch64</code>, <code>armv7</code>, <code>riscv64</code>, <code>riscv32</code>), which can be combined for cross-compilation; either or both may be omitted to default to the host platform/architecture. Only <code>--platform windows --arch x86_64</code> is currently implemented — any other combination fails with a clear "unsupported target" error rather than compiling.</li>
 </ul>
 <h3 id="bug-fixes">Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">&para;</a></h3>
 <ul>
