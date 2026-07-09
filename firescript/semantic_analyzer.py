@@ -716,7 +716,14 @@ class SemanticAnalyzer:
             class_name = node.name
             sig = self.method_signatures.get((class_name, class_name))
             self._analyze_call_args_with_signature(node.children, sig, node)
-        
+
+        # Enum variant construction: EnumName.Variant(args). Payload fields
+        # are always owned by value (no borrow syntax for them), so every
+        # argument is unconditionally moved into the payload.
+        elif node.node_type == NodeTypes.ENUM_VARIANT_CONSTRUCT:
+            sig = [("", "", False, False) for _ in node.children]
+            self._analyze_call_args_with_signature(node.children, sig, node)
+
         # Scope: enter/exit scope tracking
         elif node.node_type == NodeTypes.SCOPE:
             self._enter_scope()

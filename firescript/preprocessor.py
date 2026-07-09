@@ -407,6 +407,15 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
                     _apply_move_semantics(new_children, flags)
             return node
 
+        # Enum variant construction (EnumName.Variant(args)): payload fields
+        # are always owned by value (no borrow syntax for them), so every
+        # argument is unconditionally moved into the payload.
+        if node.node_type == NodeTypes.ENUM_VARIANT_CONSTRUCT:
+            new_children = [process_node(c) if c is not None else None for c in node.children]
+            node.children = new_children
+            _apply_move_semantics(new_children, [False] * len(new_children))
+            return node
+
         # Other nodes: recurse into children
         new_children = []
         for c in node.children:

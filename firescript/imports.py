@@ -8,6 +8,7 @@ from parser import Parser, ASTNode
 from enums import NodeTypes
 from errors import ImportNotFoundError, CyclicImportError
 from compiler_types import SourceMap, MergedSymbolTable
+from utils.file_utils import safe_relpath
 
 
 @dataclass
@@ -96,7 +97,7 @@ class ModuleResolver:
             raise FileNotFoundError(file_path)
         lexer = Lexer(file_content)
         tokens = lexer.tokenize()
-        parser = Parser(tokens, file_content, os.path.relpath(file_path))
+        parser = Parser(tokens, file_content, safe_relpath(file_path))
         ast = parser.parse()
         if parser.errors:
             # Surface the first parser error to the caller

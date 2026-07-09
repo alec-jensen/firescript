@@ -9,6 +9,7 @@ import time
 from log_formatter import LogFormatter
 from compiler_pipeline import CompilerPipeline
 from errors import CompileTimeError
+from utils.file_utils import safe_relpath
 
 FIRESCRIPT_VERSION = "0.5.0"
 FIRESCRIPT_RELEASE_DATE = "July 2, 2026"
@@ -136,7 +137,7 @@ def _compile_runtime_file(path: str) -> "FIRModule":
 
     with open(path, "r", encoding="utf-8") as f:
         source = f.read()
-    rel = os.path.relpath(path)
+    rel = safe_relpath(path)
     pipeline = CompilerPipeline(source, rel, path)
     ast = pipeline.parse()
     if pipeline.parser_errors:
@@ -221,7 +222,7 @@ def compile_file(file_path, target, out_path=None, emit="bin", check=False, emit
 
     pipeline = CompilerPipeline(
         file_content,
-        os.path.relpath(file_path),
+        safe_relpath(file_path),
         file_path,
     )
     ast = pipeline.parse()

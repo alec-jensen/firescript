@@ -45,7 +45,6 @@ def finish(cov, uncovered_only: bool, fail_under: float | None = None) -> float 
         print("\n(coverage not available -- install 'coverage' for coverage reporting)")
         return None
     cov.stop()
-    cov.save()
     cov.combine(keep=False)
     print()
     percent = cov.report(

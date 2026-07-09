@@ -129,6 +129,11 @@ class RunKind(Kind):
         run_timeout = float(directives.value("timeout", ctx.config.timeout))
         expected_exit = int(directives.value("exit-code", "0"))
 
+        # A handful of std.fs/std.syscalls tests write to a relative
+        # "build/temp/..." path, resolved against cwd=REPO_ROOT below.
+        # build/ is gitignored, so a fresh checkout won't have it yet.
+        os.makedirs(os.path.join(REPO_ROOT, "build", "temp"), exist_ok=True)
+
         run_cmd = [resolved_binary] + argv
         try:
             proc = subprocess.run(

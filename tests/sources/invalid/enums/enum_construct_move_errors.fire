@@ -1,0 +1,21 @@
+// Regression test: passing an owned identifier as an enum variant payload
+// argument must move it, just like a function/constructor/method call would.
+// Using the identifier afterward is a use-after-move error.
+import @firescript/std.io.println;
+
+class Box {
+    string label;
+
+    Box(string label) {
+        this.label = label;
+    }
+}
+
+enum Slot {
+    Holds(Box inner),
+    Vacant
+}
+
+Box b = Box("boxed");
+Slot s = Slot.Holds(b);
+println(b.label);  //~ ERROR FS-SEM-0001 @9
