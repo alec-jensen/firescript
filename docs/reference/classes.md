@@ -1,21 +1,21 @@
 # Classes & Inheritance
 
-> Status: This page describes planned class semantics that integrate with the ownership-based memory model. See [Memory Management](./memory_management.md) and the [Glossary](../glossary.md#memory-management-terms) for authoritative lifetime terminology.
+> Status: Classes are [IMPLEMENTED] — fields, methods, constructors, static methods, single inheritance, and generic classes all work in the current compiler. Sections describing planned semantics (e.g., custom `drop` destructors, interfaces) are marked as such. See [Memory Management](./memory_management.md) and the [Glossary](../glossary.md#memory-management-terms) for authoritative lifetime terminology.
 
 ## Object-Oriented Programming in firescript
 
 firescript's class system is designed to provide a clean, intuitive approach to object-oriented programming with features like single inheritance, constructors, and both instance and static methods.
 
-## Ownership & Lifetime (Planned)
+## Ownership & Lifetime
 
 Classes are Owned (Non-Trivially Copyable) types unless specified otherwise. Their instances participate in the deterministic ownership model:
 
 - Construction produces a new owned instance. Binding the result to a variable creates that variable as the initial owner.
 - Passing an instance to a function parameter of owned type moves it; the caller's binding becomes invalid after the call unless the value is returned.
-- Future borrow syntax (`&Person`) will allow read-only access to an instance without moving ownership.
+- Borrow syntax (`&Person`) allows read-only access to an instance without moving ownership.
 - Fields that are owned types are dropped in reverse order of their construction when the containing object is dropped.
-- A `drop(this)` method (planned) acts as a destructor. It runs exactly once at the inserted drop point.
-- Cloning an instance will be explicit (`person.clone()`) if the type supports it (semantics: deep vs copy-on-write TBD per type design).
+- A `drop(this)` method (planned) acts as a destructor. It runs exactly once at the inserted drop point. Compiler-inserted drops for owned values are implemented; user-defined `drop` methods are not yet.
+- Cloning an instance will be explicit (`person.clone()`) if the type supports it (planned; semantics: deep vs copy-on-write TBD per type design).
 - Inheritance does not change ownership: moving a `Student` moves its base `Person` subobject as part of the same operation.
 - Borrowed references cannot escape beyond the lifetime of the owning instance; the compiler enforces non-escaping borrows.
 
@@ -72,37 +72,32 @@ Class field and method names follow the exact same rules as variable names.
 A class in firescript is defined using the `class` keyword, followed by the class name and a block containing fields and methods:
 
 ```firescript
+import @firescript/std.io.println;
+
 class Person {
     // Fields (instance variables)
     string name;
-    nullable int8 age;
+    int32 age;
     bool isEmployed;
 
-    // Constructor: 'this' refers to the instance being created
-    Person(&this, string &name, nullable int8 age = null, bool isEmployed = false) {
+    // Constructor: 'this' refers to the instance being created.
+    // Constructors mutate fields, so they take '&mut this'.
+    Person(&mut this, string name, int32 age, bool isEmployed) {
         this.name = name;
         this.age = age;
         this.isEmployed = isEmployed;
     }
 
-    // Instance methods
-    // Non-mutating: borrow receiver
-    string getName(&this) {
-        return &this.name;
+    // Instance method
+    // Non-mutating: read-only borrow receiver
+    string describe(&this) {
+        return this.name + " is " + (this.age as string);
     }
 
-    nullable int getAge(&this) {
-        return &this.age;
-    }
-
-    // Mutating via borrow (allowed; does not consume the instance)
-    void celebrate(&this) {
-        if (this.age != null) {
-            this.age = this.age + 1;
-            print(this.name + " is now " + toString(this.age) + " years old!");
-        } else {
-            print(this.name + " is celebrating!");
-        }
+    // Mutating via mutable borrow (does not consume the instance)
+    void celebrate(&mut this) {
+        this.age = this.age + 1;
+        println(this.name + " is now " + (this.age as string) + " years old!");
     }
 
     // Static method (belongs to the class, not instances)
@@ -135,51 +130,47 @@ class Configuration {
 
 ### Constructors
 
-Constructors are special methods that initialize a new instance of a class. They always take `this` as their first parameter, which refers to the instance being created. For most cases, `this` will be a borrowed parameter, unless you are transferring ownership of the instance.
+Constructors are special methods that initialize a new instance of a class. They take a receiver as their first parameter, which refers to the instance being created. Because constructors assign fields, the receiver is `&mut this`.
 
 ```firescript
 class Point {
     float32 x;
     float32 y;
-    
+
     // Basic constructor
-    Point(&this, float32 x, float32 y) {
-        this.x = x;
-        this.y = y;
-    }
-    
-    // With default values (when implemented)
-    Point(&this, float32 x = 0.0, float32 y = 0.0) {
+    Point(&mut this, float32 x, float32 y) {
         this.x = x;
         this.y = y;
     }
 }
 ```
 
+Default parameter values (e.g., `float32 x = 0.0`) are [PLANNED] and not yet supported.
+
 ### Instance Methods
 
-Instance methods are functions that belong to an instance of a class. They always take `this` as their first parameter:
+Instance methods are functions that belong to an instance of a class. They always take a receiver (`&this` or `&mut this`) as their first parameter:
 
 ```firescript
 class Circle {
     float32 radius;
 
-    Circle(&this, float32 radius) {
+    Circle(&mut this, float32 radius) {
         this.radius = radius;
     }
-    
+
     // Instance methods
     // Non-mutating
-    float getArea(&this) {
-        return 3.14159 * this.radius * this.radius;
+    float32 getArea(&this) {
+        return 3.14159f32 * this.radius * this.radius;
     }
 
-    float getCircumference(&this) {
-        return 2.0 * 3.14159 * this.radius;
+    float32 getCircumference(&this) {
+        return 2.0f32 * 3.14159f32 * this.radius;
     }
 
-    // Mutating via borrow
-    void scale(&this, float32 factor) {
+    // Mutating via mutable borrow
+    void scale(&mut this, float32 factor) {
         this.radius = this.radius * factor;
     }
 }
@@ -211,12 +202,12 @@ class MathUtils {
 Once a class is defined, you can create instances (objects) of that class:
 
 ```firescript
-// Creating objects
+// Creating objects ('new' is optional)
 Person alice = Person("Alice", 30, true);
-Person bob = Person("Bob", null);
+Person bob = new Person("Bob", 25, false);
 
 // Using instance methods
-string aliceName = alice.getName();
+println(alice.describe());
 alice.celebrate();
 
 // Using static methods
@@ -229,50 +220,41 @@ Inheritance allows a class to inherit fields and methods from another class. fir
 
 ### `super` Attribute
 
-The `super` attribute is an alias for the parent class and functions like super in other languages. It allows you to call the parent class's constructor and methods from the child class.
-The main difference of `super` in firescript is that it is an attribute of the instance (`this.super`).
+The `super` attribute is an alias for the parent class and functions like super in other languages. It allows you to call the parent class's constructor from the child class (`this.super(...)`).
+The main difference of `super` in firescript is that it is an attribute of the instance (`this.super`). Calling a parent's *method* implementation through `this.super.method(...)` is [PLANNED] and not yet supported.
 
 ```firescript
 class Student from Person {
     string school;
-    string[] courses;
-    
-    Student(&this, string name, int8 age, string school) {
-        this.super(name, age);  // Call parent constructor
+
+    Student(&mut this, string name, int32 age, string school) {
+        this.super(name, age, false);  // Call parent constructor
         this.school = school;
-        this.courses = [];
     }
-    
-    // Additional methods
-    void enroll(&this, string &course) {
-        this.courses.append(course);
-        print(this.name + " enrolled in " + course);
-    }
-    
-    string[] getCourses(&this) {
-        return this.courses;
-    }
-    
+
     // Override parent method
-    void celebrate(&this) {
-        this.super.celebrate();  // Call parent method
-        print("Time for a student party!");
+    string describe(&this) {
+        return this.name + " is " + (this.age as string) + " at " + this.school;
     }
 }
+
+Student s = new Student("Jane", 18, "State University");
+println(s.describe());  // Uses Student's describe
+println(s.name);        // Inherited field
 ```
 
 ### Method Overriding
 
-Child classes can override methods from the parent class. To call the parent class's implementation, use `this.super`:
+Child classes can override methods from the parent class by redefining them:
 
 ```firescript
 class Shape {
     string color;
-    
-    Shape(&this, string color) {
+
+    Shape(&mut this, string color) {
         this.color = color;
     }
-    
+
     string describe(&this) {
         return "A " + this.color + " shape";
     }
@@ -280,36 +262,83 @@ class Shape {
 
 class Square from Shape {
     float32 side;
-    
-    Square(&this, float32 side, string color) {
+
+    Square(&mut this, float32 side, string color) {
         this.super(color);
         this.side = side;
     }
-    
+
     // Override the parent's describe method
     string describe(&this) {
-        return this.super.describe() + " (square with side " + toString(this.side) + ")";
+        return "A " + this.color + " square with side " + (this.side as string);
     }
 }
 ```
 
-## Polymorphism
+Calling the overridden parent implementation (`this.super.describe()`) is [PLANNED] and not yet supported.
 
-Polymorphism allows objects of different classes in the same inheritance hierarchy to be treated as objects of a common superclass:
+## Polymorphism [PLANNED]
+
+Polymorphism will allow objects of different classes in the same inheritance hierarchy to be treated as objects of a common superclass. This is not yet implemented:
 
 ```firescript
-// Example of future planned polymorphism
+// Future syntax
 Person[] people = [
-    Person("Alice", 25),
+    Person("Alice", 25, false),
     Student("Bob", 20, "State University")
 ];
 
 uint8 i = 0;
-while (i < people.length) {
-    print(people[i].getName());
+while (i < people.length()) {
+    println(people[i].describe());
     i = i + 1;
 }
 ```
+
+## Generic Classes
+
+Classes support one or more type parameters declared with angle-bracket syntax. The compiler monomorphizes each unique instantiation automatically.
+
+```firescript
+copyable class Pair<T, U> {
+    T first;
+    U second;
+
+    Pair(T first, U second) {
+        this.first = first;
+        this.second = second;
+    }
+}
+
+// Usage
+Pair<int32, string> p = Pair<int32, string>(42, "hello");
+println(p.first);   // 42
+println(p.second);  // hello
+```
+
+Both `copyable` and owned (heap-allocated) generic classes are supported. `@firescript/std.types` provides ready-made `Tuple<T, U>` and `Option<T>` types (see [Standard Library — Types](std/types.md)).
+
+## Copyable Classes
+
+A class may be annotated `copyable` to become Copyable if it satisfies:
+1. All fields are Copyable.
+2. No `drop` defined.
+3. Fixed-size representation.
+4. No disallowed interior references.
+
+```firescript
+copyable class Point {
+    float32 x;
+    float32 y;
+
+    Point(&mut this, float32 x, float32 y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+```
+
+Copyable class values copy bitwise; moves do not invalidate the source.
 
 ## Planned Class Features (Not Yet Implemented)
 
@@ -333,7 +362,7 @@ class Circle implements Drawable {
     
     // Must implement all interface methods
     void draw(&this) {
-        print("Drawing circle with radius " + toString(this.radius));
+        print("Drawing circle with radius " + (this.radius as string));
     }
     
     bool isVisible(&this) {
@@ -359,7 +388,7 @@ class Square implements Drawable, Movable {
     
     // Implement Drawable
     void draw(&this) {
-        print("Drawing square at (" + toString(this.x) + ", " + toString(this.y) + ")");
+        print("Drawing square at (" + (this.x as string) + ", " + (this.y as string) + ")");
     }
     
     bool isVisible(&this) {
@@ -373,29 +402,6 @@ class Square implements Drawable, Movable {
     }
 }
 ```
-
-### Generics on Classes
-
-Classes support one or more type parameters declared with angle-bracket syntax. The compiler monomorphizes each unique instantiation automatically.
-
-```firescript
-copyable class Pair<T, U> {
-    T first;
-    U second;
-
-    Pair(T first, U second) {
-        this.first = first;
-        this.second = second;
-    }
-}
-
-// Usage
-Pair<int32, string> p = Pair<int32, string>(42, "hello");
-println(p.first);   // 42
-println(p.second);  // hello
-```
-
-Both `copyable` and owned (heap-allocated) generic classes are supported. `firescript/std/types/tuple.fire` provides a ready-made `Tuple2<T, U>` type.
 
 ### Abstract Classes and Methods
 
@@ -425,27 +431,6 @@ class Cat from Animal {
 }
 ```
 
-### Copyable Classes
-
-A class may be annotated `copyable` to become Copyable if it satisfies:
-1. All fields are Copyable.
-2. No `drop` defined.
-3. Fixed-size representation.
-4. No disallowed interior references.
-
-```firescript
-// Future syntax
-copyable class Point {
-    float32 x;
-    float32 y;
-    
-    Point(this, float32 x, float32 y) {
-        this.x = x;
-        this.y = y;
-    }
-}
-```
-
 ## Best Practices for Class Design
 
 1. **Single Responsibility Principle**: Each class should have only one reason to change.\
@@ -455,17 +440,20 @@ copyable class Point {
 
 ## Implementation Status
 
-Classes in firescript have partial support in the current compiler:
+Classes in firescript in the current compiler:
 
-- ✅ Class definitions
-- ✅ Instance fields and methods
-- ✅ Constructors
-- ✅ Static methods
-- ✅ Inheritance
-- ❌ Method overriding
-- ❌ Polymorphism
-- ❌ Interfaces
-- ❌ Access modifiers
-- ❌ Abstract classes
-- ❌ Meta-attributes/annotations
-- ✅ Generics on classes
+- [IMPLEMENTED] Class definitions
+- [IMPLEMENTED] Instance fields and methods (`&this` / `&mut this` receivers)
+- [IMPLEMENTED] Constructors (with `this.super(...)` chaining)
+- [IMPLEMENTED] Static methods
+- [IMPLEMENTED] Single inheritance (including multi-level)
+- [IMPLEMENTED] Method overriding
+- [IMPLEMENTED] Generic classes
+- [IMPLEMENTED] Copyable classes (`copyable class`)
+- [PLANNED] Calling parent methods via `this.super.method(...)`
+- [PLANNED] Polymorphism
+- [PLANNED] Interfaces
+- [PLANNED] Access modifiers
+- [PLANNED] Abstract classes
+- [PLANNED] Custom `drop(this)` destructors
+- [PLANNED] Default parameter values

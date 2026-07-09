@@ -1,0 +1,7 @@
+// Invalid: generic enums are not yet supported.
+// EXPECT: parser error
+
+enum Option<T> {
+    Some,
+    None
+}

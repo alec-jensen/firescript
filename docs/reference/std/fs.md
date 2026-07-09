@@ -11,24 +11,24 @@ Represents a file path and provides methods for common file operations.
 ```firescript
 class File {
     string path;
-    
-    File(&this, string path);
-    
+
+    File(&mut this, string path);
+
     FileResult read(&this);
     FileResult readBytes(&this, int32 bytes);
     FileResult writeAll(&this, string data);
     FileResult appendAll(&this, string data);
     bool exists(&this);
     FileResult remove(&this);
-    FileResult renameTo(&this, string new_path);
-    FileResult moveTo(&this, string dst_path);
+    FileResult renameTo(&mut this, string new_path);
+    FileResult moveTo(&mut this, string dst_path);
 }
 ```
 
 **Constructor:**
 
 ```firescript
-File(&this, string path)
+File(&mut this, string path)
 ```
 
 Create a `File` instance for the given path. The path is stored but the file is not opened until an operation is called.
@@ -52,13 +52,13 @@ Encapsulates the result of a file operation.
 class FileResult {
     int32 status;
     string data;
-    
+
     FileResult(int32 status, string data);
 
-    bool ok(&FileResult this);
-    int32 err_code(&FileResult this);
-    int32 result_status(&FileResult this);
-    string result_data(&FileResult this);
+    bool ok(&this);
+    int32 err_code(&this);
+    int32 result_status(&this);
+    string result_data(&this);
 }
 ```
 
@@ -84,6 +84,8 @@ Read the entire file contents into a string.
 
 ```firescript
 import @firescript/std.fs.File;
+import @firescript/std.io.println;
+
 File f = File("data.txt");
 FileResult r = f.read();
 if (r.ok()) {
@@ -185,7 +187,7 @@ f.remove();
 ### `renameTo(string new_path)`
 
 ```firescript
-FileResult renameTo(&this, string new_path)
+FileResult renameTo(&mut this, string new_path)
 ```
 
 Rename (or move within same filesystem) to a new path. Updates the `File` path on success.
@@ -204,7 +206,7 @@ f.renameTo("newname.txt");
 ### `moveTo(string dst_path)`
 
 ```firescript
-FileResult moveTo(&this, string dst_path)
+FileResult moveTo(&mut this, string dst_path)
 ```
 
 Move file to a new location with cross-filesystem fallback. On cross-device moves, automatically falls back to copy + delete.
@@ -226,7 +228,7 @@ f.moveTo("/other/location/file.txt");
 ### `ok()`
 
 ```firescript
-bool ok(&FileResult this)
+bool ok(&this)
 ```
 
 Check if operation succeeded (status >= 0).
@@ -242,7 +244,7 @@ if (result.ok()) {
 ### `err_code()`
 
 ```firescript
-int32 err_code(&FileResult this)
+int32 err_code(&this)
 ```
 
 Extract the error code (positive errno value). Returns 0 if operation succeeded.
@@ -252,14 +254,14 @@ Extract the error code (positive errno value). Returns 0 if operation succeeded.
 ```firescript
 int32 err = result.err_code();
 if (err > 0) {
-    println("Error: " + err);
+    println("Error: " + (err as string));
 }
 ```
 
 ### `result_status()`
 
 ```firescript
-int32 result_status(&FileResult this)
+int32 result_status(&this)
 ```
 
 Get the raw status field (positive on success, negative errno on failure).
@@ -267,7 +269,7 @@ Get the raw status field (positive on success, negative errno on failure).
 ### `result_data()`
 
 ```firescript
-string result_data(&FileResult this)
+string result_data(&this)
 ```
 
 Get the data field (file contents for reads, empty for writes).

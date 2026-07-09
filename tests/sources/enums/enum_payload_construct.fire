@@ -1,0 +1,25 @@
+import @firescript/std.io.println;
+
+// Payload fields are limited to copyable scalar types in this pass; owned
+// payload data (strings, classes) requires the destructor support planned
+// for a later stage (see docs/internal/development/version_planning.md,
+// 0.6.0 "Griffin").
+enum Shape {
+    Circle(float64),
+    Rectangle(float64, float64),
+    Labeled(int32, bool),
+    Point
+}
+
+Shape a = Shape.Circle(3.0);
+Shape b = Shape.Rectangle(2.0, 5.0);
+Shape c = Shape.Labeled(7, true);
+Shape d = Shape.Point;
+
+// Reassignment across variants with different payload shapes must not
+// corrupt the shared tagged-union storage.
+a = Shape.Rectangle(1.0, 1.0);
+b = Shape.Point;
+
+println("constructed all payload variants");
+println("reassignment across variants ok");

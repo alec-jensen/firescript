@@ -1,0 +1,11 @@
+import @firescript/std.io.println;
+
+int32[] arr = [1, 2, 3, 4, 5];
+println(arr[0] + arr[1]);
+println(arr[2] * arr[3]);
+println(arr[arr.length() - 1]);
+
+string s1 = "Hello";
+string s2 = "World";
+println(s1 + " " + s2);
+println("Count: " + (5 as string));

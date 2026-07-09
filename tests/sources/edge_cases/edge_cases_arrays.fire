@@ -1,0 +1,16 @@
+import @firescript/std.io.println;
+
+// Empty array
+int32[] empty_arr = [];
+println(empty_arr.length());
+
+// Single element array
+int32[] single = [42];
+println(single[0]);
+println(single.length());
+
+// Array with identical elements
+int32[] same = [5, 5, 5, 5];
+for (int32 val in same) {
+    println(val);
+}

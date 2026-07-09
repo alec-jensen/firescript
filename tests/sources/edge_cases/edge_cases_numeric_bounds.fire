@@ -1,0 +1,28 @@
+import @firescript/std.io.println;
+
+// Minimum and maximum values
+int8 i8_min = -128i8;
+int8 i8_max = 127i8;
+println(i8_min);
+println(i8_max);
+
+int32 i32_min = -2147483648;
+int32 i32_max = 2147483647;
+println(i32_min);
+println(i32_max);
+
+uint8 u8_max = 255u8;
+println(u8_max);
+
+// Very large numbers
+int64 large = 9223372036854775807i64;
+println(large);
+
+uint64 ularge = 18446744073709551615u64;
+println(ularge);
+
+// Very small float values
+float32 small_f32 = 0.0001f;
+float64 small_f64 = 0.0000001;
+println(small_f32);
+println(small_f64);

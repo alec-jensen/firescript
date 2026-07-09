@@ -22,7 +22,7 @@ This glossary contains definitions of terms commonly used in the firescript docu
 - **Owned:** Includes user-defined objects, closures, arrays, and strings. These values are stored on the heap with pointers on the stack. Ownership is unique unless an explicit sharing container (future `Rc`, `Arc`) is used.
 - **Move:** Occurs on assignment, passing to a parameter of owned type, or returning a value. After a move, the source binding cannot be used (use-after-move error).
 - **Borrow:** Lightweight, read-only access. Cannot be stored in owned fields or escape its originating scope/call. Does not incur runtime overhead.
-- **Clone:** Creates an independent owned value. Semantics (deep vs copy-on-write) determined by the type implementation but always preserves logical independence.
+- **Clone:** Creates an independent owned value (planned; explicit `.clone()` is not yet implemented). Semantics (deep vs copy-on-write) determined by the type implementation but always preserves logical independence.
 - **Drop:** Compiler-inserted destructor invocation (`drop(this)`) ensuring timely resource release (files, sockets, buffers) without tracing GC.
 - **Module:** A single `.fire` file or a collection of files that can be imported. Modules encapsulate code and can expose public APIs.
 - **Package:** A distributable unit of code, often hosted in a package registry. Packages can contain multiple modules and dependencies.

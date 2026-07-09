@@ -1,0 +1,10 @@
+// Invalid: constructing a payload variant with the wrong number of arguments.
+// EXPECT: parser error
+
+enum Shape {
+    Circle(float64),
+    Point
+}
+
+Shape a = Shape.Circle(3.0, 4.0);
+Shape b = Shape.Point(1);

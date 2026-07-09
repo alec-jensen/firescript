@@ -1,6 +1,6 @@
 # Control Flow
 
-firescript supports several control flow structures: conditional statements (`if`/`else`), while loops, C-style for loops, and for-in loops. Range loops and the ternary operator are not yet supported by the compiler.
+firescript supports several control flow structures: conditional statements (`if`/`else`), while loops, C-style for loops, and for-in loops (over arrays, strings, and generators). Range-style loops are provided by the `@firescript/std.ranges` module. The ternary operator is not yet supported by the compiler.
 
 ## Introduction to Control Flow
 
@@ -145,7 +145,7 @@ if (!(age < 18 || !hasLicense)) {
 
 ## Loops
 
-Loops allow for repeated execution of a block of code. firescript supports `while` loops and plans to support various forms of `for` loops in the future.
+Loops allow for repeated execution of a block of code. firescript supports `while` loops, C-style `for` loops, and `for-in` loops.
 
 ### While Loops
 
@@ -295,7 +295,7 @@ for (int32 i = 0; i < 3; i++) {
 
 ### For-In Loops
 
-For-in loops iterate over elements in a collection (arrays or strings). The loop variable must be declared with a type:
+For-in loops iterate over elements in a collection (arrays, strings, or generators). The loop variable must be declared with a type:
 
 ```firescript
 import @firescript/std.io.println;
@@ -327,6 +327,49 @@ for (string ch in text) {
 }
 ```
 
+### Range Loops
+
+Range-style counting loops are provided by the `@firescript/std.ranges` module, which exports the `range`, `rangeFrom`, and `rangeStep` generators:
+
+```firescript
+import @firescript/std.io.println;
+import @firescript/std.ranges.range;
+import @firescript/std.ranges.rangeFrom;
+import @firescript/std.ranges.rangeStep;
+
+for (int32 i in range(5)) {
+    println(i);  // 0, 1, 2, 3, 4
+}
+
+for (int32 i in rangeFrom(2, 6)) {
+    println(i);  // 2, 3, 4, 5
+}
+
+for (int32 i in rangeStep(0, 10, 3)) {
+    println(i);  // 0, 3, 6, 9
+}
+```
+
+### Iterating Over Generators
+
+`for-in` also works over any generator function, including user-defined ones (see [Functions & Methods](functions.md) for generator definitions):
+
+```firescript
+import @firescript/std.io.println;
+
+generator<int32> countdown(int32 n) {
+    int32 i = n;
+    while (i > 0) {
+        yield i;
+        i -= 1;
+    }
+}
+
+for (int32 v in countdown(3)) {
+    println(v);  // 3, 2, 1
+}
+```
+
 ### Break and Continue in For Loops
 
 Both `break` and `continue` work in for loops:
@@ -354,23 +397,6 @@ for (int32 i = 0; i < 5; i++) {
 ## Future Control Flow Features
 
 The following control flow features are planned but not yet implemented in the current compiler:
-
-### Range Loops
-
-```firescript
-// Future syntax
-import @firescript/std.io.print;\n\nfor (uint8 i : range(5)) {
-    print(i); // 0, 1, 2, 3, 4
-}
-
-for (uint8 i : range(2, 8)) {
-    print(i); // 2, 3, 4, 5, 6, 7
-}
-
-for (uint8 i : range(1, 10, 2)) {
-    print(i); // 1, 3, 5, 7, 9
-}
-```
 
 ### Ternary Operator
 
@@ -410,20 +436,20 @@ switch (value) {
 
 3. **Be careful with while loops**: Always ensure that the condition will eventually become false to avoid infinite loops.
 
-4. **Use appropriate loop types**: Once implemented, choose the right loop for the task: `while` for unknown iteration counts, `for` for counting, and `for-in` for collections.
+4. **Use appropriate loop types**: Choose the right loop for the task: `while` for unknown iteration counts, `for` for counting, and `for-in` for collections.
 
 ## Implementation Status
 
 The current firescript compiler supports:
 
-- ✅ `if`/`else`/`else if` conditional statements
-- ✅ `while` loops
-- ✅ C-style `for` loops
-- ✅ `for-in` loops (for arrays)
-- ✅ `break` and `continue` statements
+- [IMPLEMENTED] `if`/`else`/`else if` conditional statements
+- [IMPLEMENTED] `while` loops
+- [IMPLEMENTED] C-style `for` loops
+- [IMPLEMENTED] `for-in` loops (arrays, strings, and generators)
+- [IMPLEMENTED] Range loops via `@firescript/std.ranges`
+- [IMPLEMENTED] `break` and `continue` statements
 
 Not yet implemented:
 
-- ❌ Range-based loops
-- ❌ Ternary operator
-- ❌ `switch`/`case` statements
+- [PLANNED] Ternary operator
+- [PLANNED] `switch`/`case` statements

@@ -1,0 +1,9 @@
+import @firescript/std.io.println;
+
+int32 i32_min = -2147483648i32;
+int32 i32_max = 2147483647i32;
+int32 i32_test = 1000000;  // Default int literal is int32
+println(i32_min);
+println(i32_max);
+println(i32_test);
+println(i32_test + 500000);

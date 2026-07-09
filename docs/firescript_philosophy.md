@@ -1,6 +1,6 @@
 # firescript Philosophy
 
-firescript is intended to be a simple but powerful and fast language with safety by design. This is accomplished through a strict type system, explicit design, and simple to learn but powerful compile-time memory management. It is intended to be usable in a variety of domains, from systems programming to web development, as it compiles to a C backend or JavaScript + WebAssembly in the future.
+firescript is intended to be a simple but powerful and fast language with safety by design. This is accomplished through a strict type system, explicit design, and simple to learn but powerful compile-time memory management.
 
 ## Key Principles
 

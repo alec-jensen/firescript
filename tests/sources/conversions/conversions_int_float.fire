@@ -1,0 +1,20 @@
+import @firescript/std.io.println;
+
+// Integer to float
+int32 int_val = 100;
+float32 f32_from_int = (int_val as float32);
+float64 f64_from_int = (int_val as float64);
+println(int_val);
+println(f32_from_int);
+println(f64_from_int);
+
+// Float to integer (truncation)
+float32 f32_val = 42.75f;
+int32 int_from_f32 = (f32_val as int32);
+println(f32_val);
+println(int_from_f32);  // Should be 42
+
+float64 f64_val = 99.99;
+int64 int_from_f64 = (f64_val as int64);
+println(f64_val);
+println(int_from_f64);  // Should be 99

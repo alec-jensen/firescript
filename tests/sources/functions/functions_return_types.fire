@@ -1,0 +1,17 @@
+import @firescript/std.io.println;
+
+float32 divide(float32 a, float32 b) {
+    return a / b;
+}
+println(divide(10.0f, 4.0f));
+
+bool isEven(int32 n) {
+    return (n % 2) == 0;
+}
+println(isEven(4));
+println(isEven(7));
+
+string makeGreeting(string name) {
+    return "Hello, " + name + "!";
+}
+println(makeGreeting("Alice"));

@@ -1,0 +1,18 @@
+import @firescript/std.io.println;
+
+// Unsigned to signed
+uint8 u8 = 200u8;
+int8 i8_from_u8 = (u8 as int8);
+println(u8);
+println(i8_from_u8);  // May be negative due to overflow
+
+uint32 u32 = 3000000000u32;
+int32 i32_from_u32 = (u32 as int32);
+println(u32);
+println(i32_from_u32);
+
+// Signed to unsigned
+int32 negative = -42;
+uint32 u_from_negative = (negative as uint32);
+println(negative);
+println(u_from_negative);

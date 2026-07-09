@@ -1,0 +1,7 @@
+import @firescript/std.io.println;
+
+void printTwice(string msg) {
+    println(msg);
+    println(msg);
+}
+printTwice("repeat");

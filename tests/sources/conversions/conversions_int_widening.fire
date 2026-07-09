@@ -1,0 +1,17 @@
+import @firescript/std.io.println;
+
+// Integer to integer widening conversions
+int8 i8 = 42i8;
+int16 i16 = (i8 as int16);
+int32 i32 = (i16 as int32);
+int64 i64 = (i32 as int64);
+println(i8);
+println(i16);
+println(i32);
+println(i64);
+
+// Chained conversions
+int8 start = 100i8;
+int64 end = (((start as int16) as int32) as int64);
+println(start);
+println(end);

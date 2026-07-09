@@ -45,12 +45,14 @@ The following words are reserved and cannot be used as identifiers:
 
 | Category | Words |
 |---|---|
-| Control flow | `if` `elif` `else` `while` `for` `in` `break` `continue` `return` `ternary` |
+| Control flow | `if` `elif` `else` `while` `for` `in` `break` `continue` `return` `ternary` `yield` |
 | Declarations | `class` `constraint` `directive` `generator` |
-| Modifiers | `const` `nullable` `copyable` `static` |
-| Other keywords | `import` `from` `as` `new` |
+| Modifiers | `const` `nullable` `copyable` `static` `mut` `owned` |
+| Other keywords | `import` `export` `from` `as` `new` |
 | Primitive types | `int8` `int16` `int32` `int64` `uint8` `uint16` `uint32` `uint64` `float32` `float64` `float128` `bool` `string` `void` |
 | Literals | `true` `false` `null` |
+
+The `char` type name is also reserved in type positions.
 
 ## Declaration and Initialization
 
@@ -99,7 +101,9 @@ string password = null;           // Invalid - non-nullable type cannot hold nul
 Attempting to use a nullable variable without checking for null may result in runtime errors:
 
 ```firescript
-import @firescript/std.io.print;\n\nnullable string message = null;
+import @firescript/std.io.print;
+
+nullable string message = null;
 
 // Safe access pattern
 if (message != null) {

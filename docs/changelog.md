@@ -2,6 +2,12 @@
 
 firescript follows [Semantic Versioning](https://semver.org/). This makes it easier to understand the impact of changes in each release.
 
+## 0.6.0 - Griffin (Currently in Development)
+
+### New Language Features
+- Added `enum` declarations with tag-only (no data payload) variants, e.g. `enum Color { Red, Green, Blue }`. Variants are constructed with `EnumName.Variant` syntax (e.g. `Color.Red`). Enums are owned types (heap-allocated, like classes without an explicit `copyable` annotation). Generic enums (`enum Foo<T>`) are not yet supported and produce a clear compile error rather than miscompiling; `match` expressions for destructuring enums are also not yet implemented. See `docs/internal/development/version_planning.md` (0.6.0 "Griffin") for the full planned feature.
+- Enum variants can now declare positional data payloads, e.g. `enum Shape { Circle(float64), Rectangle(float64, float64), Point }`, constructed as `Shape.Circle(3.0)`. Payload types are currently limited to copyable scalars (owned payload data — strings, classes — is not yet dropped correctly on scope exit; that support, along with `match` for reading payload fields back out, is planned for a later stage of 0.6.0 "Griffin").
+
 ## 0.5.0 - Kirin
 *July 2, 2026*
 
@@ -29,7 +35,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 
 ### Breaking Changes
 - **firescript now compiles with zero external dependencies — Python only.** The compiler lowers source through its own intermediate representations (FIR and FLIR), then assembles x86-64 machine code and writes the PE32+ executable itself: no C compiler, no assembler, no linker, no external programs are invoked at any stage. GCC/Clang and MinGW binutils (`as`/`ld`) are no longer used or required; the `--cc` flag and the `CC` environment variable have been removed, and `--emit c` is replaced by `--emit asm`.
-- Native compilation currently targets **Windows x64 only**. Compiled binaries are freestanding, position-independent, ASLR-compatible (DYNAMICBASE/NXCOMPAT) PE32+ executables that import only `kernel32.dll`. Linux and macOS native targets are planned for a future release.
+- Native compilation currently targets **Windows x86_64 only**. Compiled binaries are freestanding, position-independent, ASLR-compatible (DYNAMICBASE/NXCOMPAT) PE32+ executables that import only `kernel32.dll`. Linux and macOS native targets are planned for a future release.
 - The language runtime (strings, arrays, numeric formatting and parsing, process arguments, file syscalls) is now implemented in firescript itself (`std/internal/runtime.fire`) and compiled into every program.
 - `float128` is now a true 16-byte IEEE 754 binary128 (quad-precision) type, implemented as a self-hosted soft-float runtime over pairs of 64-bit integers (no external libraries). Arithmetic (`+`, `-`, `*`, `/`, unary `-`), comparisons, and conversions to/from `float64`, integers, and decimal strings are correctly rounded (round-to-nearest-even), with full support for subnormals, signed zero, infinity, and NaN. Converting a `float128` to a string uses printf `%f` formatting with 6 fraction digits (e.g. `4.000000`).
 - Removed built-in `input()` function.

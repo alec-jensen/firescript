@@ -1,0 +1,15 @@
+import @firescript/std.io.println;
+
+// A for loop containing an if that branches into a while (interaction
+// between three different control-flow constructs nested together).
+for (int32 p = 0; p < 3; p++) {
+    if (p == 1) {
+        int32 q = 0;
+        while (q < 2) {
+            println(p * 100 + q);
+            q++;
+        }
+    } else {
+        println(p * 100);
+    }
+}

@@ -1,0 +1,14 @@
+import @firescript/std.io.println;
+
+int32 pos = 42;
+int32 neg = -pos;
+println(neg);
+println(-neg);
+println(+pos);
+
+int32 count = 5;
+count++;
+println(count);
+count--;
+count--;
+println(count);

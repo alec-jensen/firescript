@@ -1,0 +1,6 @@
+import @firescript/std.io.println;
+
+int32[] nums = [5, 10, 15, 20];
+for (int32 n in nums) {
+    println(n);
+}

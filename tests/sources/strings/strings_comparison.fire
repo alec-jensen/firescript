@@ -1,0 +1,8 @@
+import @firescript/std.io.println;
+
+string a = "apple";
+string b = "apple";
+string c = "banana";
+println(a == b);  // true
+println(a == c);  // false
+println(a != c);  // true

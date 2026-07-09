@@ -1,0 +1,13 @@
+import @firescript/std.io.println;
+
+int32 num = 42;
+string str_num = (num as string);
+println(str_num);
+
+float32 fnum = 3.14f;
+string str_fnum = (fnum as string);
+println(str_fnum);
+
+bool flag = true;
+string str_bool = (flag as string);
+println(str_bool);

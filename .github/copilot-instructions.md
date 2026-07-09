@@ -5,7 +5,7 @@ python firescript/main.py <source-file>
 Add the -d flag to view debug output during compilation.
 python firescript/main.py <source-file> -d
 
-Whenever you add a file to examples/tests, make sure to create a corresponding golden file in tests/expected with the same name but a .out extension. The golden file should contain the expected output of running the firescript source file. You should create golden files for every test case.
+Test sources live under tests/sources/<category>/ (e.g. tests/sources/arrays/, tests/sources/std/regex/), grouped by feature area; error tests live under the mirrored tests/sources/invalid/<category>/. Whenever you add a file to examples/ or tests/sources/<category>/, make sure to create a corresponding golden file at the mirrored path in tests/expected/<category>/ with the same name but a .out extension. The golden file should contain the expected output of running the firescript source file. You should create golden files for every test case. Prefer one focused behavior per file over a large multi-assertion file — see tests/TEST_MANIFEST.md's "Splitting large test files" section.
 
 Veryify the docs (/docs) for language syntax, features, and examples are accurate and up to date with the current implementation of firescript.
 

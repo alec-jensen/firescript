@@ -1,0 +1,19 @@
+import @firescript/std.io.println;
+
+int32 i = toInt("42");
+println(i);
+
+float32 f = toFloat("3.5");
+println(f);
+
+float64 d = toDouble("2.25");
+println(d);
+
+bool b = toBool("true");
+println(b);
+
+char c = toChar("65");
+println(c);
+
+string s = toString(123);
+println(s);

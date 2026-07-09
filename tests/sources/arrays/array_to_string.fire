@@ -1,0 +1,17 @@
+import @firescript/std.io.println;
+
+int32[3] nums = [1, 2, 3];
+string s1 = nums as string;
+println(s1);
+
+float64[2] fs = [1.5, 2.5];
+string s2 = fs as string;
+println(s2);
+
+string[2] words = ["hi", "there"];
+string s3 = words as string;
+println(s3);
+
+int32[0] empty;
+string s4 = empty as string;
+println(s4);

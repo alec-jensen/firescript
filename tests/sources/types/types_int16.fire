@@ -1,0 +1,9 @@
+import @firescript/std.io.println;
+
+int16 i16_min = -32768i16;
+int16 i16_max = 32767i16;
+int16 i16_test = 1000i16;
+println(i16_min);
+println(i16_max);
+println(i16_test);
+println(i16_test * 2i16);

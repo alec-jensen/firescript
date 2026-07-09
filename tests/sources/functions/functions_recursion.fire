@@ -1,0 +1,10 @@
+import @firescript/std.io.println;
+
+int32 factorial(int32 n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+println(factorial(5));  // 120
+println(factorial(3));  // 6

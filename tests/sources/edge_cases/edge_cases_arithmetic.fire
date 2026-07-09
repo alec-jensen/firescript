@@ -1,0 +1,13 @@
+import @firescript/std.io.println;
+
+// Division by small numbers
+int32 div_small = 1 / 1;
+println(div_small);
+
+float32 f_div = 1.0f / 2.0f;
+println(f_div);
+
+// Modulo edge cases
+println(0 % 5);
+println(5 % 5);
+println(1 % 5);

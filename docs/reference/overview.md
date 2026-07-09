@@ -18,13 +18,13 @@ The firescript compiler is under active development. Current status:
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Copyable Types | ⚠️ Partial | `bool`, `char`, `intN`, `floatN` (stack-allocated scalars) |
-| Owned Types | ⚠️ Partial | `string`, arrays (heap-allocated with move semantics) |
-| Memory Model | ⚠️ In Progress | Ownership model documented; compiler enforcement WIP. Arrays are targeted as the first Owned type. See [Memory Management](memory_management.md). |
-| Control Flow | ⚠️ Partial | `if/else`, `while` & `for` loops work, `range()` loops planned |
-| Functions | ⚠️ Partial | Functions can be defined and used but lack some planned features |
-| Classes | ⚠️ Partial | Object-oriented features planned for future versions |
-| Modules | ⚠️ Partial | Import/module organization exists; explicit export visibility is documented as the module boundary |
+| Copyable Types | [IMPLEMENTED] | `bool`, `char`, `intN`, `floatN` (stack-allocated scalars) |
+| Owned Types | [IMPLEMENTED] | `string`, arrays, user-defined classes (heap-allocated with move semantics) |
+| Memory Model | [IMPLEMENTED] | Ownership, moves, borrows, and deterministic drop insertion are enforced by the compiler. See [Memory Management](memory_management.md). |
+| Control Flow | [IMPLEMENTED] | `if`/`else if`/`else`, `while`, C-style `for`, `for-in` (arrays, strings, generators), `break`/`continue`. Range loops via `@firescript/std.ranges`. |
+| Functions | [IMPLEMENTED] | Parameters, return values, recursion, generic functions, generators |
+| Classes | [IMPLEMENTED] | Fields, methods, constructors, inheritance, static methods, generic classes |
+| Modules | [IMPLEMENTED] | Imports with explicit export visibility (private by default) |
 
 ## Getting Started
 
@@ -41,23 +41,25 @@ For more detailed information, each section of this reference covers specific as
 
 - [Type System](type_system.md) - Comprehensive information about the firescript type system
 - [Scoping Rules](scoping.md) - How variable scoping works
-- [Classes & Inheritance](classes.md) - Object-oriented programming (future)
+- [Classes & Inheritance](classes.md) - Object-oriented programming
 
 ## Example Code
 
 ```firescript
-// Calculate fibonacci numbers
-int8 i = 0;
-int8 j = 1;
-int8 count = 10;
+import @firescript/std.io.println;
 
-print("Fibonacci Sequence:");
-print(i);
-print(j);
+// Calculate fibonacci numbers
+int32 i = 0;
+int32 j = 1;
+int32 count = 10;
+
+println("Fibonacci Sequence:");
+println(i);
+println(j);
 
 while (count > 0) {
-    int8 next = i + j;
-    print(next);
+    int32 next = i + j;
+    println(next);
     i = j;
     j = next;
     count = count - 1;

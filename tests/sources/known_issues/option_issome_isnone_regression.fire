@@ -1,0 +1,29 @@
+// Regression test for a known bug: Option/CopyableOption's isSome()/isNone()
+// currently return the wrong value regardless of whether the option actually
+// holds a value. See CLAUDE.md feature table ("isSome"/"isNone" currently
+// return wrong results) and docs/reference/std/types.md.
+//
+// Expected (correct) behavior once fixed:
+//   some_opt holds 42 -> isSome() true, isNone() false
+//   csome holds 7     -> isSome() true, isNone() false
+//
+// NOTE: calling `.isSome()`/`.isNone()` directly inline (e.g. as a println
+// argument or an if-condition) currently crashes the FIR->FLIR lowering pass
+// with a separate bug (see generic_method_call_crashes.fire). This test
+// routes through an intermediate bool variable to isolate the wrong-value
+// bug from that unrelated crash.
+import @firescript/std.io.println;
+import @firescript/std.types.Option;
+import @firescript/std.types.CopyableOption;
+
+Option<int32> some_opt = Option<int32>(42);
+bool some_is_some = some_opt.isSome();
+bool some_is_none = some_opt.isNone();
+println(some_is_some);
+println(some_is_none);
+
+CopyableOption<int32> csome = CopyableOption<int32>(7);
+bool csome_is_some = csome.isSome();
+bool csome_is_none = csome.isNone();
+println(csome_is_some);
+println(csome_is_none);

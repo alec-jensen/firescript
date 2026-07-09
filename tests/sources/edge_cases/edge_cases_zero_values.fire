@@ -1,0 +1,10 @@
+import @firescript/std.io.println;
+
+int32 zero_int = 0;
+float32 zero_float = 0.0f;
+bool zero_bool = false;
+string empty_str = "";
+println(zero_int);
+println(zero_float);
+println(zero_bool);
+println(empty_str);

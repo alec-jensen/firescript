@@ -7,7 +7,7 @@ A **module** is a unit of firescript code that you can import. Modules are simil
 
 A **package** is something you can install from the package manager. Packages are modules, but not all modules are packages.
 
-A **library** is a package included with the Firescript installation.
+A **library** is a package included with the firescript installation.
 
 ## Module Exports
 

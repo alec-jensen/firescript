@@ -2,6 +2,8 @@
 
 The `std.types` module provides generic container and utility types.
 
+> Status: `Tuple` and `CopyableTuple` are [IMPLEMENTED] and tested. `Option` and `CopyableOption` are [IN DEVELOPMENT]: they compile, but `isSome()`/`isNone()` currently return incorrect results (a known bug in generic-class methods that compare a nullable field to `null`), so they should not be relied on yet.
+
 ## `Tuple<T, U>`
 
 A pair of values of potentially different types.
@@ -21,7 +23,7 @@ class Tuple<T, U> {
 import @firescript/std.types.Tuple;
 import @firescript/std.io.println;
 
-Tuple<int32, string> pair = Tuple(42, "answer");
+Tuple<int32, string> pair = Tuple<int32, string>(42, "answer");
 println(pair.first);   // 42
 println(pair.second);  // answer
 ```
@@ -46,13 +48,13 @@ copyable class CopyableTuple<T, U> {
 ```firescript
 import @firescript/std.types.CopyableTuple;
 
-CopyableTuple<float64, float64> coord = CopyableTuple(3.14, 2.71);
+CopyableTuple<float64, float64> coord = CopyableTuple<float64, float64>(3.14, 2.71);
 CopyableTuple<float64, float64> copy = coord;  // copies
 ```
 
-## `Option<T>`
+## `Option<T>` [IN DEVELOPMENT]
 
-An optional value of type `T`. Use this to represent potentially missing values without explicit nullability.
+An optional value of type `T`. Use this to represent potentially missing values without explicit nullability. **Known issue:** `isSome()` and `isNone()` currently return incorrect results; prefer plain `nullable` variables until this is fixed.
 
 ```firescript
 class Option<nullable T> {
@@ -72,26 +74,24 @@ class Option<nullable T> {
 
 **Example:**
 
+Intended usage (see the known issue above):
+
 ```firescript
 import @firescript/std.types.Option;
 import @firescript/std.io.println;
 
-Option<string> maybe_name = Option("Alice");
-if (maybe_name.isSome()) {
-    println("Name: " + maybe_name.value);
-}
-
-Option<string> none_name = Option(null);
-if (none_name.isNone()) {
-    println("No name provided");
+Option<string> maybe_name = Option<string>("Alice");
+bool present = maybe_name.isSome();
+if (present) {
+    println(maybe_name.value);
 }
 ```
 
 **Note:** `Option` is an Owned type; construct carefully with move semantics in mind.
 
-## `CopyableOption<T>`
+## `CopyableOption<T>` [IN DEVELOPMENT]
 
-A copyable variant of `Option` for copyable types.
+A copyable variant of `Option` for copyable types. Subject to the same known issue as `Option`.
 
 ```firescript
 copyable class CopyableOption<nullable T> {
@@ -106,12 +106,16 @@ copyable class CopyableOption<nullable T> {
 
 **Example:**
 
+Intended usage (see the known issue above):
+
 ```firescript
 import @firescript/std.types.CopyableOption;
+import @firescript/std.io.println;
 
-CopyableOption<int32> maybe_count = CopyableOption(5);
-if (maybe_count.isSome()) {
-    println("Count: " + maybe_count.value);
+CopyableOption<int32> maybe_count = CopyableOption<int32>(5);
+bool present = maybe_count.isSome();
+if (present) {
+    println(maybe_count.value);
 }
 ```
 
@@ -125,16 +129,10 @@ if (maybe_count.isSome()) {
 
 ```firescript
 import @firescript/std.types.Tuple;
-import @firescript/std.types.Option;
 import @firescript/std.io.println;
 
 // Tuple usage
-Tuple<int32, string> user = Tuple(1, "alice");
-println("User ID: " + user.first);
-
-// Option usage
-Option<string> bio = Option("Software engineer");
-if (bio.isSome()) {
-    println("Bio: " + bio.value);
-}
+Tuple<int32, string> user = Tuple<int32, string>(1, "alice");
+println("User ID: " + (user.first as string));
+println(user.second);
 ```

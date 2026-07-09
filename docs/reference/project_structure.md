@@ -37,18 +37,19 @@ and you wanted to have functions directly available on `math`. You would create 
 │       └── constants.fire
 ```
 
-The `init.fire` file could look like this:
+The `init.fire` file could look like this (the function must be exported to be importable — module symbols are private by default):
 
 ```firescript
 // math/init.fire
-int32 add(int32 a, int32 b) {
+export int32 add(int32 a, int32 b) {
     return a + b;
 }
 ```
 
 Now, in your `main.fire`, you can import the `math` module and use the `add` function directly:
 
-```firescript// main.fire
+```firescript
+// main.fire
 import math.add;
 
 int32 result = add(5, 10);

@@ -1,0 +1,20 @@
+import @firescript/std.io.println;
+
+int32 add(int32 a, int32 b) {
+    return a + b;
+}
+
+int32 multiply(int32 a, int32 b) {
+    return a * b;
+}
+
+println(add(5, 3));
+println(multiply(4, 7));
+println(add(multiply(2, 3), 4));  // 2*3 + 4 = 10
+println(multiply(add(2, 3), 4));  // (2+3) * 4 = 20
+
+// Nested calls to the same function
+int32 triple(int32 n) {
+    return n * 3;
+}
+println(triple(triple(2)));  // 18

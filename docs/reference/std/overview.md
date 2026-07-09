@@ -6,11 +6,12 @@ firescript includes a standard library under the `@firescript/std` namespace, pr
 
 - [I/O](io.md): Formatted output with `print` and `println`
 - [File System](fs.md): File operations via the `File` class and `FileResult` helpers
-- [Math](math.md): Mathematical constants and functions
-- [Regex](regex.md): Full-string regular-expression matching and pattern validation
+- [Math](math.md): Mathematical functions
+- [Regex](regex.md): Regular-expression matching, anchors, and pattern validation
 - [Command-Line Arguments](cli_args.md): Argument parsing for CLI programs
 - [Types](types.md): Generic container types (`Tuple`, `Option`)
-- FCL Lexer: Lexer for parsing FireScript Configuration Language (FCL) data
+- Ranges: `range`, `rangeFrom`, and `rangeStep` generators for counting loops (`@firescript/std.ranges`)
+- FCL Lexer: Lexer for parsing firescript config language (FCL) data (`@firescript/std.fcl`)
 
 ## Importing
 
@@ -19,7 +20,7 @@ Standard library modules are imported using `@firescript/std` namespace syntax:
 ```firescript
 import @firescript/std.io.println;
 import @firescript/std.fs.File;
-import @firescript/std.math.PI64;
+import @firescript/std.math.max;
 import @firescript/std.fcl.next_token;  // FCL lexer
 ```
 

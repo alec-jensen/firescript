@@ -101,6 +101,7 @@ self-hosting work is not blocked by missing data structures.
   classes, alternation, quantifiers)
 - Error tests for invalid enum/match usage
 - Error tests for invalid regex patterns
+- Improve overall test coverage
 
 ### Gate
 
@@ -210,7 +211,7 @@ firescript front-end is developed alongside it and tested against the same test 
   front-end instead of the Python front-end
 - Run full test suite through firescript front-end, compare FIR snapshots
 - Incremental rollout: lexer first, then parser, then semantic analysis, then FIR
-- Firescript front-end modules live under `firescript/std/compiler/` so they are
+- firescript front-end modules live under `firescript/std/compiler/` so they are
   importable like standard library modules
 
 ### Compiler improvements (Python side)
@@ -221,14 +222,14 @@ firescript front-end is developed alongside it and tested against the same test 
 
 ### Test coverage
 
-- Firescript lexer produces identical token streams to Python lexer across all test files
-- Firescript parser produces identical ASTs across all test files
-- Firescript semantic analysis passes all golden and error tests (output-identical)
-- Firescript FIR builder produces FIR dumps matching Python FIR dumps (deterministic)
+- firescript lexer produces identical token streams to Python lexer across all test files
+- firescript parser produces identical ASTs across all test files
+- firescript semantic analysis passes all golden and error tests (output-identical)
+- firescript FIR builder produces FIR dumps matching Python FIR dumps (deterministic)
 
 ### Gate
 
-Firescript front-end passes 100% of the existing test suite with output-identical results
+firescript front-end passes 100% of the existing test suite with output-identical results
 when run via `--frontend firescript`. The Python front-end is still the default, but the
 firescript front-end is feature-complete.
 
@@ -240,7 +241,7 @@ firescript front-end is feature-complete.
 
 Write the code generator (FLIR lowering, assembly emission) and the self-hosted toolchain
 (assembler, PE writer) in firescript. The firescript compiler compiles itself end-to-end
-on Windows x64.
+on Windows x86_64.
 
 ### firescript/std/compiler/codegen.fire
 - FIR → FLIR lowering (monomorphization, class lowering, generator lowering)
@@ -275,15 +276,15 @@ on Windows x64.
 
 ### Test coverage
 
-- Firescript codegen passes all golden tests (output-identical)
-- Firescript assembler + PE writer pass `tests/asm_encoding_tests.py`
+- firescript codegen passes all golden tests (output-identical)
+- firescript assembler + PE writer pass `tests/asm_encoding_tests.py`
 - Bootstrap binary passes full test suite on its own
 - Determinism test: bootstrap binary is byte-identical on repeated compilations
 
 ### Gate
 
 `python firescript/main.py --compiler firescript <file>.fire` produces a working binary
-for any test source (Windows x64). The firescript compiler can compile itself end-to-end.
+for any test source (Windows x86_64). The firescript compiler can compile itself end-to-end.
 The resulting binary, when run on the firescript compiler sources, produces a byte-identical
 (or semantically equivalent) copy of itself.
 
@@ -291,16 +292,16 @@ The resulting binary, when run on the firescript compiler sources, produces a by
 
 ## 0.10.0 — Chimera
 
-**Theme: Linux x64 target + kiln foundations.**
+**Theme: Linux x86_64 target + kiln foundations.**
 
-Two parallel tracks: (A) port the compiler to Linux x64 with ELF output, and (B) build
+Two parallel tracks: (A) port the compiler to Linux x86_64 with ELF output, and (B) build
 kiln basics on top of FCL. Chimera is the hybrid beast — fitting for a hybrid-platform,
 hybrid-tool release.
 
-### Track A: Linux x64 target
+### Track A: Linux x86_64 target
 
 #### firescript/std/compiler/elf_writer.fire
-- Pure-firescript ELF64 writer for Linux x64
+- Pure-firescript ELF64 writer for Linux x86_64
 - ELF header, program headers, section headers, symbol table, relocation handling
 - Linux x86-64 syscall ABI (instead of kernel32.dll imports)
 - System V AMD64 calling convention differences from Win64
@@ -310,8 +311,8 @@ hybrid-tool release.
 - Add Linux x86-64 syscall ABI to the codegen (`codegen/flir_to_asm.py` already emits
   target-neutral assembly; add `--target` flag to select Win64 vs System V ABI)
 - Runtime: Linux syscall wrappers for heap (brk/mmap), I/O (read/write), process exit
-- `--target {windows-x64,linux-x64}` flag in `main.py`
-- Firescript-on-Linux CI (GitHub Actions) runs the golden suite under native Linux build
+- `--target {windows-x86_64,linux-x86_64}` flag in `main.py`
+- firescript-on-Linux CI (GitHub Actions) runs the golden suite under native Linux build
 - Update `tests/golden_runner.py` to support cross-target testing
 
 ### Track B: kiln foundations
@@ -347,7 +348,7 @@ hybrid-tool release.
 
 ### Gate
 
-`--target linux-x64` produces a working native ELF binary for all test sources. Kiln can
+`--target linux-x86_64` produces a working native ELF binary for all test sources. Kiln can
 `init`, `build`, and `run` a simple project with local-only dependencies. Both targets
 pass their golden suites on CI.
 
@@ -379,7 +380,7 @@ networking primitives and connects kiln to the world with registry support.
 
 ### Compiler improvements
 
-- Add `--target {windows-x64,linux-x64}` to the firescript backend (mirrors Python flag)
+- Add `--target {windows-x86_64,linux-x86_64}` to the firescript backend (mirrors Python flag)
 - Ensure std.net compiles and runs on both targets
 
 ### Test coverage
@@ -424,14 +425,14 @@ making firescript production-ready and retiring the Python compiler.
 - Remove `--frontend` flag (long superseded)
 - Remove Python test-runner dependency: test runners rewritten in firescript or
   kept as lightweight Python wrappers with no compiler logic
-- Firescript compiler source becomes the canonical implementation
+- firescript compiler source becomes the canonical implementation
 
 ### Release criteria
 
-1. Firescript compiler is fully self-hosted — compiles itself end-to-end with no Python
+1. firescript compiler is fully self-hosted — compiles itself end-to-end with no Python
    compiler code invoked in the compile path
 2. 100% test suite passes on the self-hosted compiler across both target platforms
-3. Compiler runs on **Windows x64** (Tier 1) and **Linux x64** (Tier 1, CI-tested every
+3. Compiler runs on **Windows x86_64** (Tier 1) and **Linux x86_64** (Tier 1, CI-tested every
    commit)
 4. kiln provides `init`, `build`, `run`, `test`, `publish`, `add`, `sync`, `update`
 5. Standard library is documented, stable, and tested (`std.collections`, `std.text`,
@@ -448,7 +449,7 @@ Features deferred beyond 1.0, prioritized for subsequent releases:
 
 ### High priority
 - **`@firescript/std.math.linalg`** — vectors, matrices, core linear algebra
-- **macOS x64** Mach-O target
+- **macOS x86_64** Mach-O target
 
 ### Medium priority
 - **`@firescript/std.io.input`** — keyboard/mouse/gamepad input APIs

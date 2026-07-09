@@ -1,0 +1,13 @@
+import @firescript/std.io.println;
+
+// Float32 to float64
+float32 f32 = 3.14159f;
+float64 f64 = (f32 as float64);
+println(f32);
+println(f64);
+
+// Float64 to float32 (precision loss)
+float64 precise = 3.141592653589793;
+float32 less_precise = (precise as float32);
+println(precise);
+println(less_precise);

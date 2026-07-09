@@ -1,0 +1,12 @@
+import @firescript/std.io.println;
+
+float32 f32_pi = 3.14159f;
+float32 f32_e = 2.71828f;
+float32 f32_zero = 0.0f;
+float32 f32_negative = -42.5f;
+println(f32_pi);
+println(f32_e);
+println(f32_zero);
+println(f32_negative);
+println(f32_pi * 2.0f);
+println(f32_e + f32_pi);

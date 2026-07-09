@@ -81,7 +81,11 @@ def _colorize(text: str, code: str) -> str:
 
 
 def _suite_label(name: str) -> str:
-    return "Golden tests" if name == "golden" else "Error tests"
+    if name == "golden":
+        return "Golden tests"
+    if name == "error":
+        return "Error tests"
+    return "CLI tests"
 
 
 def main() -> int:
@@ -91,6 +95,7 @@ def main() -> int:
     parser.add_argument("--fail-fast", action="store_true", help="Stop after the first suite failure")
     parser.add_argument("--golden-only", action="store_true", help="Run only golden tests")
     parser.add_argument("--error-only", action="store_true", help="Run only error tests")
+    parser.add_argument("--cli-only", action="store_true", help="Run only CLI behavior tests")
     parser.add_argument(
         "--jobs",
         type=int,
@@ -102,17 +107,20 @@ def main() -> int:
     parser.add_argument("--uncovered", action="store_true", help="Show only uncovered lines in the coverage report")
     args = parser.parse_args()
 
-    if args.golden_only and args.error_only:
-        print("Cannot use --golden-only and --error-only together.")
+    only_flags = [args.golden_only, args.error_only, args.cli_only]
+    if sum(1 for f in only_flags if f) > 1:
+        print("Cannot use --golden-only, --error-only, and --cli-only together.")
         return 2
 
     cov = _start_coverage()
 
     from golden_runner import DEFAULT_SEARCH, discover_cases, run_golden  # noqa: E402
     from error_runner import discover_error_tests, run_error_tests  # noqa: E402
+    from cli_runner import CASES as cli_cases, run_cli_cases  # noqa: E402
 
-    should_run_golden = not args.error_only
-    should_run_error = not args.golden_only
+    should_run_golden = not (args.error_only or args.cli_only)
+    should_run_error = not (args.golden_only or args.cli_only)
+    should_run_cli = not (args.golden_only or args.error_only)
 
     overall_failures = 0
     suite_results: List[tuple[str, bool, int, int]] = []
@@ -157,6 +165,19 @@ def main() -> int:
         rc, stats = error_result
         passed = rc == 0
         suite_results.append(("error", passed, stats.passed, stats.total))
+        if not passed:
+            overall_failures += 1
+            if args.fail_fast:
+                stopped_early = True
+
+    if should_run_cli and not stopped_early:
+        print(_colorize("\n== Running CLI tests ==", "36"))
+        cli_result = run_cli_cases(cli_cases, fail_fast=args.fail_fast, return_stats=True)
+        if not isinstance(cli_result, tuple):
+            raise RuntimeError("run_cli_cases(return_stats=True) did not return stats")
+        rc, stats = cli_result
+        passed = rc == 0
+        suite_results.append(("cli", passed, stats.passed, stats.total))
         if not passed:
             overall_failures += 1
 

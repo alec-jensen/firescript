@@ -1,0 +1,28 @@
+import @firescript/std.io.println;
+
+// Zero-iteration loops
+int32 no_iterations = 0;
+while (no_iterations > 0) {
+    println("Should not print");
+    no_iterations--;
+}
+
+for (int32 i = 0; i < 0; i++) {
+    println("Should not print");
+}
+
+int32[] empty_for_in = [];
+for (int32 x in empty_for_in) {
+    println("Should not print");
+}
+
+// Single-iteration loops
+int32 once = 1;
+while (once > 0) {
+    println("Once");
+    once--;
+}
+
+for (int32 j = 0; j < 1; j++) {
+    println("One iteration");
+}

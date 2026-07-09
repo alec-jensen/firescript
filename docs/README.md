@@ -14,6 +14,7 @@ firescript is still in active development. Some pages describe planned behavior 
 
 - [Types and Variables](reference/variables.md)
 - [Arrays](reference/arrays.md)
+- [Operators](reference/operators.md)
 - [Control Flow](reference/control_flow.md)
 - [Functions and Methods](reference/functions.md)
 - [Classes and Inheritance](reference/classes.md)
@@ -23,12 +24,23 @@ firescript is still in active development. Some pages describe planned behavior 
 - [Error Handling](reference/error_handling.md)
 - [Modules](reference/modules.md)
 - [Imports](reference/imports.md)
+- [Project Structure](reference/project_structure.md)
+
+## Standard Library
+
+- [Overview](reference/std/overview.md)
+- [I/O](reference/std/io.md)
+- [File System](reference/std/fs.md)
+- [Math](reference/std/math.md)
+- [Regex](reference/std/regex.md)
+- [Command-Line Arguments](reference/std/cli_args.md)
+- [Types](reference/std/types.md)
 
 ## Tooling and Project Docs
 
+- [FCL Overview](reference/fcl/overview.md)
 - [kiln Overview](reference/kiln/overview.md)
 - [kiln Manifest](reference/kiln/manifest.md)
-- [Benchmarks](benchmarks.md)
 - [Changelog](changelog.md)
 
 ## Internal Docs (Compiler Developer-only)

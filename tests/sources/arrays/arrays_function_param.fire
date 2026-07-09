@@ -1,0 +1,13 @@
+import @firescript/std.io.println;
+
+int32 sumArray(int32[] arr) {
+    int32 sum = 0;
+    for (int32 val in arr) {
+        sum = sum + val;
+    }
+    return sum;
+}
+
+int32[] to_sum = [1, 2, 3, 4, 5];
+int32 total = sumArray(to_sum);
+println(total);  // 15

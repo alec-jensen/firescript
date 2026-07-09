@@ -1,0 +1,12 @@
+import @firescript/std.io.println;
+
+// Casts combined with arithmetic operations
+int8 a = 10i8;
+int16 b = 20i16;
+int32 result = (a as int32) + (b as int32);
+println(result);
+
+int32 x = 5;
+float32 y = 2.0f;
+float32 div_result = (x as float32) / y;
+println(div_result);

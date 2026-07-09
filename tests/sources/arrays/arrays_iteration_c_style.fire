@@ -1,0 +1,6 @@
+import @firescript/std.io.println;
+
+int32[] values = [100, 200, 300];
+for (int32 i = 0; i < values.length(); i++) {
+    println(values[i]);
+}

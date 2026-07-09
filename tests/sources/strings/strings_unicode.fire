@@ -1,0 +1,7 @@
+import @firescript/std.io.println;
+
+string emoji = "🔥";
+println(emoji);
+
+string accents = "café";
+println(accents);

@@ -1,5 +1,7 @@
 # firescript config language
 
+> Status: [IN DEVELOPMENT]. The FCL lexer is implemented and available via `@firescript/std.fcl` (`next_token` and token accessors). The parser, typechecker, expression layer, and both usage modes described below are [PLANNED] — the examples on this page are design direction, not working behavior. Full FCL is planned for the 0.7.0 release.
+
 firescript config language (fcl) is a typed, human-readable configuration DSL designed for firescript configs.
 
 fcl is intended for the same use cases where teams often choose YAML or TOML, but with syntax and semantics aligned to firescript.

@@ -1,6 +1,6 @@
 # Native Toolchain (self-hosted assembler + PE writer) [IMPLEMENTED]
 
-firescript produces native Windows x64 executables with **no external tools** —
+firescript produces native Windows x86_64 executables with **no external tools** —
 no `as`, `ld`, `objdump`, gcc, or clang, and no third-party Python packages. The
 back of the pipeline is:
 

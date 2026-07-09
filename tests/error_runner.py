@@ -87,11 +87,18 @@ def _normalize_user_path(path_value: str) -> str:
     return os.path.abspath(os.path.expanduser(path_value))
 
 
+def _expected_errors_path_for(src: str) -> str:
+    """Mirror a source file's category subdirectory under tests/expected_errors/."""
+    rel = os.path.relpath(src, INVALID_DIR)
+    rel_noext = os.path.splitext(rel)[0]
+    return os.path.join(EXPECTED_ERRORS_DIR, rel_noext + ".err")
+
+
 def discover_error_tests() -> List[ErrorTestCase]:
-    """Find all .fire files in tests/sources/invalid/"""
-    pattern = os.path.join(INVALID_DIR, "*.fire")
-    sources = glob.glob(pattern)
-    
+    """Find all .fire files in tests/sources/invalid/, recursively."""
+    pattern = os.path.join(INVALID_DIR, "**", "*.fire")
+    sources = glob.glob(pattern, recursive=True)
+
     cases = []
     for src in sorted(sources):
         base = os.path.splitext(os.path.basename(src))[0]
@@ -99,9 +106,9 @@ def discover_error_tests() -> List[ErrorTestCase]:
         # intended to be compiled as standalone failing cases.
         if base.endswith("_provider"):
             continue
-        expected = os.path.join(EXPECTED_ERRORS_DIR, f"{base}.err")
+        expected = _expected_errors_path_for(src)
         cases.append(ErrorTestCase(source=src, expected_errors=expected))
-    
+
     return cases
 
 
@@ -320,8 +327,7 @@ def main():
         cases = []
         for src in args.cases:
             src = _normalize_user_path(src)
-            base = os.path.splitext(os.path.basename(src))[0]
-            expected = os.path.join(EXPECTED_ERRORS_DIR, f"{base}.err")
+            expected = _expected_errors_path_for(src)
             cases.append(ErrorTestCase(source=src, expected_errors=expected))
     else:
         # Discover all error tests

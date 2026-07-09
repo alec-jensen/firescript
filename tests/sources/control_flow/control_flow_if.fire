@@ -1,0 +1,42 @@
+import @firescript/std.io.println;
+
+// Simple if
+int32 x = 10;
+if (x > 5) {
+    println("x is greater than 5");
+}
+
+// if-else
+int32 score = 75;
+if (score >= 70) {
+    println("Pass");
+} else {
+    println("Fail");
+}
+
+// if-else if-else chain
+int32 grade = 85;
+if (grade >= 90) {
+    println("A");
+} else if (grade >= 80) {
+    println("B");  // This should print
+} else if (grade >= 70) {
+    println("C");
+} else if (grade >= 60) {
+    println("D");
+} else {
+    println("F");
+}
+
+// Nested if statements
+int32 age = 25;
+bool hasLicense = true;
+if (age >= 18) {
+    if (hasLicense) {
+        println("Can drive");  // This should print
+    } else {
+        println("Cannot drive - no license");
+    }
+} else {
+    println("Cannot drive - too young");
+}

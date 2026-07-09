@@ -1,0 +1,8 @@
+import @firescript/std.io.println;
+
+string single_char = "a";
+println(single_char);
+println(single_char.length());
+
+string spaces = "   ";
+println(spaces.length());

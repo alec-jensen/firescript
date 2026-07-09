@@ -1,0 +1,10 @@
+import @firescript/std.io.println;
+
+int8 i8_min = -128i8;
+int8 i8_max = 127i8;
+int8 i8_zero = 0i8;
+println(i8_min);
+println(i8_max);
+println(i8_zero);
+println(i8_max + 1i8);  // Overflow behavior
+println(i8_min - 1i8);  // Underflow behavior

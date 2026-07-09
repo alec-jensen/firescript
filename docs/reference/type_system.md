@@ -23,7 +23,7 @@ These are fixed-size scalars stored on the stack and copied by value:
   * **`float64`**: 64-bit floating point number
   * **`float128`**: 128-bit floating point number. [IMPLEMENTED] — true 16-byte IEEE 754 binary128 (quad-precision), implemented as a self-hosted soft-float runtime. Arithmetic, comparisons, and conversions are correctly rounded (round-to-nearest-even), with full support for subnormals, signed zero, infinity, and NaN.
 * **`bool`**: Represents boolean values, either `true` or `false`. Example: `bool isActive = true;`
-* **`char`**: Represents a single character. (Note: Currently handled similarly to strings in some contexts, formal `char` type might be refined). Example: `char initial = "A";`
+* **`char`**: Represents a single character, stored on the stack. Initialized with a character literal or a single-character string literal. Examples: `char initial = 'A';`, `char digit = "7";`
 
 ### Owned Types (Heap-Allocated)
 
@@ -31,7 +31,7 @@ These values are stored on the heap with pointers on the stack and use move sema
 
 * **`string`**: Represents sequences of characters. Example: `string message = "Hello, World!";`
 * **Arrays**: Collections of elements (see [Arrays](arrays.md))
-* **User-defined classes**: Custom objects (planned)
+* **User-defined classes**: Custom objects (see [Classes & Inheritance](classes.md))
 
 ### Special Types
 
@@ -62,8 +62,8 @@ Notes:
 * For readability, parentheses are recommended when mixing with other operators.
 * `as` is supported for:
   - Numeric-to-numeric casts (with possible loss of precision or overflow)
-  - String-to-numeric casts (using standard C conversion functions: `atoi`, `atoll`, `atof`)
-  - Built-in type conversions to `string` (via `+ ""` concatenation)
+  - String-to-numeric casts (parsed by the firescript runtime)
+  - Built-in type conversions to `string` (numeric types, `bool`, `char`)
 
 ### Integer Type (`intN` and `uintN`)
 
@@ -286,7 +286,7 @@ int8 firstScore = scores[0];  // 85
 scores[1] = 95;  // Array becomes [85, 95, 78]
 
 // Array properties
-int8 count = scores.length;  // 3
+int32 count = scores.length();  // 3
 ```
 
 ## Nullability
@@ -356,32 +356,26 @@ float64 parsedFloat = "3.14" as float64;  // 3.14
 string str1 = 42 as string;               // "42"
 string str2 = 3.14f32 as string;          // "3.14"
 string str3 = true as string;             // "true"
-
-// Boolean conversions
-bool fromString = "true" as bool;         // true
-bool fromInt = 1 as bool;                 // true (non-zero is true)
-
-// Character conversions
-char first = "Hello" as char;             // "H" - first character
+char letter = 'A';
+string str4 = letter as string;           // "A"
 ```
 
 **Casting Rules:**
 
 1. **Numeric to numeric**: Always allowed, may lose precision or truncate
-2. **String to numeric**: Parses the string, throws error if invalid format
+2. **String to numeric**: Parses the string
 3. **Numeric to string**: Converts to string representation
 4. **Boolean to string**: "true" or "false"
-5. **String to boolean**: "true" → true, anything else → false
-6. **Numeric to boolean**: 0 → false, non-zero → true
-7. **String to char**: Takes first character
+5. **Char to string**: One-character string
 
 **Invalid Casts:**
 
-Some casts are not allowed and will result in compile-time errors:
+Casts to non-numeric targets other than `string` are not allowed and will result in compile-time errors:
 
 ```firescript
 // int32 x = [1, 2, 3] as int32;  // ❌ Error: Cannot cast array to int32
-// bool b = "hello" as bool;       // ⚠️ Runtime error: Invalid boolean string
+// bool b = 1 as bool;             // ❌ Error: cannot cast to bool
+// char c = "Hello" as char;       // ❌ Error: cannot cast to char
 ```
 
 ### Mixed-Type Arithmetic
@@ -423,12 +417,14 @@ This explicit approach prevents silent precision loss and makes data type conver
 
 ### String Concatenation
 
-String concatenation with `+` is an exception - it will implicitly convert non-string values to strings:
+String concatenation with `+` requires both operands to be strings. There is no implicit conversion — cast non-string values explicitly:
 
 ```firescript
-string message = "Count: " + 42;  // "Count: 42" - int32 converted to string
-string status = "Active: " + true;  // "Active: true" - bool converted to string
-string pi = "Pi is approximately " + 3.14f32;  // Converts float to string
+string message = "Count: " + (42 as string);              // "Count: 42"
+string status = "Active: " + (true as string);            // "Active: true"
+string pi = "Pi is approximately " + (3.14f32 as string); // "Pi is approximately 3.14"
+
+// string bad = "Count: " + 42;  // ❌ Error: cannot concatenate string and int32
 ```
 
 ## Type Checking and Enforcement
@@ -441,7 +437,7 @@ The firescript parser includes a type-checking phase that runs after the initial
 
 2. **Assignments**: When assigning a value to an existing variable (`x = 10i8;`), the checker ensures the assigned value's type is compatible with the variable's declared type.
 
-3. **Expressions**: Operators (`+`, `-`, `*`, `/`, `==`, `>`, etc.) are checked to ensure they are used with compatible operand types. For example, arithmetic operators generally require numeric types (`intN`, `floatN`), while `+` can also be used for string concatenation. The result type of an expression is also determined (e.g., `1 + 2.0` results in a `float32`).
+3. **Expressions**: Operators (`+`, `-`, `*`, `/`, `==`, `>`, etc.) are checked to ensure they are used with compatible operand types. For example, arithmetic operators require numeric operands of the exact same type, while `+` can also be used for string concatenation (both operands must be strings).
 
 4. **Function Calls**: Arguments passed to functions are checked against the expected parameter types. The return value type is also enforced.
 
@@ -463,9 +459,9 @@ bool result = age + name;  // Type error: Cannot add int and string
                            // Also cannot assign result to bool
 ```
 
-## Type Introspection
+## Type Introspection [PLANNED]
 
-The `typeof` built-in function returns a string representing the type of a value:
+A `typeof` built-in returning a string representation of a value's type is planned but not yet implemented:
 
 ```firescript
 // Future syntax
@@ -483,11 +479,9 @@ The following standard library types are planned but not yet implemented:
 * **`Decimal`**: Fixed-point, arbitrary-precision decimal type for precise calculations.
 * **`list<T>`**: A dynamic array type that can grow and shrink, unlike fixed-size arrays.
 
-## Advanced Type Features (Planned)
+## Generics
 
-The following advanced type features are planned but not yet implemented:
-
-### Generics
+> Status: Generic functions and generic classes are [IMPLEMENTED], including type-union constraints and named constraint aliases. Interface-based constraints are [PLANNED] and are marked as such below.
 
 Generics allow you to write flexible, reusable code that works with multiple types while maintaining type safety. Instead of writing separate functions for each type, you write one generic function that works with any compatible type.
 
@@ -506,7 +500,7 @@ T max<T>(T a, T b) {
 
 // Type parameter is inferred from arguments
 int8 largerInt = max(5i8, 10i8);        // T inferred as int8
-string largerString = max("apple", "banana");  // T inferred as string
+float64 largerF64 = max(2.5, 1.5);      // T inferred as float64
 
 // Or explicitly specified
 float32 largerFloat = max<float32>(3.14f32, 2.71f32);
@@ -516,17 +510,16 @@ float32 largerFloat = max<float32>(3.14f32, 2.71f32);
 
 Type constraints restrict which types can be used with a generic function. This ensures the function only accepts types that support the required operations.
 
-**Interface Constraints:**
+**Interface Constraints [PLANNED]:**
+
+Interface-based constraints are planned alongside the interface system itself:
 
 ```firescript
+// Future syntax
 // T must satisfy the Comparable interface
 T max<T: Comparable>(T a, T b) {
-    return a > b ? a : b;
-}
-
-// T must satisfy the Numeric interface
-T add<T: Numeric>(T a, T b) {
-    return a + b;
+    if (a > b) { return a; }
+    return b;
 }
 ```
 
@@ -555,33 +548,25 @@ T process<T: Point | Circle>(T shape) {
 }
 ```
 
-**Multiple Constraints:**
+**Multiple Constraints [PLANNED]:**
 
-You can combine both interface constraints and type unions:
+Combining interface constraints with type unions is planned for when interfaces land:
 
 ```firescript
-import @firescript/std.io.print;
-
+// Future syntax
 // T must satisfy Comparable AND be in the union
 T clamp<T: Comparable & (int32 | float64)>(T value, T min, T max) {
-    if (value < min) return min;
-    if (value > max) return max;
+    if (value < min) { return min; }
+    if (value > max) { return max; }
     return value;
-}
-
-// Multiple interface constraints
-T process<T: Printable & Drawable>(T item) {
-    print(item.toString());
-    item.draw();
-    return item;
 }
 ```
 
 **When to Use Each:**
 
-- **Interface constraints** (`T: Comparable`): When you need types with specific capabilities, works with any type that implements the interface
-- **Type unions** (`T: int32 | float64`): When you want to explicitly list allowed types, simple and explicit
-- **Built-in interfaces** (`T: Numeric`, `SignedInt`, `Float`): For common operations across type families
+- **Type unions** (`T: int32 | float64`): When you want to explicitly list allowed types, simple and explicit — available today
+- **Constraint aliases** (`T: Numeric`): Named, reusable type unions — available today (see [Custom Type Constraints](#custom-type-constraints))
+- **Interface constraints** (`T: Comparable`) [PLANNED]: When you need types with specific capabilities, works with any type that implements the interface
 
 #### Type Union Constraints
 
@@ -610,46 +595,17 @@ T feed<T: Dog | Cat>(T animal) {
 }
 ```
 
-**Combining Unions with Interfaces:**
+**Combining Unions with Interfaces [PLANNED]:**
 
-You can require that types satisfy both an interface AND be in a specific union:
+Once interfaces are implemented, you will be able to require that types satisfy both an interface AND be in a specific union:
 
 ```firescript
+// Future syntax
 // T must be Comparable AND one of these specific types
 T max<T: Comparable & (int32 | int64 | float64)>(T a, T b) {
-    return a > b ? a : b;
+    if (a > b) { return a; }
+    return b;
 }
-
-// Custom interface with type union
-interface Drawable {
-    void draw(&this);
-}
-
-class Square implements Drawable { /* ... */ }
-class Circle implements Drawable { /* ... */ }
-
-// T must implement Drawable AND be one of these types
-T render<T: Drawable & (Square | Circle)>(T shape) {
-    shape.draw();
-    return shape;
-}
-```
-
-**Type Unions vs. Interfaces:**
-
-```firescript
-// Using interface - open-ended, any type that implements Numeric
-T addWithInterface<T: Numeric>(T a, T b) {
-    return a + b;
-}
-
-// Using type union - closed, only these specific types
-T addWithUnion<T: int32 | int64 | float64>(T a, T b) {
-    return a + b;
-}
-
-// Interface: More flexible, allows future types
-// Union: More explicit, you know exactly what's allowed
 ```
 
 **Practical Example:**
@@ -658,7 +614,7 @@ T addWithUnion<T: int32 | int64 | float64>(T a, T b) {
 // Define a function that only works with specific numeric types
 T safeDivide<T: float32 | float64>(T a, T b) {
     if (b == 0.0) {
-        return 0.0;  // Safe default for floats
+        return a - a;  // Safe zero default for floats
     }
     return a / b;
 }
@@ -668,104 +624,35 @@ float64 result2 = safeDivide(10.0f64, 2.0f64);  // ✅ Works
 // int32 result3 = safeDivide(10i32, 2i32);     // ❌ Error: int32 not in union
 ```
 
-#### Built-in Type Constraints
+#### Standard Constraint Aliases [IN DEVELOPMENT]
 
-firescript provides several built-in constraint interfaces that are automatically implemented by appropriate types:
+The standard library defines common constraint aliases as type unions (in `firescript/std/constraints.fire`):
 
-**Numeric Constraints:**
+- **`Numeric`** — all `intN`, `uintN`, and `floatN` types
+- **`SignedInteger`** — `int8 | int16 | int32 | int64`
+- **`UnsignedInteger`** — `uint8 | uint16 | uint32 | uint64`
+- **`Integer`** — `SignedInteger | UnsignedInteger`
+- **`FloatingPoint`** — `float32 | float64 | float128`
 
-- **`Numeric`** - Any numeric type (int, uint, float of any precision)
-  - Supports: `+`, `-`, `*`, `/`, `%`, `**`
-  - Implemented by: All `intN`, `uintN`, and `floatN` types
-
-- **`Integer`** - Any integer type (signed or unsigned)
-  - Supports: All `Numeric` operations plus bitwise operations
-  - Implemented by: All `intN` and `uintN` types
-
-- **`SignedInt`** - Signed integers only
-  - Supports: All `Integer` operations plus unary negation
-  - Implemented by: All `intN` types (`int8`, `int16`, `int32`, `int64`)
-
-- **`UnsignedInt`** - Unsigned integers only
-  - Supports: All `Integer` operations
-  - Implemented by: All `uintN` types (`uint8`, `uint16`, `uint32`, `uint64`)
-
-- **`Float`** - Floating-point types only
-  - Supports: All `Numeric` operations
-  - Implemented by: All `floatN` types (`float32`, `float64`, `float128`)
-
-**Behavioral Constraints:**
-
-- **`Comparable`** - Types that can be compared
-  - Supports: `<`, `>`, `<=`, `>=`, `==`, `!=`
-  - Implemented by: All numeric types, `string`, `char`, `bool`
-
-- **`Equatable`** - Types that support equality testing
-  - Supports: `==`, `!=`
-  - Implemented by: All built-in types
-
-- **`Copyable`** - Types that can be copied (as opposed to moved)
-  - All primitive types are `Copyable`
-  - Classes are `Owned` by default (not `Copyable`)
-
-**Examples:**
-
-```firescript
-// Works with any numeric type
-T square<T: Numeric>(T x) {
-    return x * x;
-}
-
-// Only works with floating-point types
-T sqrt<T: Float>(T value) {
-    // Implementation uses floating-point operations
-    return __builtin_sqrt(value);
-}
-
-// Only works with signed integers
-T abs<T: SignedInt>(T value) {
-    return value < 0 ? -value : value;
-}
-
-// Works with any comparable type
-T clamp<T: Comparable>(T value, T min, T max) {
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
-}
-```
+These are not yet importable from user code; for now, define equivalent constraint aliases in your own modules (see [Custom Type Constraints](#custom-type-constraints)). Interface-style constraints with behavioral requirements (`Comparable`, `Equatable`, etc.) are [PLANNED] as part of the interface system.
 
 
 
 #### Multiple Type Parameters
 
-Functions can have multiple generic type parameters:
+Functions can declare multiple generic type parameters (e.g., `R convert<T, R>(T value)`). Function-typed parameters and casting between type parameters are [PLANNED]:
 
 ```firescript
-// Convert from one type to another
-R convert<T, R>(T value) {
-    return cast<R>(value);
-}
-
-// Map a function over a value
+// Future syntax
+// Map a function over a value (function types are planned)
 R map<T, R>(T value, R func(T)) {
     return func(value);
 }
-
-// Combine two values of different types
-R combine<T1, T2, R: Numeric>(T1 a, T2 b) {
-    return cast<R>(a) + cast<R>(b);
-}
-
-// With constraints on each parameter
-R interpolate<T: Float, R: Float>(T a, T b, R t) {
-    return cast<R>(a) + cast<R>((b - a) * cast<T>(t));
-}
 ```
 
-#### Generic Constants and Type-Associated Values
+#### Generic Constants and Type-Associated Values [PLANNED]
 
-For constants that need to adapt to the type precision, use type-associated constant functions:
+For constants that need to adapt to the type precision, type-associated constant functions are planned:
 
 ```firescript
 // Type-associated constants (planned syntax)
@@ -808,7 +695,7 @@ int32 x = identity(42i32);        // T inferred as int32
 string s = identity("hello");      // T inferred as string
 
 // Explicit type parameter when needed
-float64 y = identity<float64>(42); // Converts 42 to float64
+float64 y = identity<float64>(42.0); // T is float64
 ```
 
 Type inference follows these rules:
@@ -819,7 +706,9 @@ Type inference follows these rules:
 4. All type parameters must be consistently inferred
 
 ```firescript
-T add<T: Numeric>(T a, T b) {
+constraint NumericPrimitive = int32 | int64 | float32 | float64;
+
+T add<T: NumericPrimitive>(T a, T b) {
     return a + b;
 }
 
@@ -829,54 +718,28 @@ float32 result2 = add(1.5f32, 2.5f32);  // ✅ T inferred as float32
 // int32 result3 = add(10i32, 20i64);  // ❌ Error: T cannot be both int32 and int64
 ```
 
-#### Generic Classes (Planned)
+#### Generic Classes
 
-Generic classes will allow creating data structures that work with any type:
+Generic classes create data structures that work with any type. Both owned and `copyable` generic classes are supported:
 
 ```firescript
-// Planned syntax
 class Box<T> {
     T value;
 
-    Box(&this, T value) {
+    Box(T value) {
         this.value = value;
     }
 
     T getValue(&this) {
         return this.value;
     }
-
-    void setValue(&this, T newValue) {
-        this.value = newValue;
-    }
 }
 
 // Usage
-Box<int32> intBox = Box(42i32);
-Box<string> strBox = Box("hello");
-
-int32 x = intBox.getValue();    // 42
-string s = strBox.getValue();    // "hello"
+Box<int32> intBox = Box<int32>(42i32);
 ```
 
-Generic classes with constraints:
-
-```firescript
-// Planned syntax
-class Pair<T: Comparable> {
-    T first;
-    T second;
-
-    Pair(&this, T first, T second) {
-        this.first = first;
-        this.second = second;
-    }
-
-    T max(&this) {
-        return this.first > this.second ? this.first : this.second;
-    }
-}
-```
+The standard library's `Tuple<T, U>` and `Option<T>` (`@firescript/std.types`) are generic classes. See [Classes & Inheritance — Generic Classes](classes.md#generic-classes).
 
 #### Generic Arrays and Collections (Planned)
 
@@ -907,8 +770,9 @@ Generics in firescript use **monomorphization** at compile time:
 
 ```firescript
 // You write this once:
-T max<T: Comparable>(T a, T b) {
-    return a > b ? a : b;
+T max<T: int32 | float32>(T a, T b) {
+    if (a > b) { return a; }
+    return b;
 }
 
 // If you call it with int32 and float32:
@@ -916,12 +780,12 @@ int32 x = max(5i32, 10i32);
 float32 y = max(3.14f32, 2.71f32);
 
 // The compiler generates (conceptually):
-int32 max_int32(int32 a, int32 b) { return a > b ? a : b; }
-float32 max_float32(float32 a, float32 b) { return a > b ? a : b; }
+// int32 max_int32(int32 a, int32 b) { ... }
+// float32 max_float32(float32 a, float32 b) { ... }
 
 // And replaces your calls with:
-int32 x = max_int32(5i32, 10i32);
-float32 y = max_float32(3.14f32, 2.71f32);
+// int32 x = max_int32(5i32, 10i32);
+// float32 y = max_float32(3.14f32, 2.71f32);
 ```
 
 This approach is similar to C++ templates and Rust generics, ensuring that generic code has no performance penalty.
@@ -1029,12 +893,12 @@ T render<T: Drawable & Shape2D>(T shape) {
 **Constraint Aliases vs. Interfaces:**
 
 ```firescript
-// Constraint alias - just a shorthand for a type union
+// Constraint alias - just a shorthand for a type union (implemented)
 constraint FastInt = int32 | int64;
 T add<T: FastInt>(T a, T b) { return a + b; }
 // Expands to: T add<T: int32 | int64>(T a, T b)
 
-// Interface - defines required capabilities
+// Interface - defines required capabilities (PLANNED, future syntax)
 interface Printable {
     string toString(&this);
 }
@@ -1057,17 +921,19 @@ Constraint aliases follow the same scoping rules as other declarations:
 // Module-level constraint (usable throughout the file)
 constraint ModuleNumeric = int32 | float32;
 
-// Exported module API (planned syntax)
+// Exported module API
 export constraint PublicNumeric = int32 | float64;
 export T compute<T: PublicNumeric>(T value) {
     return value;
 }
 
 // Importing another module can only access its exported symbols.
-import std.types.{NumericPrimitive, SignedInteger};
+import my_module.{PublicNumeric, compute}
 ```
 
-### Interfaces
+### Interfaces [PLANNED]
+
+> Status: The entire interface system described in this section is [PLANNED]. None of it is implemented in the current compiler; all code below is future syntax.
 
 Interfaces define a set of capabilities that types can implement. They are used primarily as constraints for generic type parameters, ensuring that generic code only accepts types that support the required operations.
 
@@ -1090,7 +956,7 @@ interface Printable {
 
 class PrintableInt implements Printable {
     int32 value;
-    string toString(&this) { return toString(this.value); }
+    string toString(&this) { return this.value as string; }
 }
 ```
 
@@ -1136,7 +1002,9 @@ interface Comparable from Equatable {
 Classes declare which interfaces they implement using the `implements` keyword:
 
 ```firescript
-import @firescript/std.io.print;\n\n// Define a class that implements an interface
+import @firescript/std.io.print;
+
+// Define a class that implements an interface
 class Point implements Printable {
     float32 x;
     float32 y;
@@ -1148,7 +1016,7 @@ class Point implements Printable {
     
     // Implement the required method from Printable
     string toString(&this) {
-        return "Point(" + toString(this.x) + ", " + toString(this.y) + ")";
+        return "Point(" + (this.x as string) + ", " + (this.y as string) + ")";
     }
 }
 
@@ -1162,7 +1030,7 @@ class Circle implements Drawable, Printable {
     
     // Implement Drawable methods
     void draw(&this) {
-        print("Drawing circle with radius " + toString(this.radius));
+        print("Drawing circle with radius " + (this.radius as string));
     }
     
     void move(&this, int32 dx, int32 dy) {
@@ -1175,7 +1043,7 @@ class Circle implements Drawable, Printable {
     
     // Implement Printable method
     string toString(&this) {
-        return "Circle(radius=" + toString(this.radius) + ")";
+        return "Circle(radius=" + (this.radius as string) + ")";
     }
 }
 ```
@@ -1222,7 +1090,7 @@ class PrintableInt implements Printable {
     }
     
     string toString(&this) {
-        return "Value: " + toString(this.value);
+        return "Value: " + (this.value as string);
     }
 }
 
@@ -1478,23 +1346,20 @@ interface FileOperations {
 
 ### User-Defined Types (Classes)
 
-Classes will enable user-defined types with methods and properties:
+Classes enable user-defined types with fields and methods, including constructors, inheritance, static methods, and generics. See [Classes & Inheritance](classes.md) for the full reference:
 
 ```firescript
-// Future syntax
 class Point {
     float32 x;
     float32 y;
 
-    Point(this, float32 x, float32 y) {
+    Point(&mut this, float32 x, float32 y) {
         this.x = x;
         this.y = y;
     }
 
-    float32 distanceTo(this, Point other) {
-        float32 dx = this.x - other.x;
-        float32 dy = this.y - other.y;
-        return toFloat((dx * dx + dy * dy) ** 0.5);
+    float32 dot(&this, Point &other) {
+        return this.x * other.x + this.y * other.y;
     }
 }
 ```
@@ -1503,31 +1368,30 @@ class Point {
 
 The current firescript compiler supports:
 
-* ✅ All integer types (`int8`, `int16`, `int32`, `int64`, `uint8`, `uint16`, `uint32`, `uint64`)
-* ✅ All floating point types (`float32`, `float64`, `float128`)
-* ✅ Nullable type modifiers
-* ✅ Arrays (as Owned heap-allocated types)
-* ✅ Static type checking for expressions and assignments
-* ✅ Generics
-  * ✅ Generic functions
-  * ✅ Type constraints with interfaces
-  * ✅ Type union constraints (`T: int32 | float64`)
-  * ✅ Generic classes
-  * ✅ Type inference for generics
-* ⚠️ Explicit type casting (only for numeric types, `string`, and `bool` at present)
+* [IMPLEMENTED] All integer types (`int8`, `int16`, `int32`, `int64`, `uint8`, `uint16`, `uint32`, `uint64`)
+* [IMPLEMENTED] All floating point types (`float32`, `float64`, `float128`)
+* [IMPLEMENTED] `bool`, `char`, `string`
+* [IMPLEMENTED] Nullable type modifiers
+* [IMPLEMENTED] Arrays (as Owned heap-allocated types)
+* [IMPLEMENTED] User-defined classes (including generic and `copyable` classes)
+* [IMPLEMENTED] Static type checking for expressions and assignments
+* [IMPLEMENTED] Generics
+  * Generic functions (with and without constraints)
+  * Type union constraints (`T: int32 | float64`)
+  * Named constraint aliases (`constraint Name = ...`)
+  * Generic classes
+  * Type inference for generic calls, plus explicit type arguments
+* [IMPLEMENTED] Explicit `as` casting: numeric ↔ numeric, string → numeric, and built-in types → `string`
 
 Not yet implemented:
 
-* ❌ Type inference on variable declarations
-* ❌ Type introspection with `typeof`
-* ❌ Interfaces (syntax and semantics documented, implementation pending)
-  * ❌ Interface definitions (`interface Name { }`)
-  * ❌ Interface inheritance (`interface Child from Parent { }`)
-  * ❌ Interface implementations (`class Type implements Interface { }`)
-  * ❌ Built-in interfaces with compiler support (Numeric, Comparable, etc.)
-  * ❌ Primitive type wrapper classes (`Integer`, `Float`, etc.)
-  * ❌ Marker interfaces
-  * ❌ Default implementations in interfaces
-  * ❌ Associated types
-  * ❌ Interface objects / dynamic dispatch
-* ❌ Function types
+* [PLANNED] Type inference on variable declarations
+* [PLANNED] Type introspection with `typeof`
+* [PLANNED] Casts to `bool` or `char`
+* [PLANNED] Interfaces (syntax and semantics documented above; implementation pending)
+  * Interface definitions (`interface Name { }`)
+  * Interface inheritance (`interface Child from Parent { }`)
+  * Interface implementations (`class Type implements Interface { }`)
+  * Built-in interfaces with compiler support (`Comparable`, `Equatable`, etc.)
+  * Marker interfaces, default implementations, associated types, dynamic dispatch
+* [PLANNED] Function types

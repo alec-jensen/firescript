@@ -2,50 +2,18 @@
 
 ## Prerequisites
 
-- GCC (other compilers may work, but GCC is recommended)
-- Python 3 (firescript generally targets the latest version of Python)
+- Python 3.13+ (firescript generally targets the latest version of Python)
+
+No C compiler, assembler, or linker is required — the firescript compiler assembles x86-64 machine code and writes the executable itself using only the Python standard library.
 
 **Supported Platforms:**
-- Linux
-- Windows (via MSYS2, WSL is not officially supported but may work)
+- Windows (x86_64)
 
-**Note: The compiler is developed in Fedora Linux and Windows environments. As it is currently under active development, there may be platform-specific issues. If you encounter any problems on your platform, please report them in the issue tracker. Contributions to improve cross-platform compatibility are also welcome.**
+**Note: The compiler is developed on Windows. As it is currently under active development, there may be platform-specific issues. If you encounter any problems on your platform, please report them in the issue tracker. Contributions to improve cross-platform compatibility are also welcome.**
 
 ## Installation
 
-### Linux
-
-```bash
-# Debian/Ubuntu
-sudo apt-get install gcc python3 libgmp-dev libmpfr-dev
-
-# Fedora/RHEL/CentOS
-sudo dnf install gcc python3 gmp-devel mpfr-devel
-
-# Arch/Manjaro
-sudo pacman -S gcc python3 gmp mpfr
-
-# Clone the repository
-git clone https://github.com/alec-jensen/firescript.git
-cd firescript
-```
-
 ### Windows
-
-Install python
-
-You will need some sort of C compiler, either GCC or Clang. We recommend GCC via MSYS2 for Windows users.
-
-Install [GCC via MSYS2](https://www.msys2.org/):
-
-Open the MSYS2 UCRT64 terminal and run:
-
-```bash
-pacman -Syu
-pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain
-```
-
-Add `C:\msys64\ucrt64\bin` to your system PATH.
 
 Clone the repository
 
@@ -57,9 +25,16 @@ cd firescript
 ## Compiling and Running a Program
 
 ```bash
-# Compile a firescript program
-python3 firescript/firescript.py program.fire
+# Compile a firescript program (output goes to build\program.exe)
+python firescript/main.py program.fire
 
 # Execute the compiled program
-./output/program
+.\build\program.exe
 ```
+
+Useful flags:
+
+- `-o <path>` — choose the output file
+- `-d` — debug output
+- `--check` — run checks only, without generating code
+- `--emit {ast,asm,obj,bin}` — choose the kind of output to generate

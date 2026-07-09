@@ -24,31 +24,31 @@ BUILD_DIR = os.path.join(REPO_ROOT, "build")
 
 # Representative subset spanning the implemented feature surface.
 SNAPSHOT_CASES = [
-    "fibonacci.fire",                       # recursion, int64
-    "functions_comprehensive.fire",         # params, returns, nesting
-    "control_flow_comprehensive.fire",      # if/elif/else, loops, break/continue
-    "operator_precedence.fire",             # expression structure
-    "operators_logical.fire",               # &&, ||, !
-    "types_numeric_comprehensive.fire",     # all numeric types and literals
-    "string_operations_comprehensive.fire", # strings, concat, length, iteration
-    "array_operations_comprehensive.fire",  # arrays, index/count, for-in
-    "array_negative_indexing.fire",         # negative indices
-    "numeric_casts.fire",                   # as-casts incl. float128 alias
-    "classes_methods.fire",                 # classes, constructors, methods
-    "classes_static_methods.fire",          # static methods
-    "inheritance.fire",                     # base classes, super()
-    "receiver_mut.fire",                    # &this / &mut this receivers
-    "generics_basic.fire",                  # generic functions
-    "generics_class_basic.fire",            # generic classes
-    "generators_basic.fire",                # generators, yield, ranges
-    "memory_class_owned_fields.fire",       # destructors / owned fields
-    "move_semantics_test.fire",             # moves
-    "borrow_test.fire",                     # borrows
-    "nullable_advanced.fire",               # nullable types
-    "imports_multi.fire",                   # module merging
-    "std_types_test.fire",                  # std.types Tuple/Option
-    "std_cli_args_basic.fire",              # process args intrinsics
-    "syscall_basic.fire",                   # syscall intrinsics
+    "performance/fibonacci.fire",                  # recursion, int64
+    "functions/functions_calling_functions.fire",  # params, returns, function-calling-function
+    "control_flow/control_flow_while.fire",        # while loops, break/continue, nesting
+    "expressions/operator_precedence.fire",        # expression structure
+    "operators/operators_logical.fire",            # &&, ||, !
+    "types/types_int64.fire",                      # numeric type literals and arithmetic
+    "strings/strings_concatenation.fire",          # strings, concat, casts
+    "arrays/arrays_iteration_for_in.fire",         # arrays, index, for-in
+    "arrays/array_negative_indexing.fire",         # negative indices
+    "conversions/numeric_casts.fire",              # as-casts incl. float128 alias
+    "classes/classes_methods.fire",                # classes, constructors, methods
+    "classes/classes_static_methods.fire",         # static methods
+    "classes/inheritance.fire",                    # base classes, super()
+    "memory/receiver_mut.fire",                    # &this / &mut this receivers
+    "generics/generics_basic.fire",                # generic functions
+    "generics/generics_class_basic.fire",          # generic classes
+    "generators/generators_basic.fire",            # generators, yield, ranges
+    "memory/memory_class_owned_fields.fire",       # destructors / owned fields
+    "memory/move_semantics_test.fire",             # moves
+    "memory/borrow_test.fire",                     # borrows
+    "nullable/nullable_advanced.fire",             # nullable types
+    "imports/imports_multi.fire",                  # module merging
+    "std/types/std_types_test.fire",               # std.types Tuple/Option
+    "std/cli/std_cli_args_basic.fire",             # process args intrinsics
+    "std/syscalls/syscall_basic.fire",              # syscall intrinsics
 ]
 
 
@@ -85,7 +85,13 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.cases:
-        cases = [os.path.basename(c) for c in args.cases]
+        cases = []
+        for c in args.cases:
+            abs_c = os.path.abspath(c)
+            if abs_c.startswith(SOURCES_DIR + os.sep):
+                cases.append(os.path.relpath(abs_c, SOURCES_DIR).replace(os.sep, "/"))
+            else:
+                cases.append(c)
     else:
         cases = SNAPSHOT_CASES
 
@@ -95,7 +101,7 @@ def main() -> int:
     passed = 0
     failed = 0
     for case in cases:
-        source_path = os.path.join(SOURCES_DIR, case)
+        source_path = os.path.join(SOURCES_DIR, *case.split("/"))
         print(f"[CASE  ] {case}")
         try:
             first = convert(source_path)
@@ -110,10 +116,14 @@ def main() -> int:
             failed += 1
             continue
 
+        # expected_fir/expected_flir are a small, curated set of internal
+        # compiler fixtures kept flat (basename-keyed), independent of the
+        # source tree's category subdirectories.
+        case_base = os.path.basename(case)
         case_ok = True
         checks = [
-            (os.path.join(EXPECTED_DIR, case.replace(".fire", ".fir")), first[0], "FIR"),
-            (os.path.join(EXPECTED_FLIR_DIR, case.replace(".fire", ".flir")), first[1], "FLIR"),
+            (os.path.join(EXPECTED_DIR, case_base.replace(".fire", ".fir")), first[0], "FIR"),
+            (os.path.join(EXPECTED_FLIR_DIR, case_base.replace(".fire", ".flir")), first[1], "FLIR"),
         ]
         for expected_path, actual, label in checks:
             if args.update:

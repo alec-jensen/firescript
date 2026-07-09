@@ -1,10 +1,10 @@
 # Memory Management
 
-> Status: This is the authoritative specification of firescript's ownership-based memory model. Some described behaviors (e.g., last-use drop insertion, borrow checking) may not yet be enforced in current builds. If another document conflicts with this page, this page takes precedence.
+> Status: This is the authoritative specification of firescript's ownership-based memory model. The core model is [IMPLEMENTED]: moves, borrows (`&T`, `&mut this`), use-after-move diagnostics, borrow-escape detection, and deterministic compiler-inserted drops are all enforced by the current compiler. Features still [PLANNED] are marked inline (explicit `.clone()`, user-defined `drop(this)` destructors, closures). If another document conflicts with this page, this page takes precedence.
 
 ## Overview
 
-firescript uses a deterministic ownership model rather than a tracing garbage collector. Values are categorized as either copyable or owned. Owned values move by default; borrowing (`&T`) provides a temporary, read‑only view *only for Owned types*. Copyable types are always passed and assigned by value (bitwise copy); they cannot be borrowed. The compiler (planned) inserts destruction (“drop”) at the last proven use or at scope end. Ordinary owned values incur no runtime reference counting.
+firescript uses a deterministic ownership model rather than a tracing garbage collector. Values are categorized as either copyable or owned. Owned values move by default; borrowing (`&T`) provides a temporary, read‑only view *only for Owned types*. Copyable types are always passed and assigned by value (bitwise copy); they cannot be borrowed. The compiler inserts destruction (“drop”) at scope end and along all control-flow exits. Ordinary owned values incur no runtime reference counting.
 
 This page is layered: first core concepts, then detailed rules. Other documentation pages should link here instead of redefining terminology.
 
@@ -16,7 +16,7 @@ This page is layered: first core concepts, then detailed rules. Other documentat
 4. Copyable types are simply copied; “move” is indistinguishable from copy; borrowing does not exist for Copyable types
 5. The compiler performs last-use analysis to place deterministic drop points (Owned types only)
 6. Scope exit drops any remaining owned values
-7. Cloning is explicit (`.clone()` / `clone(x)`) for Owned values
+7. Cloning is explicit (`.clone()` / `clone(x)`) for Owned values ([PLANNED] — not yet implemented)
 
 ## Terminology
 
@@ -37,7 +37,7 @@ Core terms (Copyable, Owned, Move, Borrow, Clone, Drop) are defined centrally in
 - Copyable: Fixed-size scalars with no destructor (e.g., `intN`, `floatN`, `bool`, `char`). These values are stored on the stack. Copy is bitwise; there is no drop. Borrowing a Copyable type is disallowed (`&int` is invalid).
 - Owned: Heap-backed or resource-managing values (e.g., user-defined objects, closures, arrays, strings). These values are stored on the heap with pointers on the stack. Ownership is unique; assignment/pass/return *moves* ownership. Destruction runs at drop points.
 
-Cloning Owned values is explicit via `.clone()` or `clone(x)`.
+Cloning Owned values is explicit via `.clone()` or `clone(x)` ([PLANNED] — not yet implemented).
 
 ### 2. Regions and Lifetimes
 
@@ -80,9 +80,9 @@ Notes:
 - Mutability of Owned values occurs via methods with a `&mut this` receiver (mutable borrow) or a consuming `this` receiver.
 - If a function must retain or store a value, it must take ownership (`owned T`) or clone inside the borrow’s scope.
 
-TL;DRL Borrowing passes a read-only pointer.
+TL;DR: Borrowing passes a read-only pointer.
 
-### 5. Closures and Coroutines
+### 5. Closures and Coroutines [PLANNED]
 
 - Capturing by move transfers ownership into the closure’s region (Owned types only).
 - Capturing by borrow is only allowed for non-escaping closures and only for Owned types.
@@ -91,7 +91,7 @@ TL;DRL Borrowing passes a read-only pointer.
 
 ### 6. Destruction and `Drop`
 
-- Owned (Owned) types may define `drop(this)`.
+- Owned types may define `drop(this)` ([PLANNED] — user-defined destructors are not yet supported; compiler-inserted drops are implemented).
 - Drops occur deterministically:
   - At last use (if provable).
   - At scope exit.
@@ -99,13 +99,12 @@ TL;DRL Borrowing passes a read-only pointer.
 - Moves prevent duplicate drops (previous binding invalidated).
 - Copyable values never have drops.
 
-Example:
+Example (illustrative — user-defined `drop` is planned):
 
 ```firescript
-File f = File.open("log.txt");
-f.write("hello");
-f.flush();
-// f dropped here even on early return/exception; File.drop closes the descriptor.
+File f = File("log.txt");
+f.writeAll("hello");
+// f dropped here even on early return; a future File.drop could close a held descriptor.
 ```
 
 ### 7. Method Receivers
@@ -119,9 +118,10 @@ Method receiver kinds apply only to Owned types (Copyable methods implicitly cop
 For Copyable types:
 - Methods always receive the value by copy; “consuming” semantics do not apply.
 
-Consuming example:
+Consuming example ([PLANNED] — consuming receivers are not yet supported):
 
 ```firescript
+// Future syntax
 Account upgrade(this) {
   // ... mutate internal state
   return this;
@@ -189,9 +189,10 @@ int8 y = x;          // copy (Copyable); x still valid
 print(x);           // OK
 ```
 
-### Example: Clone (Takeaway: explicit duplication for Owned)
+### Example: Clone (Takeaway: explicit duplication for Owned) [PLANNED]
 
 ```firescript
+// Future syntax — .clone() is not yet implemented
 string s1 = "fire";
 string s2 = s1.clone(); // independent
 print(s1);
@@ -201,19 +202,19 @@ print(s2);
 ### Example: Borrowed Parameter (Owned only)
 
 ```firescript
-int length(&string s) {
-    return s.length;
+int32 length(&string s) {
+    return s.length();
 }
 
 string name = "firescript";
-int8 n = length(name); // borrow; name still valid
+int32 n = length(name); // borrow; name still valid
 ```
 
 ### Example: Invalid Borrow of Copyable (Compile Error)
 
 ```firescript
 int8 id = 10;
-printId(&id);   // ERROR: cannot borrow Copyable type 'int'; remove '&'
+printId(&id);   // ERROR: cannot borrow Copyable type 'int8'; remove '&'
 
 // Correct version:
 void printId(int8 v) {
@@ -242,17 +243,19 @@ string u = "alice";
 addUser(u);   // move; u invalid afterward
 ```
 
-### Example: Returning Borrow (Owned Only, Non-Escaping)
+### Example: Returning Borrow (Owned Only, Non-Escaping) [PLANNED]
 
 ```firescript
-&string head(string[] xs) {
+// Future syntax — borrow return types are not yet supported
+&string head(&string[] xs) {
     return xs[0];   // OK: element owned by caller's array
 }
 ```
 
-### Example: Consuming Method
+### Example: Consuming Method [PLANNED]
 
 ```firescript
+// Future syntax — consuming receivers are not yet supported
 Account activate(owned this) {
     // mutate state
     return this;

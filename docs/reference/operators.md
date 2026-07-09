@@ -29,10 +29,11 @@ int32 pow  = a ** b;  // 1000
 
 Integer division truncates toward zero. Modulo returns the remainder with the same sign as the dividend (C-style, not Python-style).
 
-The `+` operator is also used for string concatenation. When one operand is a `string`, the other is implicitly converted to a string. This is the only implicit conversion in the language.
+The `+` operator is also used for string concatenation. Both operands must be strings — there is no implicit conversion. Cast non-string values explicitly with `as`:
 
 ```firescript
-string msg = "Value: " + 42;  // "Value: 42"
+string msg = "Value: " + (42 as string);  // "Value: 42"
+// string bad = "Value: " + 42;           // ❌ Error: cannot concatenate string and int32
 ```
 
 ## Assignment Operators
@@ -165,9 +166,10 @@ expr as TargetType
 Supported conversions:
 
 - Between any numeric types (`intN`, `uintN`, `floatN`)
-- Numeric to `string` and `string` to numeric
-- Numeric to `bool` (zero → `false`, non-zero → `true`)
-- `string` to `bool` (`"true"` → `true`, anything else → `false`)
+- `string` to numeric
+- Built-in types to `string` (numeric types, `bool`, `char`)
+
+Casts *to* `bool` or `char` are not supported.
 
 ```firescript
 int16 small  = 300i16;
@@ -180,26 +182,26 @@ int32   ipi = pi as int32;       // 3 (truncates toward zero)
 string s = 42 as string;         // "42"
 int32  n = "100" as int32;       // 100
 
-bool fromInt = 1 as bool;        // true
-bool fromStr = "true" as bool;   // true
+string t = true as string;       // "true"
 ```
 
 ⚠️ **Note:** Java/C-style casts (`(int32)value`) are not supported. Always use the postfix `as` form.
 
 ## Ternary Operator
 
-❌ **Not yet implemented.**
+**[PLANNED] — not yet implemented.**
 
-The ternary operator is planned with the following syntax:
+A ternary expression is planned using the reserved `ternary` keyword:
 
 ```firescript
-condition ? trueValue : falseValue
+// Future syntax
+int8 max = ternary a > b then a else b;
 ```
 
 Use an `if/else` block in the meantime:
 
 ```firescript
-// Instead of: int32 abs = x < 0 ? -x : x;
+// Instead of a ternary expression:
 int32 abs = 0;
 if (x < 0) {
     abs = -x;
@@ -210,7 +212,7 @@ if (x < 0) {
 
 ## Bitwise Operators
 
-❌ **Not yet implemented.**
+**[PLANNED] — not yet implemented.**
 
 The following bitwise operators are planned for integer types:
 
@@ -229,15 +231,15 @@ Operators are evaluated in the following order (highest precedence first). Opera
 
 | Level | Operators | Associativity |
 |-------|-----------|---------------|
-| 1 (highest) | `!` `-` `+` (unary) | Right |
-| 2 | `**` | Right |
-| 3 | `*` `/` `%` | Left |
-| 4 | `+` `-` | Left |
-| 5 | `<` `>` `<=` `>=` | Left |
-| 6 | `==` `!=` | Left |
-| 7 | `&&` | Left |
-| 8 | `\|\|` | Left |
-| 9 | `as` | Left |
+| 1 (highest) | `as` (postfix cast) | Left |
+| 2 | `!` `-` `+` (unary) | Right |
+| 3 | `**` | Right |
+| 4 | `*` `/` `%` | Left |
+| 5 | `+` `-` | Left |
+| 6 | `<` `>` `<=` `>=` | Left |
+| 7 | `==` `!=` | Left |
+| 8 | `&&` | Left |
+| 9 | `\|\|` | Left |
 | 10 (lowest) | `=` `+=` `-=` `*=` `/=` `%=` `**=` | Right |
 
 Use parentheses to make evaluation order explicit when combining operators from different levels:
@@ -251,7 +253,7 @@ bool check = a + 1 > b && c != 0;  // ((a + 1) > b) && (c != 0)
 
 ## Array Operators
 
-❌ **Not yet implemented.**
+**[PLANNED] — not yet implemented.**
 
 The following operators are planned for arrays:
 
@@ -292,13 +294,13 @@ int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
 
 | Operator group | Status |
 |----------------|--------|
-| Arithmetic (`+` `-` `*` `/` `%` `**`) | ✅ Implemented |
-| Assignment (`=`) | ✅ Implemented |
-| Compound assignment (`+=` `-=` `*=` `/=` `%=` `**=`) | ✅ Implemented |
-| Increment / decrement (`++` `--`) | ✅ Implemented |
-| Comparison (`==` `!=` `<` `>` `<=` `>=`) | ✅ Implemented |
-| Logical (`&&` `\|\|` `!`) | ✅ Implemented |
-| Cast (`as`) | ✅ Implemented |
-| Ternary (`? :`) | ❌ Planned |
-| Bitwise (`&` `\|` `^` `~` `<<` `>>`) | ❌ Planned |
-| Array operators (`+` `-` `*` `/` `.`) | ❌ Planned |
+| Arithmetic (`+` `-` `*` `/` `%` `**`) | [IMPLEMENTED] |
+| Assignment (`=`) | [IMPLEMENTED] |
+| Compound assignment (`+=` `-=` `*=` `/=` `%=` `**=`) | [IMPLEMENTED] |
+| Increment / decrement (`++` `--`) | [IMPLEMENTED] |
+| Comparison (`==` `!=` `<` `>` `<=` `>=`) | [IMPLEMENTED] |
+| Logical (`&&` `\|\|` `!`) | [IMPLEMENTED] |
+| Cast (`as`) | [IMPLEMENTED] |
+| Ternary | [PLANNED] |
+| Bitwise (`&` `\|` `^` `~` `<<` `>>`) | [PLANNED] |
+| Array operators (`+` `-` `*` `/` `.`) | [PLANNED] |

@@ -8,13 +8,16 @@ In firescript, arrays are fixed-size, ordered collections of elements that all s
 
 ## Declaration and Initialization
 
-Arrays are declared by appending `[N]` to any valid type, where `N` is the fixed size. Arrays can be initialized with values in square brackets, or left uninitialized to be zero-initialized:
+Arrays are declared by appending `[N]` to any valid type, where `N` is the fixed size. Arrays can be initialized with values in square brackets, or left uninitialized to be zero-initialized. When an initializer is provided, the size may be omitted (`T[]`) and is inferred from the initializer:
 
 ```firescript
 // Array initialization with explicit values
 int8[5] numbers = [10, 20, 30, 40, 50];
 string[3] names = ["Alice", "Bob", "Charlie"];
 bool[3] flags = [true, false, true];
+
+// Size inferred from the initializer
+int32[] inferred = [1, 2, 3, 4, 5];   // int32[5]
 
 // Array with declared size, zero-initialized
 int32[10] zeros = [];           // All elements are 0
@@ -91,13 +94,13 @@ for (string ch in text) {
 
 ### Array as Function Arguments
 
-Arrays can be passed to functions. Function parameters can specify a fixed array size or use a size placeholder:
+Arrays can be passed to functions. Array parameters may be unsized (`T[]`), accepting an array of any length:
 
 ```firescript
-// Function with sized array parameter
-int32 sum(&int8[5] numbers) {
+// Function with array parameter
+int32 sum(int32[] numbers) {
     int32 total = 0;
-    uint8 i = 0;
+    int32 i = 0;
     while (i < numbers.length()) {
         total = total + numbers[i];
         i = i + 1;
@@ -106,9 +109,11 @@ int32 sum(&int8[5] numbers) {
 }
 
 // Usage
-int8[5] values = [1, 2, 3, 4, 5];
+int32[] values = [1, 2, 3, 4, 5];
 int32 result = sum(values);  // 15
 ```
+
+Arrays are Owned values, so passing one to an owned parameter moves it. Use a borrowed parameter (`&int32[] numbers`) to keep using the array at the call site afterwards — see [Memory Management](memory_management.md).
 
 ### Nested Arrays
 
@@ -216,12 +221,12 @@ int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
 
 Arrays are functional but with limited operations in the current compiler:
 
-- ✅ Array declaration and initialization
-- ✅ Element access with positive indices
-- ✅ Negative index access for fixed-size arrays (`arr[-1]`)
-- ✅ `length()` method (including on array function parameters)
-- ✅ `index(value)` and `count(value)` on fixed-size arrays
-- ✅ `for-in` loop over arrays (including array function parameters)
-- ❌ Array slicing
-- ❌ Core fixed-size array `sort()` method (use standard library)
-- ❌ Multi-dimensional array operations
+- [IMPLEMENTED] Array declaration and initialization (sized `T[N]` and inferred `T[]` forms)
+- [IMPLEMENTED] Element access with positive indices
+- [IMPLEMENTED] Negative index access for fixed-size arrays (`arr[-1]`)
+- [IMPLEMENTED] `length()` method (including on array function parameters)
+- [IMPLEMENTED] `index(value)` and `count(value)` on fixed-size arrays
+- [IMPLEMENTED] `for-in` loop over arrays (including array function parameters)
+- [PLANNED] Array slicing
+- [PLANNED] Core fixed-size array `sort()` method (use standard library)
+- [PLANNED] Multi-dimensional array operations

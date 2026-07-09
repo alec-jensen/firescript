@@ -47,13 +47,12 @@ println(100);
 
 ## Supported Types
 
-Both `print` and `println` are generic and support all types that can be converted to strings, including:
+Both `print` and `println` are generic and support all built-in types that can be converted to strings:
 
 - Numeric types (`intN`, `uintN`, `floatN`)
 - `bool`
 - `char`
 - `string`
-- Custom types with `toString()` support
 
 ## Notes
 

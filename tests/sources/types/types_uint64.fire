@@ -1,0 +1,7 @@
+import @firescript/std.io.println;
+
+uint64 u64_max = 18446744073709551615u64;
+uint64 u64_test = 1000000000u64;
+println(u64_max);
+println(u64_test);
+println(u64_test * 10u64);

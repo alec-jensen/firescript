@@ -66,4 +66,4 @@ correctly-rounded binary128 implementation built on `fractions.Fraction`. The
 runtime was validated bit-exactly against the oracle across the oracle's
 hand-checked vectors plus large random and targeted fuzz (subnormal boundaries,
 ties, near-overflow, dual-subnormal operands), and against f64↔f128 round trips.
-The committed regression test is `tests/sources/float128_ops.fire`.
+The committed regression test is `tests/sources/special_types/float128_ops.fire`.

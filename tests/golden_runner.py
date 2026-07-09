@@ -40,11 +40,27 @@ REPO_ROOT = os.path.abspath(os.path.join(REPO_ROOT, os.pardir))
 sys.path.insert(0, os.path.join(REPO_ROOT, "firescript"))
 from backend import pe_inspect  # noqa: E402
 
+SOURCES_ROOT = os.path.join(REPO_ROOT, "tests", "sources")
 DEFAULT_SEARCH = [
-    os.path.join(REPO_ROOT, "tests", "sources", "*.fire"),
+    os.path.join(SOURCES_ROOT, "**", "*.fire"),
 ]
 EXPECTED_DIR = os.path.join(REPO_ROOT, "tests", "expected")
 DIFFS_DIR = os.path.join(REPO_ROOT, "tests", "diffs")
+
+# Helper/provider modules: imported by other test sources, never compiled as
+# standalone test cases. Basenames (without extension) or a "_provider" suffix.
+HELPER_MODULE_BASENAMES = {"utils", "math_utils", "string_utils"}
+
+
+def _is_helper_module(basename: str) -> bool:
+    return basename in HELPER_MODULE_BASENAMES or basename.endswith("_provider")
+
+
+def _expected_path_for(src: str) -> str:
+    """Mirror a source file's category subdirectory under tests/expected/."""
+    rel = os.path.relpath(src, SOURCES_ROOT)
+    rel_noext = os.path.splitext(rel)[0]
+    return os.path.join(EXPECTED_DIR, rel_noext + ".out")
 
 
 TAG_WIDTH = 6  # e.g. CASE, PASS, UPDATE
@@ -99,16 +115,19 @@ class RuntimeTimeoutError(Exception):
 def discover_cases(patterns: List[str]) -> List[TestCase]:
     sources: List[str] = []
     for pat in patterns:
-        sources.extend(glob.glob(pat))
-    # Exclude invalid tests and helper modules (utils.fire, math_utils.fire, string_utils.fire) by simple path check
+        sources.extend(glob.glob(pat, recursive=True))
+    # Exclude invalid tests (own runner) and helper/provider modules (imported
+    # by other sources, never standalone) by simple path/name check.
     sources = [s for s in sources if os.sep + "invalid" + os.sep not in s]
-    helper_modules = {"utils.fire", "math_utils.fire", "string_utils.fire"}
-    sources = [s for s in sources if os.path.basename(s) not in helper_modules]
+    sources = [
+        s for s in sources
+        if not _is_helper_module(os.path.splitext(os.path.basename(s))[0])
+    ]
     cases: List[TestCase] = []
     for src in sorted(set(sources)):
         base = os.path.splitext(os.path.basename(src))[0]
         binary = os.path.join(REPO_ROOT, "build", base)
-        expected = os.path.join(EXPECTED_DIR, f"{base}.out")
+        expected = _expected_path_for(src)
         args_path = resolve_args_path(src)
         cases.append(
             TestCase(
@@ -381,7 +400,7 @@ def run_golden(
 def main():
     ap = argparse.ArgumentParser(description="firescript golden test runner")
     ap.add_argument("--cases", nargs="*", help="Specific .fire sources to test")
-    ap.add_argument("--glob", action="append", help="Glob(s) to discover sources; defaults to tests/sources/*.fire")
+    ap.add_argument("--glob", action="append", help="Glob(s) to discover sources; defaults to tests/sources/**/*.fire")
     ap.add_argument("--update", action="store_true", help="Update or create golden files to match current output")
     ap.add_argument("--fail-fast", action="store_true", help="Stop on first failure")
     ap.add_argument("--verbose", action="store_true", help="Verbose output")
@@ -401,7 +420,7 @@ def main():
         for src in args.cases:
             base = os.path.splitext(os.path.basename(src))[0]
             binary = os.path.join(REPO_ROOT, "build", base)
-            expected = os.path.join(EXPECTED_DIR, f"{base}.out")
+            expected = _expected_path_for(src)
             args_path = resolve_args_path(src)
             cases.append(TestCase(src, binary, expected, args_path))
     else:

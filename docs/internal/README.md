@@ -4,7 +4,7 @@ This is documentation for internal language features intended for use in the com
 
 ## Compiler internals
 
-[FIR + FLIR Pipeline](development/fir_flir_pipeline.md) - Index for the FIR (Firescript Intermediate Representation) and FLIR (Firescript Lowered Intermediate Representation) design docs: architecture overview, per-IR specs, and a developer quick reference. **[IMPLEMENTED]**
+[FIR + FLIR Pipeline](development/fir_flir_pipeline.md) - Index for the FIR (firescript Intermediate Representation) and FLIR (firescript Lowered Intermediate Representation) design docs: architecture overview, per-IR specs, and a developer quick reference. **[IMPLEMENTED]**
 
 [Native Toolchain](development/native_toolchain.md) - How the self-hosted x86-64 assembler and PE32+ writer work. **[IMPLEMENTED]**
 

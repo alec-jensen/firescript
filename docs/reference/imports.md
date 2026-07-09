@@ -32,20 +32,20 @@ import src.utils.utils.*
 
 Only exported symbols are eligible for import, including wildcard imports. Module-private top-level declarations remain visible only inside the defining file.
 
-- Aliasing imports (optional):
+- Aliasing imports ([PLANNED] — parsed, but aliased access is not yet implemented):
 
 ```firescript
 import src.utils.utils.helper as help
 import src.utils.utils as Utils
 ```
 
-### Importing external packages (reserved)
+### Importing standard library modules and external packages
 
-These forms are reserved for future package management and standard library support:
+Standard library imports under the `@firescript/std` namespace are implemented. The `@user/package` form is reserved for future package management:
 
 ```firescript
-import @user/package
-import @firescript/std
+import @firescript/std.io.println;   // implemented
+import @user/package                 // reserved for future package management
 ```
 
 These imports can be used the same as local imports, like so:
@@ -113,7 +113,6 @@ import src.utils.utils.{helper, CONSTANT}
 ## Reserved & Future Features
 
 - `import @user/package` is reserved for future package management.
-- `import @firescript/std` is reserved for standard library modules.
 
 ## Best Practices
 
@@ -135,7 +134,8 @@ import src.utils.utils.{helper, CONSTANT}
 | `import src.utils.utils.helper`       | Import a specific symbol                  |
 | `import src.utils.utils.{a, b}`       | Import multiple symbols                   |
 | `import src.utils.utils.*`            | Import all symbols (discouraged)          |
-| `import src.utils.utils.helper as h`  | Alias an imported symbol                  |
+| `import src.utils.utils.helper as h`  | Alias an imported symbol (planned)        |
+| `import @firescript/std.io.println;`  | Standard library import                   |
 | `import @user/package`                | External package (future)                 |
 
 ## Implementation Notes
@@ -146,12 +146,12 @@ import src.utils.utils.{helper, CONSTANT}
 
 ## Implementation Status
 
-- ✅ Import syntax parsing (Phase 0) - fully implemented
-- ✅ Module resolution and dependency loading (Phase 1) - fully implemented
-- ✅ Multi-module compilation with merged AST (Phase 2 basic) - fully implemented
-- ✅ Wildcard imports (`import module.*`)
-- ✅ Symbol imports (`import module.{a, b}`)
-- ✅ Cyclic import detection
-- ✅ Standard library imports (`import @firescript/std`)
-- ⚠️  Module aliases and qualified access (e.g., `Utils.helper()`) - not yet implemented
-- ❌ External packages (`@user/package`) - not supported yet
+- [IMPLEMENTED] Import syntax parsing
+- [IMPLEMENTED] Module resolution and dependency loading
+- [IMPLEMENTED] Multi-module compilation with merged AST
+- [IMPLEMENTED] Wildcard imports (`import module.*`)
+- [IMPLEMENTED] Symbol imports (`import module.{a, b}`)
+- [IMPLEMENTED] Cyclic import detection
+- [IMPLEMENTED] Standard library imports (`import @firescript/std...`)
+- [PLANNED] Module aliases and qualified access (e.g., `import module as M`, `M.helper()`)
+- [PLANNED] External packages (`@user/package`)
