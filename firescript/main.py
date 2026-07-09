@@ -191,6 +191,11 @@ def _runtime_fir_module():
             os.path.join(internal_dir, "float128.fire")
         )
         _RUNTIME_FIR_CACHE = _merge_fir_modules(runtime_mod, float128_mod)
+        # Each source module was already verified individually inside
+        # ASTToFIRConverter.convert(); re-verify the merged module as a
+        # whole so cross-module references (e.g. SyscallResult defined in
+        # one file, used in another) are checked too.
+        _RUNTIME_FIR_CACHE.validate()
     return _RUNTIME_FIR_CACHE
 
 

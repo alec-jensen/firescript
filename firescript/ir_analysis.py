@@ -32,8 +32,9 @@ class CFG:
                 if s in preds:
                     preds[s].append(b)
         self.predecessors = preds
-        self.rpo = _reverse_postorder(entry, successors, block_ids)
-        self.reachable = set(self.rpo)
+        reachable_order, visited = _reverse_postorder(entry, successors, block_ids)
+        self.reachable = visited
+        self.rpo = reachable_order + [b for b in block_ids if b not in visited]
 
 
 def build_cfg(block_ids: list[str], entry: str, successors_of: Callable[[str], list[str]]) -> CFG:
@@ -41,14 +42,15 @@ def build_cfg(block_ids: list[str], entry: str, successors_of: Callable[[str], l
     return CFG(block_ids, entry, successors)
 
 
-def _reverse_postorder(entry: str, successors: dict[str, list[str]], all_ids: list[str]) -> list[str]:
+def _reverse_postorder(
+    entry: str, successors: dict[str, list[str]], all_ids: list[str]
+) -> tuple[list[str], set[str]]:
     """Iterative DFS-based reverse postorder from `entry`.
 
     Deterministic: successors are visited in the order given by
-    `successors[block]` (declaration order). Blocks unreachable from entry
-    are appended afterward in declaration order, so callers iterating
-    `.rpo` still see every block exactly once (unreachable ones just sort
-    last and are excluded from `.reachable`).
+    `successors[block]` (declaration order). Returns (order, visited) --
+    `order` lists only blocks reachable from `entry`; `visited` is the
+    same set of ids, for O(1) reachability checks.
     """
     all_id_set = set(all_ids)
     visited: set[str] = set()
@@ -73,10 +75,7 @@ def _reverse_postorder(entry: str, successors: dict[str, list[str]], all_ids: li
                 stack.pop()
 
     postorder.reverse()
-    for b in all_ids:
-        if b not in visited:
-            postorder.append(b)
-    return postorder
+    return postorder, visited
 
 
 def _intersect(b1: str, b2: str, idom: dict[str, str], order_index: dict[str, int]) -> str:
@@ -95,9 +94,8 @@ def compute_dominators(cfg: CFG) -> dict[str, str]:
     entry). Only covers blocks reachable from cfg.entry; unreachable
     blocks are absent from the result.
     """
-    rpo = cfg.rpo[: len(cfg.reachable)] if len(cfg.rpo) != len(cfg.reachable) else cfg.rpo
-    # cfg.rpo already lists reachable blocks first, in RPO order, followed
-    # by unreachable ones appended in declaration order; take the prefix.
+    # cfg.rpo lists reachable blocks first, in RPO order, followed by
+    # unreachable ones appended in declaration order; take the prefix.
     reachable_rpo = [b for b in cfg.rpo if b in cfg.reachable]
     order_index = {b: i for i, b in enumerate(reachable_rpo)}
     idom: dict[str, str] = {cfg.entry: cfg.entry}

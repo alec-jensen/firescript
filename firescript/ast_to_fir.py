@@ -383,6 +383,16 @@ class ASTToFIRConverter:
             type_str = "int32"
         type_str = type_str.strip()
 
+        if type_str.endswith("?"):
+            # The scope table (see _declare/_lookup) has no dedicated slot
+            # for nullable-ness, so it's threaded through the type string
+            # itself with a trailing "?" -- consistent with SimpleType's
+            # own render() convention. Without this, re-deriving a local's
+            # type from the scope table at each LoadVar/StoreVar site would
+            # silently drop nullable-ness (FIRV-L2).
+            nullable = True
+            type_str = type_str[:-1].strip()
+
         if type_str.endswith("[]"):
             return ArrayType(self._fir_type(type_str[:-2]), array_size)
         if is_array:
@@ -703,6 +713,48 @@ class ASTToFIRConverter:
         )
         self.module.add_type(type_def)
 
+    @staticmethod
+    def _strip_nullable_str(type_str: str) -> str:
+        """Drop a trailing '?' from a type-name string. _expr_type()
+        preserves nullable-ness (via the scope table's "?" suffix
+        convention, see _fir_type) for callers reconstructing an actual
+        FIRType, but a few call sites feed its result into FLIR lowering
+        as a bare metadata string used for exact matching (e.g.
+        `operand_type`, `source_type`) -- lowering has never cared about
+        nullable-ness (it's a FIR/semantic-level distinction only; both
+        `string` and `string?` share the same runtime representation), so
+        those sites must strip it first.
+        """
+        return type_str[:-1] if type_str.endswith("?") else type_str
+
+    def _synthesize_zero(self, fir_type: FIRType) -> Optional[Value]:
+        """Best-effort zero value for a copyable scalar type.
+
+        Used to keep an implicit/fallthrough Return well-typed (FIRV-T4)
+        without changing the runtime value: lowering already zero-fills a
+        value-less Return in a non-void function (flir/lowering.py's
+        fall-off handling), so emitting the same zero literal here at the
+        FIR level is behavior-preserving, just earlier in the pipeline
+        (see docs/internal/development/ir_verifier_spec.md section 8.1).
+        Returns None for types with no safe zero representation (owned/
+        reference types); callers must not synthesize a value-less Return
+        for those -- a non-void function that can fall off the end
+        without returning an owned value is a real bug the verifier
+        should catch, not paper over.
+        """
+        if not isinstance(fir_type, SimpleType):
+            return None
+        name = fir_type.name
+        if name in ("int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64"):
+            return self.builder.int_literal("0", fir_type)
+        if name in ("float32", "float64", "float128"):
+            return self.builder.float_literal("0", fir_type)
+        if name == "bool":
+            return self.builder.bool_literal(False, fir_type)
+        if name == "char":
+            return self.builder.char_literal("\\0", fir_type)
+        return None
+
     def _function_params(self, node: ASTNode) -> tuple[list[tuple[str, FIRType]], list[str]]:
         params: list[tuple[str, FIRType]] = []
         modes: list[str] = []
@@ -808,6 +860,8 @@ class ASTToFIRConverter:
                 this_type = self._fir_type(class_name)
                 result = self.builder.load_var(self._local_name("this"), this_type)
                 self.builder.ret(result)
+            elif function.return_type is not None:
+                self.builder.ret(self._synthesize_zero(function.return_type))
             else:
                 self.builder.ret()
 
@@ -828,7 +882,10 @@ class ASTToFIRConverter:
             self._convert_statements(body.children)
 
         if not self.builder.current_block.is_terminated():
-            self.builder.ret()
+            if not function.is_generator and function.return_type is not None:
+                self.builder.ret(self._synthesize_zero(function.return_type))
+            else:
+                self.builder.ret()
 
         self._pop_scope()
         self._seal_open_blocks(function)
@@ -854,12 +911,43 @@ class ASTToFIRConverter:
 
     @staticmethod
     def _seal_open_blocks(function: FIRFunction) -> None:
-        """Terminate any unterminated blocks (unreachable join points)."""
-        from fir.ir_node import UnreachableInst
+        """Terminate any unterminated blocks, then drop blocks with no
+        incoming edge from the entry block.
+
+        An if/else join block (see _convert_if) ends up with zero
+        predecessors when every arm already terminates (e.g. `if (c) {
+        return a; } else { return b; }`); code positioned there afterward
+        (including the function's own implicit trailing return) is
+        genuinely unreachable. Pruning it is a pure dead-code removal --
+        it cannot change program behavior -- and keeps FIR free of orphan
+        blocks (FIRV-S5).
+        """
+        from fir.ir_node import BranchInst, JumpInst, UnreachableInst
 
         for block in function.blocks:
             if block.terminator is None:
                 block.set_terminator(UnreachableInst())
+
+        if not function.blocks:
+            return
+        entry_id = function.blocks[0].id
+        by_id = {b.id: b for b in function.blocks}
+        reachable = {entry_id}
+        worklist = [entry_id]
+        while worklist:
+            block = by_id[worklist.pop()]
+            term = block.terminator
+            if isinstance(term, BranchInst):
+                targets = [term.true_block, term.false_block]
+            elif isinstance(term, JumpInst):
+                targets = [term.target_block]
+            else:
+                targets = []
+            for target in targets:
+                if target in by_id and target not in reachable:
+                    reachable.add(target)
+                    worklist.append(target)
+        function.blocks = [b for b in function.blocks if b.id in reachable]
 
     # ------------------------------------------------------------------
     # Statements
@@ -957,9 +1045,20 @@ class ASTToFIRConverter:
             return
 
         if node_type == NodeTypes.RETURN_STATEMENT:
+            func = self.current_function
             if node.children:
                 value = self._convert_expression(node.children[0])
-                self.builder.ret(value)
+                if func is not None and func.return_type is None:
+                    # Void function (e.g. script-style top-level `return
+                    # N;`): evaluate for side effects, but a void Return
+                    # must carry no value (FIRV-T4). Matches existing
+                    # lowering behavior, which already discarded the value
+                    # here -- see ir_verifier_spec.md section 8.1.
+                    self.builder.ret()
+                else:
+                    self.builder.ret(value)
+            elif func is not None and func.return_type is not None and not func.is_generator:
+                self.builder.ret(self._synthesize_zero(func.return_type))
             else:
                 self.builder.ret()
             return
@@ -1015,7 +1114,11 @@ class ASTToFIRConverter:
         self._expected_type_str = type_str
         init_value = self._convert_expression(init_node) if init_node is not None else None
         self._expected_type_str = None
-        unique = self._declare(node.name, type_str, False, None)
+        # Store nullable-ness in the scope table via the "?" suffix (see
+        # _fir_type) so LoadVar/StoreVar sites re-deriving this local's
+        # type from its name alone still get it right.
+        stored_type_str = f"{type_str}?" if node.is_nullable else type_str
+        unique = self._declare(node.name, stored_type_str, False, None)
         self.builder.declare_local(unique, var_type, init_value)
 
     def _convert_variable_assignment(self, node: ASTNode) -> None:
@@ -1454,7 +1557,7 @@ class ASTToFIRConverter:
             value = self._convert_expression(node.children[0])
             target = self._fir_type(node.name or node.var_type)
             cast = self.builder.cast(value, target)
-            cast.instruction.metadata["source_type"] = self._expr_type(node.children[0])
+            cast.instruction.metadata["source_type"] = self._strip_nullable_str(self._expr_type(node.children[0]))
             return cast
 
         if node_type == NodeTypes.BINARY_EXPRESSION and node.name in ("&&", "||"):
@@ -1469,7 +1572,7 @@ class ASTToFIRConverter:
             right = self._convert_expression(node.children[1])
             result_type = self._fir_type(self._expr_type(node))
             op_inst = self.builder.binary_op(node.name, left, right, result_type)
-            op_inst.instruction.metadata["operand_type"] = self._expr_type(node.children[0])
+            op_inst.instruction.metadata["operand_type"] = self._strip_nullable_str(self._expr_type(node.children[0]))
             return op_inst
 
         if node_type == NodeTypes.UNARY_EXPRESSION:
@@ -1838,7 +1941,11 @@ class ASTToFIRConverter:
         for param, arg in zip(params, call_node.children):
             param_type = param.var_type or ""
             if param_type in type_params and param_type not in mapping:
-                arg_type = self._expr_type(arg)
+                # Nullable-ness doesn't affect runtime representation, so
+                # it must not affect a generic instantiation's identity --
+                # println<string> and println<string?> are the same
+                # monomorphized instance (see _strip_nullable_str).
+                arg_type = self._strip_nullable_str(self._expr_type(arg))
                 mapping[param_type] = arg_type
         return [mapping[tp] for tp in type_params if tp in mapping] if len(mapping) == len(type_params) else []
 

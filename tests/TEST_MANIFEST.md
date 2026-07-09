@@ -110,8 +110,11 @@ Plain `assert` also works. Covers:
 - `tests/python/fir/` -- unit tests for `firescript/fir/`: builder
   construction (`test_builder.py`), textual dump format verified against
   the spec example in `docs/internal/development/fir_spec.md`
-  (`test_dump.py`), structural validation of terminators/branch
-  targets/cross-function value use (`test_validation.py`).
+  (`test_dump.py`), the Tier-1 FIR verifier
+  (`docs/internal/development/ir_verifier_spec.md`) -- structural/def-use
+  rules (FIRV-S, FIRV-D) in `test_verifier_structure.py`, type/local/
+  generator rules (FIRV-T, FIRV-L1-L2, FIRV-G1-G3) in
+  `test_verifier_types.py`.
 - `tests/python/float128/` -- self-tests for the binary128 correctness
   oracle (`tests/support/float128_oracle.py`): hand-verified constants and
   arithmetic/comparison/parse/format checks (`test_oracle_units.py`), plus

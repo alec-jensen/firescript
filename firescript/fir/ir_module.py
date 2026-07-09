@@ -93,28 +93,14 @@ class FIRFunction:
         return block
 
     def validate(self) -> None:
-        """Check structural invariants; raises ValueError on violation."""
-        if not self.blocks:
-            raise ValueError(f"function {self.name} has no blocks")
-        block_ids = set()
-        for block in self.blocks:
-            if block.id in block_ids:
-                raise ValueError(f"function {self.name} has duplicate block id {block.id}")
-            block_ids.add(block.id)
-            if block.terminator is None:
-                raise ValueError(f"block {block.id} in function {self.name} has no terminator")
-        for block in self.blocks:
-            term = block.terminator
-            targets = []
-            if hasattr(term, "true_block"):
-                targets.extend([term.true_block, term.false_block])
-            if hasattr(term, "target_block"):
-                targets.append(term.target_block)
-            for target in targets:
-                if target not in block_ids:
-                    raise ValueError(
-                        f"block {block.id} in function {self.name} targets unknown block {target}"
-                    )
+        """Thin wrapper over the module-level Tier-1 verifier (fir/verifier.py).
+
+        Kept so existing single-function callers/tests still work; wraps
+        this function alone in a throwaway module.
+        """
+        wrapper = FIRModule("firescript")
+        wrapper.functions = [self]
+        wrapper.validate()
 
 
 class FIRModule:
@@ -139,5 +125,7 @@ class FIRModule:
         return constant
 
     def validate(self) -> None:
-        for function in self.functions:
-            function.validate()
+        """Thin wrapper over the Tier-1 verifier (fir/verifier.py)."""
+        from fir.verifier import verify_fir_module
+
+        verify_fir_module(self)
