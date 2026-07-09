@@ -1459,7 +1459,7 @@ subnormals, signed zero, infinity, and NaN per IEEE 754.</p>
   feeding the sticky bit; shared normalize/round/pack tail with <code>mul</code>.</li>
 </ul>
 <h2 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h2>
-<p>The ground-truth reference is <code>tests/float128_oracle.py</code>, a pure-stdlib
+<p>The ground-truth reference is <code>tests/support/float128_oracle.py</code>, a pure-stdlib
 correctly-rounded binary128 implementation built on <code>fractions.Fraction</code>. The
 runtime was validated bit-exactly against the oracle across the oracle's
 hand-checked vectors plus large random and targeted fuzz (subnormal boundaries,

@@ -2332,7 +2332,7 @@ on Windows x86_64.</p>
 <h3 id="test-coverage_3">Test coverage<a class="headerlink" href="#test-coverage_3" title="Permanent link">&para;</a></h3>
 <ul>
 <li>firescript codegen passes all golden tests (output-identical)</li>
-<li>firescript assembler + PE writer pass <code>tests/asm_encoding_tests.py</code></li>
+<li>firescript assembler + PE writer pass <code>tests/python/backend/test_asm_encoding.py</code></li>
 <li>Bootstrap binary passes full test suite on its own</li>
 <li>Determinism test: bootstrap binary is byte-identical on repeated compilations</li>
 </ul>
@@ -2363,7 +2363,7 @@ hybrid-tool release.</p>
 <li>Runtime: Linux syscall wrappers for heap (brk/mmap), I/O (read/write), process exit</li>
 <li><code>--target {windows-x86_64,linux-x86_64}</code> flag in <code>main.py</code></li>
 <li>firescript-on-Linux CI (GitHub Actions) runs the golden suite under native Linux build</li>
-<li>Update <code>tests/golden_runner.py</code> to support cross-target testing</li>
+<li>Update <code>tests/run.py</code>'s <code>run</code> kind / matrix engine to support cross-target testing</li>
 </ul>
 <h3 id="track-b-kiln-foundations">Track B: kiln foundations<a class="headerlink" href="#track-b-kiln-foundations" title="Permanent link">&para;</a></h3>
 <h4 id="package-manifest-format">Package manifest format<a class="headerlink" href="#package-manifest-format" title="Permanent link">&para;</a></h4>

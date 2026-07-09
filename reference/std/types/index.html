@@ -1115,10 +1115,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#optiont-in-development" class="md-nav__link">
+  <a href="#optiont-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Option&lt;T&gt; [IN DEVELOPMENT]
+        Option&lt;T&gt; [IMPLEMENTED]
       
     </span>
   </a>
@@ -1126,10 +1126,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#copyableoptiont-in-development" class="md-nav__link">
+  <a href="#copyableoptiont-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CopyableOption&lt;T&gt; [IN DEVELOPMENT]
+        CopyableOption&lt;T&gt; [IMPLEMENTED]
       
     </span>
   </a>
@@ -1426,10 +1426,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#optiont-in-development" class="md-nav__link">
+  <a href="#optiont-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Option&lt;T&gt; [IN DEVELOPMENT]
+        Option&lt;T&gt; [IMPLEMENTED]
       
     </span>
   </a>
@@ -1437,10 +1437,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#copyableoptiont-in-development" class="md-nav__link">
+  <a href="#copyableoptiont-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CopyableOption&lt;T&gt; [IN DEVELOPMENT]
+        CopyableOption&lt;T&gt; [IMPLEMENTED]
       
     </span>
   </a>
@@ -1563,7 +1563,7 @@
 <h1 id="generic-types-stdtypes">Generic Types (<code>std.types</code>)<a class="headerlink" href="#generic-types-stdtypes" title="Permanent link">&para;</a></h1>
 <p>The <code>std.types</code> module provides generic container and utility types.</p>
 <blockquote>
-<p>Status: <code>Tuple</code> and <code>CopyableTuple</code> are [IMPLEMENTED] and tested. <code>Option</code> and <code>CopyableOption</code> are [IN DEVELOPMENT]: they compile, but <code>isSome()</code>/<code>isNone()</code> currently return incorrect results (a known bug in generic-class methods that compare a nullable field to <code>null</code>), so they should not be relied on yet.</p>
+<p>Status: <code>Tuple</code>, <code>CopyableTuple</code>, <code>Option</code>, and <code>CopyableOption</code> are all [IMPLEMENTED] and tested.</p>
 </blockquote>
 <h2 id="tuplet-u"><code>Tuple&lt;T, U&gt;</code><a class="headerlink" href="#tuplet-u" title="Permanent link">&para;</a></h2>
 <p>A pair of values of potentially different types.</p>
@@ -1598,8 +1598,8 @@ println(pair.second);  // answer
 CopyableTuple&lt;float64, float64&gt; coord = CopyableTuple&lt;float64, float64&gt;(3.14, 2.71);
 CopyableTuple&lt;float64, float64&gt; copy = coord;  // copies
 </code></pre>
-<h2 id="optiont-in-development"><code>Option&lt;T&gt;</code> [IN DEVELOPMENT]<a class="headerlink" href="#optiont-in-development" title="Permanent link">&para;</a></h2>
-<p>An optional value of type <code>T</code>. Use this to represent potentially missing values without explicit nullability. <strong>Known issue:</strong> <code>isSome()</code> and <code>isNone()</code> currently return incorrect results; prefer plain nullable (<code>?</code>) variables until this is fixed.</p>
+<h2 id="optiont-implemented"><code>Option&lt;T&gt;</code> [IMPLEMENTED]<a class="headerlink" href="#optiont-implemented" title="Permanent link">&para;</a></h2>
+<p>An optional value of type <code>T</code>. Use this to represent potentially missing values without explicit nullability.</p>
 <pre><code class="language-firescript">class Option&lt;T?&gt; {
     T value?;
 
@@ -1626,8 +1626,8 @@ if (present) {
 }
 </code></pre>
 <p><strong>Note:</strong> <code>Option</code> is an Owned type; construct carefully with move semantics in mind.</p>
-<h2 id="copyableoptiont-in-development"><code>CopyableOption&lt;T&gt;</code> [IN DEVELOPMENT]<a class="headerlink" href="#copyableoptiont-in-development" title="Permanent link">&para;</a></h2>
-<p>A copyable variant of <code>Option</code> for copyable types. Subject to the same known issue as <code>Option</code>.</p>
+<h2 id="copyableoptiont-implemented"><code>CopyableOption&lt;T&gt;</code> [IMPLEMENTED]<a class="headerlink" href="#copyableoptiont-implemented" title="Permanent link">&para;</a></h2>
+<p>A copyable variant of <code>Option</code> for copyable types.</p>
 <pre><code class="language-firescript">copyable class CopyableOption&lt;T?&gt; {
     T value?;
 

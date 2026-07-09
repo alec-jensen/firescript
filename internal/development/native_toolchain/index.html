@@ -1382,7 +1382,7 @@ can't be silently miscompiled.</p>
   (<code>\012</code>) take precedence over the <code>\0</code> NUL escape — both were real parity bugs
   found by the differential test.</li>
 </ul>
-<p>Validation: <code>tests/asm_encoding_tests.py</code> differentially byte-compares 87
+<p>Validation: <code>tests/python/backend/test_asm_encoding.py</code> differentially byte-compares 87
 instruction forms against MinGW <code>as</code> when present (and skips cleanly when not,
 so the suite needs only Python).</p>
 <h2 id="pe-writer-firescriptbackendpepy">PE writer (<code>firescript/backend/pe.py</code>)<a class="headerlink" href="#pe-writer-firescriptbackendpepy" title="Permanent link">&para;</a></h2>
