@@ -23,3 +23,20 @@ println(find_at("if|else|while", "for x", 0));    // -1: no match
 
 // Test find_at doesn't match beyond what's available
 println(find_at("abc", "ab", 0));        // -1: text too short
+
+/* EXPECT
+3
+3
+-1
+true
+false
+true
+false
+true
+false
+2
+4
+5
+-1
+-1
+*/

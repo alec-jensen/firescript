@@ -11,3 +11,8 @@ if (10 > 5) {
     max_val = 5;
 }
 println(max_val);
+
+/* EXPECT
+8
+10
+*/

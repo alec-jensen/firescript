@@ -11,12 +11,12 @@ void takeOwned(string s) {
 }
 
 string badAliasReturn(&Box b) {
-    string alias = b.name; // Error: cannot move borrowed projection into owned local
+    string alias = b.name; // Error: cannot move borrowed projection into owned local  //~ ERROR FS-SEM-0001 @22
     return alias;
 }
 
 void badAliasPass(&Box b) {
-    takeOwned(b.name); // Error: cannot move borrowed projection into owned parameter
+    takeOwned(b.name); // Error: cannot move borrowed projection into owned parameter  //~ ERROR FS-SEM-0001 @17
 }
 
 Box bx = Box("fire");

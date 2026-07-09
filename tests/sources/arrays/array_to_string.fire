@@ -15,3 +15,10 @@ println(s3);
 int32[0] empty;
 string s4 = empty as string;
 println(s4);
+
+/* EXPECT
+[1, 2, 3]
+[1.500000, 2.500000]
+[hi, there]
+[]
+*/

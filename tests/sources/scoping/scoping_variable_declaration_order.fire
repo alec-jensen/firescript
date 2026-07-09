@@ -21,3 +21,12 @@ for (int32 j = 0; j < 1; j++) {
     println(value4);
 }
 println(value);  // Still 1
+
+/* EXPECT
+1
+2
+2
+3
+4
+1
+*/

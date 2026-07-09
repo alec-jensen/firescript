@@ -28,3 +28,14 @@ for (int32 m = 0; m < 2;) {
     println("m=" + (m as string));
     m++;
 }
+
+/* EXPECT
+0
+1
+2
+4
+5
+2
+m=0
+m=1
+*/

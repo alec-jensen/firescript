@@ -8,3 +8,8 @@ int32 factorial(int32 n) {
 }
 println(factorial(5));  // 120
 println(factorial(3));  // 6
+
+/* EXPECT
+120
+6
+*/

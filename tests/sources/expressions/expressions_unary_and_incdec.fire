@@ -12,3 +12,11 @@ println(count);
 count--;
 count--;
 println(count);
+
+/* EXPECT
+-42
+42
+42
+6
+4
+*/

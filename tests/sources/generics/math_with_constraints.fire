@@ -26,3 +26,11 @@ println(absVal);
 // Test clamp
 int32 clamped = clamp(100, 0, 50);
 println(clamped);
+
+/* EXPECT
+20
+10
+3.140000
+42
+50
+*/

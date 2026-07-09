@@ -11,3 +11,11 @@ println(is_match("abc", "abc"));
 
 // Test to ensure validation works
 println(is_match("[ab", "ab"));  // Should be false due to validation error
+
+/* EXPECT
+true
+true
+true
+true
+false
+*/

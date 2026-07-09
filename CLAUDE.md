@@ -21,6 +21,10 @@ python firescript/main.py <source-file> -d
 - If something is unclear, ask for clarification. Things exist the way they do for a reason.
 - Do not remove code unless you are certain it is dead and unused.
 
+## Determinism
+
+The compiler must be fully deterministic: compiling the same source twice on the same machine must produce byte-identical output. Never introduce reliance on hash-randomized iteration order (e.g. iterating a `dict`/`set` keyed by object identity or `hash()` where insertion order isn't guaranteed stable across runs), uninitialized memory, wall-clock time, or thread/process scheduling order anywhere in the compiler pipeline. The `determinism` test kind (`tests/run.py`, see [test_harness_v2.md](docs/internal/development/test_harness_v2.md)) enforces this by compiling sources twice and byte-comparing the binaries — treat any failure there as a real compiler bug, not a harness flake, unless proven otherwise.
+
 ## Documentation Accuracy
 
 The docs in `/docs` describe both **implemented** and **planned** language features. When reading or writing docs, treat status markers as ground truth:
@@ -52,34 +56,36 @@ The goal is **100% test coverage** of all implemented language features. Every i
 ### Running Tests
 
 ```bash
-# Valid-code golden tests
-python tests/golden_runner.py
+# Run everything: run + compile-fail + snapshot + python kinds
+python tests/run.py
 
-# Run a specific test
-python tests/golden_runner.py --cases tests/sources/<category>/<name>.fire
+# Run a specific test (works for .fire and .py)
+python tests/run.py tests/sources/<category>/<name>.fire
+python tests/run.py tests/python/<category>/test_foo.py::test_bar
 
-# Regenerate golden files (review diffs carefully)
-python tests/golden_runner.py --update
+# Run only one kind, or everything under a category
+python tests/run.py kind:run
+python tests/run.py kind:compile-fail
+python tests/run.py <category>
 
-# Invalid-code / error tests
-python tests/error_runner.py
+# Bless mode: rewrite in-file EXPECT blocks / //~ annotations / snapshots to
+# match current output (review the diff before committing!)
+python tests/run.py --update
+
+# List matching test ids without running them
+python tests/run.py --list
 ```
 
-Test sources are grouped into category subdirectories (`tests/sources/<category>/`, e.g. `arrays/`, `classes/`, `std/regex/`), mirrored by `tests/expected/<category>/`. Error tests follow the same pattern under `tests/sources/invalid/<category>/` and `tests/expected_errors/<category>/`. See `tests/TEST_MANIFEST.md` for the full category list.
+Test sources are grouped into category subdirectories (`tests/sources/<category>/`, e.g. `arrays/`, `classes/`, `std/regex/`). Error tests follow the same pattern under `tests/sources/invalid/<category>/`. All expectations for a `.fire` test live **inside the file itself** as magic-comment directives (`//@ key: value`), diagnostic annotations (`//~ ERROR <CODE>`), and a trailing `/* EXPECT ... */` output block — there are no sidecar golden files, with the sole exception of FIR/FLIR IR snapshots under `tests/snapshots/<category>/`. Python-based tests live under `tests/python/<category>/test_*.py` and always run. See `tests/TEST_MANIFEST.md` for the full category list, directive reference, and harness architecture pointer (`docs/internal/development/test_harness_v2.md`).
 
 ### Adding Tests
 
 1. Pick (or create) the matching category subdirectory, e.g. `tests/sources/arrays/` (or `tests/sources/invalid/<category>/` for error tests). Prefer one focused behavior per file — see "Splitting large test files" in `tests/TEST_MANIFEST.md` — over adding more assertions to an existing file.
-2. For valid tests: add `println()` calls to produce expected output, then run `--update` to generate the golden file at the mirrored `tests/expected/<category>/<name>.out`. Review the output before committing.
-3. For error tests: add the file to `tests/sources/invalid/<category>/`. Run `python tests/error_runner.py --update` to capture expected diagnostics in `tests/expected_errors/<category>/`.
-4. Commit both the source and golden/error files.
-5. Update `tests/TEST_MANIFEST.md` to document the new test.
-
-### Golden Files
-
-- Located in `tests/expected/<category>/` with a `.out` extension, mirroring the source's category subdirectory and filename.
-- Per-test command-line argument sidecars can be placed next to the source as `tests/sources/<category>/<name>.args`.
-- Use Unix line endings; trailing newlines per line are stripped.
+2. For valid tests: write the `.fire` file with `println()` calls, then run `python tests/run.py <path> --update` to write the `/* EXPECT ... */` block *into the file*. Review it before committing.
+3. For error tests: add the file to `tests/sources/invalid/<category>/` with `//~ ERROR <CODE> [@<col>]` annotations (hand-written, or generated with `python tests/run.py <path> --update`).
+4. For Python tests: add a `test_*` function to a `tests/python/<category>/test_*.py` module (new or existing); it runs automatically, no registration needed.
+5. Commit the source file(s).
+6. Update `tests/TEST_MANIFEST.md` to document the new test.
 
 ### Bug Fix Tests
 
@@ -96,7 +102,7 @@ If a test fails, investigate and fix the underlying compiler or stdlib issue. On
 
 ## Examples and Test Files
 
-Whenever you add a file to `examples/` or `tests/sources/<category>/`, create a corresponding golden file at the mirrored path in `tests/expected/<category>/` with the same name and a `.out` extension containing the expected output.
+Whenever you add a file to `examples/` or `tests/sources/<category>/`, give it a trailing `/* EXPECT ... */` block with the expected output (run `python tests/run.py <path> --update` to generate it) — see "Adding Tests" above.
 
 ## Standard Library
 

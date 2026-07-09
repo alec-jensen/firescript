@@ -7,3 +7,10 @@ println(i32_min);
 println(i32_max);
 println(i32_test);
 println(i32_test + 500000);
+
+/* EXPECT
+-2147483648
+2147483647
+1000000
+1500000
+*/

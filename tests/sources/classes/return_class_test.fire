@@ -15,3 +15,8 @@ Point makePoint(int32 x, int32 y) {
 Point p1 = makePoint(10i32, 20i32);
 println(p1.x);
 println(p1.y);
+
+/* EXPECT
+10
+20
+*/

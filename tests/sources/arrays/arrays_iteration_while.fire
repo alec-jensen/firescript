@@ -6,3 +6,10 @@ while (idx < data.length()) {
     println(data[idx]);
     idx++;
 }
+
+/* EXPECT
+7
+14
+21
+28
+*/

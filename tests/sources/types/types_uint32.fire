@@ -5,3 +5,9 @@ uint32 u32_test = 1000000u32;
 println(u32_max);
 println(u32_test);
 println(u32_test * 2u32);
+
+/* EXPECT
+4294967295
+1000000
+2000000
+*/

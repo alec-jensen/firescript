@@ -105,3 +105,28 @@ println(numericMix(2.0, 3.0, 4.0));
 
 println("-- firstChar --");
 println(firstChar("Z"));
+
+/* EXPECT
+-- int add --
+5
+25
+-- float addFloat --
+4.000000
+-- double mulDouble --
+6.000000
+-- array param --
+15
+-- bool bothTrue --
+true
+false
+-- string greet --
+Hello, firescript
+-- void logValues --
+42
+3.140000
+value
+-- numericMix --
+9.000000
+-- firstChar --
+Z
+*/

@@ -10,3 +10,8 @@ int32 x = 5;
 float32 y = 2.0f;
 float32 div_result = (x as float32) / y;
 println(div_result);
+
+/* EXPECT
+30
+2.500000
+*/

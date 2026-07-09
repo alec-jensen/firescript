@@ -1,42 +1,43 @@
 // Malformed loop and if headers.
 
 // Invalid if condition, then close paren
-if (1 +) {
+if (1 +) {  //~ ERROR FS-PARSE-0012 @8
     int32 a = 1;
 }
 
 // Missing ')' after if condition
-if (true {
+if (true {  //~ ERROR FS-PARSE-0010 @10
     int32 b = 1;
 }
 
 // Missing '(' after while
-while true {
+while true {  //~ ERROR FS-PARSE-0010 @7
     int32 c = 1;
 }
 
 // Missing ')' after while condition
-while (true {
+while (true {  //~ ERROR FS-PARSE-0010 @13
     int32 d = 1;
 }
 
 // Missing '(' after for
-for ;;) {
+for ;;) {  //~ ERROR FS-PARSE-0010 @5
     int32 e = 1;
 }
 
 // Missing ';' after for init
-for (int32 f = 0) {
+for (int32 f = 0) {  //~ ERROR FS-PARSE-0010 @17
     int32 g = 1;
 }
 
 // Missing ')' after for header
-for (int32 h = 0; h < 3; h++ {
+for (int32 h = 0; h < 3; h++ {  //~ ERROR FS-PARSE-0010 @30
     int32 i2 = 1;
 }
 
 // for-in: missing 'in' cannot be formed (lookahead requires it), but a bad
 // collection expression after 'in' can:
-for (int32 v in ) {
+for (int32 v in ) {  //~ ERROR FS-PARSE-0012 @17
+//~^ ERROR FS-PARSE-0010 @19
     int32 j2 = 1;
 }

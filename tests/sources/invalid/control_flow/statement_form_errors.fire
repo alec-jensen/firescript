@@ -5,10 +5,10 @@ int32 x = 1;
 while (x < 2) {
     x++;
     break
-}
+}  //~ ERROR FS-PARSE-0010 @1
 
 // Bare identifier is not a statement
-x;
+x;  //~ ERROR FS-PARSE-0010 @1
 
 // Field access alone is not a statement
 class Holder {
@@ -18,15 +18,16 @@ class Holder {
         this.v = 3;
     }
 }
-Holder h = Holder();
-h.v;
+Holder h = Holder();  //~ ERROR FS-SEM-0010 @12
+h.v;  //~ ERROR FS-PARSE-0010 @4
 
 // Missing expression after field assignment
-h.v = ;
+h.v = ;  //~ ERROR FS-PARSE-0012 @7
+//~^ ERROR FS-PARSE-0010 @10
 
 // Missing expression after array element assignment
 int32[] arr = [1, 2];
 arr[0] = ;
 
 // Dangling else with a braceless statement
-else x++;
+else x++;  //~ ERROR FS-PARSE-0012 @1

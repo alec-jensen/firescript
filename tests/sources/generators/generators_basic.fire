@@ -1,3 +1,4 @@
+//@ snapshot: fir, flir
 import @firescript/std.io.println;
 import @firescript/std.ranges.range;
 import @firescript/std.ranges.rangeFrom;
@@ -30,3 +31,22 @@ generator<int32> countdown(int32 n) {
 for (int32 v in countdown(3)) {
     println(v);
 }
+
+/* EXPECT
+0
+1
+2
+3
+4
+2
+3
+4
+5
+0
+3
+6
+9
+3
+2
+1
+*/

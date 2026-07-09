@@ -1,29 +1,33 @@
 // Invalid syntax tests (lexer/parser should flag)
 // EXPECT: parser errors
 
-print("-- invalid syntax: missing semicolons --")
-int32 a = 5 // missing semicolon
-int32 b = 6; int32 c = 7 // missing semicolon after chained declaration style (unsupported)
+print("-- invalid syntax: missing semicolons --")  //~ ERROR FS-PARSE-0012 @1
+int32 a = 5 // missing semicolon  //~ ERROR FS-PARSE-0010 @13
+int32 b = 6; int32 c = 7 // missing semicolon after chained declaration style (unsupported)  //~ ERROR FS-PARSE-0010 @26
 
 print("-- invalid syntax: unclosed paren --");
-int32 x = (1 + 2; // unclosed paren
+int32 x = (1 + 2; // unclosed paren  //~ ERROR FS-PARSE-0010 @17
 
-print("-- invalid syntax: unclosed array literal --");
-int32[] arr = [1,2,3; // missing closing bracket
+print("-- invalid syntax: unclosed array literal --");  //~ ERROR FS-PARSE-0012 @1
+int32[] arr = [1,2,3; // missing closing bracket  //~ ERROR FS-PARSE-0010 @21
+//~^ ERROR FS-PARSE-0010 @21
 
-print("-- invalid syntax: stray tokens --");
-@ # $ // unexpected symbols (if lexer produces tokens)
+print("-- invalid syntax: stray tokens --");  //~ ERROR FS-PARSE-0012 @1
+@ # $ // unexpected symbols (if lexer produces tokens)  //~ ERROR FS-PARSE-0012 @3
 
-print("-- invalid syntax: malformed if --");
-if 1) { print(1); }
+print("-- invalid syntax: malformed if --");  //~ ERROR FS-PARSE-0012 @1
+if 1) { print(1); }  //~ ERROR FS-PARSE-0010 @4
+//~^ ERROR FS-PARSE-0012 @9
 
-print("-- invalid syntax: while missing condition parens --");
-while 1 < 2 { print(1); }
+print("-- invalid syntax: while missing condition parens --");  //~ ERROR FS-PARSE-0012 @1
+while 1 < 2 { print(1); }  //~ ERROR FS-PARSE-0010 @7
+//~^ ERROR FS-PARSE-0012 @15
 
-print("-- invalid syntax: dangling else --");
-else { print(1); }
+print("-- invalid syntax: dangling else --");  //~ ERROR FS-PARSE-0012 @1
+else { print(1); }  //~ ERROR FS-PARSE-0012 @1
+//~^ ERROR FS-PARSE-0012 @8
 
-print("-- invalid syntax: array type missing closing --");
-int32[ x = 4;
+print("-- invalid syntax: array type missing closing --");  //~ ERROR FS-PARSE-0012 @1
+int32[ x = 4;  //~ ERROR FS-PARSE-0010 @8
 
-print("-- invalid syntax tests end --");
+print("-- invalid syntax tests end --");  //~ ERROR FS-PARSE-0012 @1

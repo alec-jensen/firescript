@@ -11,3 +11,11 @@ println(f_div);
 println(0 % 5);
 println(5 % 5);
 println(1 % 5);
+
+/* EXPECT
+1
+0.500000
+0
+0
+1
+*/

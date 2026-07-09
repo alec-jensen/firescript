@@ -43,7 +43,7 @@ can't be silently miscompiled.
   (`\012`) take precedence over the `\0` NUL escape — both were real parity bugs
   found by the differential test.
 
-Validation: `tests/asm_encoding_tests.py` differentially byte-compares 87
+Validation: `tests/python/backend/test_asm_encoding.py` differentially byte-compares 87
 instruction forms against MinGW `as` when present (and skips cleanly when not,
 so the suite needs only Python).
 

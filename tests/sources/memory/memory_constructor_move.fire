@@ -36,3 +36,12 @@ println(r.bottomRight.x);
 println(r.bottomRight.y);
 println(r.width());
 println(r.height());
+
+/* EXPECT
+1
+2
+7
+8
+6
+6
+*/

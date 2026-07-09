@@ -11,3 +11,4 @@ firescript is intended to be a simple but powerful and fast language with safety
   - There is no undefined behavior; all operations are well-defined.
 - **Performance:** Although the syntax is high-level, firescript is designed to compile to efficient low-level code, with no runtime overhead.
 - **Explicitness:** The language favors explicit declarations and operations over implicit behavior, making code easier to read and reason about.
+- **Determinism:** The compiler is fully deterministic — compiling the same source (and inputs) twice, on the same machine, must always produce byte-identical output. There is no reliance on hash-randomized iteration order, uninitialized memory, wall-clock time, or other non-reproducible state anywhere in the pipeline.

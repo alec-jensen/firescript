@@ -3,7 +3,7 @@ import @firescript/std.fs.{File, FileResult};
 
 // Solution for a coding challenge, being used as a test
 
-File file = File("tests/sources/hackathon8_input.txt");
+File file = File("tests/sources/integration/hackathon8_mission2.txt");
 
 FileResult r = file.read();
 
@@ -89,3 +89,7 @@ if (r.ok()) {
     print("error: ");
     println(r.err_code());
 }
+
+/* EXPECT
+17
+*/

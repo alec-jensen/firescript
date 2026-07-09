@@ -18,3 +18,10 @@ describe(Shape.Circle(1.0));
 describe(Shape.Rectangle(2.0, 3.0));
 describe(Shape.Triangle(4.0, 5.0));
 describe(Shape.Point);
+
+/* EXPECT
+circle r=1.000000
+something else
+something else
+something else
+*/

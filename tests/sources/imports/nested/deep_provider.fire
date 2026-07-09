@@ -1,3 +1,4 @@
+//@ helper
 // Provider module living in a subdirectory (imported via a deep dotted path).
 export int32 deepValue() {
     return 77;

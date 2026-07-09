@@ -23,3 +23,14 @@ println(zero as string);
 println(nine as string);
 
 return 0;
+
+/* EXPECT
+A
+t:	|
+n:
+|
+bs:\|
+A
+0
+9
+*/

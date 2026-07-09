@@ -29,3 +29,22 @@ println(is_match("[b-d]+", ""));
 println(is_match("x*z", "z"));
 println(is_match("x*z", "xxxz"));
 println(is_match("x*z", "xxy"));
+
+/* EXPECT
+true
+true
+false
+false
+true
+true
+false
+false
+false
+true
+true
+false
+false
+true
+true
+false
+*/

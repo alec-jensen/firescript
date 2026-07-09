@@ -1,15 +1,17 @@
 // Malformed constraint declarations.
 
 // Missing constraint name
-constraint = int32;
+constraint = int32;  //~ ERROR FS-PARSE-0010 @12
+//~^ ERROR FS-PARSE-0010 @19
 
 // Missing '=' after name
-constraint NoAssign int32;
+constraint NoAssign int32;  //~ ERROR FS-PARSE-0010 @21
+//~^ ERROR FS-PARSE-0010 @26
 
 // Missing type after '='
-constraint NoType = ;
+constraint NoType = ;  //~ ERROR FS-PARSE-0010 @21
 
 // Trailing '|' with no following type
-constraint Trailing = int32 | ;
+constraint Trailing = int32 | ;  //~ ERROR FS-PARSE-0010 @31
 
 int32 x = 1;

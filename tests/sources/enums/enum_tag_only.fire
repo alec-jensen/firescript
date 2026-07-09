@@ -26,3 +26,8 @@ d = Direction.West;
 
 println("constructed all variants");
 println("reassignment ok");
+
+/* EXPECT
+constructed all variants
+reassignment ok
+*/

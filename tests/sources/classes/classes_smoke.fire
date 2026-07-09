@@ -3,3 +3,7 @@ class Point {
     int32 x;
     int32 y;
 }
+
+/* EXPECT
+
+*/

@@ -1,3 +1,4 @@
+//@ snapshot: fir, flir
 directive enable_syscalls;
 
 import @firescript/std.io.println;
@@ -17,3 +18,7 @@ if (open_w.status >= 0) {
         }
     }
 }
+
+/* EXPECT
+hello syscall
+*/

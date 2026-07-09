@@ -10,3 +10,7 @@ T max<T: int32 | int64>(T a, T b) {
 int32 x = max(10, 20);
 println(x);
 return 0;
+
+/* EXPECT
+20
+*/

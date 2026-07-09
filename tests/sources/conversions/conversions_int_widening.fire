@@ -15,3 +15,12 @@ int8 start = 100i8;
 int64 end = (((start as int16) as int32) as int64);
 println(start);
 println(end);
+
+/* EXPECT
+42
+42
+42
+42
+100
+100
+*/

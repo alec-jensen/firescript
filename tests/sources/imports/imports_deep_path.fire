@@ -3,3 +3,7 @@ import @firescript/std.io.println;
 import nested.deep_provider.deepValue;
 
 println(deepValue());
+
+/* EXPECT
+77
+*/

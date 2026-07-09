@@ -3,26 +3,27 @@
 
 // Missing semicolons
 int32 a = 5
-int32 b = 10;
+int32 b = 10;  //~ ERROR FS-PARSE-0010 @1
 
 // Unclosed parenthesis
-int32 x = (5 + 3;
+int32 x = (5 + 3;  //~ ERROR FS-PARSE-0010 @17
 
 // Unclosed array literal
-int32[] arr = [1, 2, 3;
+int32[] arr = [1, 2, 3;  //~ ERROR FS-PARSE-0010 @23
+//~^ ERROR FS-PARSE-0010 @23
 
 // Missing condition parentheses in if
-if x > 5 {
-    println("test");
+if x > 5 {  //~ ERROR FS-PARSE-0010 @4
+    println("test");  //~ ERROR FS-PARSE-0012 @5
 }
 
 // Missing condition in while
-while {
-    println("test");
+while {  //~ ERROR FS-PARSE-0010 @7
+    println("test");  //~ ERROR FS-PARSE-0012 @5
 }
 
 // Invalid tokens
-@#$%
+@#$%  //~ ERROR FS-PARSE-0012 @2
 
 // Missing block braces
 if (true)
@@ -36,7 +37,7 @@ int32[ bad_arr = 5;
 
 // Dangling else
 else {
-    println("orphan else");
+    println("orphan else");  //~ ERROR FS-PARSE-0010 @14
 }
 
 // Missing function body
@@ -48,5 +49,5 @@ void badFunc {
 }
 
 // Missing closing brace
-void unclosed() {
+void unclosed() {  //~ ERROR FS-PARSE-0010 @17
     int32 z = 10;

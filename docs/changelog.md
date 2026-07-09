@@ -10,6 +10,9 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 
 ### Breaking Changes
 - `match` is now a reserved keyword. `@firescript/std.regex`'s `match(pattern, text)` function (added in 0.5.0) has been renamed to `find_match(pattern, text)` to avoid the collision; `is_match` is unaffected.
+
+### Bug Fixes
+- Parser diagnostics that occur at end-of-file (no current token to anchor to, e.g. an incomplete trailing declaration) now report a real line/column — the last real token's position — instead of always reporting line 0, column 0.
 - Nullable variables, fields, and parameters are now declared with a trailing `?` after the name instead of a leading `nullable` keyword: `int a? = null;` instead of `nullable int a = null;`. The `nullable` keyword has been removed. This also applies to the generic-parameter constraint form (`class Option<T?>` instead of `class Option<nullable T>`).
 
 ## 0.5.0 - Kirin

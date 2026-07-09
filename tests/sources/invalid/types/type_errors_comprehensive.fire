@@ -4,16 +4,16 @@
 import @firescript/std.io.println;
 
 // Type mismatch in variable declaration
-int32 num = "string value";
+int32 num = "string value";  //~ ERROR FS-SEM-0002 @7
 
 // Type mismatch in assignment
 int32 value = 10;
-value = "cannot assign string";
+value = "cannot assign string";  //~ ERROR FS-SEM-0002 @1
 
 // Incompatible types in arithmetic
 string text = "hello";
 int32 number = 42;
-int32 bad_add = text + number;
+int32 bad_add = text + number;  //~ ERROR FS-SEM-0010 @22
 
 // Incompatible types in array literal
 int32[] mixed = [1, 2, "three", 4];
@@ -35,14 +35,14 @@ int32 shouldReturnInt() {
 
 // Cannot index non-array
 int32 not_array = 5;
-int32 bad_index = not_array[0];
+int32 bad_index = not_array[0];  //~ ERROR FS-SEM-0010 @19
 
 // Cannot index with non-integer
 int32[] nums = [1, 2, 3];
-int32 elem = nums["string index"];
+int32 elem = nums["string index"];  //~ ERROR FS-SEM-0010 @19
 
 // Undefined variable
-println(undefined_var);
+println(undefined_var);  //~ ERROR FS-PARSE-0003 @9
 
 // Undefined function
 undefinedFunction(1, 2, 3);
@@ -55,12 +55,12 @@ needsTwo(1);  // Too few
 needsTwo(1, 2, 3);  // Too many
 
 // Non-boolean condition in if
-if (5) {
+if (5) {  //~ ERROR FS-SEM-0010 @5
     println("five is not a boolean");
 }
 
 // Non-boolean condition in while  
-while (42) {
+while (42) {  //~ ERROR FS-SEM-0010 @8
     println("loop");
 }
 
@@ -70,7 +70,7 @@ not_func(5);
 
 // Duplicate variable declaration
 int32 duplicate = 1;
-int32 duplicate = 2;
+int32 duplicate = 2;  //~ ERROR FS-SEM-0010 @7
 
 // Assigning to const (if consts are implemented)
 // const int32 constant = 100;

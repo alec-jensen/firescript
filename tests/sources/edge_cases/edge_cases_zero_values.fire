@@ -8,3 +8,9 @@ println(zero_int);
 println(zero_float);
 println(zero_bool);
 println(empty_str);
+
+/* EXPECT
+0
+0.000000
+false
+*/

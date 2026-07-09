@@ -27,3 +27,10 @@ bool csome_is_some = csome.isSome();
 bool csome_is_none = csome.isNone();
 println(csome_is_some);
 println(csome_is_none);
+
+/* EXPECT
+true
+false
+true
+false
+*/

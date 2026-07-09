@@ -26,3 +26,8 @@ while (once > 0) {
 for (int32 j = 0; j < 1; j++) {
     println("One iteration");
 }
+
+/* EXPECT
+Once
+One iteration
+*/

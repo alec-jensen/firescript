@@ -22,3 +22,13 @@ println(read_five_result.result_data());
 File missing_file = File("build/temp/does_not_exist_std_fs_basic.txt");
 FileResult missing_result = missing_file.read();
 println(missing_result.result_status());
+
+/* EXPECT
+5
+5
+10
+alpha beta
+5
+alpha
+-2
+*/

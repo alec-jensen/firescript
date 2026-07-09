@@ -13,4 +13,4 @@ if (cond == 1i32) {
     consume(value);  // value moved on this path
 }
 
-println(value); // Error: value may have moved in the if branch
+println(value); // Error: value may have moved in the if branch  //~ ERROR FS-SEM-0001 @9

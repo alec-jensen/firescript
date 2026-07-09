@@ -17,3 +17,12 @@ println(c);
 
 string s = toString(123);
 println(s);
+
+/* EXPECT
+42
+3.500000
+2.250000
+true
+6
+123
+*/

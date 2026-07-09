@@ -4,3 +4,7 @@ import @firescript/std.io.println;
 import utils.helper
 
 println(helper(20));
+
+/* EXPECT
+120
+*/

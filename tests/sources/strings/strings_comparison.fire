@@ -6,3 +6,9 @@ string c = "banana";
 println(a == b);  // true
 println(a == c);  // false
 println(a != c);  // true
+
+/* EXPECT
+true
+false
+true
+*/

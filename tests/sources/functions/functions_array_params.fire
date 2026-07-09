@@ -16,3 +16,8 @@ int32 arraySum(int32[] values) {
 }
 int32[] to_sum = [1, 2, 3, 4, 5];
 println(arraySum(to_sum));  // 15
+
+/* EXPECT
+99
+15
+*/

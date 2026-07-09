@@ -8,3 +8,11 @@ println(i8_max);
 println(i8_zero);
 println(i8_max + 1i8);  // Overflow behavior
 println(i8_min - 1i8);  // Underflow behavior
+
+/* EXPECT
+-128
+127
+0
+-128
+127
+*/

@@ -11,3 +11,10 @@ float64 precise = 3.141592653589793;
 float32 less_precise = (precise as float32);
 println(precise);
 println(less_precise);
+
+/* EXPECT
+3.141590
+3.141590
+3.141593
+3.141593
+*/

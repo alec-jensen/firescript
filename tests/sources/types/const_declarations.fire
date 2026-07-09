@@ -9,3 +9,10 @@ println(MAX_USERS);
 println(RATIO);
 println(NEGATIVE);
 println(MAX_USERS + 1);
+
+/* EXPECT
+100
+2.500000
+-7
+101
+*/

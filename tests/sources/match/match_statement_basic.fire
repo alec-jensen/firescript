@@ -17,3 +17,9 @@ void describe(Color c) {
 describe(Color.Red);
 describe(Color.Green);
 describe(Color.Blue);
+
+/* EXPECT
+red
+green
+blue
+*/

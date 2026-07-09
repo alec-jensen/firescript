@@ -12,10 +12,10 @@ class Pt {
     }
 
     void setX(&this, int32 v) {
-        this.x = v;
+        this.x = v;  //~ ERROR FS-SEM-0001 @16
     }
 
     void setY(&this, int32 v) {
-        this.y = v;
+        this.y = v;  //~ ERROR FS-SEM-0001 @16
     }
 }

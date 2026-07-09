@@ -63,3 +63,12 @@ describeWrapper(Wrapper.Holds(Box("final-box")));
 describeWrapper(Wrapper.Empty);
 
 println("done");
+
+/* EXPECT
+10000
+text: final
+empty message
+holds: final-box
+empty wrapper
+done
+*/

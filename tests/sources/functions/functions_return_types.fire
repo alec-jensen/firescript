@@ -15,3 +15,10 @@ string makeGreeting(string name) {
     return "Hello, " + name + "!";
 }
 println(makeGreeting("Alice"));
+
+/* EXPECT
+2.500000
+true
+false
+Hello, Alice!
+*/

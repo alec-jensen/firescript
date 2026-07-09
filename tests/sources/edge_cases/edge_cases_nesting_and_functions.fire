@@ -32,3 +32,11 @@ string returnTest(int32 n) {
 println(returnTest(-5));
 println(returnTest(0));
 println(returnTest(5));
+
+/* EXPECT
+Deep nested
+99
+negative
+zero
+positive
+*/

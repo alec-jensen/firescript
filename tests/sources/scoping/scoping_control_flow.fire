@@ -36,3 +36,17 @@ for (int32 num in numbers) {
     int32 doubled = num * 2;
     println(doubled);
 }
+
+/* EXPECT
+42
+0
+0
+10
+20
+0
+100
+200
+2
+4
+6
+*/

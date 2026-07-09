@@ -1,64 +1,77 @@
 // Operator error tests - comprehensive
 
 // Type mismatches in arithmetic
-fn void arithmetic_mismatches() {
+fn void arithmetic_mismatches() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
     int32 a = 5;
     string b = "hello";
-    int32 result = a + b;  // Can't add int and string
+    int32 result = a + b;  // Can't add int and string  //~ ERROR FS-SEM-0010 @22
     
     string s1 = "hello";
     string s2 = "world";
-    string s3 = s1 - s2;  // Can't subtract strings
+    string s3 = s1 - s2;  // Can't subtract strings  //~ ERROR FS-SEM-0010 @20
     
     int32 x = 10;
-    string y = x * "repeat";  // Can't multiply int and string
+    string y = x * "repeat";  // Can't multiply int and string  //~ ERROR FS-SEM-0010 @18
 }
 
 // Division by zero (if statically checked)
-fn void division_by_zero() {
-    int32 x = 10 / 0;  // Division by zero
-    int32 y = 15 % 0;  // Modulo by zero
+fn void division_by_zero() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    int32 x = 10 / 0;  // Division by zero  //~ ERROR FS-SEM-0010 @11
+    int32 y = 15 % 0;  // Modulo by zero  //~ ERROR FS-SEM-0010 @11
 }
 
 // Comparison type mismatches
-fn void comparison_mismatches() {
-    int32 a = 5;
-    string b = "5";
-    bool result = a < b;  // Can't compare int and string
+fn void comparison_mismatches() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    int32 a = 5;  //~ ERROR FS-SEM-0010 @11
+    string b = "5";  //~ ERROR FS-SEM-0010 @12
+    bool result = a < b;  // Can't compare int and string  //~ ERROR FS-SEM-0010 @10
+//~^ ERROR FS-SEM-0010 @21
     
-    bool c = "hello" > "world";  // May not support string comparison
+    bool c = "hello" > "world";  // May not support string comparison  //~ ERROR FS-SEM-0010 @22
 }
 
 // Logical operators on non-booleans
-fn void logical_on_non_bool() {
-    int32 a = 5;
-    int32 b = 10;
-    bool result = a and b;  // 'and' requires boolean operands
+fn void logical_on_non_bool() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    int32 a = 5;  //~ ERROR FS-SEM-0010 @11
+    int32 b = 10;  //~ ERROR FS-SEM-0010 @11
+    bool result = a and b;  // 'and' requires boolean operands  //~ ERROR FS-SEM-0002 @10
+//~^ ERROR FS-SEM-0010 @10
+//~^^ ERROR FS-PARSE-0010 @21
 }
 
 // Unary operator type mismatches
-fn void unary_mismatches() {
+fn void unary_mismatches() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
     string s = "hello";
-    string negated = -s;  // Can't negate a string
+    string negated = -s;  // Can't negate a string  //~ ERROR FS-SEM-0010 @22
     
-    int32 x = 5;
-    bool b = not x;  // 'not' requires boolean
+    int32 x = 5;  //~ ERROR FS-SEM-0010 @11
+    bool b = not x;  // 'not' requires boolean  //~ ERROR FS-SEM-0010 @10
+//~^ ERROR FS-PARSE-0003 @14
+//~^^ ERROR FS-PARSE-0010 @18
 }
 
 // Assignment to non-lvalue
-fn void assign_to_non_lvalue() {
+fn void assign_to_non_lvalue() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
     5 = 10;  // Can't assign to literal
     (5 + 3) = 10;  // Can't assign to expression
 }
 
 // Compound assignment type mismatch
-fn void compound_assign_mismatch() {
-    int32 x = 5;
+fn void compound_assign_mismatch() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    int32 x = 5;  //~ ERROR FS-SEM-0010 @11
     x += "hello";  // Type mismatch
 }
 
 // Increment/decrement on non-numeric
-fn void inc_dec_non_numeric() {
-    string s = "hello";
-    s++;  // Can't increment string
+fn void inc_dec_non_numeric() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    string s = "hello";  //~ ERROR FS-SEM-0010 @12
+    s++;  // Can't increment string  //~ ERROR FS-SEM-0002 @5
 }

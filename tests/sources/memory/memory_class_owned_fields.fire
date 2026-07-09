@@ -1,3 +1,4 @@
+//@ snapshot: fir, flir
 // Test that classes with owned fields (strings) generate correct destructors
 // and don't leak or double-free their fields.
 
@@ -19,3 +20,9 @@ Person p = new Person("Alice", 30);
 println(p.name);
 println(p.age);
 println(p.greet());
+
+/* EXPECT
+Alice
+30
+Hello, Alice
+*/

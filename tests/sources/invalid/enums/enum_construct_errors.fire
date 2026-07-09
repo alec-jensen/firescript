@@ -5,7 +5,8 @@ enum Color {
 }
 
 // Missing variant name after '.'
-Color a = Color.;
+Color a = Color.;  //~ ERROR FS-PARSE-0010 @17
+//~^ ERROR FS-PARSE-0010 @17
 
 // Unknown variant
-Color b = Color.Purple;
+Color b = Color.Purple;  //~ ERROR FS-PARSE-0012 @17

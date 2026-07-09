@@ -1,3 +1,4 @@
+//@ snapshot: fir, flir
 // Test borrowing syntax
 
 import @firescript/std.io.println;
@@ -32,3 +33,9 @@ consumePoint(p1);  // p1 is moved here
 
 // This should cause an error:
 // println(p1.x);  // ERROR: use after move
+
+/* EXPECT
+10
+20
+10
+*/

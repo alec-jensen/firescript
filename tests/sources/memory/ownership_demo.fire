@@ -61,3 +61,13 @@ destroyPoint(p4);  // Move - p4 is now INVALID
 // println(p4.x);  // Would cause: Use-after-move error
 
 println(999i32);  // Test completed successfully!
+
+/* EXPECT
+1.000000
+1.000000
+10
+25
+3
+7
+999
+*/

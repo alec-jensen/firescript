@@ -1,6 +1,6 @@
 // Private module symbol should not be importable.
 
 import @firescript/std.io.println;
-import visibility_provider.hiddenValue;
+import visibility_provider.hiddenValue;  //~ ERROR FS-PARSE-0003 @28
 
-println(hiddenValue);
+println(hiddenValue);  //~ ERROR FS-PARSE-0003 @9

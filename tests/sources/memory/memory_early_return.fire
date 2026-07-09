@@ -7,3 +7,8 @@ int32 test() {
 }
 
 println(test());
+
+/* EXPECT
+3
+7
+*/

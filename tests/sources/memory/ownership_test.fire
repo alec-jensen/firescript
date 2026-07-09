@@ -22,3 +22,9 @@ int32 a = 5i32;
 int32 b = a;  // Copy, not move
 println(a);  // Should work - a is still valid
 println(b);
+
+/* EXPECT
+10
+5
+5
+*/

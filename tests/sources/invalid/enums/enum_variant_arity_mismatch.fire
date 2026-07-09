@@ -6,5 +6,5 @@ enum Shape {
     Point
 }
 
-Shape a = Shape.Circle(3.0, 4.0);
-Shape b = Shape.Point(1);
+Shape a = Shape.Circle(3.0, 4.0);  //~ ERROR FS-PARSE-0012 @17
+Shape b = Shape.Point(1);  //~ ERROR FS-PARSE-0012 @17

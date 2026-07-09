@@ -5,3 +5,8 @@ float128 a = 1.25f128;
 float128 b = 2.75f128;
 float128 c = a + b;
 println(c);
+
+/* EXPECT
+-- float128 test --
+4.000000
+*/

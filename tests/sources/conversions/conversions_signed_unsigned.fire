@@ -16,3 +16,12 @@ int32 negative = -42;
 uint32 u_from_negative = (negative as uint32);
 println(negative);
 println(u_from_negative);
+
+/* EXPECT
+200
+-56
+3000000000
+-1294967296
+-42
+4294967254
+*/

@@ -17,3 +17,13 @@ println(e3);
 string e4 = last_error("abc");
 println("Error 4:");
 println(e4);
+
+/* EXPECT
+Error 1:
+
+Error 2:
+
+Error 3:
+
+Error 4:
+*/

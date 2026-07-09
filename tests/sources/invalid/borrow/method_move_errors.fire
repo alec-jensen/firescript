@@ -18,7 +18,7 @@ Sink s = Sink("init");
 
 string owned = "moved";
 s.take(owned);    // Move into method parameter
-println(owned);   // Error: used after move
+println(owned);   // Error: used after move  //~ ERROR FS-SEM-0001 @9
 
 string borrowed = "still-here";
 s.keep(borrowed); // Borrow only

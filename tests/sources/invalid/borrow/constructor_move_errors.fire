@@ -12,8 +12,8 @@ class Wrapper {
 
 string s1 = "first";
 Wrapper w1 = Wrapper(s1); // move into constructor parameter
-println(s1); // Error: used after move
+println(s1); // Error: used after move  //~ ERROR FS-SEM-0001 @9
 
 string s2 = "second";
 Wrapper w2 = new Wrapper(s2); // move into constructor parameter
-println(s2); // Error: used after move
+println(s2); // Error: used after move  //~ ERROR FS-SEM-0001 @9

@@ -9,3 +9,9 @@ int32 testFunction(int32 param) {
 }
 
 println(testFunction(5));
+
+/* EXPECT
+5
+10
+15
+*/

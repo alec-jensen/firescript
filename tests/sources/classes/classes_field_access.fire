@@ -15,3 +15,7 @@ class Point {
 Point p = new Point(0, 0);
 p.x = 7;
 println(p.x);
+
+/* EXPECT
+7
+*/

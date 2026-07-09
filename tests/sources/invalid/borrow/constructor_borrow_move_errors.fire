@@ -11,8 +11,8 @@ class Wrapper {
 }
 
 void badMoves(&string s) {
-    Wrapper a = Wrapper(s);      // Error: cannot move borrowed value into constructor param
-    Wrapper b = new Wrapper(s);  // Error: cannot move borrowed value into constructor param
+    Wrapper a = Wrapper(s);      // Error: cannot move borrowed value into constructor param  //~ ERROR FS-SEM-0001 @25
+    Wrapper b = new Wrapper(s);  // Error: cannot move borrowed value into constructor param  //~ ERROR FS-SEM-0001 @29
     println(a.text);
     println(b.text);
 }

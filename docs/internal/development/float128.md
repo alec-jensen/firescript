@@ -61,7 +61,7 @@ subnormals, signed zero, infinity, and NaN per IEEE 754.
 
 ## Validation
 
-The ground-truth reference is `tests/float128_oracle.py`, a pure-stdlib
+The ground-truth reference is `tests/support/float128_oracle.py`, a pure-stdlib
 correctly-rounded binary128 implementation built on `fractions.Fraction`. The
 runtime was validated bit-exactly against the oracle across the oracle's
 hand-checked vectors plus large random and targeted fuzz (subnormal boundaries,

@@ -8,3 +8,12 @@ println(find_at("ab", "xab", 1));         // 2: match at position 1
 println(find_at("ab", "xab", 0));         // -1: no match at position 0
 println(find_at("a", "xaxbx", 1));        // 1: match at position 1
 println(find_at("a", "xaxbx", 2));        // -1: no match at position 2
+
+/* EXPECT
+3
+2
+2
+-1
+1
+-1
+*/

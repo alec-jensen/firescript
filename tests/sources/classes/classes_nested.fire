@@ -34,3 +34,9 @@ Rect r = new Rect(p1, p2);
 println(r.topLeft.x);
 println(r.bottomRight.y);
 println(r.width());
+
+/* EXPECT
+1
+7
+4
+*/

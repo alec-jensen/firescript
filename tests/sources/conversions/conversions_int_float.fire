@@ -18,3 +18,13 @@ float64 f64_val = 99.99;
 int64 int_from_f64 = (f64_val as int64);
 println(f64_val);
 println(int_from_f64);  // Should be 99
+
+/* EXPECT
+100
+100.000000
+100.000000
+42.750000
+42
+99.990000
+99
+*/

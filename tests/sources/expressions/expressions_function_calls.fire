@@ -18,3 +18,11 @@ int32 triple(int32 n) {
     return n * 3;
 }
 println(triple(triple(2)));  // 18
+
+/* EXPECT
+8
+28
+10
+20
+18
+*/

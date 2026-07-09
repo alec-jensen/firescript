@@ -26,3 +26,10 @@ println(r3);  // 3000
 println(r4);  // 30000
 
 return 0;
+
+/* EXPECT
+30
+300
+3000
+30000
+*/

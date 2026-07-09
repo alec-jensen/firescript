@@ -1,3 +1,4 @@
+//@ helper
 // Helper module with utility functions
 export int32 helper(int32 x) {
     return x + 100;

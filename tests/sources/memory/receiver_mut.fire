@@ -1,3 +1,4 @@
+//@ snapshot: fir, flir
 import @firescript/std.io.println;
 
 class Counter {
@@ -53,3 +54,10 @@ Pair p = new Pair("hello", "world");
 println(p.describe());
 p.swap();
 println(p.describe());
+
+/* EXPECT
+3
+13
+hello,world
+world,hello
+*/

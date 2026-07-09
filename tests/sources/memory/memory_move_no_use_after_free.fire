@@ -23,3 +23,10 @@ e = d;                 // move d into e (old e dropped); d must not be dropped
 Box f = Box(555i32);   // must not reuse d's block
 println(e.v);          // 333
 println(f.v);          // 555
+
+/* EXPECT
+111
+222
+333
+555
+*/

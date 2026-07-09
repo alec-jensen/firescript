@@ -36,3 +36,11 @@ if (d == null) {
 } else {
     println("d is not null");
 }
+
+/* EXPECT
+=== Nullable Variables ===
+a is null
+hello
+world
+d is null
+*/

@@ -11,3 +11,10 @@ println(empty);
 // Long strings
 string long_str = "This is a very long string that contains many words and characters to test how the compiler and runtime handle longer string values.";
 println(long_str);
+
+/* EXPECT
+Hello
+World
+
+This is a very long string that contains many words and characters to test how the compiler and runtime handle longer string values.
+*/

@@ -284,7 +284,7 @@ on Windows x86_64.
 ### Test coverage
 
 - firescript codegen passes all golden tests (output-identical)
-- firescript assembler + PE writer pass `tests/asm_encoding_tests.py`
+- firescript assembler + PE writer pass `tests/python/backend/test_asm_encoding.py`
 - Bootstrap binary passes full test suite on its own
 - Determinism test: bootstrap binary is byte-identical on repeated compilations
 
@@ -320,7 +320,7 @@ hybrid-tool release.
 - Runtime: Linux syscall wrappers for heap (brk/mmap), I/O (read/write), process exit
 - `--target {windows-x86_64,linux-x86_64}` flag in `main.py`
 - firescript-on-Linux CI (GitHub Actions) runs the golden suite under native Linux build
-- Update `tests/golden_runner.py` to support cross-target testing
+- Update `tests/run.py`'s `run` kind / matrix engine to support cross-target testing
 
 ### Track B: kiln foundations
 

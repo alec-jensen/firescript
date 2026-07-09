@@ -7,3 +7,10 @@ println(i16_min);
 println(i16_max);
 println(i16_test);
 println(i16_test * 2i16);
+
+/* EXPECT
+-32768
+32767
+1000
+2000
+*/

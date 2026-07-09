@@ -4,3 +4,8 @@ import @firescript/std.io.*;
 print("no");
 println(" newline then one");
 println("wildcard works");
+
+/* EXPECT
+no newline then one
+wildcard works
+*/

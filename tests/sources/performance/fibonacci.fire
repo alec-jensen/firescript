@@ -1,3 +1,4 @@
+//@ snapshot: fir, flir
 // Recursive Fibonacci test using functions
 
 import @firescript/std.io.println;
@@ -10,3 +11,7 @@ int64 fib(int64 n) {
 }
 
 println(fib(20i64));
+
+/* EXPECT
+6765
+*/

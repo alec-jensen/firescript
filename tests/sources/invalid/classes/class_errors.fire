@@ -1,8 +1,9 @@
 // Class error tests - comprehensive
 
 // Undefined class
-fn void use_undefined_class() {
-    UndefinedClass obj;
+fn void use_undefined_class() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    UndefinedClass obj;  //~ ERROR FS-PARSE-0010 @5
 }
 
 // Accessing undefined field
@@ -11,21 +12,24 @@ class Point {
     int32 y;
 }
 
-fn void undefined_field() {
-    Point p;
-    int32 z = p.z;  // Field 'z' doesn't exist
+fn void undefined_field() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    Point p;  //~ ERROR FS-PARSE-0010 @12
+    int32 z = p.z;  // Field 'z' doesn't exist  //~ ERROR FS-PARSE-0003 @15
 }
 
 // Field type mismatch
-fn void field_type_mismatch() {
-    Point p;
-    p.x = "string";  // x is int32, not string
+fn void field_type_mismatch() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    Point p;  //~ ERROR FS-PARSE-0010 @12
+    p.x = "string";  // x is int32, not string  //~ ERROR FS-PARSE-0003 @5
 }
 
 // Calling undefined method
-fn void undefined_method() {
-    Point p;
-    p.move(5, 10);  // Point has no 'move' method
+fn void undefined_method() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    Point p;  //~ ERROR FS-PARSE-0010 @12
+    p.move(5, 10);  // Point has no 'move' method  //~ ERROR FS-PARSE-0003 @5
 }
 
 // Accessing private field (if privacy is implemented)
@@ -49,7 +53,8 @@ class DuplicateField {
 }
 
 // Using class name as variable
-fn void class_as_var() {
+fn void class_as_var() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
     int32 Point = 5;  // Point is already a class name
 }
 
@@ -58,7 +63,8 @@ class MustInit {
     int32 required;
 }
 
-fn void missing_init() {
-    MustInit obj;  // May need initialization
-    println(obj.required);
+fn void missing_init() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    MustInit obj;  // May need initialization  //~ ERROR FS-PARSE-0010 @17
+    println(obj.required);  //~ ERROR FS-PARSE-0012 @5
 }

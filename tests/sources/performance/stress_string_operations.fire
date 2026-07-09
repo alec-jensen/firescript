@@ -70,3 +70,26 @@ string[] str_arr = ["first", "second", "third"];
 println(str_arr[0]);
 println(str_arr[1]);
 println(str_arr[2]);
+
+/* EXPECT
+=== String Operation Tests ===
+
+after empty
+HelloWorld
+ABC
+first
+second
+third
+iteration
+iteration
+iteration
+123
+-456
+line1
+line2
+col1	col2
+This is a much longer string to test memory allocation and handling of larger text content
+first
+second
+third
+*/

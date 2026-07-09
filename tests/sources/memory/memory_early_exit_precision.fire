@@ -18,3 +18,10 @@ string demo(bool flag) {
 
 println(demo(true));
 println(demo(false));
+
+/* EXPECT
+consume:x
+moved
+after:x
+x
+*/

@@ -1,37 +1,47 @@
 // Literal and constant errors
 
 // Integer overflow
-fn void overflow() {
+fn void overflow() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
     int32 too_big = 99999999999999999999;  // Exceeds int32 range
 }
 
 // Invalid hex literals
-fn void invalid_hex() {
-    int32 bad_hex = 0xGHIJ;  // Invalid hex digits
+fn void invalid_hex() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    int32 bad_hex = 0xGHIJ;  // Invalid hex digits  //~ ERROR FS-PARSE-0010 @22
 }
 
 // Invalid escape sequences
-fn void invalid_escape() {
+fn void invalid_escape() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
     string bad = "hello\q";  // \q is not a valid escape
 }
 
 // Unclosed string literal
-fn void unclosed_string() {
-    string bad = "unclosed;
+fn void unclosed_string() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    string bad = "unclosed;  //~ ERROR FS-PARSE-0012 @18
+//~^ ERROR FS-PARSE-0010 @19
 }
 
 // Invalid number format
-fn void invalid_number() {
-    int32 bad = 123abc;  // Invalid number
+fn void invalid_number() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    int32 bad = 123abc;  // Invalid number  //~ ERROR FS-SEM-0010 @11
+//~^ ERROR FS-PARSE-0010 @20
 }
 
 // Float assigned to int without cast
-fn void float_to_int_no_cast() {
-    int32 x = 3.14;  // Should require explicit cast
+fn void float_to_int_no_cast() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    int32 x = 3.14;  // Should require explicit cast  //~ ERROR FS-SEM-0002 @11
 }
 
 // Boolean literal typo
-fn void boolean_typo() {
-    bool x = True;  // Should be 'true' (lowercase)
-    bool y = False;  // Should be 'false' (lowercase)
+fn void boolean_typo() {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @9
+    bool x = True;  // Should be 'true' (lowercase)  //~ ERROR FS-SEM-0010 @10
+//~^ ERROR FS-PARSE-0003 @14
+    bool y = False;  // Should be 'false' (lowercase)  //~ ERROR FS-PARSE-0003 @14
 }

@@ -9,3 +9,7 @@ println(last_error("^"));       // Should be "" (just anchor) or error
 
 // Control: pattern without anchors
 println(last_error("abc"));     // Should be ""
+
+/* EXPECT
+pattern is empty
+*/

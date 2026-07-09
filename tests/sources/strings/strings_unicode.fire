@@ -5,3 +5,8 @@ println(emoji);
 
 string accents = "café";
 println(accents);
+
+/* EXPECT
+🔥
+café
+*/

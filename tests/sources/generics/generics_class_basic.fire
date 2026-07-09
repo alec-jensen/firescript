@@ -1,3 +1,4 @@
+//@ snapshot: fir, flir
 import @firescript/std.io.println;
 
 copyable class Pair<T, U> {
@@ -17,3 +18,10 @@ println(p1.first);
 println(p1.second);
 println(p2.first);
 println(p2.second);
+
+/* EXPECT
+10
+20
+42
+hello
+*/

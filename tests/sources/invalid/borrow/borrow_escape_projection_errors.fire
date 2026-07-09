@@ -7,11 +7,11 @@ class Box {
 }
 
 string badFieldReturn(&Box b) {
-    return b.name; // Error: direct borrowed projection escapes
+    return b.name; // Error: direct borrowed projection escapes  //~ ERROR FS-SEM-0001 @14
 }
 
 string[] badArrayReturn(&string[] arr) {
-    return arr; // Error: returning borrowed array escapes
+    return arr; // Error: returning borrowed array escapes  //~ ERROR FS-SEM-0001 @12
 }
 
 string[] values = ["a", "b"];

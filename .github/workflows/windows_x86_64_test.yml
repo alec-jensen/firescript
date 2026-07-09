@@ -35,4 +35,4 @@ jobs:
           python-version: '3.x'
 
       - name: Run unified test suite
-        run: python tests/run_tests.py
+        run: python tests/run.py --profile ci

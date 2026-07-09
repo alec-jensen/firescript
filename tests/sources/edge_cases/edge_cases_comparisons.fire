@@ -9,3 +9,14 @@ println(0 >= 0);
 
 println(true == true);
 println(false == false);
+
+/* EXPECT
+true
+false
+true
+true
+false
+true
+true
+true
+*/

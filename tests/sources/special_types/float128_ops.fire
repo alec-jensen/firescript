@@ -32,3 +32,27 @@ println("1.25" as float128);  // 1.250000
 float64 d = 2.5;
 println(d as float128);       // 2.500000
 println((a + b) as float64);  // 4.000000
+
+/* EXPECT
+-- arithmetic --
+4.000000
+1.500000
+3.437500
+2.200000
+-1.250000
+0.333333
+-- comparisons --
+true
+false
+true
+true
+true
+true
+-- conversions --
+3
+42.000000
+7.000000
+1.250000
+2.500000
+4.000000
+*/

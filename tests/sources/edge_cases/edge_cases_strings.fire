@@ -6,3 +6,9 @@ println(single_char.length());
 
 string spaces = "   ";
 println(spaces.length());
+
+/* EXPECT
+a
+1
+3
+*/

@@ -11,3 +11,11 @@ println(quote);
 
 string backslash = "Path\\to\\file";
 println(backslash);
+
+/* EXPECT
+Line1
+Line2
+Col1	Col2	Col3
+She said "Hello"
+Path\to\file
+*/

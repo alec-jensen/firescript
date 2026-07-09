@@ -1,3 +1,4 @@
+//@ snapshot: fir, flir
 import @firescript/std.io.println;
 
 // While loop
@@ -37,3 +38,26 @@ while (outer < 3) {
     }
     outer++;
 }
+
+/* EXPECT
+0
+1
+2
+3
+4
+0
+1
+2
+3
+4
+1
+2
+4
+5
+0
+1
+10
+11
+20
+21
+*/

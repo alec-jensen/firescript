@@ -9,3 +9,9 @@ println(y);
 println(z);
 
 return 0;
+
+/* EXPECT
+-42
+42
+5
+*/

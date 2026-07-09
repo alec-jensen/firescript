@@ -1,26 +1,27 @@
 // Malformed function definitions: return type, params, body errors.
 
 // Unclosed '[' in array return type
-int32[ badRet() {
+int32[ badRet() {  //~ ERROR FS-PARSE-0010 @8
     return 0;
 }
 
 // Missing parameter type
-void badParamType(!) {
+void badParamType(!) {  //~ ERROR FS-PARSE-0010 @19
 }
 
 // Unclosed '[' in array parameter type
-void badParamArray(int32[ xs) {
+void badParamArray(int32[ xs) {  //~ ERROR FS-PARSE-0010 @27
+//~^ ERROR FS-PARSE-0010 @27
 }
 
 // Missing parameter name
-void missingParamName(int32) {
+void missingParamName(int32) {  //~ ERROR FS-PARSE-0010 @28
 }
 
 // Missing ')' after parameters
-void unclosedParams(int32 x {
+void unclosedParams(int32 x {  //~ ERROR FS-PARSE-0010 @29
 }
 
 // Missing '{' to start body
 void noBody(int32 x)
-int32 y = 1;
+int32 y = 1;  //~ ERROR FS-PARSE-0010 @1

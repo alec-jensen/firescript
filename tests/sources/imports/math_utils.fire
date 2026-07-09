@@ -1,3 +1,4 @@
+//@ helper
 // Math utilities module
 export int32 square(int32 x) {
     return x * x;

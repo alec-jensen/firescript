@@ -339,9 +339,22 @@ class ParserBase:
         return None
 
     def report_error(self, err: CompileTimeError, token: Optional[Token] = None) -> None:
-        if token is not None and self.file is not None:
+        if self.file is not None:
+            # At EOF the current token is None; anchor right after the last
+            # real token instead of leaving line/column at their 0 defaults
+            # (which could never be expressed as a //~ line-anchored
+            # diagnostic annotation). Anchoring off the last *token* rather
+            # than len(self.file) keeps the position stable regardless of
+            # what trailing text (e.g. a //~ comment) follows it in the file.
+            if token is not None:
+                index = token.index
+            elif self.tokens:
+                last = self.tokens[-1]
+                index = last.index + len(last.value or "")
+            else:
+                index = 0
             try:
-                line_num, column_num = get_line_and_coumn_from_index(self.file, token.index)
+                line_num, column_num = get_line_and_coumn_from_index(self.file, index)
                 line_text = get_line(self.file, line_num)
                 err.line = line_num
                 err.column = column_num

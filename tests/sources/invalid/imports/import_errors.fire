@@ -1,18 +1,19 @@
 // Import error tests
 
 // Importing non-existent file
-import "nonexistent_module";
+import "nonexistent_module";  //~ ERROR FS-PARSE-0010 @8
 
 // Importing non-existent symbol
-import { undefined_symbol } from "std";
+import { undefined_symbol } from "std";  //~ ERROR FS-PARSE-0010 @8
+//~^ ERROR FS-PARSE-0010 @10
 
 // Circular import (if A imports B and B imports A)
 // This would need two files to test properly
 
 // Wildcard import conflict
-import * from "std";
-import * from "io";  // May cause naming conflicts
+import * from "std";  //~ ERROR FS-PARSE-0010 @8
+import * from "io";  // May cause naming conflicts  //~ ERROR FS-PARSE-0010 @8
 
 // Importing after code
 int32 x = 5;
-import "io";  // Imports must be at the top
+import "io";  // Imports must be at the top  //~ ERROR FS-PARSE-0010 @8

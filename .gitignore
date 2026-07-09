@@ -12,5 +12,3 @@ test/
 
 hello.fire
 kiln.exe
-.coverage.*
-.coverage

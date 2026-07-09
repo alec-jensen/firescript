@@ -29,3 +29,13 @@ println(read_result.result_status());
 println(read_result.result_data());
 FileResult missing_result = missingFile.read();
 println(missing_result.err_code());
+
+/* EXPECT
+3
+4
+exists
+missing
+7
+one two
+2
+*/

@@ -1,21 +1,26 @@
 // Malformed generic function definitions.
 
 // Missing type parameter name after '<'
-T badParam<(T x) {
-    return x;
+T badParam<(T x) {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0010 @13
+    return x;  //~ ERROR FS-PARSE-0003 @12
 }
 
 // Missing constraint after ':'
-T badConstraint<T:>(T x) {
-    return x;
+T badConstraint<T:>(T x) {  //~ ERROR FS-PARSE-0010 @19
+//~^ ERROR FS-PARSE-0010 @21
+    return x;  //~ ERROR FS-PARSE-0003 @12
 }
 
 // Missing '>' to close type parameters
-T unclosed<T(T x) {
-    return x;
+T unclosed<T(T x) {  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0012 @12
+//~^^ ERROR FS-PARSE-0010 @16
+    return x;  //~ ERROR FS-PARSE-0003 @12
 }
 
 // Return type is not a declared type parameter
-Q badReturn<T>(T x) {
-    return x;
+Q badReturn<T>(T x) {  //~ ERROR FS-PARSE-0012 @1
+//~^ ERROR FS-PARSE-0010 @16
+    return x;  //~ ERROR FS-PARSE-0003 @12
 }

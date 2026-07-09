@@ -9,3 +9,8 @@ void main() {
     println("user main");
     println(helper(21));
 }
+
+/* EXPECT
+user main
+42
+*/

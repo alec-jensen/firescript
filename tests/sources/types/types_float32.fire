@@ -10,3 +10,12 @@ println(f32_zero);
 println(f32_negative);
 println(f32_pi * 2.0f);
 println(f32_e + f32_pi);
+
+/* EXPECT
+3.141590
+2.718280
+0.000000
+-42.500000
+6.283180
+5.859870
+*/

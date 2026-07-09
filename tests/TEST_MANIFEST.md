@@ -4,85 +4,121 @@ This document provides an overview of the test suite for the firescript compiler
 
 ## Test Organization
 
-Test source files live under `tests/sources/<category>/`, grouped by feature area (e.g. `tests/sources/arrays/`, `tests/sources/classes/`). Invalid/error-triggering sources live under the mirrored `tests/sources/invalid/<category>/`. Golden output files mirror the same category structure: `tests/expected/<category>/<name>.out` for valid tests, `tests/expected_errors/<category>/<name>.err` for error tests. The test runner (`tests/golden_runner.py`) compiles each test file, runs it, and compares output against golden files.
+Test source files live under `tests/sources/<category>/`, grouped by feature area (e.g. `tests/sources/arrays/`, `tests/sources/classes/`). Invalid/error-triggering sources live under the mirrored `tests/sources/invalid/<category>/`. All expectations for a `.fire` test live **inside the test file itself** as magic-comment directives and a trailing output block — there are no sidecar golden files (the one exception is FIR/FLIR IR snapshots; see "Snapshot Tests" below). Python-based tests (compiler-infrastructure unit tests, CLI invocation tests) live under `tests/python/<category>/test_*.py` and always run alongside the `.fire` suite.
 
-Helper/provider modules that are imported by other tests but never compiled standalone (e.g. `utils.fire`, `math_utils.fire`, files ending in `_provider.fire`) live alongside the tests that import them, since imports resolve relative to the importing file's own directory.
+The single entry point for every kind of test is `tests/run.py` (`python tests/run.py`). It replaces the previous eight separate runners (`golden_runner.py`, `error_runner.py`, `cli_runner.py`, `asm_encoding_tests.py`, `fir_unit_tests.py`, `fir_snapshot_runner.py`, `run_tests.py`, `float128_oracle.py`'s self-tests). See `docs/internal/development/test_harness_v2.md` for the full harness architecture spec.
+
+Helper/provider modules that are imported by other tests but never compiled standalone (e.g. `utils.fire`, `math_utils.fire`, files ending in `_provider.fire`) live alongside the tests that import them, since imports resolve relative to the importing file's own directory, and carry a `//@ helper` directive so the harness never treats them as a standalone test case.
 
 ## Running Tests
 
-### Valid Code Tests (Golden Tests)
-
 ```bash
-# Run all tests
-python tests/golden_runner.py
+# Run everything (all kinds: run, compile-fail, snapshot, python)
+python tests/run.py
 
-# Run specific test(s)
-python tests/golden_runner.py --cases tests/sources/operators/operators_arithmetic.fire
+# Run a specific test file (works for .fire and .py)
+python tests/run.py tests/sources/operators/operators_arithmetic.fire
 
-# Update golden files (review diffs carefully!)
-python tests/golden_runner.py --update
+# Run everything under a category (checks both sources/<cat> and python/<cat>)
+python tests/run.py arrays
 
-# Verbose output
-python tests/golden_runner.py --verbose
+# Run only one kind
+python tests/run.py kind:run
+python tests/run.py kind:compile-fail
+python tests/run.py kind:snapshot
+python tests/run.py kind:python
 
-# Stop on first failure
-python tests/golden_runner.py --fail-fast
+# Run one Python test function
+python tests/run.py tests/python/cli/test_emit.py::test_emit_ast
+
+# Glob test ids by name
+python tests/run.py name:generics_*
+
+# Bless mode: rewrite in-file EXPECT blocks / //~ annotations / snapshots to
+# match current output (review the diff before committing!)
+python tests/run.py --update
+
+# List matching test ids without running them (also the discovery debugging tool)
+python tests/run.py --list
+
+# Verbose per-case output, stop after first failure, parallelism, fixed seed
+python tests/run.py --verbose
+python tests/run.py --fail-fast
+python tests/run.py --jobs 4
+python tests/run.py --seed 0x1c9e4d2ab0f37e51
+
+# Coverage report (on by default for unfiltered runs when `coverage` is installed)
+python tests/run.py --coverage
+python tests/run.py --uncovered   # show only uncovered lines
+
+# CI profile (quick matrix, full determinism sampling)
+python tests/run.py --profile ci
 ```
 
-### Invalid Code Tests (Error Tests)
+The master seed for the run is always printed as the first and last line of
+output (`Seed: 0x...`) so any run -- including anything that used sampling
+(matrix cells, determinism sampling) -- is exactly reproducible with `--seed`.
 
-```bash
-# Run all error tests
-python tests/error_runner.py
+### `run` kind (golden tests)
 
-# Run specific error test(s)
-python tests/error_runner.py --cases tests/sources/invalid/syntax/syntax_errors.fire
+Discovers every `tests/sources/**/*.fire` not under `invalid/` and not marked
+`//@ helper`. Compiles the file, runs the binary (verifying it imports only
+`kernel32.dll` via the pure-Python PE inspector -- firescript binaries are
+freestanding), and compares normalized stdout against the trailing `/* EXPECT
+... */` block in the source file (see "EXPECT Block Format" below).
 
-# Update expected error files (review diffs carefully!)
-python tests/error_runner.py --update
+### `compile-fail` kind (error tests)
 
-# Verbose output
-python tests/error_runner.py --verbose
+Discovers every `tests/sources/invalid/**/*.fire` not marked `//@ helper`.
+Invokes `firescript/main.py --check --message-format json` in a subprocess
+and compares the JSON diagnostic events against the file's `//~ ERROR`
+line-anchored annotations (see "Invalid Tests" below). Message wording can
+change freely without breaking tests; only the diagnostic code, line, and
+(optionally) column are checked.
 
-# Stop on first failure
-python tests/error_runner.py --fail-fast
-```
+### `snapshot` kind (FIR/FLIR IR dumps)
 
-The error test runner verifies that:
-- Invalid code produces structured diagnostics
-- Diagnostic error codes match expected values
-- Diagnostic locations (line/column) match expected values
-- Message wording can change without breaking tests
+Discovers every `.fire` file carrying `//@ snapshot: fir` and/or `//@
+snapshot: flir` (a small, curated subset of the feature surface -- 25 cases
+today). Compiles each case twice via `--emit-fir`/`--emit-flir` (the two
+dumps must be byte-identical -- an IR-dump determinism check) and compares
+against the golden file at `tests/snapshots/<category>/<name>.fir` /
+`.flir`. This is the **one deliberate sidecar exception**: IR dumps are
+large, machine-generated, and would harm readability if inlined into the
+test source.
 
-Expected error files are stored in `tests/expected_errors/<category>/` with `.err` extension, mirroring `tests/sources/invalid/<category>/`.
+### `python` kind (compiler-infrastructure and CLI tests)
 
-### Compiler Infrastructure Tests
+Discovers every `tests/python/**/test_*.py`; every top-level `test_*`
+callable is one test case, run in a worker process using the `pyunit`
+micro-framework (`from harness import pyunit as t`; see
+`tests/harness/pyunit.py` for the full API: `t.require`, `t.require_eq`,
+`t.tmpdir()`, `t.run_compiler()`, `t.subtest()`, `t.skip()`, `t.params()`).
+Plain `assert` also works. Covers:
 
-```bash
-# FIR (firescript intermediate representation) infrastructure unit tests
-python tests/fir_unit_tests.py
-```
-
-- **fir_unit_tests.py** - Unit tests for `firescript/fir/`: FIRBuilder construction, textual dump format (verified against the spec example in `docs/internal/development/fir_spec.md`), dump determinism, structural validation (terminators, branch targets, cross-function value use)
-
-```bash
-# FIR snapshot tests (AST->FIR conversion goldens)
-python tests/fir_snapshot_runner.py
-
-# Regenerate FIR goldens (review diffs carefully!)
-python tests/fir_snapshot_runner.py --update
-```
-
-- **fir_snapshot_runner.py** - Converts a representative subset of test sources (25 cases spanning the implemented feature surface, referenced by their category-relative path e.g. `arrays/arrays_iteration_for_in.fire`) to FIR and FLIR via `--emit-fir`/`--emit-flir`, compares the dumps against goldens in `tests/expected_fir/` and `tests/expected_flir/`, and verifies determinism by converting each case twice. These goldens are internal compiler fixtures, kept flat and basename-keyed (independent of the source tree's category subdirectories) since it's a small curated set, not user-facing behavior.
-
-The golden runner also verifies every compiled binary imports only `kernel32.dll` (via the pure-Python PE inspector); firescript binaries are freestanding.
-
-```bash
-# CLI invocation behavior tests (firescript/main.py flags)
-python tests/cli_runner.py
-```
-
-- **cli_runner.py** - Exercises `firescript/main.py` command-line behavior that the golden/error/FIR-snapshot runners never touch, since those only ever invoke the default single-file `--emit bin` path: `-v/--version`, no-input-specified error, `--check` (valid and invalid input), `--emit ast`, `--emit-deps`, `--emit asm`, `--emit-fir` without `--emit-flir`, `-o` output renaming, `--dir` batch directory compilation (including partial-failure counting and the `--dir`+`-o` conflict error), missing-file and missing-directory errors, unsupported `--target`, and the unsupported `--no-link` path. These are invocation-level (exit code / files produced / log output) checks, not language-feature goldens, so they don't use the `tests/sources` + `tests/expected` convention.
+- `tests/python/cli/` -- `firescript/main.py` invocation behavior never
+  exercised by the golden/error/snapshot kinds (`-v`, `--check`, `--emit
+  ast`/`asm`/`--emit-fir`, `--emit-deps`, `-o` renaming, `--dir` batch
+  compilation, `--message-format json`, `-d` debug mode, import-resolution
+  errors), split by area: `test_check.py`, `test_emit.py`,
+  `test_dir_batch.py`, `test_output.py`, `test_diagnostics.py`,
+  `test_imports.py`.
+- `tests/python/backend/test_asm_encoding.py` -- differential + unit tests
+  for the pure-Python x86-64 assembler; unit assertions always run,
+  differential comparison against MinGW `as` only when `as` is on `PATH`.
+- `tests/python/fir/` -- unit tests for `firescript/fir/`: builder
+  construction (`test_builder.py`), textual dump format verified against
+  the spec example in `docs/internal/development/fir_spec.md`
+  (`test_dump.py`), structural validation of terminators/branch
+  targets/cross-function value use (`test_validation.py`).
+- `tests/python/float128/` -- self-tests for the binary128 correctness
+  oracle (`tests/support/float128_oracle.py`): hand-verified constants and
+  arithmetic/comparison/parse/format checks (`test_oracle_units.py`), plus
+  self-consistency of every generated test vector (`test_oracle_vectors.py`).
+- `tests/python/harness/` -- the harness's own tests (directive parser,
+  EXPECT/`//~` parsing and rewriting, seed derivation, matrix engine,
+  selector matching). The harness ships with its own test coverage since it
+  is the arbiter of every other test.
 
 ## Test Categories
 
@@ -304,13 +340,17 @@ Prefer many small, single-behavior `.fire` files over one large multi-assertion 
 
 ## Known-Failing Regression Tests
 
-These `tests/sources/known_issues/*.fire` cases are **expected to fail** under `golden_runner.py` right now — they were added to lock in known compiler bugs before a fix lands, per CLAUDE.md's "always add a test that would have failed before the fix" rule, applied here in advance of the fix rather than alongside it. Do not "fix" them by editing the golden or deleting the case; they should start passing once the underlying bug referenced in each file's header comment is fixed, at which point re-run with `--update`, review the diff, and move the file into its normal feature category (e.g. an `Option` fix moves `option_issome_isnone_regression.fire` into `std/types/`).
+These `tests/sources/known_issues/*.fire` cases are **expected to fail** under the `run` kind right now — they were added to lock in known compiler bugs before a fix lands, per CLAUDE.md's "always add a test that would have failed before the fix" rule, applied here in advance of the fix rather than alongside it. Do not "fix" them by editing the EXPECT block or deleting the case; they should start passing once the underlying bug referenced in each file's header comment is fixed, at which point re-run with `--update`, review the diff, and move the file into its normal feature category (e.g. an `Option` fix moves `option_issome_isnone_regression.fire` into `std/types/`).
 
 - **option_issome_isnone_regression.fire** - `Option`/`CopyableOption` `isSome()`/`isNone()` return `false` for both calls regardless of whether the option actually holds a value (confirmed: a populated `Option<int32>(42)` and `CopyableOption<int32>(7)` both report `isSome()==false, isNone()==false`). Golden encodes the *correct* expected values (`true, false, true, false`), so the test fails until the bug is fixed. See CLAUDE.md's feature table note and `docs/reference/std/types.md`.
 - **generic_nested_call_crash_regression.fire** - `println(max(3, 7))` (passing a generic function call directly as another call's argument) crashes FIR->FLIR lowering with `LoweringError: cannot convert T to string` — the generic type parameter `T` isn't substituted with the concrete instantiated type before the implicit string cast. No golden file (compilation itself fails); the runner reports this as `ERROR` with the full traceback until fixed.
 - **generic_method_if_condition_crash_regression.fire** - `if (some_opt.isSome())` (calling a generic class's method inline as a branch condition, or as any inline expression not first assigned to a variable) crashes FIR->FLIR lowering with `LoweringError: unsupported FIR operand NoneType`. No golden file; reports as `ERROR` until fixed.
 
 This category is specifically for currently-known, not-yet-fixed bugs (expected to fail). Normal regression tests added alongside a fix (per CLAUDE.md's standard "Bug Fix Tests" workflow — a test that would have failed before the fix and passes after) go in their feature's regular category directory, not here.
+
+### Known-Skipped `compile-fail` Tests
+
+Three `tests/sources/invalid/` cases carry `//@ skip:` and are reported as `SKIP` rather than run: `match/match_syntax_errors.fire`, `syntax/export_errors.fire`, `syntax/expression_operand_errors.fire`. Discovered during the v2 harness migration: these files trigger cascading parser-recovery diagnostics whose reported line/column are not stable under trailing-comment insertion -- inserting a `//~` annotation on one line shifts where the parser resynchronizes and thus what line/column the *next* diagnostic is reported at, so a single `--update` pass never converges to a stable annotation set. This is a pre-existing parser-recovery fragility, not a harness bug; it needs a compiler-side fix (making recovery position depend only on token stream, not on trailing source text) before these can be re-enabled under the `//~` annotation system.
 
 ## Invalid Tests
 
@@ -336,21 +376,22 @@ Tests in `tests/sources/invalid/<category>/` are expected to fail compilation an
 ### Error Test System
 
 - **Location**: `tests/sources/invalid/<category>/*.fire`
-- **Expected Errors**: `tests/expected_errors/<category>/*.err`
-- **Runner**: `tests/error_runner.py`
+- **Expected diagnostics**: in-file `//~ ERROR <CODE> [@<column>]` annotations, anchored to the offending source line (see "Directive Reference" below) -- no sidecar files.
+- **Kind**: `compile-fail` (`python tests/run.py kind:compile-fail`)
 
 ### How It Works
 
-1. Invalid source files are linted through the compiler front-end.
-2. Structured diagnostics are collected as error objects.
-3. Diagnostics are compared to golden signatures in this format: `<ERROR_CODE>@<line>:<column>`.
-4. Test passes when all expected signatures match.
+1. `firescript/main.py --check --message-format json` is invoked in a subprocess against the invalid source.
+2. Structured JSON diagnostic events are parsed from its output.
+3. Diagnostics are compared against the file's `//~ ERROR` annotations: the multiset of `(code, line, column?)` must match exactly (column is only checked when the annotation specifies one).
+4. Test passes when all annotations match with no missing or extra diagnostics.
 
 ### Benefits
 
-- **Message-Independent**: Error message text can evolve without brittle test churn.
+- **Message-Independent**: Error message text can evolve without brittle test churn (an optional quoted substring can still assert on wording when useful).
 - **Regression Prevention**: Error code and location regressions are caught immediately.
 - **Location Accuracy**: Ensures diagnostics point to the right source coordinates.
+- **Self-Maintaining Line Numbers**: `//~^` caret-stacking anchors an annotation to a line *relative to itself*, so annotations don't silently go stale when lines are inserted/removed elsewhere in the file (the classic problem with absolute-line-number sidecar files).
 
 ## Test Coverage Summary
 
@@ -373,16 +414,54 @@ Tests in `tests/sources/invalid/<category>/` are expected to fail compilation an
 
 ## Adding New Tests
 
+### A golden (`run` kind) test
+
 1. Pick (or create) the matching category subdirectory under `tests/sources/`, e.g. `tests/sources/arrays/`. Prefer one focused behavior per file over adding more assertions to an existing file — see "Splitting large test files" above.
-2. Add test cases with expected output via `println()`.
-3. Run `python tests/golden_runner.py --cases tests/sources/<category>/<name>.fire --update` to generate the golden file — it's written to the mirrored `tests/expected/<category>/<name>.out`.
-4. Review the generated golden file.
-5. Commit both the source and golden files.
+2. Write the `.fire` file with test cases producing expected output via `println()`. Add any `//@` header directives it needs (`//@ args:`, `//@ exit-code:`, etc. -- see "Directive Reference" below).
+3. Run `python tests/run.py tests/sources/<category>/<name>.fire --update` to write the trailing `/* EXPECT ... */` block *into the file itself*.
+4. Review the EXPECT block the update wrote (it's part of the diff now, not a separate golden file).
+5. Commit the source file.
 6. Update this manifest.
 
-## Golden File Format
+### An error (`compile-fail` kind) test
 
-Golden files contain the expected stdout output from running the compiled test binary. They use Unix-style line endings (\n) and have trailing newlines stripped per line.
+1. Add the file to `tests/sources/invalid/<category>/`.
+2. Either hand-write `//~ ERROR <CODE> [@<column>]` annotations on the offending lines, or run `python tests/run.py tests/sources/invalid/<category>/<name>.fire --update` to have the harness insert them from the compiler's actual diagnostics.
+3. Review the inserted annotations.
+4. Commit the source file.
+
+### A Python test
+
+Add a `test_*` function to an existing (or new) `tests/python/<category>/test_*.py` module; it always runs, no registration needed. Use `from harness import pyunit as t` for assertions/helpers.
+
+## EXPECT Block Format
+
+The trailing `/* EXPECT ... */` block (or its `// EXPECT: <line>` fallback form, used only when the expected output itself contains a `*/`) holds the expected stdout from running the compiled test binary, normalized the same way the actual output is: Unix-style line endings (`\n`), trailing whitespace stripped per line. It must be the last non-blank content in the file. `--update` rewrites it in place.
+
+## Directive Reference
+
+Header directives (`//@ key: value` in `.fire` files, `#@ key: value` in `.py` files) must appear in the leading comment block at the top of the file -- one found after the first code token is a discovery-time error, never a silent skip. `//~` diagnostic annotations are the opposite: only valid *after* code starts, anchored to source lines.
+
+| Directive | Applies to | Meaning |
+|---|---|---|
+| `//@ mode: run \| compile-fail` | `.fire` | Explicit kind override; normally inferred from location (`invalid/` -> compile-fail). Conflicting with location is a discovery error. |
+| `//@ helper` | `.fire` | File is imported by other tests; never a standalone test case. |
+| `//@ args: <tokens>` | `.fire` | argv for the compiled binary, shlex-split (repeatable, concatenates with `arg:` in file order). |
+| `//@ arg: <verbatim>` | `.fire` | One argv token, verbatim to end of line (repeatable). |
+| `//@ stdin: <text>` | `.fire` | One line of stdin (repeatable, joined with `\n`). Mutually exclusive with `stdin-file:`. |
+| `//@ stdin-file: <path>` | `.fire` | stdin from a file, path relative to the test file. |
+| `//@ exit-code: <int>` | `.fire` | Expected binary exit code (default 0). |
+| `//@ timeout: <seconds>` | `.fire` | Binary run timeout (default: harness config). |
+| `//@ compile-timeout: <seconds>` | `.fire` | Compile timeout (default: harness config). |
+| `//@ compile-flags: <flags>` | `.fire` | Extra flags appended to the compiler invocation. |
+| `//@ snapshot: fir[, flir]` | `.fire` | Opt into the `snapshot` kind in addition to `run`. |
+| `//@ no-matrix` | `.fire` | Run only in the default matrix cell. |
+| `//@ no-determinism: <reason>` | `.fire` | Exclude from determinism-kind sampling; reason required. |
+| `//@ requires: <feature>` | `.fire`, `.py` | Skip unless the named capability is available (e.g. `mingw-as`). Repeatable. |
+| `//@ skip: <reason>` | `.fire`, `.py` | Unconditional skip with a mandatory reason; shows as `SKIP`, greppable. |
+| `//~ [^*] ERROR <CODE> [@<col>] ["substr"]` | `.fire` (`invalid/`) | Expected diagnostic, anchored to its own line minus one per leading `^`. |
+
+Unknown directive keys, and directives outside the rules above (misplaced `//@`, a `compile-fail` file with zero `//~` annotations, a duplicate EXPECT block), are always loud discovery errors -- never silently skipped.
 
 ## Test Naming Conventions
 

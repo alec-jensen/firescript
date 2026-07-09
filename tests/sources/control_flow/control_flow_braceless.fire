@@ -16,3 +16,10 @@ println("after while: " + (i as string));
 int32 total = 0;
 for (int32 k = 0; k < 4; k++) total += k;
 println("for total: " + (total as string));
+
+/* EXPECT
+if-braceless
+else-braceless
+after while: 3
+for total: 6
+*/

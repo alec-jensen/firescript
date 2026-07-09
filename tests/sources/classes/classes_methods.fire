@@ -1,3 +1,4 @@
+//@ snapshot: fir, flir
 // Constructors and instance methods test
 
 import @firescript/std.io.println;
@@ -18,3 +19,7 @@ class Point {
 
 Point p = new Point(2, 3);
 println(p.sum());
+
+/* EXPECT
+5
+*/

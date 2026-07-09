@@ -14,4 +14,4 @@ for (int32 n in nums) {
     println(n);
 }
 
-println(msg); // Error: msg may have moved on loop path
+println(msg); // Error: msg may have moved on loop path  //~ ERROR FS-SEM-0001 @9

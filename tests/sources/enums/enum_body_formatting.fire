@@ -16,3 +16,7 @@ match s {
     Status.Code(value) -> println("code " + (value as string)),
     Status.Fail -> println("fail"),
 }
+
+/* EXPECT
+code 42
+*/

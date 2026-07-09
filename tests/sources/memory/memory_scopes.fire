@@ -7,3 +7,9 @@ println(a.length());
     println(b.length());
 }
 println(a.length());
+
+/* EXPECT
+3
+2
+3
+*/

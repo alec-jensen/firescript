@@ -1,3 +1,4 @@
+//@ helper
 // Second half of the import cycle (provider module, not a standalone case).
 import import_cycle_a.ping;
 

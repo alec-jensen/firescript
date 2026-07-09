@@ -1,3 +1,4 @@
+//@ helper
 // String utilities module
 export string wrap(string s) {
     return "[" + s + "]";

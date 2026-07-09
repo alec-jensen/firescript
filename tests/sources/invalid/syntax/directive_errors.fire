@@ -1,5 +1,5 @@
 // Malformed compiler directive statements (tests directive parsing behavior).
-directive;
-directive not_a_real_directive;
+directive;  //~ ERROR FS-PARSE-0010 @10
+directive not_a_real_directive;  //~ ERROR FS-PARSE-0012 @11
 directive enable_drops
-int32 x = 1;
+int32 x = 1;  //~ ERROR FS-PARSE-0010 @1

@@ -1,3 +1,4 @@
+//@ snapshot: fir, flir
 import @firescript/std.io.println;
 
 class Person {
@@ -107,3 +108,17 @@ println(d.did);
 println(d.root());
 println(d.onlyB());
 println(d.onlyC());
+
+/* EXPECT
+Jane is 18 at School
+Jane
+18
+A(a)->B(b)->C(c)->D(d)
+a
+b
+c
+d
+a
+b
+c
+*/

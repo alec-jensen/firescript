@@ -9,3 +9,8 @@ int32 helper(int32 x) {
 
 println(helper(1));
 println(CONSTANT);
+
+/* EXPECT
+2
+42
+*/

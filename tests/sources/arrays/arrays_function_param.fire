@@ -11,3 +11,7 @@ int32 sumArray(int32[] arr) {
 int32[] to_sum = [1, 2, 3, 4, 5];
 int32 total = sumArray(to_sum);
 println(total);  // 15
+
+/* EXPECT
+15
+*/

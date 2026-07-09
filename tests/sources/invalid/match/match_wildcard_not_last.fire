@@ -9,5 +9,5 @@ enum Shape {
 Shape s = Shape.Point;
 match s {
     _ -> { }
-    Shape.Point -> { }
+    Shape.Point -> { }  //~ ERROR FS-SEM-0001 @5
 }

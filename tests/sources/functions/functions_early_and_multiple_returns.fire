@@ -23,3 +23,11 @@ string classify(int32 n) {
 println(classify(-3));
 println(classify(0));
 println(classify(5));
+
+/* EXPECT
+42
+0
+negative
+zero
+positive
+*/

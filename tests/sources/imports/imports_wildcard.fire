@@ -5,3 +5,8 @@ import utils.*
 
 println(helper(5));
 println(CONSTANT);
+
+/* EXPECT
+105
+42
+*/

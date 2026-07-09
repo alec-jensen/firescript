@@ -14,3 +14,8 @@ copyable class Pair<T, U> {
 Pair<int32, string> p = Pair(1, "x");
 println(p.first);
 println(p.second);
+
+/* EXPECT
+1
+x
+*/

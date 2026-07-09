@@ -11,3 +11,7 @@ T max<T>(T a, T b) {
 
 int32 x = max(10, 20);
 println(x);
+
+/* EXPECT
+20
+*/

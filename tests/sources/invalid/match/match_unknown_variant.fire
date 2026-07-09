@@ -7,7 +7,7 @@ enum Shape {
 }
 
 Shape s = Shape.Point;
-match s {
+match s {  //~ ERROR FS-SEM-0001 @1
     Shape.Circle(radius) -> { }
-    Shape.Triangle -> { }
+    Shape.Triangle -> { }  //~ ERROR FS-SEM-0001 @5
 }

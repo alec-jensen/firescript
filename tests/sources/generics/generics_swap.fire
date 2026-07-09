@@ -20,3 +20,10 @@ swap(x, y);  // Should print 10, 5
 float64 p = 1.5;
 float64 q = 2.5;
 swap(p, q);  // Should print 2.5, 1.5
+
+/* EXPECT
+10
+5
+2.500000
+1.500000
+*/

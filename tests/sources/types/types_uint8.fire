@@ -7,3 +7,10 @@ println(u8_min);
 println(u8_max);
 println(u8_test);
 println(u8_max + 1u8);  // Overflow
+
+/* EXPECT
+0
+255
+128
+0
+*/

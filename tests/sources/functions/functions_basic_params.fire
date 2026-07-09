@@ -30,3 +30,13 @@ int32 multiply(int32 x, int32 y) {
     return x * y;
 }
 println(multiply(4, 5));
+
+/* EXPECT
+Hello from function!
+42
+10
+20
+10
+300
+20
+*/

@@ -31,3 +31,20 @@ println(remove_result.result_status());
 println(fileC.exists());
 FileResult remove_again_result = fileC.remove();
 println(remove_again_result.result_status());
+
+/* EXPECT
+8
+true
+false
+0
+true
+true
+path ops
+0
+false
+true
+path ops
+0
+false
+-2
+*/

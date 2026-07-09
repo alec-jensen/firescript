@@ -8,6 +8,6 @@ enum Shape {
 
 Shape s = Shape.Point;
 match s {
-    Shape.Circle(bogus) -> { }
+    Shape.Circle(bogus) -> { }  //~ ERROR FS-SEM-0001 @5
     Shape.Point -> { }
 }

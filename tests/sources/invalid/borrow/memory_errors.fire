@@ -6,10 +6,10 @@ import @firescript/std.io.println;
 // Use after move (if ownership is enforced)
 string owned = "hello";
 string moved = owned;  // Move
-println(owned);  // Error: used after move
+println(owned);  // Error: used after move  //~ ERROR FS-SEM-0001 @9
 
 string badBorrowReturn(&string s) {
-	return s;  // Error: borrowed value escapes callable scope
+	return s;  // Error: borrowed value escapes callable scope  //~ ERROR FS-SEM-0001 @9
 }
 
 string source = "borrow";

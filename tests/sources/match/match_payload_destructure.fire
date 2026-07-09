@@ -36,3 +36,12 @@ void describeRenamed(Shape s) {
 describeRenamed(Shape.Circle(1.5));
 describeRenamed(Shape.Rectangle(4.0, 9.0));
 describeRenamed(Shape.Point);
+
+/* EXPECT
+circle r=3.000000
+rect 2.000000x5.000000
+point
+renamed circle r=1.500000
+rect width only=4.000000
+renamed point
+*/

@@ -9,3 +9,11 @@ string s1 = "Hello";
 string s2 = "World";
 println(s1 + " " + s2);
 println("Count: " + (5 as string));
+
+/* EXPECT
+3
+12
+5
+Hello World
+Count: 5
+*/

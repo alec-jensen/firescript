@@ -24,3 +24,9 @@ v3 = v1.add(v2);
 println(v3.x);
 println(v3.y);
 println(v1.dot(v2));
+
+/* EXPECT
+4
+6
+11
+*/

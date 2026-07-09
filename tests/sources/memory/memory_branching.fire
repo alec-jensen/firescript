@@ -10,3 +10,8 @@ if (cond == 1i32) {
     println(c.length());
 }
 println(a.length());
+
+/* EXPECT
+1
+2
+*/

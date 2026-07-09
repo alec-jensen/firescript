@@ -13,3 +13,12 @@ println(uoverflow + 1u8);
 int8 underflow = -128i8;
 println(underflow);
 println(underflow - 1i8);
+
+/* EXPECT
+127
+-128
+255
+0
+-128
+127
+*/

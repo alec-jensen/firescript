@@ -5,3 +5,9 @@ uint16 u16_test = 30000u16;
 println(u16_max);
 println(u16_test);
 println(u16_test + 1000u16);
+
+/* EXPECT
+65535
+30000
+31000
+*/

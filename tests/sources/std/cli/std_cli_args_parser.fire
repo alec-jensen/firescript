@@ -10,3 +10,15 @@ println(option_value_alias("output", "o", "none") == "none");
 println(positional(0, "none") == "none");
 println(positional(1, "none") == "none");
 println(positional(-1, "none") == "none");
+
+/* EXPECT
+true
+true
+true
+true
+true
+true
+true
+true
+true
+*/

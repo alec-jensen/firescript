@@ -4,3 +4,7 @@ import @firescript/std.io.println;
 import visibility_provider.addOne;
 
 println(addOne(41));
+
+/* EXPECT
+42
+*/

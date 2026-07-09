@@ -23,3 +23,8 @@ b = Shape.Point;
 
 println("constructed all payload variants");
 println("reassignment across variants ok");
+
+/* EXPECT
+constructed all payload variants
+reassignment across variants ok
+*/

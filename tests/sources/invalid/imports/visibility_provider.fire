@@ -1,3 +1,4 @@
+//@ helper
 export int32 addOne(int32 x) {
     return x + 1;
 }

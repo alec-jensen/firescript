@@ -9,6 +9,6 @@ enum Shape {
 Shape s = Shape.Point;
 match s {
     Shape.Circle(radius) -> { }
-    Shape.Circle(radius: r2) -> { }
+    Shape.Circle(radius: r2) -> { }  //~ ERROR FS-SEM-0001 @5
     Shape.Point -> { }
 }

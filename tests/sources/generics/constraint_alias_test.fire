@@ -37,3 +37,12 @@ println(abs1);  // 42
 println(abs2);  // 999
 
 return 0;
+
+/* EXPECT
+30
+300
+4.000000
+5.850000
+42
+999
+*/

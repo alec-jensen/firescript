@@ -9,33 +9,34 @@ class Widget {
 }
 
 // Array literals cannot directly contain arrays
-int32[] nested = [[1], [2]];
+int32[] nested = [[1], [2]];  //~ ERROR FS-SEM-0010 @18
 
 // Cannot cast an array to a non-string type
 int32[] arr = [1, 2];
-float64 a = arr as float64;
+float64 a = arr as float64;  //~ ERROR FS-SEM-0010 @20
 
 // Cannot cast to a non-numeric user type
-int32 b = 5 as Widget;
+int32 b = 5 as Widget;  //~ ERROR FS-SEM-0010 @16
 
 // Cannot cast a non-numeric source type
-Widget w = Widget();
-int32 c = w as int32;
+Widget w = Widget();  //~ ERROR FS-SEM-0010 @12
+int32 c = w as int32;  //~ ERROR FS-SEM-0010 @16
 
 // Wrong number of explicit generic type arguments
 T first<T, U>(T x, U y) {
     return x;
 }
-int32 d = first<int32>(1, 2);
+int32 d = first<int32>(1, 2);  //~ ERROR FS-SEM-0010 @11
 
 // Conflicting generic inference
 T pick<T>(T x, T y) {
     return x;
 }
-int32 e = pick(1, "two");
+int32 e = pick(1, "two");  //~ ERROR FS-SEM-0002 @7
+//~^ ERROR FS-SEM-0010 @11
 
 // Builtin arity error
-print(1, 2);
+print(1, 2);  //~ ERROR FS-PARSE-0012 @1
 
 // Constructor argument count mismatch
-Widget w2 = Widget(1, 2);
+Widget w2 = Widget(1, 2);  //~ ERROR FS-SEM-0010 @13

@@ -5,7 +5,7 @@ import @firescript/std.io.println;
 // Variable shadowing (not allowed in firescript)
 int32 x = 10;
 {
-    int32 x = 20;  // Error: shadowing not allowed
+    int32 x = 20;  // Error: shadowing not allowed  //~ ERROR FS-SEM-0010 @11
     println(x);
 }
 
@@ -17,15 +17,16 @@ int32 future_var = 100;
 {
     int32 scoped = 42;
 }
-println(scoped);  // Error: scoped not in scope here
+println(scoped);  // Error: scoped not in scope here  //~ ERROR FS-PARSE-0003 @9
 
 // Access to loop variable outside loop
 for (int32 i = 0; i < 10; i++) {
     println(i);
 }
-println(i);  // Error: i not in scope
+println(i);  // Error: i not in scope  //~ ERROR FS-PARSE-0003 @9
 
 // Duplicate parameter names (if not caught)
-void duplicateParams(int32 x, int32 x) {
+void duplicateParams(int32 x, int32 x) {  //~ ERROR FS-SEM-0010 @28
+//~^ ERROR FS-SEM-0010 @37
     println(x);
 }

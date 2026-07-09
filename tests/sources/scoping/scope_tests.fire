@@ -30,3 +30,13 @@ if (globalVar > 5) {
 }
 
 // print(innerVar2); // ERROR: innerVar2 is not accessible here
+
+/* EXPECT
+10
+20
+10
+30
+10
+30
+40
+*/

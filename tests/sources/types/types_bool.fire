@@ -4,3 +4,8 @@ bool b_true = true;
 bool b_false = false;
 println(b_true);
 println(b_false);
+
+/* EXPECT
+true
+false
+*/

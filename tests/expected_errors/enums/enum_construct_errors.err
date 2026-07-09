@@ -1,5 +1,0 @@
-# firescript expected diagnostics v2
-# format: <ERROR_CODE>@<line>:<column>
-FS-PARSE-0010@8:17
-FS-PARSE-0010@8:17
-FS-PARSE-0012@11:17

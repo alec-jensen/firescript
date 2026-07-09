@@ -1,50 +1,55 @@
 // Malformed generator definitions and yield statements.
 
 // Missing '<' after 'generator'
-generator int32 g1() {
+generator int32 g1() {  //~ ERROR FS-PARSE-0010 @11
     yield 1;
 }
 
 // Missing yield type
-generator<> g2() {
+generator<> g2() {  //~ ERROR FS-PARSE-0010 @11
+//~^ ERROR FS-PARSE-0012 @13
     yield 1;
-}
+}  //~ ERROR FS-PARSE-0010 @1
 
 // Missing '>' after yield type
-generator<int32 g3() {
+generator<int32 g3() {  //~ ERROR FS-PARSE-0010 @17
+//~^ ERROR FS-PARSE-0012 @17
     yield 1;
-}
+}  //~ ERROR FS-PARSE-0010 @1
 
 // Missing generator name
-generator<int32> () {
+generator<int32> () {  //~ ERROR FS-PARSE-0010 @18
     yield 1;
 }
 
 // Missing '(' after name
-generator<int32> g5 {
+generator<int32> g5 {  //~ ERROR FS-PARSE-0010 @21
     yield 1;
 }
 
 // Bad parameter type
-generator<int32> g6(! x) {
+generator<int32> g6(! x) {  //~ ERROR FS-PARSE-0010 @21
+//~^ ERROR FS-PARSE-0010 @23
     yield 1;
 }
 
 // Missing parameter name
-generator<int32> g7(int32) {
+generator<int32> g7(int32) {  //~ ERROR FS-PARSE-0010 @26
     yield 1;
 }
 
 // Missing ')' after parameters
-generator<int32> g8(int32 x {
+generator<int32> g8(int32 x {  //~ ERROR FS-PARSE-0010 @29
     yield 1;
 }
 
 // Missing '{' to start body
 generator<int32> g9()
-    yield 1;
+    yield 1;  //~ ERROR FS-PARSE-0010 @5
+//~^ ERROR FS-PARSE-0010 @15
 
 // yield with no expression
 generator<int32> g10() {
-    yield;
+    yield;  //~ ERROR FS-PARSE-0012 @10
+//~^ ERROR FS-PARSE-0010 @13
 }

@@ -8,6 +8,6 @@ enum Shape {
 
 Shape s = Shape.Point;
 match s {
-    Shape.Rectangle(width, width: w2) -> { }
+    Shape.Rectangle(width, width: w2) -> { }  //~ ERROR FS-SEM-0001 @5
     Shape.Point -> { }
 }

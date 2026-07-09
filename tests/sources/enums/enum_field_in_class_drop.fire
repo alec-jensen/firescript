@@ -58,3 +58,9 @@ void useShelf() {
 useHolder();
 useShelf();
 println("done");
+
+/* EXPECT
+holder: inside
+shelf: boxed
+done
+*/

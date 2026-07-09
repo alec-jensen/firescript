@@ -26,3 +26,10 @@ float64 a = match s {
     Shape.Point -> -1.0
 };
 println(a as string);
+
+/* EXPECT
+12.566360
+12.000000
+0.000000
+11.000000
+*/

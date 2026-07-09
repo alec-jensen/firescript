@@ -5,3 +5,8 @@ void printTwice(string msg) {
     println(msg);
 }
 printTwice("repeat");
+
+/* EXPECT
+repeat
+repeat
+*/

@@ -4,8 +4,10 @@ import @firescript/std.io.println;
 
 int32[] nums = [1i32, 2i32, 3i32, 4i32];
 
-int32[] badStart = nums["1":2i32]; // Error: start must be integer
-int32[] badEnd = nums[1i32:true];    // Error: end must be integer
+int32[] badStart = nums["1":2i32]; // Error: start must be integer  //~ ERROR FS-PARSE-0010 @28
+//~^ ERROR FS-PARSE-0013 @28
+int32[] badEnd = nums[1i32:true];    // Error: end must be integer  //~ ERROR FS-PARSE-0010 @27
+//~^ ERROR FS-PARSE-0013 @27
 
-println(badStart.length());
-println(badEnd.length());
+println(badStart.length());  //~ ERROR FS-PARSE-0003 @9
+println(badEnd.length());  //~ ERROR FS-PARSE-0003 @9

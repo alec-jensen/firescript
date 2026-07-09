@@ -1,21 +1,21 @@
 // Malformed import statements.
 
 // Non-identifier in symbol group
-import utils.{5}
+import utils.{5}  //~ ERROR FS-PARSE-0010 @15
 
 // Unclosed symbol group
 import utils.{helper
 
-// Missing alias name after 'as'
-import utils.{CONSTANT as }
+// Missing alias name after 'as'  //~ ERROR FS-PARSE-0010 @1
+import utils.{CONSTANT as }  //~ ERROR FS-PARSE-0010 @27
 
 // Non-symbol token after '.'
-import utils.!;
+import utils.!;  //~ ERROR FS-PARSE-0010 @14
 
 // External (non-@firescript) packages are rejected
-import @somebody/package;
+import @somebody/package;  //~ ERROR FS-PARSE-0012 @1
 
 // Missing package name after '@'
-import @;
+import @;  //~ ERROR FS-PARSE-0010 @9
 
 int32 x = 1;

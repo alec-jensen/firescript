@@ -53,3 +53,30 @@ flag = true;
 println(flag);
 flag = !flag;
 println(flag);
+
+/* EXPECT
+false
+true
+true
+false
+false
+false
+true
+true
+true
+false
+true
+false
+true
+false
+false
+true
+false
+true
+true
+false
+true
+false
+true
+false
+*/

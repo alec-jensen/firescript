@@ -7,3 +7,7 @@ println("top-level ignored");
 void main() {
     println("only main runs");
 }
+
+/* EXPECT
+only main runs
+*/

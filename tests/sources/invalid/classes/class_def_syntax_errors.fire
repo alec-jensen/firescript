@@ -1,27 +1,27 @@
 // Malformed class definitions.
 
 // Missing class name
-class {
-    int32 v;
+class {  //~ ERROR FS-PARSE-0010 @7
+    int32 v;  //~ ERROR FS-PARSE-0010 @12
 }
 
 // Missing generic type parameter name
-class G1<> {
-    int32 v;
+class G1<> {  //~ ERROR FS-PARSE-0010 @10
+    int32 v;  //~ ERROR FS-PARSE-0010 @12
 }
 
 // Missing '>' to close class type parameters
-class G2<T {
-    int32 v;
+class G2<T {  //~ ERROR FS-PARSE-0010 @12
+    int32 v;  //~ ERROR FS-PARSE-0010 @12
 }
 
 // Missing base class name after 'from'
-class D1 from {
-    int32 v;
+class D1 from {  //~ ERROR FS-PARSE-0010 @15
+    int32 v;  //~ ERROR FS-PARSE-0010 @12
 }
 
 // Class inheriting from itself
-class S1 from S1 {
+class S1 from S1 {  //~ ERROR FS-PARSE-0012 @15
     int32 v;
 
     S1() {
@@ -31,11 +31,11 @@ class S1 from S1 {
 
 // Missing '{' to start class body
 class N1
-int32 topLevel = 1;
+int32 topLevel = 1;  //~ ERROR FS-PARSE-0010 @1
 
 // Member that is not a type
 class M1 {
-    ! bogus;
+    ! bogus;  //~ ERROR FS-PARSE-0010 @5
     int32 v;
 
     M1() {
@@ -47,7 +47,7 @@ class M1 {
 class C1 {
     int32 v;
 
-    static C1() {
+    static C1() {  //~ ERROR FS-PARSE-0012 @12
         this.v = 1;
     }
 }
@@ -60,7 +60,7 @@ class R1 {
         this.v = 1;
     }
 
-    int32 get(&other) {
+    int32 get(&other) {  //~ ERROR FS-PARSE-0010 @16
         return 1;
     }
 }
@@ -73,7 +73,8 @@ class R2 {
         this.v = 1;
     }
 
-    int32 take(owned other) {
+    int32 take(owned other) {  //~ ERROR FS-PARSE-0010 @16
+//~^ ERROR FS-PARSE-0010 @22
         return 1;
     }
 }
@@ -86,7 +87,8 @@ class P1 {
         this.v = 1;
     }
 
-    int32 m(&this, ! x) {
+    int32 m(&this, ! x) {  //~ ERROR FS-PARSE-0010 @20
+//~^ ERROR FS-PARSE-0010 @22
         return 1;
     }
 }
@@ -99,7 +101,7 @@ class P2 {
         this.v = 1;
     }
 
-    int32 m(&this, int32[] xs) {
+    int32 m(&this, int32[] xs) {  //~ ERROR FS-PARSE-0012 @25
         return 1;
     }
 }
@@ -112,7 +114,7 @@ class P3 {
         this.v = 1;
     }
 
-    int32 m(&this, int32) {
+    int32 m(&this, int32) {  //~ ERROR FS-PARSE-0010 @25
         return 1;
     }
 }

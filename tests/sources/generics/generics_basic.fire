@@ -1,3 +1,4 @@
+//@ snapshot: fir, flir
 // Test basic generic functions with type inference and explicit type arguments
 
 import @firescript/std.io.println;
@@ -55,3 +56,12 @@ println(absInt);  // 42
 int64 negInt64 = -999i64;
 int64 absInt64 = abs(negInt64, 0i64);
 println(absInt64);  // 999
+
+/* EXPECT
+20
+10
+100
+3.140000
+42
+999
+*/

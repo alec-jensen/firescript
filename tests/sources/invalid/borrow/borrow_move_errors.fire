@@ -7,12 +7,12 @@ void takeOwned(string s) {
 }
 
 string illegalAssign(&string s) {
-    string copy = s; // Error: cannot move borrowed value into owned binding
+    string copy = s; // Error: cannot move borrowed value into owned binding  //~ ERROR FS-SEM-0001 @19
     return copy;
 }
 
 void illegalPass(&string s) {
-    takeOwned(s); // Error: cannot move borrowed value into owned parameter
+    takeOwned(s); // Error: cannot move borrowed value into owned parameter  //~ ERROR FS-SEM-0001 @15
 }
 
 string source = "borrowed";

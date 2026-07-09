@@ -1,42 +1,49 @@
 // Malformed enum definitions.
 
 // Missing enum name
-enum {
-    A
+enum {  //~ ERROR FS-PARSE-0010 @6
+    A  //~ ERROR FS-PARSE-0010 @5
 }
 
 // Duplicate variant
 enum Dup {
     A,
-    A
+    A  //~ ERROR FS-PARSE-0012 @5
+//~^ ERROR FS-PARSE-0010 @8
 }
 
 // Payload field type is not a type
 enum BadPayloadType {
-    V(! x)
+    V(! x)  //~ ERROR FS-PARSE-0010 @7
+//~^ ERROR FS-PARSE-0010 @7
+//~^^ ERROR FS-PARSE-0010 @7
+//~^^^ ERROR FS-PARSE-0010 @7
 }
 
 // Missing payload field name
 enum BadPayloadName {
-    V(int32)
+    V(int32)  //~ ERROR FS-PARSE-0010 @12
+//~^ ERROR FS-PARSE-0010 @15
 }
 
 // Duplicate payload field name
 enum DupField {
-    W(int32 a, int32 a)
+    W(int32 a, int32 a)  //~ ERROR FS-PARSE-0012 @22
+//~^ ERROR FS-PARSE-0010 @26
 }
 
 // Missing ')' to close payload
 enum UnclosedPayload {
     P(int32 a
-}
+}  //~ ERROR FS-PARSE-0010 @1
 
 // Missing ',' between variants
 enum MissingComma {
     A
-    B
+    B  //~ ERROR FS-PARSE-0010 @5
+//~^ ERROR FS-PARSE-0010 @8
 }
 
 // No variants at all
-enum Empty {
+enum Empty {  //~ ERROR FS-PARSE-0012 @6
 }

@@ -34,3 +34,18 @@ for (int32 outer in countup(2)) {
         println(outer * 10 + inner);
     }
 }
+
+/* EXPECT
+0
+1
+2
+---
+1
+3
+5
+---
+0
+1
+10
+11
+*/
