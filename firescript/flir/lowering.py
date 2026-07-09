@@ -269,6 +269,7 @@ from flir.ir import (
     ptr_to,
     struct_type,
 )
+from platforms.windows import WINDOWS_RUNTIME_EXTERNS
 
 _SCALARS: dict[str, FLIRType] = {
     "int8": I8,
@@ -1655,25 +1656,11 @@ class FIRToFLIRLowering:
         "syscall_move": ("fs_rt_syscall_move", "SyscallResult"),
     }
 
-    # Win32 externs: fir intrinsic -> (symbol, dll, return type, param types)
-    _WIN_EXTERNS = {
-        "win_get_process_heap": ("GetProcessHeap", U64, []),
-        "win_heap_alloc": ("HeapAlloc", U64, [U64, U32, U64]),
-        "win_heap_free": ("HeapFree", U32, [U64, U32, U64]),
-        "win_get_std_handle": ("GetStdHandle", U64, [I32]),
-        "win_write_file": ("WriteFile", I32, [U64, U64, U32, U64, U64]),
-        "win_read_file": ("ReadFile", I32, [U64, U64, U32, U64, U64]),
-        "win_create_file_a": ("CreateFileA", U64, [U64, U32, U32, U64, U32, U32, U64]),
-        "win_close_handle": ("CloseHandle", I32, [U64]),
-        "win_delete_file_a": ("DeleteFileA", I32, [U64]),
-        "win_move_file_ex_a": ("MoveFileExA", I32, [U64, U64, U32]),
-        "win_copy_file_a": ("CopyFileA", I32, [U64, U64, I32]),
-        "win_get_last_error": ("GetLastError", U32, []),
-        "win_get_command_line_a": ("GetCommandLineA", U64, []),
-        "win_get_file_size": ("GetFileSize", U32, [U64, U64]),
-        "win_set_file_pointer": ("SetFilePointer", U32, [U64, I32, U64, U32]),
-        "win_exit_process": ("ExitProcess", VOID, [U32]),
-    }
+    # fir intrinsic -> (symbol, return type, param types) for the current
+    # target platform. Only Windows is implemented today (see
+    # firescript/targets.py); a second platform would need this table
+    # selected per-target instead of hardcoded to platforms.windows.
+    _WIN_EXTERNS = WINDOWS_RUNTIME_EXTERNS
 
     _MEM_OPS = {
         "mem_load_u8": (U8, "load"),

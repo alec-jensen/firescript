@@ -254,6 +254,8 @@ class FLIRToAsmBackend:
         ])
 
     def _emit_entry(self) -> None:
+        # Process-exit sequence is Windows-specific (kernel32 ExitProcess);
+        # a Linux/macOS x86-64 target would exit via a raw syscall instead.
         self.out.extend([
             ".globl firescript_entry",
             "firescript_entry:",

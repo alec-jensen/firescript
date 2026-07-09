@@ -1,9 +1,11 @@
 """firescript code generation backends.
 
-The compiler pipeline is AST -> FIR -> FLIR -> x86-64 assembly; see
-flir_to_asm.FLIRToAsmBackend.
+The compiler pipeline is AST -> FIR -> FLIR -> arch-specific assembly.
+Each `codegen.<arch>` subpackage implements one architecture's backend;
+see `codegen.x86_64.flir_to_asm.FLIRToAsmBackend` for the only one
+implemented today (see `firescript/targets.py` for the support matrix).
 """
 
-from codegen.flir_to_asm import FLIRToAsmBackend
+from codegen.x86_64.flir_to_asm import FLIRToAsmBackend
 
 __all__ = ["FLIRToAsmBackend"]

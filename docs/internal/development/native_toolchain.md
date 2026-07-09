@@ -5,14 +5,17 @@ no `as`, `ld`, `objdump`, gcc, or clang, and no third-party Python packages. The
 back of the pipeline is:
 
 ```
-FLIR → codegen/flir_to_asm.py → x86-64 GAS text
-     → backend/assembler.py    → object image (bytes + symbols + relocs)
-     → backend/pe.py           → PE32+ .exe importing only kernel32.dll
+FLIR → codegen/x86_64/flir_to_asm.py → x86-64 GAS text
+     → backend/x86_64/assembler.py    → object image (bytes + symbols + relocs)
+     → backend/windows/pe.py          → PE32+ .exe importing only kernel32.dll
 ```
 
-Everything runs in-process from `main.py:_compile_asm`.
+Everything runs in-process from `main.py:_compile_asm`. The path is split by
+concern (`backend/<arch>` encodes machine code, `backend/<platform>` writes the
+executable format) so a future target can add a sibling module instead of
+touching this one — see `firescript/targets.py` for the current support matrix.
 
-## Assembler (`firescript/backend/assembler.py`)
+## Assembler (`firescript/backend/x86_64/assembler.py`)
 
 `assemble(text) -> ObjectImage` parses the exact Intel-syntax grammar that
 `flir_to_asm.py` emits — a closed, controlled set — and encodes it to machine
@@ -47,7 +50,7 @@ Validation: `tests/python/backend/test_asm_encoding.py` differentially byte-comp
 instruction forms against MinGW `as` when present (and skips cleanly when not,
 so the suite needs only Python).
 
-## PE writer (`firescript/backend/pe.py`)
+## PE writer (`firescript/backend/windows/pe.py`)
 
 `write_pe(obj, out_path, import_dll_map)` lays out sections and writes a PE32+
 console executable by hand:
@@ -67,7 +70,7 @@ console executable by hand:
   `firescript_entry`, ImageBase `0x140000000`, SectionAlignment `0x1000`,
   FileAlignment `0x200`, import + IAT data directories.
 
-Output is byte-deterministic. `backend/pe_inspect.py` is a stdlib-only PE import
+Output is byte-deterministic. `backend/windows/pe_inspect.py` is a stdlib-only PE import
 reader used by the test suite (replacing `objdump`) to assert binaries import
 only kernel32.
 

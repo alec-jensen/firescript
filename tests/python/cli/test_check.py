@@ -43,8 +43,30 @@ def test_file_not_found():
 
 def test_unsupported_target():
     src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
-    proc = t.run_compiler(["--target", "web", src])
+    proc = t.run_compiler(["--platform", "linux", "--arch", "x86_64", src])
     t.require_eq(proc.returncode, 1)
+
+
+def test_invalid_platform_choice_rejected():
+    src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
+    proc = t.run_compiler(["--platform", "not-a-real-platform", src])
+    t.require_eq(proc.returncode, 2)
+
+
+def test_invalid_arch_choice_rejected():
+    src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
+    proc = t.run_compiler(["--arch", "not-a-real-arch", src])
+    t.require_eq(proc.returncode, 2)
+
+
+def test_default_target_compiles():
+    src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
+    exe = os.path.join(BUILD_DIR, "functions.exe")
+    if os.path.exists(exe):
+        os.remove(exe)
+    proc = t.run_compiler([src])
+    t.require_eq(proc.returncode, 0, proc.stderr)
+    t.require(os.path.exists(exe), "default --platform/--arch must resolve to a supported target on CI")
 
 
 def test_no_link_rejected():

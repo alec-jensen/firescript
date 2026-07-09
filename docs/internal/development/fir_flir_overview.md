@@ -21,7 +21,7 @@ AST → FIR Converter (firescript/ast_to_fir.py) → FIR
     ↓
 FIR → FLIR Lowering (firescript/flir/lowering.py) → FLIR
     ↓
-FLIR → x86-64 assembly (firescript/codegen/flir_to_asm.py)
+FLIR → x86-64 assembly (firescript/codegen/x86_64/flir_to_asm.py)
     ↓
 Self-hosted assembler + PE writer (firescript/backend/) → native .exe
 ```
@@ -39,8 +39,9 @@ to FLIR as-is.
   language semantics.
 - **FLIR stage**: erases high-level constructs into structs, pointers, primitive operations,
   and ABI-aware layouts (ready for a backend to consume directly).
-- **Backend stage**: `flir_to_asm.py` emits x86-64 GAS-syntax text; `backend/assembler.py` and
-  `backend/pe.py` turn that into a freestanding PE32+ executable importing only `kernel32.dll`.
+- **Backend stage**: `flir_to_asm.py` emits x86-64 GAS-syntax text; `backend/x86_64/assembler.py`
+  and `backend/windows/pe.py` turn that into a freestanding PE32+ executable importing only
+  `kernel32.dll`.
 
 ## Type System Summary
 

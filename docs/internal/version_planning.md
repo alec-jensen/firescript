@@ -258,12 +258,12 @@ on Windows x86_64.
 ### firescript/std/compiler/assembler.fire
 - Pure-firescript x86-64 assembler consuming the same GAS Intel text format
 - Object image production (sections, symbols, relocations)
-- Must produce byte-identical output to Python `backend/assembler.py`
+- Must produce byte-identical output to Python `backend/x86_64/assembler.py`
 
 ### firescript/std/compiler/pe_writer.fire
 - Pure-firescript PE32+ writer
 - DOS header, COFF header, optional header, section layout, import directory, IAT
-- Must produce byte-identical output to Python `backend/pe.py`
+- Must produce byte-identical output to Python `backend/windows/pe.py`
 
 ### Bootstrap
 - `python firescript/main.py --compiler firescript` toggle uses the firescript
@@ -314,11 +314,15 @@ hybrid-tool release.
 - System V AMD64 calling convention differences from Win64
 
 #### Python backend support
-- Add ELF64 writer to the Python backend (`backend/elf.py`)
-- Add Linux x86-64 syscall ABI to the codegen (`codegen/flir_to_asm.py` already emits
-  target-neutral assembly; add `--target` flag to select Win64 vs System V ABI)
+- Add an ELF64 writer under `backend/linux/elf.py` (mirrors `backend/windows/pe.py`)
+- Add a Linux runtime-extern table under `firescript/platforms/linux.py` (mirrors
+  `firescript/platforms/windows.py`), wired into `flir/lowering.py` for the Linux target
+- Add a System V AMD64 calling convention to `codegen/x86_64/flir_to_asm.py` alongside
+  the existing `Win64Convention`, selected per-target
 - Runtime: Linux syscall wrappers for heap (brk/mmap), I/O (read/write), process exit
-- `--target {windows-x86_64,linux-x86_64}` flag in `main.py`
+- Add `Target(Platform.LINUX, Arch.X86_64)` to `SUPPORTED_TARGETS` in `firescript/targets.py`
+  (already selectable on the CLI via `--platform linux --arch x86_64`, since the choices
+  mirror the full README support matrix — this just wires up the backend)
 - firescript-on-Linux CI (GitHub Actions) runs the golden suite under native Linux build
 - Update `tests/run.py`'s `run` kind / matrix engine to support cross-target testing
 
@@ -355,9 +359,9 @@ hybrid-tool release.
 
 ### Gate
 
-`--target linux-x86_64` produces a working native ELF binary for all test sources. Kiln can
-`init`, `build`, and `run` a simple project with local-only dependencies. Both targets
-pass their golden suites on CI.
+`--platform linux --arch x86_64` produces a working native ELF binary for all test sources.
+Kiln can `init`, `build`, and `run` a simple project with local-only dependencies. Both
+targets pass their golden suites on CI.
 
 ---
 
@@ -387,7 +391,7 @@ networking primitives and connects kiln to the world with registry support.
 
 ### Compiler improvements
 
-- Add `--target {windows-x86_64,linux-x86_64}` to the firescript backend (mirrors Python flag)
+- Add `--platform`/`--arch` flags to the firescript backend (mirrors the Python flags)
 - Ensure std.net compiles and runs on both targets
 
 ### Test coverage

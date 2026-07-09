@@ -1,9 +1,10 @@
 """Pure-Python x86-64 assembler for the FLIR backend's GAS Intel-syntax output.
 
 Consumes exactly the instruction/operand grammar that
-`codegen/flir_to_asm.py` emits (a closed, controlled set) and produces an
-`ObjectImage`: per-section bytes, a symbol table, and a relocation list the
-PE writer resolves at layout time. No external tools.
+`codegen/x86_64/flir_to_asm.py` emits (a closed, controlled set) and
+produces an `ObjectImage`: per-section bytes, a symbol table, and a
+relocation list the executable writer (e.g. `backend/windows/pe.py`)
+resolves at layout time. No external tools.
 
 Encoding choices kept deterministic and relaxation-free:
 - jmp/jcc/call always use the rel32 form (no short-branch relaxation).

@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import struct
 
-from backend.assembler import ObjectImage, RIP32, RIP32_IMPORT
+from backend.x86_64.assembler import ObjectImage, RIP32, RIP32_IMPORT
 
 IMAGE_BASE = 0x140000000
 SECTION_ALIGN = 0x1000

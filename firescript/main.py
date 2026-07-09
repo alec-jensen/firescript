@@ -10,6 +10,7 @@ from log_formatter import LogFormatter
 from compiler_pipeline import CompilerPipeline
 from errors import CompileTimeError
 from utils.file_utils import safe_relpath
+import targets
 
 FIRESCRIPT_VERSION = "0.5.0"
 FIRESCRIPT_RELEASE_DATE = "July 2, 2026"
@@ -56,9 +57,12 @@ def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
     Everything is done in-process with the pure-Python assembler and PE
     writer; no external tools are invoked.
     """
-    from codegen.flir_to_asm import FLIRToAsmBackend
-    from backend.assembler import assemble, AssemblerError
-    from backend.pe import write_pe
+    # Only windows/x86_64 is implemented today (see firescript/targets.py);
+    # a second supported target would need these picked per-target instead
+    # of hardcoded to the x86_64/windows backend.
+    from codegen.x86_64.flir_to_asm import FLIRToAsmBackend
+    from backend.x86_64.assembler import assemble, AssemblerError
+    from backend.windows.pe import write_pe
 
     base_name = os.path.splitext(os.path.basename(file_path))[0]
     os.makedirs("build/temp", exist_ok=True)
@@ -191,7 +195,7 @@ def _runtime_fir_module():
 
 
 def compile_file(file_path, target, out_path=None, emit="bin", check=False, emit_deps=False, no_link=False, link_args=None, emit_fir=False, emit_flir=False):
-    """Compile a single firescript file"""
+    """Compile a single firescript file for the given `targets.Target`."""
     if link_args is None:
         link_args = []
 
@@ -311,8 +315,10 @@ def compile_file(file_path, target, out_path=None, emit="bin", check=False, emit
         logging.info(f"Check completed for {file_path}")
         return True
 
-    if target != "native":
-        logging.error(f"Unsupported target: {target}")
+    if not targets.is_supported(target):
+        logging.error(
+            f"Unsupported target: {target}. Currently supported: {targets.supported_targets_str()}"
+        )
         return False
 
     # AST -> FIR -> FLIR -> x86-64 assembly.
@@ -429,11 +435,16 @@ def main():
     parser.add_argument("-d", "--debug", action="store_true", help="Debug mode")
     parser.add_argument("-o", "--output", help="Output file")
     parser.add_argument(
-        "-t",
-        "--target",
-        choices=["native", "web"],
-        help="Target language for compilation. Default is native",
-        default="native",
+        "--platform",
+        choices=targets.PLATFORM_CHOICES,
+        default=None,
+        help="Target platform to compile for. Defaults to the host platform.",
+    )
+    parser.add_argument(
+        "--arch",
+        choices=targets.ARCH_CHOICES,
+        default=None,
+        help="Target architecture to compile for. Defaults to the host architecture.",
     )
     parser.add_argument("--message-format", choices=["text", "json"], default="text", help="Format for diagnostic messages")
     parser.add_argument("--emit", choices=["ast", "asm", "obj", "bin"], default="bin", help="Type of output to generate")
@@ -463,6 +474,14 @@ def main():
     if args.debug:
         logging.debug(args)
 
+    try:
+        resolved_target = targets.resolve_target(args.platform, args.arch)
+    except targets.UnknownHostError as e:
+        logging.error(
+            f"{e}. Pass --platform and --arch explicitly to select a compilation target."
+        )
+        sys.exit(1)
+
     # Check that at least one of file or dir is specified
     if not args.file and not args.dir:
         logging.error("No input file or directory specified")
@@ -489,7 +508,7 @@ def main():
 
         output_path = compile_file(
             args.file,
-            args.target,
+            resolved_target,
             out_path=args.output,
             emit=args.emit,
             check=args.check,
@@ -537,7 +556,7 @@ def main():
         for file_path in fire_files:
             if compile_file(  # deepcode ignore PathTraversal: directory mode compiles user-selected local files.
                 file_path,
-                args.target,
+                resolved_target,
                 emit=args.emit,
                 check=args.check,
                 emit_deps=args.emit_deps,

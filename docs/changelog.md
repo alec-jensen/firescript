@@ -10,6 +10,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 
 ### Breaking Changes
 - `match` is now a reserved keyword. `@firescript/std.regex`'s `match(pattern, text)` function (added in 0.5.0) has been renamed to `find_match(pattern, text)` to avoid the collision; `is_match` is unaffected.
+- The `-t`/`--target` flag (`native`/`web`) has been removed. It is replaced by two separate flags, `--platform` (`windows`, `linux`, `macos`, `bare-metal`) and `--arch` (`x86_64`, `i686`, `aarch64`, `armv7`, `riscv64`, `riscv32`), which can be combined for cross-compilation; either or both may be omitted to default to the host platform/architecture. Only `--platform windows --arch x86_64` is currently implemented — any other combination fails with a clear "unsupported target" error rather than compiling.
 
 ### Bug Fixes
 - Parser diagnostics that occur at end-of-file (no current token to anchor to, e.g. an incomplete trailing declaration) now report a real line/column — the last real token's position — instead of always reporting line 0, column 0. This anchor position is now also stable regardless of trailing comments in the source, and no longer depends on a stray comment token the parser hadn't yet skipped.

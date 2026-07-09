@@ -80,7 +80,7 @@ class RunKind(Kind):
         return self._run(case, ctx, update=True)
 
     def _run(self, case: TestCase, ctx: ExecContext, update: bool) -> TestResult:
-        from backend import pe_inspect
+        from backend.windows import pe_inspect
 
         src = case.payload["source"]
         directives = case.directives

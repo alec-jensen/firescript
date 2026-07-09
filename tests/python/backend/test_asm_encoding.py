@@ -21,7 +21,7 @@ from harness.config import REPO_ROOT
 
 sys.path.insert(0, os.path.join(REPO_ROOT, "firescript"))
 
-from backend.assembler import assemble  # noqa: E402
+from backend.x86_64.assembler import assemble  # noqa: E402
 
 # Instruction forms covering the backend's closed grammar. Lines with a
 # label/RIP operand would need their displacement field masked before

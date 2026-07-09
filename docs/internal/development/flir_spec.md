@@ -1,6 +1,6 @@
 # FLIR Specification (Lowered IR) [IMPLEMENTED]
 
-FLIR (firescript Lowered IR) is the machine-like IR produced by lowering FIR. It is defined in `firescript/flir/` (`ir.py`, `lowering.py`, `textual.py`) and consumed by `firescript/codegen/flir_to_asm.py`, the only backend. Dump it for a given source file with `--emit-flir`.
+FLIR (firescript Lowered IR) is the machine-like IR produced by lowering FIR. It is defined in `firescript/flir/` (`ir.py`, `lowering.py`, `textual.py`) and consumed by `firescript/codegen/x86_64/flir_to_asm.py`, the only backend. Dump it for a given source file with `--emit-flir`.
 
 ## Purpose
 
