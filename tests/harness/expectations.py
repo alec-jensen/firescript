@@ -226,46 +226,62 @@ def match_diagnostics(
 
 
 def update_diagnostic_annotations(text: str, actuals: list[ActualDiagnostic]) -> str:
-    """Rewrite //~ annotations to match actuals: keep matches, drop stale,
-    insert new ones at the end of the offending line (stacking with //~^
-    when the line already carries a trailing annotation)."""
-    lines = text.splitlines()
-    annotations = parse_diagnostic_annotations(text)
-    missing, extra = match_diagnostics(annotations, actuals)
-    missing_set = {(a.code, a.target_line, a.column, a.anno_line) for a in missing}
+    """Rewrite //~ annotations to match actuals.
 
-    # Drop stale annotation lines/segments.
-    kept_lines = []
-    anno_lines_by_number = {a.anno_line for a in annotations}
-    stale_anno_lines = {a.anno_line for a in missing}
+    Always fully regenerates the annotation set from `actuals` rather than
+    doing a minimal incremental diff against what's already on disk. An
+    earlier incremental version kept individually-matched annotations
+    untouched and only patched in the mismatched ones, recomputing caret
+    counts (//~^, //~^^, ...) purely from the newly-inserted subset. When a
+    stacked group had one diagnostic that stayed matched across a run and a
+    sibling that didn't, that produced an inconsistent caret count for the
+    group (e.g. two siblings both written with a single //~^, only one of
+    which is actually correct) -- which itself changed what the *next*
+    --update pass considered stale, so two same-code diagnostics at
+    different columns on one line could swap which one got which caret
+    count forever, never reaching a fixed point. Regenerating the whole
+    line's group together, every time, is simpler and provably idempotent:
+    for a fixed `actuals` list the output text is always identical.
+    """
+    lines = text.splitlines()
+
+    # Strip every existing annotation line/segment, tracking where each
+    # surviving code line lands in the stripped list (a line that was
+    # nothing but an annotation disappears entirely, shifting everything
+    # below it).
+    orig_to_kept: dict[int, int] = {}
+    kept_lines: list[str] = []
     for idx, raw in enumerate(lines):
         line_no = idx + 1
-        if line_no in stale_anno_lines and line_no in anno_lines_by_number:
-            pos = raw.find("//~")
-            code_part = raw[:pos].rstrip()
-            if code_part == "":
-                continue  # whole line was just the annotation; drop it
-            kept_lines.append(code_part)
-        else:
+        pos = raw.find("//~")
+        if pos == -1:
             kept_lines.append(raw)
+            orig_to_kept[line_no] = len(kept_lines) - 1
+            continue
+        code_part = raw[:pos].rstrip()
+        if code_part == "":
+            continue  # whole line was just the annotation; drop it
+        kept_lines.append(code_part)
+        orig_to_kept[line_no] = len(kept_lines) - 1
 
-    # Insert new annotations for `extra` actual diagnostics, grouped by target line.
     by_line: dict[int, list[ActualDiagnostic]] = {}
-    for a in extra:
+    for a in actuals:
         by_line.setdefault(a.line, []).append(a)
 
+    inserts: dict[int, list[ActualDiagnostic]] = {}
+    for line_no, diags in by_line.items():
+        kept_idx = orig_to_kept.get(line_no, len(kept_lines) - 1)
+        inserts[kept_idx] = diags
+
     output: list[str] = []
-    for line_no, raw in enumerate(kept_lines, start=1):
-        output.append(raw)
-        if line_no not in by_line:
+    for idx, raw in enumerate(kept_lines):
+        diags = inserts.get(idx)
+        if not diags:
+            output.append(raw)
             continue
-        diags = by_line[line_no]
-        remaining = diags
-        if "//~" not in output[-1]:
-            first = diags[0]
-            col_part = f" @{first.column}" if first.column is not None else ""
-            output[-1] = f"{output[-1]}  //~ {first.severity} {first.code}{col_part}"
-            remaining = diags[1:]
+        first, remaining = diags[0], diags[1:]
+        col_part = f" @{first.column}" if first.column is not None else ""
+        output.append(f"{raw}  //~ {first.severity} {first.code}{col_part}")
         for stack_offset, diag in enumerate(remaining, start=1):
             col_part = f" @{diag.column}" if diag.column is not None else ""
             output.append(f"//~{'^' * stack_offset} {diag.severity} {diag.code}{col_part}")

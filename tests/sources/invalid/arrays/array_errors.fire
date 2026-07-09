@@ -26,8 +26,8 @@ fn void wrong_init_size() {  //~ ERROR FS-PARSE-0010 @1
 fn void init_type_mismatch() {  //~ ERROR FS-PARSE-0010 @1
 //~^ ERROR FS-PARSE-0012 @9
     int32[3] arr = [1, "two", 3];  // Mixed types  //~ ERROR FS-SEM-0010 @14
-    int32[3] arr2 = ["one", "two", "three"];  // All wrong type  //~ ERROR FS-SEM-0002 @14
-//~^ ERROR FS-SEM-0010 @14
+    int32[3] arr2 = ["one", "two", "three"];  // All wrong type  //~ ERROR FS-SEM-0010 @14
+//~^ ERROR FS-SEM-0002 @14
 }
 
 // Can't assign array to non-array

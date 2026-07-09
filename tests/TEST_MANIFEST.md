@@ -93,7 +93,8 @@ Discovers every `tests/python/**/test_*.py`; every top-level `test_*`
 callable is one test case, run in a worker process using the `pyunit`
 micro-framework (`from harness import pyunit as t`; see
 `tests/harness/pyunit.py` for the full API: `t.require`, `t.require_eq`,
-`t.tmpdir()`, `t.run_compiler()`, `t.subtest()`, `t.skip()`, `t.params()`).
+`t.tmpdir()`, `t.run_compiler()`, `t.subtest()`, `t.params()`; there is no
+`t.skip()` -- this harness has no skip capability, see CLAUDE.md).
 Plain `assert` also works. Covers:
 
 - `tests/python/cli/` -- `firescript/main.py` invocation behavior never
@@ -331,26 +332,15 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 Larger multi-feature programs (coding-challenge solutions used as integration-style tests, not focused unit tests):
 - **hackathon8_mission1.fire** / **hackathon8_mission2.fire** - `std.io` + `std.fs` combined usage
 
-### `known_issues/`
-See "Known-Failing Regression Tests" below.
-
 ## Splitting large test files
 
 Prefer many small, single-behavior `.fire` files over one large multi-assertion file — a failure in a 10-line file tells you exactly what broke; a failure in a 150-line file with a dozen unrelated assertions does not. When a category needs more than one file, name them `<category>_<specific_behavior>.fire` (e.g. `arrays_iteration_for_in.fire`, `strings_escapes.fire`). This is the standard convention going forward; all of the original `*_comprehensive.fire` files have been split (see `arrays/`, `strings/`, `control_flow/`, `conversions/`, `edge_cases/`, `expressions/`, `functions/`, `scoping/`, `types/` above). When splitting, drop redundant content already covered by a sibling file in the same category (noted inline above where it applies) and drop commented-out "not yet implemented" placeholder assertions rather than preserving them.
 
 ## Known-Failing Regression Tests
 
-These `tests/sources/known_issues/*.fire` cases are **expected to fail** under the `run` kind right now — they were added to lock in known compiler bugs before a fix lands, per CLAUDE.md's "always add a test that would have failed before the fix" rule, applied here in advance of the fix rather than alongside it. Do not "fix" them by editing the EXPECT block or deleting the case; they should start passing once the underlying bug referenced in each file's header comment is fixed, at which point re-run with `--update`, review the diff, and move the file into its normal feature category (e.g. an `Option` fix moves `option_issome_isnone_regression.fire` into `std/types/`).
-
-- **option_issome_isnone_regression.fire** - `Option`/`CopyableOption` `isSome()`/`isNone()` return `false` for both calls regardless of whether the option actually holds a value (confirmed: a populated `Option<int32>(42)` and `CopyableOption<int32>(7)` both report `isSome()==false, isNone()==false`). Golden encodes the *correct* expected values (`true, false, true, false`), so the test fails until the bug is fixed. See CLAUDE.md's feature table note and `docs/reference/std/types.md`.
-- **generic_nested_call_crash_regression.fire** - `println(max(3, 7))` (passing a generic function call directly as another call's argument) crashes FIR->FLIR lowering with `LoweringError: cannot convert T to string` — the generic type parameter `T` isn't substituted with the concrete instantiated type before the implicit string cast. No golden file (compilation itself fails); the runner reports this as `ERROR` with the full traceback until fixed.
-- **generic_method_if_condition_crash_regression.fire** - `if (some_opt.isSome())` (calling a generic class's method inline as a branch condition, or as any inline expression not first assigned to a variable) crashes FIR->FLIR lowering with `LoweringError: unsupported FIR operand NoneType`. No golden file; reports as `ERROR` until fixed.
+`tests/sources/known_issues/*.fire` cases are **expected to fail** under the `run` kind right now — they were added to lock in known compiler bugs before a fix lands, per CLAUDE.md's "always add a test that would have failed before the fix" rule, applied here in advance of the fix rather than alongside it. Do not "fix" them by editing the EXPECT block or deleting the case; they should start passing once the underlying bug referenced in each file's header comment is fixed, at which point re-run with `--update`, review the diff, and move the file into its normal feature category. As of this writing the category is empty -- the three prior entries (`Option`/`CopyableOption` `isSome()`/`isNone()` wrong values, and two generic-call FIR->FLIR lowering crashes) were all traced to one root cause in `ast_to_fir.py`'s `_find_method_def()`/`_expr_type()` (methods/calls on a class or function imported from another module could resolve against a stale or unsubstituted generic type instead of the concrete instantiation) and fixed; the regression tests now live at `std/types/option_issome_isnone.fire`, `generics/generic_nested_call.fire`, and `generics/generic_method_if_condition.fire`.
 
 This category is specifically for currently-known, not-yet-fixed bugs (expected to fail). Normal regression tests added alongside a fix (per CLAUDE.md's standard "Bug Fix Tests" workflow — a test that would have failed before the fix and passes after) go in their feature's regular category directory, not here.
-
-### Known-Skipped `compile-fail` Tests
-
-Three `tests/sources/invalid/` cases carry `//@ skip:` and are reported as `SKIP` rather than run: `match/match_syntax_errors.fire`, `syntax/export_errors.fire`, `syntax/expression_operand_errors.fire`. Discovered during the v2 harness migration: these files trigger cascading parser-recovery diagnostics whose reported line/column are not stable under trailing-comment insertion -- inserting a `//~` annotation on one line shifts where the parser resynchronizes and thus what line/column the *next* diagnostic is reported at, so a single `--update` pass never converges to a stable annotation set. This is a pre-existing parser-recovery fragility, not a harness bug; it needs a compiler-side fix (making recovery position depend only on token stream, not on trailing source text) before these can be re-enabled under the `//~` annotation system.
 
 ## Invalid Tests
 
@@ -365,12 +355,12 @@ Tests in `tests/sources/invalid/<category>/` are expected to fail compilation an
 - **generics/** - `generics_errors.fire`
 - **imports/** - `import_errors.fire`, `export_visibility_private.fire` (importing a non-exported symbol), `visibility_provider.fire` (helper, not a standalone test)
 - **literals/** - `literal_errors.fire`
-- **match/** - `match_non_exhaustive.fire` (missing variant arms and no `_` wildcard), `match_duplicate_variant.fire` (same variant matched twice), `match_wildcard_not_last.fire` (arms after a wildcard `_` are unreachable), `match_unknown_variant.fire` (pattern references a variant that doesn't exist on the enum), `match_unknown_payload_field.fire` (pattern binds a field name the variant doesn't declare), `match_duplicate_field_binding.fire` (the same payload field is bound twice in one pattern)
+- **match/** - `match_non_exhaustive.fire` (missing variant arms and no `_` wildcard), `match_duplicate_variant.fire` (same variant matched twice), `match_wildcard_not_last.fire` (arms after a wildcard `_` are unreachable), `match_unknown_variant.fire` (pattern references a variant that doesn't exist on the enum), `match_unknown_payload_field.fire` (pattern binds a field name the variant doesn't declare), `match_duplicate_field_binding.fire` (the same payload field is bound twice in one pattern), `match_syntax_errors.fire` (malformed match expression syntax)
 - **nullable/** - `nullable_errors.fire`
 - **operators/** - `operator_errors.fire`
 - **scoping/** - `scope_errors.fire` (variable shadowing not allowed, use before declaration, out-of-scope access)
 - **strings/** - `string_implicit_conv_error.fire`
-- **syntax/** - `syntax_errors.fire`, `syntax_comprehensive.fire` (missing semicolons, unclosed parens/braces, invalid tokens, malformed control flow)
+- **syntax/** - `syntax_errors.fire`, `syntax_comprehensive.fire` (missing semicolons, unclosed parens/braces, invalid tokens, malformed control flow), `export_errors.fire` (invalid uses of `export`), `expression_operand_errors.fire` (missing right-hand operands and malformed primary expressions)
 - **types/** - `type_mismatches.fire`, `type_errors_comprehensive.fire` (type mismatches in assignments, function calls, operators, conditions, indexing)
 
 ### Error Test System
@@ -442,6 +432,8 @@ The trailing `/* EXPECT ... */` block (or its `// EXPECT: <line>` fallback form,
 
 Header directives (`//@ key: value` in `.fire` files, `#@ key: value` in `.py` files) must appear in the leading comment block at the top of the file -- one found after the first code token is a discovery-time error, never a silent skip. `//~` diagnostic annotations are the opposite: only valid *after* code starts, anchored to source lines.
 
+**There is no skip directive and no skip capability anywhere in this harness, on purpose** -- see CLAUDE.md's "never skip tests" rule. A test that can't currently pass must fail or error loudly (optionally moved into a `known_issues/` directory with a header comment explaining why, per the conventions above), never silently disappear from the results.
+
 | Directive | Applies to | Meaning |
 |---|---|---|
 | `//@ mode: run \| compile-fail` | `.fire` | Explicit kind override; normally inferred from location (`invalid/` -> compile-fail). Conflicting with location is a discovery error. |
@@ -457,8 +449,6 @@ Header directives (`//@ key: value` in `.fire` files, `#@ key: value` in `.py` f
 | `//@ snapshot: fir[, flir]` | `.fire` | Opt into the `snapshot` kind in addition to `run`. |
 | `//@ no-matrix` | `.fire` | Run only in the default matrix cell. |
 | `//@ no-determinism: <reason>` | `.fire` | Exclude from determinism-kind sampling; reason required. |
-| `//@ requires: <feature>` | `.fire`, `.py` | Skip unless the named capability is available (e.g. `mingw-as`). Repeatable. |
-| `//@ skip: <reason>` | `.fire`, `.py` | Unconditional skip with a mandatory reason; shows as `SKIP`, greppable. |
 | `//~ [^*] ERROR <CODE> [@<col>] ["substr"]` | `.fire` (`invalid/`) | Expected diagnostic, anchored to its own line minus one per leading `^`. |
 
 Unknown directive keys, and directives outside the rules above (misplaced `//@`, a `compile-fail` file with zero `//~` annotations, a duplicate EXPECT block), are always loud discovery errors -- never silently skipped.

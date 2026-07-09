@@ -13,7 +13,7 @@ from harness.config import PYTHON_TESTS_DIR, REPO_ROOT
 from harness.directives import DirectiveError, parse_python_directives
 from harness.kinds.base import ExecContext, Kind
 from harness.model import Status, TestCase, TestId, TestResult
-from harness.pyunit import SkipTest, SubtestFailure, TestFailure
+from harness.pyunit import SubtestFailure, TestFailure
 
 
 def _repo_relative(path: str) -> str:
@@ -95,11 +95,6 @@ class PythonUnitKind(Kind):
         return cases
 
     def execute(self, case: TestCase, ctx: ExecContext) -> TestResult:
-        directives = case.directives
-        skip_reason = directives.value("skip") if directives is not None else None
-        if skip_reason:
-            return TestResult(case.id, Status.SKIP, message=skip_reason)
-
         start = time.perf_counter()
         try:
             module = _load_module(case.payload["module_path"])
@@ -108,8 +103,6 @@ class PythonUnitKind(Kind):
                 fn(case.payload["param"])
             else:
                 fn()
-        except SkipTest as e:
-            return TestResult(case.id, Status.SKIP, message=e.reason, duration_s=time.perf_counter() - start)
         except (TestFailure, SubtestFailure, AssertionError) as e:
             return TestResult(
                 case.id, Status.FAIL, message=str(e),

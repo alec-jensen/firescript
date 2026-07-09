@@ -75,13 +75,13 @@ function main() -> void {
     DeclareLocal("b", int32, %1)
     %2 = LoadVar("a") -> int32
     %3 = LoadVar("b") -> int32
-    %4 = Call(max, [%2, %3], ["own", "own"]) -> T
+    %4 = Call(max, [%2, %3], ["own", "own"]) -> int32
     DeclareLocal("maxVal", int32, %4)
     %5 = LoadVar("maxVal") -> int32
     Call(println, [%5], ["borrow"])
     %6 = LoadVar("a") -> int32
     %7 = LoadVar("b") -> int32
-    %8 = Call(min, [%6, %7], ["own", "own"]) -> T
+    %8 = Call(min, [%6, %7], ["own", "own"]) -> int32
     DeclareLocal("minVal", int32, %8)
     %9 = LoadVar("minVal") -> int32
     Call(println, [%9], ["borrow"])
@@ -91,7 +91,7 @@ function main() -> void {
     DeclareLocal("d", int64, %11)
     %12 = LoadVar("c") -> int64
     %13 = LoadVar("d") -> int64
-    %14 = Call(max, [%12, %13], ["own", "own"]) -> T
+    %14 = Call(max, [%12, %13], ["own", "own"]) -> int64
     DeclareLocal("maxVal64", int64, %14)
     %15 = LoadVar("maxVal64") -> int64
     Call(println, [%15], ["borrow"])
@@ -101,7 +101,7 @@ function main() -> void {
     DeclareLocal("f", float32, %17)
     %18 = LoadVar("e") -> float32
     %19 = LoadVar("f") -> float32
-    %20 = Call(max, [%18, %19], ["own", "own"]) -> T
+    %20 = Call(max, [%18, %19], ["own", "own"]) -> float32
     DeclareLocal("maxFloat", float32, %20)
     %21 = LoadVar("maxFloat") -> float32
     Call(println, [%21], ["borrow"])
@@ -110,7 +110,7 @@ function main() -> void {
     DeclareLocal("negInt", int32, %23)
     %24 = LoadVar("negInt") -> int32
     %25 = IntLiteral(0, int32)
-    %26 = Call(abs, [%24, %25], ["own", "own"]) -> T
+    %26 = Call(abs, [%24, %25], ["own", "own"]) -> int32
     DeclareLocal("absInt", int32, %26)
     %27 = LoadVar("absInt") -> int32
     Call(println, [%27], ["borrow"])
@@ -119,7 +119,7 @@ function main() -> void {
     DeclareLocal("negInt64", int64, %29)
     %30 = LoadVar("negInt64") -> int64
     %31 = IntLiteral(0, int64)
-    %32 = Call(abs, [%30, %31], ["own", "own"]) -> T
+    %32 = Call(abs, [%30, %31], ["own", "own"]) -> int64
     DeclareLocal("absInt64", int64, %32)
     %33 = LoadVar("absInt64") -> int64
     Call(println, [%33], ["borrow"])

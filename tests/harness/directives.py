@@ -38,13 +38,9 @@ FIRE_KEYS = {
     "snapshot": (False, True),
     "no-matrix": (False, False),
     "no-determinism": (False, True),
-    "requires": (True, True),
-    "skip": (False, True),
 }
 
 PYTHON_KEYS = {
-    "requires": (True, True),
-    "skip": (False, True),
     "timeout": (False, True),
     "no-matrix": (False, False),
 }

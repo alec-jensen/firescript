@@ -1,0 +1,19 @@
+// Missing right-hand operands and malformed primary expressions.
+int32 a = 1 || ;  //~ ERROR FS-PARSE-0012 @16
+//~^ ERROR FS-PARSE-0010 @17
+int32 b = 1 && ;  //~ ERROR FS-PARSE-0012 @16
+//~^ ERROR FS-PARSE-0010 @17
+int32 c = 5 as ;  //~ ERROR FS-PARSE-0010 @16
+int32 d = 1 == ;  //~ ERROR FS-PARSE-0012 @16
+//~^ ERROR FS-PARSE-0010 @17
+int32 e = 1 + ;  //~ ERROR FS-PARSE-0012 @15
+//~^ ERROR FS-PARSE-0010 @16
+int32 f = 2 * ;  //~ ERROR FS-PARSE-0012 @15
+//~^ ERROR FS-PARSE-0010 @16
+int32 g = 2 ** ;  //~ ERROR FS-PARSE-0012 @16
+//~^ ERROR FS-PARSE-0010 @17
+int32 h = -;  //~ ERROR FS-PARSE-0012 @12
+//~^ ERROR FS-PARSE-0010 @11
+//~^^ ERROR FS-PARSE-0010 @13
+int32 i = new;  //~ ERROR FS-PARSE-0010 @14
+//~^ ERROR FS-PARSE-0010 @14

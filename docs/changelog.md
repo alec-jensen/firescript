@@ -12,8 +12,11 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - `match` is now a reserved keyword. `@firescript/std.regex`'s `match(pattern, text)` function (added in 0.5.0) has been renamed to `find_match(pattern, text)` to avoid the collision; `is_match` is unaffected.
 
 ### Bug Fixes
-- Parser diagnostics that occur at end-of-file (no current token to anchor to, e.g. an incomplete trailing declaration) now report a real line/column — the last real token's position — instead of always reporting line 0, column 0.
+- Parser diagnostics that occur at end-of-file (no current token to anchor to, e.g. an incomplete trailing declaration) now report a real line/column — the last real token's position — instead of always reporting line 0, column 0. This anchor position is now also stable regardless of trailing comments in the source, and no longer depends on a stray comment token the parser hadn't yet skipped.
 - Nullable variables, fields, and parameters are now declared with a trailing `?` after the name instead of a leading `nullable` keyword: `int a? = null;` instead of `nullable int a = null;`. The `nullable` keyword has been removed. This also applies to the generic-parameter constraint form (`class Option<T?>` instead of `class Option<nullable T>`).
+- `export` followed only by a trailing comment (nothing else before end-of-file) no longer silently drops the "expected declaration after 'export'" diagnostic.
+- `Option<T>`/`CopyableOption<T>` (and any other generic class imported from a different module) now correctly resolve method calls against the concrete instantiated type: `isSome()`/`isNone()` returned wrong results, and calling a generic class's method inline (e.g. as an `if` condition or directly as another call's argument) crashed the compiler. Both were the same root cause — method calls on an imported generic class resolved against the bare class name instead of its instantiation.
+- Passing a generic function call directly as another call's argument (e.g. `println(max(3, 7))`, where `max<T>` is generic) no longer crashes with `LoweringError: cannot convert T to string` — the inner call's return type is now resolved to its concrete substituted type instead of the raw unsubstituted type parameter.
 
 ## 0.5.0 - Kirin
 *July 2, 2026*

@@ -2,7 +2,7 @@
 
 The `std.types` module provides generic container and utility types.
 
-> Status: `Tuple` and `CopyableTuple` are [IMPLEMENTED] and tested. `Option` and `CopyableOption` are [IN DEVELOPMENT]: they compile, but `isSome()`/`isNone()` currently return incorrect results (a known bug in generic-class methods that compare a nullable field to `null`), so they should not be relied on yet.
+> Status: `Tuple`, `CopyableTuple`, `Option`, and `CopyableOption` are all [IMPLEMENTED] and tested.
 
 ## `Tuple<T, U>`
 
@@ -52,9 +52,9 @@ CopyableTuple<float64, float64> coord = CopyableTuple<float64, float64>(3.14, 2.
 CopyableTuple<float64, float64> copy = coord;  // copies
 ```
 
-## `Option<T>` [IN DEVELOPMENT]
+## `Option<T>` [IMPLEMENTED]
 
-An optional value of type `T`. Use this to represent potentially missing values without explicit nullability. **Known issue:** `isSome()` and `isNone()` currently return incorrect results; prefer plain nullable (`?`) variables until this is fixed.
+An optional value of type `T`. Use this to represent potentially missing values without explicit nullability.
 
 ```firescript
 class Option<T?> {
@@ -89,9 +89,9 @@ if (present) {
 
 **Note:** `Option` is an Owned type; construct carefully with move semantics in mind.
 
-## `CopyableOption<T>` [IN DEVELOPMENT]
+## `CopyableOption<T>` [IMPLEMENTED]
 
-A copyable variant of `Option` for copyable types. Subject to the same known issue as `Option`.
+A copyable variant of `Option` for copyable types.
 
 ```firescript
 copyable class CopyableOption<T?> {

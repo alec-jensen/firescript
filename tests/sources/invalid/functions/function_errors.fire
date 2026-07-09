@@ -2,17 +2,17 @@
 
 // Missing return statement in non-void function
 fn int32 missing_return(int32 x) {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @10
-//~^^ ERROR FS-PARSE-0012 @25
-//~^^^ ERROR FS-PARSE-0010 @31
+//~^ ERROR FS-PARSE-0012 @25
+//~^^ ERROR FS-PARSE-0010 @31
+//~^^^ ERROR FS-PARSE-0012 @10
     println("no return!");  //~ ERROR FS-PARSE-0012 @5
 }
 
 // Function call with wrong number of arguments
 fn int32 takes_two(int32 a, int32 b) {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @10
-//~^^ ERROR FS-PARSE-0012 @20
-//~^^^ ERROR FS-PARSE-0010 @26
+//~^ ERROR FS-PARSE-0012 @20
+//~^^ ERROR FS-PARSE-0010 @26
+//~^^^ ERROR FS-PARSE-0012 @10
 //~^^^^ ERROR FS-PARSE-0010 @36
     return a + b;  //~ ERROR FS-PARSE-0003 @12
 //~^ ERROR FS-PARSE-0003 @16
@@ -26,9 +26,9 @@ fn void wrong_args() {  //~ ERROR FS-PARSE-0010 @1
 
 // Function call with wrong argument types
 fn int32 takes_int(int32 x) {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @10
-//~^^ ERROR FS-PARSE-0012 @20
-//~^^^ ERROR FS-PARSE-0010 @26
+//~^ ERROR FS-PARSE-0012 @20
+//~^^ ERROR FS-PARSE-0010 @26
+//~^^^ ERROR FS-PARSE-0012 @10
     return x;  //~ ERROR FS-PARSE-0003 @12
 }
 

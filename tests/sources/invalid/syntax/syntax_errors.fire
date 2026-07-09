@@ -2,8 +2,8 @@
 // EXPECT: parser errors
 
 print("-- invalid syntax: missing semicolons --")  //~ ERROR FS-PARSE-0012 @1
-int32 a = 5 // missing semicolon  //~ ERROR FS-PARSE-0010 @13
-int32 b = 6; int32 c = 7 // missing semicolon after chained declaration style (unsupported)  //~ ERROR FS-PARSE-0010 @26
+int32 a = 5 // missing semicolon  //~ ERROR FS-PARSE-0010 @12
+int32 b = 6; int32 c = 7 // missing semicolon after chained declaration style (unsupported)  //~ ERROR FS-PARSE-0010 @25
 
 print("-- invalid syntax: unclosed paren --");
 int32 x = (1 + 2; // unclosed paren  //~ ERROR FS-PARSE-0010 @17

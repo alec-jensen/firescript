@@ -1,0 +1,29 @@
+// Regression test: Option/CopyableOption's isSome()/isNone() must reflect
+// whether the option actually holds a value. Root cause was
+// ast_to_fir.py's _find_method_def() looking up methods keyed by the bare
+// class name while callers passed the full generic instantiation (e.g.
+// "Option<int32>"), which only ever failed to resolve for classes imported
+// from another module (a same-file generic class's calls are pre-resolved
+// by the parser's own type-checking pass instead).
+import @firescript/std.io.println;
+import @firescript/std.types.Option;
+import @firescript/std.types.CopyableOption;
+
+Option<int32> some_opt = Option<int32>(42);
+bool some_is_some = some_opt.isSome();
+bool some_is_none = some_opt.isNone();
+println(some_is_some);
+println(some_is_none);
+
+CopyableOption<int32> csome = CopyableOption<int32>(7);
+bool csome_is_some = csome.isSome();
+bool csome_is_none = csome.isNone();
+println(csome_is_some);
+println(csome_is_none);
+
+/* EXPECT
+true
+false
+true
+false
+*/

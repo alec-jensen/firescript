@@ -12,14 +12,14 @@ T identity<T>(T x) {
 }
 
 // Missing '(' after generic class type arguments
-Box<int32> a = Box<int32>;  //~ ERROR FS-PARSE-0003 @16
-//~^ ERROR FS-PARSE-0010 @26
+Box<int32> a = Box<int32>;  //~ ERROR FS-PARSE-0010 @26
+//~^ ERROR FS-PARSE-0003 @16
 
 // Missing '(' after generic function type arguments
-int32 b = identity<int32>;  //~ ERROR FS-PARSE-0003 @11
-//~^ ERROR FS-PARSE-0010 @26
+int32 b = identity<int32>;  //~ ERROR FS-PARSE-0010 @26
+//~^ ERROR FS-PARSE-0003 @11
 
 // Non-type token inside a type argument list
-Box<int32> c = Box<5>(1);  //~ ERROR FS-PARSE-0003 @16
+Box<int32> c = Box<5>(1);  //~ ERROR FS-PARSE-0010 @20
 //~^ ERROR FS-PARSE-0010 @20
-//~^^ ERROR FS-PARSE-0010 @20
+//~^^ ERROR FS-PARSE-0003 @16

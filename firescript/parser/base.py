@@ -338,21 +338,62 @@ class ParserBase:
         )
         return None
 
+    _COMMENT_TOKEN_TYPES = ("SINGLE_LINE_COMMENT", "MULTI_LINE_COMMENT_START", "MULTI_LINE_COMMENT_END")
+
+    def _last_non_comment_token(self, start_idx: Optional[int] = None) -> Optional[Token]:
+        """Scan self.tokens backward from `start_idx` (default: the end of
+        the stream) for the last token that isn't part of a comment.
+
+        Comments are ordinary tokens here (stripped ad hoc by each parse loop
+        that calls _skip_comment(), not by the lexer), so a stray recovery
+        path can leave self.current_token -- or self.tokens[-1] at EOF --
+        sitting on a comment token, e.g. a trailing //~ diagnostic-annotation
+        comment. Anchoring a diagnostic to that token's position would make
+        the reported position depend on how many trailing comment lines
+        happen to follow the real code, which is exactly the instability
+        this method exists to avoid.
+        """
+        i = len(self.tokens) - 1 if start_idx is None else start_idx
+        while i >= 0:
+            t = self.tokens[i]
+            if t.type == "MULTI_LINE_COMMENT_END":
+                # Skip back through the whole block comment, including its
+                # start marker.
+                i -= 1
+                while i >= 0 and self.tokens[i].type != "MULTI_LINE_COMMENT_START":
+                    i -= 1
+                i -= 1
+                continue
+            if t.type in ("SINGLE_LINE_COMMENT", "MULTI_LINE_COMMENT_START"):
+                i -= 1
+                continue
+            return t
+        return None
+
     def report_error(self, err: CompileTimeError, token: Optional[Token] = None) -> None:
         if self.file is not None:
             # At EOF the current token is None; anchor right after the last
-            # real token instead of leaving line/column at their 0 defaults
-            # (which could never be expressed as a //~ line-anchored
-            # diagnostic annotation). Anchoring off the last *token* rather
-            # than len(self.file) keeps the position stable regardless of
-            # what trailing text (e.g. a //~ comment) follows it in the file.
-            if token is not None:
+            # real (non-comment) token instead of leaving line/column at
+            # their 0 defaults (which could never be expressed as a //~
+            # line-anchored diagnostic annotation). Anchoring off the last
+            # real token rather than len(self.file) keeps the position
+            # stable regardless of what trailing text (e.g. a //~ comment)
+            # follows it in the file.
+            if token is not None and token.type in self._COMMENT_TOKEN_TYPES:
+                # A stray recovery path left the caller pointing at a
+                # comment token instead of skipping past it -- resolve to
+                # the last real token before it instead of anchoring to the
+                # comment (see _last_non_comment_token).
+                start_idx = self._current_token_index()
+                if start_idx < 0:
+                    start_idx = len(self.tokens) - 1
+                last = self._last_non_comment_token(start_idx)
+                index = last.index + len(last.value or "") if last is not None else 0
+            elif token is not None:
                 index = token.index
-            elif self.tokens:
-                last = self.tokens[-1]
-                index = last.index + len(last.value or "")
             else:
-                index = 0
+                last = self._last_non_comment_token()
+                index = last.index + len(last.value or "") if last is not None else 0
             try:
                 line_num, column_num = get_line_and_coumn_from_index(self.file, index)
                 line_text = get_line(self.file, line_num)

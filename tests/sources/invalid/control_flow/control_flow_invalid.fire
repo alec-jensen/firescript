@@ -2,19 +2,19 @@
 // EXPECT: errors about conditions and misplaced statements
 
 print("-- invalid: break outside loop --");  //~ ERROR FS-PARSE-0012 @1
-break; // should error (not inside loop)  //~ ERROR FS-SEM-0010 @1
-//~^ ERROR FS-PARSE-0010 @8
+break; // should error (not inside loop)  //~ ERROR FS-PARSE-0010 @7
+//~^ ERROR FS-SEM-0010 @1
 
 print("-- invalid: continue outside loop --");
-continue; // should error  //~ ERROR FS-SEM-0010 @1
-//~^ ERROR FS-PARSE-0010 @11
+continue; // should error  //~ ERROR FS-PARSE-0010 @10
+//~^ ERROR FS-SEM-0010 @1
 
 print("-- invalid: if condition type mismatch (already elsewhere) repeating with string) --");
-if ("hello") { print(1); }  //~ ERROR FS-SEM-0010 @5
-//~^ ERROR FS-PARSE-0012 @16
+if ("hello") { print(1); }  //~ ERROR FS-PARSE-0012 @16
+//~^ ERROR FS-SEM-0010 @5
 
 print("-- invalid: while condition non-bool --");  //~ ERROR FS-PARSE-0012 @1
-while (1) { print(1); }  //~ ERROR FS-SEM-0010 @8
-//~^ ERROR FS-PARSE-0012 @13
+while (1) { print(1); }  //~ ERROR FS-PARSE-0012 @13
+//~^ ERROR FS-SEM-0010 @8
 
 print("-- invalid control flow tests end --");  //~ ERROR FS-PARSE-0012 @1

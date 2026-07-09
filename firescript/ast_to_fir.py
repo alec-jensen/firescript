@@ -528,6 +528,22 @@ class ASTToFIRConverter:
                 return f"generator<{yield_type}>"
             if node.name in INTRINSIC_RETURN_TYPES:
                 return INTRINSIC_RETURN_TYPES[node.name]
+            if node.name in self.generic_functions:
+                # node.return_type may be a stale, unsubstituted generic
+                # placeholder (e.g. "T") for a cross-module generic call
+                # whose defining module wasn't merged yet when the call site
+                # was first type-checked -- prefer computing the concrete
+                # substituted return type from the inferred type args over
+                # trusting that annotation.
+                type_params = self.generic_functions[node.name]
+                type_args = list(getattr(node, "type_args", []) or [])
+                if not type_args or any(a in type_params for a in type_args):
+                    type_args = self._infer_type_args(node.name, node)
+                func_def = self.function_defs.get(node.name)
+                if func_def is not None and type_args and len(type_args) == len(type_params):
+                    subst = dict(zip(type_params, type_args))
+                    ret = func_def.return_type or "void"
+                    return subst.get(ret, ret)
             annotated = getattr(node, "return_type", None)
             if annotated:
                 return annotated
@@ -593,7 +609,10 @@ class ASTToFIRConverter:
 
     def _find_method_def(self, class_name: str, method_name: str) -> Optional[ASTNode]:
         """Find a method definition on a class or any of its base classes."""
-        current: Optional[str] = class_name
+        # class_method_defs is keyed by the bare class name, but callers pass
+        # the full declared type including generic args (e.g. "Box<int32>")
+        # -- strip them the same way _all_class_fields/FIELD_ACCESS already do.
+        current: Optional[str] = class_name.split("<")[0] if class_name else class_name
         seen: set[str] = set()
         while current is not None and current not in seen:
             seen.add(current)

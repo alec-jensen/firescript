@@ -61,7 +61,16 @@ def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
 
     base_name = os.path.splitext(os.path.basename(file_path))[0]
     os.makedirs("build/temp", exist_ok=True)
-    asm_path = os.path.join("build", "temp", f"{base_name}.s")
+    if emit == "asm":
+        # A user-facing deliverable at a stable default path (tests and
+        # docs depend on this exact name when -o isn't given).
+        asm_path = os.path.join("build", "temp", f"{base_name}.s")
+    else:
+        # Pure scratch file consumed only by the assembler below and never
+        # exposed to the user -- PID-suffixed so concurrent compiler
+        # invocations of the same source file (or files sharing a
+        # basename) never write it to the same path at once.
+        asm_path = os.path.join("build", "temp", f"{base_name}.{os.getpid()}.s")
 
     try:
         asm_text = FLIRToAsmBackend(flir_module).generate()

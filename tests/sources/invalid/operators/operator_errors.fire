@@ -38,9 +38,9 @@ fn void logical_on_non_bool() {  //~ ERROR FS-PARSE-0010 @1
 //~^ ERROR FS-PARSE-0012 @9
     int32 a = 5;  //~ ERROR FS-SEM-0010 @11
     int32 b = 10;  //~ ERROR FS-SEM-0010 @11
-    bool result = a and b;  // 'and' requires boolean operands  //~ ERROR FS-SEM-0002 @10
+    bool result = a and b;  // 'and' requires boolean operands  //~ ERROR FS-PARSE-0010 @21
 //~^ ERROR FS-SEM-0010 @10
-//~^^ ERROR FS-PARSE-0010 @21
+//~^^ ERROR FS-SEM-0002 @10
 }
 
 // Unary operator type mismatches
@@ -50,9 +50,9 @@ fn void unary_mismatches() {  //~ ERROR FS-PARSE-0010 @1
     string negated = -s;  // Can't negate a string  //~ ERROR FS-SEM-0010 @22
     
     int32 x = 5;  //~ ERROR FS-SEM-0010 @11
-    bool b = not x;  // 'not' requires boolean  //~ ERROR FS-SEM-0010 @10
-//~^ ERROR FS-PARSE-0003 @14
-//~^^ ERROR FS-PARSE-0010 @18
+    bool b = not x;  // 'not' requires boolean  //~ ERROR FS-PARSE-0010 @18
+//~^ ERROR FS-SEM-0010 @10
+//~^^ ERROR FS-PARSE-0003 @14
 }
 
 // Assignment to non-lvalue

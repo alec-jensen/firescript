@@ -6,21 +6,23 @@ stage2 builds the same source -> stage3 binary; stage2 and stage3 must be
 byte-identical. `--profile full` and release CI only.
 
 This stub proves the kind-plugin seam (one module, no core edits) without
-implementing the real contract, per spec sec.11 phase 3.
+implementing the real contract, per spec sec.11 phase 3. There is no
+capability to skip a test in this harness (tests must fail loudly, never be
+silently skipped -- see CLAUDE.md), so until the self-hosted toolchain
+actually exists to byte-compare, this kind discovers zero cases rather than
+producing a fake one that reports as skipped.
 """
 from __future__ import annotations
 
 from harness.kinds.base import ExecContext, Kind
-from harness.model import Status, TestCase, TestId, TestResult
+from harness.model import TestCase, TestResult
 
 
 class BootstrapKind(Kind):
     name = "bootstrap"
 
     def discover(self, config) -> list[TestCase]:
-        if config.profile != "full":
-            return []
-        return [TestCase(id=TestId(kind="bootstrap", path="tests/bootstrap", name="stage2_stage3_byte_match"))]
+        return []
 
     def execute(self, case: TestCase, ctx: ExecContext) -> TestResult:
-        return TestResult(case.id, Status.SKIP, message="self-hosted compiler not yet buildable")
+        raise NotImplementedError("bootstrap kind has no runnable cases yet")

@@ -1,0 +1,16 @@
+// Regression test: passing a generic function call directly as an argument
+// to another call (nested generic calls) must resolve the inner call's
+// concrete return type, not the raw generic placeholder. Root cause was
+// ast_to_fir.py's _expr_type() trusting a stale, unsubstituted
+// node.return_type annotation ("T") for a cross-module generic call whose
+// defining module wasn't merged yet when the call site was first
+// type-checked, which then poisoned println's own generic type-arg
+// inference.
+import @firescript/std.io.println;
+import @firescript/std.math.max;
+
+println(max(3, 7));
+
+/* EXPECT
+7
+*/

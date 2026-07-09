@@ -1,7 +1,7 @@
 """Console + JSON reporting (spec sec.6.4, sec.6.5). Preserves the existing
-visual language: [CASE ] cyan, [PASS ] green, [FAIL ] red, [SKIP ] yellow
-with reason, [UPDATE]/[NEW ] yellow; per-kind summary lines, totals, then
-coverage, then the seed as the final line."""
+visual language: [CASE ] cyan, [PASS ] green, [FAIL ]/[ERROR ] red,
+[UPDATE]/[NEW ] yellow; per-kind summary lines, totals, then coverage, then
+the seed as the final line. There is no SKIP status -- see model.py."""
 from __future__ import annotations
 
 import json
@@ -38,7 +38,6 @@ _STATUS_COLOR = {
     Status.PASS: "32",
     Status.FAIL: "31",
     Status.ERROR: "31",
-    Status.SKIP: "33",
     Status.UPDATED: "33",
     Status.NEW: "33",
 }
@@ -72,11 +71,8 @@ class ConsoleReporter:
             total = len(kind_results)
             passed = sum(1 for r in kind_results if r.status in (Status.PASS, Status.UPDATED, Status.NEW))
             failed = sum(1 for r in kind_results if r.status in (Status.FAIL, Status.ERROR))
-            skipped = sum(1 for r in kind_results if r.status == Status.SKIP)
             color = "32" if failed == 0 else "31"
-            print(colorize(
-                f"{kind_name}: {passed}/{total} passed, {failed}/{total} failed, {skipped} skipped", color
-            ))
+            print(colorize(f"{kind_name}: {passed}/{total} passed, {failed}/{total} failed", color))
 
         total = len(results)
         failed_total = sum(1 for r in results if r.status in (Status.FAIL, Status.ERROR))
@@ -102,7 +98,7 @@ class JsonReporter:
         self.results.append(result)
 
     def write(self, path: str, *, seed: str, profile: str, matrix: str, started: float, coverage_pct=None) -> None:
-        counts = {"pass": 0, "fail": 0, "error": 0, "skip": 0, "updated": 0, "new": 0}
+        counts = {"pass": 0, "fail": 0, "error": 0, "updated": 0, "new": 0}
         for r in self.results:
             counts[r.status.value.lower()] += 1
         payload = {

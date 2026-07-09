@@ -32,8 +32,8 @@ int32 d = first<int32>(1, 2);  //~ ERROR FS-SEM-0010 @11
 T pick<T>(T x, T y) {
     return x;
 }
-int32 e = pick(1, "two");  //~ ERROR FS-SEM-0002 @7
-//~^ ERROR FS-SEM-0010 @11
+int32 e = pick(1, "two");  //~ ERROR FS-SEM-0010 @11
+//~^ ERROR FS-SEM-0002 @7
 
 // Builtin arity error
 print(1, 2);  //~ ERROR FS-PARSE-0012 @1

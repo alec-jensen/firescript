@@ -53,6 +53,10 @@ The changelog lives at `docs/changelog.md`. Changelog rules:
 
 The goal is **100% test coverage** of all implemented language features. Every implemented feature must have at least one test. Every bug fix must be accompanied by a regression test that would have caught the bug.
 
+### Never Skip Tests
+
+There is no skip capability anywhere in the test harness, and none should ever be added. If a test can't currently pass — a compiler bug, a harness limitation, environmental flakiness — it must fail or error loudly, not be silently skipped or hidden. Do not add a `//@ skip:`-style directive, a `pyunit` skip helper, a `Status.SKIP`-equivalent result, or any other mechanism that makes a discovered test disappear from the pass/fail count. If a case is a known, not-yet-fixed bug, document it with a header comment explaining the bug and let it fail/error (see `tests/sources/known_issues/` and `tests/sources/invalid/known_issues/` for the convention — move the file there, don't remove it from the run). Never edit a test's expectations just to make a known-broken case stop showing up as a failure.
+
 ### Running Tests
 
 ```bash
@@ -150,7 +154,7 @@ The table below reflects the **current implementation status** of major language
 | `@firescript/std.io` (`print`, `println`) | [IMPLEMENTED] |
 | `@firescript/std.math` | [IMPLEMENTED] |
 | `@firescript/std.types` — `Tuple`, `CopyableTuple` | [IMPLEMENTED] |
-| `@firescript/std.types` — `Option`, `CopyableOption` (`isSome`/`isNone` currently return wrong results) | [IN DEVELOPMENT] |
+| `@firescript/std.types` — `Option`, `CopyableOption` | [IMPLEMENTED] |
 | `@firescript/std.fs` (`File`, `FileResult`) | [IMPLEMENTED] |
 | `@firescript/std.regex` | [IMPLEMENTED] |
 | `@firescript/std.cli.args` | [IMPLEMENTED] |

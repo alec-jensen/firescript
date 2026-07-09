@@ -4,9 +4,9 @@
 import utils.{5}  //~ ERROR FS-PARSE-0010 @15
 
 // Unclosed symbol group
-import utils.{helper
+import utils.{helper  //~ ERROR FS-PARSE-0010 @21
 
-// Missing alias name after 'as'  //~ ERROR FS-PARSE-0010 @1
+// Missing alias name after 'as'
 import utils.{CONSTANT as }  //~ ERROR FS-PARSE-0010 @27
 
 // Non-symbol token after '.'

@@ -3,8 +3,8 @@ int32[] arr = [1, 2, 3];
 
 // Missing index expression
 int32 a = arr[;  //~ ERROR FS-PARSE-0012 @15
-//~^ ERROR FS-PARSE-0010 @18
-//~^^ ERROR FS-PARSE-0010 @18
+//~^ ERROR FS-PARSE-0010 @16
+//~^^ ERROR FS-PARSE-0010 @16
 
 // Missing ']' after index
 int32 b = arr[1;  //~ ERROR FS-PARSE-0010 @16

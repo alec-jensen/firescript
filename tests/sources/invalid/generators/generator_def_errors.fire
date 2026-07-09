@@ -46,10 +46,10 @@ generator<int32> g8(int32 x {  //~ ERROR FS-PARSE-0010 @29
 // Missing '{' to start body
 generator<int32> g9()
     yield 1;  //~ ERROR FS-PARSE-0010 @5
-//~^ ERROR FS-PARSE-0010 @15
+//~^ ERROR FS-PARSE-0010 @13
 
 // yield with no expression
 generator<int32> g10() {
     yield;  //~ ERROR FS-PARSE-0012 @10
-//~^ ERROR FS-PARSE-0010 @13
+//~^ ERROR FS-PARSE-0010 @11
 }

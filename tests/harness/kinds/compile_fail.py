@@ -64,15 +64,6 @@ class CompileFailKind(Kind):
                     )
                 )
                 continue
-            if directives.value("skip"):
-                cases.append(
-                    TestCase(
-                        id=TestId(kind="compile-fail", path=rel, name=stem),
-                        directives=directives,
-                        payload={"source": src, "text": text},
-                    )
-                )
-                continue
             try:
                 annotations = parse_diagnostic_annotations(text)
             except DirectiveError as e:

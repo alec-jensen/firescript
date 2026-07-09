@@ -19,10 +19,15 @@ class TestId:
 
 
 class Status(str, Enum):
+    """No SKIP value on purpose: this harness never skips a discovered test.
+    A test either passes, fails, errors, or (in --update mode) gets its
+    in-file expectations rewritten -- see CLAUDE.md's "never skip tests"
+    rule. A kind that can't run a case yet (e.g. an unimplemented feature)
+    should discover zero cases for it, not report a fake skipped one."""
+
     PASS = "PASS"
     FAIL = "FAIL"
     ERROR = "ERROR"
-    SKIP = "SKIP"
     UPDATED = "UPDATED"
     NEW = "NEW"
 

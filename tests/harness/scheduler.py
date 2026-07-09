@@ -22,11 +22,6 @@ def _execute_one(kind_name: str, case: TestCase, config, master_seed: str, updat
     if "discovery_error" in case.payload:
         return TestResult(case.id, Status.ERROR, message=case.payload["discovery_error"])
 
-    if case.directives is not None:
-        skip_reason = case.directives.value("skip")
-        if skip_reason:
-            return TestResult(case.id, Status.SKIP, message=skip_reason)
-
     kind_cls = kinds_pkg.get(kind_name)
     kind = kind_cls()
 

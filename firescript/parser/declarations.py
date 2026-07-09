@@ -412,6 +412,15 @@ class DeclarationsMixin(TypeSystemMixin):
                 continue
             if self.current_token.type == "EXPORT":
                 self.advance()
+                # A trailing comment (e.g. a //~ diagnostic annotation) right
+                # after 'export' must not mask the "nothing follows" case --
+                # skip it before checking for EOF, same as the top-level
+                # loop does before dispatching on token type.
+                while self.current_token and self.current_token.type in (
+                    "SINGLE_LINE_COMMENT",
+                    "MULTI_LINE_COMMENT_START",
+                ):
+                    self._skip_comment()
                 if not self.current_token:
                     self.expected_token_error("declaration after 'export'", self.current_token)
                     self._pending_export = False

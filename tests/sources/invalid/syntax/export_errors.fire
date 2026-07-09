@@ -1,0 +1,16 @@
+// Invalid uses of 'export'.
+
+// export before an import
+export import utils.helper  //~ ERROR FS-PARSE-0012 @8
+
+// export before a directive
+export directive enable_drops;  //~ ERROR FS-PARSE-0012 @8
+
+// export of a constraint declaration
+export constraint Nums = int32 | int64;  //~ ERROR FS-PARSE-0012 @8
+
+// export applied to a non-declaration statement
+export println("hi");  //~ ERROR FS-PARSE-0012 @8
+
+// export at end of file with nothing after it
+export  //~ ERROR FS-PARSE-0010 @7

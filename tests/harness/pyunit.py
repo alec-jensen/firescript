@@ -25,12 +25,6 @@ class TestFailure(AssertionError):
     pass
 
 
-class SkipTest(Exception):
-    def __init__(self, reason: str):
-        self.reason = reason
-        super().__init__(reason)
-
-
 class SubtestFailure(AssertionError):
     def __init__(self, label: str, inner: BaseException):
         self.label = label
@@ -49,10 +43,6 @@ def require_eq(a, b, msg: str = "") -> None:
         raise TestFailure(f"{detail}{a!r} != {b!r}")
 
 
-def skip(reason: str) -> None:
-    raise SkipTest(reason)
-
-
 @contextlib.contextmanager
 def tmpdir():
     with tempfile.TemporaryDirectory() as d:
@@ -63,8 +53,6 @@ def tmpdir():
 def subtest(label: str):
     try:
         yield
-    except SkipTest:
-        raise
     except Exception as e:  # noqa: BLE001
         raise SubtestFailure(label, e) from e
 

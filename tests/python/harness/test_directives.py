@@ -57,10 +57,9 @@ def test_repeatable_keys_accumulate_in_order():
 
 
 def test_python_directives_use_hash_at():
-    text = "#@ requires: mingw-as\n#@ skip: flaky on CI\nimport os\n"
+    text = "#@ timeout: 5\nimport os\n"
     d = parse_python_directives(text)
-    t.require_eq(d.values("requires"), ["mingw-as"])
-    t.require_eq(d.value("skip"), "flaky on CI")
+    t.require_eq(d.value("timeout"), "5")
 
 
 def test_two_spaces_after_marker_is_error():
