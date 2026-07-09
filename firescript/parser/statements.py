@@ -621,6 +621,10 @@ class StatementsMixin(ExpressionsMixin):
         if self.current_token.type == "IF":
             return self.parse_if_statement()
 
+        # Handle match expressions used as a statement (result discarded)
+        if self.current_token.type == "MATCH":
+            return self._parse_match_expression()
+
         # Dangling else (no preceding if handled this token)
         if self.current_token.type == "ELSE":
             tok = self.current_token

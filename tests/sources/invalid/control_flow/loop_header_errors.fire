@@ -1,0 +1,42 @@
+// Malformed loop and if headers.
+
+// Invalid if condition, then close paren
+if (1 +) {
+    int32 a = 1;
+}
+
+// Missing ')' after if condition
+if (true {
+    int32 b = 1;
+}
+
+// Missing '(' after while
+while true {
+    int32 c = 1;
+}
+
+// Missing ')' after while condition
+while (true {
+    int32 d = 1;
+}
+
+// Missing '(' after for
+for ;;) {
+    int32 e = 1;
+}
+
+// Missing ';' after for init
+for (int32 f = 0) {
+    int32 g = 1;
+}
+
+// Missing ')' after for header
+for (int32 h = 0; h < 3; h++ {
+    int32 i2 = 1;
+}
+
+// for-in: missing 'in' cannot be formed (lookahead requires it), but a bad
+// collection expression after 'in' can:
+for (int32 v in ) {
+    int32 j2 = 1;
+}

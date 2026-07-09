@@ -2,7 +2,7 @@
 // EXPECT: parser error
 
 enum Shape {
-    Circle(float64),
+    Circle(float64 radius),
     Point
 }
 

@@ -1,0 +1,38 @@
+import @firescript/std.io.println;
+
+enum Shape {
+    Circle(float64 radius),
+    Rectangle(float64 width, float64 height),
+    Point
+}
+
+void describe(Shape s) {
+    match s {
+        Shape.Circle(radius) -> {
+            println("circle r=" + (radius as string));
+        }
+        Shape.Rectangle(width, height) -> {
+            println("rect " + (width as string) + "x" + (height as string));
+        }
+        Shape.Point -> {
+            println("point");
+        }
+    }
+}
+
+describe(Shape.Circle(3.0));
+describe(Shape.Rectangle(2.0, 5.0));
+describe(Shape.Point);
+
+// Field renaming (`field: local`) and field omission both work.
+void describeRenamed(Shape s) {
+    match s {
+        Shape.Circle(radius: r) -> { println("renamed circle r=" + (r as string)); }
+        Shape.Rectangle(width) -> { println("rect width only=" + (width as string)); }
+        Shape.Point -> { println("renamed point"); }
+    }
+}
+
+describeRenamed(Shape.Circle(1.5));
+describeRenamed(Shape.Rectangle(4.0, 9.0));
+describeRenamed(Shape.Point);

@@ -1,0 +1,56 @@
+// Malformed match expressions (pure syntax errors).
+enum Shape {
+    Dot,
+    Line(float64 len)
+}
+
+Shape s1 = Shape.Dot;
+
+// Missing '{' to start match body
+int32 a = match s1 5;
+
+Shape s2 = Shape.Dot;
+
+// Missing '->' after pattern
+int32 b = match s2 {
+    _ 5
+};
+
+Shape s3 = Shape.Dot;
+
+// Pattern is not an identifier or '_'
+int32 c = match s3 {
+    5 -> 1,
+    _ -> 2
+};
+
+Shape s4 = Shape.Dot;
+
+// Missing '.' and variant after enum name
+int32 d = match s4 {
+    Shape -> 1,
+    _ -> 2
+};
+
+Shape s5 = Shape.Dot;
+
+// Missing local binding name after ':'
+int32 e = match s5 {
+    Shape.Line(len:) -> 1,
+    _ -> 2
+};
+
+Shape s6 = Shape.Dot;
+
+// Missing ')' to close pattern bindings
+int32 f = match s6 {
+    Shape.Line(len -> 1,
+    _ -> 2
+};
+
+Shape s7 = Shape.Dot;
+
+// Missing arm body after '->'
+int32 g = match s7 {
+    _ ->
+};

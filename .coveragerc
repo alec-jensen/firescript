@@ -1,10 +1,13 @@
 [run]
-source = firescript
+# FIRESCRIPT_COV_ROOT is set by tests/run_tests.py so compiler subprocesses
+# spawned with a different cwd (e.g. cli_runner --dir cases in temp dirs)
+# still resolve the source tree; defaults to the cwd for manual runs.
+source = ${FIRESCRIPT_COV_ROOT-.}/firescript
 parallel = true
 omit =
-    firescript/lsp_server.py
-    firescript/lsp/*
-    firescript/__pycache__/*
+    */lsp_server.py
+    */lsp/*
+    */__pycache__/*
 
 [report]
 show_missing = false

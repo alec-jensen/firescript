@@ -1,0 +1,13 @@
+// Invalid: the pattern references a variant that doesn't exist on the enum.
+// EXPECT: semantic error
+
+enum Shape {
+    Circle(float64 radius),
+    Point
+}
+
+Shape s = Shape.Point;
+match s {
+    Shape.Circle(radius) -> { }
+    Shape.Triangle -> { }
+}

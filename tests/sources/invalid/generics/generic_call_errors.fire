@@ -1,0 +1,21 @@
+// Generic type-argument lists without a following constructor/call.
+copyable class Box<T> {
+    T v;
+
+    Box(T v) {
+        this.v = v;
+    }
+}
+
+T identity<T>(T x) {
+    return x;
+}
+
+// Missing '(' after generic class type arguments
+Box<int32> a = Box<int32>;
+
+// Missing '(' after generic function type arguments
+int32 b = identity<int32>;
+
+// Non-type token inside a type argument list
+Box<int32> c = Box<5>(1);

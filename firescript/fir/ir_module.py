@@ -10,13 +10,14 @@ from fir.ownership import OwnershipMap
 
 
 class EnumVariantDef:
-    """One variant of an enum type: a name plus its positional payload fields.
+    """One variant of an enum type: a name plus its named payload fields.
 
-    `payload` is empty for tag-only variants; data-carrying variants are a
-    planned follow-up (payload fields are stored by position, not name).
+    `payload` is empty for tag-only variants. Payload fields are named
+    (declaration order preserved) so match arms can bind by field name;
+    construction remains positional, in this same declaration order.
     """
 
-    def __init__(self, name: str, payload: Optional[list[FIRType]] = None):
+    def __init__(self, name: str, payload: Optional[list[tuple[str, FIRType]]] = None):
         self.name = name
         self.payload = payload or []
 

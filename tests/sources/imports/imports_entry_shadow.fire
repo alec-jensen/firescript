@@ -1,0 +1,11 @@
+// The entry module's own definition wins over an imported symbol of the
+// same name (a conflict is logged, entry definition replaces the import).
+import @firescript/std.io.println;
+import utils.{helper, CONSTANT}
+
+int32 helper(int32 x) {
+    return x + 1;
+}
+
+println(helper(1));
+println(CONSTANT);

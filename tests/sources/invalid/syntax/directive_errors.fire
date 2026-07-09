@@ -1,0 +1,5 @@
+// Malformed compiler directive statements (tests directive parsing behavior).
+directive;
+directive not_a_real_directive;
+directive enable_drops
+int32 x = 1;

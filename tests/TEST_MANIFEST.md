@@ -107,8 +107,15 @@ Each heading below is a directory under `tests/sources/`.
 - **generators_break_continue.fire** - `break`/`continue` inside a for-in loop over a generator, and nested for-in-over-generator loops
 
 ### `enums/`
-- **enum_tag_only.fire** - Tag-only (no data payload) enum declarations, variant construction (`EnumName.Variant`), and reassignment (verifies the previously-held owned enum value is dropped without corrupting later allocations). `match` is not yet implemented (see `docs/internal/version_planning.md` 0.6.0 "Griffin").
-- **enum_payload_construct.fire** - Enum variants with positional data payloads (e.g. `Circle(float64)`), construction with arguments, and reassignment across variants with different payload shapes sharing the same tagged-union storage. Payload types are limited to copyable scalars in this pass; owned payload data and `match` (needed to read payload fields back out) are not yet implemented.
+- **enum_tag_only.fire** - Tag-only (no data payload) enum declarations, variant construction (`EnumName.Variant`), and reassignment (verifies the previously-held owned enum value is dropped without corrupting later allocations).
+- **enum_payload_construct.fire** - Enum variants with named data payloads (e.g. `Circle(float64 radius)`), positional construction with arguments, and reassignment across variants with different payload shapes sharing the same tagged-union storage.
+- **enum_owned_payload_drop.fire** - Owned payload data (a `string` field, and a class field elsewhere) is dropped correctly when the active variant goes out of scope; the destructor is tag-dispatched so only the active variant's owned fields are ever freed (never a different variant's, since payload storage is shared/overlapping). Also covers a class with an owned-enum-typed field, and 5000 construct/match/drop cycles as a leak/double-free sanity check.
+
+### `match/`
+- **match_statement_basic.fire** - Statement-form `match` over a tag-only enum with per-arm print side effects
+- **match_payload_destructure.fire** - Payload variants destructured by declared field name, including renaming a field to a different local (`field: local`) and omitting fields a given arm doesn't need
+- **match_expression_value.fire** - `match` used as a value-producing expression: as a function's `return` expression and as a variable declaration's initializer
+- **match_wildcard.fire** - A `_` wildcard arm covering multiple variants not listed explicitly
 
 ### `types/`
 Per-type min/max value and overflow/underflow behavior, split by numeric type:
@@ -318,6 +325,7 @@ Tests in `tests/sources/invalid/<category>/` are expected to fail compilation an
 - **generics/** - `generics_errors.fire`
 - **imports/** - `import_errors.fire`, `export_visibility_private.fire` (importing a non-exported symbol), `visibility_provider.fire` (helper, not a standalone test)
 - **literals/** - `literal_errors.fire`
+- **match/** - `match_non_exhaustive.fire` (missing variant arms and no `_` wildcard), `match_duplicate_variant.fire` (same variant matched twice), `match_wildcard_not_last.fire` (arms after a wildcard `_` are unreachable), `match_unknown_variant.fire` (pattern references a variant that doesn't exist on the enum), `match_unknown_payload_field.fire` (pattern binds a field name the variant doesn't declare), `match_duplicate_field_binding.fire` (the same payload field is bound twice in one pattern)
 - **nullable/** - `nullable_errors.fire`
 - **operators/** - `operator_errors.fire`
 - **scoping/** - `scope_errors.fire` (variable shadowing not allowed, use before declaration, out-of-scope access)

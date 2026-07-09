@@ -25,9 +25,9 @@ println(last_error("[ab"));
 
 Returns `true` when the pattern matches the input text. Without anchors, the pattern must match the entire input; `^` and `$` control anchoring explicitly.
 
-### `bool match(string pattern, string text)`
+### `bool find_match(string pattern, string text)`
 
-Alias of `is_match`.
+Alias of `is_match`. Named `match` prior to 0.6.0; renamed because `match` is now a reserved keyword.
 
 ### `int32 find_at(string pattern, string text, int32 start_pos)`
 

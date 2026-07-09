@@ -1,0 +1,42 @@
+// Malformed enum definitions.
+
+// Missing enum name
+enum {
+    A
+}
+
+// Duplicate variant
+enum Dup {
+    A,
+    A
+}
+
+// Payload field type is not a type
+enum BadPayloadType {
+    V(! x)
+}
+
+// Missing payload field name
+enum BadPayloadName {
+    V(int32)
+}
+
+// Duplicate payload field name
+enum DupField {
+    W(int32 a, int32 a)
+}
+
+// Missing ')' to close payload
+enum UnclosedPayload {
+    P(int32 a
+}
+
+// Missing ',' between variants
+enum MissingComma {
+    A
+    B
+}
+
+// No variants at all
+enum Empty {
+}

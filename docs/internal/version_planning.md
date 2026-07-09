@@ -86,7 +86,11 @@ self-hosting work is not blocked by missing data structures.
 ### Compiler improvements
 
 - Support `enum` and `match` in the front-end pipeline (lexer, parser, semantic analysis,
-  FIR lowering)
+  FIR lowering) — **done**: `enum` declarations (tag-only and named data-payload variants,
+  positional construction) and `match` expressions (name-based payload binding with
+  optional rename, exhaustiveness/duplicate/wildcard-order checks, statement and
+  value-producing forms, tag-dispatched destructors for owned payload data) work across the
+  full pipeline. Generic enums (`enum Option<T>`) remain a follow-up.
 - Support `Vec<T>`, `HashMap<K,V>`, `StringBuilder`, and `Result<T,E>` as stdlib modules
   with appropriate compiler intrinsics where needed
 - Implement `@firescript/std.regex` with necessary runtime support
@@ -94,19 +98,22 @@ self-hosting work is not blocked by missing data structures.
 
 ### Test coverage
 
-- Comprehensive golden tests for enums and match
+- Comprehensive golden tests for enums and match — **done**: `tests/sources/enums/`,
+  `tests/sources/match/`, plus error tests in `tests/sources/invalid/enums/` and
+  `tests/sources/invalid/match/`
 - Comprehensive golden tests for Vec, HashMap, StringBuilder operations
 - Golden tests for new string methods
 - Comprehensive golden tests for regex (matching, capture groups, anchors, character
   classes, alternation, quantifiers)
-- Error tests for invalid enum/match usage
+- Error tests for invalid enum/match usage — **done**
 - Error tests for invalid regex patterns
 - Improve overall test coverage
 
 ### Gate
 
 All stdlib modules are usable from firescript code. Vec, HashMap, string methods, and regex
-are thoroughly tested. Enum and match work across the full pipeline (no FIR/FLIR gaps).
+are thoroughly tested. Enum and match work across the full pipeline (no FIR/FLIR gaps) —
+**done**.
 
 ---
 

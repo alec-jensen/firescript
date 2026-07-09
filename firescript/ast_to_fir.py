@@ -232,9 +232,9 @@ class ASTToFIRConverter:
         self.class_generic_params: dict[str, list[str]] = {}
         self.class_method_names: dict[str, set[str]] = {}
         self.class_method_defs: dict[tuple[str, str], ASTNode] = {}
-        # Enum registries: name -> [(variant name, payload FIRTypes), ...] in
-        # declaration order (tag = index into this list).
-        self.enum_variants: dict[str, list[tuple[str, list[FIRType]]]] = {}
+        # Enum registries: name -> [(variant name, [(field name, FIRType), ...]), ...]
+        # in declaration order (tag = index into this list).
+        self.enum_variants: dict[str, list[tuple[str, list[tuple[str, FIRType]]]]] = {}
         self.enum_categories: dict[str, str] = {}
         self.function_defs: dict[str, ASTNode] = {}
         self.generic_functions: dict[str, list[str]] = {}
@@ -350,7 +350,10 @@ class ASTToFIRConverter:
                 self.enum_variants[name] = [
                     (
                         member.name,
-                        [self._fir_type(t) for t in getattr(member, "payload_types", []) or []],
+                        [
+                            (field_name, self._fir_type(field_type))
+                            for field_name, field_type in getattr(member, "payload_fields", []) or []
+                        ],
                     )
                     for member in child.children
                     if member.node_type == NodeTypes.ENUM_VARIANT
@@ -575,6 +578,16 @@ class ASTToFIRConverter:
                 if field_name == node.name:
                     return subst.get(field_type, field_type)
             return "int32"
+
+        if node.node_type == NodeTypes.MATCH_EXPRESSION:
+            annotated = getattr(node, "return_type", None)
+            if annotated:
+                return annotated
+            for arm in node.children[1:]:
+                body = arm.children[0] if arm.children else None
+                if body is not None and body.node_type != NodeTypes.SCOPE:
+                    return self._expr_type(body)
+            return "void"
 
         return getattr(node, "return_type", None) or "int32"
 
@@ -943,6 +956,7 @@ class ASTToFIRConverter:
             NodeTypes.TYPE_METHOD_CALL,
             NodeTypes.CONSTRUCTOR_CALL,
             NodeTypes.SUPER_CALL,
+            NodeTypes.MATCH_EXPRESSION,
         ):
             self._convert_expression(node, as_statement=True)
             return
@@ -1476,6 +1490,9 @@ class ASTToFIRConverter:
         if node_type == NodeTypes.ENUM_VARIANT_CONSTRUCT:
             return self._convert_enum_variant_construct(node)
 
+        if node_type == NodeTypes.MATCH_EXPRESSION:
+            return self._convert_match(node, as_statement)
+
         raise FIRConversionError(f"Unsupported expression node {node_type}", node)
 
     def _convert_enum_variant_construct(self, node: ASTNode) -> Value:
@@ -1487,16 +1504,140 @@ class ASTToFIRConverter:
             raise FIRConversionError(
                 f"Unknown variant '{node.name}' in enum '{enum_name}'", node
             )
-        payload_types = variant_payloads[node.name]
-        if len(node.children) != len(payload_types):
+        payload_fields = variant_payloads[node.name]
+        if len(node.children) != len(payload_fields):
             raise FIRConversionError(
-                f"Variant '{enum_name}.{node.name}' expects {len(payload_types)} argument(s), "
+                f"Variant '{enum_name}.{node.name}' expects {len(payload_fields)} argument(s), "
                 f"got {len(node.children)}",
                 node,
             )
         args = [self._convert_expression(child) for child in node.children]
         enum_type = self._fir_type(enum_name)
         return self.builder.construct_variant(enum_type, node.name, args)
+
+    def _convert_match(self, node: ASTNode, as_statement: bool) -> Optional[Value]:
+        """Lower `match` to a chain of tag-compare branches.
+
+        Statement form (as_statement=True) discards each arm's value.
+        Expression form requires every arm body to be a plain expression
+        (no `{ }` block) and stores each arm's value into a shared temp
+        local, loaded once execution reaches the join block.
+
+        Exhaustiveness, duplicate-variant, wildcard-order, and binding
+        validity are already enforced by semantic analysis; this pass
+        trusts that and focuses purely on control flow.
+        """
+        scrutinee_node = node.children[0]
+        arms = node.children[1:]
+
+        wildcard_arm = next((a for a in arms if getattr(a, "is_wildcard", False)), None)
+        non_wildcard_arms = [a for a in arms if not getattr(a, "is_wildcard", False)]
+        enum_name = getattr(non_wildcard_arms[0], "enum_name", None) if non_wildcard_arms else None
+        variant_fields = dict(self.enum_variants.get(enum_name, [])) if enum_name else {}
+        variant_order = [v for v, _ in self.enum_variants.get(enum_name, [])] if enum_name else []
+
+        if not as_statement:
+            for arm in arms:
+                body = arm.children[0] if arm.children else None
+                if body is not None and body.node_type == NodeTypes.SCOPE:
+                    raise FIRConversionError(
+                        "match used as an expression requires every arm body to be a plain "
+                        "expression (no '{ }' block)",
+                        arm,
+                    )
+
+        scrutinee_value = self._convert_expression(scrutinee_node)
+        scrutinee_type = scrutinee_value.result_type
+        marker = f"{len(self.current_function.blocks)}_{len(self.builder.current_block.instructions)}"
+        scrutinee_temp = f"__match_scrutinee_{marker}"
+        self._used_local_names.add(scrutinee_temp)
+        self.builder.declare_local(scrutinee_temp, scrutinee_type, scrutinee_value)
+
+        result_temp: Optional[str] = None
+        result_type: Optional[FIRType] = None
+        if not as_statement:
+            result_type = self._fir_type(self._expr_type(node))
+            result_temp = f"__match_result_{marker}"
+            self._used_local_names.add(result_temp)
+            self.builder.declare_local(result_temp, result_type)
+
+        join_block = self.builder.new_block()
+        int32_type = self._fir_type("int32")
+        bool_type = self._fir_type("bool")
+
+        test_block = self.builder.current_block
+        for i, arm in enumerate(non_wildcard_arms):
+            self.builder.position_at(test_block)
+            variant_name = getattr(arm, "variant_name", None)
+            tag_index = variant_order.index(variant_name) if variant_name in variant_order else -1
+            scrut_ref = self.builder.load_var(scrutinee_temp, scrutinee_type)
+            tag_value = self.builder.extract_tag(scrut_ref, int32_type)
+            tag_const = self.builder.int_literal(str(tag_index), int32_type)
+            is_match = self.builder.binary_op("==", tag_value, tag_const, bool_type)
+
+            arm_block = self.builder.new_block()
+            next_block = self.builder.new_block()
+            self.builder.branch(is_match, arm_block.id, next_block.id)
+
+            self.builder.position_at(arm_block)
+            self._convert_match_arm_body(
+                arm, variant_fields, scrutinee_temp, scrutinee_type, result_temp
+            )
+            if not self.builder.current_block.is_terminated():
+                self.builder.jump(join_block.id)
+
+            test_block = next_block
+
+        self.builder.position_at(test_block)
+        if wildcard_arm is not None:
+            self._convert_match_arm_body(
+                wildcard_arm, variant_fields, scrutinee_temp, scrutinee_type, result_temp
+            )
+            if not self.builder.current_block.is_terminated():
+                self.builder.jump(join_block.id)
+        else:
+            # Exhaustiveness is guaranteed by semantic analysis, so this
+            # fallthrough is unreachable at runtime.
+            self.builder.unreachable()
+
+        self.builder.position_at(join_block)
+        if result_temp is not None:
+            return self.builder.load_var(result_temp, result_type)
+        return None
+
+    def _convert_match_arm_body(
+        self,
+        arm: ASTNode,
+        variant_fields: dict[str, list[tuple[str, FIRType]]],
+        scrutinee_temp: str,
+        scrutinee_type: FIRType,
+        result_temp: Optional[str],
+    ) -> None:
+        self._push_scope()
+        variant_name = getattr(arm, "variant_name", None)
+        bindings = getattr(arm, "bindings", []) or []
+        field_defs = variant_fields.get(variant_name, [])
+        field_names = [fname for fname, _ in field_defs]
+        field_types = dict(field_defs)
+        for field_name, local_name in bindings:
+            if field_name not in field_names:
+                continue  # already reported by semantic analysis
+            field_index = field_names.index(field_name)
+            field_type = field_types[field_name]
+            scrut_ref = self.builder.load_var(scrutinee_temp, scrutinee_type)
+            extracted = self.builder.extract_payload_field(scrut_ref, variant_name, field_index, field_type)
+            unique_name = self._declare(local_name, field_type.render(), False)
+            self.builder.declare_local(unique_name, field_type, extracted)
+
+        body = arm.children[0] if arm.children else None
+        if body is not None:
+            if body.node_type == NodeTypes.SCOPE:
+                self._convert_statements(body.children)
+            else:
+                value = self._convert_expression(body)
+                if result_temp is not None:
+                    self.builder.store_var(result_temp, value)
+        self._pop_scope()
 
     def _convert_short_circuit(self, node: ASTNode) -> Value:
         """Lower && / || with C-style short-circuit evaluation via a temp local."""

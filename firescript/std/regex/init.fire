@@ -12,7 +12,7 @@ export bool is_match(string pattern, string text) {
     return RegexPattern(pattern).is_match(text);
 }
 
-export bool match(string pattern, string text) {
+export bool find_match(string pattern, string text) {
     return RegexPattern(pattern).matches(text);
 }
 

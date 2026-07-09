@@ -1,0 +1,50 @@
+// Malformed generator definitions and yield statements.
+
+// Missing '<' after 'generator'
+generator int32 g1() {
+    yield 1;
+}
+
+// Missing yield type
+generator<> g2() {
+    yield 1;
+}
+
+// Missing '>' after yield type
+generator<int32 g3() {
+    yield 1;
+}
+
+// Missing generator name
+generator<int32> () {
+    yield 1;
+}
+
+// Missing '(' after name
+generator<int32> g5 {
+    yield 1;
+}
+
+// Bad parameter type
+generator<int32> g6(! x) {
+    yield 1;
+}
+
+// Missing parameter name
+generator<int32> g7(int32) {
+    yield 1;
+}
+
+// Missing ')' after parameters
+generator<int32> g8(int32 x {
+    yield 1;
+}
+
+// Missing '{' to start body
+generator<int32> g9()
+    yield 1;
+
+// yield with no expression
+generator<int32> g10() {
+    yield;
+}

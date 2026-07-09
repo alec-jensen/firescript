@@ -1,0 +1,5 @@
+// Import a symbol from a module in a subdirectory via a deep dotted path.
+import @firescript/std.io.println;
+import nested.deep_provider.deepValue;
+
+println(deepValue());

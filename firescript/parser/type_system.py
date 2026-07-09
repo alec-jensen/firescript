@@ -130,6 +130,33 @@ class TypeSystemMixin(StatementsMixin):
                 current_scope[node.name] = (inferred_type, False)
             return
 
+        # Match expression: scrutinee resolves in the outer scope; each arm
+        # gets its own scope with pattern bindings registered.
+        if node.node_type == NodeTypes.MATCH_EXPRESSION:
+            if node.children:
+                self.resolve_variable_types(node.children[0], current_scope)
+                for arm in node.children[1:]:
+                    self.resolve_variable_types(arm, current_scope)
+            return
+
+        if node.node_type == NodeTypes.MATCH_ARM:
+            new_scope = current_scope.copy()
+            enum_name = getattr(node, "enum_name", None)
+            bindings = getattr(node, "bindings", []) or []
+            if bindings:
+                payload_fields = dict(
+                    self.user_enums.get(enum_name or "", {}).get(
+                        getattr(node, "variant_name", None) or "", []
+                    )
+                )
+                for field_name, local_name in bindings:
+                    bind_type = payload_fields.get(field_name)
+                    new_scope[local_name] = (bind_type, False)
+            body = node.children[0] if node.children else None
+            if body:
+                self.resolve_variable_types(body, new_scope)
+            return
+
         # Identifier usage: ensure variable defined
         if node.node_type == NodeTypes.IDENTIFIER:
             if node.name not in current_scope:

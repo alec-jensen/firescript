@@ -1,0 +1,13 @@
+// Invalid: a wildcard '_' arm must be the last arm.
+// EXPECT: semantic error
+
+enum Shape {
+    Circle(float64 radius),
+    Point
+}
+
+Shape s = Shape.Point;
+match s {
+    _ -> { }
+    Shape.Point -> { }
+}

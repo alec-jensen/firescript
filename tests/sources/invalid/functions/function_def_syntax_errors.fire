@@ -1,0 +1,26 @@
+// Malformed function definitions: return type, params, body errors.
+
+// Unclosed '[' in array return type
+int32[ badRet() {
+    return 0;
+}
+
+// Missing parameter type
+void badParamType(!) {
+}
+
+// Unclosed '[' in array parameter type
+void badParamArray(int32[ xs) {
+}
+
+// Missing parameter name
+void missingParamName(int32) {
+}
+
+// Missing ')' after parameters
+void unclosedParams(int32 x {
+}
+
+// Missing '{' to start body
+void noBody(int32 x)
+int32 y = 1;

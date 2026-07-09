@@ -1,0 +1,14 @@
+// Invalid: the same variant is matched twice.
+// EXPECT: semantic error
+
+enum Shape {
+    Circle(float64 radius),
+    Point
+}
+
+Shape s = Shape.Point;
+match s {
+    Shape.Circle(radius) -> { }
+    Shape.Circle(radius: r2) -> { }
+    Shape.Point -> { }
+}

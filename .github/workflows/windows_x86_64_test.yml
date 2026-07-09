@@ -1,4 +1,4 @@
-name: Windows x86_64 Test Suite
+name: Windows x86_64
 
 permissions:
   contents: read
@@ -20,7 +20,7 @@ on:
       - 'tests/**'
 
 jobs:
-  test:
+  windows_x86_64_test:
     # firescript compiles directly to native Windows x86_64 executables with its
     # own assembler and PE writer — no external toolchain. Python is the only
     # requirement.

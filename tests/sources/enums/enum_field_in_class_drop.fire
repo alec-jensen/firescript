@@ -1,0 +1,60 @@
+// An enum with owned payload stored as a class field: dropping the class
+// must run the enum's generated destructor (including nested class payloads).
+import @firescript/std.io.println;
+
+class Box {
+    string label;
+
+    Box(string label) {
+        this.label = label;
+    }
+}
+
+enum Note {
+    Text(string body),
+    Silent
+}
+
+enum Slot {
+    Holds(Box inner),
+    Vacant
+}
+
+class Holder {
+    Note note;
+
+    Holder(Note note) {
+        this.note = note;
+    }
+}
+
+class Shelf {
+    Slot slot;
+
+    Shelf(Slot slot) {
+        this.slot = slot;
+    }
+}
+
+void useHolder() {
+    Note n = Note.Text("inside");
+    Holder h = Holder(n);
+    match h.note {
+        Note.Text(body) -> println("holder: " + body),
+        Note.Silent -> println("holder: silent"),
+    }
+}
+
+void useShelf() {
+    Box b = Box("boxed");
+    Slot s = Slot.Holds(b);
+    Shelf shelf = Shelf(s);
+    match shelf.slot {
+        Slot.Holds(inner) -> println("shelf: " + inner.label),
+        Slot.Vacant -> println("shelf: vacant"),
+    }
+}
+
+useHolder();
+useShelf();
+println("done");

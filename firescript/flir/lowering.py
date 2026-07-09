@@ -526,20 +526,21 @@ class FIRToFLIRLowering:
         return struct_name
 
     def _layout_fields_from(
-        self, payload: list[FIRType], type_map: dict[str, str], start_offset: int
+        self, payload: list[tuple[str, FIRType]], type_map: dict[str, str], start_offset: int
     ) -> tuple[list[tuple[str, FLIRType, int]], int, int]:
-        """Lay out a variant's payload fields as if a standalone struct,
-        with offsets shifted by `start_offset`. Returns (fields, size, align)
-        where `size` is the payload's own size (not including start_offset)."""
+        """Lay out a variant's named payload fields as if a standalone
+        struct, with offsets shifted by `start_offset`. Returns
+        (fields, size, align) where `size` is the payload's own size (not
+        including start_offset)."""
         size = 0
         align = 1
         fields: list[tuple[str, FLIRType, int]] = []
-        for i, ftype in enumerate(payload):
+        for fname, ftype in payload:
             lowered = self.lower_type(ftype, type_map)
             falign = lowered.align(self.flir)
             fsize = lowered.size(self.flir)
             offset = align_up(size, falign)
-            fields.append((f"_{i}", lowered, start_offset + offset))
+            fields.append((fname, lowered, start_offset + offset))
             size = offset + fsize
             align = max(align, falign)
         return fields, size, align
@@ -1454,6 +1455,37 @@ class FIRToFLIRLowering:
         td = self.typedefs.get(base)
         return td is not None and td.category == "owned"
 
+    def enum_needs_destructor(self, struct_name: str) -> bool:
+        """True if any variant has at least one owned payload field."""
+        source = self.struct_sources.get(struct_name)
+        if source is None:
+            return False
+        type_def, type_map = source
+        for variant in type_def.variants:
+            for fname, ftype in variant.payload:
+                concrete = self.subst(self.render_concrete(ftype, type_map), type_map)
+                if self._type_str_is_owned(concrete):
+                    return True
+        return False
+
+    def _struct_needs_destructor(self, struct_name: str) -> bool:
+        """Class- or enum-kind-aware dispatch for `*_needs_destructor`."""
+        source = self.struct_sources.get(struct_name)
+        if source is None:
+            return False
+        type_def, _ = source
+        if type_def.kind == "enum":
+            return self.enum_needs_destructor(struct_name)
+        return self.class_needs_destructor(struct_name)
+
+    def _ensure_destructor_for(self, struct_name: str) -> str:
+        """Class- or enum-kind-aware dispatch for `ensure_*_destructor`."""
+        source = self.struct_sources.get(struct_name)
+        type_def = source[0] if source is not None else None
+        if type_def is not None and type_def.kind == "enum":
+            return self.ensure_enum_destructor(struct_name)
+        return self.ensure_destructor(struct_name)
+
     def ensure_destructor(self, struct_name: str) -> str:
         """Generate (once) and return the destructor for a concrete class."""
         if struct_name in self.destructors:
@@ -1488,8 +1520,8 @@ class FIRToFLIRLowering:
             td = self.typedefs.get(base)
             if td is not None and td.category == "owned":
                 inner_struct = self.struct_for_class_str(concrete)
-                if self.class_needs_destructor(inner_struct):
-                    inner_destroy = self.ensure_destructor(inner_struct)
+                if self._struct_needs_destructor(inner_struct):
+                    inner_destroy = self._ensure_destructor_for(inner_struct)
                     ctx.emit(Call(inner_destroy, [field_val], VOID))
                 else:
                     self.rt_call("fs_rt_free", [field_val], VOID, ctx)
@@ -1498,6 +1530,88 @@ class FIRToFLIRLowering:
             ctx.emit(Jmp(next_block.id))
             ctx.block = next_block
 
+        self_final = ctx.emit(SlotLoad("self", ptr_to(struct_name)))
+        self.rt_call("fs_rt_free", [self_final], VOID, ctx)
+        ctx.emit(Ret())
+        return destroy_name
+
+    def ensure_enum_destructor(self, struct_name: str) -> str:
+        """Generate (once) and return the tag-dispatched destructor for an
+        owned enum: only the active variant's owned payload fields are
+        freed, then the enum's own allocation is freed."""
+        if struct_name in self.destructors:
+            return self.destructors[struct_name]
+        destroy_name = f"{struct_name}__destroy"
+        self.destructors[struct_name] = destroy_name
+
+        type_def, type_map = self.struct_sources[struct_name]
+        struct = self.flir.struct(struct_name)
+        func = FLIRFunction(destroy_name, [("self", ptr_to(struct_name))], VOID)
+        self.flir.add_function(func)
+        block = func.new_block()
+        ctx = _FuncCtx(func, type_map)
+        ctx.block = block
+        ctx.slot_types["self"] = ptr_to(struct_name)
+
+        tail_block = func.new_block()
+
+        _, tag_ftype, tag_offset = struct.field("tag")
+
+        for tag_index, variant in enumerate(type_def.variants):
+            owned_fields = [
+                fname
+                for fname, ftype in variant.payload
+                if self._type_str_is_owned(self.subst(self.render_concrete(ftype, type_map), type_map))
+            ]
+            if not owned_fields:
+                continue
+
+            # Reload "self" and the tag fresh in this block rather than
+            # reusing a Value produced in an earlier block (matching the
+            # per-field reload pattern in `ensure_destructor`).
+            self_val = ctx.emit(SlotLoad("self", ptr_to(struct_name)))
+            tag_val = ctx.emit(Load(tag_ftype, self_val, tag_offset))
+            tag_const = ctx.emit(ConstInt(str(tag_index), tag_ftype))
+            is_variant = ctx.emit(BinOp("eq", tag_ftype, tag_val, tag_const, BOOL))
+            drop_block = func.new_block()
+            skip_block = func.new_block()
+            ctx.emit(Br(is_variant, drop_block.id, skip_block.id))
+
+            ctx.block = drop_block
+            variant_fields = dict(variant.payload)
+            field_layout = {fname: (t, o) for fname, t, o in struct.variant_layouts[variant.name]}
+            for fname in owned_fields:
+                lowered_ftype, offset = field_layout[fname]
+                self_val2 = ctx.emit(SlotLoad("self", ptr_to(struct_name)))
+                field_val = ctx.emit(Load(lowered_ftype, self_val2, offset))
+                null = ctx.emit(ConstNull())
+                non_null = ctx.emit(BinOp("ne", PTR, field_val, null, BOOL))
+                free_block = func.new_block()
+                next_field_block = func.new_block()
+                ctx.emit(Br(non_null, free_block.id, next_field_block.id))
+
+                ctx.block = free_block
+                concrete = self.subst(self.render_concrete(variant_fields[fname], type_map), type_map)
+                base = concrete.split("<")[0]
+                td = self.typedefs.get(base)
+                if td is not None and td.category == "owned":
+                    inner_struct = self.struct_for_class_str(concrete)
+                    if self._struct_needs_destructor(inner_struct):
+                        inner_destroy = self._ensure_destructor_for(inner_struct)
+                        ctx.emit(Call(inner_destroy, [field_val], VOID))
+                    else:
+                        self.rt_call("fs_rt_free", [field_val], VOID, ctx)
+                else:
+                    self.rt_call("fs_rt_free", [field_val], VOID, ctx)
+                ctx.emit(Jmp(next_field_block.id))
+                ctx.block = next_field_block
+
+            ctx.emit(Jmp(tail_block.id))
+            ctx.block = skip_block
+
+        ctx.emit(Jmp(tail_block.id))
+
+        ctx.block = tail_block
         self_final = ctx.emit(SlotLoad("self", ptr_to(struct_name)))
         self.rt_call("fs_rt_free", [self_final], VOID, ctx)
         ctx.emit(Ret())
@@ -1515,8 +1629,8 @@ class FIRToFLIRLowering:
         td = self.typedefs.get(base)
         if td is not None and td.category == "owned":
             struct_name = self.struct_for_class_str(type_str, ctx.type_map)
-            if self.class_needs_destructor(struct_name):
-                ctx.emit(Call(self.ensure_destructor(struct_name), [value], VOID))
+            if self._struct_needs_destructor(struct_name):
+                ctx.emit(Call(self._ensure_destructor_for(struct_name), [value], VOID))
                 return
         self.rt_call("fs_rt_free", [value], VOID, ctx)
 

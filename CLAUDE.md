@@ -162,6 +162,6 @@ The table below reflects the **current implementation status** of major language
 | JavaScript + Wasm compilation target | [PLANNED] |
 | Dynamic arrays (stdlib) | [PLANNED] |
 | Built-in `input()` function | Removed in current dev cycle |
-| `enum` declarations, tag-only variants (`Color.Red`) | [IN DEVELOPMENT] |
-| `enum` variants with data payloads (`Circle(float64)`), copyable scalar payloads only | [IN DEVELOPMENT] |
-| `match` expressions | [PLANNED] |
+| `enum` declarations, tag-only and named-data-payload variants (`Circle(float64 radius)`) | [IMPLEMENTED] |
+| Generic enums (`enum Option<T>`) | [PLANNED] |
+| `match` expressions, statement and value-producing forms | [IMPLEMENTED] |

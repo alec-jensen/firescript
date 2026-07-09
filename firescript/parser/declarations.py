@@ -573,6 +573,7 @@ class DeclarationsMixin(TypeSystemMixin):
                         NodeTypes.SCOPE,
                         NodeTypes.FUNCTION_DEFINITION,
                         NodeTypes.GENERATOR_DEFINITION,
+                        NodeTypes.MATCH_EXPRESSION,
                     )
                 ):
                     if self.current_token and self.current_token.type == "SEMICOLON":
@@ -1424,9 +1425,12 @@ class DeclarationsMixin(TypeSystemMixin):
         return cls_node
 
     def _parse_enum_definition(self):
-        """Parse an enum definition: enum Name { Variant1, Variant2(Type, ...), ... }
+        """Parse an enum definition: enum Name { Variant1, Variant2(Type name, ...), ... }
 
-        Variant payloads are positional/tuple-style (no named fields).
+        Variant payload fields are named (`Type name`, same declaration order
+        as class fields / function parameters) so match patterns can bind by
+        field name. Construction (`EnumName.Variant(args...)`) remains
+        positional, in declaration order.
         """
         enum_tok = self.consume("ENUM")
         if enum_tok is None:
@@ -1447,7 +1451,7 @@ class DeclarationsMixin(TypeSystemMixin):
             return None
 
         variants: list[ASTNode] = []
-        variant_payloads: dict[str, list[str]] = {}
+        variant_payloads: dict[str, list[tuple[str, str]]] = {}
         while self.current_token and self.current_token.type != "CLOSE_BRACE":
             if self.current_token.type in (
                 "SINGLE_LINE_COMMENT",
@@ -1469,17 +1473,28 @@ class DeclarationsMixin(TypeSystemMixin):
                     f"Duplicate variant '{variant_tok.value}' in enum '{name_tok.value}'", variant_tok
                 )
 
-            payload_types: list[str] = []
+            payload_fields: list[tuple[str, str]] = []
             if self.current_token and self.current_token.type == "OPEN_PAREN":
                 self.advance()  # consume '('
                 if self.current_token and self.current_token.type != "CLOSE_PAREN":
                     while True:
                         if not self._is_type_token(self.current_token):
-                            self.expected_token_error("payload type in enum variant", self.current_token)
+                            self.expected_token_error("payload field type in enum variant", self.current_token)
                             break
                         type_tok = self.current_token
                         self.advance()
-                        payload_types.append(self._normalize_type_name(type_tok))
+                        field_tok = self.consume("IDENTIFIER")
+                        if field_tok is None:
+                            self.expected_token_error("payload field name in enum variant", self.current_token)
+                            break
+                        field_type = self._normalize_type_name(type_tok)
+                        if any(fname == field_tok.value for fname, _ in payload_fields):
+                            self.invalid_expression_error(
+                                f"Duplicate payload field '{field_tok.value}' in variant "
+                                f"'{name_tok.value}.{variant_tok.value}'",
+                                field_tok,
+                            )
+                        payload_fields.append((field_tok.value, field_type))
                         if self.current_token and self.current_token.type == "COMMA":
                             self.advance()
                             continue
@@ -1488,9 +1503,9 @@ class DeclarationsMixin(TypeSystemMixin):
                     self.expected_token_error("')' to close enum variant payload", self.current_token)
 
             variant_node = ASTNode(NodeTypes.ENUM_VARIANT, variant_tok, variant_tok.value, [], variant_tok.index)
-            setattr(variant_node, "payload_types", payload_types)
+            setattr(variant_node, "payload_fields", payload_fields)
             variants.append(variant_node)
-            variant_payloads[variant_tok.value] = payload_types
+            variant_payloads[variant_tok.value] = payload_fields
 
             if self.current_token and self.current_token.type == "COMMA":
                 self.advance()

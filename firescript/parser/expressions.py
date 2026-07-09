@@ -220,6 +220,8 @@ class ExpressionsMixin(ParserBase):
         token = self.current_token
         if token is None:
             return None
+        if token.type == "MATCH":
+            return self._parse_match_expression()
         # Java-like constructor: new ClassName(args)  or  new Generic<T1,T2>(args)
         if token.type == "NEW":
             self.advance()
@@ -501,6 +503,132 @@ class ExpressionsMixin(ParserBase):
             self.invalid_expression_error(f"Unexpected token {token.value}", token)
             self.advance()
             return None
+
+    def _parse_match_expression(self):
+        """Parse a match expression: match <expr> { <pattern> -> <body>, ... }
+
+        Pure syntax at this stage: pattern validity (enum/variant existence,
+        binding arity, exhaustiveness, wildcard placement, duplicate arms)
+        is checked during semantic analysis, not here.
+        """
+        match_tok = self.consume("MATCH")
+        if match_tok is None:
+            return None
+        scrutinee = self.parse_expression()
+        if scrutinee is None:
+            self.expected_token_error("expression to match on", self.current_token)
+            return None
+        if not self.consume("OPEN_BRACE"):
+            self.expected_token_error("'{' to start match body", self.current_token)
+            return None
+
+        arms: list[ASTNode] = []
+        while self.current_token and self.current_token.type != "CLOSE_BRACE":
+            if self.current_token.type in ("SINGLE_LINE_COMMENT", "MULTI_LINE_COMMENT_START"):
+                self._skip_comment()
+                continue
+            if self.current_token.type == "COMMA":
+                self.advance()
+                continue
+            arm = self._parse_match_arm()
+            if arm is None:
+                # Recover: skip to the next arm boundary.
+                while self.current_token and self.current_token.type not in ("COMMA", "CLOSE_BRACE"):
+                    self.advance()
+                continue
+            arms.append(arm)
+            if self.current_token and self.current_token.type == "COMMA":
+                self.advance()
+
+        if not self.consume("CLOSE_BRACE"):
+            self.expected_token_error("'}' to close match body", self.current_token)
+            return None
+
+        node = ASTNode(NodeTypes.MATCH_EXPRESSION, match_tok, "match", [scrutinee, *arms], match_tok.index)
+        return self._parse_postfix_cast(node)
+
+    def _parse_match_arm(self) -> Optional[ASTNode]:
+        """Parse one match arm: pattern -> body.
+
+        pattern := '_' | EnumName '.' Variant | EnumName '.' Variant '(' bindings ')'
+        bindings := binding (',' binding)*
+        binding  := field_name (':' local_name)?
+
+        Payload fields are bound by declared field name (not position); a
+        field can be renamed to a different local with `field: local`.
+        Fields omitted from the pattern are simply not bound in the arm body.
+        """
+        is_wildcard = False
+        enum_name: Optional[str] = None
+        variant_name: Optional[str] = None
+        bindings: list[tuple[str, str]] = []
+
+        if self.current_token and self.current_token.type == "IDENTIFIER" and self.current_token.value == "_":
+            pattern_tok = self.current_token
+            self.advance()
+            is_wildcard = True
+        else:
+            enum_tok = self.consume("IDENTIFIER")
+            if enum_tok is None:
+                self.expected_token_error("pattern (enum variant or '_') in match arm", self.current_token)
+                return None
+            if not self.consume("DOT"):
+                self.expected_token_error("'.' after enum type in match pattern", self.current_token)
+                return None
+            variant_tok = self.consume("IDENTIFIER")
+            if variant_tok is None:
+                self.expected_token_error("variant name in match pattern", self.current_token)
+                return None
+            pattern_tok = enum_tok
+            enum_name = enum_tok.value
+            variant_name = variant_tok.value
+
+            if self.current_token and self.current_token.type == "OPEN_PAREN":
+                self.advance()  # consume '('
+                if self.current_token and self.current_token.type != "CLOSE_PAREN":
+                    while True:
+                        field_tok = self.consume("IDENTIFIER")
+                        if field_tok is None:
+                            self.expected_token_error(
+                                "payload field name in match pattern", self.current_token
+                            )
+                            break
+                        local_name = field_tok.value
+                        if self.current_token and self.current_token.type == "COLON":
+                            self.advance()  # consume ':'
+                            local_tok = self.consume("IDENTIFIER")
+                            if local_tok is None:
+                                self.expected_token_error(
+                                    "local binding name after ':' in match pattern", self.current_token
+                                )
+                                break
+                            local_name = local_tok.value
+                        bindings.append((field_tok.value, local_name))
+                        if self.current_token and self.current_token.type == "COMMA":
+                            self.advance()
+                            continue
+                        break
+                if not self.consume("CLOSE_PAREN"):
+                    self.expected_token_error("')' to close match pattern bindings", self.current_token)
+
+        if not self.consume("ARROW"):
+            self.expected_token_error("'->' after match pattern", self.current_token)
+            return None
+
+        if self.current_token and self.current_token.type == "OPEN_BRACE":
+            body = self.parse_scope()
+        else:
+            body = self.parse_expression()
+        if body is None:
+            self.expected_token_error("match arm body", self.current_token)
+            return None
+
+        arm_node = ASTNode(NodeTypes.MATCH_ARM, pattern_tok, variant_name or "_", [body], pattern_tok.index)
+        setattr(arm_node, "is_wildcard", is_wildcard)
+        setattr(arm_node, "enum_name", enum_name)
+        setattr(arm_node, "variant_name", variant_name)
+        setattr(arm_node, "bindings", bindings)
+        return arm_node
 
     def parse_array_literal(self):
         """Parse an array literal expression like [1, 2, 3]"""

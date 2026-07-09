@@ -1,0 +1,13 @@
+// Invalid: the pattern binds a field that doesn't exist on the variant.
+// EXPECT: semantic error
+
+enum Shape {
+    Circle(float64 radius),
+    Point
+}
+
+Shape s = Shape.Point;
+match s {
+    Shape.Circle(bogus) -> { }
+    Shape.Point -> { }
+}

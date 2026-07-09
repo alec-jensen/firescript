@@ -1,0 +1,19 @@
+import @firescript/std.io.println;
+
+enum Color {
+    Red,
+    Green,
+    Blue
+}
+
+void describe(Color c) {
+    match c {
+        Color.Red -> { println("red"); }
+        Color.Green -> { println("green"); }
+        Color.Blue -> { println("blue"); }
+    }
+}
+
+describe(Color.Red);
+describe(Color.Green);
+describe(Color.Blue);

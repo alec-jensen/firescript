@@ -5,9 +5,9 @@ import @firescript/std.io.println;
 // for a later stage (see docs/internal/development/version_planning.md,
 // 0.6.0 "Griffin").
 enum Shape {
-    Circle(float64),
-    Rectangle(float64, float64),
-    Labeled(int32, bool),
+    Circle(float64 radius),
+    Rectangle(float64 width, float64 height),
+    Labeled(int32 code, bool active),
     Point
 }
 

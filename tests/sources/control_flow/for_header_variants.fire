@@ -1,0 +1,30 @@
+// C-style for headers with omitted or expression (non-declaration) parts.
+import @firescript/std.io.println;
+
+int32 i = 0;
+
+// No init clause
+for (; i < 3; i++) {
+    println(i);
+}
+
+// Expression (increment) init instead of a declaration
+for (i++; i < 6; i++) {
+    println(i);
+}
+
+// All three clauses empty; exit via break
+int32 k = 0;
+for (;;) {
+    k++;
+    if (k >= 2) {
+        break;
+    }
+}
+println(k);
+
+// No increment clause
+for (int32 m = 0; m < 2;) {
+    println("m=" + (m as string));
+    m++;
+}

@@ -1,0 +1,9 @@
+// When main() is defined, top-level statements outside it are ignored
+// (the compiler logs a warning and only main() runs).
+import @firescript/std.io.println;
+
+println("top-level ignored");
+
+void main() {
+    println("only main runs");
+}

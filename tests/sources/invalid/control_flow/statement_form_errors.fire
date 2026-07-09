@@ -1,0 +1,32 @@
+// Malformed statement forms.
+int32 x = 1;
+
+// break outside a loop still parses; missing semicolon after break
+while (x < 2) {
+    x++;
+    break
+}
+
+// Bare identifier is not a statement
+x;
+
+// Field access alone is not a statement
+class Holder {
+    int32 v;
+
+    Holder() {
+        this.v = 3;
+    }
+}
+Holder h = Holder();
+h.v;
+
+// Missing expression after field assignment
+h.v = ;
+
+// Missing expression after array element assignment
+int32[] arr = [1, 2];
+arr[0] = ;
+
+// Dangling else with a braceless statement
+else x++;

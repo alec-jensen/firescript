@@ -1,0 +1,22 @@
+// Malformed type-level and instance member accesses.
+class Foo {
+    int32 v;
+
+    Foo() {
+        this.v = 1;
+    }
+
+    static int32 bar() {
+        return 7;
+    }
+}
+
+// Missing method name after type '.'
+int32 a = Foo.;
+
+// Missing '(' after type method name
+int32 b = Foo.bar;
+
+// Missing identifier after instance '.'
+Foo f = Foo();
+int32 c = f.;

@@ -1,0 +1,16 @@
+// Integer literal bases (hex, binary, octal) and underscore separators.
+import @firescript/std.io.println;
+
+int32 hex = 0xFF;
+int32 bin = 0b1010;
+int32 oct = 0o755;
+int32 sep = 1_000_000;
+int64 bigHex = 0xDEAD_BEEFi64;
+uint8 hexSuffixed = 0x2Au8;
+
+println(hex);
+println(bin);
+println(oct);
+println(sep);
+println(bigHex);
+println(hexSuffixed);

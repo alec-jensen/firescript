@@ -1,0 +1,21 @@
+// Malformed import statements.
+
+// Non-identifier in symbol group
+import utils.{5}
+
+// Unclosed symbol group
+import utils.{helper
+
+// Missing alias name after 'as'
+import utils.{CONSTANT as }
+
+// Non-symbol token after '.'
+import utils.!;
+
+// External (non-@firescript) packages are rejected
+import @somebody/package;
+
+// Missing package name after '@'
+import @;
+
+int32 x = 1;

@@ -1,0 +1,21 @@
+// Malformed generic function definitions.
+
+// Missing type parameter name after '<'
+T badParam<(T x) {
+    return x;
+}
+
+// Missing constraint after ':'
+T badConstraint<T:>(T x) {
+    return x;
+}
+
+// Missing '>' to close type parameters
+T unclosed<T(T x) {
+    return x;
+}
+
+// Return type is not a declared type parameter
+Q badReturn<T>(T x) {
+    return x;
+}

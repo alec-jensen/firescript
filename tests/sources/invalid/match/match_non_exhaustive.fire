@@ -1,0 +1,13 @@
+// Invalid: match does not cover every enum variant and has no wildcard.
+// EXPECT: semantic error
+
+enum Shape {
+    Circle(float64 radius),
+    Rectangle(float64 width, float64 height),
+    Point
+}
+
+Shape s = Shape.Circle(3.0);
+match s {
+    Shape.Circle(radius) -> { }
+}

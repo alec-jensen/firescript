@@ -205,6 +205,101 @@ def case_no_link_rejected() -> None:
     _require(proc.returncode == 1, f"--no-link should exit 1 (unsupported), got {proc.returncode}")
 
 
+def case_message_format_json() -> None:
+    src = os.path.join(SOURCES_DIR, "invalid", "types", "type_mismatches.fire")
+    proc = run_cli(["--message-format", "json", "--check", src])
+    _require(proc.returncode == 1, f"--check on invalid file should exit 1, got {proc.returncode}")
+    combined = proc.stdout + proc.stderr
+    _require('"type": "diagnostic"' in combined,
+             f"expected JSON diagnostic events in output, got: {combined!r}")
+    _require('"type": "log"' in combined,
+             f"expected JSON log events in output, got: {combined!r}")
+
+
+def case_debug_mode() -> None:
+    src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
+    proc = run_cli(["-d", "--check", src])
+    _require(proc.returncode == 0, f"-d --check on valid file should exit 0, got {proc.returncode}: {proc.stderr}")
+    combined = proc.stdout + proc.stderr
+    _require("DEBUG" in combined, f"expected DEBUG log lines with -d, got: {combined!r}")
+
+
+def case_file_and_dir_together() -> None:
+    src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
+    with tempfile.TemporaryDirectory() as tmp:
+        shutil.copy(os.path.join(SOURCES_DIR, "operators", "unary_test.fire"), os.path.join(tmp, "b.fire"))
+        proc = run_cli(["--check", "--dir", tmp, src], cwd=tmp)
+        _require(proc.returncode == 0, f"file + --dir should compile both and exit 0, got {proc.returncode}: {proc.stderr}")
+        combined = proc.stdout + proc.stderr
+        _require("Both file and directory specified" in combined,
+                 f"expected both-specified warning in output, got: {combined!r}")
+
+
+def case_emit_asm_output_path() -> None:
+    src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
+    with tempfile.TemporaryDirectory() as tmp:
+        out_path = os.path.join(tmp, "custom.s")
+        proc = run_cli(["--emit", "asm", "-o", out_path, src])
+        _require(proc.returncode == 0, f"--emit asm -o should exit 0, got {proc.returncode}: {proc.stderr}")
+        _require(os.path.exists(out_path), f"expected assembly file at {out_path}")
+
+
+def case_emit_ast_output_rename() -> None:
+    src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
+    with tempfile.TemporaryDirectory() as tmp:
+        out_path = os.path.join(tmp, "renamed.ast")
+        proc = run_cli(["--emit", "ast", "-o", out_path, src])
+        _require(proc.returncode == 0, f"--emit ast -o should exit 0, got {proc.returncode}: {proc.stderr}")
+        _require(os.path.exists(out_path), f"expected AST file moved to {out_path}")
+
+
+def case_input_is_directory() -> None:
+    proc = run_cli(["--check", SOURCES_DIR])
+    _require(proc.returncode == 1, f"passing a directory as the input file should exit 1, got {proc.returncode}")
+
+
+def case_output_rename_no_ext() -> None:
+    src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
+    with tempfile.TemporaryDirectory() as tmp:
+        out_path = os.path.join(tmp, "custom_name")
+        proc = run_cli(["-o", out_path, src])
+        _require(proc.returncode == 0, f"-o without .exe should exit 0, got {proc.returncode}: {proc.stderr}")
+        # The compiler appends .exe when writing, then the -o handling moves
+        # the result to the exact requested output path.
+        _require(os.path.exists(out_path), f"expected binary at {out_path}")
+
+
+def case_import_not_found_compile() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        src = os.path.join(tmp, "missing_import.fire")
+        with open(src, "w", encoding="utf-8") as f:
+            f.write("import definitely_missing_module.helper;\nint32 x = helper(1);\n")
+        proc = run_cli([src])
+        _require(proc.returncode == 1, f"unresolvable import should exit 1, got {proc.returncode}")
+        combined = proc.stdout + proc.stderr
+        _require("Import resolution failed" in combined,
+                 f"expected import resolution failure in output, got: {combined!r}")
+
+
+def case_import_with_syntax_error() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        src = os.path.join(tmp, "bad_after_merge.fire")
+        with open(src, "w", encoding="utf-8") as f:
+            f.write("import @firescript/std.io.println;\nint32 x = ;\nprintln(x);\n")
+        proc = run_cli([src])
+        _require(proc.returncode == 1, f"syntax error alongside imports should exit 1, got {proc.returncode}")
+
+
+def case_emit_deps_no_imports() -> None:
+    src = os.path.join(SOURCES_DIR, "classes", "classes_smoke.fire")
+    deps_out = os.path.join(BUILD_DIR, "classes_smoke.d")
+    if os.path.exists(deps_out):
+        os.remove(deps_out)
+    proc = run_cli(["--emit-deps", "--check", src])
+    _require(proc.returncode == 0, f"--emit-deps on import-free file should exit 0, got {proc.returncode}: {proc.stderr}")
+    _require(not os.path.exists(deps_out), "no deps file expected for an import-free source")
+
+
 CASES: List[Case] = [
     Case("version", case_version),
     Case("no_input_specified", case_no_input),
@@ -222,6 +317,16 @@ CASES: List[Case] = [
     Case("emit_asm", case_emit_asm),
     Case("emit_fir_only", case_emit_fir_only),
     Case("no_link_rejected", case_no_link_rejected),
+    Case("message_format_json", case_message_format_json),
+    Case("debug_mode", case_debug_mode),
+    Case("file_and_dir_together", case_file_and_dir_together),
+    Case("emit_asm_output_path", case_emit_asm_output_path),
+    Case("emit_ast_output_rename", case_emit_ast_output_rename),
+    Case("input_is_directory", case_input_is_directory),
+    Case("emit_deps_no_imports", case_emit_deps_no_imports),
+    Case("output_rename_no_ext", case_output_rename_no_ext),
+    Case("import_not_found_compile", case_import_not_found_compile),
+    Case("import_with_syntax_error", case_import_with_syntax_error),
 ]
 
 

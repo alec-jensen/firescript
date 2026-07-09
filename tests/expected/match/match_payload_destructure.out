@@ -1,0 +1,6 @@
+circle r=3.000000
+rect 2.000000x5.000000
+point
+renamed circle r=1.500000
+rect width only=4.000000
+renamed point

@@ -1,0 +1,11 @@
+// A user-defined main() is used as the program entry point.
+import @firescript/std.io.println;
+
+int32 helper(int32 x) {
+    return x * 2;
+}
+
+void main() {
+    println("user main");
+    println(helper(21));
+}

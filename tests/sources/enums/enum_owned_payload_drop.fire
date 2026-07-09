@@ -1,0 +1,65 @@
+import @firescript/std.io.println;
+
+// Owned payload data (a string field, and a class field elsewhere) must be
+// dropped when the active variant holding it goes out of scope, and only
+// the active variant's owned fields should ever be freed (never a
+// different variant's, since payload storage is shared/overlapping).
+
+class Box {
+    string label;
+
+    Box(string label) {
+        this.label = label;
+    }
+}
+
+enum Message {
+    Text(string body),
+    Empty
+}
+
+enum Wrapper {
+    Holds(Box inner),
+    Empty
+}
+
+void describeMessage(Message m) {
+    match m {
+        Message.Text(body) -> { println("text: " + body); }
+        Message.Empty -> { println("empty message"); }
+    }
+}
+
+void describeWrapper(Wrapper w) {
+    match w {
+        Wrapper.Holds(inner) -> { println("holds: " + inner.label); }
+        Wrapper.Empty -> { println("empty wrapper"); }
+    }
+}
+
+// Repeated construction/match/drop must not leak or double-free. Output is
+// kept small (accumulate a counter instead of printing per iteration) so
+// the golden file stays reasonably sized while still exercising 5000
+// construct-match-drop cycles.
+int32 total = 0;
+for (int32 i = 0; i < 5000; i++) {
+    Message m = Message.Text("hello");
+    match m {
+        Message.Text(body) -> { total = total + 1; }
+        Message.Empty -> { }
+    }
+
+    Wrapper w = Wrapper.Holds(Box("box-label"));
+    match w {
+        Wrapper.Holds(inner) -> { total = total + 1; }
+        Wrapper.Empty -> { }
+    }
+}
+println(total as string);
+
+describeMessage(Message.Text("final"));
+describeMessage(Message.Empty);
+describeWrapper(Wrapper.Holds(Box("final-box")));
+describeWrapper(Wrapper.Empty);
+
+println("done");

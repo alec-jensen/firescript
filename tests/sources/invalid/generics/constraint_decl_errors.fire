@@ -1,0 +1,15 @@
+// Malformed constraint declarations.
+
+// Missing constraint name
+constraint = int32;
+
+// Missing '=' after name
+constraint NoAssign int32;
+
+// Missing type after '='
+constraint NoType = ;
+
+// Trailing '|' with no following type
+constraint Trailing = int32 | ;
+
+int32 x = 1;

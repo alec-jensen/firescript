@@ -1,0 +1,11 @@
+// Top-level const declarations become module-level constants.
+import @firescript/std.io.println;
+
+const int32 MAX_USERS = 100;
+const float64 RATIO = 2.5;
+const int32 NEGATIVE = -7;
+
+println(MAX_USERS);
+println(RATIO);
+println(NEGATIVE);
+println(MAX_USERS + 1);

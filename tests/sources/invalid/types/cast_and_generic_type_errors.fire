@@ -1,0 +1,41 @@
+// Cast, generic-inference, builtin-arity, and constructor type errors.
+
+class Widget {
+    int32 v;
+
+    Widget() {
+        this.v = 1;
+    }
+}
+
+// Array literals cannot directly contain arrays
+int32[] nested = [[1], [2]];
+
+// Cannot cast an array to a non-string type
+int32[] arr = [1, 2];
+float64 a = arr as float64;
+
+// Cannot cast to a non-numeric user type
+int32 b = 5 as Widget;
+
+// Cannot cast a non-numeric source type
+Widget w = Widget();
+int32 c = w as int32;
+
+// Wrong number of explicit generic type arguments
+T first<T, U>(T x, U y) {
+    return x;
+}
+int32 d = first<int32>(1, 2);
+
+// Conflicting generic inference
+T pick<T>(T x, T y) {
+    return x;
+}
+int32 e = pick(1, "two");
+
+// Builtin arity error
+print(1, 2);
+
+// Constructor argument count mismatch
+Widget w2 = Widget(1, 2);

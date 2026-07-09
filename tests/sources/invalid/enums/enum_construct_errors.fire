@@ -1,0 +1,11 @@
+// Malformed enum variant constructions.
+enum Color {
+    Red,
+    Green
+}
+
+// Missing variant name after '.'
+Color a = Color.;
+
+// Unknown variant
+Color b = Color.Purple;

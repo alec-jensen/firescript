@@ -44,6 +44,11 @@ def _start_coverage():
         except OSError:
             pass
     os.environ["COVERAGE_PROCESS_START"] = COVERAGERC
+    os.environ["FIRESCRIPT_COV_ROOT"] = REPO_ROOT
+    # Pin the data file to the repo root so compiler subprocesses running with
+    # a different cwd (e.g. cli_runner --dir cases in temp dirs) don't scatter
+    # their parallel data files into directories that get deleted.
+    os.environ["COVERAGE_FILE"] = os.path.join(REPO_ROOT, ".coverage")
     cov = coverage_mod.Coverage(config_file=COVERAGERC)
     cov.start()
     return cov

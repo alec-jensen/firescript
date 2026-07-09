@@ -1,0 +1,6 @@
+// Wildcard import from a @firescript stdlib module.
+import @firescript/std.io.*;
+
+print("no");
+println(" newline then one");
+println("wildcard works");

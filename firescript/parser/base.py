@@ -131,9 +131,9 @@ class ParserBase:
         # User-defined class registry and type names
         self.user_classes: dict[str, dict[str, str]] = {}
         self.user_types: set[str] = set()
-        # User-defined enum registry: enum name -> {variant name -> payload type strings}
+        # User-defined enum registry: enum name -> {variant name -> [(field_name, field_type), ...]}
         # (declaration order preserved; empty list means a tag-only variant)
-        self.user_enums: dict[str, dict[str, list[str]]] = {}
+        self.user_enums: dict[str, dict[str, list[tuple[str, str]]]] = {}
         # className -> methodName -> {"return": str, "params": [str, ...]}
         self.user_methods = {}
 

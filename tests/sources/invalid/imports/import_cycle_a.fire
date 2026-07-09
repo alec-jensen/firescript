@@ -1,0 +1,8 @@
+// Cyclic import: this module imports a provider that imports it back.
+import import_cycle_b_provider.pong;
+
+export int32 ping(int32 x) {
+    return x + 1;
+}
+
+int32 r = pong(1);

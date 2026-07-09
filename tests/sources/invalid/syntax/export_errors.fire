@@ -1,0 +1,16 @@
+// Invalid uses of 'export'.
+
+// export before an import
+export import utils.helper
+
+// export before a directive
+export directive enable_drops;
+
+// export of a constraint declaration
+export constraint Nums = int32 | int64;
+
+// export applied to a non-declaration statement
+export println("hi");
+
+// export at end of file with nothing after it
+export

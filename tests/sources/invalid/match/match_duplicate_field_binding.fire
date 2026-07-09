@@ -1,0 +1,13 @@
+// Invalid: the same payload field is bound more than once in one pattern.
+// EXPECT: semantic error
+
+enum Shape {
+    Rectangle(float64 width, float64 height),
+    Point
+}
+
+Shape s = Shape.Point;
+match s {
+    Shape.Rectangle(width, width: w2) -> { }
+    Shape.Point -> { }
+}

@@ -44,6 +44,8 @@ class NodeTypes(Enum):
     ENUM_DEFINITION = "EnumDefinition"
     ENUM_VARIANT = "EnumVariant"
     ENUM_VARIANT_CONSTRUCT = "EnumVariantConstruct"
+    MATCH_EXPRESSION = "MatchExpression"
+    MATCH_ARM = "MatchArm"
 
 
 class CompilerDirective(Enum):

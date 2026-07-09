@@ -1,0 +1,8 @@
+// Malformed array access expressions.
+int32[] arr = [1, 2, 3];
+
+// Missing index expression
+int32 a = arr[;
+
+// Missing ']' after index
+int32 b = arr[1;

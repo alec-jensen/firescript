@@ -96,6 +96,10 @@ class SemanticAnalyzer:
         # list of (param_name, param_type, is_array, is_borrowed), excluding receiver.
         self.method_signatures: Dict[Tuple[str, str], List[Tuple[str, str, bool, bool]]] = {}
 
+        # Track enum variants: enum_name -> {variant_name -> [(field_name, field_type), ...]}
+        # (declaration order preserved; empty list means a tag-only variant).
+        self.enum_variants: Dict[str, Dict[str, List[Tuple[str, str]]]] = {}
+
         # Track callable analysis context for validating return semantics.
         # Each frame stores: (return_type, borrowed_parameter_names, receiver_is_mutable).
         # receiver_is_mutable is False for &this (read-only), True for &mut this or no receiver.
@@ -182,7 +186,15 @@ class SemanticAnalyzer:
 
             # Don't recurse into method bodies during signature collection.
             return
-        
+
+        if node.node_type == NodeTypes.ENUM_DEFINITION:
+            self.enum_variants[node.name] = {
+                member.name: list(getattr(member, "payload_fields", []) or [])
+                for member in node.children
+                if member.node_type == NodeTypes.ENUM_VARIANT
+            }
+            return
+
         # Recurse for non-function nodes
         if hasattr(node, 'children'):
             for child in node.children:
@@ -397,7 +409,129 @@ class SemanticAnalyzer:
             return self._definitely_terminates(then_branch) and self._definitely_terminates(else_branch)
 
         return False
-    
+
+    def _validate_match_arms(self, match_node: ASTNode, arms: List[ASTNode]) -> None:
+        """Check exhaustiveness, duplicate variants, wildcard placement, and
+        binding arity for a match expression's arms."""
+        if not arms:
+            self.report_error(
+                SemanticError(message="'match' must have at least one arm"), match_node
+            )
+            return
+
+        seen_variants: Set[str] = set()
+        wildcard_seen = False
+        enum_name: Optional[str] = None
+
+        for arm in arms:
+            is_wildcard = bool(getattr(arm, "is_wildcard", False))
+
+            if wildcard_seen:
+                self.report_error(
+                    SemanticError(message="Unreachable match arm: a wildcard '_' arm must be last"),
+                    arm,
+                )
+
+            if is_wildcard:
+                wildcard_seen = True
+                continue
+
+            arm_enum_name = getattr(arm, "enum_name", None)
+            variant_name = getattr(arm, "variant_name", None)
+
+            if enum_name is None:
+                enum_name = arm_enum_name
+            elif arm_enum_name and arm_enum_name != enum_name:
+                self.report_error(
+                    SemanticError(
+                        message=(
+                            f"Match arm pattern '{arm_enum_name}.{variant_name}' does not match "
+                            f"enum type '{enum_name}' used by earlier arms"
+                        )
+                    ),
+                    arm,
+                )
+
+            if arm_enum_name not in self.enum_variants:
+                self.report_error(
+                    SemanticError(message=f"Unknown enum type '{arm_enum_name}' in match pattern"),
+                    arm,
+                )
+                continue
+
+            variant_payloads = self.enum_variants[arm_enum_name]
+            if variant_name not in variant_payloads:
+                self.report_error(
+                    SemanticError(message=f"Unknown variant '{variant_name}' in enum '{arm_enum_name}'"),
+                    arm,
+                )
+                continue
+
+            if variant_name in seen_variants:
+                self.report_error(
+                    SemanticError(
+                        message=f"Duplicate match arm for variant '{arm_enum_name}.{variant_name}'"
+                    ),
+                    arm,
+                )
+            seen_variants.add(variant_name)
+
+            bindings = getattr(arm, "bindings", []) or []
+            field_names = {fname for fname, _ in variant_payloads[variant_name]}
+            seen_fields: Set[str] = set()
+            for field_name, _local_name in bindings:
+                if field_name not in field_names:
+                    self.report_error(
+                        SemanticError(
+                            message=(
+                                f"Variant '{arm_enum_name}.{variant_name}' has no payload field "
+                                f"'{field_name}'"
+                            )
+                        ),
+                        arm,
+                    )
+                    continue
+                if field_name in seen_fields:
+                    self.report_error(
+                        SemanticError(
+                            message=(
+                                f"Field '{field_name}' is bound more than once in this match pattern"
+                            )
+                        ),
+                        arm,
+                    )
+                seen_fields.add(field_name)
+
+        if enum_name is not None and enum_name in self.enum_variants and not wildcard_seen:
+            missing = set(self.enum_variants[enum_name].keys()) - seen_variants
+            if missing:
+                missing_list = ", ".join(sorted(missing))
+                self.report_error(
+                    SemanticError(
+                        message=(
+                            f"Non-exhaustive match on enum '{enum_name}': missing variant(s) "
+                            f"{missing_list} (add arms for them or a trailing '_' wildcard)"
+                        )
+                    ),
+                    match_node,
+                )
+
+    def _register_match_arm_bindings(self, arm: ASTNode) -> None:
+        """Register a match arm's payload bindings as borrowed values scoped
+        to the arm body. Bindings resolve by declared field name (optionally
+        renamed via `field: local`) and are read-only borrows by default
+        (like `&this`); explicit move-out-of-payload syntax is a planned
+        follow-up."""
+        bindings = getattr(arm, "bindings", []) or []
+        if not bindings:
+            return
+        enum_name = getattr(arm, "enum_name", None)
+        variant_name = getattr(arm, "variant_name", None)
+        payload_fields = dict(self.enum_variants.get(enum_name or "", {}).get(variant_name or "", []))
+        for field_name, local_name in bindings:
+            bind_type = payload_fields.get(field_name)
+            self._register_binding(local_name, bind_type, False, arm, is_borrowed=True)
+
     def _validate_borrow(
         self,
         var_type: Optional[str],
@@ -665,6 +799,49 @@ class SemanticAnalyzer:
                 merged_sources = [then_snapshot]
             else:
                 merged_sources = [then_snapshot, else_snapshot]
+
+            all_bindings = set(base_snapshot.keys())
+            for src in merged_sources:
+                all_bindings |= set(src.keys())
+
+            for binding in all_bindings:
+                merged_state = None
+                for src in merged_sources:
+                    src_state = src.get(binding, base_snapshot.get(binding, binding.state))
+                    merged_state = src_state if merged_state is None else self._merge_state_pair(merged_state, src_state)
+                if merged_state is not None:
+                    binding.state = merged_state
+
+        # Match expression: validate patterns (exhaustiveness, duplicates,
+        # wildcard order, binding arity), register payload bindings as
+        # scoped borrows, and merge ownership states across arms (an N-way
+        # generalization of the if/else merge above).
+        elif node.node_type == NodeTypes.MATCH_EXPRESSION:
+            if not node.children:
+                return
+
+            scrutinee = node.children[0]
+            arms = node.children[1:]
+
+            self._analyze_node(scrutinee)
+            self._validate_match_arms(node, arms)
+
+            base_snapshot = self._snapshot_binding_states()
+            arm_results: List[Tuple[Dict[BindingInfo, OwnershipState], bool]] = []
+
+            for arm in arms:
+                self._restore_binding_states(base_snapshot)
+                self._enter_scope()
+                self._register_match_arm_bindings(arm)
+                body = arm.children[0] if arm.children else None
+                if body is not None:
+                    self._analyze_node(body)
+                terminates = self._definitely_terminates(body)
+                self._exit_scope()
+                arm_results.append((self._snapshot_binding_states(), terminates))
+
+            non_terminating = [snap for snap, terminates in arm_results if not terminates]
+            merged_sources = non_terminating if non_terminating else [base_snapshot]
 
             all_bindings = set(base_snapshot.keys())
             for src in merged_sources:
