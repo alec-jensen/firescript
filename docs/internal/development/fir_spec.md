@@ -102,6 +102,7 @@ function bump_or_reset(counter: Counter, should_reset: bool) -> int32 {
     %3 = BinaryOp("+", %0, %2)
     StoreField(counter, "value", %3)
     Call(println, [%3], ["borrow"])
+    Drop(counter)
     Return(%3)
 }
 ```

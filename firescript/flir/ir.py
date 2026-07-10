@@ -543,25 +543,12 @@ class FLIRFunction:
         return block
 
     def validate(self) -> None:
-        ids = set()
-        for block in self.blocks:
-            if block.id in ids:
-                raise ValueError(f"duplicate FLIR block id {block.id} in {self.name}")
-            ids.add(block.id)
-            if not block.is_terminated():
-                raise ValueError(f"FLIR block {block.id} in {self.name} has no terminator")
-        for block in self.blocks:
-            last = block.instructions[-1]
-            targets = []
-            if isinstance(last, Br):
-                targets = [last.true_block, last.false_block]
-            elif isinstance(last, Jmp):
-                targets = [last.target]
-            for target in targets:
-                if target not in ids:
-                    raise ValueError(
-                        f"FLIR block {block.id} in {self.name} targets unknown block {target}"
-                    )
+        """Thin wrapper over the module-level Tier-1 verifier
+        (flir/verifier.py). Kept so existing single-function callers/tests
+        still work; wraps this function alone in a throwaway module."""
+        wrapper = FLIRModule("firescript")
+        wrapper.functions = [self]
+        wrapper.validate()
 
 
 class FLIRModule:
@@ -593,5 +580,7 @@ class FLIRModule:
         return f
 
     def validate(self) -> None:
-        for f in self.functions:
-            f.validate()
+        """Thin wrapper over the Tier-1 verifier (flir/verifier.py)."""
+        from flir.verifier import verify_flir_module
+
+        verify_flir_module(self)

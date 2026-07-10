@@ -185,6 +185,81 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
                 names.update(_collect_identifier_names(child))
         return names
 
+    def _return_transferred_identifiers(expr: Optional[ASTNode]) -> set[str]:
+        """Names within a return expression that are actually
+        ownership-transferred: the bare returned identifier, or an
+        identifier passed to a non-borrowed function/constructor
+        parameter. An identifier passed only to *borrowed* parameters
+        (including every intrinsic -- unknown to func_sigs/ctor_sigs,
+        since intrinsics all borrow their arguments) is not transferred.
+        """
+        if expr is None:
+            return set()
+        if expr.node_type == NodeTypes.IDENTIFIER:
+            return {expr.name} if expr.name else set()
+
+        transferred: set[str] = set()
+
+        def walk(node: Optional[ASTNode]) -> None:
+            if node is None:
+                return
+            if node.node_type == NodeTypes.FUNCTION_CALL:
+                # Bare `ClassName(args)` construction parses as a
+                # FUNCTION_CALL (not a distinct CONSTRUCTOR_CALL node) --
+                # check ctor_sigs first so a constructor's own borrow
+                # flags are consulted instead of silently missing (falling
+                # through to the "unknown callee" default).
+                flags = ctor_sigs.get(node.name) if node.name in ctor_sigs else func_sigs.get(node.name)
+                for i, arg in enumerate(node.children):
+                    borrowed = flags[i] if flags is not None and i < len(flags) else True
+                    if arg is not None and arg.node_type == NodeTypes.IDENTIFIER and not borrowed:
+                        transferred.add(arg.name)
+                    walk(arg)
+                return
+            if node.node_type == NodeTypes.CONSTRUCTOR_CALL:
+                flags = ctor_sigs.get(node.name)
+                for i, arg in enumerate(node.children):
+                    borrowed = flags[i] if flags is not None and i < len(flags) else True
+                    if arg is not None and arg.node_type == NodeTypes.IDENTIFIER and not borrowed:
+                        transferred.add(arg.name)
+                    walk(arg)
+                return
+            if node.node_type == NodeTypes.METHOD_CALL:
+                receiver = node.children[0] if node.children else None
+                args = node.children[1:]
+                class_name: Optional[str] = None
+                if receiver is not None and receiver.node_type == NodeTypes.CONSTRUCTOR_CALL:
+                    class_name = receiver.name
+                elif (
+                    receiver is not None
+                    and receiver.node_type == NodeTypes.FUNCTION_CALL
+                    and receiver.name in ctor_sigs
+                ):
+                    # Bare `ClassName(args)` construction parses as
+                    # FUNCTION_CALL (see the FUNCTION_CALL branch above).
+                    class_name = receiver.name
+                elif receiver is not None and receiver.node_type == NodeTypes.IDENTIFIER:
+                    for frame in reversed(var_maps):
+                        if receiver.name in frame:
+                            class_name = frame[receiver.name][0]
+                            break
+                flags = method_sigs.get(class_name or "", {}).get(node.name) if class_name else None
+                for i, arg in enumerate(args):
+                    # Unresolved receiver class or method: conservatively
+                    # treat as transferred (matches the prior, blanket-
+                    # exempt behavior for this one case).
+                    borrowed = flags[i] if flags is not None and i < len(flags) else False
+                    if arg is not None and arg.node_type == NodeTypes.IDENTIFIER and not borrowed:
+                        transferred.add(arg.name)
+                    walk(arg)
+                walk(receiver)
+                return
+            for c in node.children or []:
+                walk(c)
+
+        walk(expr)
+        return transferred
+
     def _drops_for_frames(frames: List[List[Tuple[str, Optional[str], bool]]]) -> List[ASTNode]:
         """Generate drop calls for the given scope frames (innermost first)."""
         drops: List[ASTNode] = []
@@ -203,7 +278,9 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
 
     def _apply_move_semantics(args: List[ASTNode], is_borrowed_flags: Optional[List[bool]]) -> None:
         """For each argument that is an owned-type identifier passed to a non-borrowed param,
-        remove it from scope_stack (ownership transferred to callee)."""
+        remove it from scope_stack (ownership transferred to callee) -- including when the
+        argument is itself an own-mode parameter of the enclosing function/method, which is
+        now scope-tracked too (see the FUNCTION_DEFINITION handler above)."""
         if is_borrowed_flags is None:
             return
         for i, arg in enumerate(args):
@@ -213,7 +290,7 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
                 for frame in reversed(var_maps):
                     if arg.name in frame:
                         vt, ia, origin = frame[arg.name]
-                        if origin != "param" and is_owned(vt, ia):
+                        if is_owned(vt, ia):
                             _remove_from_scope_stack(arg.name)
                         break
 
@@ -226,7 +303,7 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
         for frame in reversed(var_maps):
             if rhs.name in frame:
                 vt, ia, origin = frame[rhs.name]
-                if origin != "param" and is_owned(vt, ia):
+                if is_owned(vt, ia):
                     _remove_from_scope_stack(rhs.name)
                 return
 
@@ -245,6 +322,30 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
             _move_source_identifier(node.children[0] if node.children else None)
             return node
 
+        # General assignment (field/array/identifier target, e.g.
+        # `this.field = param;` in a constructor): a bare-identifier RHS
+        # naming an owned param/local is a move into the target, same as
+        # VARIABLE_ASSIGNMENT's RHS below -- just with no "drop the old
+        # value" step, since the target isn't a tracked local's own scope
+        # entry. Without this, a constructor moving an owned parameter
+        # into `this.field` never removed that parameter from scope
+        # tracking, so it looked doubly-consumed once params started
+        # being auto-dropped at scope exit (FIRV-O2).
+        if node.node_type == NodeTypes.ASSIGNMENT:
+            new_children = []
+            for c in node.children:
+                new_children.append(process_node(c) if c is not None else None)
+            node.children = new_children
+            rhs = node.children[1] if len(node.children) > 1 else None
+            if rhs is not None and rhs.node_type == NodeTypes.IDENTIFIER:
+                for frame in reversed(var_maps):
+                    if rhs.name in frame:
+                        vt, ia, origin = frame[rhs.name]
+                        if is_owned(vt, ia):
+                            _remove_from_scope_stack(rhs.name)
+                        break
+            return node
+
         # Variable assignment: drop old value if assigning to an Owned local
         if node.node_type == NodeTypes.VARIABLE_ASSIGNMENT:
             target = node.name
@@ -261,7 +362,7 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
             _move_source_identifier(node.children[0] if node.children else None)
             if sym is not None:
                 vt, ia, origin = sym
-                if origin != "param" and is_owned(vt, ia):
+                if is_owned(vt, ia):
                     wrap = ASTNode(NodeTypes.SCOPE, node.token, "scope", [], node.index)
                     wrap.children.append(_make_drop_call(target, vt, ia))
                     wrap.children.append(node)
@@ -282,9 +383,29 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
                 if c.node_type == NodeTypes.PARAMETER:
                     var_maps[-1][c.name] = (c.var_type, c.is_array, "param")
                     new_kids.append(c)
+                    # An own-mode (non-borrowed) Owned parameter is the
+                    # callee's responsibility to drop, exactly like a
+                    # local -- register it the same way so the normal
+                    # scope-exit/return/break/continue drop machinery
+                    # covers it too. Without this, a function that never
+                    # explicitly consumes its own owned parameter silently
+                    # leaked it (FIRV-O3).
+                    if not getattr(c, "is_borrowed", False) and is_owned(c.var_type, c.is_array):
+                        scope_stack[-1].append((c.name, c.var_type, c.is_array))
             body = node.children[-1] if node.children else None
             if body is not None:
-                new_kids.append(process_node(body))
+                processed_body = process_node(body)
+                # Whatever remains in the params frame after processing
+                # the body is what no return/break/continue path already
+                # dropped -- i.e. control can fall off the end of the
+                # function while still owning that parameter. Append
+                # trailing drops the same way a SCOPE appends its own
+                # (see the SCOPE handler above); an already-terminating
+                # body (every path returns) leaves this frame empty, so
+                # this is a no-op in that case.
+                for nm, vt, ia in scope_stack[-1]:
+                    processed_body.children.append(_make_drop_call(nm, vt, ia))
+                new_kids.append(processed_body)
             node.children = new_kids
             scope_stack.clear()
             scope_stack.extend(saved_scope_stack)
@@ -309,7 +430,20 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
             var_maps.pop()
             return node
 
-        # Return: drop all owned vars in all active scopes, skipping vars used in return expr
+        # Return: drop all owned vars in all active scopes, skipping vars
+        # referenced anywhere in the return expression. The drops this
+        # inserts run *before* the return statement, so any identifier the
+        # return expression still needs to read -- transferred or merely
+        # borrowed -- must not be dropped first (that would be a
+        # use-after-drop, a real bug, not just an imprecise leak). This is
+        # deliberately the conservative superset _return_transferred_
+        # identifiers computes (which is precise about *transfer* but
+        # wrong for this "don't drop what's still read" purpose); the
+        # cost is under-dropping (FIRV-O3 leaks) in the narrower case
+        # `_return_transferred_identifiers` was built to fix (a var
+        # referenced only as a borrowed sub-argument, e.g. `return
+        # fs_rt_str_dup(view);`), which is fixed at specific call sites
+        # (see std/internal/runtime.fire's fs_rt_argv_at) instead.
         if node.node_type == NodeTypes.RETURN_STATEMENT:
             wrap = ASTNode(NodeTypes.SCOPE, node.token, "scope", [], node.index)
             used_in_return = _collect_identifier_names(node.children[0]) if node.children else set()
@@ -318,9 +452,19 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
                     if nm not in used_in_return:
                         wrap.children.append(_make_drop_call(nm, vt, ia))
             wrap.children.append(node)
-            # Clear all frames so parent scopes don't emit double-drops for these vars
-            for frame in scope_stack:
-                frame.clear()
+            # NOTE: do NOT clear the scope_stack frames here (see the
+            # identical note on Break/Continue below). scope_stack frames
+            # for outer scopes are shared, mutable list objects visible to
+            # every sibling branch (e.g. both arms of an if/elif/else, or
+            # code after the if entirely) -- clearing them here previously
+            # made every *later* return/scope-exit in the function believe
+            # already-handled-on-this-one-path variables needed no drop at
+            # all, silently leaking them on every other path (FIRV-O3).
+            # A return is terminal, so no other statement in *this* block
+            # follows it; any apparent "extra" drop this leaves for a
+            # provably-unreachable join point downstream (e.g. both arms
+            # of an if/else already returned) lands in a block
+            # ast_to_fir.py's _seal_open_blocks prunes as unreachable.
             return wrap
 
         # Break/Continue: drop all owned vars in scopes between here and the loop boundary
@@ -405,6 +549,21 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
                 flags = method_sigs[class_name].get(node.name)
                 if flags:
                     _apply_move_semantics(new_children, flags)
+            return node
+
+        # this.super(args): ast_to_fir.py::_convert_super_call always passes
+        # every argument "own" (base = self.builder.call(f"{super_class}.
+        # {super_class}", args, ["own"] * len(args), ...)) regardless of
+        # the base constructor's own borrow flags, so every argument is
+        # unconditionally moved -- same as enum variant construction.
+        # Without this, an owned argument threaded through a super() call
+        # (common in constructor chains: B.B calling this.super(id)) was
+        # never removed from scope tracking, so it looked doubly consumed
+        # once params started being auto-dropped at scope exit (FIRV-O2).
+        if node.node_type == NodeTypes.SUPER_CALL:
+            new_children = [process_node(c) if c is not None else None for c in node.children]
+            node.children = new_children
+            _apply_move_semantics(new_children, [False] * len(new_children))
             return node
 
         # Enum variant construction (EnumName.Variant(args)): payload fields

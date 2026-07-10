@@ -251,6 +251,8 @@ class ASTToFIRConverter:
         # name, so FIR local names are unique within a function.
         self.scopes: list[dict[str, tuple[str, bool, Optional[int], str]]] = []
         self._used_local_names: set[str] = set()
+        self._sc_counter = 0
+        self._match_counter = 0
         # (continue_target_block_id, break_target_block_id)
         self.loop_stack: list[tuple[str, str]] = []
 
@@ -411,6 +413,15 @@ class ASTToFIRConverter:
             return SimpleType(type_str, category=self.class_categories[type_str], nullable=nullable)
         if type_str in self.enum_categories:
             return SimpleType(type_str, category=self.enum_categories[type_str], nullable=nullable)
+        if type_str == "SyscallResult":
+            # Compiler-internal copyable struct backing the syscall_*
+            # intrinsics (see flir/lowering.py::ensure_struct's matching
+            # special case). Its class definition lives in
+            # std/internal/runtime.fire, merged into class_categories only
+            # for that file's own conversion -- every *other* file using
+            # SyscallResult must know its category without that merge, or
+            # every local of this type looks (wrongly) "owned" (FIRV-O3).
+            return SimpleType(type_str, category="copyable", nullable=nullable)
         return make_simple(type_str, nullable=nullable)
 
     @staticmethod
@@ -1499,6 +1510,16 @@ class ASTToFIRConverter:
         self.builder.jump(header.id)
 
         self.builder.position_at(exit_block)
+        if array_type.is_owned():
+            # __arr_<var> is the sole owner of the iterated array (a copy
+            # of whatever expression `for (x in <expr>)` evaluated);
+            # nothing else drops it (FIRV-O3). Freeing it is shallow --
+            # matches flir/lowering.py::lower_drop's existing behavior for
+            # array types, which frees the backing buffer only -- so this
+            # is independent of (and doesn't paper over) any separate gap
+            # in per-element ownership for arrays of owned elements.
+            arr_final = self.builder.load_var(source_local, array_type)
+            self.builder.drop(arr_final)
 
     def _array_size_of(self, node: ASTNode) -> Optional[int]:
         if node.node_type == NodeTypes.ARRAY_LITERAL:
@@ -1670,7 +1691,11 @@ class ASTToFIRConverter:
 
         scrutinee_value = self._convert_expression(scrutinee_node)
         scrutinee_type = scrutinee_value.result_type
-        marker = f"{len(self.current_function.blocks)}_{len(self.builder.current_block.instructions)}"
+        # A name keyed on block/instruction counts at generation time is
+        # not guaranteed unique across different match expressions in the
+        # same function (FIRV-L3); a dedicated monotonic counter is.
+        self._match_counter += 1
+        marker = str(self._match_counter)
         scrutinee_temp = f"__match_scrutinee_{marker}"
         self._used_local_names.add(scrutinee_temp)
         self.builder.declare_local(scrutinee_temp, scrutinee_type, scrutinee_value)
@@ -1723,6 +1748,12 @@ class ASTToFIRConverter:
             self.builder.unreachable()
 
         self.builder.position_at(join_block)
+        if scrutinee_type.is_owned():
+            # The scrutinee temp is the sole owner of the matched value
+            # (ExtractTag/ExtractPayloadField are non-consuming reads);
+            # nothing else drops it, so every arm leaked it (FIRV-O3).
+            scrut_final = self.builder.load_var(scrutinee_temp, scrutinee_type)
+            self.builder.drop(scrut_final)
         if result_temp is not None:
             return self.builder.load_var(result_temp, result_type)
         return None
@@ -1764,7 +1795,13 @@ class ASTToFIRConverter:
     def _convert_short_circuit(self, node: ASTNode) -> Value:
         """Lower && / || with C-style short-circuit evaluation via a temp local."""
         bool_type = make_simple("bool")
-        temp_name = f"__sc_{len(self.current_function.blocks)}_{len(self.builder.current_block.instructions)}"
+        # A name keyed on block/instruction counts at generation time is
+        # not guaranteed unique -- two short-circuit expressions converted
+        # in different blocks can land on the same (block count,
+        # instruction count) pair and collide (FIRV-L3). A dedicated
+        # monotonic counter is.
+        self._sc_counter += 1
+        temp_name = f"__sc_{self._sc_counter}"
         self._used_local_names.add(temp_name)
 
         left = self._convert_expression(node.children[0])
@@ -1918,6 +1955,15 @@ class ASTToFIRConverter:
     def _call_arg_modes(self, name: str, node: ASTNode) -> list[str]:
         func_def = self.function_defs.get(name)
         if func_def is None:
+            if name in INTRINSIC_FUNCTIONS:
+                # Every intrinsic (string/array primitives, numeric
+                # conversions, syscalls, low-level mem/win32 primitives)
+                # reads its arguments without taking ownership; defaulting
+                # to "own" here made every call site look like it consumed
+                # its (often borrowed) argument, which FIRV-O7 correctly
+                # flags as illegal when the argument is itself a borrow
+                # parameter.
+                return ["borrow"] * len(node.children)
             return ["own"] * len(node.children)
         modes: list[str] = []
         params = [c for c in func_def.children if c.node_type == NodeTypes.PARAMETER]

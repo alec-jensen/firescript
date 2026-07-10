@@ -270,7 +270,12 @@ func @println__string(value: ptr<i8>) -> void {
     %1 = call.ptr<i8> @impl_fs_rt_str_dup(%0)
     %2 = strconst "\n"
     %3 = call.ptr<i8> @impl_fs_rt_str_concat(%1, %2)
-    call.void @impl_fs_rt_stdout(%3)
+    slot text: ptr<i8>
+    slotstore text, %3
+    %4 = slotload.ptr<i8> text
+    call.void @impl_fs_rt_stdout(%4)
+    %5 = slotload.ptr<i8> text
+    call.void @impl_fs_rt_free(%5)
     ret
 }
 
@@ -369,9 +374,9 @@ func @rt_reg_add(p: u64) -> void {
     %14 = slotload.u64 cap
     %15 = const.u64 0
     %16 = eq.u64 %14, %15
-    slot __sc_4_12: bool
-    slotstore __sc_4_12, %16
-    %17 = slotload.bool __sc_4_12
+    slot __sc_1: bool
+    slotstore __sc_1, %16
+    %17 = slotload.bool __sc_1
     br %17, L5, L4
 
   L2:
@@ -400,11 +405,11 @@ func @rt_reg_add(p: u64) -> void {
     %30 = const.u64 7
     %31 = mul.u64 %29, %30
     %32 = ge.u64 %28, %31
-    slotstore __sc_4_12, %32
+    slotstore __sc_1, %32
     jmp L5
 
   L5:
-    %33 = slotload.bool __sc_4_12
+    %33 = slotload.bool __sc_1
     br %33, L6, L3
 
   L6:

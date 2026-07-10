@@ -37,7 +37,11 @@ function<T> print(value: &T) -> void {
   block_0:
     %0 = LoadVar("value") -> T
     %1 = Cast(%0, string)
-    Call(stdout, [%1], ["own"])
+    DeclareLocal("text", string, %1)
+    %2 = LoadVar("text") -> string
+    Call(stdout, [%2], ["borrow"])
+    %3 = LoadVar("text") -> string
+    Drop(%3)
     Return()
 }
 
@@ -47,7 +51,11 @@ function<T> println(value: &T) -> void {
     %1 = Cast(%0, string)
     %2 = StringLiteral("\n", string)
     %3 = BinaryOp("+", %1, %2)
-    Call(stdout, [%3], ["own"])
+    DeclareLocal("text", string, %3)
+    %4 = LoadVar("text") -> string
+    Call(stdout, [%4], ["borrow"])
+    %5 = LoadVar("text") -> string
+    Drop(%5)
     Return()
 }
 
@@ -73,7 +81,7 @@ function Person.describe(this: &Person) -> string {
     %3 = BinaryOp("+", %1, %2)
     %4 = LoadVar("this") -> Person
     %5 = LoadField(%4, "age")
-    %6 = Call(toString, [%5], ["own"]) -> string
+    %6 = Call(toString, [%5], ["borrow"]) -> string
     %7 = BinaryOp("+", %3, %6)
     Return(%7)
 }
@@ -106,7 +114,7 @@ function Student.describe(this: &Student) -> string {
     %3 = BinaryOp("+", %1, %2)
     %4 = LoadVar("this") -> Student
     %5 = LoadField(%4, "age")
-    %6 = Call(toString, [%5], ["own"]) -> string
+    %6 = Call(toString, [%5], ["borrow"]) -> string
     %7 = BinaryOp("+", %3, %6)
     %8 = StringLiteral(" at ", string)
     %9 = BinaryOp("+", %7, %8)

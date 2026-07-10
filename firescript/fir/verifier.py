@@ -110,7 +110,25 @@ def verify_fir_module(module: FIRModule) -> None:
 
     const_types: dict[str, FIRType] = {c.name: c.const_type for c in module.constants}
     for function in module.functions:
-        _FunctionVerifier(module, function, type_index, func_index, const_types, violations).run()
+        before = len(violations)
+        fv = _FunctionVerifier(module, function, type_index, func_index, const_types, violations)
+        fv.run()
+        # Tier 2 (ownership dataflow, FIRV-L3/G4/E1) assumes a well-formed
+        # CFG with valid dominance, which Tier 1 guarantees; skip it for a
+        # function Tier 1 already flagged rather than cascading false
+        # positives off broken structure.
+        if len(violations) == before and function.blocks:
+            from fir.ownership_verifier import (
+                verify_enum_payload_guards,
+                verify_generator_dominance,
+                verify_no_shadowing,
+                verify_ownership,
+            )
+
+            verify_no_shadowing(function, fv.idom, fv.cfg, violations)
+            verify_ownership(module, function, fv.cfg, fv.idom, violations)
+            verify_generator_dominance(function, fv.idom, fv.cfg, fv.def_positions, violations)
+            verify_enum_payload_guards(module, function, fv.idom, fv.cfg, violations)
 
     if violations:
         dump = ""

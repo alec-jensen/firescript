@@ -369,13 +369,20 @@ Places where the current pipeline is expected to violate the normative rules.
 Per §1, these are fixed at the emitter (or the rule is narrowed *here*, in
 writing) — the verifier is never quietly weakened:
 
-1. **Void `Return` with a value / non-void fall-off.** Lowering currently
-   tolerates script-style `return 0` in a void `main` and synthesizes a zero
-   return when control falls off a non-void function
-   (`flir/lowering.py:850–869`). Under FIRV-T4 both shapes are invalid FIR;
-   the fix belongs in AST→FIR (type `main` consistently; require or
-   synthesize explicit returns with `Unreachable` where the frontend proved
-   unreachability).
+1. **Void `Return` with a value / non-void fall-off — resolved in Phase 1.**
+   `ast_to_fir.py` now synthesizes a type-appropriate zero literal (or, for a
+   script-style `return N;` inside the void synthetic `main`, drops the
+   value after evaluating it for side effects) at every point that used to
+   emit a bare, type-mismatched `Return`. No FIRV-T4 narrowing was needed;
+   `_seal_open_blocks` also now prunes blocks left with no predecessor (an
+   if/else join point where every arm already returns), which the same
+   fall-off logic could otherwise write an invalid trailing `Return` into
+   (FIRV-S5). See `ASTToFIRConverter._synthesize_zero` /
+   `_seal_open_blocks`. A residual gap remains for a non-void, non-generator
+   function whose *owned* (non-scalar) return type has no safe synthesized
+   zero and that still falls off every path with no explicit return on some
+   path — semantic analysis does not yet reject this source-level shape, so
+   FIRV-T4 is the backstop for it; no case has surfaced in the test corpus.
 2. **`Move`/`Clone` on copyable values** (FIRV-O6): the converter likely
    emits these today since lowering treats them as pass-through
    (`flir/lowering.py:823–824`). Fix in the converter.
@@ -392,6 +399,140 @@ writing) — the verifier is never quietly weakened:
    described that precisely is a bug to fix, not to accommodate.
 5. **`OwnershipMap` completeness** (FIRV-O8): recording is best-effort
    today; expect disagreements. That's why O8 is staged after O1–O7.
+6. **Pointer pointee is not load-bearing for FLIRV-T2–T5 signature/slot
+   matching (narrowed, Phase 2).** `ptr<S>` pointee is documentary at the
+   type-equality level used for binop operand types, `ret`/call
+   argument/result types, and slot load/store types: a raw generic
+   allocator (`fs_rt_alloc_zeroed`) and pointer-typed helpers legitimately
+   reinterpret a pointer's pointee at each use site (object/array
+   allocation, generator frame slots, destructor field frees, `mem_copy`
+   pointer args). `flir/verifier.py::_ptr_lenient_eq` treats any two
+   `kind == "ptr"` types as equal for these checks; **M1 typed-field-access
+   checking is unaffected** — it still requires an exact field-type match
+   once a pointer's pointee names a known struct.
+7. **Narrow-integer arithmetic promotes implicitly (narrowed, Phase 2).** A
+   `binop`'s declared `operand_type` may be wider than an actual i8/i16/u8/
+   u16 operand (any signedness pairing, e.g. `u8` feeding an `i32` binop);
+   sub-i32 values are promoted without an explicit `cvt` in current lowering
+   (byte/word loop counters, array-element comparisons). See
+   `flir/verifier.py::_binop_operand_ok`.
+8. **Nullable-value-type equality against `null` compares a boxed pointer,
+   not `operand_type` (narrowed, Phase 2).** `std/types/option.fire`'s
+   `this.value == null` (for `T?` instantiated with a copyable/value `T`,
+   e.g. `Option<int32>`) lowers to an `eq`/`ne` `binop` whose declared
+   `operand_type` reflects `T` (`i32`), but the actual compared value is the
+   nullable's boxed-pointer representation (`ptr`) versus `nullconst`. Any
+   `eq`/`ne` binop with a bare-`ptr`-kind operand is accepted regardless of
+   `operand_type`, matching this null-check pattern.
+9. **`char` (I8) crossing a `uint8`-declared runtime boundary — resolved in
+   Phase 2.** `std/internal/runtime.fire` declares `fs_rt_char_to_str`,
+   `fs_rt_str_char_code`, and `fs_rt_str_char_code_at` with `uint8`
+   parameters/returns, but firescript's `char` always lowers to `I8`
+   (`_SCALARS["char"]`). Fixed at the three call sites in
+   `flir/lowering.py` with an explicit `Cvt` bridging `I8`/`U8` (same
+   width, bit-pattern-preserving) rather than weakening FLIRV-T1/T2/T4.
+10. **Anonymous expression-temporary lifetime is out of scope for FIRV-O1-O3
+    (narrowed, Phase 3).** `fir/ownership_verifier.py::_identifier_of`
+    tracks only named bindings (parameters, `DeclareLocal` locals) and
+    deliberately does *not* track a bare instruction result used directly
+    as a sub-expression and never bound to a name (e.g. a `Cast`/`BinaryOp`
+    string-concatenation result passed straight into a call argument).
+    `ast_to_fir.py` has no expression-temporary lifetime tracking at all
+    today -- nothing in the pipeline ever drops such a value -- so treating
+    every one as a trackable, must-be-consumed identifier surfaces a real
+    but enormous, untargeted leak class spanning nearly every
+    string-producing sub-expression in the corpus (`println`'s own `value
+    as string` cast was a representative, now-fixed instance: see
+    `std/io.fire`, which now binds the cast to a name so it *is* tracked).
+    Properly closing this gap needs dedicated expression-temporary
+    lifetime infrastructure in `ast_to_fir.py` (something akin to a
+    per-statement temporary drop list), not a narrow emitter patch;
+    tracked here as a known, deliberately scoped-out gap for follow-up
+    work, not something Tier 2 silently accepts as safe.
+11. **Container-owning synthesized locals need their own explicit `Drop`
+    (resolved in Phase 3, case by case).** Compiler-synthesized locals
+    that FIR-level ownership tracking doesn't otherwise see (the
+    preprocessor's drop insertion only ever looks at real
+    `VARIABLE_DECLARATION` nodes in the *source* AST) leaked before this
+    phase: match's `__match_scrutinee_N` (`ast_to_fir.py::_convert_match`,
+    now drops the scrutinee at the join block once every arm has run) and
+    `for (x in expr)`'s `__arr_<var>` array-container temp
+    (`_convert_for_in_array`, now dropped at the loop's exit block; this
+    frees the array's own backing buffer only -- an array of *owned*
+    elements has no per-element destructor at all today, a separate,
+    still-open gap, not one this fix papers over). Generator-related
+    synthesized locals (`__gen_*`) were not audited in this phase and are
+    a known residual leak source; see open question below.
+12. **A handful of preprocessor drop-insertion bugs, fixed in Phase 3
+    (`preprocessor.py`).** Recorded here because each was a genuine,
+    previously invisible correctness bug the ownership dataflow exposed,
+    not a verifier accommodation:
+    - Own-mode function/method **parameters** were never registered for
+      automatic drop insertion at all (only `VARIABLE_DECLARATION` locals
+      were) -- fixed by registering them into the same scope-tracking
+      frame at function entry, with a matching trailing-drop step for
+      control falling off the end without consuming them.
+    - `RETURN_STATEMENT` and (previously) nowhere else cleared
+      `scope_stack` frame *contents* in place after inserting its drops.
+      Frames are shared, mutable list objects visible to every sibling
+      branch (both arms of an if/elif/else, or code after the whole
+      if-statement) -- clearing them made every *later* return or
+      scope-exit in the function believe an outer variable handled on one
+      path needed no drop on any other path, silently leaking it. Removed
+      entirely (matching the pre-existing, deliberate non-clearing
+      behavior already documented on Break/Continue: an occasional
+      redundant drop is harmless since the runtime allocator's free path
+      is idempotent against untracked/already-freed pointers -- but a
+      missing drop is a real leak).
+    - Move-semantics helpers (`_move_source_identifier`,
+      `_apply_move_semantics`) excluded any identifier whose scope origin
+      was `"param"` from ever being removed from drop tracking. Harmless
+      before parameters were tracked at all; once they were, this made a
+      parameter threaded through a constructor/method/`super()` call look
+      doubly-consumed (the call's own move plus the enclosing function's
+      unconditional trailing drop). Both helpers now apply move semantics
+      uniformly regardless of origin.
+    - Bare `ClassName(args)` construction parses as a `NodeTypes.
+      FUNCTION_CALL` (not a distinct constructor-call node) -- move-
+      semantics and return-transfer analysis now check `ctor_sigs` first
+      for such calls, and (for a `ClassName(args).method(...)` receiver
+      chain specifically) resolve the receiver's class from that
+      constructor call too, so the *method's* real borrow flags are used
+      instead of falling through to a conservative default.
+    - `this.super(args)` (a distinct `SUPER_CALL` node) had no move-
+      semantics handling at all; `ast_to_fir.py::_convert_super_call`
+      always passes every argument `own` regardless of the base
+      constructor's own borrow flags, so `SUPER_CALL` arguments are now
+      unconditionally treated as moved, matching that.
+    - The return-statement drop-insertion's "don't drop what this return
+      expression still needs" check was tried, for one iteration, as a
+      *precise* transfer analysis (only the bare returned identifier, or
+      an identifier passed to a non-borrowed parameter, was exempted).
+      That is wrong for this specific purpose: the drops it inserts run
+      *before* the return statement, so an identifier the expression
+      merely *reads* (a borrowed sub-argument, e.g. `return
+      fs_rt_str_dup(view);`) must also not be dropped first, or the read
+      is a use-after-drop -- a real bug, strictly worse than the leak it
+      was trying to fix. Reverted to the conservative superset (any
+      identifier referenced anywhere in the return expression is
+      exempted from pre-return dropping); the narrower borrowed-in-return
+      case is fixed at specific call sites instead (see
+      `std/internal/runtime.fire::fs_rt_argv_at`).
+13. **Two-phase dataflow reporting (architectural fix, Phase 3).**
+    `ir_analysis.forward_dataflow`'s worklist driver calls `transfer()`
+    repeatedly per block across fixpoint rounds, on intermediate,
+    not-yet-converged states -- `fir/ownership_verifier.py` originally
+    called `self.emit(...)` as a side effect *inside* that transfer
+    function, which both duplicated genuine violations (one emission per
+    visit) and fabricated spurious ones (a static instruction inside a
+    loop body, revisited on a later fixpoint round, would see its *own*
+    prior-iteration `MOVED` state and report a use-after-move against
+    itself). Fixed by converging silently first (`self._reporting =
+    False`), then running exactly one more, side-effect-enabled pass per
+    block using each block's final converged in-state
+    (`self._reporting = True`). Any dataflow-based Tier-2 checker (FLIR's
+    heap-token analysis in Phase 4 included) must follow the same
+    two-phase shape.
 
 ## 9. Testing
 

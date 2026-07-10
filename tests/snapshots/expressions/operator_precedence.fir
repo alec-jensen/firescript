@@ -4,7 +4,11 @@ function<T> print(value: &T) -> void {
   block_0:
     %0 = LoadVar("value") -> T
     %1 = Cast(%0, string)
-    Call(stdout, [%1], ["own"])
+    DeclareLocal("text", string, %1)
+    %2 = LoadVar("text") -> string
+    Call(stdout, [%2], ["borrow"])
+    %3 = LoadVar("text") -> string
+    Drop(%3)
     Return()
 }
 
@@ -14,7 +18,11 @@ function<T> println(value: &T) -> void {
     %1 = Cast(%0, string)
     %2 = StringLiteral("\n", string)
     %3 = BinaryOp("+", %1, %2)
-    Call(stdout, [%3], ["own"])
+    DeclareLocal("text", string, %3)
+    %4 = LoadVar("text") -> string
+    Call(stdout, [%4], ["borrow"])
+    %5 = LoadVar("text") -> string
+    Drop(%5)
     Return()
 }
 
@@ -106,76 +114,76 @@ function main() -> void {
     %67 = LoadVar("r4") -> bool
     Call(println, [%67], ["borrow"])
     %68 = BoolLiteral(true, bool)
-    DeclareLocal("__sc_1_85", bool, %68)
-    %69 = LoadVar("__sc_1_85") -> bool
+    DeclareLocal("__sc_1", bool, %68)
+    %69 = LoadVar("__sc_1") -> bool
     Branch(%69, block_2, block_1)
 
   block_1:
     %70 = BoolLiteral(false, bool)
-    DeclareLocal("__sc_3_0", bool, %70)
-    %71 = LoadVar("__sc_3_0") -> bool
+    DeclareLocal("__sc_2", bool, %70)
+    %71 = LoadVar("__sc_2") -> bool
     Branch(%71, block_3, block_4)
 
   block_2:
-    %72 = LoadVar("__sc_1_85") -> bool
+    %72 = LoadVar("__sc_1") -> bool
     DeclareLocal("r5", bool, %72)
     %73 = BoolLiteral(false, bool)
-    DeclareLocal("__sc_5_2", bool, %73)
-    %74 = LoadVar("__sc_5_2") -> bool
+    DeclareLocal("__sc_4", bool, %73)
+    %74 = LoadVar("__sc_4") -> bool
     Branch(%74, block_5, block_6)
 
   block_3:
     %75 = BoolLiteral(false, bool)
-    StoreVar("__sc_3_0", %75)
+    StoreVar("__sc_2", %75)
     Jump(block_4)
 
   block_4:
-    %76 = LoadVar("__sc_3_0") -> bool
-    StoreVar("__sc_1_85", %76)
+    %76 = LoadVar("__sc_2") -> bool
+    StoreVar("__sc_1", %76)
     Jump(block_2)
 
   block_5:
     %77 = BoolLiteral(true, bool)
-    StoreVar("__sc_5_2", %77)
+    StoreVar("__sc_4", %77)
     Jump(block_6)
 
   block_6:
-    %78 = LoadVar("__sc_5_2") -> bool
-    DeclareLocal("__sc_5_2", bool, %78)
-    %79 = LoadVar("__sc_5_2") -> bool
+    %78 = LoadVar("__sc_4") -> bool
+    DeclareLocal("__sc_3", bool, %78)
+    %79 = LoadVar("__sc_3") -> bool
     Branch(%79, block_8, block_7)
 
   block_7:
     %80 = BoolLiteral(true, bool)
-    StoreVar("__sc_5_2", %80)
+    StoreVar("__sc_3", %80)
     Jump(block_8)
 
   block_8:
-    %81 = LoadVar("__sc_5_2") -> bool
+    %81 = LoadVar("__sc_3") -> bool
     DeclareLocal("r6", bool, %81)
     %82 = BoolLiteral(false, bool)
-    DeclareLocal("__sc_9_2", bool, %82)
-    %83 = LoadVar("__sc_9_2") -> bool
+    DeclareLocal("__sc_6", bool, %82)
+    %83 = LoadVar("__sc_6") -> bool
     Branch(%83, block_9, block_10)
 
   block_9:
     %84 = BoolLiteral(false, bool)
-    StoreVar("__sc_9_2", %84)
+    StoreVar("__sc_6", %84)
     Jump(block_10)
 
   block_10:
-    %85 = LoadVar("__sc_9_2") -> bool
-    DeclareLocal("__sc_9_2", bool, %85)
-    %86 = LoadVar("__sc_9_2") -> bool
+    %85 = LoadVar("__sc_6") -> bool
+    DeclareLocal("__sc_5", bool, %85)
+    %86 = LoadVar("__sc_5") -> bool
     Branch(%86, block_12, block_11)
 
   block_11:
     %87 = BoolLiteral(false, bool)
-    StoreVar("__sc_9_2", %87)
+    StoreVar("__sc_5", %87)
     Jump(block_12)
 
   block_12:
-    %88 = LoadVar("__sc_9_2") -> bool
+    %88 = LoadVar("__sc_5") -> bool
     DeclareLocal("r7", bool, %88)
     %89 = LoadVar("r5") -> bool
     Call(println, [%89], ["borrow"])

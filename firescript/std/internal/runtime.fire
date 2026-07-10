@@ -1135,7 +1135,8 @@ string fs_rt_argv_at(int32 index) {
     uint64 argv = mem_load_u64(state + 48u64);
     uint64 arg = mem_load_u64(argv + (index as uint64) * 8u64);
     string view = addr_to_str(arg);
-    return fs_rt_str_dup(view);
+    string result = fs_rt_str_dup(view);
+    return result;
 }
 
 // ---- syscalls over kernel32 (fd table maps small ints to HANDLEs) ----

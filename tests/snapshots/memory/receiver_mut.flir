@@ -88,8 +88,6 @@ func @Pair__swap(this: ptr<Pair>) -> void {
     %5 = slotload.ptr<i8> tmp
     %6 = slotload.ptr<Pair> this
     store.ptr<i8> %6, 8, %5
-    %7 = slotload.ptr<i8> tmp
-    call.void @impl_fs_rt_free(%7)
     ret
 }
 
@@ -189,36 +187,6 @@ func @impl_fs_rt_alloc_zeroed(n: i64) -> ptr<i8> {
     ret %5
 }
 
-func @impl_fs_rt_free(p: ptr<i8>) -> void {
-  L0:
-    %0 = slotload.ptr<i8> p
-    %1 = cvt.ptr_to_u64 %0
-    slot addr: u64
-    slotstore addr, %1
-    %2 = slotload.u64 addr
-    %3 = const.u64 0
-    %4 = eq.u64 %2, %3
-    br %4, L2, L1
-
-  L1:
-    %5 = slotload.u64 addr
-    %6 = call.bool @rt_reg_remove(%5)
-    br %6, L4, L3
-
-  L2:
-    ret
-
-  L3:
-    ret
-
-  L4:
-    %7 = call.u64 @rt_heap()
-    %8 = const.u32 0
-    %9 = slotload.u64 addr
-    %10 = call.u32 @HeapFree(%7, %8, %9)
-    jmp L3
-}
-
 func @impl_fs_rt_str_concat(a: ptr<i8>, b: ptr<i8>) -> ptr<i8> {
   L0:
     %0 = slotload.ptr<i8> a
@@ -298,8 +266,43 @@ func @println__int32(value: i32) -> void {
     %1 = call.ptr<i8> @impl_fs_rt_i32_to_str(%0)
     %2 = strconst "\n"
     %3 = call.ptr<i8> @impl_fs_rt_str_concat(%1, %2)
-    call.void @impl_fs_rt_stdout(%3)
+    slot text: ptr<i8>
+    slotstore text, %3
+    %4 = slotload.ptr<i8> text
+    call.void @impl_fs_rt_stdout(%4)
+    %5 = slotload.ptr<i8> text
+    call.void @impl_fs_rt_free(%5)
     ret
+}
+
+func @impl_fs_rt_free(p: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> p
+    %1 = cvt.ptr_to_u64 %0
+    slot addr: u64
+    slotstore addr, %1
+    %2 = slotload.u64 addr
+    %3 = const.u64 0
+    %4 = eq.u64 %2, %3
+    br %4, L2, L1
+
+  L1:
+    %5 = slotload.u64 addr
+    %6 = call.bool @rt_reg_remove(%5)
+    br %6, L4, L3
+
+  L2:
+    ret
+
+  L3:
+    ret
+
+  L4:
+    %7 = call.u64 @rt_heap()
+    %8 = const.u32 0
+    %9 = slotload.u64 addr
+    %10 = call.u32 @HeapFree(%7, %8, %9)
+    jmp L3
 }
 
 func @println__string(value: ptr<i8>) -> void {
@@ -308,7 +311,12 @@ func @println__string(value: ptr<i8>) -> void {
     %1 = call.ptr<i8> @impl_fs_rt_str_dup(%0)
     %2 = strconst "\n"
     %3 = call.ptr<i8> @impl_fs_rt_str_concat(%1, %2)
-    call.void @impl_fs_rt_stdout(%3)
+    slot text: ptr<i8>
+    slotstore text, %3
+    %4 = slotload.ptr<i8> text
+    call.void @impl_fs_rt_stdout(%4)
+    %5 = slotload.ptr<i8> text
+    call.void @impl_fs_rt_free(%5)
     ret
 }
 
@@ -360,9 +368,9 @@ func @rt_reg_add(p: u64) -> void {
     %14 = slotload.u64 cap
     %15 = const.u64 0
     %16 = eq.u64 %14, %15
-    slot __sc_4_12: bool
-    slotstore __sc_4_12, %16
-    %17 = slotload.bool __sc_4_12
+    slot __sc_1: bool
+    slotstore __sc_1, %16
+    %17 = slotload.bool __sc_1
     br %17, L5, L4
 
   L2:
@@ -391,11 +399,11 @@ func @rt_reg_add(p: u64) -> void {
     %30 = const.u64 7
     %31 = mul.u64 %29, %30
     %32 = ge.u64 %28, %31
-    slotstore __sc_4_12, %32
+    slotstore __sc_1, %32
     jmp L5
 
   L5:
-    %33 = slotload.bool __sc_4_12
+    %33 = slotload.bool __sc_1
     br %33, L6, L3
 
   L6:
@@ -465,6 +473,101 @@ func @rt_reg_add(p: u64) -> void {
     jmp L7
 
   L13:
+    ret
+}
+
+func @rt_str_len_addr(addr: u64) -> u64 {
+  L0:
+    %0 = slotload.u64 addr
+    %1 = const.u64 0
+    %2 = eq.u64 %0, %1
+    br %2, L2, L1
+
+  L1:
+    %3 = const.u64 0
+    slot len: u64
+    slotstore len, %3
+    jmp L3
+
+  L2:
+    %4 = const.u64 0
+    ret %4
+
+  L3:
+    %5 = slotload.u64 addr
+    %6 = slotload.u64 len
+    %7 = add.u64 %5, %6
+    %8 = cvt.u64_to_ptr %7
+    %9 = load.u8 %8, 0
+    %10 = const.u8 0
+    %11 = ne.u8 %9, %10
+    br %11, L4, L5
+
+  L4:
+    %12 = slotload.u64 len
+    %13 = const.u64 1
+    %14 = add.u64 %12, %13
+    slotstore len, %14
+    jmp L3
+
+  L5:
+    %15 = slotload.u64 len
+    ret %15
+}
+
+func @impl_fs_rt_i32_to_str(v: i32) -> ptr<i8> {
+  L0:
+    %0 = slotload.i32 v
+    %1 = cvt.i32_to_i64 %0
+    %2 = call.ptr<i8> @impl_fs_rt_i64_to_str(%1)
+    ret %2
+}
+
+func @impl_fs_rt_stdout(s: ptr<i8>) -> void {
+  L0:
+    %0 = slotload.ptr<i8> s
+    %1 = cvt.ptr_to_u64 %0
+    slot addr: u64
+    slotstore addr, %1
+    %2 = slotload.u64 addr
+    %3 = const.u64 0
+    %4 = eq.u64 %2, %3
+    br %4, L2, L1
+
+  L1:
+    %5 = slotload.u64 addr
+    %6 = call.u64 @rt_str_len_addr(%5)
+    slot len: u64
+    slotstore len, %6
+    %7 = slotload.u64 len
+    %8 = const.u64 0
+    %9 = eq.u64 %7, %8
+    br %9, L4, L3
+
+  L2:
+    ret
+
+  L3:
+    %10 = const.i32 11
+    %11 = neg.i32 %10
+    %12 = call.u64 @GetStdHandle(%11)
+    slot handle: u64
+    slotstore handle, %12
+    %13 = call.u64 @rt_state()
+    slot state: u64
+    slotstore state, %13
+    %14 = slotload.u64 handle
+    %15 = slotload.u64 addr
+    %16 = slotload.u64 len
+    %17 = cvt.u64_to_u32 %16
+    %18 = slotload.u64 state
+    %19 = const.u64 32
+    %20 = add.u64 %18, %19
+    %21 = const.u64 0
+    %22 = call.i32 @WriteFile(%14, %15, %17, %20, %21)
+    ret
+
+  L4:
     ret
 }
 
@@ -602,101 +705,6 @@ func @rt_heap() -> u64 {
     %2 = cvt.u64_to_ptr %1
     %3 = load.u64 %2, 0
     ret %3
-}
-
-func @rt_str_len_addr(addr: u64) -> u64 {
-  L0:
-    %0 = slotload.u64 addr
-    %1 = const.u64 0
-    %2 = eq.u64 %0, %1
-    br %2, L2, L1
-
-  L1:
-    %3 = const.u64 0
-    slot len: u64
-    slotstore len, %3
-    jmp L3
-
-  L2:
-    %4 = const.u64 0
-    ret %4
-
-  L3:
-    %5 = slotload.u64 addr
-    %6 = slotload.u64 len
-    %7 = add.u64 %5, %6
-    %8 = cvt.u64_to_ptr %7
-    %9 = load.u8 %8, 0
-    %10 = const.u8 0
-    %11 = ne.u8 %9, %10
-    br %11, L4, L5
-
-  L4:
-    %12 = slotload.u64 len
-    %13 = const.u64 1
-    %14 = add.u64 %12, %13
-    slotstore len, %14
-    jmp L3
-
-  L5:
-    %15 = slotload.u64 len
-    ret %15
-}
-
-func @impl_fs_rt_i32_to_str(v: i32) -> ptr<i8> {
-  L0:
-    %0 = slotload.i32 v
-    %1 = cvt.i32_to_i64 %0
-    %2 = call.ptr<i8> @impl_fs_rt_i64_to_str(%1)
-    ret %2
-}
-
-func @impl_fs_rt_stdout(s: ptr<i8>) -> void {
-  L0:
-    %0 = slotload.ptr<i8> s
-    %1 = cvt.ptr_to_u64 %0
-    slot addr: u64
-    slotstore addr, %1
-    %2 = slotload.u64 addr
-    %3 = const.u64 0
-    %4 = eq.u64 %2, %3
-    br %4, L2, L1
-
-  L1:
-    %5 = slotload.u64 addr
-    %6 = call.u64 @rt_str_len_addr(%5)
-    slot len: u64
-    slotstore len, %6
-    %7 = slotload.u64 len
-    %8 = const.u64 0
-    %9 = eq.u64 %7, %8
-    br %9, L4, L3
-
-  L2:
-    ret
-
-  L3:
-    %10 = const.i32 11
-    %11 = neg.i32 %10
-    %12 = call.u64 @GetStdHandle(%11)
-    slot handle: u64
-    slotstore handle, %12
-    %13 = call.u64 @rt_state()
-    slot state: u64
-    slotstore state, %13
-    %14 = slotload.u64 handle
-    %15 = slotload.u64 addr
-    %16 = slotload.u64 len
-    %17 = cvt.u64_to_u32 %16
-    %18 = slotload.u64 state
-    %19 = const.u64 32
-    %20 = add.u64 %18, %19
-    %21 = const.u64 0
-    %22 = call.i32 @WriteFile(%14, %15, %17, %20, %21)
-    ret
-
-  L4:
-    ret
 }
 
 func @impl_fs_rt_str_dup(s: ptr<i8>) -> ptr<i8> {

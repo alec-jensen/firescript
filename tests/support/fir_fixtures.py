@@ -50,6 +50,7 @@ def build_bump_or_reset() -> FIRModule:
     v3 = builder.binary_op("+", v0, v2)
     builder.store_field(counter, "value", v3)
     builder.call("println", [v3], ["borrow"], None)
+    builder.drop(counter)
     builder.ret(v3)
 
     return module

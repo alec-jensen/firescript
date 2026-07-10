@@ -9,7 +9,11 @@ function<T> print(value: &T) -> void {
   block_0:
     %0 = LoadVar("value") -> T
     %1 = Cast(%0, string)
-    Call(stdout, [%1], ["own"])
+    DeclareLocal("text", string, %1)
+    %2 = LoadVar("text") -> string
+    Call(stdout, [%2], ["borrow"])
+    %3 = LoadVar("text") -> string
+    Drop(%3)
     Return()
 }
 
@@ -19,7 +23,11 @@ function<T> println(value: &T) -> void {
     %1 = Cast(%0, string)
     %2 = StringLiteral("\n", string)
     %3 = BinaryOp("+", %1, %2)
-    Call(stdout, [%3], ["own"])
+    DeclareLocal("text", string, %3)
+    %4 = LoadVar("text") -> string
+    Call(stdout, [%4], ["borrow"])
+    %5 = LoadVar("text") -> string
+    Drop(%5)
     Return()
 }
 
@@ -89,15 +97,15 @@ function main() -> void {
     DeclareLocal("c", string?, %14)
     %15 = IntLiteral(0, int32)
     DeclareLocal("count", int32, %15)
-    %16 = LoadVar("a") -> string
+    %16 = LoadVar("a") -> string?
     %17 = NullLiteral(string?)
     %18 = BinaryOp("!=", %16, %17)
     Branch(%18, block_2, block_1)
 
   block_1:
-    %19 = LoadVar("a") -> string
+    %19 = LoadVar("a") -> string?
     Drop(%19)
-    %20 = LoadVar("b") -> string
+    %20 = LoadVar("b") -> string?
     %21 = NullLiteral(string?)
     %22 = BinaryOp("!=", %20, %21)
     Branch(%22, block_4, block_3)
@@ -110,9 +118,9 @@ function main() -> void {
     Jump(block_1)
 
   block_3:
-    %26 = LoadVar("b") -> string
+    %26 = LoadVar("b") -> string?
     Drop(%26)
-    %27 = LoadVar("c") -> string
+    %27 = LoadVar("c") -> string?
     %28 = NullLiteral(string?)
     %29 = BinaryOp("!=", %27, %28)
     Branch(%29, block_6, block_5)
@@ -125,25 +133,25 @@ function main() -> void {
     Jump(block_3)
 
   block_5:
-    %33 = LoadVar("c") -> string
+    %33 = LoadVar("c") -> string?
     Drop(%33)
     %34 = LoadVar("count") -> int32
     Call(println, [%34], ["borrow"])
     %35 = NullLiteral(string?)
     DeclareLocal("val", string?, %35)
-    %36 = LoadVar("val") -> string
+    %36 = LoadVar("val") -> string?
     %37 = NullLiteral(string?)
     %38 = BinaryOp("==", %36, %37)
     Call(println, [%38], ["borrow"])
     %39 = StringLiteral("assigned", string)
-    %40 = LoadVar("val") -> string
+    %40 = LoadVar("val") -> string?
     Drop(%40)
     StoreVar("val", %39)
-    %41 = LoadVar("val") -> string
+    %41 = LoadVar("val") -> string?
     %42 = NullLiteral(string?)
     %43 = BinaryOp("!=", %41, %42)
     Call(println, [%43], ["borrow"])
-    %44 = LoadVar("val") -> string
+    %44 = LoadVar("val") -> string?
     Drop(%44)
     Return()
 

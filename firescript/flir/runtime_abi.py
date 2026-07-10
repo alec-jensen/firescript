@@ -118,7 +118,7 @@ RUNTIME_ABI: dict[str, RuntimeSignature] = {
     "fs_rt_f128_to_str": _sig(F128, ret=STRING, effect=MemoryEffect.RETURNS_FRESH),
     "fs_rt_str_to_f128": _sig(STRING, ret=F128),
     # -- backend-only primitives (no firescript source; assembler builtins) --
-    "fs_rt_mem_copy": _sig(PTR, PTR, I64, ret=VOID),
+    "fs_rt_mem_copy": _sig(PTR, PTR, U64, ret=VOID),
     "fs_rt_f64_bits": _sig(F64, ret=U64),
 }
 

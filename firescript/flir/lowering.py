@@ -1053,8 +1053,13 @@ class FIRToFLIRLowering:
                 self.set_val(inst, self.rt_call("fs_rt_str_to_bool", [value], BOOL, ctx), ctx)
                 return
             if target_str == "char":
-                code = self.rt_call("fs_rt_str_char_code", [value], I8, ctx)
-                self.set_val(inst, code, ctx)
+                # fs_rt_str_char_code is declared `uint8` in runtime.fire;
+                # firescript's `char` always lowers to I8 (_SCALARS), so
+                # bridge the representational gap explicitly rather than
+                # returning a uint8-typed value where char (I8) is
+                # expected (FLIRV-T1/T2).
+                code = self.rt_call("fs_rt_str_char_code", [value], U8, ctx)
+                self.set_val(inst, self._cvt_to(code, U8, I8, ctx), ctx)
                 return
 
         source_type = self.lower_type_str(source_str, ctx.type_map)
@@ -1107,7 +1112,10 @@ class FIRToFLIRLowering:
             case "bool":
                 return self.rt_call("fs_rt_bool_to_str", [value], ptr_to("i8"), ctx)
             case "char":
-                return self.rt_call("fs_rt_char_to_str", [value], ptr_to("i8"), ctx)
+                # fs_rt_char_to_str is declared `uint8` in runtime.fire;
+                # `value` is char, which always lowers to I8 (_SCALARS).
+                u8_value = self._cvt_to(value, I8, U8, ctx)
+                return self.rt_call("fs_rt_char_to_str", [u8_value], ptr_to("i8"), ctx)
             case "int8" | "int16" | "int32":
                 v32 = self._cvt_to(value, self.lower_type_str(source_str, ctx.type_map), I32, ctx)
                 return self.rt_call("fs_rt_i32_to_str", [v32], ptr_to("i8"), ctx)
@@ -1905,7 +1913,8 @@ class FIRToFLIRLowering:
             return
         if name == "toChar":
             if source_str == "string":
-                self.set_val(inst, self.rt_call("fs_rt_str_char_code", [value], I8, ctx), ctx)
+                code = self.rt_call("fs_rt_str_char_code", [value], U8, ctx)
+                self.set_val(inst, self._cvt_to(code, U8, I8, ctx), ctx)
             else:
                 self.set_val(inst, self._cvt_to(value, source_type, I8, ctx), ctx)
             return

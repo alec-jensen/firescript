@@ -3,9 +3,11 @@
 directive enable_lowlevel_stdout;
 
 export void print<T>(&T value) {
-    stdout(value as string);
+    string text = value as string;
+    stdout(text);
 }
 
 export void println<T>(&T value) {
-    stdout((value as string) + "\n");
+    string text = (value as string) + "\n";
+    stdout(text);
 }
