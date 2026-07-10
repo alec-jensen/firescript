@@ -116,11 +116,13 @@ Plain `assert` also works. Covers:
   generator rules (FIRV-T, FIRV-L1-L2, FIRV-G1-G3) in
   `test_verifier_types.py`, and Tier-2 ownership dataflow rules (FIRV-O1-O7,
   FIRV-L3, FIRV-G4, FIRV-E1) in `test_verifier_ownership.py`.
-- `tests/python/flir/` -- unit tests for `firescript/flir/`'s Tier-1
-  verifier (`docs/internal/development/ir_verifier_spec.md`), FLIR modules
-  built directly from `flir.ir` objects (there is no FLIRBuilder helper):
+- `tests/python/flir/` -- unit tests for `firescript/flir/`'s verifier
+  (`docs/internal/development/ir_verifier_spec.md`), FLIR modules built
+  directly from `flir.ir` objects (there is no FLIRBuilder helper):
   structural rules (FLIRV-S) in `test_verifier_structure.py`, type/memory
-  rules (FLIRV-T, FLIRV-M1-M3) in `test_verifier_types.py`.
+  rules (FLIRV-T, FLIRV-M1-M3) in `test_verifier_types.py`, and Tier-2
+  heap-token allocation-lifecycle rules (FLIRV-A1-A5, FLIRV-M4) in
+  `test_verifier_heap.py`.
 - `tests/python/float128/` -- self-tests for the binary128 correctness
   oracle (`tests/support/float128_oracle.py`): hand-verified constants and
   arithmetic/comparison/parse/format checks (`test_oracle_units.py`), plus
