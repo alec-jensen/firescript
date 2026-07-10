@@ -1173,6 +1173,11 @@ class FIRToFLIRLowering:
         cur = ctx.emit(SlotLoad(result_slot, ptr_to("i8")))
         sep = ctx.emit(ConstStr(", "))
         joined = self.rt_call("fs_rt_str_concat", [cur, sep], ptr_to("i8"), ctx)
+        # fs_rt_str_concat borrows both arguments and returns a fresh
+        # string; `cur` (the accumulator's previous value) is about to be
+        # overwritten below, so it must be freed here or it leaks on every
+        # iteration but the last.
+        self.rt_call("fs_rt_free", [cur], VOID, ctx)
         ctx.emit(SlotStore(result_slot, joined))
         ctx.emit(Jmp(append_block.id))
 
@@ -1183,6 +1188,12 @@ class FIRToFLIRLowering:
         elem_text = self._to_string(elem, elem_str, None, ctx) if elem_str != "string" else elem
         cur2 = ctx.emit(SlotLoad(result_slot, ptr_to("i8")))
         joined2 = self.rt_call("fs_rt_str_concat", [cur2, elem_text], ptr_to("i8"), ctx)
+        # Same as above for the accumulator, plus `elem_text` itself: a
+        # fresh per-element string (str_dup/i32_to_str/... result) that is
+        # only ever read here, never stored, so nothing else frees it.
+        self.rt_call("fs_rt_free", [cur2], VOID, ctx)
+        if elem_str != "string":
+            self.rt_call("fs_rt_free", [elem_text], VOID, ctx)
         ctx.emit(SlotStore(result_slot, joined2))
         one = ctx.emit(ConstInt("1", I32))
         nxt = ctx.emit(BinOp("add", I32, idx_a, one, I32))
@@ -1192,7 +1203,9 @@ class FIRToFLIRLowering:
         ctx.block = done
         cur3 = ctx.emit(SlotLoad(result_slot, ptr_to("i8")))
         closer = ctx.emit(ConstStr("]"))
-        return self.rt_call("fs_rt_str_concat", [cur3, closer], ptr_to("i8"), ctx)
+        result = self.rt_call("fs_rt_str_concat", [cur3, closer], ptr_to("i8"), ctx)
+        self.rt_call("fs_rt_free", [cur3], VOID, ctx)
+        return result
 
     # -- objects -----------------------------------------------------------
 
@@ -1800,6 +1813,16 @@ class FIRToFLIRLowering:
             else:
                 ret_type = ret
             result = self.rt_call(rt_name, args, ret_type, ctx)
+            if name == "free_shallow":
+                # ast_to_fir.py's _convert_super_call releases the
+                # temporary base-class object after splicing its fields
+                # onto `this` without running its destructor (the fields
+                # now belong to `this`) -- a deliberate shallow free, not
+                # the "should have called the destructor" mistake
+                # FLIRV-A5 targets. Tag the emitted call so the verifier
+                # can tell the two apart; the underlying runtime call
+                # (fs_rt_free) is identical either way.
+                ctx.block.instructions[-1].metadata["shallow_free"] = True
             if result is not None:
                 self.set_val(inst, result, ctx)
             return

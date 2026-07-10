@@ -34,13 +34,17 @@ function<T> println(value: &T) -> void {
   block_0:
     %0 = LoadVar("value") -> T
     %1 = Cast(%0, string)
-    %2 = StringLiteral("\n", string)
-    %3 = BinaryOp("+", %1, %2)
-    DeclareLocal("text", string, %3)
-    %4 = LoadVar("text") -> string
-    Call(stdout, [%4], ["borrow"])
-    %5 = LoadVar("text") -> string
+    DeclareLocal("cast_text", string, %1)
+    %2 = LoadVar("cast_text") -> string
+    %3 = StringLiteral("\n", string)
+    %4 = BinaryOp("+", %2, %3)
+    DeclareLocal("text", string, %4)
+    %5 = LoadVar("cast_text") -> string
     Drop(%5)
+    %6 = LoadVar("text") -> string
+    Call(stdout, [%6], ["borrow"])
+    %7 = LoadVar("text") -> string
+    Drop(%7)
     Return()
 }
 

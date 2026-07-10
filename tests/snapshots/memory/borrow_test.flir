@@ -58,14 +58,19 @@ func @println__int32(value: i32) -> void {
   L0:
     %0 = slotload.i32 value
     %1 = call.ptr<i8> @impl_fs_rt_i32_to_str(%0)
-    %2 = strconst "\n"
-    %3 = call.ptr<i8> @impl_fs_rt_str_concat(%1, %2)
+    slot cast_text: ptr<i8>
+    slotstore cast_text, %1
+    %2 = slotload.ptr<i8> cast_text
+    %3 = strconst "\n"
+    %4 = call.ptr<i8> @impl_fs_rt_str_concat(%2, %3)
     slot text: ptr<i8>
-    slotstore text, %3
-    %4 = slotload.ptr<i8> text
-    call.void @impl_fs_rt_stdout(%4)
-    %5 = slotload.ptr<i8> text
+    slotstore text, %4
+    %5 = slotload.ptr<i8> cast_text
     call.void @impl_fs_rt_free(%5)
+    %6 = slotload.ptr<i8> text
+    call.void @impl_fs_rt_stdout(%6)
+    %7 = slotload.ptr<i8> text
+    call.void @impl_fs_rt_free(%7)
     ret
 }
 

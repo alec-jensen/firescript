@@ -96,7 +96,17 @@ def verify_flir_module(module: FLIRModule) -> None:
     _verify_structs(module, struct_index, violations)
 
     for function in module.functions:
-        _FunctionVerifier(module, function, func_index, struct_index, global_names, mutable_names, global_types, violations).run()
+        before = len(violations)
+        fv = _FunctionVerifier(module, function, func_index, struct_index, global_names, mutable_names, global_types, violations)
+        fv.run()
+        # Tier 2 (heap-token allocation lifecycle, FLIRV-A/M4-M5) assumes a
+        # well-formed CFG with valid dominance, which Tier 1 guarantees;
+        # skip it for a function Tier 1 already flagged rather than
+        # cascading false positives off broken structure.
+        if len(violations) == before and function.blocks:
+            from flir.heap_verifier import verify_heap_lifecycle
+
+            verify_heap_lifecycle(module, function, func_index, struct_index, fv.cfg, fv.def_positions, violations)
 
     if violations:
         dump = _format_first_offender(module, func_index, violations)

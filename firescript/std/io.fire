@@ -8,6 +8,8 @@ export void print<T>(&T value) {
 }
 
 export void println<T>(&T value) {
-    string text = (value as string) + "\n";
+    string cast_text = value as string;
+    string text = cast_text + "\n";
+    drop(cast_text);
     stdout(text);
 }

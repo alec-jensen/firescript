@@ -191,6 +191,11 @@ class FInst:
         self.operands: list[FValue] = operands or []
         self.result_type = result_type
         self._result: Optional[FValue] = None
+        # Optional out-of-band annotations from lowering (e.g. marking a
+        # call as a deliberate shallow free -- see flir/heap_verifier.py's
+        # FLIRV-A5 exemption for it); not part of any instruction's
+        # semantics, purely advisory for later passes.
+        self.metadata: dict = {}
 
     def has_result(self) -> bool:
         return self.result_type is not None and self.result_type.kind != "void"
