@@ -1423,6 +1423,7 @@
 
 <h1 id="fir-specification-high-level-ir-implemented">FIR Specification (High-Level IR) [IMPLEMENTED]<a class="headerlink" href="#fir-specification-high-level-ir-implemented" title="Permanent link">&para;</a></h1>
 <p>This document describes the firescript IR (FIR): a compact, typed high-level IR used for analysis and optimization before lowering to FLIR. It is defined in <code>firescript/fir/</code> (<code>ir_types.py</code>, <code>ir_node.py</code>, <code>ir_module.py</code>, <code>ownership.py</code>, <code>ir_builder.py</code>, <code>textual.py</code>) and produced from the semantic-analyzed AST by <code>firescript/ast_to_fir.py</code>. Dump it for a given source file with <code>--emit-fir</code>.</p>
+<p>Every FIR module is validated on every compilation before lowering; see <a href="../ir_verifier_spec/">ir_verifier_spec.md</a> for the full rule catalog (<code>firescript/fir/verifier.py</code>, <code>firescript/fir/ownership_verifier.py</code>).</p>
 <h2 id="design-principles">Design Principles<a class="headerlink" href="#design-principles" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Preserve all type information (classes, generics, ownership)</li>
@@ -1513,6 +1514,7 @@ function bump_or_reset(counter: Counter, should_reset: bool) -&gt; int32 {
     %3 = BinaryOp(&quot;+&quot;, %0, %2)
     StoreField(counter, &quot;value&quot;, %3)
     Call(println, [%3], [&quot;borrow&quot;])
+    Drop(counter)
     Return(%3)
 }
 </code></pre>
