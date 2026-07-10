@@ -4,7 +4,11 @@ function<T> print(value: &T) -> void {
   block_0:
     %0 = LoadVar("value") -> T
     %1 = Cast(%0, string)
-    Call(stdout, [%1], ["own"])
+    DeclareLocal("text", string, %1)
+    %2 = LoadVar("text") -> string
+    Call(stdout, [%2], ["borrow"])
+    %3 = LoadVar("text") -> string
+    Drop(%3)
     Return()
 }
 
@@ -14,7 +18,11 @@ function<T> println(value: &T) -> void {
     %1 = Cast(%0, string)
     %2 = StringLiteral("\n", string)
     %3 = BinaryOp("+", %1, %2)
-    Call(stdout, [%3], ["own"])
+    DeclareLocal("text", string, %3)
+    %4 = LoadVar("text") -> string
+    Call(stdout, [%4], ["borrow"])
+    %5 = LoadVar("text") -> string
+    Drop(%5)
     Return()
 }
 
@@ -41,6 +49,8 @@ function wrap(s: string) -> string {
     %2 = BinaryOp("+", %0, %1)
     %3 = StringLiteral("]", string)
     %4 = BinaryOp("+", %2, %3)
+    %5 = LoadVar("s") -> string
+    Drop(%5)
     Return(%4)
 }
 

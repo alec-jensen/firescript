@@ -47,11 +47,15 @@ export class File {
     }
 
     FileResult writeAll(&this, string data) {
-        return _write_mode(this.path, data, "w");
+        FileResult result = _write_mode(this.path, data, "w");
+        drop(data);
+        return result;
     }
 
     FileResult appendAll(&this, string data) {
-        return _write_mode(this.path, data, "a");
+        FileResult result = _write_mode(this.path, data, "a");
+        drop(data);
+        return result;
     }
 
     bool exists(&this) {
@@ -73,6 +77,8 @@ export class File {
         SyscallResult result = syscall_rename(this.path, new_path);
         if (result.status >= 0) {
             this.path = new_path;
+        } else {
+            drop(new_path);
         }
         return FileResult(result.status, "");
     }
@@ -81,6 +87,8 @@ export class File {
         SyscallResult result = syscall_move(this.path, dst_path);
         if (result.status >= 0) {
             this.path = dst_path;
+        } else {
+            drop(dst_path);
         }
         return FileResult(result.status, "");
     }

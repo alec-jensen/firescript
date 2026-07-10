@@ -254,7 +254,15 @@ class ASTToFIRConverter:
         self._sc_counter = 0
         self._match_counter = 0
         # (continue_target_block_id, break_target_block_id)
-        self.loop_stack: list[tuple[str, str]] = []
+        # (continue_target, break_target, cleanup) -- cleanup is the
+        # (unique_name, FIRType) of the current iteration's owned
+        # loop-element binding (for-in over a string/array of owned
+        # elements), or None. break/continue jump directly out of the loop
+        # body, bypassing the per-iteration drop inserted at the bottom of
+        # the body for the normal fallthrough path -- without also
+        # dropping it here, taking either exit leaked that iteration's
+        # element on exactly the paths that skip the fallthrough (FIRV-O3).
+        self.loop_stack: list[tuple[str, str, Optional[tuple[str, FIRType]]]] = []
 
         # Directive gating: file path -> set of enabled directive names.
         # Nodes carry source_file when merged from imports; single-file
@@ -407,7 +415,14 @@ class ASTToFIRConverter:
             base, args_text = type_str.split("<", 1)
             args_text = args_text[:-1]
             args = [self._fir_type(a) for a in self._split_type_args(args_text)]
-            return GenericInstanceType(base, args)
+            # GenericInstanceType.category previously defaulted unconditionally
+            # to "owned" regardless of the underlying class -- a copyable
+            # generic class (e.g. `copyable class Pair<T, U>`) was therefore
+            # always misclassified as owned, causing the ownership verifier to
+            # demand its locals be consumed/dropped (FIRV-O3) even though
+            # nothing should ever drop a copyable value.
+            category = self.class_categories.get(base, "owned")
+            return GenericInstanceType(base, args, category=category)
 
         if type_str in self.class_categories:
             return SimpleType(type_str, category=self.class_categories[type_str], nullable=nullable)
@@ -446,6 +461,14 @@ class ASTToFIRConverter:
     # ------------------------------------------------------------------
     # Scope helpers
     # ------------------------------------------------------------------
+
+    def _drop_loop_cleanup(self) -> None:
+        cleanup = self.loop_stack[-1][2] if self.loop_stack else None
+        if cleanup is None:
+            return
+        name, ty = cleanup
+        ref = self.builder.load_var(name, ty)
+        self.builder.drop(ref)
 
     def _push_scope(self) -> None:
         self.scopes.append({})
@@ -1046,12 +1069,14 @@ class ASTToFIRConverter:
         if node_type == NodeTypes.BREAK_STATEMENT:
             if not self.loop_stack:
                 raise FIRConversionError("break outside loop", node)
+            self._drop_loop_cleanup()
             self.builder.jump(self.loop_stack[-1][1])
             return
 
         if node_type == NodeTypes.CONTINUE_STATEMENT:
             if not self.loop_stack:
                 raise FIRConversionError("continue outside loop", node)
+            self._drop_loop_cleanup()
             self.builder.jump(self.loop_stack[-1][0])
             return
 
@@ -1059,6 +1084,22 @@ class ASTToFIRConverter:
             func = self.current_function
             if node.children:
                 value = self._convert_expression(node.children[0])
+                # preprocessor.py's RETURN_STATEMENT handler computes the
+                # names read (not transferred) by this return expression --
+                # e.g. a match/for-in scrutinee, an own-mode `this` read via
+                # a field access, a borrowed call argument -- and defers
+                # dropping them to here, since it can only insert drops
+                # *before* the return statement (which would be a
+                # use-after-drop for anything the expression still needs to
+                # read). Now that `value` is fully built, it's safe.
+                for post_drop_name in getattr(node, "post_return_drop_names", []):
+                    symbol = self._lookup(post_drop_name)
+                    if symbol is None:
+                        continue
+                    type_str, is_array, size, unique = symbol
+                    drop_type = self._fir_type(type_str, is_array, size)
+                    drop_ref = self.builder.load_var(unique, drop_type)
+                    self.builder.drop(drop_ref)
                 if func is not None and func.return_type is None:
                     # Void function (e.g. script-style top-level `return
                     # N;`): evaluate for side effects, but a void Return
@@ -1253,7 +1294,7 @@ class ASTToFIRConverter:
         self.builder.branch(cond, body_block.id, exit_block.id)
 
         self.builder.position_at(body_block)
-        self.loop_stack.append((header.id, exit_block.id))
+        self.loop_stack.append((header.id, exit_block.id, None))
         self._push_scope()
         body = node.children[1]
         if body.node_type == NodeTypes.SCOPE:
@@ -1288,7 +1329,7 @@ class ASTToFIRConverter:
             self.builder.jump(body_block.id)
 
         self.builder.position_at(body_block)
-        self.loop_stack.append((incr_block.id, exit_block.id))
+        self.loop_stack.append((incr_block.id, exit_block.id, None))
         self._push_scope()
         if body_node.node_type == NodeTypes.SCOPE:
             self._convert_statements(body_node.children)
@@ -1361,7 +1402,7 @@ class ASTToFIRConverter:
         loop_local = self._declare(loop_var, loop_var_type_str, False, None)
         self.builder.declare_local(loop_local, self._fir_type(loop_var_type_str), element)
 
-        self.loop_stack.append((header.id, exit_block.id))
+        self.loop_stack.append((header.id, exit_block.id, None))
         if body.node_type == NodeTypes.SCOPE:
             self._convert_statements(body.children)
         else:
@@ -1372,6 +1413,13 @@ class ASTToFIRConverter:
             self.builder.jump(header.id)
 
         self.builder.position_at(exit_block)
+        # __gen_<var> is always a fresh generator object (the collection
+        # expression driving this loop is always a generator-function call,
+        # never a bare identifier -- see _convert_for_in's dispatch above),
+        # so this loop is its sole owner; preprocessor.py never sees this
+        # FIR-synthesized binding, so nothing else drops it (FIRV-O3).
+        gen_final = self.builder.load_var(gen_local, gen_type)
+        self.builder.drop(gen_final)
 
     def _convert_for_in_string(
         self,
@@ -1385,9 +1433,19 @@ class ASTToFIRConverter:
         string_type = make_simple("string")
         bool_type = make_simple("bool")
 
-        source = self._convert_expression(collection)
-        source_local = self._declare(f"__str_{loop_var}", "string", False, None)
-        self.builder.declare_local(source_local, string_type, source)
+        if collection.node_type == NodeTypes.IDENTIFIER:
+            # Borrow the existing binding directly, same as
+            # _convert_for_in_array/_convert_match: `for (c in s) {...}` is
+            # borrow-style when `s` is a bare identifier -- the original
+            # binding remains the owner, dropped once by the preprocessor's
+            # normal scope-exit tracking. Declaring+consuming a second
+            # owned local for it here would double-free once the original
+            # binding is also dropped (FIRV-O2).
+            source_local = self._local_name(collection.name)
+        else:
+            source = self._convert_expression(collection)
+            source_local = self._declare(f"__str_{loop_var}", "string", False, None)
+            self.builder.declare_local(source_local, string_type, source)
         index_local = self._declare(f"__i_{loop_var}", "int32", False, None)
         zero = self.builder.int_literal("0", int32)
         self.builder.declare_local(index_local, int32, zero)
@@ -1419,11 +1477,13 @@ class ASTToFIRConverter:
             )
         element.instruction.metadata["intrinsic"] = True
         loop_local = self._declare(loop_var, loop_var_type_str, False, None)
-        self.builder.declare_local(loop_local, self._fir_type(loop_var_type_str), element)
+        loop_local_type = self._fir_type(loop_var_type_str)
+        self.builder.declare_local(loop_local, loop_local_type, element)
 
         # The increment happens in a dedicated block so `continue` advances.
         incr_block = self.builder.new_block()
-        self.loop_stack.append((incr_block.id, exit_block.id))
+        loop_cleanup = (loop_local, loop_local_type) if loop_local_type.is_owned() else None
+        self.loop_stack.append((incr_block.id, exit_block.id, loop_cleanup))
         if body.node_type == NodeTypes.SCOPE:
             self._convert_statements(body.children)
         else:
@@ -1431,6 +1491,14 @@ class ASTToFIRConverter:
         self.loop_stack.pop()
         self._pop_scope()
         if not self.builder.current_block.is_terminated():
+            # loop_local (each iteration's single-character string) is a
+            # fresh str_char_at result -- preprocessor.py never sees this
+            # FIR-synthesized binding, so nothing else drops it (FIRV-O3).
+            # (break/continue take care of this same drop on their own
+            # exit paths via loop_cleanup -- see _drop_loop_cleanup.)
+            if loop_local_type.is_owned():
+                loop_local_final = self.builder.load_var(loop_local, loop_local_type)
+                self.builder.drop(loop_local_final)
             self.builder.jump(incr_block.id)
 
         self.builder.position_at(incr_block)
@@ -1441,6 +1509,13 @@ class ASTToFIRConverter:
         self.builder.jump(header.id)
 
         self.builder.position_at(exit_block)
+        if collection.node_type != NodeTypes.IDENTIFIER:
+            # __str_<var> is the sole owner of the string only when it was
+            # copied from a fresh temporary (see the borrow-style exemption
+            # above); freeing it here mirrors _convert_for_in_array's
+            # matching container-level drop.
+            src_final = self.builder.load_var(source_local, string_type)
+            self.builder.drop(src_final)
 
     def _convert_for_in_array(
         self,
@@ -1460,9 +1535,19 @@ class ASTToFIRConverter:
         size = self._array_size_of(collection)
         array_type = self._fir_type(element_type_str, True, size)
 
-        source = self._convert_expression(collection)
-        source_local = self._declare(f"__arr_{loop_var}", element_type_str, True, size)
-        self.builder.declare_local(source_local, array_type, source)
+        if collection.node_type == NodeTypes.IDENTIFIER:
+            # Borrow the existing binding directly: don't declare+consume
+            # a second owned local for it. `for (x in numbers) {...}` is
+            # borrow-style iteration -- "numbers" remains valid (and is
+            # dropped exactly once, by the preprocessor's normal
+            # scope-exit tracking) after the loop. Taking ownership here
+            # too, as if the array were a fresh temporary, would
+            # eventually free the same backing buffer twice (FIRV-O2).
+            source_local = self._local_name(collection.name)
+        else:
+            source = self._convert_expression(collection)
+            source_local = self._declare(f"__arr_{loop_var}", element_type_str, True, size)
+            self.builder.declare_local(source_local, array_type, source)
         index_local = self._declare(f"__i_{loop_var}", "int32", False, None)
         zero = self.builder.int_literal("0", int32)
         self.builder.declare_local(index_local, int32, zero)
@@ -1492,7 +1577,7 @@ class ASTToFIRConverter:
         self.builder.declare_local(loop_local, self._fir_type(loop_var_type_str), element)
 
         incr_block = self.builder.new_block()
-        self.loop_stack.append((incr_block.id, exit_block.id))
+        self.loop_stack.append((incr_block.id, exit_block.id, None))
         if body.node_type == NodeTypes.SCOPE:
             self._convert_statements(body.children)
         else:
@@ -1510,14 +1595,20 @@ class ASTToFIRConverter:
         self.builder.jump(header.id)
 
         self.builder.position_at(exit_block)
-        if array_type.is_owned():
-            # __arr_<var> is the sole owner of the iterated array (a copy
-            # of whatever expression `for (x in <expr>)` evaluated);
-            # nothing else drops it (FIRV-O3). Freeing it is shallow --
-            # matches flir/lowering.py::lower_drop's existing behavior for
-            # array types, which frees the backing buffer only -- so this
-            # is independent of (and doesn't paper over) any separate gap
-            # in per-element ownership for arrays of owned elements.
+        if array_type.is_owned() and collection.node_type != NodeTypes.IDENTIFIER:
+            # __arr_<var> is the sole owner of the iterated array *only*
+            # when `for (x in <expr>)` iterates a fresh temporary (an
+            # array literal, a function-call result, ...) with no other
+            # owner. When <expr> is a bare identifier naming an existing
+            # local/param, that binding remains the owner -- it is (and
+            # was already, independent of this fix) dropped by the
+            # preprocessor's normal scope-exit tracking; `source` here is
+            # just a second reference to the same pointer, and freeing it
+            # too would double-free once the original binding is also
+            # dropped (FIRV-O2). Freeing __arr_<var> in the temporary case
+            # is shallow -- matches flir/lowering.py::lower_drop's
+            # existing behavior for array types (backing buffer only) --
+            # independent of any separate gap in per-element ownership.
             arr_final = self.builder.load_var(source_local, array_type)
             self.builder.drop(arr_final)
 
@@ -1689,16 +1780,27 @@ class ASTToFIRConverter:
                         arm,
                     )
 
-        scrutinee_value = self._convert_expression(scrutinee_node)
-        scrutinee_type = scrutinee_value.result_type
         # A name keyed on block/instruction counts at generation time is
         # not guaranteed unique across different match expressions in the
         # same function (FIRV-L3); a dedicated monotonic counter is.
         self._match_counter += 1
         marker = str(self._match_counter)
-        scrutinee_temp = f"__match_scrutinee_{marker}"
-        self._used_local_names.add(scrutinee_temp)
-        self.builder.declare_local(scrutinee_temp, scrutinee_type, scrutinee_value)
+        if scrutinee_node.node_type == NodeTypes.IDENTIFIER:
+            # Borrow the existing binding directly, same as
+            # _convert_for_in_array: `match e {...}` is borrow-style (e
+            # remains valid and is dropped exactly once, by the
+            # preprocessor's normal scope-exit tracking, after the
+            # match); declaring+consuming a second owned local for it
+            # here would double-free once the original binding is also
+            # dropped (FIRV-O2).
+            scrutinee_temp = self._local_name(scrutinee_node.name)
+            scrutinee_type = self._convert_expression(scrutinee_node).result_type
+        else:
+            scrutinee_value = self._convert_expression(scrutinee_node)
+            scrutinee_type = scrutinee_value.result_type
+            scrutinee_temp = f"__match_scrutinee_{marker}"
+            self._used_local_names.add(scrutinee_temp)
+            self.builder.declare_local(scrutinee_temp, scrutinee_type, scrutinee_value)
 
         result_temp: Optional[str] = None
         result_type: Optional[FIRType] = None
@@ -1748,10 +1850,12 @@ class ASTToFIRConverter:
             self.builder.unreachable()
 
         self.builder.position_at(join_block)
-        if scrutinee_type.is_owned():
+        if scrutinee_type.is_owned() and scrutinee_node.node_type != NodeTypes.IDENTIFIER:
             # The scrutinee temp is the sole owner of the matched value
             # (ExtractTag/ExtractPayloadField are non-consuming reads);
-            # nothing else drops it, so every arm leaked it (FIRV-O3).
+            # nothing else drops it, so every arm leaked it (FIRV-O3) --
+            # except when scrutinee_node is a bare identifier, in which
+            # case the original binding remains the owner (see above).
             scrut_final = self.builder.load_var(scrutinee_temp, scrutinee_type)
             self.builder.drop(scrut_final)
         if result_temp is not None:

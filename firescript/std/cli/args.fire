@@ -149,10 +149,14 @@ export string option_value(string name, string fallback) {
             continue;
         }
         if (_starts_with(arg, short_eq)) {
-            return _value_after_equals(arg);
+            string result = _value_after_equals(arg);
+            drop(arg);
+            return result;
         }
         if (_starts_with(arg, long_eq)) {
-            return _value_after_equals(arg);
+            string result = _value_after_equals(arg);
+            drop(arg);
+            return result;
         }
         i = i + 1;
     }
@@ -193,15 +197,21 @@ export string option_value_alias(string long_name, string short_name, string fal
             continue;
         }
         if (_starts_with(arg, short_eq)) {
-            return _value_after_equals(arg);
+            string result = _value_after_equals(arg);
+            drop(arg);
+            return result;
         }
         if (_starts_with(arg, long_eq)) {
-            return _value_after_equals(arg);
+            string result = _value_after_equals(arg);
+            drop(arg);
+            return result;
         }
         if (_str_len(short_name) == 1) {
             if (_starts_with(arg, short_flag)) {
                 if (_str_len(arg) > 2) {
-                    return str_slice(arg, 2, _str_len(arg));
+                    string result = str_slice(arg, 2, _str_len(arg));
+                    drop(arg);
+                    return result;
                 }
             }
         }

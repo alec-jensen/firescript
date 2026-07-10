@@ -1529,6 +1529,16 @@ class DeclarationsMixin(TypeSystemMixin):
 
         self.user_types.add(name_tok.value)
         self.user_enums[name_tok.value] = variant_payloads
+        # Enums are always heap-allocated tagged unions (see
+        # ast_to_fir.py's _convert_enum, category="owned" unconditionally
+        # -- there is no "copyable enum" variant) and so always need the
+        # same automatic drop-insertion tracking classes get; without
+        # this, preprocessor.py's is_owned() never recognized any enum
+        # type, silently skipping every enum-typed local/param for
+        # automatic dropping (FIRV-O3).
+        from utils.type_utils import register_class
+
+        register_class(name_tok.value, is_copyable=False)
 
         enum_node = ASTNode(NodeTypes.ENUM_DEFINITION, name_tok, name_tok.value, variants, name_tok.index)
         return enum_node

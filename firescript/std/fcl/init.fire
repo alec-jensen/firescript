@@ -74,7 +74,7 @@ FclLexTokenResult _single(&string kind, &string text, int32 start, int32 next) {
 	return FclLexTokenResult(0, "" + kind, "" + text, start, next, next);
 }
 
-export FclLexTokenResult next_token(string source, int32 index) {
+export FclLexTokenResult next_token(&string source, int32 index) {
 	int32 n = _len(source);
 	int32 i = index;
 
@@ -97,25 +97,39 @@ export FclLexTokenResult next_token(string source, int32 index) {
 	string ch = _char_at(source, i);
 
 	if (ch == "{") {
-		return _single("lbrace", ch, i, i + 1);
+		FclLexTokenResult tok = _single("lbrace", ch, i, i + 1);
+		drop(ch);
+		return tok;
 	}
 	if (ch == "}") {
-		return _single("rbrace", ch, i, i + 1);
+		FclLexTokenResult tok = _single("rbrace", ch, i, i + 1);
+		drop(ch);
+		return tok;
 	}
 	if (ch == "[") {
-		return _single("lbracket", ch, i, i + 1);
+		FclLexTokenResult tok = _single("lbracket", ch, i, i + 1);
+		drop(ch);
+		return tok;
 	}
 	if (ch == "]") {
-		return _single("rbracket", ch, i, i + 1);
+		FclLexTokenResult tok = _single("rbracket", ch, i, i + 1);
+		drop(ch);
+		return tok;
 	}
 	if (ch == ":") {
-		return _single("colon", ch, i, i + 1);
+		FclLexTokenResult tok = _single("colon", ch, i, i + 1);
+		drop(ch);
+		return tok;
 	}
 	if (ch == ",") {
-		return _single("comma", ch, i, i + 1);
+		FclLexTokenResult tok = _single("comma", ch, i, i + 1);
+		drop(ch);
+		return tok;
 	}
 	if (ch == "=") {
-		return _single("assign", ch, i, i + 1);
+		FclLexTokenResult tok = _single("assign", ch, i, i + 1);
+		drop(ch);
+		return tok;
 	}
 
 	if (ch == "\"") {
@@ -149,7 +163,9 @@ export FclLexTokenResult next_token(string source, int32 index) {
 			}
 			j = j + 1;
 		}
-		return FclLexTokenResult(0, "int32", _slice(source, i, j), i, j, j);
+		FclLexTokenResult tok = FclLexTokenResult(0, "int32", _slice(source, i, j), i, j, j);
+		drop(ch);
+		return tok;
 	}
 
 	if (_is_alpha(ch)) {
@@ -162,13 +178,15 @@ export FclLexTokenResult next_token(string source, int32 index) {
 			j = j + 1;
 		}
 		string word = _slice(source, i, j);
+		drop(ch);
 		if (word == "true" || word == "false") {
 			return FclLexTokenResult(0, "bool", word, i, j, j);
 		}
 		return FclLexTokenResult(0, "identifier", word, i, j, j);
 	}
 
-	return FclLexTokenResult(-84, "invalid", ch, i, i + 1, i + 1);
+	FclLexTokenResult tok = FclLexTokenResult(-84, "invalid", ch, i, i + 1, i + 1);
+	return tok;
 }
 
 export int32 status(&FclLexTokenResult token) {

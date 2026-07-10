@@ -137,10 +137,13 @@ export class RegexPattern {
 
             if (first == "\\") {
                 if (i + 1 >= class_end) {
+                    drop(first);
                     return false;
                 }
                 string esc = str_char_at(this.pattern, i + 1);
                 first_val = this._decode_escape_char(esc);
+                drop(esc);
+                drop(first);
                 i = i + 2;
             } else {
                 first_val = first;
@@ -154,10 +157,14 @@ export class RegexPattern {
 
                 if (rhs_raw == "\\") {
                     if (rhs_i + 1 >= class_end) {
+                        drop(rhs_raw);
+                        drop(first_val);
                         return false;
                     }
                     string esc2 = str_char_at(this.pattern, rhs_i + 1);
                     last_val = this._decode_escape_char(esc2);
+                    drop(esc2);
+                    drop(rhs_raw);
                     i = rhs_i + 2;
                 } else {
                     last_val = rhs_raw;
@@ -173,6 +180,7 @@ export class RegexPattern {
             if (c == first_val) {
                 matched = true;
             }
+            drop(first_val);
         }
 
         if (negated) {
@@ -291,6 +299,8 @@ export class RegexPattern {
                 if (this._is_quantifier(maybe_q)) {
                     quant = maybe_q;
                     next_pattern = atom_end + 1;
+                } else {
+                    drop(maybe_q);
                 }
             }
 

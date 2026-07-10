@@ -124,7 +124,12 @@ class _OwnershipChecker:
         self.owned_local_names: set[str] = set()
         for block in function.blocks:
             for inst in block.instructions:
-                if isinstance(inst, DeclareLocalInst) and inst.var_type.is_owned() and not self._is_generic(inst.var_type):
+                if (
+                    isinstance(inst, DeclareLocalInst)
+                    and inst.var_type.is_owned()
+                    and not self._is_generic(inst.var_type)
+                    and not self._is_aliased_read(inst.operands[0] if inst.operands else None)
+                ):
                     self.owned_local_names.add(inst.name)
 
         self.def_positions: dict[int, tuple[str, int]] = {}
@@ -138,6 +143,19 @@ class _OwnershipChecker:
         from fir.ir_types import SimpleType
 
         return isinstance(fir_type, SimpleType) and fir_type.name in self.generic_names
+
+    def _is_aliased_read(self, value: Optional["Value"]) -> bool:
+        """True if `value` is a LoadField/IndexArray/ExtractPayloadField
+        result -- an in-place read of a slot the containing object/array/
+        enum still owns (see _identifier_of's matching comment), not a
+        fresh allocation. A `T x = <that>;` binding is therefore still an
+        alias, not a new independently-ownable value: tracking it as one
+        would demand a Drop that double-frees once the container is later
+        dropped.
+        """
+        return isinstance(value, FIRValue) and isinstance(
+            value.instruction, (LoadFieldInst, IndexArrayInst, ExtractPayloadFieldInst)
+        )
 
     def emit(self, rule_id: str, message: str, block: Optional[BasicBlock] = None, index: Optional[int] = None, inst: Optional[Instruction] = None) -> None:
         if not self._reporting:
@@ -261,7 +279,11 @@ class _OwnershipChecker:
         if isinstance(inst, DeclareLocalInst):
             if inst.operands:
                 self._consume(inst.operands[0], state, block, index, inst)
-            if inst.var_type.is_owned():
+            if (
+                inst.var_type.is_owned()
+                and not self._is_generic(inst.var_type)
+                and not self._is_aliased_read(inst.operands[0] if inst.operands else None)
+            ):
                 state[inst.name] = OwnState.OWNED
             return
 

@@ -4,7 +4,7 @@ from typing import List, Tuple, Dict, Optional
 
 from enums import NodeTypes
 from parser import ASTNode
-from utils.type_utils import is_owned
+from utils.type_utils import is_owned as _is_owned_registered
 
 
 DROP_DIRECTIVE_NAME = "enable_drops"
@@ -14,16 +14,18 @@ DROP_DIRECTIVE_NAME = "enable_drops"
 _SigMap = Dict[str, List[bool]]
 
 
-def _collect_signatures(ast: ASTNode) -> Tuple[_SigMap, _SigMap, Dict[str, _SigMap]]:
-    """Walk the AST and return (func_sigs, ctor_sigs, method_sigs).
+def _collect_signatures(ast: ASTNode) -> Tuple[_SigMap, _SigMap, Dict[str, _SigMap], Dict[str, Dict[str, Optional[str]]]]:
+    """Walk the AST and return (func_sigs, ctor_sigs, method_sigs, method_return_types).
 
     func_sigs:   {func_name: [is_borrowed, ...]}
     ctor_sigs:   {class_name: [is_borrowed, ...]}  (constructor params, excl. receiver)
     method_sigs: {class_name: {method_name: [is_borrowed, ...]}}  (excl. receiver)
+    method_return_types: {class_name: {method_name: return_type}}
     """
     func_sigs: _SigMap = {}
     ctor_sigs: _SigMap = {}
     method_sigs: Dict[str, _SigMap] = {}
+    method_return_types: Dict[str, Dict[str, Optional[str]]] = {}
 
     def _param_flags(children) -> List[bool]:
         return [
@@ -37,6 +39,7 @@ def _collect_signatures(ast: ASTNode) -> Tuple[_SigMap, _SigMap, Dict[str, _SigM
             func_sigs[node.name] = _param_flags(node.children)
         elif node.node_type == NodeTypes.CLASS_DEFINITION:
             method_sigs.setdefault(node.name, {})
+            method_return_types.setdefault(node.name, {})
             for child in node.children:
                 if child.node_type == NodeTypes.CLASS_METHOD_DEFINITION:
                     flags = _param_flags(child.children)
@@ -44,12 +47,13 @@ def _collect_signatures(ast: ASTNode) -> Tuple[_SigMap, _SigMap, Dict[str, _SigM
                         ctor_sigs[node.name] = flags
                     else:
                         method_sigs[node.name][child.name] = flags
+                        method_return_types[node.name][child.name] = child.return_type
         for c in (node.children or []):
             if c is not None:
                 walk(c)
 
     walk(ast)
-    return func_sigs, ctor_sigs, method_sigs
+    return func_sigs, ctor_sigs, method_sigs, method_return_types
 
 
 def _make_identifier(name: str, var_type: str | None, is_array: bool) -> ASTNode:
@@ -162,7 +166,32 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
     _ensure_drop_directive(ast)
 
     # Collect function/constructor/method signatures for move tracking
-    func_sigs, ctor_sigs, method_sigs = _collect_signatures(ast)
+    func_sigs, ctor_sigs, method_sigs, method_return_types = _collect_signatures(ast)
+
+    # Generic class templates (e.g. `class Option<T?>`) are deliberately never
+    # registered with utils.type_utils.register_class (see
+    # parser/declarations.py's _parse_class_definition: the bare template
+    # name must not resolve as a standalone concrete type during parsing).
+    # That means the module-level is_owned() can never see them, so an
+    # own-mode `this`/param/local of a generic-class type was silently never
+    # tracked for auto-drop at all (ast_to_fir.py's own class_categories --
+    # built straight from each CLASS_DEFINITION node's is_copyable flag,
+    # generic or not -- disagreed, which is why the ownership verifier
+    # (which trusts ast_to_fir.py's categorization) correctly flagged these
+    # as leaked). Build a local name->is_copyable map from the same
+    # CLASS_DEFINITION nodes ast_to_fir.py's _collect_program_info reads, and
+    # shadow is_owned with a wrapper that consults it first.
+    _generic_class_copyable: Dict[str, bool] = {
+        child.name: bool(getattr(child, "is_copyable", False))
+        for child in ast.children
+        if child.node_type == NodeTypes.CLASS_DEFINITION and getattr(child, "type_params", None)
+    }
+
+    def is_owned(base_type: Optional[str], is_array: bool) -> bool:
+        base_name = base_type.split("<", 1)[0] if base_type else base_type
+        if base_name in _generic_class_copyable:
+            return True if is_array else not _generic_class_copyable[base_name]
+        return _is_owned_registered(base_type, is_array)
 
     # Each scope (for Owned locals): list of (name, var_type, is_array)
     scope_stack: List[List[Tuple[str, Optional[str], bool]]] = [[]]
@@ -174,7 +203,19 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
     loop_boundaries: List[int] = []
 
     def _collect_identifier_names(node: Optional[ASTNode]) -> set[str]:
-        """Collect identifier names referenced by an expression subtree."""
+        """Collect identifier names referenced anywhere in an expression
+        subtree, for the "don't drop what this return expression still
+        reads" purpose (see the RETURN_STATEMENT handler). Deliberately
+        broad/conservative: the drops this exemption set protects run
+        *before* the return statement, so *any* identifier the expression
+        still reads -- transferred or merely borrowed (e.g. a match
+        scrutinee, or a borrowed call argument) -- must not be dropped
+        first, or the read is a use-after-drop. A precise, transfer-only
+        exemption was tried and reverted (see ir_verifier_spec.md section
+        8 items 12-13): it's wrong for this specific purpose and trades a
+        real bug (use-after-drop) for a narrower one (an under-dropped
+        leak, FIRV-O3) it was trying to fix.
+        """
         if node is None:
             return set()
         names: set[str] = set()
@@ -367,6 +408,41 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
                     wrap.children.append(_make_drop_call(target, vt, ia))
                     wrap.children.append(node)
                     return wrap
+            elif var_maps and target not in var_maps[-1]:
+                # No prior declaration anywhere in scope: this
+                # `target = expr;` is itself the (type-inferred) implicit
+                # declaration -- e.g. script-style top-level `v1 =
+                # Vec2(3, 4);` with no type annotation. Register it the
+                # same way an explicit VARIABLE_DECLARATION would so it
+                # gets auto-dropped, but only when the RHS's class is
+                # staticly known here (a bare constructor call) -- general
+                # RHS type inference isn't available before semantic
+                # analysis runs. Without this, an owned value bound only
+                # through this implicit-declaration form was never tracked
+                # at all and always leaked (FIRV-O3).
+                rhs = node.children[0] if node.children else None
+                inferred_class: Optional[str] = None
+                if rhs is not None and rhs.node_type == NodeTypes.CONSTRUCTOR_CALL:
+                    inferred_class = rhs.name
+                elif rhs is not None and rhs.node_type == NodeTypes.FUNCTION_CALL and rhs.name in ctor_sigs:
+                    inferred_class = rhs.name
+                elif rhs is not None and rhs.node_type == NodeTypes.METHOD_CALL and rhs.children:
+                    receiver = rhs.children[0]
+                    receiver_class: Optional[str] = None
+                    if receiver.node_type == NodeTypes.CONSTRUCTOR_CALL:
+                        receiver_class = receiver.name
+                    elif receiver.node_type == NodeTypes.FUNCTION_CALL and receiver.name in ctor_sigs:
+                        receiver_class = receiver.name
+                    elif receiver.node_type == NodeTypes.IDENTIFIER:
+                        for frame in reversed(var_maps):
+                            if receiver.name in frame:
+                                receiver_class = frame[receiver.name][0]
+                                break
+                    if receiver_class is not None:
+                        inferred_class = method_return_types.get(receiver_class, {}).get(rhs.name)
+                if inferred_class is not None and is_owned(inferred_class, False):
+                    var_maps[-1][target] = (inferred_class, False, "local")
+                    scope_stack[-1].append((target, inferred_class, False))
             return node
 
         # Function/method definition: process body
@@ -446,7 +522,28 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
         # (see std/internal/runtime.fire's fs_rt_argv_at) instead.
         if node.node_type == NodeTypes.RETURN_STATEMENT:
             wrap = ASTNode(NodeTypes.SCOPE, node.token, "scope", [], node.index)
-            used_in_return = _collect_identifier_names(node.children[0]) if node.children else set()
+            expr = node.children[0] if node.children else None
+            used_in_return = _collect_identifier_names(expr) if expr is not None else set()
+            transferred = _return_transferred_identifiers(expr) if expr is not None else set()
+            # Names read within the return expression but not actually
+            # transferred out (e.g. a match/for-in scrutinee, a borrowed
+            # call argument, an own-mode `this` receiver read via a field
+            # access) are exempted from the *pre*-drop above -- correctly,
+            # since dropping them before the expression evaluates would be
+            # a use-after-drop -- but nothing else ever drops them either,
+            # which leaks them (FIRV-O3). ast_to_fir.py's RETURN_STATEMENT
+            # conversion inserts a Drop for each of these *after* it
+            # finishes building the return value but *before* emitting the
+            # Return, which is the one ordering that is safe for both
+            # concerns at once.
+            post_drop_names = sorted(
+                nm
+                for frame in scope_stack
+                for nm, vt, ia in frame
+                if nm in used_in_return and nm not in transferred
+            )
+            if post_drop_names:
+                setattr(node, "post_return_drop_names", post_drop_names)
             for frame in scope_stack:
                 for nm, vt, ia in frame:
                     if nm not in used_in_return:

@@ -9,15 +9,18 @@ directive enable_process_args;
 import @firescript/std.regex.pattern.RegexPattern;
 
 export bool is_match(string pattern, string text) {
-    return RegexPattern(pattern).is_match(text);
+    bool result = RegexPattern(pattern).is_match(text);
+    return result;
 }
 
 export bool find_match(string pattern, string text) {
-    return RegexPattern(pattern).matches(text);
+    bool result = RegexPattern(pattern).matches(text);
+    return result;
 }
 
 export int32 find_at(string pattern, string text, int32 start_pos) {
-    return RegexPattern(pattern).find_at(text, start_pos);
+    int32 result = RegexPattern(pattern).find_at(text, start_pos);
+    return result;
 }
 
 export string last_error(string pattern) {

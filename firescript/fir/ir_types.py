@@ -92,11 +92,10 @@ class ArrayType(FIRType):
 class GenericInstanceType(FIRType):
     """A generic class applied to type arguments: Box<int32>."""
 
-    category = "owned"
-
-    def __init__(self, base_name: str, type_args: list[FIRType]):
+    def __init__(self, base_name: str, type_args: list[FIRType], category: str = "owned"):
         self.base_name = base_name
         self.type_args = type_args
+        self.category = category
 
     def render(self) -> str:
         args = ", ".join(t.render() for t in self.type_args)
