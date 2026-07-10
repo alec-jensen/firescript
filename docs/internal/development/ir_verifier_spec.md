@@ -1,4 +1,4 @@
-# FIR/FLIR Verifier Specification [PLANNED]
+# FIR/FLIR Verifier Specification [IMPLEMENTED]
 
 Mandatory validity verification for both IR levels, run on **every**
 compilation. If a FIR or FLIR module violates any rule below, compilation
@@ -533,6 +533,53 @@ writing) — the verifier is never quietly weakened:
     (`self._reporting = True`). Any dataflow-based Tier-2 checker (FLIR's
     heap-token analysis in Phase 4 included) must follow the same
     two-phase shape.
+14. **FLIRV-A4 narrowed to named-slot-tracked tokens (Phase 4).** Same
+    root cause and same fix as item 10 (anonymous expression temporaries):
+    `flir/heap_verifier.py`'s heap-token dataflow tracks a token's
+    identity through must-alias slot stores/loads, but a fresh allocation
+    that is only ever read as an anonymous sub-expression (e.g. an
+    intermediate concatenation result in a chain like `"a" + x + "b"`,
+    never bound to a slot) is still `LIVE` at every `ret` -- flagging it
+    as a leak would surface the exact same enormous, untargeted,
+    pre-existing gap the FIR ownership verifier already deliberately
+    scopes out. `FLIRV-A4` therefore only reports a token currently
+    referenced by a named slot; A1-A3 and A5 are unaffected (they fire on
+    an actual use/free, not merely on "unfreed at return").
+15. **FLIRV-A5 exempts a struct's own `<S>__destroy` and shallow-free
+    releases (Phase 4).** Two legitimate direct-`fs_rt_free` sites would
+    otherwise be misflagged as "should have called the destructor":
+    - `<S>__destroy` itself (`flir/lowering.py::ensure_destructor` /
+      `ensure_enum_destructor`) frees `S`'s own backing allocation as its
+      terminal step, *after* already recursively freeing/destroying each
+      owned field individually earlier in the same function -- exempted
+      structurally when the verified function's name is
+      `f"{pointee}__destroy"`.
+    - `ast_to_fir.py::_convert_super_call` releases a temporary
+      base-class object after splicing its fields onto `this`, without
+      running the base class's destructor (the fields already transferred
+      ownership to `this`; running the destructor too would free them a
+      second time once `this` is later dropped). Lowered from a distinct
+      FIR-level `free_shallow` intrinsic, which collapses to the same
+      `fs_rt_free` call as any other free at the FLIR level -- so
+      `flir/lowering.py::lower_call` tags the emitted `Call`'s
+      (`flir/ir.py::FInst.metadata`) with `shallow_free: True`, and the
+      verifier exempts calls carrying that tag.
+16. **The array-to-string and `println<T>` leaks the verifier caught
+    (Phase 4, fixed at the emitter).** Both real, pre-existing bugs, not
+    verifier false positives:
+    - `flir/lowering.py::_array_to_string` built its `"[a, b, c]"`
+      accumulator via repeated `str_concat` + `slotstore` without ever
+      freeing the accumulator's previous value or each element's
+      converted-to-string result -- every array-to-string conversion
+      leaked one allocation per element. Fixed by freeing the superseded
+      accumulator value and the per-element conversion result once each
+      has been read by the next `str_concat`.
+    - `std/io.fire::println<T>` built `(value as string) + "\n"` inline;
+      the intermediate cast result was never freed (the same anonymous-
+      expression-temporary gap as items 10 and 14, just one that happened
+      to be a *named* function's own leak rather than caller-side).
+      Fixed by binding the cast to a name (`cast_text`) and dropping it
+      after the concatenation.
 
 ## 9. Testing
 

@@ -2,6 +2,8 @@
 
 FLIR (firescript Lowered IR) is the machine-like IR produced by lowering FIR. It is defined in `firescript/flir/` (`ir.py`, `lowering.py`, `textual.py`) and consumed by `firescript/codegen/x86_64/flir_to_asm.py`, the only backend. Dump it for a given source file with `--emit-flir`.
 
+Every FLIR module is validated on every compilation before codegen; see [ir_verifier_spec.md](ir_verifier_spec.md) for the full rule catalog (`firescript/flir/verifier.py`, `firescript/flir/heap_verifier.py`).
+
 ## Purpose
 
 - Lower classes to struct layouts and pointers

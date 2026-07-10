@@ -2,6 +2,8 @@
 
 This document describes the firescript IR (FIR): a compact, typed high-level IR used for analysis and optimization before lowering to FLIR. It is defined in `firescript/fir/` (`ir_types.py`, `ir_node.py`, `ir_module.py`, `ownership.py`, `ir_builder.py`, `textual.py`) and produced from the semantic-analyzed AST by `firescript/ast_to_fir.py`. Dump it for a given source file with `--emit-fir`.
 
+Every FIR module is validated on every compilation before lowering; see [ir_verifier_spec.md](ir_verifier_spec.md) for the full rule catalog (`firescript/fir/verifier.py`, `firescript/fir/ownership_verifier.py`).
+
 ## Design Principles
 
 - Preserve all type information (classes, generics, ownership)
