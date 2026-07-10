@@ -1,9 +1,10 @@
 """Tier-2 heap-token allocation-lifecycle verifier for FLIR functions.
 
-Implements FLIRV-A1-A5 and FLIRV-M4-M5 from
-docs/internal/development/ir_verifier_spec.md sections 5.3-5.4. Only runs
-against a function that already passed Tier-1 checks (FLIRV-S/T/M1-M3),
-which guarantee a well-formed CFG with valid dominance.
+Implements FLIRV-A1-A5 and FLIRV-M4 from
+docs/internal/development/ir_verifier_spec.md sections 5.3-5.4. FLIRV-M5
+(null discipline) is not implemented here -- see that spec's section 8.2.
+Only runs against a function that already passed Tier-1 checks
+(FLIRV-S/T/M1-M3), which guarantee a well-formed CFG with valid dominance.
 
 An intraprocedural forward dataflow tracks the state of *heap tokens*:
 values produced by a call that returns a fresh heap allocation (per
