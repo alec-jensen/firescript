@@ -1,0 +1,33 @@
+// A non-void function whose only `if` has no `else` falls off the end on
+// the false path with no explicit return; the compiler synthesizes a
+// zero value of the declared return type for that implicit path.
+// Exercises this for float64 and bool return types (in addition to the
+// already-covered int32 case elsewhere).
+
+import @firescript/std.io.println;
+
+float64 maybeHalf(bool flag, float64 x) {
+    if (flag) {
+        return x / 2.0;
+    }
+}
+
+bool maybeTrue(bool flag) {
+    if (flag) {
+        return true;
+    }
+}
+
+println(maybeHalf(true, 10.0) as string);
+println(maybeHalf(false, 10.0) as string);
+println(maybeTrue(true) as string);
+println(maybeTrue(false) as string);
+
+return 0;
+
+/* EXPECT
+5.000000
+0.000000
+true
+false
+*/

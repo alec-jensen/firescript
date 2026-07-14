@@ -1,0 +1,6 @@
+// Semantic error: string 'length' method takes no arguments.
+
+void string_length_arg_count() {
+    string s = "hello";
+    int32 n = s.length(1);  //~ ERROR FS-SEM-0010 @17
+}

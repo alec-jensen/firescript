@@ -1,0 +1,19 @@
+// Semantic error: 'this.super(...)' with an argument of the wrong type for
+// the base class's constructor.
+
+class Base {
+    int32 x;
+
+    Base(int32 x) {
+        this.x = x;
+    }
+}
+
+class Derived from Base {
+    int32 y;
+
+    Derived(int32 y) {
+        this.super("bad");  //~ ERROR FS-SEM-0010 @20
+        this.y = y;
+    }
+}

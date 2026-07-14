@@ -1,103 +1,103 @@
-module functions_calling_functions
+fir module functions_calling_functions
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function add(a: int32, b: int32) -> int32 {
-  block_0:
-    %0 = LoadVar("a") -> int32
-    %1 = LoadVar("b") -> int32
-    %2 = BinaryOp("+", %0, %1)
-    Return(%2)
+function @add(a: int32, b: int32) -> int32 {
+  L0:
+    %0 = loadvar.int32 a
+    %1 = loadvar.int32 b
+    %2 = binop "+", %0, %1
+    ret %2
 }
 
-function double(x: int32) -> int32 {
-  block_0:
-    %0 = LoadVar("x") -> int32
-    %1 = IntLiteral(2, int32)
-    %2 = BinaryOp("*", %0, %1)
-    Return(%2)
+function @double(x: int32) -> int32 {
+  L0:
+    %0 = loadvar.int32 x
+    %1 = const.int32 2
+    %2 = binop "*", %0, %1
+    ret %2
 }
 
-function addThenDouble(a: int32, b: int32) -> int32 {
-  block_0:
-    %0 = LoadVar("a") -> int32
-    %1 = LoadVar("b") -> int32
-    %2 = Call(add, [%0, %1], ["own", "own"]) -> int32
-    DeclareLocal("sum", int32, %2)
-    %3 = LoadVar("sum") -> int32
-    %4 = Call(double, [%3], ["own"]) -> int32
-    Return(%4)
+function @addThenDouble(a: int32, b: int32) -> int32 {
+  L0:
+    %0 = loadvar.int32 a
+    %1 = loadvar.int32 b
+    %2 = call.int32 @add(%0 own, %1 own)
+    local sum: int32 = %2
+    %3 = loadvar.int32 sum
+    %4 = call.int32 @double(%3 own)
+    ret %4
 }
 
-function complexCalc(a: int32, b: int32, c: int32) -> int32 {
-  block_0:
-    %0 = LoadVar("a") -> int32
-    %1 = LoadVar("b") -> int32
-    %2 = BinaryOp("+", %0, %1)
-    DeclareLocal("temp", int32, %2)
-    %3 = LoadVar("temp") -> int32
-    %4 = LoadVar("c") -> int32
-    %5 = BinaryOp("*", %3, %4)
-    StoreVar("temp", %5)
-    %6 = LoadVar("temp") -> int32
-    %7 = IntLiteral(100, int32)
-    %8 = BinaryOp(">", %6, %7)
-    Branch(%8, block_2, block_1)
+function @complexCalc(a: int32, b: int32, c: int32) -> int32 {
+  L0:
+    %0 = loadvar.int32 a
+    %1 = loadvar.int32 b
+    %2 = binop "+", %0, %1
+    local temp: int32 = %2
+    %3 = loadvar.int32 temp
+    %4 = loadvar.int32 c
+    %5 = binop "*", %3, %4
+    storevar temp, %5
+    %6 = loadvar.int32 temp
+    %7 = const.int32 100
+    %8 = binop ">", %6, %7
+    br %8, L2, L1
 
-  block_1:
-    %9 = LoadVar("temp") -> int32
-    Return(%9)
+  L1:
+    %9 = loadvar.int32 temp
+    ret %9
 
-  block_2:
-    %10 = LoadVar("temp") -> int32
-    %11 = IntLiteral(2, int32)
-    %12 = BinaryOp("/", %10, %11)
-    Return(%12)
+  L2:
+    %10 = loadvar.int32 temp
+    %11 = const.int32 2
+    %12 = binop "/", %10, %11
+    ret %12
 }
 
-function main() -> void {
-  block_0:
-    %0 = IntLiteral(2, int32)
-    %1 = IntLiteral(3, int32)
-    %2 = Call(addThenDouble, [%0, %1], ["own", "own"]) -> int32
-    Call(println, [%2], ["borrow"])
-    %3 = IntLiteral(10, int32)
-    %4 = IntLiteral(20, int32)
-    %5 = IntLiteral(5, int32)
-    %6 = Call(complexCalc, [%3, %4, %5], ["own", "own", "own"]) -> int32
-    Call(println, [%6], ["borrow"])
-    %7 = IntLiteral(2, int32)
-    %8 = IntLiteral(3, int32)
-    %9 = IntLiteral(4, int32)
-    %10 = Call(complexCalc, [%7, %8, %9], ["own", "own", "own"]) -> int32
-    Call(println, [%10], ["borrow"])
-    Return()
+function @main() -> void {
+  L0:
+    %0 = const.int32 2
+    %1 = const.int32 3
+    %2 = call.int32 @addThenDouble(%0 own, %1 own)
+    call @println(%2 borrow)
+    %3 = const.int32 10
+    %4 = const.int32 20
+    %5 = const.int32 5
+    %6 = call.int32 @complexCalc(%3 own, %4 own, %5 own)
+    call @println(%6 borrow)
+    %7 = const.int32 2
+    %8 = const.int32 3
+    %9 = const.int32 4
+    %10 = call.int32 @complexCalc(%7 own, %8 own, %9 own)
+    call @println(%10 borrow)
+    ret
 }

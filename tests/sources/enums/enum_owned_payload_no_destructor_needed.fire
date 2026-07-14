@@ -1,0 +1,41 @@
+import @firescript/std.io.println;
+
+// Companion to enum_owned_payload_drop.fire: that file's payload class (Box)
+// has an owned (string) field, so its destructor recurses through a
+// generated per-class destructor. This file's payload class (Counter) has
+// only scalar fields, so `class_needs_destructor` is False for it and the
+// enum's generated destructor must free it directly via fs_rt_free instead
+// of calling a nested destructor (lower_enum_destructor's "else" branch in
+// firescript/flir/lowering.py).
+
+class Counter {
+    int32 value;
+
+    Counter(int32 value) {
+        this.value = value;
+    }
+}
+
+enum Container {
+    Has(Counter c),
+    None
+}
+
+void describe(Container c) {
+    match c {
+        Container.Has(c) -> { println("has: " + (c.value as string)); }
+        Container.None -> { println("none"); }
+    }
+}
+
+Container full = Container.Has(Counter(42));
+describe(full);
+describe(Container.None);
+
+println("done");
+
+/* EXPECT
+has: 42
+none
+done
+*/

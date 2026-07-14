@@ -1,0 +1,24 @@
+import @firescript/std.io.println;
+
+// generators_basic.fire's countdown() has a single (syntactic) `yield`
+// statement inside a loop, so its state-machine dispatch never needs to
+// chain between resume states (resume_blocks has exactly one entry). This
+// generator has two distinct `yield` sites, forcing the multi-way resume
+// dispatch chain in lower_generator (firescript/flir/lowering.py) that
+// picks among 2+ resume blocks by comparing the saved `_state` field.
+
+generator<int32> pair(int32 a, int32 b) {
+    yield a;
+    yield b;
+    yield a + b;
+}
+
+for (int32 v in pair(10, 20)) {
+    println(v);
+}
+
+/* EXPECT
+10
+20
+30
+*/

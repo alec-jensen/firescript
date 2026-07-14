@@ -1,0 +1,6 @@
+// Parser error: an initializer expression is expected but the file ends
+// immediately after '='.
+
+void expression_at_eof() {  //~ ERROR FS-PARSE-0010 @26
+    int32 x =  //~ ERROR FS-PARSE-0012 @14
+//~^ ERROR FS-PARSE-0010 @14

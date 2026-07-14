@@ -1,0 +1,5 @@
+// Array literal whose first element is an undefined variable: only the
+// undefined-variable diagnostic should fire once (the array-literal
+// element-type inference bails out silently on a None element type
+// instead of piling on a second, misleading "cannot determine type" error).
+int32[1] a = [undefined_var];  //~ ERROR FS-PARSE-0003 @15

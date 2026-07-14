@@ -1,0 +1,13 @@
+// Constructor call with an argument of the wrong type (arity matches, but
+// the type at one position doesn't).
+class Point {
+    int32 x;
+    int32 y;
+
+    Point(int32 x, int32 y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+Point p = Point(1, "two");  //~ ERROR FS-SEM-0010 @20

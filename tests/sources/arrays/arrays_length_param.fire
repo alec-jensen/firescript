@@ -1,0 +1,24 @@
+// Test .length() called on an array function parameter, whose size is
+// not statically known at the call site (unlike a local declared from an
+// array literal) -- exercises the array_length intrinsic call path.
+
+import @firescript/std.io.println;
+
+int32 arrayLen(&int32[] arr) {
+    return arr.length();
+}
+
+int32 arraySize(&int32[] arr) {
+    return arr.size();
+}
+
+int32[] nums = [10, 20, 30, 40];
+println(arrayLen(nums));
+println(arraySize(nums));
+
+return 0;
+
+/* EXPECT
+4
+4
+*/

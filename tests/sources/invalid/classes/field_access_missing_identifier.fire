@@ -1,0 +1,17 @@
+// Field access with nothing after the '.': fails both at the low-level
+// primary-expression parser (unexpected token) and at the statement
+// dispatch level (no assignment follows the incomplete field access).
+class Holder {
+    int32 v;
+
+    Holder(int32 v) {
+        this.v = v;
+    }
+}
+
+int32 main() {
+    Holder h = Holder(1);
+    h.;  //~ ERROR FS-PARSE-0010 @7
+//~^ ERROR FS-PARSE-0010 @7
+    return 0;
+}

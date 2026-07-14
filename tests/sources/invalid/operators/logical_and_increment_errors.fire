@@ -1,0 +1,11 @@
+// Unary '!' / '&&'/'||' operand-type errors, and increment/decrement on an
+// undefined identifier.
+
+int32 a = 5;
+bool b = !a;  //~ ERROR FS-SEM-0010 @10
+
+bool c = true && a;  //~ ERROR FS-SEM-0010 @15
+
+bool d = a || true;  //~ ERROR FS-SEM-0010 @12
+
+undefined_var++;  //~ ERROR FS-PARSE-0003 @1

@@ -1,0 +1,39 @@
+// Test for-in loops over strings (string.length()-driven iteration).
+// Exercises both collection forms (bare identifier vs. a fresh string
+// expression) and break / continue inside the loop.
+
+import @firescript/std.io.println;
+
+// Bare identifier collection, string loop variable.
+string s = "abc";
+for (string c in s) {
+    println(c);
+}
+
+// Fresh string expression (not a bare identifier), with a continue.
+for (string c in "wxyz") {
+    if (c == "y") {
+        continue;
+    }
+    println(c);
+}
+
+// Fresh string expression, with a break.
+for (string c in "loop") {
+    if (c == "o") {
+        break;
+    }
+    println(c);
+}
+
+return 0;
+
+/* EXPECT
+a
+b
+c
+w
+x
+z
+l
+*/

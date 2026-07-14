@@ -1,0 +1,16 @@
+// Bare/extra semicolons inside a scope are legal empty statements --
+// exercises the SEMICOLON skip branch in parse_scope()'s statement loop.
+import @firescript/std.io.println;
+
+int32 addOne(int32 x) {
+    ;
+    ;
+    return x + 1;
+    ;
+}
+
+println(addOne(4));
+
+/* EXPECT
+5
+*/

@@ -1,0 +1,25 @@
+// Malformed method declarations inside a class body (distinct from the
+// constructor-parsing equivalents in constructor_param_syntax_errors.fire).
+
+// Missing identifier after type in class body.
+class M1 {
+    int32 v;
+    int32 !;  //~ ERROR FS-PARSE-0010 @11
+
+    M1() {  //~ ERROR FS-PARSE-0010 @7
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
+    }
+}
+
+// A static regular method also can't declare a '&this' receiver.
+class M2 {
+    int32 v;
+
+    M2() {
+        this.v = 1;
+    }
+
+    static int32 get(&this) {  //~ ERROR FS-PARSE-0012 @23
+        return 1;
+    }
+}

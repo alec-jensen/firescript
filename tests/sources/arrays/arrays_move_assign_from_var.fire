@@ -1,0 +1,21 @@
+// Test declaring an array-typed local whose initializer is another
+// array variable (a move), not an array literal -- exercises the
+// non-literal initializer path for array declarations.
+
+import @firescript/std.io.println;
+
+int32[] a = [1, 2, 3];
+int32[] b = a;
+println(b[0]);
+println(b[1]);
+println(b[2]);
+println(b.length());
+
+return 0;
+
+/* EXPECT
+1
+2
+3
+3
+*/

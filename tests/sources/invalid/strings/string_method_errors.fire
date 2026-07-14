@@ -1,0 +1,13 @@
+// String method errors: wrong argument count for `length`, and an unknown
+// string method name.
+int32 wrongArgCount() {
+    string s = "abc";
+    int32 x = s.length(1);  //~ ERROR FS-SEM-0010 @17
+    return x;
+}
+
+int32 main() {
+    string s = "abc";
+    int32 x = s.foo();  //~ ERROR FS-SEM-0010 @17
+    return x;
+}

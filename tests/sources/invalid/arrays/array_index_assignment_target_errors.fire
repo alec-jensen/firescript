@@ -1,0 +1,9 @@
+// Array-index-assignment target where the index expression itself fails to
+// parse (not just a missing RHS -- see expression_operand_errors.fire for
+// that case; kept separate because a preceding malformed-assignment
+// statement's error-recovery there ends up swallowing this one silently).
+int32[] arr = [1, 2];
+arr[!] = 5;  //~ ERROR FS-PARSE-0012 @6
+//~^ ERROR FS-PARSE-0010 @5
+//~^^ ERROR FS-PARSE-0010 @8
+//~^^^ ERROR FS-PARSE-0012 @8

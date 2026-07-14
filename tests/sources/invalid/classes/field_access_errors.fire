@@ -1,0 +1,15 @@
+// Field access errors: unknown field on a class type, and field access on a
+// non-class expression type.
+
+import @firescript/std.io.println;
+
+class Point {
+    int32 x;
+    int32 y;
+}
+
+Point p = Point(1, 2);
+int32 z = p.z;  //~ ERROR FS-SEM-0010 @13
+
+int32 n = 5;
+int32 bad = n.x;  //~ ERROR FS-SEM-0010 @15

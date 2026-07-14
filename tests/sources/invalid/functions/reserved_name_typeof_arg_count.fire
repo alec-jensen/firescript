@@ -1,0 +1,12 @@
+// Semantic error: the type checker hardcodes a single-argument arity check
+// for a function literally named 'typeof' (a legacy builtin-name check that
+// still applies to any user-defined function reusing that name, since
+// 'typeof' is not a reserved keyword in firescript).
+
+int32 typeof(int32 a, int32 b) {
+    return a;
+}
+
+void reserved_name_typeof_arg_count() {
+    int32 x = typeof(1, 2);  //~ ERROR FS-SEM-0010 @15
+}

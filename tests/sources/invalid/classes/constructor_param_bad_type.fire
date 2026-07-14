@@ -1,0 +1,12 @@
+// Parser error: constructor parameter with a token that isn't a valid
+// parameter type.
+
+class Foo {
+    int32 x;
+
+    Foo(+ x) {  //~ ERROR FS-PARSE-0010 @9
+//~^ ERROR FS-PARSE-0010 @11
+        this.x = x;  //~ ERROR FS-PARSE-0003 @9
+//~^ ERROR FS-PARSE-0003 @18
+    }
+}

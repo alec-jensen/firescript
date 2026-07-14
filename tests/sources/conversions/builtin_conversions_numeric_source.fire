@@ -1,0 +1,32 @@
+import @firescript/std.io.println;
+
+// toInt/toFloat/toDouble/toBool/toChar called with a numeric (non-string)
+// source argument -- builtin_conversions.fire only exercises the
+// string-source paths of these conversion builtins.
+
+int32 fromFloat = toInt(9.75);
+println(fromFloat);
+
+float32 fromInt = toFloat(7);
+println(fromInt);
+
+float64 fromInt2 = toDouble(7);
+println(fromInt2);
+
+bool fromZero = toBool(0);
+println(fromZero);
+
+bool fromNonZero = toBool(5);
+println(fromNonZero);
+
+char fromInt3 = toChar(66);
+println(fromInt3);
+
+/* EXPECT
+9
+7.000000
+7.000000
+false
+true
+B
+*/

@@ -1,0 +1,16 @@
+// Sized array parameter type: int32[N] (fixed-size array parameter, distinct
+// from the unsized int32[] form covered by functions_array_params.fire).
+import @firescript/std.io.println;
+
+int32 sumFirstTwo(int32[2] xs) {
+    return xs[0] + xs[1];
+}
+
+void main() {
+    int32[2] nums = [10, 20];
+    println(sumFirstTwo(nums));
+}
+
+/* EXPECT
+30
+*/

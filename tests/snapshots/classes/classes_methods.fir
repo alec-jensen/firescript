@@ -1,74 +1,74 @@
-module classes_methods
+fir module classes_methods
 
 type Point owned {
   x: int32
   y: int32
 }
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function Point.Point(x: int32, y: int32) -> Point {
-  block_0:
-    %0 = Allocate(Point, [])
-    DeclareLocal("this", Point, %0)
-    %1 = LoadVar("x") -> int32
-    %2 = LoadVar("this") -> Point
-    StoreField(%2, "x", %1)
-    %3 = LoadVar("y") -> int32
-    %4 = LoadVar("this") -> Point
-    StoreField(%4, "y", %3)
-    %5 = LoadVar("this") -> Point
-    Return(%5)
+function @Point.Point(x: int32, y: int32) -> Point {
+  L0:
+    %0 = alloc.Point()
+    local this: Point = %0
+    %1 = loadvar.int32 x
+    %2 = loadvar.Point this
+    storefield %2, "x", %1
+    %3 = loadvar.int32 y
+    %4 = loadvar.Point this
+    storefield %4, "y", %3
+    %5 = loadvar.Point this
+    ret %5
 }
 
-function Point.sum(this: &Point) -> int32 {
-  block_0:
-    %0 = LoadVar("this") -> Point
-    %1 = LoadField(%0, "x")
-    %2 = LoadVar("this") -> Point
-    %3 = LoadField(%2, "y")
-    %4 = BinaryOp("+", %1, %3)
-    Return(%4)
+function @Point.sum(this: &Point) -> int32 {
+  L0:
+    %0 = loadvar.Point this
+    %1 = loadfield.int32 %0, "x"
+    %2 = loadvar.Point this
+    %3 = loadfield.int32 %2, "y"
+    %4 = binop "+", %1, %3
+    ret %4
 }
 
-function main() -> void {
-  block_0:
-    %0 = IntLiteral(2, int32)
-    %1 = IntLiteral(3, int32)
-    %2 = Call(Point.Point, [%0, %1], ["own", "own"]) -> Point
-    DeclareLocal("p", Point, %2)
-    %3 = LoadVar("p") -> Point
-    %4 = MethodCall(%3, "sum", [], []) -> int32
-    Call(println, [%4], ["borrow"])
-    %5 = LoadVar("p") -> Point
-    Drop(%5)
-    Return()
+function @main() -> void {
+  L0:
+    %0 = const.int32 2
+    %1 = const.int32 3
+    %2 = call.Point @Point.Point(%0 own, %1 own)
+    local p: Point = %2
+    %3 = loadvar.Point p
+    %4 = mcall.int32 %3, "sum"()
+    call @println(%4 borrow)
+    %5 = loadvar.Point p
+    drop %5
+    ret
 }

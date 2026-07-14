@@ -1,125 +1,125 @@
-module strings_concatenation
+fir module strings_concatenation
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function main() -> void {
-  block_0:
-    %0 = StringLiteral("Hello", string)
-    DeclareLocal("s1", string, %0)
-    %1 = StringLiteral("World", string)
-    DeclareLocal("s2", string, %1)
-    %2 = LoadVar("s1") -> string
-    %3 = StringLiteral(", ", string)
-    %4 = BinaryOp("+", %2, %3)
-    %5 = LoadVar("s2") -> string
-    %6 = BinaryOp("+", %4, %5)
-    %7 = StringLiteral("!", string)
-    %8 = BinaryOp("+", %6, %7)
-    DeclareLocal("greeting", string, %8)
-    %9 = LoadVar("s1") -> string
-    Drop(%9)
-    %10 = LoadVar("s2") -> string
-    Drop(%10)
-    %11 = LoadVar("greeting") -> string
-    Call(println, [%11], ["borrow"])
-    %12 = LoadVar("greeting") -> string
-    Drop(%12)
-    %13 = StringLiteral("Line 1", string)
-    %14 = StringLiteral(" ", string)
-    %15 = BinaryOp("+", %13, %14)
-    %16 = StringLiteral("Line 2", string)
-    %17 = BinaryOp("+", %15, %16)
-    %18 = StringLiteral(" ", string)
-    %19 = BinaryOp("+", %17, %18)
-    %20 = StringLiteral("Line 3", string)
-    %21 = BinaryOp("+", %19, %20)
-    DeclareLocal("multi", string, %21)
-    %22 = LoadVar("multi") -> string
-    Call(println, [%22], ["borrow"])
-    %23 = LoadVar("multi") -> string
-    Drop(%23)
-    %24 = IntLiteral(5, int32)
-    DeclareLocal("count", int32, %24)
-    %25 = StringLiteral("Count: ", string)
-    %26 = LoadVar("count") -> int32
-    %27 = Cast(%26, string)
-    %28 = BinaryOp("+", %25, %27)
-    DeclareLocal("result", string, %28)
-    %29 = LoadVar("result") -> string
-    Call(println, [%29], ["borrow"])
-    %30 = LoadVar("result") -> string
-    Drop(%30)
-    %31 = StringLiteral("Alice", string)
-    DeclareLocal("name", string, %31)
-    %32 = StringLiteral("30", string)
-    DeclareLocal("age_str", string, %32)
-    %33 = StringLiteral("Name: ", string)
-    %34 = LoadVar("name") -> string
-    %35 = BinaryOp("+", %33, %34)
-    %36 = StringLiteral(", Age: ", string)
-    %37 = BinaryOp("+", %35, %36)
-    %38 = LoadVar("age_str") -> string
-    %39 = BinaryOp("+", %37, %38)
-    DeclareLocal("info", string, %39)
-    %40 = LoadVar("name") -> string
-    Drop(%40)
-    %41 = LoadVar("age_str") -> string
-    Drop(%41)
-    %42 = LoadVar("info") -> string
-    Call(println, [%42], ["borrow"])
-    %43 = LoadVar("info") -> string
-    Drop(%43)
-    %44 = StringLiteral("", string)
-    DeclareLocal("build", string, %44)
-    %45 = LoadVar("build") -> string
-    %46 = StringLiteral("a", string)
-    %47 = BinaryOp("+", %45, %46)
-    %48 = LoadVar("build") -> string
-    Drop(%48)
-    StoreVar("build", %47)
-    %49 = LoadVar("build") -> string
-    %50 = StringLiteral("b", string)
-    %51 = BinaryOp("+", %49, %50)
-    %52 = LoadVar("build") -> string
-    Drop(%52)
-    StoreVar("build", %51)
-    %53 = LoadVar("build") -> string
-    %54 = StringLiteral("c", string)
-    %55 = BinaryOp("+", %53, %54)
-    %56 = LoadVar("build") -> string
-    Drop(%56)
-    StoreVar("build", %55)
-    %57 = LoadVar("build") -> string
-    Call(println, [%57], ["borrow"])
-    %58 = LoadVar("build") -> string
-    Drop(%58)
-    Return()
+function @main() -> void {
+  L0:
+    %0 = strconst "Hello"
+    local s1: string = %0
+    %1 = strconst "World"
+    local s2: string = %1
+    %2 = loadvar.string s1
+    %3 = strconst ", "
+    %4 = binop "+", %2, %3
+    %5 = loadvar.string s2
+    %6 = binop "+", %4, %5
+    %7 = strconst "!"
+    %8 = binop "+", %6, %7
+    local greeting: string = %8
+    %9 = loadvar.string s1
+    drop %9
+    %10 = loadvar.string s2
+    drop %10
+    %11 = loadvar.string greeting
+    call @println(%11 borrow)
+    %12 = loadvar.string greeting
+    drop %12
+    %13 = strconst "Line 1"
+    %14 = strconst " "
+    %15 = binop "+", %13, %14
+    %16 = strconst "Line 2"
+    %17 = binop "+", %15, %16
+    %18 = strconst " "
+    %19 = binop "+", %17, %18
+    %20 = strconst "Line 3"
+    %21 = binop "+", %19, %20
+    local multi: string = %21
+    %22 = loadvar.string multi
+    call @println(%22 borrow)
+    %23 = loadvar.string multi
+    drop %23
+    %24 = const.int32 5
+    local count: int32 = %24
+    %25 = strconst "Count: "
+    %26 = loadvar.int32 count
+    %27 = cast.string %26
+    %28 = binop "+", %25, %27
+    local result: string = %28
+    %29 = loadvar.string result
+    call @println(%29 borrow)
+    %30 = loadvar.string result
+    drop %30
+    %31 = strconst "Alice"
+    local name: string = %31
+    %32 = strconst "30"
+    local age_str: string = %32
+    %33 = strconst "Name: "
+    %34 = loadvar.string name
+    %35 = binop "+", %33, %34
+    %36 = strconst ", Age: "
+    %37 = binop "+", %35, %36
+    %38 = loadvar.string age_str
+    %39 = binop "+", %37, %38
+    local info: string = %39
+    %40 = loadvar.string name
+    drop %40
+    %41 = loadvar.string age_str
+    drop %41
+    %42 = loadvar.string info
+    call @println(%42 borrow)
+    %43 = loadvar.string info
+    drop %43
+    %44 = strconst ""
+    local build: string = %44
+    %45 = loadvar.string build
+    %46 = strconst "a"
+    %47 = binop "+", %45, %46
+    %48 = loadvar.string build
+    drop %48
+    storevar build, %47
+    %49 = loadvar.string build
+    %50 = strconst "b"
+    %51 = binop "+", %49, %50
+    %52 = loadvar.string build
+    drop %52
+    storevar build, %51
+    %53 = loadvar.string build
+    %54 = strconst "c"
+    %55 = binop "+", %53, %54
+    %56 = loadvar.string build
+    drop %56
+    storevar build, %55
+    %57 = loadvar.string build
+    call @println(%57 borrow)
+    %58 = loadvar.string build
+    drop %58
+    ret
 }

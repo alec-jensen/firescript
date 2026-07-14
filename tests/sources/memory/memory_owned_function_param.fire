@@ -1,0 +1,23 @@
+// Explicit 'owned' keyword on a plain (non-receiver) function parameter.
+import @firescript/std.io.println;
+
+class Box {
+    int32 v;
+
+    Box(int32 v) {
+        this.v = v;
+    }
+}
+
+void consume(owned Box b) {
+    println(b.v);
+}
+
+void main() {
+    Box b = Box(42i32);
+    consume(b);
+}
+
+/* EXPECT
+42
+*/

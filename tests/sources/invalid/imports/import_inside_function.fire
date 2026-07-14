@@ -1,0 +1,6 @@
+// Imports are top-level only; an import statement inside a function body
+// is rejected.
+int32 main() {
+    import @firescript/std.io.println;  //~ ERROR FS-PARSE-0012 @5
+    return 0;
+}

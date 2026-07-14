@@ -1,0 +1,31 @@
+// Constructor-call argument-count and argument-type mismatches, for both
+// the bare `ClassName(...)` call form and the `new ClassName(...)` form,
+// plus `new` on a class with no user-defined constructor.
+class Foo {
+    int32 v;
+
+    Foo(int32 v) {
+        this.v = v;
+    }
+}
+
+class Plain {
+    int32 v;
+}
+
+int32 bareCallWrongCount() {
+    Foo f = Foo(1, 2);  //~ ERROR FS-SEM-0010 @13
+    return 0;
+}
+
+int32 bareCallWrongType() {
+    Foo f = Foo(true);  //~ ERROR FS-SEM-0010 @17
+    return 0;
+}
+
+int32 main() {
+    Foo f2 = new Foo(1, 2);  //~ ERROR FS-SEM-0010 @18
+    Foo f3 = new Foo(true);  //~ ERROR FS-SEM-0010 @22
+    Plain p = new Plain(1);  //~ ERROR FS-SEM-0010 @19
+    return 0;
+}

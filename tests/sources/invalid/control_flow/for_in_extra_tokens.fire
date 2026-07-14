@@ -1,0 +1,9 @@
+// for-in header with extra tokens after the collection expression instead
+// of the closing ')'.
+int32 main() {
+    int32[] arr = [1, 2, 3];
+    for (int32 i in arr, arr) {  //~ ERROR FS-PARSE-0010 @24
+//~^ ERROR FS-PARSE-0010 @26
+    }
+    return 0;
+}

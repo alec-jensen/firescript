@@ -1,0 +1,14 @@
+// Parser error: match pattern with an enum type name but no variant name
+// after the '.'.
+
+enum Shape {
+    Circle(float64 radius),
+    Point
+}
+
+void match_pattern_missing_variant(Shape s) {
+    match s {
+        Shape. -> 1  //~ ERROR FS-PARSE-0010 @16
+        _ -> 0
+    }
+}

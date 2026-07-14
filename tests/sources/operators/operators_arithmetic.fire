@@ -42,6 +42,11 @@ int32 base = 2;
 int32 exp = 3;
 println(base ** exp);  // 8
 
+// Power with float operands (routes through fs_rt_pow_f64, not fs_rt_pow_i64)
+float64 fbase = 2.0;
+float64 fexp = 3.0;
+println(fbase ** fexp);  // 8.0
+
 // Unary operators
 println("--- Unary Operations ---");
 int32 pos = 42;
@@ -117,6 +122,7 @@ println("=== All arithmetic operator tests passed ===");
 3
 --- Power ---
 8
+8.000000
 --- Unary Operations ---
 -42
 42

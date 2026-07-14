@@ -1,4 +1,4 @@
-module std_types_test
+fir module std_types_test
 
 type Tuple<T, U> owned {
   first: T
@@ -18,139 +18,139 @@ type CopyableOption<T> copyable {
   value: T
 }
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function<T, U> Tuple.Tuple(first: T, second: U) -> Tuple {
-  block_0:
-    %0 = Allocate(Tuple, [])
-    DeclareLocal("this", Tuple, %0)
-    %1 = LoadVar("first") -> T
-    %2 = LoadVar("this") -> Tuple
-    StoreField(%2, "first", %1)
-    %3 = LoadVar("second") -> U
-    %4 = LoadVar("this") -> Tuple
-    StoreField(%4, "second", %3)
-    %5 = LoadVar("this") -> Tuple
-    Return(%5)
+function<T, U> @Tuple.Tuple(first: T, second: U) -> Tuple {
+  L0:
+    %0 = alloc.Tuple()
+    local this: Tuple = %0
+    %1 = loadvar.T first
+    %2 = loadvar.Tuple this
+    storefield %2, "first", %1
+    %3 = loadvar.U second
+    %4 = loadvar.Tuple this
+    storefield %4, "second", %3
+    %5 = loadvar.Tuple this
+    ret %5
 }
 
-function<T, U> CopyableTuple.CopyableTuple(first: T, second: U) -> CopyableTuple {
-  block_0:
-    %0 = Allocate(CopyableTuple, [])
-    DeclareLocal("this", CopyableTuple, %0)
-    %1 = LoadVar("first") -> T
-    %2 = LoadVar("this") -> CopyableTuple
-    StoreField(%2, "first", %1)
-    %3 = LoadVar("second") -> U
-    %4 = LoadVar("this") -> CopyableTuple
-    StoreField(%4, "second", %3)
-    %5 = LoadVar("this") -> CopyableTuple
-    Return(%5)
+function<T, U> @CopyableTuple.CopyableTuple(first: T, second: U) -> CopyableTuple {
+  L0:
+    %0 = alloc.CopyableTuple()
+    local this: CopyableTuple = %0
+    %1 = loadvar.T first
+    %2 = loadvar.CopyableTuple this
+    storefield %2, "first", %1
+    %3 = loadvar.U second
+    %4 = loadvar.CopyableTuple this
+    storefield %4, "second", %3
+    %5 = loadvar.CopyableTuple this
+    ret %5
 }
 
-function<T> Option.Option(value: T) -> Option {
-  block_0:
-    %0 = Allocate(Option, [])
-    DeclareLocal("this", Option, %0)
-    %1 = LoadVar("value") -> T
-    %2 = LoadVar("this") -> Option
-    StoreField(%2, "value", %1)
-    %3 = LoadVar("this") -> Option
-    Return(%3)
+function<T> @Option.Option(value: T) -> Option {
+  L0:
+    %0 = alloc.Option()
+    local this: Option = %0
+    %1 = loadvar.T value
+    %2 = loadvar.Option this
+    storefield %2, "value", %1
+    %3 = loadvar.Option this
+    ret %3
 }
 
-function<T> Option.isSome(this: Option) -> bool {
-  block_0:
-    %0 = LoadVar("this") -> Option
-    %1 = LoadField(%0, "value")
-    %2 = NullLiteral(string?)
-    %3 = BinaryOp("!=", %1, %2)
-    %4 = LoadVar("this") -> Option
-    Drop(%4)
-    Return(%3)
+function<T> @Option.isSome(this: Option) -> bool {
+  L0:
+    %0 = loadvar.Option this
+    %1 = loadfield.T %0, "value"
+    %2 = nullconst string?
+    %3 = binop "!=", %1, %2
+    %4 = loadvar.Option this
+    drop %4
+    ret %3
 }
 
-function<T> Option.isNone(this: Option) -> bool {
-  block_0:
-    %0 = LoadVar("this") -> Option
-    %1 = LoadField(%0, "value")
-    %2 = NullLiteral(string?)
-    %3 = BinaryOp("==", %1, %2)
-    %4 = LoadVar("this") -> Option
-    Drop(%4)
-    Return(%3)
+function<T> @Option.isNone(this: Option) -> bool {
+  L0:
+    %0 = loadvar.Option this
+    %1 = loadfield.T %0, "value"
+    %2 = nullconst string?
+    %3 = binop "==", %1, %2
+    %4 = loadvar.Option this
+    drop %4
+    ret %3
 }
 
-function<T> CopyableOption.CopyableOption(value: T) -> CopyableOption {
-  block_0:
-    %0 = Allocate(CopyableOption, [])
-    DeclareLocal("this", CopyableOption, %0)
-    %1 = LoadVar("value") -> T
-    %2 = LoadVar("this") -> CopyableOption
-    StoreField(%2, "value", %1)
-    %3 = LoadVar("this") -> CopyableOption
-    Return(%3)
+function<T> @CopyableOption.CopyableOption(value: T) -> CopyableOption {
+  L0:
+    %0 = alloc.CopyableOption()
+    local this: CopyableOption = %0
+    %1 = loadvar.T value
+    %2 = loadvar.CopyableOption this
+    storefield %2, "value", %1
+    %3 = loadvar.CopyableOption this
+    ret %3
 }
 
-function<T> CopyableOption.isSome(this: CopyableOption) -> bool {
-  block_0:
-    %0 = LoadVar("this") -> CopyableOption
-    %1 = LoadField(%0, "value")
-    %2 = NullLiteral(string?)
-    %3 = BinaryOp("!=", %1, %2)
-    Return(%3)
+function<T> @CopyableOption.isSome(this: CopyableOption) -> bool {
+  L0:
+    %0 = loadvar.CopyableOption this
+    %1 = loadfield.T %0, "value"
+    %2 = nullconst string?
+    %3 = binop "!=", %1, %2
+    ret %3
 }
 
-function<T> CopyableOption.isNone(this: CopyableOption) -> bool {
-  block_0:
-    %0 = LoadVar("this") -> CopyableOption
-    %1 = LoadField(%0, "value")
-    %2 = NullLiteral(string?)
-    %3 = BinaryOp("==", %1, %2)
-    Return(%3)
+function<T> @CopyableOption.isNone(this: CopyableOption) -> bool {
+  L0:
+    %0 = loadvar.CopyableOption this
+    %1 = loadfield.T %0, "value"
+    %2 = nullconst string?
+    %3 = binop "==", %1, %2
+    ret %3
 }
 
-function main() -> void {
-  block_0:
-    %0 = IntLiteral(42, int32)
-    %1 = StringLiteral("hello", string)
-    %2 = Call(Tuple.Tuple, [%0, %1], ["own", "own"]) -> Tuple<int32, string>
-    DeclareLocal("t1", Tuple<int32, string>, %2)
-    %3 = LoadVar("t1") -> Tuple<int32, string>
-    %4 = LoadField(%3, "first")
-    Call(println, [%4], ["borrow"])
-    %5 = LoadVar("t1") -> Tuple<int32, string>
-    %6 = LoadField(%5, "second")
-    Call(println, [%6], ["borrow"])
-    %7 = LoadVar("t1") -> Tuple<int32, string>
-    Drop(%7)
-    Return()
+function @main() -> void {
+  L0:
+    %0 = const.int32 42
+    %1 = strconst "hello"
+    %2 = call.Tuple<int32, string> @Tuple.Tuple(%0 own, %1 own)
+    local t1: Tuple<int32, string> = %2
+    %3 = loadvar.Tuple<int32, string> t1
+    %4 = loadfield.int32 %3, "first"
+    call @println(%4 borrow)
+    %5 = loadvar.Tuple<int32, string> t1
+    %6 = loadfield.string %5, "second"
+    call @println(%6 borrow)
+    %7 = loadvar.Tuple<int32, string> t1
+    drop %7
+    ret
 }

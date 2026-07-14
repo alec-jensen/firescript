@@ -41,3 +41,9 @@ for (int32 v in ) {  //~ ERROR FS-PARSE-0012 @17
 //~^ ERROR FS-PARSE-0010 @19
     int32 j2 = 1;
 }
+
+// for-in: missing ')' after the header
+int32[] arr = [1, 2];
+for (int32 w in arr {  //~ ERROR FS-PARSE-0010 @21
+    int32 k2 = 1;
+}

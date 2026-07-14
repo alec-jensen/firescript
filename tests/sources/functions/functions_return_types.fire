@@ -16,9 +16,57 @@ string makeGreeting(string name) {
 }
 println(makeGreeting("Alice"));
 
+// firescript does not enforce "all paths return" -- a function whose body
+// falls off the end without an explicit `return` implicitly returns a
+// zero value for its declared return type. These exercise
+// ast_to_fir.py's _synthesize_zero() for bool/char/float128 (the
+// int/float32/float64 cases are already exercised by ordinary fallthrough
+// functions elsewhere; this file adds the remaining scalar types).
+bool alwaysFallsThrough(int32 n) {
+    if (n > 1000000) {
+        return true;
+    }
+    // falls through: implicit `return false;`
+}
+println(alwaysFallsThrough(5));
+
+// Note: a `char`-returning fallthrough function is not exercised here --
+// `char` cannot be used as a function *return type* at all in the current
+// grammar (only via variable-declaration's import-deferred-identifier
+// path, which _parse_function_definition's return-type check doesn't
+// use): `char f() { ... }` fails to parse ("Expected '=' in variable
+// declaration"), so ast_to_fir.py's char branch of _synthesize_zero() is
+// exercised at the FIR level instead, in
+// tests/python/fir/test_ast_to_fir_errors.py.
+
+float128 wideFallsThrough(int32 n) {
+    if (n > 1000000) {
+        return 1.5f128;
+    }
+    // falls through: implicit `return 0.0;`
+}
+println(wideFallsThrough(5) as string);
+
+// An if/else where both arms already return: the join block after the
+// if-statement has no predecessor and is unreachable code (exercises
+// _seal_open_blocks' Unreachable-terminator + dead-block-pruning path).
+int32 bothArmsReturn(int32 n) {
+    if (n > 0) {
+        return 1;
+    } else {
+        return -1;
+    }
+}
+println(bothArmsReturn(5));
+println(bothArmsReturn(-5));
+
 /* EXPECT
 2.500000
 true
 false
 Hello, Alice!
+false
+0.000000
+1
+-1
 */

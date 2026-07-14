@@ -1,0 +1,12 @@
+// Semantic error: 'Type.staticMethod(...)' called with an argument of the
+// wrong type.
+
+class Utils {
+    static int32 identity(int32 x) {
+        return x;
+    }
+}
+
+void type_method_call_arg_type() {
+    int32 y = Utils.identity("bad");  //~ ERROR FS-SEM-0010 @30
+}

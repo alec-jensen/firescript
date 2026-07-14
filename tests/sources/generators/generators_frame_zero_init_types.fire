@@ -1,0 +1,52 @@
+import @firescript/std.io.println;
+
+// A generator's local variables live in its frame struct and are
+// zero-initialized once, up front, in the generator's `__init` function
+// (see lower_generator's local_decls loop, and _zero_value, in
+// firescript/flir/lowering.py) -- independent of whatever the source's own
+// initializer expression assigns once the body actually runs. This
+// exercises _zero_value across the non-integer FLIRType kinds it handles:
+// bool (bconst false) and a float128 struct (both 64-bit halves zeroed).
+//
+// Note: a generator-local of *pointer* kind (string, a non-copyable class,
+// or an array) currently crashes the compiler with an internal
+// "FLIRV-T1: store value type 'ptr' does not match declared value_type
+// 'ptr<...>'" error -- _zero_value's ConstNull() produces a generic `ptr`
+// FLIRType rather than the frame field's specific `ptr<T>` type. This is a
+// newly-found bug (not fixed here, see task report); it also means
+// _zero_value's own `ptr` branch (lowering.py's `_zero_value`, the
+// `ConstNull()` case) is unreachable via any *working* generator today, so
+// this file intentionally avoids a pointer-kind generator local and sticks
+// to a copyable class (a by-value struct, not a pointer) instead.
+
+copyable class Vec2 {
+    float32 x;
+    float32 y;
+}
+
+generator<int32> mixedLocals(int32 n) {
+    bool flag = true;
+    float128 big = 1.5f128;
+    Vec2 v = Vec2(1.0f32, 2.0f32);
+    int32 i = 0;
+    while (i < n) {
+        if (flag) {
+            yield i;
+        }
+        i += 1;
+    }
+    println(big as string);
+    println(v.x);
+}
+
+for (int32 x in mixedLocals(3)) {
+    println(x);
+}
+
+/* EXPECT
+0
+1
+2
+1.500000
+1.000000
+*/

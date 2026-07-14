@@ -52,3 +52,11 @@ def test_file_and_dir_together():
         t.require_eq(proc.returncode, 0, proc.stderr)
         combined = proc.stdout + proc.stderr
         t.require("Both file and directory specified" in combined, combined)
+
+
+def test_dir_with_no_fire_files_warns():
+    with t.tmpdir() as tmp:
+        proc = t.run_compiler(["--dir", tmp], cwd=tmp)
+        t.require_eq(proc.returncode, 0, proc.stderr)
+        combined = proc.stdout + proc.stderr
+        t.require("No .fire files found" in combined, combined)

@@ -13,6 +13,7 @@ firescript is a statically and strongly typed programming language designed to b
 - **Static & Strong Typing:** Enhances code readability and reliability.
 - **Simple Syntax:** Combines the best of C, Java, JavaScript, and Python.
 - **Everything is Explicit:** No implicit conversions or hidden behavior.
+- **Fully Automated Compile-Time Memory Management:** Deterministic ownership model with moves, borrows, and explicit cloning instead of a tracing garbage collector.
 - **Self-Hosted Toolchain:** The x86-64 assembler, PE/ELF writers, FCL config language parser, and kiln build system are all implemented in firescript itself. The compiler compiles itself end-to-end with no Python invoked in the compile path.
 - **Zero External Dependencies:** The compiler produces native executables using only the Python standard library — no C compiler, no assembler, no linker, no third-party packages. Compiled binaries are freestanding and import only `kernel32.dll` (Windows) or use raw syscalls (Linux).
 - **Native Code Generation:** Compiles through its own intermediate representations (FIR → FLIR) directly to machine code.

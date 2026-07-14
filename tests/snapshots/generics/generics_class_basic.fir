@@ -1,75 +1,75 @@
-module generics_class_basic
+fir module generics_class_basic
 
 type Pair<T, U> copyable {
   first: T
   second: U
 }
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function<T, U> Pair.Pair(first: T, second: U) -> Pair {
-  block_0:
-    %0 = Allocate(Pair, [])
-    DeclareLocal("this", Pair, %0)
-    %1 = LoadVar("first") -> T
-    %2 = LoadVar("this") -> Pair
-    StoreField(%2, "first", %1)
-    %3 = LoadVar("second") -> U
-    %4 = LoadVar("this") -> Pair
-    StoreField(%4, "second", %3)
-    %5 = LoadVar("this") -> Pair
-    Return(%5)
+function<T, U> @Pair.Pair(first: T, second: U) -> Pair {
+  L0:
+    %0 = alloc.Pair()
+    local this: Pair = %0
+    %1 = loadvar.T first
+    %2 = loadvar.Pair this
+    storefield %2, "first", %1
+    %3 = loadvar.U second
+    %4 = loadvar.Pair this
+    storefield %4, "second", %3
+    %5 = loadvar.Pair this
+    ret %5
 }
 
-function main() -> void {
-  block_0:
-    %0 = IntLiteral(10, int32)
-    %1 = IntLiteral(20, int32)
-    %2 = Call(Pair.Pair, [%0, %1], ["own", "own"]) -> Pair<int32, int32>
-    DeclareLocal("p1", Pair<int32, int32>, %2)
-    %3 = IntLiteral(42, int32)
-    %4 = StringLiteral("hello", string)
-    %5 = Call(Pair.Pair, [%3, %4], ["own", "own"]) -> Pair<int32, string>
-    DeclareLocal("p2", Pair<int32, string>, %5)
-    %6 = LoadVar("p1") -> Pair<int32, int32>
-    %7 = LoadField(%6, "first")
-    Call(println, [%7], ["borrow"])
-    %8 = LoadVar("p1") -> Pair<int32, int32>
-    %9 = LoadField(%8, "second")
-    Call(println, [%9], ["borrow"])
-    %10 = LoadVar("p2") -> Pair<int32, string>
-    %11 = LoadField(%10, "first")
-    Call(println, [%11], ["borrow"])
-    %12 = LoadVar("p2") -> Pair<int32, string>
-    %13 = LoadField(%12, "second")
-    Call(println, [%13], ["borrow"])
-    Return()
+function @main() -> void {
+  L0:
+    %0 = const.int32 10
+    %1 = const.int32 20
+    %2 = call.Pair<int32, int32> @Pair.Pair(%0 own, %1 own)
+    local p1: Pair<int32, int32> = %2
+    %3 = const.int32 42
+    %4 = strconst "hello"
+    %5 = call.Pair<int32, string> @Pair.Pair(%3 own, %4 own)
+    local p2: Pair<int32, string> = %5
+    %6 = loadvar.Pair<int32, int32> p1
+    %7 = loadfield.int32 %6, "first"
+    call @println(%7 borrow)
+    %8 = loadvar.Pair<int32, int32> p1
+    %9 = loadfield.int32 %8, "second"
+    call @println(%9 borrow)
+    %10 = loadvar.Pair<int32, string> p2
+    %11 = loadfield.int32 %10, "first"
+    call @println(%11 borrow)
+    %12 = loadvar.Pair<int32, string> p2
+    %13 = loadfield.string %12, "second"
+    call @println(%13 borrow)
+    ret
 }

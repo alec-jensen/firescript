@@ -1,0 +1,30 @@
+// Test casting string literals/values to numeric types.
+// (string -> bool and string -> char are not supported casts.)
+
+import @firescript/std.io.println;
+
+println("-- string to numeric casts --");
+
+int32 i32 = ("42" as int32);
+println(i32);
+
+int64 i64 = ("9223372036854775807" as int64);
+println(i64);
+
+uint64 u64 = ("18446744073709551615" as uint64);
+println(u64);
+
+float32 f32 = ("3.5" as float32);
+println(f32);
+
+float64 f64 = ("3.5" as float64);
+println(f64);
+
+/* EXPECT
+-- string to numeric casts --
+42
+9223372036854775807
+18446744073709551615
+3.500000
+3.500000
+*/

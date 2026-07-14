@@ -1,0 +1,19 @@
+// Array-access on a non-array type, and an array method called with the
+// wrong argument count.
+int32 indexNonArray() {
+    int32 x = 5;
+    int32 y = x[0];  //~ ERROR FS-SEM-0010 @15
+    return y;
+}
+
+int32 undefinedIndex() {
+    int32[] arr = [1, 2];
+    int32 y = arr[undef];  //~ ERROR FS-PARSE-0003 @19
+    return y;
+}
+
+int32 main() {
+    int32[] arr = [1, 2];
+    int32 x = arr.length(1);  //~ ERROR FS-SEM-0010 @19
+    return x;
+}

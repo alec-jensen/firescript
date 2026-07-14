@@ -1,0 +1,77 @@
+// Malformed constructor parameter lists. Constructors parse their own
+// receiver/parameter list separately from regular methods (see
+// receiver_readonly_mutation_errors.fire / class_def_syntax_errors.fire for
+// the method-level equivalents of these checks).
+
+// Receiver must be 'this' after '&' in a constructor.
+class R1 {
+    int32 v;
+
+    R1(&other) {  //~ ERROR FS-PARSE-0010 @9
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
+    }
+}
+
+// 'owned' receiver must be 'this' in a constructor.
+class R2 {
+    int32 v;
+
+    R2(owned other) {  //~ ERROR FS-PARSE-0010 @14
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
+    }
+}
+
+// A static constructor also can't declare a '&this' receiver.
+class R3 {
+    int32 v;
+
+    static R3(&this) {  //~ ERROR FS-PARSE-0012 @12
+//~^ ERROR FS-PARSE-0012 @16
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
+    }
+}
+
+// Constructor parameter type invalid.
+class P1 {
+    int32 v;
+
+    P1(&this, ! x) {  //~ ERROR FS-PARSE-0010 @15
+//~^ ERROR FS-PARSE-0010 @17
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
+    }
+}
+
+// Array parameters are not supported for constructors either.
+class P2 {
+    int32 v;
+
+    P2(&this, int32[] xs) {  //~ ERROR FS-PARSE-0012 @20
+        this.v = 1;
+    }
+}
+
+// Missing constructor parameter name.
+class P3 {
+    int32 v;
+
+    P3(&this, int32) {  //~ ERROR FS-PARSE-0010 @20
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
+    }
+}
+
+// Missing ')' after constructor parameters.
+class P4 {
+    int32 v;
+
+    P4(&this {  //~ ERROR FS-PARSE-0010 @14
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
+    }
+}
+
+// Missing '{' to start constructor body.
+class P5 {
+    int32 v;
+
+    P5(&this)  //~ ERROR FS-PARSE-0010 @14
+    int32 topLevel5 = 1;
+}

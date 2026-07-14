@@ -1,0 +1,66 @@
+import @firescript/std.io.println;
+
+// Wide matrix of numeric <-> numeric conversions: large float -> uint64
+// (needs the sign-bit correction dance in the x86-64 backend) and
+// float -> narrow int/uint targets. Exercises flir_to_asm.py's
+// _emit_cvt paths beyond what numeric_casts.fire and
+// conversions_int_float.fire already cover.
+
+println("-- uint64 <-> float --");
+// NOTE: `uint64 as float64` (any value, not just ones with the high bit
+// set) was tried here too, but it triggers a real backend bug:
+// firescript/codegen/x86_64/flir_to_asm.py's _emit_cvt (around line
+// 772-773) unconditionally emits a `js` (jump-if-sign) instruction for
+// this conversion (it branches on the runtime value's sign bit at
+// codegen time, so the js instruction is always generated regardless of
+// the actual value), but the self-hosted assembler
+// (firescript/backend/x86_64/assembler.py, _JCC table around line 252)
+// only recognizes jnz/jz/jb/jae/je/jne -- not js. Compiling
+// `uint64 x = 42u64; x as float64;` fails with "Assembly failed:
+// unsupported mnemonic: js". That means uint64->float conversion is
+// completely unusable today, which is a genuine compiler bug, not a
+// problem with this test; reported separately rather than worked around
+// by fixing compiler source here.
+float64 bigF = 1.8e19;
+uint64 bigFAsU = bigF as uint64;
+println(bigFAsU);
+
+float64 smallF = 42.0;
+uint64 smallFAsU = smallF as uint64;
+println(smallFAsU);
+
+// float32 (not just float64) source into uint64: exercises the
+// cvtss2sd upconversion inside the float->u64 sign-bit-correction path.
+float32 bigF32 = 1.8e19f32;
+uint64 bigF32AsU = bigF32 as uint64;
+println(bigF32AsU);
+
+println("-- float to narrow int/uint --");
+float64 f1 = 200.9;
+int8 f1i8 = f1 as int8;
+println(f1i8);
+
+int16 f1i16 = f1 as int16;
+println(f1i16);
+
+uint8 f1u8 = f1 as uint8;
+println(f1u8);
+
+uint16 f1u16 = f1 as uint16;
+println(f1u16);
+
+uint32 f1u32 = f1 as uint32;
+println(f1u32);
+
+/* EXPECT
+-- uint64 <-> float --
+18000000000000000000
+42
+18000000404716257280
+-- float to narrow int/uint --
+-56
+200
+200
+200
+200
+*/

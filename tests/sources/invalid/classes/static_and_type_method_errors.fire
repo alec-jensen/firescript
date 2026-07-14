@@ -1,0 +1,40 @@
+// Static-method and Type.method() call errors: calling a static method on
+// an instance, calling an unknown type-level method, and an argument-count
+// mismatch on a real static method.
+class Foo {
+    int32 v;
+
+    Foo(int32 v) {
+        this.v = v;
+    }
+
+    static int32 make() {
+        return 1;
+    }
+
+    static int32 makeWith(int32 x) {
+        return x;
+    }
+}
+
+int32 callStaticOnInstance() {
+    Foo f = Foo(1);
+    int32 x = f.make();  //~ ERROR FS-SEM-0010 @17
+    return x;
+}
+
+int32 unknownTypeMethod() {
+    int32 y = Foo.nope();  //~ ERROR FS-SEM-0010 @19
+    return y;
+}
+
+int32 typeMethodArgCountMismatch() {
+    int32 y = Foo.makeWith();  //~ ERROR FS-SEM-0010 @19
+    return y;
+}
+
+int32 main() {
+    bool wrongTypeArg = true;
+    int32 y = Foo.makeWith(wrongTypeArg);  //~ ERROR FS-SEM-0010 @28
+    return 0;
+}

@@ -1,0 +1,17 @@
+// Unknown field access on a generic class template body (inside a method
+// of the class itself, before/without monomorphization).
+copyable class Box<T> {
+    T val;
+
+    Box(T val) {
+        this.val = val;
+    }
+
+    T bad() {
+        return this.nope;  //~ ERROR FS-SEM-0010 @21
+    }
+}
+
+int32 main() {
+    return 0;
+}

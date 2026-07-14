@@ -1,0 +1,16 @@
+// Exercises the 'Type.ConstructorName(...)' call form, which resolves to
+// the class's own constructor rather than a static method (a constructor is
+// not static, so this both succeeds at resolving the constructor and
+// mismatches the surrounding declared type).
+
+class Widget {
+    int32 id;
+
+    Widget(int32 id) {
+        this.id = id;
+    }
+}
+
+void type_method_call_constructor_form() {
+    string bad = Widget.Widget(5);  //~ ERROR FS-SEM-0002 @12
+}

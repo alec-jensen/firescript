@@ -1,0 +1,21 @@
+// Field-access type errors: unknown field on a real class, and field
+// access attempted on a non-class (primitive) type.
+class Foo {
+    int32 v;
+
+    Foo(int32 v) {
+        this.v = v;
+    }
+}
+
+int32 unknownField() {
+    Foo f = Foo(1);
+    int32 y = f.notthere;  //~ ERROR FS-SEM-0010 @17
+    return y;
+}
+
+int32 main() {
+    int32 x = 5;
+    int32 y = x.foo;  //~ ERROR FS-SEM-0010 @17
+    return 0;
+}

@@ -1,0 +1,9 @@
+// Explicit generic type arguments that violate a union-of-types constraint.
+
+import @firescript/std.io.println;
+
+T pick<T: int32 | int64>(T x, T y) {
+    return x;
+}
+
+string result = pick<string>("a", "b");  //~ ERROR FS-SEM-0010 @17

@@ -56,3 +56,15 @@ def test_emit_ast_output_rename():
         proc = t.run_compiler(["--emit", "ast", "-o", out_path, src])
         t.require_eq(proc.returncode, 0, proc.stderr)
         t.require(os.path.exists(out_path))
+
+
+def test_emit_ast_output_rename_failure_exits_nonzero():
+    # -o points inside a directory that doesn't exist, so compile_file's
+    # internal write to build/<name>.ast succeeds but the final
+    # shutil.move(...) to the requested -o path raises.
+    src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
+    with t.tmpdir() as tmp:
+        out_path = os.path.join(tmp, "no_such_subdir", "renamed.ast")
+        proc = t.run_compiler(["--emit", "ast", "-o", out_path, src])
+        t.require_eq(proc.returncode, 1)
+        t.require("Failed to move output" in (proc.stdout + proc.stderr))

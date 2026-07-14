@@ -1,0 +1,39 @@
+import @firescript/std.io.println;
+
+// Functions with more than 4 parameters: the Windows x64 calling
+// convention only passes the first 4 args in registers, so the 5th+
+// integer/float/struct args come off the stack. Exercises the
+// >4-argument spill paths in flir_to_asm.py's function prologue
+// (integer, float, and copyable-struct parameter kinds).
+
+copyable class Point {
+    int32 x;
+    int32 y;
+
+    Point(int32 x, int32 y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+int32 sumFiveInts(int32 a, int32 b, int32 c, int32 d, int32 e) {
+    return a + b + c + d + e;
+}
+
+float64 sumFiveFloats(float64 a, float64 b, float64 c, float64 d, float64 e) {
+    return a + b + c + d + e;
+}
+
+int32 fifthIsStruct(int32 a, int32 b, int32 c, int32 d, Point p) {
+    return a + b + c + d + p.x + p.y;
+}
+
+println(sumFiveInts(1, 2, 3, 4, 5));
+println(sumFiveFloats(1.5, 2.5, 3.5, 4.5, 5.5));
+println(fifthIsStruct(1, 2, 3, 4, Point(10, 20)));
+
+/* EXPECT
+15
+17.500000
+40
+*/

@@ -1,0 +1,15 @@
+// A stray ']' token inside a scope matches no statement dispatch branch;
+// the scope parser's no-progress guard forces a single-token advance to
+// skip over it and keep parsing rather than looping forever.
+import @firescript/std.io.println;
+
+int32 addOne(int32 x) {
+    ]
+    return x + 1;
+}
+
+println(addOne(4));
+
+/* EXPECT
+5
+*/

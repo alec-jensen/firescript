@@ -1,223 +1,223 @@
-module generators_basic
+fir module generators_basic
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-generator range(end: int32) -> generator<int32> {
-  block_0:
-    %0 = IntLiteral(0, int32)
-    DeclareLocal("i", int32, %0)
-    Jump(block_1)
+generator @range(end: int32) -> generator<int32> {
+  L0:
+    %0 = const.int32 0
+    local i: int32 = %0
+    jmp L1
 
-  block_1:
-    %1 = LoadVar("i") -> int32
-    %2 = LoadVar("end") -> int32
-    %3 = BinaryOp("<", %1, %2)
-    Branch(%3, block_2, block_3)
+  L1:
+    %1 = loadvar.int32 i
+    %2 = loadvar.int32 end
+    %3 = binop "<", %1, %2
+    br %3, L2, L3
 
-  block_2:
-    %4 = LoadVar("i") -> int32
-    Yield(%4)
-    %5 = LoadVar("i") -> int32
-    %6 = IntLiteral(1, int32)
-    %7 = BinaryOp("+", %5, %6)
-    StoreVar("i", %7)
-    Jump(block_1)
+  L2:
+    %4 = loadvar.int32 i
+    yield %4
+    %5 = loadvar.int32 i
+    %6 = const.int32 1
+    %7 = binop "+", %5, %6
+    storevar i, %7
+    jmp L1
 
-  block_3:
-    Return()
+  L3:
+    ret
 }
 
-generator rangeFrom(start: int32, end: int32) -> generator<int32> {
-  block_0:
-    %0 = LoadVar("start") -> int32
-    DeclareLocal("i", int32, %0)
-    Jump(block_1)
+generator @rangeFrom(start: int32, end: int32) -> generator<int32> {
+  L0:
+    %0 = loadvar.int32 start
+    local i: int32 = %0
+    jmp L1
 
-  block_1:
-    %1 = LoadVar("i") -> int32
-    %2 = LoadVar("end") -> int32
-    %3 = BinaryOp("<", %1, %2)
-    Branch(%3, block_2, block_3)
+  L1:
+    %1 = loadvar.int32 i
+    %2 = loadvar.int32 end
+    %3 = binop "<", %1, %2
+    br %3, L2, L3
 
-  block_2:
-    %4 = LoadVar("i") -> int32
-    Yield(%4)
-    %5 = LoadVar("i") -> int32
-    %6 = IntLiteral(1, int32)
-    %7 = BinaryOp("+", %5, %6)
-    StoreVar("i", %7)
-    Jump(block_1)
+  L2:
+    %4 = loadvar.int32 i
+    yield %4
+    %5 = loadvar.int32 i
+    %6 = const.int32 1
+    %7 = binop "+", %5, %6
+    storevar i, %7
+    jmp L1
 
-  block_3:
-    Return()
+  L3:
+    ret
 }
 
-generator rangeStep(start: int32, end: int32, step: int32) -> generator<int32> {
-  block_0:
-    %0 = LoadVar("start") -> int32
-    DeclareLocal("i", int32, %0)
-    Jump(block_1)
+generator @rangeStep(start: int32, end: int32, step: int32) -> generator<int32> {
+  L0:
+    %0 = loadvar.int32 start
+    local i: int32 = %0
+    jmp L1
 
-  block_1:
-    %1 = LoadVar("i") -> int32
-    %2 = LoadVar("end") -> int32
-    %3 = BinaryOp("<", %1, %2)
-    Branch(%3, block_2, block_3)
+  L1:
+    %1 = loadvar.int32 i
+    %2 = loadvar.int32 end
+    %3 = binop "<", %1, %2
+    br %3, L2, L3
 
-  block_2:
-    %4 = LoadVar("i") -> int32
-    Yield(%4)
-    %5 = LoadVar("i") -> int32
-    %6 = LoadVar("step") -> int32
-    %7 = BinaryOp("+", %5, %6)
-    StoreVar("i", %7)
-    Jump(block_1)
+  L2:
+    %4 = loadvar.int32 i
+    yield %4
+    %5 = loadvar.int32 i
+    %6 = loadvar.int32 step
+    %7 = binop "+", %5, %6
+    storevar i, %7
+    jmp L1
 
-  block_3:
-    Return()
+  L3:
+    ret
 }
 
-generator countdown(n: int32) -> generator<int32> {
-  block_0:
-    %0 = LoadVar("n") -> int32
-    DeclareLocal("i", int32, %0)
-    Jump(block_1)
+generator @countdown(n: int32) -> generator<int32> {
+  L0:
+    %0 = loadvar.int32 n
+    local i: int32 = %0
+    jmp L1
 
-  block_1:
-    %1 = LoadVar("i") -> int32
-    %2 = IntLiteral(0, int32)
-    %3 = BinaryOp(">", %1, %2)
-    Branch(%3, block_2, block_3)
+  L1:
+    %1 = loadvar.int32 i
+    %2 = const.int32 0
+    %3 = binop ">", %1, %2
+    br %3, L2, L3
 
-  block_2:
-    %4 = LoadVar("i") -> int32
-    Yield(%4)
-    %5 = LoadVar("i") -> int32
-    %6 = IntLiteral(1, int32)
-    %7 = BinaryOp("-", %5, %6)
-    StoreVar("i", %7)
-    Jump(block_1)
+  L2:
+    %4 = loadvar.int32 i
+    yield %4
+    %5 = loadvar.int32 i
+    %6 = const.int32 1
+    %7 = binop "-", %5, %6
+    storevar i, %7
+    jmp L1
 
-  block_3:
-    Return()
+  L3:
+    ret
 }
 
-function main() -> void {
-  block_0:
-    %0 = IntLiteral(5, int32)
-    %1 = GenNew(range, [%0]) -> generator<int32>
-    DeclareLocal("__gen_i", generator<int32>, %1)
-    Jump(block_1)
+function @main() -> void {
+  L0:
+    %0 = const.int32 5
+    %1 = gennew.generator<int32> @range(%0)
+    local __gen_i: generator<int32> = %1
+    jmp L1
 
-  block_1:
-    %2 = LoadVar("__gen_i") -> generator<int32>
-    %3 = GenNext(%2) -> bool
-    Branch(%3, block_2, block_3)
+  L1:
+    %2 = loadvar.generator<int32> __gen_i
+    %3 = gennext.bool %2
+    br %3, L2, L3
 
-  block_2:
-    %4 = LoadVar("__gen_i") -> generator<int32>
-    %5 = GenValue(%4) -> int32
-    DeclareLocal("i", int32, %5)
-    %6 = LoadVar("i") -> int32
-    Call(println, [%6], ["borrow"])
-    Jump(block_1)
+  L2:
+    %4 = loadvar.generator<int32> __gen_i
+    %5 = genvalue.int32 %4
+    local i: int32 = %5
+    %6 = loadvar.int32 i
+    call @println(%6 borrow)
+    jmp L1
 
-  block_3:
-    %7 = LoadVar("__gen_i") -> generator<int32>
-    Drop(%7)
-    %8 = IntLiteral(2, int32)
-    %9 = IntLiteral(6, int32)
-    %10 = GenNew(rangeFrom, [%8, %9]) -> generator<int32>
-    DeclareLocal("__gen_i__2", generator<int32>, %10)
-    Jump(block_4)
+  L3:
+    %7 = loadvar.generator<int32> __gen_i
+    drop %7
+    %8 = const.int32 2
+    %9 = const.int32 6
+    %10 = gennew.generator<int32> @rangeFrom(%8, %9)
+    local __gen_i__2: generator<int32> = %10
+    jmp L4
 
-  block_4:
-    %11 = LoadVar("__gen_i__2") -> generator<int32>
-    %12 = GenNext(%11) -> bool
-    Branch(%12, block_5, block_6)
+  L4:
+    %11 = loadvar.generator<int32> __gen_i__2
+    %12 = gennext.bool %11
+    br %12, L5, L6
 
-  block_5:
-    %13 = LoadVar("__gen_i__2") -> generator<int32>
-    %14 = GenValue(%13) -> int32
-    DeclareLocal("i__2", int32, %14)
-    %15 = LoadVar("i__2") -> int32
-    Call(println, [%15], ["borrow"])
-    Jump(block_4)
+  L5:
+    %13 = loadvar.generator<int32> __gen_i__2
+    %14 = genvalue.int32 %13
+    local i__2: int32 = %14
+    %15 = loadvar.int32 i__2
+    call @println(%15 borrow)
+    jmp L4
 
-  block_6:
-    %16 = LoadVar("__gen_i__2") -> generator<int32>
-    Drop(%16)
-    %17 = IntLiteral(0, int32)
-    %18 = IntLiteral(10, int32)
-    %19 = IntLiteral(3, int32)
-    %20 = GenNew(rangeStep, [%17, %18, %19]) -> generator<int32>
-    DeclareLocal("__gen_i__3", generator<int32>, %20)
-    Jump(block_7)
+  L6:
+    %16 = loadvar.generator<int32> __gen_i__2
+    drop %16
+    %17 = const.int32 0
+    %18 = const.int32 10
+    %19 = const.int32 3
+    %20 = gennew.generator<int32> @rangeStep(%17, %18, %19)
+    local __gen_i__3: generator<int32> = %20
+    jmp L7
 
-  block_7:
-    %21 = LoadVar("__gen_i__3") -> generator<int32>
-    %22 = GenNext(%21) -> bool
-    Branch(%22, block_8, block_9)
+  L7:
+    %21 = loadvar.generator<int32> __gen_i__3
+    %22 = gennext.bool %21
+    br %22, L8, L9
 
-  block_8:
-    %23 = LoadVar("__gen_i__3") -> generator<int32>
-    %24 = GenValue(%23) -> int32
-    DeclareLocal("i__3", int32, %24)
-    %25 = LoadVar("i__3") -> int32
-    Call(println, [%25], ["borrow"])
-    Jump(block_7)
+  L8:
+    %23 = loadvar.generator<int32> __gen_i__3
+    %24 = genvalue.int32 %23
+    local i__3: int32 = %24
+    %25 = loadvar.int32 i__3
+    call @println(%25 borrow)
+    jmp L7
 
-  block_9:
-    %26 = LoadVar("__gen_i__3") -> generator<int32>
-    Drop(%26)
-    %27 = IntLiteral(3, int32)
-    %28 = GenNew(countdown, [%27]) -> generator<int32>
-    DeclareLocal("__gen_v", generator<int32>, %28)
-    Jump(block_10)
+  L9:
+    %26 = loadvar.generator<int32> __gen_i__3
+    drop %26
+    %27 = const.int32 3
+    %28 = gennew.generator<int32> @countdown(%27)
+    local __gen_v: generator<int32> = %28
+    jmp L10
 
-  block_10:
-    %29 = LoadVar("__gen_v") -> generator<int32>
-    %30 = GenNext(%29) -> bool
-    Branch(%30, block_11, block_12)
+  L10:
+    %29 = loadvar.generator<int32> __gen_v
+    %30 = gennext.bool %29
+    br %30, L11, L12
 
-  block_11:
-    %31 = LoadVar("__gen_v") -> generator<int32>
-    %32 = GenValue(%31) -> int32
-    DeclareLocal("v", int32, %32)
-    %33 = LoadVar("v") -> int32
-    Call(println, [%33], ["borrow"])
-    Jump(block_10)
+  L11:
+    %31 = loadvar.generator<int32> __gen_v
+    %32 = genvalue.int32 %31
+    local v: int32 = %32
+    %33 = loadvar.int32 v
+    call @println(%33 borrow)
+    jmp L10
 
-  block_12:
-    %34 = LoadVar("__gen_v") -> generator<int32>
-    Drop(%34)
-    Return()
+  L12:
+    %34 = loadvar.generator<int32> __gen_v
+    drop %34
+    ret
 }

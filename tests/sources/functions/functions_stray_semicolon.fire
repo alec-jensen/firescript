@@ -1,0 +1,12 @@
+import @firescript/std.io.println;
+
+void greet() {
+    ;
+    println("hi");
+}
+
+greet();
+
+/* EXPECT
+hi
+*/

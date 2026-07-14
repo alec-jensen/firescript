@@ -175,6 +175,53 @@ def test_e1_extract_payload_field_unguarded():
     _expect_rule(module, "FIRV-E1")
 
 
+def test_o6_clone_non_owned():
+    module = FIRModule("firescript")
+    func = FIRFunction("f", return_type=INT32)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    x = b.int_literal("1", INT32)
+    cloned = b.clone(x)  # int32 is copyable, not owned
+    b.ret(cloned)
+    _expect_rule(module, "FIRV-O6")
+
+
+def test_o4_borrow_mut_passed_twice_same_call():
+    module, point_t = _point_module()
+    callee = FIRFunction(
+        "callee", params=[("a", point_t), ("b", point_t)], param_modes=["borrow_mut", "borrow_mut"], return_type=None
+    )
+    module.add_function(callee)
+    func = FIRFunction("f", params=[("p", point_t)], param_modes=["borrow"], return_type=None)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    p = func.param_value("p")
+    b.call("callee", [p, p], ["borrow_mut", "borrow_mut"], None)
+    b.ret()
+    _expect_rule(module, "FIRV-O4")
+
+
+def test_identifier_of_aliased_field_read_not_tracked_as_owned():
+    """A local bound directly to a LoadField result aliases the containing
+    object's field storage rather than allocating a fresh owned value; it
+    must not be required to be independently dropped (no O3 leak at
+    return) since dropping it would double-free once the object itself is
+    dropped."""
+    module, point_t = _point_module()
+    module.types[0] = TypeDef("Point", "owned", fields=[("inner", make_simple("Inner"))])
+    module.add_type(TypeDef("Inner", "owned", fields=[]))
+    inner_t = make_simple("Inner")
+    func = FIRFunction("f", params=[("p", point_t)], param_modes=["own"], return_type=None)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    p = func.param_value("p")
+    field_val = b.load_field(p, "inner", inner_t)
+    b.declare_local("x", inner_t, field_val)  # aliases p.inner, not a fresh value
+    b.drop(p)
+    b.ret()
+    module.validate()  # must not raise: "x" is not itself independently owned
+
+
 def test_verifier_ownership_accepts_clean_module():
     module, point_t = _point_module()
     func = FIRFunction("f", params=[("p", point_t)], param_modes=["own"], return_type=INT32)

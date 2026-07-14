@@ -1,0 +1,51 @@
+import @firescript/std.io.println;
+
+// float128 <-> narrower numeric types. float128_ops.fire already covers
+// float128 <-> int64/uint64 and float128 <-> float64; this file exercises
+// the remaining lower_cast branches in firescript/flir/lowering.py:
+// int8/int16/int32 -> float128 (widen via i64), float128 -> int8/int16/int32
+// (narrow via i64), float128 -> float32, and float32 -> float128.
+
+println("-- narrow int to float128 --");
+int8 i8 = 5i8;
+float128 from_i8 = i8 as float128;
+println(from_i8);
+
+int16 i16 = -1234i16;
+float128 from_i16 = i16 as float128;
+println(from_i16);
+
+int32 i32 = 987654i32;
+float128 from_i32 = i32 as float128;
+println(from_i32);
+
+println("-- float128 to narrow int --");
+float128 big = 41.9f128;
+int8 to_i8 = big as int8;
+println(to_i8);
+int16 to_i16 = big as int16;
+println(to_i16);
+int32 to_i32 = big as int32;
+println(to_i32);
+
+println("-- float128 <-> float32 --");
+float128 f = 6.5f128;
+float32 f32 = f as float32;
+println(f32);
+float32 src32 = 8.25f32;
+float128 back = src32 as float128;
+println(back);
+
+/* EXPECT
+-- narrow int to float128 --
+5.000000
+-1234.000000
+987654.000000
+-- float128 to narrow int --
+41
+41
+41
+-- float128 <-> float32 --
+6.500000
+8.250000
+*/

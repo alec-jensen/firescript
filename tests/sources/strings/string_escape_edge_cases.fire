@@ -1,0 +1,21 @@
+//@ snapshot: fir, flir
+import @firescript/std.io.println;
+
+// Escaped single-quote and an unrecognized escape sequence inside a
+// (double-quoted) string literal: the lexer's STRING_LITERAL regex
+// accepts `\.` for any character (no fixed set of recognized escapes),
+// so both reach codegen/x86_64/flir_to_asm.py's _escape_asciz(), which
+// treats a recognized escape (\n \t \r \0 \\ \") specially, passes `\'`
+// through as a literal `'` (redundant escape, not meaningful in a
+// double-quoted string), and falls back to keeping the backslash
+// literal for anything else (e.g. `\q`).
+string s1 = "it\'s here";
+println(s1);
+
+string s2 = "a\qb";
+println(s2);
+
+/* EXPECT
+it's here
+a\qb
+*/

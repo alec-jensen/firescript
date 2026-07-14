@@ -1,0 +1,12 @@
+import @firescript/std.io.println;
+
+T modOp<T>(T a, T b) {
+    return a % b;
+}
+
+int32 r = modOp(10i32, 3i32);
+println(r);
+
+/* EXPECT
+1
+*/

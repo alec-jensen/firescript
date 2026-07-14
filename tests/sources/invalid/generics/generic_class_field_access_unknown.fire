@@ -1,0 +1,19 @@
+// Semantic error: accessing an unknown field on 'this' inside a generic
+// class template's own method body (checked against the template's field
+// list, before any monomorphized instantiation).
+
+class Box<T> {
+    T value;
+
+    Box(T value) {
+        this.value = value;
+    }
+
+    T bogus() {
+        return this.notAField;  //~ ERROR FS-SEM-0010 @21
+    }
+}
+
+void generic_class_field_access_unknown() {
+    Box<int32> b = new Box<int32>(5);  //~ ERROR FS-SEM-0010 @24
+}

@@ -6,6 +6,13 @@ enum Shape {
 
 Shape s1 = Shape.Dot;
 
+// Missing scrutinee expression
+int32 z = match {  //~ ERROR FS-PARSE-0012 @17
+//~^ ERROR FS-PARSE-0010 @18
+//~^^ ERROR FS-PARSE-0010 @18
+    _ -> 1  //~ ERROR FS-PARSE-0010 @5
+};
+
 // Missing '{' to start match body
 int32 a = match s1 5;  //~ ERROR FS-PARSE-0010 @20
 //~^ ERROR FS-PARSE-0010 @20
@@ -33,6 +40,14 @@ int32 d = match s4 {
     _ -> 2
 };
 
+Shape s4b = Shape.Dot;
+
+// Missing variant name after '.'
+int32 d2 = match s4b {
+    Shape. -> 1,  //~ ERROR FS-PARSE-0010 @12
+    _ -> 2
+};
+
 Shape s5 = Shape.Dot;
 
 // Missing local binding name after ':'
@@ -51,8 +66,18 @@ int32 f = match s6 {
 
 Shape s7 = Shape.Dot;
 
+// Payload field name is not an identifier
+int32 h = match s7 {
+    Shape.Line(5) -> 1,  //~ ERROR FS-PARSE-0010 @16
+//~^ ERROR FS-PARSE-0010 @16
+//~^^ ERROR FS-PARSE-0010 @16
+    _ -> 2
+};
+
+Shape s8 = Shape.Dot;
+
 // Missing arm body after '->'
-int32 g = match s7 {
+int32 g = match s8 {
     _ ->
 };  //~ ERROR FS-PARSE-0012 @1
 //~^ ERROR FS-PARSE-0010 @2

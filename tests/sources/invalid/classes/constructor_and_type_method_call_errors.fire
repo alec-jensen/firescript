@@ -1,0 +1,44 @@
+// Errors for `new`-constructed instances and Type.method(...) call forms.
+
+import @firescript/std.io.println;
+
+class Plain {
+    int32 v;
+}
+
+class Foo {
+    int32 v;
+
+    Foo(int32 v) {
+        this.v = v;
+    }
+
+    int32 twice(&this) {
+        return this.v * 2;
+    }
+
+    static int32 bar(int32 x) {
+        return x;
+    }
+}
+
+// No explicit constructor defined for Plain: `new` form requires one
+Plain p = new Plain();  //~ ERROR FS-SEM-0010 @15
+
+// Wrong argument count for `new` constructor
+Foo f1 = new Foo(1, 2);  //~ ERROR FS-SEM-0010 @14
+
+// Wrong argument type for `new` constructor
+Foo f2 = new Foo("nope");  //~ ERROR FS-SEM-0010 @18
+
+// Unknown static/constructor method on a type
+int32 u = Foo.doesNotExist(1);  //~ ERROR FS-SEM-0010 @15
+
+// Instance method invoked in type-call form: neither static nor constructor
+int32 t = Foo.twice(1);  //~ ERROR FS-SEM-0010 @15
+
+// Wrong argument count for a static method call
+int32 s1 = Foo.bar(1, 2);  //~ ERROR FS-SEM-0010 @16
+
+// Wrong argument type for a static method call
+int32 s2 = Foo.bar("nope");  //~ ERROR FS-SEM-0010 @20

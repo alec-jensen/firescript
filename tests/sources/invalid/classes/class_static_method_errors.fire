@@ -15,3 +15,9 @@ class Tool {
 Tool t = Tool();
 println(t.id(1i32));      // Error: static method called on instance  //~ ERROR FS-SEM-0010 @11
 println(Tool.twice(2i32)); // Error: instance method called on type  //~ ERROR FS-SEM-0010 @14
+
+// Wrong argument count for a static method call
+println(Tool.id(1i32, 2i32));  //~ ERROR FS-SEM-0010 @14
+
+// Wrong argument type for a static method call
+println(Tool.id("x"));  //~ ERROR FS-SEM-0010 @17

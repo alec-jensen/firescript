@@ -1,0 +1,7 @@
+// Parser error: compound assignment with no expression after the operator.
+
+void compound_assignment_missing_rhs() {  //~ ERROR FS-PARSE-0010 @40
+    int32 x = 5;
+    x +=;  //~ ERROR FS-PARSE-0012 @9
+//~^ ERROR FS-PARSE-0010 @10
+}

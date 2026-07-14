@@ -1,0 +1,8 @@
+// Dotted path ends with '.' and nothing follows at all (@firescript/ form).
+// Kept in its own file (rather than folded into import_syntax_errors.fire):
+// combining this with other malformed-import cases in one file caused an
+// earlier case's error recovery to leave stray token-stream state that
+// prevented the "nothing follows the trailing dot" branch in
+// firescript/parser/declarations.py (_parse_import) from actually being
+// exercised, even though the diagnostic still matched by a different path.
+import @firescript/std.  //~ ERROR FS-PARSE-0010 @24

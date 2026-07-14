@@ -1,0 +1,31 @@
+// Type errors for individual binary operators, one mismatch per function so
+// each error is independent of the others.
+int32 plusMismatch() {
+    bool b = true;
+    int32 x = 5;
+    int32 y = x + b;  //~ ERROR FS-SEM-0010 @17
+    return y;
+}
+
+bool andMismatch() {
+    int32 x = 5;
+    bool y = x && true;  //~ ERROR FS-SEM-0010 @16
+    return y;
+}
+
+int32 moduloMismatch() {
+    float32 x = 1.0f32;
+    int32 y = x % 2;  //~ ERROR FS-SEM-0010 @17
+    return y;
+}
+
+bool equalityMismatch() {
+    int32 x = 5;
+    string s = "a";
+    bool y = x == s;  //~ ERROR FS-SEM-0010 @16
+    return y;
+}
+
+int32 main() {
+    return 0;
+}

@@ -1,0 +1,45 @@
+import @firescript/std.io.println;
+
+// firescript does not require exhaustive returns from non-void functions
+// (no "missing return" diagnostic exists). When control falls off the end
+// of such a function without an explicit `return`, ast_to_fir.py's
+// _synthesize_zero() emits an implicit `return 0`/`return false`/etc. at
+// the FIR level for scalar return types (int/float/bool/char) so the
+// generated FIR stays well-typed (FIRV-T4).
+//
+// Note: _synthesize_zero() returns None (i.e. a value-less Return) for
+// non-scalar return types (string, array, class, ...); that currently
+// makes the FIR verifier reject the module with an "internal compiler
+// error" (FIRV-T4: "value-less Return in non-void function") instead of a
+// clean diagnostic or a working implicit-zero return -- see e.g.
+// `string maybeString(bool f) { if (f) { return "x"; } }` falling off the
+// end. This is a newly-found bug, not fixed here (see task report). It
+// also means lower_terminator's own `_zero_value` fallback in
+// firescript/flir/lowering.py (~line 867-868) is unreachable dead code:
+// the verifier rejects the malformed FIR before lowering ever sees it.
+
+int32 maybeReturnInt(bool flag) {
+    if (flag) {
+        return 42;
+    }
+    // falls off the end when flag is false -> synthesized `return 0`
+}
+
+bool maybeReturnBool(bool flag) {
+    if (flag) {
+        return true;
+    }
+    // falls off the end -> synthesized `return false`
+}
+
+println(maybeReturnInt(true));
+println(maybeReturnInt(false));
+println(maybeReturnBool(true));
+println(maybeReturnBool(false));
+
+/* EXPECT
+42
+0
+true
+false
+*/

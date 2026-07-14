@@ -29,5 +29,6 @@ h.v = ;  //~ ERROR FS-PARSE-0012 @7
 int32[] arr = [1, 2];
 arr[0] = ;
 
-// Dangling else with a braceless statement
-else x++;  //~ ERROR FS-PARSE-0012 @1
+// Missing expression after a plain variable assignment
+x = ;  //~ ERROR FS-PARSE-0012 @5
+//~^ ERROR FS-PARSE-0010 @6

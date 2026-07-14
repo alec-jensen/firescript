@@ -1,0 +1,19 @@
+// Field access on an unknown field name inside a generic class template's
+// own method body (before any concrete instantiation). This exercises the
+// generic_class_templates lookup path for field resolution, distinct from
+// the ordinary user_classes lookup used once a concrete instance exists.
+copyable class Pair<T, U> {
+    T first;
+    U second;
+
+    Pair(T first, U second) {
+        this.first = first;
+        this.second = second;
+    }
+
+    T getBogus(&this) {
+        return this.bogus;  //~ ERROR FS-SEM-0010 @21
+    }
+}
+
+Pair<int32, int32> p1 = Pair<int32, int32>(10, 20);

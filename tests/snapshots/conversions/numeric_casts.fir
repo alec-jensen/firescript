@@ -1,95 +1,95 @@
-module numeric_casts
+fir module numeric_casts
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function main() -> void {
-  block_0:
-    %0 = StringLiteral("-- numeric casts --", string)
-    Call(println, [%0], ["borrow"])
-    %1 = IntLiteral(127, int16)
-    %2 = Cast(%1, int8)
-    DeclareLocal("i8", int8, %2)
-    %3 = LoadVar("i8") -> int8
-    Call(println, [%3], ["borrow"])
-    %4 = IntLiteral(0, int32)
-    %5 = IntLiteral(12345, int32)
-    %6 = BinaryOp("-", %4, %5)
-    %7 = Cast(%6, int16)
-    DeclareLocal("i16", int16, %7)
-    %8 = LoadVar("i16") -> int16
-    Call(println, [%8], ["borrow"])
-    %9 = IntLiteral(123456, int64)
-    %10 = Cast(%9, int32)
-    DeclareLocal("i32", int32, %10)
-    %11 = LoadVar("i32") -> int32
-    Call(println, [%11], ["borrow"])
-    %12 = IntLiteral(123456789, int64)
-    %13 = Cast(%12, int64)
-    DeclareLocal("i64", int64, %13)
-    %14 = LoadVar("i64") -> int64
-    Call(println, [%14], ["borrow"])
-    %15 = IntLiteral(255, int16)
-    %16 = Cast(%15, uint8)
-    DeclareLocal("u8", uint8, %16)
-    %17 = LoadVar("u8") -> uint8
-    Call(println, [%17], ["borrow"])
-    %18 = IntLiteral(65000, int32)
-    %19 = Cast(%18, uint16)
-    DeclareLocal("u16", uint16, %19)
-    %20 = LoadVar("u16") -> uint16
-    Call(println, [%20], ["borrow"])
-    %21 = IntLiteral(4000000000, uint64)
-    %22 = Cast(%21, uint32)
-    DeclareLocal("u32", uint32, %22)
-    %23 = LoadVar("u32") -> uint32
-    Call(println, [%23], ["borrow"])
-    %24 = IntLiteral(9000000000, uint64)
-    %25 = Cast(%24, uint64)
-    DeclareLocal("u64", uint64, %25)
-    %26 = LoadVar("u64") -> uint64
-    Call(println, [%26], ["borrow"])
-    %27 = FloatLiteral(3.25, float64)
-    %28 = Cast(%27, float32)
-    DeclareLocal("f32", float32, %28)
-    %29 = LoadVar("f32") -> float32
-    Call(println, [%29], ["borrow"])
-    %30 = FloatLiteral(3.25, float64)
-    %31 = Cast(%30, float64)
-    DeclareLocal("f64", float64, %31)
-    %32 = LoadVar("f64") -> float64
-    Call(println, [%32], ["borrow"])
-    %33 = FloatLiteral(3.25, float64)
-    %34 = Cast(%33, float128)
-    DeclareLocal("f128", float128, %34)
-    %35 = LoadVar("f128") -> float128
-    Call(println, [%35], ["borrow"])
-    Return()
+function @main() -> void {
+  L0:
+    %0 = strconst "-- numeric casts --"
+    call @println(%0 borrow)
+    %1 = const.int16 127
+    %2 = cast.int8 %1
+    local i8: int8 = %2
+    %3 = loadvar.int8 i8
+    call @println(%3 borrow)
+    %4 = const.int32 0
+    %5 = const.int32 12345
+    %6 = binop "-", %4, %5
+    %7 = cast.int16 %6
+    local i16: int16 = %7
+    %8 = loadvar.int16 i16
+    call @println(%8 borrow)
+    %9 = const.int64 123456
+    %10 = cast.int32 %9
+    local i32: int32 = %10
+    %11 = loadvar.int32 i32
+    call @println(%11 borrow)
+    %12 = const.int64 123456789
+    %13 = cast.int64 %12
+    local i64: int64 = %13
+    %14 = loadvar.int64 i64
+    call @println(%14 borrow)
+    %15 = const.int16 255
+    %16 = cast.uint8 %15
+    local u8: uint8 = %16
+    %17 = loadvar.uint8 u8
+    call @println(%17 borrow)
+    %18 = const.int32 65000
+    %19 = cast.uint16 %18
+    local u16: uint16 = %19
+    %20 = loadvar.uint16 u16
+    call @println(%20 borrow)
+    %21 = const.uint64 4000000000
+    %22 = cast.uint32 %21
+    local u32: uint32 = %22
+    %23 = loadvar.uint32 u32
+    call @println(%23 borrow)
+    %24 = const.uint64 9000000000
+    %25 = cast.uint64 %24
+    local u64: uint64 = %25
+    %26 = loadvar.uint64 u64
+    call @println(%26 borrow)
+    %27 = fconst.float64 3.25
+    %28 = cast.float32 %27
+    local f32: float32 = %28
+    %29 = loadvar.float32 f32
+    call @println(%29 borrow)
+    %30 = fconst.float64 3.25
+    %31 = cast.float64 %30
+    local f64: float64 = %31
+    %32 = loadvar.float64 f64
+    call @println(%32 borrow)
+    %33 = fconst.float64 3.25
+    %34 = cast.float128 %33
+    local f128: float128 = %34
+    %35 = loadvar.float128 f128
+    call @println(%35 borrow)
+    ret
 }

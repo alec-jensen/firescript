@@ -219,6 +219,215 @@ def test_m3_ptradd_nonpositive_scale():
     _expect_rule(module, "FLIRV-M3")
 
 
+def test_t2_binop_operand_type_does_not_match_operand_type():
+    module, func = _simple_module()
+    entry = func.new_block()
+    a = entry.add(ConstInt("1", I64))  # i64, but operand_type declared i32
+    b = entry.add(ConstInt("2", I32))
+    bad = entry.add(BinOp("add", I32, a, b, I32))
+    entry.instructions.append(Ret(b))
+    _expect_rule(module, "FLIRV-T2")
+
+
+def test_t2_binop_rhs_operand_type_does_not_match_operand_type():
+    module, func = _simple_module()
+    entry = func.new_block()
+    a = entry.add(ConstInt("1", I32))
+    b = entry.add(ConstInt("2", I64))  # i64, but operand_type declared i32
+    entry.add(BinOp("add", I32, a, b, I32))
+    entry.instructions.append(Ret(a))
+    _expect_rule(module, "FLIRV-T2")
+
+
+def test_t2_comparison_must_produce_bool():
+    module, func = _simple_module()
+    entry = func.new_block()
+    a = entry.add(ConstInt("1", I32))
+    b = entry.add(ConstInt("2", I32))
+    entry.add(BinOp("eq", I32, a, b, I32))  # comparisons must produce bool
+    entry.instructions.append(Ret(a))
+    _expect_rule(module, "FLIRV-T2")
+
+
+def test_t2_neg_result_type_mismatch():
+    module, func = _simple_module()
+    entry = func.new_block()
+    a = entry.add(ConstInt("1", I32))
+    entry.add(Neg(a, I64))  # operand is i32, declared result i64
+    entry.instructions.append(Ret(a))
+    _expect_rule(module, "FLIRV-T2")
+
+
+def test_t2_cvt_to_type_not_scalar():
+    module = FLIRModule("firescript")
+    struct = FLIRStruct("Point", kind="class")
+    struct.fields = [("x", I32, 0)]
+    struct.size = 4
+    struct.align = 4
+    module.add_struct(struct)
+    func = FLIRFunction("f", return_type=I32)
+    module.add_function(func)
+    entry = func.new_block()
+    a = entry.add(ConstInt("1", I32))
+    from flir.ir import struct_type
+
+    entry.add(Cvt(a, I32, struct_type("Point")))  # to_type is a struct, not scalar
+    entry.instructions.append(Ret(a))
+    _expect_rule(module, "FLIRV-T2")
+
+
+def test_t2_unknown_binop():
+    module, func = _simple_module()
+    entry = func.new_block()
+    a = entry.add(ConstInt("1", I32))
+    b = entry.add(ConstInt("2", I32))
+    entry.add(BinOp("xor_not_real", I32, a, b, I32))
+    entry.instructions.append(Ret(a))
+    _expect_rule(module, "FLIRV-T2")
+
+
+def test_t2_cvt_from_type_not_scalar():
+    module = FLIRModule("firescript")
+    struct = FLIRStruct("Point", kind="class")
+    struct.fields = [("x", I32, 0)]
+    struct.size = 4
+    struct.align = 4
+    module.add_struct(struct)
+    func = FLIRFunction("f", params=[("p", ptr_to("Point"))], return_type=I32)
+    module.add_function(func)
+    entry = func.new_block()
+    p = entry.add(SlotLoad("p", ptr_to("Point")))
+    from flir.ir import FLIRType
+
+    struct_scalar_type = FLIRType("struct", struct_name="Point")
+    entry.add(Cvt(p, struct_scalar_type, I32))  # struct is not a scalar kind
+    zero = entry.add(ConstInt("0", I32))
+    entry.instructions.append(Ret(zero))
+    _expect_rule(module, "FLIRV-T2")
+
+
+def test_t3_bare_ret_in_nonvoid_function():
+    module, func = _simple_module()
+    entry = func.new_block()
+    entry.instructions.append(Ret())  # f declared to return I32
+    _expect_rule(module, "FLIRV-T3")
+
+
+def test_t3_ret_carries_value_in_void_function():
+    module = FLIRModule("firescript")
+    func = FLIRFunction("f", return_type=VOID)
+    module.add_function(func)
+    entry = func.new_block()
+    a = entry.add(ConstInt("1", I32))
+    entry.instructions.append(Ret(a))
+    _expect_rule(module, "FLIRV-T3")
+
+
+def test_t4_call_to_extern_argument_type_mismatch():
+    module = FLIRModule("firescript")
+    module.externs["MessageBoxA"] = ("user32", I32, [I32])
+    func = FLIRFunction("f", return_type=I32)
+    module.add_function(func)
+    entry = func.new_block()
+    s = entry.add(ConstStr("x"))
+    result = entry.add(Call("MessageBoxA", [s], I32))  # extern expects I32, not ptr
+    entry.instructions.append(Ret(result))
+    _expect_rule(module, "FLIRV-T4")
+
+
+def test_t4_call_to_runtime_abi_entry_argument_count_mismatch():
+    module, func = _simple_module()
+    entry = func.new_block()
+    result = entry.add(Call("fs_rt_str_length", [], I32))  # expects 1 string argument
+    entry.instructions.append(Ret(result))
+    _expect_rule(module, "FLIRV-T4")
+
+
+def test_t5_slotstore_value_type_mismatch():
+    module, func = _simple_module()
+    entry = func.new_block()
+    entry.add(SlotDecl("x", I32))
+    bad = entry.add(ConstStr("y"))
+    entry.add(SlotStore("x", bad))
+    zero = entry.add(ConstInt("0", I32))
+    entry.instructions.append(Ret(zero))
+    _expect_rule(module, "FLIRV-T5")
+
+
+def test_t5_slotaddr_undeclared_slot():
+    module, func = _simple_module()
+    entry = func.new_block()
+    entry.add(SlotAddr("nope"))
+    zero = entry.add(ConstInt("0", I32))
+    entry.instructions.append(Ret(zero))
+    _expect_rule(module, "FLIRV-T5")
+
+
+def test_t6_gload_undeclared_global():
+    module, func = _simple_module()
+    entry = func.new_block()
+    v = entry.add(GlobalLoad("nope", I32))
+    entry.instructions.append(Ret(v))
+    _expect_rule(module, "FLIRV-T6")
+
+
+def test_t6_gload_type_mismatch():
+    module, func = _simple_module()
+    module.globals.append(("g", I32, "0"))
+    entry = func.new_block()
+    v = entry.add(GlobalLoad("g", BOOL))  # declared i32, loaded as bool
+    zero = entry.add(ConstInt("0", I32))
+    entry.instructions.append(Ret(zero))
+    _expect_rule(module, "FLIRV-T6")
+
+
+def test_t6_gstore_undeclared_global():
+    module, func = _simple_module()
+    entry = func.new_block()
+    v = entry.add(ConstInt("1", I32))
+    entry.add(GlobalStore("nope", v))
+    entry.instructions.append(Ret(v))
+    _expect_rule(module, "FLIRV-T6")
+
+
+def test_t6_gstore_value_type_mismatch():
+    module, func = _simple_module()
+    module.mutable_globals.append(("g", I32))
+    entry = func.new_block()
+    bad = entry.add(ConstStr("x"))
+    entry.add(GlobalStore("g", bad))
+    zero = entry.add(ConstInt("0", I32))
+    entry.instructions.append(Ret(zero))
+    _expect_rule(module, "FLIRV-T6")
+
+
+def test_m2_load_misaligned_offset():
+    module = FLIRModule("firescript")
+    struct = FLIRStruct("Packed", kind="class")
+    struct.fields = [("b", ptr_to("i8"), 0), ("x", I32, 8)]
+    struct.size = 16
+    struct.align = 8
+    module.add_struct(struct)
+    func = FLIRFunction("f", params=[("p", ptr_to("Packed"))], return_type=I32)
+    module.add_function(func)
+    entry = func.new_block()
+    p = entry.add(SlotLoad("p", ptr_to("Packed")))
+    bad = entry.add(Load(I32, p, 5))  # not aligned, and not a declared field offset
+    entry.instructions.append(Ret(bad))
+    _expect_rule(module, "FLIRV-M1")
+
+
+def test_m3_ptradd_base_non_pointer():
+    module, func = _simple_module()
+    entry = func.new_block()
+    base = entry.add(ConstInt("0", I32))  # not a pointer
+    idx = entry.add(ConstInt("0", I32))
+    entry.add(PtrAdd(base, idx, 4))
+    zero = entry.add(ConstInt("0", I32))
+    entry.instructions.append(Ret(zero))
+    _expect_rule(module, "FLIRV-M3")
+
+
 def test_verifier_types_accepts_clean_module():
     module = FLIRModule("firescript")
     struct = FLIRStruct("Point", kind="class")

@@ -1,63 +1,63 @@
-module fibonacci
+fir module fibonacci
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function fib(n: int64) -> int64 {
-  block_0:
-    %0 = LoadVar("n") -> int64
-    %1 = IntLiteral(1, int64)
-    %2 = BinaryOp("<=", %0, %1)
-    Branch(%2, block_2, block_1)
+function @fib(n: int64) -> int64 {
+  L0:
+    %0 = loadvar.int64 n
+    %1 = const.int64 1
+    %2 = binop "<=", %0, %1
+    br %2, L2, L1
 
-  block_1:
-    %3 = LoadVar("n") -> int64
-    %4 = IntLiteral(1, int64)
-    %5 = BinaryOp("-", %3, %4)
-    %6 = Call(fib, [%5], ["own"]) -> int64
-    %7 = LoadVar("n") -> int64
-    %8 = IntLiteral(2, int64)
-    %9 = BinaryOp("-", %7, %8)
-    %10 = Call(fib, [%9], ["own"]) -> int64
-    %11 = BinaryOp("+", %6, %10)
-    Return(%11)
+  L1:
+    %3 = loadvar.int64 n
+    %4 = const.int64 1
+    %5 = binop "-", %3, %4
+    %6 = call.int64 @fib(%5 own)
+    %7 = loadvar.int64 n
+    %8 = const.int64 2
+    %9 = binop "-", %7, %8
+    %10 = call.int64 @fib(%9 own)
+    %11 = binop "+", %6, %10
+    ret %11
 
-  block_2:
-    %12 = LoadVar("n") -> int64
-    Return(%12)
+  L2:
+    %12 = loadvar.int64 n
+    ret %12
 }
 
-function main() -> void {
-  block_0:
-    %0 = IntLiteral(20, int64)
-    %1 = Call(fib, [%0], ["own"]) -> int64
-    Call(println, [%1], ["borrow"])
-    Return()
+function @main() -> void {
+  L0:
+    %0 = const.int64 20
+    %1 = call.int64 @fib(%0 own)
+    call @println(%1 borrow)
+    ret
 }

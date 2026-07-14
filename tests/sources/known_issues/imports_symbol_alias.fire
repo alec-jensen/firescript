@@ -1,0 +1,15 @@
+// KNOWN BUG: `import module.symbol as alias;` parses successfully and
+// passes semantic analysis (the alias is recorded on the IMPORT_STATEMENT
+// node's `alias` field -- see firescript/parser/declarations.py's
+// `_parse_optional_alias()` / `_parse_import()`), but nothing downstream
+// actually renames the imported symbol to its alias: ast_to_fir.py /
+// flir/lowering.py still look up the call by its *original* name, so any
+// call site using the alias fails at FLIR lowering with
+// "call to unknown function <alias>" (a LoweringError, not a normal
+// diagnostic). Move this file back to tests/sources/imports/ (and generate
+// the EXPECT block with `--update`) once the alias is actually threaded
+// through import resolution / symbol registration so a call under the
+// alias resolves to the original definition.
+import @firescript/std.io.println as show;
+
+show(5);

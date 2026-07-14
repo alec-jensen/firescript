@@ -1,0 +1,8 @@
+// A sized-array declaration whose bracketed size is an integer literal with
+// a numeric-type suffix (e.g. `5i8`) is not a bare integer and is rejected
+// when the parser tries to convert it to an array size.
+int32 main() {
+    int32[5i8] arr;  //~ ERROR FS-PARSE-0010 @11
+//~^ ERROR FS-PARSE-0010 @16
+    return 0;
+}

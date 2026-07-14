@@ -22,6 +22,13 @@ char nine = '9';
 println(zero as string);
 println(nine as string);
 
+// Unrecognized escape sequence: the lexer's CHAR_LITERAL regex accepts any
+// `\<char>` pair, but only \n \t \r \0 \\ \' \" are known escapes
+// (firescript/flir/lowering.py's _CHAR_ESCAPES). Anything else falls back
+// to the escaped character's own code point (_char_code's fallback path).
+char unknownEscape = '\d';
+println(unknownEscape as string);
+
 return 0;
 
 /* EXPECT
@@ -33,4 +40,5 @@ bs:\|
 A
 0
 9
+d
 */

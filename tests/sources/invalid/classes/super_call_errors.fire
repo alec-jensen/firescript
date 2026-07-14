@@ -1,0 +1,59 @@
+// Invalid uses of this.super(...): no base class, base with no
+// constructor, and wrong argument count/type when a base constructor
+// does exist. All from within an actual constructor: `this.super(...)`
+// called from a *regular* method (not a constructor) is a different
+// beast entirely -- the parser only ever builds a SUPER_CALL AST node
+// when already inside a constructor (see expressions.py's `in_ctor` gate
+// on `this.super(...)`), so outside a constructor it's just a normal
+// method call named "super" that gets rejected by the ordinary
+// "Methods not supported for type X" check instead.
+
+// No base class: cannot use super at all.
+class Standalone {
+    int32 v;
+
+    Standalone(&mut this, int32 v) {
+        this.super(v);  //~ ERROR FS-SEM-0010 @14
+        this.v = v;
+    }
+}
+
+// Base class exists but declares no constructor of its own.
+class NoCtorBase {
+    int32 v;
+}
+
+class NoCtorDerived from NoCtorBase {
+    int32 w;
+
+    NoCtorDerived(&mut this, int32 w) {
+        this.super();  //~ ERROR FS-SEM-0010 @14
+        this.w = w;
+    }
+}
+
+class Base {
+    int32 v;
+
+    Base(&mut this, int32 v) {
+        this.v = v;
+    }
+}
+
+class WrongArgs from Base {
+    int32 w;
+
+    WrongArgs(&mut this, int32 v, int32 w) {
+        this.super(v, w);  //~ ERROR FS-SEM-0010 @14
+        this.w = w;
+    }
+}
+
+class WrongType from Base {
+    int32 w;
+
+    WrongType(&mut this, string v, int32 w) {
+        this.super(v);  //~ ERROR FS-SEM-0010 @20
+        this.w = w;
+    }
+}

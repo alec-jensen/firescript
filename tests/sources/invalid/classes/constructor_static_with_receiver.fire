@@ -1,0 +1,13 @@
+// Parser error: a (invalid) static constructor that also declares a
+// borrowed '&this' receiver -- both the "constructors cannot be static"
+// error and the "static methods cannot declare a receiver" error should
+// fire while parsing the same declaration.
+
+class Foo {
+    int32 x;
+
+    static Foo(&this) {  //~ ERROR FS-PARSE-0012 @12
+//~^ ERROR FS-PARSE-0012 @17
+        this.x = 0;  //~ ERROR FS-PARSE-0003 @9
+    }
+}

@@ -1,0 +1,8 @@
+// Semantic type errors for binary operators (-, *, /, **, &&, ||, %).
+
+int32 sub_mismatch() {
+    int32 a = 5;
+    float64 b = 2.0;
+    int32 c = a - b;  //~ ERROR FS-SEM-0010 @17
+    return c;
+}

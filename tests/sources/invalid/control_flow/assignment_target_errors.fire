@@ -1,0 +1,7 @@
+// Missing expression after a simple variable assignment.
+int32 main() {
+    int32 x = 1;
+    x = ;  //~ ERROR FS-PARSE-0012 @9
+    //~^ ERROR FS-PARSE-0010 @10
+    return 0;
+}

@@ -1,0 +1,16 @@
+// Calling an unknown method on a class instance (not deferred -- this file
+// has no imports, so defer_undefined_identifiers is off and the error is
+// reported immediately).
+class Foo {
+    int32 v;
+
+    Foo(int32 v) {
+        this.v = v;
+    }
+}
+
+int32 main() {
+    Foo f = Foo(1);
+    int32 x = f.bogus();  //~ ERROR FS-SEM-0010 @15
+    return 0;
+}

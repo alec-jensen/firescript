@@ -1,0 +1,15 @@
+// Parser error: 'new ClassName' constructor call missing the argument
+// list parentheses.
+
+class Widget {
+    int32 id;
+
+    Widget(int32 id) {
+        this.id = id;
+    }
+}
+
+void new_missing_paren() {
+    Widget w = new Widget;  //~ ERROR FS-PARSE-0010 @26
+//~^ ERROR FS-PARSE-0010 @26
+}

@@ -15,53 +15,52 @@ Every FLIR module is validated on every compilation before codegen; see [ir_veri
 
 ```python
 FLIRType:
-  kind: "int32" | "pointer" | "i64" | "f64" | "bool"
-  size: int                # size in bytes (ABI information)
-  align: int               # alignment in bytes (ABI information)
-  abi_info: dict           # optional ABI metadata (calling convention, register constraints)
+  kind: "i8" | "i16" | "i32" | "i64" | "u8" | "u16" | "u32" | "u64" | "f32" | "f64" | "bool" | "ptr" | "struct"
+  struct_name: Optional[str]   # set when kind == "struct"
+  pointee: Optional[str]       # set when kind == "ptr"; struct name or scalar kind, informational
 ```
+
+`render()` prints the bare `kind` for scalars, `ptr<pointee>` for pointers, and `%StructName` for structs. Size and alignment are derived (`_SCALAR_SIZES[kind]` for scalars, the struct's own `size`/`align` for `kind == "struct"`), not stored per-value.
 
 ## Instructions & Functions
 
-FLIR instructions are low-level and primitive-focused: `add_i32`, `load`, `store`, `allocate`, `free`, `call`, `branch`, `jump`, `return`.
-
-Functions have primitive or pointer parameters only and are monomorphized.
+FLIR instructions are low-level, primitive-focused, and dotted-mnemonic just like FIR's (see [fir_spec.md](fir_spec.md)): `const.i64`, `binop`-family ops rendered as `add.i64`/`sub.i64`/`le.i64`/etc., `load.<type>`, `store.<type>`, `slot`/`slotload`/`slotstore` for named locals, `call.<type>`, `br`, `jmp`, `ret`. Functions have primitive or pointer parameters only and are monomorphized; blocks are labeled `L0`, `L1`, ... and every function/global/extern symbol is `@`-prefixed.
 
 ## Lowering Examples
 
-- `LoadField(obj, "x")` → `load(obj, offset)`
-- `Allocate(Point, ...)` → `allocate(sizeof(Point))` + field stores
-- `Drop(x)` → `free(x)`
+- `loadfield.T obj, "x"` → `load.T %ptr, <offset>`
+- `alloc.Point(...)` → a runtime allocation call + field stores at their struct offsets
+- `drop x` → a runtime free call (`impl_fs_rt_free` or similar), guarded by a null/refcount check
 
 ### Larger FLIR Example: Lowered Counter Update
 
-The same `bump_or_reset` function from FIR becomes pointer arithmetic, explicit loads/stores, and concrete control flow in FLIR:
+The same `bump_or_reset` function from FIR (see [fir_spec.md](fir_spec.md)) becomes pointer arithmetic, explicit loads/stores, and concrete control flow in FLIR:
 
 ```text
-type Counter {
-  value: i32
-  size: 4
-  align: 4
-  abi_info: { kind: "struct", pass_by: "pointer" }
+flir module example
+
+struct Counter { size: 4, align: 4, kind: struct
+  value: i32 @ 0
 }
 
-function bump_or_reset(counter: *Counter, should_reset: bool) -> i32 {
-  block_0:
-    %0 = load_i32(counter, 0)
-    branch should_reset, block_1, block_2
+func @bump_or_reset(counter: ptr<Counter>, should_reset: bool) -> i32 {
+  L0:
+    %0 = load.i32 counter, 0
+    br should_reset, L1, L2
 
-  block_1:
-    %1 = const_i32(0)
-    store_i32(counter, 0, %1)
-    free(counter)
-    return %1
+  L1:
+    %1 = const.i32 0
+    store.i32 counter, 0, %1
+    call.void @impl_fs_rt_free(counter)
+    ret %1
 
-  block_2:
-    %2 = const_i32(1)
-    %3 = add_i32(%0, %2)
-    store_i32(counter, 0, %3)
-    call void @println_i32(%3)
-    return %3
+  L2:
+    %2 = const.i32 1
+    %3 = add.i32 %0, %2
+    store.i32 counter, 0, %3
+    call.void @println__int32(%3)
+    call.void @impl_fs_rt_free(counter)
+    ret %3
 }
 ```
 
@@ -70,30 +69,30 @@ function bump_or_reset(counter: *Counter, should_reset: bool) -> i32 {
 FIR generics disappear in FLIR. A single generic function may become multiple concrete functions:
 
 ```text
-function unwrap_or_default_Box_i32(box: *Box_i32, fallback: i32) -> i32 {
-  block_0:
-    %0 = load_i32(box, 0)
-    %1 = call bool @is_default_i32(%0)
-    branch %1, block_1, block_2
+func @unwrap_or_default__Box_int32(box: ptr<Box_int32>, fallback: i32) -> i32 {
+  L0:
+    %0 = load.i32 box, 0
+    %1 = call.bool @is_default__int32(%0)
+    br %1, L1, L2
 
-  block_1:
-    return fallback
+  L1:
+    ret fallback
 
-  block_2:
-    return %0
+  L2:
+    ret %0
 }
 
-function unwrap_or_default_Box_String(box: *Box_String, fallback: *String) -> *String {
-  block_0:
-    %0 = load_ptr(box, 0)
-    %1 = call bool @is_default_String(%0)
-    branch %1, block_1, block_2
+func @unwrap_or_default__Box_string(box: ptr<Box_string>, fallback: ptr<i8>) -> ptr<i8> {
+  L0:
+    %0 = load.ptr<i8> box, 0
+    %1 = call.bool @is_default__string(%0)
+    br %1, L1, L2
 
-  block_1:
-    return fallback
+  L1:
+    ret fallback
 
-  block_2:
-    return %0
+  L2:
+    ret %0
 }
 ```
 

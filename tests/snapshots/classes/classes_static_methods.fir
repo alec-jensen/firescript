@@ -1,89 +1,89 @@
-module classes_static_methods
+fir module classes_static_methods
 
 type Math owned {
 }
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function Math.max(a: int32, b: int32) -> int32 {
-  block_0:
-    %0 = LoadVar("a") -> int32
-    %1 = LoadVar("b") -> int32
-    %2 = BinaryOp(">", %0, %1)
-    Branch(%2, block_2, block_1)
+function @Math.max(a: int32, b: int32) -> int32 {
+  L0:
+    %0 = loadvar.int32 a
+    %1 = loadvar.int32 b
+    %2 = binop ">", %0, %1
+    br %2, L2, L1
 
-  block_1:
-    %3 = LoadVar("b") -> int32
-    Return(%3)
+  L1:
+    %3 = loadvar.int32 b
+    ret %3
 
-  block_2:
-    %4 = LoadVar("a") -> int32
-    Return(%4)
+  L2:
+    %4 = loadvar.int32 a
+    ret %4
 }
 
-function Math.add(a: int32, b: int32) -> int32 {
-  block_0:
-    %0 = LoadVar("a") -> int32
-    %1 = LoadVar("b") -> int32
-    %2 = BinaryOp("+", %0, %1)
-    Return(%2)
+function @Math.add(a: int32, b: int32) -> int32 {
+  L0:
+    %0 = loadvar.int32 a
+    %1 = loadvar.int32 b
+    %2 = binop "+", %0, %1
+    ret %2
 }
 
-function Math.twice(this: Math, x: int32) -> int32 {
-  block_0:
-    %0 = LoadVar("this") -> Math
-    Drop(%0)
-    %1 = LoadVar("x") -> int32
-    %2 = IntLiteral(2, int32)
-    %3 = BinaryOp("*", %1, %2)
-    Return(%3)
+function @Math.twice(this: Math, x: int32) -> int32 {
+  L0:
+    %0 = loadvar.Math this
+    drop %0
+    %1 = loadvar.int32 x
+    %2 = const.int32 2
+    %3 = binop "*", %1, %2
+    ret %3
 }
 
-function main() -> void {
-  block_0:
-    %0 = IntLiteral(3, int32)
-    %1 = IntLiteral(7, int32)
-    %2 = Call(Math.max, [%0, %1], ["own", "own"]) -> int32
-    Call(println, [%2], ["borrow"])
-    %3 = IntLiteral(8, int32)
-    %4 = IntLiteral(5, int32)
-    %5 = Call(Math.add, [%3, %4], ["own", "own"]) -> int32
-    Call(println, [%5], ["borrow"])
-    %6 = Allocate(Math, [])
-    DeclareLocal("m", Math, %6)
-    %7 = LoadVar("m") -> Math
-    %8 = IntLiteral(6, int32)
-    %9 = MethodCall(%7, "twice", [%8], ["own"]) -> int32
-    Call(println, [%9], ["borrow"])
-    %10 = LoadVar("m") -> Math
-    Drop(%10)
-    Return()
+function @main() -> void {
+  L0:
+    %0 = const.int32 3
+    %1 = const.int32 7
+    %2 = call.int32 @Math.max(%0 own, %1 own)
+    call @println(%2 borrow)
+    %3 = const.int32 8
+    %4 = const.int32 5
+    %5 = call.int32 @Math.add(%3 own, %4 own)
+    call @println(%5 borrow)
+    %6 = alloc.Math()
+    local m: Math = %6
+    %7 = loadvar.Math m
+    %8 = const.int32 6
+    %9 = mcall.int32 %7, "twice"(%8 own)
+    call @println(%9 borrow)
+    %10 = loadvar.Math m
+    drop %10
+    ret
 }

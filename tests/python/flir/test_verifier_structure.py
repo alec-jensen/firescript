@@ -108,6 +108,19 @@ def test_s2_rejects_unresolved_entry_function():
     _expect_rule(module, "FLIRV-S2")
 
 
+def test_s3_rejects_size_not_multiple_of_align():
+    module = FLIRModule("firescript")
+    struct = FLIRStruct("Bad", kind="class")
+    struct.fields = [("a", I32, 0)]
+    struct.size = 6  # not a multiple of align 4
+    struct.align = 4
+    module.add_struct(struct)
+    func = FLIRFunction("f", return_type=VOID)
+    func.new_block().instructions.append(Ret())
+    module.add_function(func)
+    _expect_rule(module, "FLIRV-S3")
+
+
 def test_s3_rejects_overlapping_fields():
     module = FLIRModule("firescript")
     struct = FLIRStruct("Bad", kind="class")
@@ -126,6 +139,98 @@ def test_s3_rejects_misaligned_field():
     struct = FLIRStruct("Bad", kind="class")
     struct.fields = [("a", I32, 1)]  # i32 needs 4-byte alignment
     struct.size = 8
+    struct.align = 4
+    module.add_struct(struct)
+    func = FLIRFunction("f", return_type=VOID)
+    func.new_block().instructions.append(Ret())
+    module.add_function(func)
+    _expect_rule(module, "FLIRV-S3")
+
+
+def test_s2_rejects_duplicate_struct_name():
+    module = FLIRModule("firescript")
+    s1 = FLIRStruct("Dup", kind="class")
+    s1.fields = [("a", I32, 0)]
+    s1.size = 4
+    s1.align = 4
+    s2 = FLIRStruct("Dup", kind="class")
+    s2.fields = [("b", I32, 0)]
+    s2.size = 4
+    s2.align = 4
+    module.add_struct(s1)
+    module.add_struct(s2)
+    func = FLIRFunction("f", return_type=VOID)
+    func.new_block().instructions.append(Ret())
+    module.add_function(func)
+    _expect_rule(module, "FLIRV-S2")
+
+
+def test_s2_rejects_duplicate_global_name():
+    module = FLIRModule("firescript")
+    module.globals.append(("g", I32, "1"))
+    module.globals.append(("g", I32, "2"))
+    func = FLIRFunction("f", return_type=VOID)
+    func.new_block().instructions.append(Ret())
+    module.add_function(func)
+    _expect_rule(module, "FLIRV-S2")
+
+
+def test_s2_rejects_global_and_mutable_global_name_collision():
+    module = FLIRModule("firescript")
+    module.globals.append(("g", I32, "1"))
+    module.mutable_globals.append(("g", I32))
+    func = FLIRFunction("f", return_type=VOID)
+    func.new_block().instructions.append(Ret())
+    module.add_function(func)
+    _expect_rule(module, "FLIRV-S2")
+
+
+def test_s2_rejects_field_referencing_unresolved_struct():
+    module = FLIRModule("firescript")
+    struct = FLIRStruct("Holder", kind="class")
+    struct.fields = [("p", ptr_to("NoSuchStruct"), 0)]
+    struct.size = 8
+    struct.align = 8
+    module.add_struct(struct)
+    func = FLIRFunction("f", return_type=VOID)
+    func.new_block().instructions.append(Ret())
+    module.add_function(func)
+    module.validate()  # a ptr field's pointee isn't struct-checked; must not raise
+
+
+def test_s3_rejects_field_exceeding_struct_size():
+    module = FLIRModule("firescript")
+    struct = FLIRStruct("Bad", kind="class")
+    struct.fields = [("a", I32, 4)]  # [4, 8) exceeds a 4-byte struct
+    struct.size = 4
+    struct.align = 4
+    module.add_struct(struct)
+    func = FLIRFunction("f", return_type=VOID)
+    func.new_block().instructions.append(Ret())
+    module.add_function(func)
+    _expect_rule(module, "FLIRV-S3")
+
+
+def test_s3_rejects_variant_field_overlapping_tag():
+    module = FLIRModule("firescript")
+    struct = FLIRStruct("E", kind="enum")
+    struct.fields = [("tag", I32, 0)]
+    struct.variant_layouts["A"] = [("v", I32, 0)]  # overlaps the [0,4) tag
+    struct.size = 8
+    struct.align = 4
+    module.add_struct(struct)
+    func = FLIRFunction("f", return_type=VOID)
+    func.new_block().instructions.append(Ret())
+    module.add_function(func)
+    _expect_rule(module, "FLIRV-S3")
+
+
+def test_s3_rejects_overlapping_variant_fields():
+    module = FLIRModule("firescript")
+    struct = FLIRStruct("E", kind="enum")
+    struct.fields = [("tag", I32, 0)]
+    struct.variant_layouts["A"] = [("a", I32, 4), ("b", I32, 6)]  # 'b' overlaps 'a'
+    struct.size = 12
     struct.align = 4
     module.add_struct(struct)
     func = FLIRFunction("f", return_type=VOID)

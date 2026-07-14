@@ -1,0 +1,11 @@
+// Malformed enum bodies not covered by enum_def_errors.fire.
+
+// Missing '{' to start enum body.
+enum NoBrace
+int32 topLevel = 1;  //~ ERROR FS-PARSE-0010 @1
+
+// Missing '}' to close the enum body (runs off the end of the file); also
+// missing a ',' or '}' right after the last variant.
+enum Unclosed {
+    A  //~ ERROR FS-PARSE-0010 @6
+//~^ ERROR FS-PARSE-0010 @6

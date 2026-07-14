@@ -5,20 +5,25 @@ numbers are assigned in (block order, instruction order) within each
 function, and module items are emitted in insertion order (which the
 AST->FIR converter keeps equal to source order).
 
+The grammar mirrors flir/textual.py's (`@`-prefixed symbols, `L<n>`
+blocks, `opcode.type operands`) so FIR and FLIR dumps read as one
+family at two abstraction levels -- see fir_spec.md's "Textual
+Representation" section for the full picture.
+
 Example output:
 
-    module firescript
+    fir module firescript
 
     type Point copyable {
       x: int32
       y: int32
     }
 
-    function main() -> void {
-      block_0:
-        %0 = IntLiteral(10, int32)
-        Drop(%0)
-        Return()
+    function @main() -> void {
+      L0:
+        %0 = const.int32 10
+        drop %0
+        ret
     }
 """
 
@@ -29,7 +34,7 @@ from fir.ir_node import FIRValue, ParamValue, Value
 
 
 def dump_module(module: FIRModule) -> str:
-    lines: list[str] = [f"module {module.name}"]
+    lines: list[str] = [f"fir module {module.name}"]
 
     for constant in module.constants:
         lines.append("")
@@ -102,7 +107,7 @@ def _format_function(function: FIRFunction) -> list[str]:
 
     ret = function.return_type.render() if function.return_type else "void"
     keyword = "generator" if function.is_generator else "function"
-    lines = [f"{keyword}{generics} {function.name}({params}) -> {ret} {{"]
+    lines = [f"{keyword}{generics} @{function.name}({params}) -> {ret} {{"]
 
     first = True
     for block in function.blocks:

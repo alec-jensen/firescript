@@ -1,0 +1,20 @@
+// Calling a class's own constructor through `Type.Type(...)` syntax (the
+// TYPE_METHOD_CALL node form) instead of the usual `Type(...)` /
+// `new Type(...)` forms -- exercises the "is a constructor, not static"
+// branch of TYPE_METHOD_CALL type-checking.
+import @firescript/std.io.println;
+
+class Foo {
+    int32 v;
+
+    Foo(int32 v) {
+        this.v = v;
+    }
+}
+
+Foo f = Foo.Foo(42);
+println(f.v);
+
+/* EXPECT
+42
+*/

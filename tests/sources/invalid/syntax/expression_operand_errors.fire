@@ -17,3 +17,22 @@ int32 h = -;  //~ ERROR FS-PARSE-0012 @12
 //~^^ ERROR FS-PARSE-0010 @13
 int32 i = new;  //~ ERROR FS-PARSE-0010 @14
 //~^ ERROR FS-PARSE-0010 @14
+
+// Compound assignment with a missing right-hand expression.
+int32 j = 1;
+j += ;  //~ ERROR FS-PARSE-0012 @6
+//~^ ERROR FS-PARSE-0010 @7
+
+// Array slicing syntax (arr[a:b]) is not supported.
+int32[] arr = [1, 2, 3];
+int32 k = arr[0:1];  //~ ERROR FS-PARSE-0013 @16
+//~^ ERROR FS-PARSE-0010 @16
+
+// Array-element assignment with a missing right-hand expression.
+arr[0] = ;  //~ ERROR FS-PARSE-0012 @10
+//~^ ERROR FS-PARSE-0010 @11
+
+// Postfix 'as' cast with nothing at all following it (runs off EOF, as
+// opposed to `5 as ;` above where a ';' is at least present).
+int32 m = 1;
+m = m as  //~ ERROR FS-PARSE-0010 @5

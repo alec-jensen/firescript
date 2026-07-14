@@ -1,0 +1,16 @@
+// Parser error: match pattern payload binding list containing a token that
+// is not a valid field-name identifier.
+
+enum Shape {
+    Circle(float64 radius),
+    Point
+}
+
+void match_pattern_bad_binding(Shape s) {
+    match s {
+        Shape.Circle(5) -> 1  //~ ERROR FS-PARSE-0010 @22
+//~^ ERROR FS-PARSE-0010 @22
+//~^^ ERROR FS-PARSE-0010 @22
+        _ -> 0
+    }
+}

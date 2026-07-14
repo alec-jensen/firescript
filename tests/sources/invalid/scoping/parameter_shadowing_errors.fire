@@ -1,0 +1,18 @@
+// Function and class-method parameters that shadow an already-declared
+// outer-scope variable are rejected.
+
+import @firescript/std.io.println;
+
+int32 outerValue = 10;
+
+void useOuter(int32 outerValue) {  //~ ERROR FS-SEM-0010 @21
+    println(outerValue);
+}
+
+class Holder {
+    int32 v;
+
+    Holder(int32 outerValue) {  //~ ERROR FS-SEM-0010 @18
+        this.v = outerValue;
+    }
+}

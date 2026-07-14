@@ -1,0 +1,6 @@
+// Semantic error: unknown method on type 'string'.
+
+void string_unknown_method() {
+    string s = "hello";
+    s.reverse();  //~ ERROR FS-SEM-0010 @7
+}

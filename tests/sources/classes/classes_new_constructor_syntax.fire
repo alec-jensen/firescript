@@ -1,0 +1,20 @@
+// Java-like 'new ClassName(args)' constructor syntax, an alternate to the
+// direct 'ClassName(args)' constructor call form used elsewhere.
+import @firescript/std.io.println;
+
+class Box {
+    int32 v;
+
+    Box(int32 v) {
+        this.v = v;
+    }
+}
+
+void main() {
+    Box b = new Box(5i32);
+    println(b.v);
+}
+
+/* EXPECT
+5
+*/

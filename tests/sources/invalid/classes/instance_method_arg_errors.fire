@@ -1,0 +1,24 @@
+// Instance-method call argument-count and argument-type mismatches.
+class Foo {
+    int32 v;
+
+    Foo(int32 v) {
+        this.v = v;
+    }
+
+    int32 add(int32 a) {
+        return this.v + a;
+    }
+}
+
+int32 wrongCount() {
+    Foo f = Foo(1);
+    int32 x = f.add();  //~ ERROR FS-SEM-0010 @17
+    return x;
+}
+
+int32 main() {
+    Foo f = Foo(1);
+    int32 y = f.add(true);  //~ ERROR FS-SEM-0010 @21
+    return y;
+}

@@ -1,0 +1,30 @@
+// Malformed generic type-argument lists in variable *declarations*
+// (as opposed to constructor calls -- see generic_call_errors.fire).
+copyable class Pair<T, U> {
+    T first;
+    U second;
+
+    Pair(T first, U second) {
+        this.first = first;
+        this.second = second;
+    }
+}
+
+Pair<int32, int32> good = Pair<int32, int32>(1, 2);
+
+// Non-type token inside a generic-declaration type-argument list.
+Pair<5, int32> a = good;  //~ ERROR FS-PARSE-0010 @6
+//~^ ERROR FS-PARSE-0010 @14
+
+// Non-type token inside a *nested* generic type-argument list.
+Pair<Pair<5, int32>, int32> b = good;  //~ ERROR FS-PARSE-0010 @11
+//~^ ERROR FS-PARSE-0010 @19
+//~^^ ERROR FS-PARSE-0010 @27
+
+// Missing '>' closing a nested generic type-argument list.
+Pair<Pair<int32, int32, int32> c = good;  //~ ERROR FS-PARSE-0010 @32
+//~^ ERROR FS-PARSE-0010 @36
+
+// Missing '>' closing the outer generic type-argument list.
+Pair<int32, int32 d = good;  //~ ERROR FS-PARSE-0010 @19
+//~^ ERROR FS-PARSE-0010 @23

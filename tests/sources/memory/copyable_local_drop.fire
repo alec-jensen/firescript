@@ -1,0 +1,29 @@
+import @firescript/std.io.println;
+
+// Regression coverage for copyable class locals going out of scope inside
+// a function body (copyable_test.fire only exercises a copy-then-use case
+// at top level). Note: `is_owned()` (firescript/utils/type_utils.py, gated
+// through firescript/preprocessor.py) never treats a copyable class as
+// owned, so no DropInst is ever emitted for `p` here -- confirmed via FIR
+// dump. That means lower_drop's `is_copyable_class_str(...)` early return
+// in firescript/flir/lowering.py (~line 1648-1649) is unreachable dead
+// code via any valid FIR the compiler produces today, not just untested.
+
+copyable class Point {
+    int32 x;
+    int32 y;
+}
+
+int32 sumCoordinates() {
+    Point p = Point(3, 4);
+    int32 total = p.x + p.y;
+    // `p` is never used again; ownership lowering inserts a Drop for it
+    // at the end of the function's scope.
+    return total;
+}
+
+println(sumCoordinates());
+
+/* EXPECT
+7
+*/

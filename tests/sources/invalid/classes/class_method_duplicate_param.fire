@@ -1,0 +1,17 @@
+// A class (instance) method with two parameters sharing the same name --
+// the second declaration shadows the first within the method's own
+// parameter scope, which is rejected the same way outer-scope shadowing is.
+class Foo {
+    int32 v;
+
+    Foo(int32 v) {
+        this.v = v;
+    }
+
+    void method(int32 x, int32 x) {  //~ ERROR FS-SEM-0010 @32
+    }
+}
+
+int32 main() {
+    return 0;
+}

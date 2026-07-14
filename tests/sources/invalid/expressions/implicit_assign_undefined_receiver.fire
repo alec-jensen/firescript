@@ -1,0 +1,8 @@
+// Semantic error: implicit-declaration assignment ('y = ...' with no prior
+// declaration) whose right-hand side is a method call on an undefined
+// receiver identifier.
+
+void implicit_assign_undefined_receiver() {
+    y = undefinedReceiver.length();  //~ ERROR FS-PARSE-0003 @9
+//~^ ERROR FS-PARSE-0003 @5
+}

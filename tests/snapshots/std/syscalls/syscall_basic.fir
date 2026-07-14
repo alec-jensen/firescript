@@ -1,92 +1,92 @@
-module syscall_basic
+fir module syscall_basic
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function main() -> void {
-  block_0:
-    %0 = StringLiteral("build/temp/syscall_test_data.txt", string)
-    %1 = StringLiteral("w", string)
-    %2 = Call(syscall_open, [%0, %1], ["borrow", "borrow"]) -> SyscallResult
-    DeclareLocal("open_w", SyscallResult, %2)
-    %3 = LoadVar("open_w") -> SyscallResult
-    %4 = LoadField(%3, "status")
-    %5 = IntLiteral(0, int32)
-    %6 = BinaryOp(">=", %4, %5)
-    Branch(%6, block_2, block_1)
+function @main() -> void {
+  L0:
+    %0 = strconst "build/temp/syscall_test_data.txt"
+    %1 = strconst "w"
+    %2 = call.SyscallResult @syscall_open(%0 borrow, %1 borrow)
+    local open_w: SyscallResult = %2
+    %3 = loadvar.SyscallResult open_w
+    %4 = loadfield.int32 %3, "status"
+    %5 = const.int32 0
+    %6 = binop ">=", %4, %5
+    br %6, L2, L1
 
-  block_1:
-    Return()
+  L1:
+    ret
 
-  block_2:
-    %7 = LoadVar("open_w") -> SyscallResult
-    %8 = LoadField(%7, "status")
-    %9 = StringLiteral("hello syscall", string)
-    %10 = Call(syscall_write, [%8, %9], ["borrow", "borrow"]) -> SyscallResult
-    %11 = LoadVar("open_w") -> SyscallResult
-    %12 = LoadField(%11, "status")
-    %13 = Call(syscall_close, [%12], ["borrow"]) -> SyscallResult
-    %14 = StringLiteral("build/temp/syscall_test_data.txt", string)
-    %15 = StringLiteral("r", string)
-    %16 = Call(syscall_open, [%14, %15], ["borrow", "borrow"]) -> SyscallResult
-    DeclareLocal("open_r", SyscallResult, %16)
-    %17 = LoadVar("open_r") -> SyscallResult
-    %18 = LoadField(%17, "status")
-    %19 = IntLiteral(0, int32)
-    %20 = BinaryOp(">=", %18, %19)
-    Branch(%20, block_4, block_3)
+  L2:
+    %7 = loadvar.SyscallResult open_w
+    %8 = loadfield.int32 %7, "status"
+    %9 = strconst "hello syscall"
+    %10 = call.SyscallResult @syscall_write(%8 borrow, %9 borrow)
+    %11 = loadvar.SyscallResult open_w
+    %12 = loadfield.int32 %11, "status"
+    %13 = call.SyscallResult @syscall_close(%12 borrow)
+    %14 = strconst "build/temp/syscall_test_data.txt"
+    %15 = strconst "r"
+    %16 = call.SyscallResult @syscall_open(%14 borrow, %15 borrow)
+    local open_r: SyscallResult = %16
+    %17 = loadvar.SyscallResult open_r
+    %18 = loadfield.int32 %17, "status"
+    %19 = const.int32 0
+    %20 = binop ">=", %18, %19
+    br %20, L4, L3
 
-  block_3:
-    Jump(block_1)
+  L3:
+    jmp L1
 
-  block_4:
-    %21 = LoadVar("open_r") -> SyscallResult
-    %22 = LoadField(%21, "status")
-    %23 = IntLiteral(64, int32)
-    %24 = Call(syscall_read, [%22, %23], ["borrow", "borrow"]) -> SyscallResult
-    DeclareLocal("read_result", SyscallResult, %24)
-    %25 = LoadVar("open_r") -> SyscallResult
-    %26 = LoadField(%25, "status")
-    %27 = Call(syscall_close, [%26], ["borrow"]) -> SyscallResult
-    %28 = LoadVar("read_result") -> SyscallResult
-    %29 = LoadField(%28, "status")
-    %30 = IntLiteral(0, int32)
-    %31 = BinaryOp(">=", %29, %30)
-    Branch(%31, block_6, block_5)
+  L4:
+    %21 = loadvar.SyscallResult open_r
+    %22 = loadfield.int32 %21, "status"
+    %23 = const.int32 64
+    %24 = call.SyscallResult @syscall_read(%22 borrow, %23 borrow)
+    local read_result: SyscallResult = %24
+    %25 = loadvar.SyscallResult open_r
+    %26 = loadfield.int32 %25, "status"
+    %27 = call.SyscallResult @syscall_close(%26 borrow)
+    %28 = loadvar.SyscallResult read_result
+    %29 = loadfield.int32 %28, "status"
+    %30 = const.int32 0
+    %31 = binop ">=", %29, %30
+    br %31, L6, L5
 
-  block_5:
-    Jump(block_3)
+  L5:
+    jmp L3
 
-  block_6:
-    %32 = LoadVar("read_result") -> SyscallResult
-    %33 = LoadField(%32, "data")
-    Call(println, [%33], ["borrow"])
-    Jump(block_5)
+  L6:
+    %32 = loadvar.SyscallResult read_result
+    %33 = loadfield.string %32, "data"
+    call @println(%33 borrow)
+    jmp L5
 }

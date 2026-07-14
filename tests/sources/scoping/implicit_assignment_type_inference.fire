@@ -1,0 +1,28 @@
+// Implicit variable declaration via bare assignment: the type of a
+// not-yet-declared name is inferred from its initializer when the RHS is a
+// constructor call or an instance method call on an already-typed object.
+
+import @firescript/std.io.println;
+
+class Widget {
+    int32 v;
+
+    Widget(int32 v) {
+        this.v = v;
+    }
+
+    int32 getV(&this) {
+        return this.v;
+    }
+}
+
+w = Widget(7);
+println(w.getV());
+
+n = w.getV();
+println(n);
+
+/* EXPECT
+7
+7
+*/

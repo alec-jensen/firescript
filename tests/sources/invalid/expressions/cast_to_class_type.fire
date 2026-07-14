@@ -1,0 +1,15 @@
+// Semantic error: casting a numeric literal to a user-defined class type
+// (syntactically an identifier target for postfix 'as', but not a valid
+// cast target semantically).
+
+class Widget {
+    int32 id;
+
+    Widget(int32 id) {
+        this.id = id;
+    }
+}
+
+void cast_to_class_type() {
+    Widget w = 5 as Widget;  //~ ERROR FS-SEM-0010 @21
+}

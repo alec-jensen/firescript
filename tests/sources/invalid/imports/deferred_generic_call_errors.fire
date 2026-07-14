@@ -1,0 +1,14 @@
+// Malformed generic-constructor-call syntax on an imported (not-yet-known
+// at initial parse time) generic class -- exercises the parser's
+// deferred-import-mode generic-call lookahead branch in expressions.py,
+// distinct from generic_call_errors.fire's same-module-defined-class cases.
+import @firescript/std.io.println;
+import @firescript/std.types.Tuple;
+
+int32 x = 1;
+
+// Non-type token in the type-argument list: the deferred-mode arg loop
+// just stops (no error of its own), so the missing '>' is what's reported.
+x = Tuple<5>(1, 2);  //~ ERROR FS-PARSE-0010 @11
+//~^ ERROR FS-PARSE-0010 @11
+//~^^ ERROR FS-PARSE-0010 @11

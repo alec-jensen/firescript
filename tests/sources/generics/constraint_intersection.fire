@@ -1,0 +1,17 @@
+// Constraint declaration using the intersection ('&') operator to combine a
+// primitive type with an interface/alias name.
+import @firescript/std.io.println;
+
+constraint NumericAndComparable = int32 & Comparable;
+
+T identity<T: NumericAndComparable>(T x) {
+    return x;
+}
+
+void main() {
+    println(identity(7i32));
+}
+
+/* EXPECT
+7
+*/

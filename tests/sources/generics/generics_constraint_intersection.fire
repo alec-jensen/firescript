@@ -1,0 +1,14 @@
+import @firescript/std.io.println;
+
+constraint Combo = int32 & float64;
+
+T identity<T: Combo>(T x) {
+    return x;
+}
+
+int32 y = identity(5i32);
+println(y);
+
+/* EXPECT
+5
+*/

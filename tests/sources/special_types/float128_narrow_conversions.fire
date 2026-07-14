@@ -1,0 +1,37 @@
+import @firescript/std.io.println;
+
+// Exercises the less common float128 conversion paths not covered by
+// float128_ops.fire: narrowing float128 -> int8/int16/int32, float128 ->
+// float32, and widening int8/int16/int32 -> float128 and float32 -> float128.
+
+println("-- float128 narrow conversions --");
+
+float128 big = 100.0f128;
+println(big as int8);      // 100
+println(big as int16);     // 100
+println(big as int32);     // 100
+println(big as float32);   // 100.000000
+
+int8 small_i8 = 5i8;
+println(small_i8 as float128);   // 5.000000
+
+int16 small_i16 = 300i16;
+println(small_i16 as float128);  // 300.000000
+
+int32 small_i32 = 70000i32;
+println(small_i32 as float128);  // 70000.000000
+
+float32 f32 = 2.5f32;
+println(f32 as float128);        // 2.500000
+
+/* EXPECT
+-- float128 narrow conversions --
+100
+100
+100
+100.000000
+5.000000
+300.000000
+70000.000000
+2.500000
+*/

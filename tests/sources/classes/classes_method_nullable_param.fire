@@ -1,0 +1,20 @@
+import @firescript/std.io.println;
+
+class Greeter {
+    string prefix;
+
+    Greeter(string prefix) {
+        this.prefix = prefix;
+    }
+
+    string greet(&this, string name?) {
+        return this.prefix + " " + name;
+    }
+}
+
+Greeter g = Greeter("Hello");
+println(g.greet("World"));
+
+/* EXPECT
+Hello World
+*/

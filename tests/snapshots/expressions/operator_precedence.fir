@@ -1,251 +1,251 @@
-module operator_precedence
+fir module operator_precedence
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function main() -> void {
-  block_0:
-    %0 = IntLiteral(2, int32)
-    %1 = IntLiteral(3, int32)
-    %2 = IntLiteral(4, int32)
-    %3 = BinaryOp("*", %1, %2)
-    %4 = BinaryOp("+", %0, %3)
-    Call(println, [%4], ["borrow"])
-    %5 = IntLiteral(10, int32)
-    %6 = IntLiteral(2, int32)
-    %7 = IntLiteral(3, int32)
-    %8 = BinaryOp("*", %6, %7)
-    %9 = BinaryOp("-", %5, %8)
-    Call(println, [%9], ["borrow"])
-    %10 = IntLiteral(10, int32)
-    %11 = IntLiteral(2, int32)
-    %12 = BinaryOp("/", %10, %11)
-    %13 = IntLiteral(3, int32)
-    %14 = BinaryOp("+", %12, %13)
-    Call(println, [%14], ["borrow"])
-    %15 = IntLiteral(10, int32)
-    %16 = IntLiteral(3, int32)
-    %17 = BinaryOp("%", %15, %16)
-    %18 = IntLiteral(1, int32)
-    %19 = BinaryOp("+", %17, %18)
-    Call(println, [%19], ["borrow"])
-    %20 = IntLiteral(2, int32)
-    %21 = IntLiteral(3, int32)
-    %22 = IntLiteral(2, int32)
-    %23 = BinaryOp("**", %21, %22)
-    %24 = BinaryOp("*", %20, %23)
-    Call(println, [%24], ["borrow"])
-    %25 = IntLiteral(4, int32)
-    %26 = IntLiteral(2, int32)
-    %27 = IntLiteral(2, int32)
-    %28 = BinaryOp("**", %26, %27)
-    %29 = BinaryOp("/", %25, %28)
-    Call(println, [%29], ["borrow"])
-    %30 = IntLiteral(10, int32)
-    %31 = IntLiteral(2, int32)
-    %32 = IntLiteral(3, int32)
-    %33 = BinaryOp("**", %31, %32)
-    %34 = BinaryOp("-", %30, %33)
-    Call(println, [%34], ["borrow"])
-    %35 = IntLiteral(2, int32)
-    %36 = UnaryOp("-", %35)
-    %37 = IntLiteral(5, int32)
-    %38 = BinaryOp("+", %36, %37)
-    Call(println, [%38], ["borrow"])
-    %39 = IntLiteral(3, int32)
-    %40 = UnaryOp("-", %39)
-    %41 = IntLiteral(3, int32)
-    %42 = UnaryOp("-", %41)
-    %43 = BinaryOp("*", %40, %42)
-    Call(println, [%43], ["borrow"])
-    %44 = IntLiteral(2, int32)
-    %45 = IntLiteral(3, int32)
-    %46 = BinaryOp("+", %44, %45)
-    %47 = IntLiteral(4, int32)
-    %48 = BinaryOp(">", %46, %47)
-    DeclareLocal("r1", bool, %48)
-    %49 = IntLiteral(2, int32)
-    %50 = IntLiteral(3, int32)
-    %51 = BinaryOp("+", %49, %50)
-    %52 = IntLiteral(4, int32)
-    %53 = BinaryOp("<", %51, %52)
-    DeclareLocal("r2", bool, %53)
-    %54 = IntLiteral(2, int32)
-    %55 = IntLiteral(3, int32)
-    %56 = BinaryOp("*", %54, %55)
-    %57 = IntLiteral(6, int32)
-    %58 = BinaryOp("==", %56, %57)
-    DeclareLocal("r3", bool, %58)
-    %59 = IntLiteral(10, int32)
-    %60 = IntLiteral(4, int32)
-    %61 = BinaryOp("-", %59, %60)
-    %62 = IntLiteral(7, int32)
-    %63 = BinaryOp("!=", %61, %62)
-    DeclareLocal("r4", bool, %63)
-    %64 = LoadVar("r1") -> bool
-    Call(println, [%64], ["borrow"])
-    %65 = LoadVar("r2") -> bool
-    Call(println, [%65], ["borrow"])
-    %66 = LoadVar("r3") -> bool
-    Call(println, [%66], ["borrow"])
-    %67 = LoadVar("r4") -> bool
-    Call(println, [%67], ["borrow"])
-    %68 = BoolLiteral(true, bool)
-    DeclareLocal("__sc_1", bool, %68)
-    %69 = LoadVar("__sc_1") -> bool
-    Branch(%69, block_2, block_1)
+function @main() -> void {
+  L0:
+    %0 = const.int32 2
+    %1 = const.int32 3
+    %2 = const.int32 4
+    %3 = binop "*", %1, %2
+    %4 = binop "+", %0, %3
+    call @println(%4 borrow)
+    %5 = const.int32 10
+    %6 = const.int32 2
+    %7 = const.int32 3
+    %8 = binop "*", %6, %7
+    %9 = binop "-", %5, %8
+    call @println(%9 borrow)
+    %10 = const.int32 10
+    %11 = const.int32 2
+    %12 = binop "/", %10, %11
+    %13 = const.int32 3
+    %14 = binop "+", %12, %13
+    call @println(%14 borrow)
+    %15 = const.int32 10
+    %16 = const.int32 3
+    %17 = binop "%", %15, %16
+    %18 = const.int32 1
+    %19 = binop "+", %17, %18
+    call @println(%19 borrow)
+    %20 = const.int32 2
+    %21 = const.int32 3
+    %22 = const.int32 2
+    %23 = binop "**", %21, %22
+    %24 = binop "*", %20, %23
+    call @println(%24 borrow)
+    %25 = const.int32 4
+    %26 = const.int32 2
+    %27 = const.int32 2
+    %28 = binop "**", %26, %27
+    %29 = binop "/", %25, %28
+    call @println(%29 borrow)
+    %30 = const.int32 10
+    %31 = const.int32 2
+    %32 = const.int32 3
+    %33 = binop "**", %31, %32
+    %34 = binop "-", %30, %33
+    call @println(%34 borrow)
+    %35 = const.int32 2
+    %36 = unop "-", %35
+    %37 = const.int32 5
+    %38 = binop "+", %36, %37
+    call @println(%38 borrow)
+    %39 = const.int32 3
+    %40 = unop "-", %39
+    %41 = const.int32 3
+    %42 = unop "-", %41
+    %43 = binop "*", %40, %42
+    call @println(%43 borrow)
+    %44 = const.int32 2
+    %45 = const.int32 3
+    %46 = binop "+", %44, %45
+    %47 = const.int32 4
+    %48 = binop ">", %46, %47
+    local r1: bool = %48
+    %49 = const.int32 2
+    %50 = const.int32 3
+    %51 = binop "+", %49, %50
+    %52 = const.int32 4
+    %53 = binop "<", %51, %52
+    local r2: bool = %53
+    %54 = const.int32 2
+    %55 = const.int32 3
+    %56 = binop "*", %54, %55
+    %57 = const.int32 6
+    %58 = binop "==", %56, %57
+    local r3: bool = %58
+    %59 = const.int32 10
+    %60 = const.int32 4
+    %61 = binop "-", %59, %60
+    %62 = const.int32 7
+    %63 = binop "!=", %61, %62
+    local r4: bool = %63
+    %64 = loadvar.bool r1
+    call @println(%64 borrow)
+    %65 = loadvar.bool r2
+    call @println(%65 borrow)
+    %66 = loadvar.bool r3
+    call @println(%66 borrow)
+    %67 = loadvar.bool r4
+    call @println(%67 borrow)
+    %68 = bconst true
+    local __sc_1: bool = %68
+    %69 = loadvar.bool __sc_1
+    br %69, L2, L1
 
-  block_1:
-    %70 = BoolLiteral(false, bool)
-    DeclareLocal("__sc_2", bool, %70)
-    %71 = LoadVar("__sc_2") -> bool
-    Branch(%71, block_3, block_4)
+  L1:
+    %70 = bconst false
+    local __sc_2: bool = %70
+    %71 = loadvar.bool __sc_2
+    br %71, L3, L4
 
-  block_2:
-    %72 = LoadVar("__sc_1") -> bool
-    DeclareLocal("r5", bool, %72)
-    %73 = BoolLiteral(false, bool)
-    DeclareLocal("__sc_4", bool, %73)
-    %74 = LoadVar("__sc_4") -> bool
-    Branch(%74, block_5, block_6)
+  L2:
+    %72 = loadvar.bool __sc_1
+    local r5: bool = %72
+    %73 = bconst false
+    local __sc_4: bool = %73
+    %74 = loadvar.bool __sc_4
+    br %74, L5, L6
 
-  block_3:
-    %75 = BoolLiteral(false, bool)
-    StoreVar("__sc_2", %75)
-    Jump(block_4)
+  L3:
+    %75 = bconst false
+    storevar __sc_2, %75
+    jmp L4
 
-  block_4:
-    %76 = LoadVar("__sc_2") -> bool
-    StoreVar("__sc_1", %76)
-    Jump(block_2)
+  L4:
+    %76 = loadvar.bool __sc_2
+    storevar __sc_1, %76
+    jmp L2
 
-  block_5:
-    %77 = BoolLiteral(true, bool)
-    StoreVar("__sc_4", %77)
-    Jump(block_6)
+  L5:
+    %77 = bconst true
+    storevar __sc_4, %77
+    jmp L6
 
-  block_6:
-    %78 = LoadVar("__sc_4") -> bool
-    DeclareLocal("__sc_3", bool, %78)
-    %79 = LoadVar("__sc_3") -> bool
-    Branch(%79, block_8, block_7)
+  L6:
+    %78 = loadvar.bool __sc_4
+    local __sc_3: bool = %78
+    %79 = loadvar.bool __sc_3
+    br %79, L8, L7
 
-  block_7:
-    %80 = BoolLiteral(true, bool)
-    StoreVar("__sc_3", %80)
-    Jump(block_8)
+  L7:
+    %80 = bconst true
+    storevar __sc_3, %80
+    jmp L8
 
-  block_8:
-    %81 = LoadVar("__sc_3") -> bool
-    DeclareLocal("r6", bool, %81)
-    %82 = BoolLiteral(false, bool)
-    DeclareLocal("__sc_6", bool, %82)
-    %83 = LoadVar("__sc_6") -> bool
-    Branch(%83, block_9, block_10)
+  L8:
+    %81 = loadvar.bool __sc_3
+    local r6: bool = %81
+    %82 = bconst false
+    local __sc_6: bool = %82
+    %83 = loadvar.bool __sc_6
+    br %83, L9, L10
 
-  block_9:
-    %84 = BoolLiteral(false, bool)
-    StoreVar("__sc_6", %84)
-    Jump(block_10)
+  L9:
+    %84 = bconst false
+    storevar __sc_6, %84
+    jmp L10
 
-  block_10:
-    %85 = LoadVar("__sc_6") -> bool
-    DeclareLocal("__sc_5", bool, %85)
-    %86 = LoadVar("__sc_5") -> bool
-    Branch(%86, block_12, block_11)
+  L10:
+    %85 = loadvar.bool __sc_6
+    local __sc_5: bool = %85
+    %86 = loadvar.bool __sc_5
+    br %86, L12, L11
 
-  block_11:
-    %87 = BoolLiteral(false, bool)
-    StoreVar("__sc_5", %87)
-    Jump(block_12)
+  L11:
+    %87 = bconst false
+    storevar __sc_5, %87
+    jmp L12
 
-  block_12:
-    %88 = LoadVar("__sc_5") -> bool
-    DeclareLocal("r7", bool, %88)
-    %89 = LoadVar("r5") -> bool
-    Call(println, [%89], ["borrow"])
-    %90 = LoadVar("r6") -> bool
-    Call(println, [%90], ["borrow"])
-    %91 = LoadVar("r7") -> bool
-    Call(println, [%91], ["borrow"])
-    %92 = IntLiteral(4, int32)
-    DeclareLocal("a", int32, %92)
-    %93 = IntLiteral(2, int32)
-    DeclareLocal("b", int32, %93)
-    %94 = IntLiteral(3, int32)
-    DeclareLocal("c", int32, %94)
-    %95 = LoadVar("a") -> int32
-    %96 = LoadVar("b") -> int32
-    %97 = LoadVar("c") -> int32
-    %98 = BinaryOp("*", %96, %97)
-    %99 = BinaryOp("+", %95, %98)
-    %100 = LoadVar("a") -> int32
-    %101 = LoadVar("b") -> int32
-    %102 = BinaryOp("*", %100, %101)
-    %103 = LoadVar("c") -> int32
-    %104 = BinaryOp("+", %102, %103)
-    %105 = BinaryOp(">", %99, %104)
-    DeclareLocal("r8", bool, %105)
-    %106 = LoadVar("a") -> int32
-    %107 = LoadVar("b") -> int32
-    %108 = BinaryOp("*", %106, %107)
-    %109 = LoadVar("c") -> int32
-    %110 = BinaryOp("+", %108, %109)
-    %111 = LoadVar("a") -> int32
-    %112 = LoadVar("b") -> int32
-    %113 = BinaryOp("+", %111, %112)
-    %114 = LoadVar("c") -> int32
-    %115 = BinaryOp("+", %113, %114)
-    %116 = BinaryOp("==", %110, %115)
-    DeclareLocal("r9", bool, %116)
-    %117 = LoadVar("r8") -> bool
-    Call(println, [%117], ["borrow"])
-    %118 = LoadVar("r9") -> bool
-    Call(println, [%118], ["borrow"])
-    %119 = IntLiteral(2, int32)
-    %120 = IntLiteral(3, int32)
-    %121 = BinaryOp("+", %119, %120)
-    %122 = IntLiteral(4, int32)
-    %123 = BinaryOp("*", %121, %122)
-    Call(println, [%123], ["borrow"])
-    %124 = IntLiteral(2, int32)
-    %125 = IntLiteral(3, int32)
-    %126 = IntLiteral(4, int32)
-    %127 = BinaryOp("+", %125, %126)
-    %128 = BinaryOp("*", %124, %127)
-    Call(println, [%128], ["borrow"])
-    %129 = IntLiteral(10, int32)
-    %130 = IntLiteral(2, int32)
-    %131 = BinaryOp("-", %129, %130)
-    %132 = IntLiteral(2, int32)
-    %133 = BinaryOp("**", %131, %132)
-    Call(println, [%133], ["borrow"])
-    Return()
+  L12:
+    %88 = loadvar.bool __sc_5
+    local r7: bool = %88
+    %89 = loadvar.bool r5
+    call @println(%89 borrow)
+    %90 = loadvar.bool r6
+    call @println(%90 borrow)
+    %91 = loadvar.bool r7
+    call @println(%91 borrow)
+    %92 = const.int32 4
+    local a: int32 = %92
+    %93 = const.int32 2
+    local b: int32 = %93
+    %94 = const.int32 3
+    local c: int32 = %94
+    %95 = loadvar.int32 a
+    %96 = loadvar.int32 b
+    %97 = loadvar.int32 c
+    %98 = binop "*", %96, %97
+    %99 = binop "+", %95, %98
+    %100 = loadvar.int32 a
+    %101 = loadvar.int32 b
+    %102 = binop "*", %100, %101
+    %103 = loadvar.int32 c
+    %104 = binop "+", %102, %103
+    %105 = binop ">", %99, %104
+    local r8: bool = %105
+    %106 = loadvar.int32 a
+    %107 = loadvar.int32 b
+    %108 = binop "*", %106, %107
+    %109 = loadvar.int32 c
+    %110 = binop "+", %108, %109
+    %111 = loadvar.int32 a
+    %112 = loadvar.int32 b
+    %113 = binop "+", %111, %112
+    %114 = loadvar.int32 c
+    %115 = binop "+", %113, %114
+    %116 = binop "==", %110, %115
+    local r9: bool = %116
+    %117 = loadvar.bool r8
+    call @println(%117 borrow)
+    %118 = loadvar.bool r9
+    call @println(%118 borrow)
+    %119 = const.int32 2
+    %120 = const.int32 3
+    %121 = binop "+", %119, %120
+    %122 = const.int32 4
+    %123 = binop "*", %121, %122
+    call @println(%123 borrow)
+    %124 = const.int32 2
+    %125 = const.int32 3
+    %126 = const.int32 4
+    %127 = binop "+", %125, %126
+    %128 = binop "*", %124, %127
+    call @println(%128 borrow)
+    %129 = const.int32 10
+    %130 = const.int32 2
+    %131 = binop "-", %129, %130
+    %132 = const.int32 2
+    %133 = binop "**", %131, %132
+    call @println(%133 borrow)
+    ret
 }

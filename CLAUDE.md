@@ -169,7 +169,6 @@ The table below reflects the **current implementation status** of major language
 | Self-hosted toolchain (Python x86-64 assembler + PE writer; no external tools) | [IMPLEMENTED] |
 | firescript-implemented runtime (`std/internal/runtime.fire`) | [IMPLEMENTED] |
 | Linux / macOS native targets | [PLANNED] |
-| JavaScript + Wasm compilation target | [PLANNED] |
 | Dynamic arrays (stdlib) | [PLANNED] |
 | Built-in `input()` function | Removed in current dev cycle |
 | `enum` declarations, tag-only and named-data-payload variants (`Circle(float64 radius)`) | [IMPLEMENTED] |

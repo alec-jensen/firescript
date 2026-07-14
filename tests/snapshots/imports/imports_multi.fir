@@ -1,84 +1,84 @@
-module imports_multi
+fir module imports_multi
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function square(x: int32) -> int32 {
-  block_0:
-    %0 = LoadVar("x") -> int32
-    %1 = LoadVar("x") -> int32
-    %2 = BinaryOp("*", %0, %1)
-    Return(%2)
+function @square(x: int32) -> int32 {
+  L0:
+    %0 = loadvar.int32 x
+    %1 = loadvar.int32 x
+    %2 = binop "*", %0, %1
+    ret %2
 }
 
-function double_val(x: int32) -> int32 {
-  block_0:
-    %0 = LoadVar("x") -> int32
-    %1 = LoadVar("x") -> int32
-    %2 = BinaryOp("+", %0, %1)
-    Return(%2)
+function @double_val(x: int32) -> int32 {
+  L0:
+    %0 = loadvar.int32 x
+    %1 = loadvar.int32 x
+    %2 = binop "+", %0, %1
+    ret %2
 }
 
-function wrap(s: string) -> string {
-  block_0:
-    %0 = StringLiteral("[", string)
-    %1 = LoadVar("s") -> string
-    %2 = BinaryOp("+", %0, %1)
-    %3 = StringLiteral("]", string)
-    %4 = BinaryOp("+", %2, %3)
-    %5 = LoadVar("s") -> string
-    Drop(%5)
-    Return(%4)
+function @wrap(s: string) -> string {
+  L0:
+    %0 = strconst "["
+    %1 = loadvar.string s
+    %2 = binop "+", %0, %1
+    %3 = strconst "]"
+    %4 = binop "+", %2, %3
+    %5 = loadvar.string s
+    drop %5
+    ret %4
 }
 
-function main() -> void {
-  block_0:
-    %0 = IntLiteral(100, int32)
-    DeclareLocal("MAX", int32, %0)
-    %1 = StringLiteral("-- Math Operations --", string)
-    Call(println, [%1], ["borrow"])
-    %2 = IntLiteral(5, int32)
-    %3 = Call(square, [%2], ["own"]) -> int32
-    Call(println, [%3], ["borrow"])
-    %4 = IntLiteral(10, int32)
-    %5 = Call(square, [%4], ["own"]) -> int32
-    Call(println, [%5], ["borrow"])
-    %6 = LoadVar("MAX") -> int32
-    Call(println, [%6], ["borrow"])
-    %7 = StringLiteral("-- String Operations --", string)
-    Call(println, [%7], ["borrow"])
-    %8 = StringLiteral("hello", string)
-    %9 = Call(wrap, [%8], ["own"]) -> string
-    Call(println, [%9], ["borrow"])
-    %10 = StringLiteral("imports work", string)
-    %11 = Call(wrap, [%10], ["own"]) -> string
-    Call(println, [%11], ["borrow"])
-    Return()
+function @main() -> void {
+  L0:
+    %0 = const.int32 100
+    local MAX: int32 = %0
+    %1 = strconst "-- Math Operations --"
+    call @println(%1 borrow)
+    %2 = const.int32 5
+    %3 = call.int32 @square(%2 own)
+    call @println(%3 borrow)
+    %4 = const.int32 10
+    %5 = call.int32 @square(%4 own)
+    call @println(%5 borrow)
+    %6 = loadvar.int32 MAX
+    call @println(%6 borrow)
+    %7 = strconst "-- String Operations --"
+    call @println(%7 borrow)
+    %8 = strconst "hello"
+    %9 = call.string @wrap(%8 own)
+    call @println(%9 borrow)
+    %10 = strconst "imports work"
+    %11 = call.string @wrap(%10 own)
+    call @println(%11 borrow)
+    ret
 }

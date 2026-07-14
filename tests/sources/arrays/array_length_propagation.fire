@@ -1,0 +1,35 @@
+import @firescript/std.io.println;
+
+// Exercises length propagation in lower_declare_local (firescript/flir/
+// lowering.py) when an unsized-array local is initialized from another
+// array whose length is only known at runtime (a slot-tracked param array)
+// vs. one whose length is statically known (a fixed-size array literal).
+
+int32 sumOf(int32[] values) {
+    // `mirror` has no declared size, so its length comes from propagating
+    // the ("slot", "<name>_len") metadata of the `values` parameter.
+    int32[] mirror = values;
+    int32 total = 0i32;
+    for (int32 i = 0i32; i < mirror.length(); i++) {
+        total += mirror[i];
+    }
+    return total;
+}
+
+int32[3] fixed = [1i32, 2i32, 3i32];
+// `copy` has no declared size either, but its initializer `fixed` has a
+// statically known size, so the length propagates as a ("const", 3) entry.
+int32[] copy = fixed;
+println(copy.length());
+println(copy[0i32]);
+println(copy[2i32]);
+
+int32[] source = [5i32, 10i32, 15i32, 20i32];
+println(sumOf(source));
+
+/* EXPECT
+3
+1
+3
+50
+*/

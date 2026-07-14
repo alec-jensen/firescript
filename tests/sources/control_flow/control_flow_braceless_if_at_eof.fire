@@ -1,0 +1,13 @@
+// A braceless `if` whose body statement is simply absent (the file ends
+// right after the condition) is tolerated: `_parse_braceless_body` gets
+// None back from `_parse_statement()` at EOF and just produces an empty
+// scope rather than an error. Exercises that EOF fallthrough directly.
+import @firescript/std.io.println;
+
+bool b = true;
+println(1);
+if (b)
+
+/* EXPECT
+1
+*/

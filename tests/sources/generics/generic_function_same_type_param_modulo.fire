@@ -1,0 +1,18 @@
+//@ snapshot: fir, flir
+import @firescript/std.io.println;
+
+// A generic function using '%' between two operands of the same (still
+// abstract) type parameter -- exercises the type-parameter-match branch of
+// the '%' operator's type check, distinct from the concrete-integer-type
+// branch already covered by other modulo tests.
+constraint Numeric = int32 | float32;
+
+T modT<T: Numeric>(T a, T b) {
+    return a % b;
+}
+
+println(modT(5, 2));
+
+/* EXPECT
+1
+*/

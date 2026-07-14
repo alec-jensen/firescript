@@ -1,0 +1,5 @@
+// Dangling 'else' with no matching 'if', in isolation (statement_form_errors.fire
+// has one too, but a preceding recovery there apparently swallows the
+// tokens before reaching it -- kept here as its own minimal, reliable case).
+int32 x = 1;
+else x++;  //~ ERROR FS-PARSE-0012 @1

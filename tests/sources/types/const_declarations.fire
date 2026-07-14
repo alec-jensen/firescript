@@ -4,15 +4,29 @@ import @firescript/std.io.println;
 const int32 MAX_USERS = 100;
 const float64 RATIO = 2.5;
 const int32 NEGATIVE = -7;
+// float32 const: exercises codegen/x86_64/flir_to_asm.py's _emit_globals()
+// dedicated f32 branch (globals are loaded as full qwords, but an f32
+// global stores its 4-byte bit pattern in the low half via a distinct
+// code path from the f64/int branches).
+const float32 SCALE = 1.5f;
+// Non-numeric const initializers (string/bool/char) are deliberately not
+// exercised here as .fire source -- all three currently fail to compile
+// end-to-end for unrelated, pre-existing reasons downstream of
+// ast_to_fir.py (see tests/python/fir/test_ast_to_fir_errors.py's
+// test_const_non_numeric_literal_initializers_reach_fir for the
+// documented bugs and the direct-to-FIR coverage of
+// _normalize_literal_text's STRING/BOOL/CHAR passthrough fallback).
 
 println(MAX_USERS);
 println(RATIO);
 println(NEGATIVE);
 println(MAX_USERS + 1);
+println(SCALE as string);
 
 /* EXPECT
 100
 2.500000
 -7
 101
+1.500000
 */

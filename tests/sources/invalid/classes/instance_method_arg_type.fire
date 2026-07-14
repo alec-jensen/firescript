@@ -1,0 +1,18 @@
+// Semantic error: instance method call with an argument of the wrong type.
+
+class Counter {
+    int32 value;
+
+    Counter(int32 value) {
+        this.value = value;
+    }
+
+    int32 add(int32 amount) {
+        return this.value + amount;
+    }
+}
+
+void instance_method_arg_type() {
+    Counter c = new Counter(0);
+    c.add("not a number");  //~ ERROR FS-SEM-0010 @11
+}

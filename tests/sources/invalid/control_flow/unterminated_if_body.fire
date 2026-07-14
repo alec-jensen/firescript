@@ -1,0 +1,4 @@
+// An `if` with a braceless body that has no statement at all before EOF.
+int32 main() {  //~ ERROR FS-PARSE-0010 @14
+    bool cond = true;
+    if (cond)

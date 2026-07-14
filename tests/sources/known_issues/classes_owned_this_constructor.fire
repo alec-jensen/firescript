@@ -1,0 +1,24 @@
+// KNOWN BUG: `owned this` as a constructor receiver parses successfully
+// (firescript/parser/declarations.py's constructor-parameter parsing has a
+// dedicated branch for it, alongside `&this`/`&mut this`) but the emitted
+// FIR is invalid: `this` gets dropped as an ordinary owned local at scope
+// exit and then read again by the implicit "return this" the constructor
+// synthesizes, so FIR ownership verification fails with FIRV-O1 (use after
+// drop). See docs/reference/memory_management.md's "Future syntax" note --
+// `owned this` receivers were only ever intended to be supported on regular
+// methods, not constructors, but the parser doesn't reject the constructor
+// form. Move this file back to tests/sources/classes/ (and regenerate the
+// EXPECT block) once ast_to_fir.py stops treating a consuming-receiver
+// constructor's `this` as needing a drop before its synthesized return.
+import @firescript/std.io.println;
+
+class Box {
+    int32 v;
+
+    Box(owned this, int32 v) {
+        this.v = v;
+    }
+}
+
+Box b = Box(5);
+println(b.v);

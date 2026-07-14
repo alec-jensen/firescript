@@ -87,7 +87,7 @@ class FIRFunction:
         return self._param_values[name]
 
     def new_block(self) -> BasicBlock:
-        block = BasicBlock(f"block_{self._block_counter}")
+        block = BasicBlock(f"L{self._block_counter}")
         self._block_counter += 1
         self.blocks.append(block)
         return block

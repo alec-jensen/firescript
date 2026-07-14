@@ -18,4 +18,14 @@ import @somebody/package;  //~ ERROR FS-PARSE-0012 @1
 // Missing package name after '@'
 import @;  //~ ERROR FS-PARSE-0010 @9
 
+// Missing identifier after '/' in external package name (@firescript/ form)
+import @firescript/;  //~ ERROR FS-PARSE-0010 @20
+
+// Unknown token after '.' while scanning the @firescript/ dotted path
+import @firescript/std.!;  //~ ERROR FS-PARSE-0010 @24
+
+// Excessively long dotted path (@firescript/ form) trips the iteration guard
+import @firescript/std.s0.s1.s2.s3.s4.s5.s6.s7.s8.s9.s10.s11.s12.s13.s14.s15.s16.s17.s18.s19.s20.s21.s22.s23.s24;  //~ ERROR FS-PARSE-0012 @93
+//~^ ERROR FS-PARSE-0010 @113
+
 int32 x = 1;

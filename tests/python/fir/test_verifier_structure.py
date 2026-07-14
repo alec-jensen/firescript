@@ -14,7 +14,20 @@ from harness.config import REPO_ROOT
 sys.path.insert(0, os.path.join(REPO_ROOT, "firescript"))
 
 from errors import IRVerificationError  # noqa: E402
-from fir import FIRBuilder, FIRFunction, FIRModule, make_simple  # noqa: E402
+from fir import FIRBuilder, FIRFunction, FIRModule, TypeDef, make_simple  # noqa: E402
+from fir.ir_module import GlobalConstant  # noqa: E402
+from fir.ir_node import CallInst, FIRValue, IntLiteralInst, ParamValue  # noqa: E402
+from fir.ir_types import GenericInstanceType  # noqa: E402
+
+INT32 = make_simple("int32")
+
+
+def _expect_rule(module: FIRModule, rule_id: str) -> None:
+    try:
+        module.validate()
+        t.require(False, f"no error raised (expected {rule_id})")
+    except IRVerificationError as e:
+        t.require(any(v.rule_id == rule_id for v in e.violations), f"{rule_id} not in: {e}")
 
 
 def test_validation_rejects_missing_terminator():
@@ -127,3 +140,179 @@ def test_validation_accepts_clean_module():
     builder.ret(result)
 
     module.validate()  # must not raise
+
+
+# ---------------------------------------------------------------------------
+# FIRV-S6: module-level duplicate names, malformed enum/type-reference rules.
+# ---------------------------------------------------------------------------
+
+def test_s6_duplicate_type_name():
+    module = FIRModule("firescript")
+    module.add_type(TypeDef("Point", "owned", fields=[("x", INT32)]))
+    module.add_type(TypeDef("Point", "owned", fields=[("y", INT32)]))
+    func = FIRFunction("f", return_type=None)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    b.ret()
+    _expect_rule(module, "FIRV-S6")
+
+
+def test_s6_duplicate_function_name():
+    module = FIRModule("firescript")
+    f1 = FIRFunction("dup", return_type=None)
+    b1 = FIRBuilder(f1)
+    b1.ret()
+    module.add_function(f1)
+    f2 = FIRFunction("dup", return_type=None)
+    b2 = FIRBuilder(f2)
+    b2.ret()
+    module.add_function(f2)
+    _expect_rule(module, "FIRV-S6")
+
+
+def test_s6_duplicate_constant_name():
+    module = FIRModule("firescript")
+    module.add_constant(GlobalConstant("K", INT32, "1"))
+    module.add_constant(GlobalConstant("K", INT32, "2"))
+    func = FIRFunction("f", return_type=None)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    b.ret()
+    _expect_rule(module, "FIRV-S6")
+
+
+def test_s6_enum_with_no_variants():
+    module = FIRModule("firescript")
+    module.add_type(TypeDef("E", "owned", kind="enum", variants=[]))
+    func = FIRFunction("f", return_type=None)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    b.ret()
+    _expect_rule(module, "FIRV-S6")
+
+
+def test_s6_enum_must_not_have_base():
+    from fir.ir_module import EnumVariantDef
+
+    module = FIRModule("firescript")
+    module.add_type(TypeDef("Base", "owned", fields=[]))
+    module.add_type(TypeDef("E", "owned", kind="enum", base="Base", variants=[EnumVariantDef("A")]))
+    func = FIRFunction("f", return_type=None)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    b.ret()
+    _expect_rule(module, "FIRV-S6")
+
+
+def test_s6_unresolved_base_type():
+    module = FIRModule("firescript")
+    module.add_type(TypeDef("Derived", "owned", base="DoesNotExist"))
+    func = FIRFunction("f", return_type=None)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    b.ret()
+    _expect_rule(module, "FIRV-S6")
+
+
+def test_s6_cyclic_base_chain():
+    module = FIRModule("firescript")
+    module.add_type(TypeDef("A", "owned", base="B"))
+    module.add_type(TypeDef("B", "owned", base="A"))
+    func = FIRFunction("f", return_type=None)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    b.ret()
+    _expect_rule(module, "FIRV-S6")
+
+
+def test_s6_generic_type_reference_omits_type_args():
+    module = FIRModule("firescript")
+    module.add_type(TypeDef("Box", "owned", fields=[("v", INT32)], generic_params=["T"]))
+    # "Holder" has a field of bare type "Box" -- Box is generic and needs
+    # type arguments (GenericInstanceType), so a bare SimpleType reference
+    # to it is malformed.
+    module.add_type(TypeDef("Holder", "owned", fields=[("b", make_simple("Box"))]))
+    func = FIRFunction("f", return_type=None)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    b.ret()
+    _expect_rule(module, "FIRV-S6")
+
+
+def test_s6_generic_instance_wrong_arg_count():
+    module = FIRModule("firescript")
+    module.add_type(TypeDef("Box", "owned", fields=[("v", INT32)], generic_params=["T"]))
+    bad_ref = GenericInstanceType("Box", [INT32, INT32])  # Box only takes 1
+    module.add_type(TypeDef("Holder", "owned", fields=[("b", bad_ref)]))
+    func = FIRFunction("f", return_type=None)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    b.ret()
+    _expect_rule(module, "FIRV-S6")
+
+
+# ---------------------------------------------------------------------------
+# FIRV-D1-D3: operand resolution failures.
+# ---------------------------------------------------------------------------
+
+def test_d1_operand_foreign_to_function():
+    module = FIRModule("firescript")
+    func = FIRFunction("f", return_type=INT32)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    # An instruction that was never added to any block of `func` (or any
+    # function in the module): its FIRValue has no entry in def_positions.
+    stray_inst = IntLiteralInst("1", INT32)
+    stray_value = FIRValue(stray_inst)
+    b.ret(stray_value)
+    _expect_rule(module, "FIRV-D1")
+
+
+def test_d1_operand_from_unreachable_block():
+    module = FIRModule("firescript")
+    func = FIRFunction("f", return_type=INT32)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    entry = b.current_block
+    orphan = func.new_block()  # nothing branches/jumps to it -- unreachable
+    b.position_at(orphan)
+    orphan_value = b.int_literal("1", INT32)
+    b.ret(orphan_value)
+    b.position_at(entry)
+    b.ret(orphan_value)  # entry (reachable) uses orphan's (unreachable) value
+    _expect_rule(module, "FIRV-D1")
+
+
+def test_d2_paramvalue_unknown_name():
+    module = FIRModule("firescript")
+    func = FIRFunction("f", return_type=INT32)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    bogus_param = ParamValue("does_not_exist", INT32)
+    b.ret(bogus_param)
+    _expect_rule(module, "FIRV-D2")
+
+
+def test_d3_operand_has_void_result_type():
+    module = FIRModule("firescript")
+    func = FIRFunction("f", return_type=INT32)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    # A void-result instruction: block.add_instruction() would normally
+    # return None for it (has_result() is False), so build the FIRValue
+    # directly via .result() and splice it into the block by hand to get
+    # an operand whose producing instruction's result_type is void.
+    void_inst = CallInst("does_not_exist", [], [], None)
+    void_value = void_inst.result()
+    b.current_block.instructions.append(void_inst)
+    b.ret(void_value)  # used as if it produced a value
+    _expect_rule(module, "FIRV-D3")
+
+
+def test_d1_unsupported_operand_kind():
+    module = FIRModule("firescript")
+    func = FIRFunction("f", return_type=INT32)
+    module.add_function(func)
+    b = FIRBuilder(func)
+    b.ret("not_a_value")  # neither ParamValue nor FIRValue
+    _expect_rule(module, "FIRV-D1")

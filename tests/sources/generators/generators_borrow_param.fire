@@ -1,0 +1,21 @@
+import @firescript/std.io.println;
+
+class Box {
+    int32 v;
+    Box(int32 v) { this.v = v; }
+}
+
+generator<int32> peekTwice(&Box b) {
+    yield b.v;
+    yield b.v;
+}
+
+Box box = Box(7);
+for (int32 x in peekTwice(box)) {
+    println(x);
+}
+
+/* EXPECT
+7
+7
+*/

@@ -1,0 +1,7 @@
+// Semantic type error: logical operators require bool operands.
+
+void logical_non_bool() {
+    int32 a = 5;
+    int32 b = 6;
+    bool c = a && b;  //~ ERROR FS-SEM-0010 @16
+}

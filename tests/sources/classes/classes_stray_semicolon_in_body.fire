@@ -1,0 +1,17 @@
+import @firescript/std.io.println;
+
+class Box {
+    ;
+    int32 v;
+
+    Box(int32 v) {
+        this.v = v;
+    }
+}
+
+Box b = Box(7);
+println(b.v);
+
+/* EXPECT
+7
+*/

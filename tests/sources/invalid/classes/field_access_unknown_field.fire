@@ -1,0 +1,16 @@
+// Semantic error: accessing a field that does not exist on the class.
+
+class Point {
+    int32 x;
+    int32 y;
+
+    Point(int32 x, int32 y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+void field_access_unknown_field() {
+    Point p = new Point(1, 2);
+    int32 z = p.z;  //~ ERROR FS-SEM-0010 @17
+}

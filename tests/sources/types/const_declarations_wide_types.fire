@@ -1,0 +1,37 @@
+// Top-level const declaration for float32, plus string literal escape
+// edge cases (escaped single quote, trailing backslash) that exercise
+// the asm backend's .asciz escaping (flir_to_asm.py _escape_asciz /
+// _emit_globals float32 global path).
+//
+// NOTE: a `const float128 X = ...f128;` case was tried here too, but it
+// was dropped: GlobalLoad in firescript/codegen/x86_64/flir_to_asm.py
+// (around line 492-497) always emits a single 8-byte `mov qword ptr`
+// regardless of the global's type size, so a 16-byte float128 global
+// constant reads back with its high qword (sign/exponent/high mantissa)
+// lost -- `const float128 PI128 = 1.5f128; println(PI128);` prints
+// "0.000000" instead of "1.500000". That looks like a real bug in the
+// backend's global-load codegen (it never special-cases struct-kind /
+// >8-byte globals), not a problem with this test. Reported separately;
+// not worked around here since it would mean blessing wrong output.
+import @firescript/std.io.println;
+
+const float32 PI32 = 3.5f32;
+
+// Declared (but never loaded) so the compiler still has to emit its
+// rodata bytes -- see the note above about why this global is never
+// read back via println here.
+const float128 PI128_UNUSED = 1.5f128;
+
+println(PI32);
+
+string quoted = "it\'s here";
+println(quoted);
+
+string trailing = "end\\";
+println(trailing);
+
+/* EXPECT
+3.500000
+it's here
+end\
+*/

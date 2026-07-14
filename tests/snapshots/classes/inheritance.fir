@@ -1,4 +1,4 @@
-module inheritance
+fir module inheritance
 
 type Person owned {
   name: string
@@ -33,358 +33,358 @@ type D owned : C {
   did: string
 }
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function Person.Person(name: string, age: int32) -> Person {
-  block_0:
-    %0 = Allocate(Person, [])
-    DeclareLocal("this", Person, %0)
-    %1 = LoadVar("name") -> string
-    %2 = LoadVar("this") -> Person
-    StoreField(%2, "name", %1)
-    %3 = LoadVar("age") -> int32
-    %4 = LoadVar("this") -> Person
-    StoreField(%4, "age", %3)
-    %5 = LoadVar("this") -> Person
-    Return(%5)
+function @Person.Person(name: string, age: int32) -> Person {
+  L0:
+    %0 = alloc.Person()
+    local this: Person = %0
+    %1 = loadvar.string name
+    %2 = loadvar.Person this
+    storefield %2, "name", %1
+    %3 = loadvar.int32 age
+    %4 = loadvar.Person this
+    storefield %4, "age", %3
+    %5 = loadvar.Person this
+    ret %5
 }
 
-function Person.describe(this: &Person) -> string {
-  block_0:
-    %0 = LoadVar("this") -> Person
-    %1 = LoadField(%0, "name")
-    %2 = StringLiteral(" is ", string)
-    %3 = BinaryOp("+", %1, %2)
-    %4 = LoadVar("this") -> Person
-    %5 = LoadField(%4, "age")
-    %6 = Call(toString, [%5], ["borrow"]) -> string
-    %7 = BinaryOp("+", %3, %6)
-    Return(%7)
+function @Person.describe(this: &Person) -> string {
+  L0:
+    %0 = loadvar.Person this
+    %1 = loadfield.string %0, "name"
+    %2 = strconst " is "
+    %3 = binop "+", %1, %2
+    %4 = loadvar.Person this
+    %5 = loadfield.int32 %4, "age"
+    %6 = call.string @toString(%5 borrow)
+    %7 = binop "+", %3, %6
+    ret %7
 }
 
-function Student.Student(name: string, age: int32, school: string) -> Student {
-  block_0:
-    %0 = Allocate(Student, [])
-    DeclareLocal("this", Student, %0)
-    %1 = LoadVar("name") -> string
-    %2 = LoadVar("age") -> int32
-    %3 = Call(Person.Person, [%1, %2], ["own", "own"]) -> Person
-    %4 = LoadVar("this") -> Student
-    %5 = LoadField(%3, "name")
-    StoreField(%4, "name", %5)
-    %6 = LoadField(%3, "age")
-    StoreField(%4, "age", %6)
-    Call(free_shallow, [%3], ["own"])
-    %7 = LoadVar("school") -> string
-    %8 = LoadVar("this") -> Student
-    StoreField(%8, "school", %7)
-    %9 = LoadVar("this") -> Student
-    Return(%9)
+function @Student.Student(name: string, age: int32, school: string) -> Student {
+  L0:
+    %0 = alloc.Student()
+    local this: Student = %0
+    %1 = loadvar.string name
+    %2 = loadvar.int32 age
+    %3 = call.Person @Person.Person(%1 own, %2 own)
+    %4 = loadvar.Student this
+    %5 = loadfield.string %3, "name"
+    storefield %4, "name", %5
+    %6 = loadfield.int32 %3, "age"
+    storefield %4, "age", %6
+    call @free_shallow(%3 own)
+    %7 = loadvar.string school
+    %8 = loadvar.Student this
+    storefield %8, "school", %7
+    %9 = loadvar.Student this
+    ret %9
 }
 
-function Student.describe(this: &Student) -> string {
-  block_0:
-    %0 = LoadVar("this") -> Student
-    %1 = LoadField(%0, "name")
-    %2 = StringLiteral(" is ", string)
-    %3 = BinaryOp("+", %1, %2)
-    %4 = LoadVar("this") -> Student
-    %5 = LoadField(%4, "age")
-    %6 = Call(toString, [%5], ["borrow"]) -> string
-    %7 = BinaryOp("+", %3, %6)
-    %8 = StringLiteral(" at ", string)
-    %9 = BinaryOp("+", %7, %8)
-    %10 = LoadVar("this") -> Student
-    %11 = LoadField(%10, "school")
-    %12 = BinaryOp("+", %9, %11)
-    Return(%12)
+function @Student.describe(this: &Student) -> string {
+  L0:
+    %0 = loadvar.Student this
+    %1 = loadfield.string %0, "name"
+    %2 = strconst " is "
+    %3 = binop "+", %1, %2
+    %4 = loadvar.Student this
+    %5 = loadfield.int32 %4, "age"
+    %6 = call.string @toString(%5 borrow)
+    %7 = binop "+", %3, %6
+    %8 = strconst " at "
+    %9 = binop "+", %7, %8
+    %10 = loadvar.Student this
+    %11 = loadfield.string %10, "school"
+    %12 = binop "+", %9, %11
+    ret %12
 }
 
-function A.A(id: string) -> A {
-  block_0:
-    %0 = Allocate(A, [])
-    DeclareLocal("this", A, %0)
-    %1 = LoadVar("id") -> string
-    %2 = LoadVar("this") -> A
-    StoreField(%2, "id", %1)
-    %3 = LoadVar("this") -> A
-    Return(%3)
+function @A.A(id: string) -> A {
+  L0:
+    %0 = alloc.A()
+    local this: A = %0
+    %1 = loadvar.string id
+    %2 = loadvar.A this
+    storefield %2, "id", %1
+    %3 = loadvar.A this
+    ret %3
 }
 
-function A.root(this: &A) -> string {
-  block_0:
-    %0 = LoadVar("this") -> A
-    %1 = LoadField(%0, "id")
-    Return(%1)
+function @A.root(this: &A) -> string {
+  L0:
+    %0 = loadvar.A this
+    %1 = loadfield.string %0, "id"
+    ret %1
 }
 
-function A.chain(this: &A) -> string {
-  block_0:
-    %0 = StringLiteral("A(", string)
-    %1 = LoadVar("this") -> A
-    %2 = LoadField(%1, "id")
-    %3 = BinaryOp("+", %0, %2)
-    %4 = StringLiteral(")", string)
-    %5 = BinaryOp("+", %3, %4)
-    Return(%5)
+function @A.chain(this: &A) -> string {
+  L0:
+    %0 = strconst "A("
+    %1 = loadvar.A this
+    %2 = loadfield.string %1, "id"
+    %3 = binop "+", %0, %2
+    %4 = strconst ")"
+    %5 = binop "+", %3, %4
+    ret %5
 }
 
-function B.B(id: string, bid: string) -> B {
-  block_0:
-    %0 = Allocate(B, [])
-    DeclareLocal("this", B, %0)
-    %1 = LoadVar("id") -> string
-    %2 = Call(A.A, [%1], ["own"]) -> A
-    %3 = LoadVar("this") -> B
-    %4 = LoadField(%2, "id")
-    StoreField(%3, "id", %4)
-    Call(free_shallow, [%2], ["own"])
-    %5 = LoadVar("bid") -> string
-    %6 = LoadVar("this") -> B
-    StoreField(%6, "bid", %5)
-    %7 = LoadVar("this") -> B
-    Return(%7)
+function @B.B(id: string, bid: string) -> B {
+  L0:
+    %0 = alloc.B()
+    local this: B = %0
+    %1 = loadvar.string id
+    %2 = call.A @A.A(%1 own)
+    %3 = loadvar.B this
+    %4 = loadfield.string %2, "id"
+    storefield %3, "id", %4
+    call @free_shallow(%2 own)
+    %5 = loadvar.string bid
+    %6 = loadvar.B this
+    storefield %6, "bid", %5
+    %7 = loadvar.B this
+    ret %7
 }
 
-function B.onlyB(this: &B) -> string {
-  block_0:
-    %0 = LoadVar("this") -> B
-    %1 = LoadField(%0, "bid")
-    Return(%1)
+function @B.onlyB(this: &B) -> string {
+  L0:
+    %0 = loadvar.B this
+    %1 = loadfield.string %0, "bid"
+    ret %1
 }
 
-function B.chain(this: &B) -> string {
-  block_0:
-    %0 = StringLiteral("A(", string)
-    %1 = LoadVar("this") -> B
-    %2 = LoadField(%1, "id")
-    %3 = BinaryOp("+", %0, %2)
-    %4 = StringLiteral(")->B(", string)
-    %5 = BinaryOp("+", %3, %4)
-    %6 = LoadVar("this") -> B
-    %7 = LoadField(%6, "bid")
-    %8 = BinaryOp("+", %5, %7)
-    %9 = StringLiteral(")", string)
-    %10 = BinaryOp("+", %8, %9)
-    Return(%10)
+function @B.chain(this: &B) -> string {
+  L0:
+    %0 = strconst "A("
+    %1 = loadvar.B this
+    %2 = loadfield.string %1, "id"
+    %3 = binop "+", %0, %2
+    %4 = strconst ")->B("
+    %5 = binop "+", %3, %4
+    %6 = loadvar.B this
+    %7 = loadfield.string %6, "bid"
+    %8 = binop "+", %5, %7
+    %9 = strconst ")"
+    %10 = binop "+", %8, %9
+    ret %10
 }
 
-function B.root(this: &B) -> string {
-  block_0:
-    %0 = LoadVar("this") -> B
-    %1 = LoadField(%0, "id")
-    Return(%1)
+function @B.root(this: &B) -> string {
+  L0:
+    %0 = loadvar.B this
+    %1 = loadfield.string %0, "id"
+    ret %1
 }
 
-function C.C(id: string, bid: string, cid: string) -> C {
-  block_0:
-    %0 = Allocate(C, [])
-    DeclareLocal("this", C, %0)
-    %1 = LoadVar("id") -> string
-    %2 = LoadVar("bid") -> string
-    %3 = Call(B.B, [%1, %2], ["own", "own"]) -> B
-    %4 = LoadVar("this") -> C
-    %5 = LoadField(%3, "id")
-    StoreField(%4, "id", %5)
-    %6 = LoadField(%3, "bid")
-    StoreField(%4, "bid", %6)
-    Call(free_shallow, [%3], ["own"])
-    %7 = LoadVar("cid") -> string
-    %8 = LoadVar("this") -> C
-    StoreField(%8, "cid", %7)
-    %9 = LoadVar("this") -> C
-    Return(%9)
+function @C.C(id: string, bid: string, cid: string) -> C {
+  L0:
+    %0 = alloc.C()
+    local this: C = %0
+    %1 = loadvar.string id
+    %2 = loadvar.string bid
+    %3 = call.B @B.B(%1 own, %2 own)
+    %4 = loadvar.C this
+    %5 = loadfield.string %3, "id"
+    storefield %4, "id", %5
+    %6 = loadfield.string %3, "bid"
+    storefield %4, "bid", %6
+    call @free_shallow(%3 own)
+    %7 = loadvar.string cid
+    %8 = loadvar.C this
+    storefield %8, "cid", %7
+    %9 = loadvar.C this
+    ret %9
 }
 
-function C.onlyC(this: &C) -> string {
-  block_0:
-    %0 = LoadVar("this") -> C
-    %1 = LoadField(%0, "cid")
-    Return(%1)
+function @C.onlyC(this: &C) -> string {
+  L0:
+    %0 = loadvar.C this
+    %1 = loadfield.string %0, "cid"
+    ret %1
 }
 
-function C.chain(this: &C) -> string {
-  block_0:
-    %0 = StringLiteral("A(", string)
-    %1 = LoadVar("this") -> C
-    %2 = LoadField(%1, "id")
-    %3 = BinaryOp("+", %0, %2)
-    %4 = StringLiteral(")->B(", string)
-    %5 = BinaryOp("+", %3, %4)
-    %6 = LoadVar("this") -> C
-    %7 = LoadField(%6, "bid")
-    %8 = BinaryOp("+", %5, %7)
-    %9 = StringLiteral(")->C(", string)
-    %10 = BinaryOp("+", %8, %9)
-    %11 = LoadVar("this") -> C
-    %12 = LoadField(%11, "cid")
-    %13 = BinaryOp("+", %10, %12)
-    %14 = StringLiteral(")", string)
-    %15 = BinaryOp("+", %13, %14)
-    Return(%15)
+function @C.chain(this: &C) -> string {
+  L0:
+    %0 = strconst "A("
+    %1 = loadvar.C this
+    %2 = loadfield.string %1, "id"
+    %3 = binop "+", %0, %2
+    %4 = strconst ")->B("
+    %5 = binop "+", %3, %4
+    %6 = loadvar.C this
+    %7 = loadfield.string %6, "bid"
+    %8 = binop "+", %5, %7
+    %9 = strconst ")->C("
+    %10 = binop "+", %8, %9
+    %11 = loadvar.C this
+    %12 = loadfield.string %11, "cid"
+    %13 = binop "+", %10, %12
+    %14 = strconst ")"
+    %15 = binop "+", %13, %14
+    ret %15
 }
 
-function C.onlyB(this: &C) -> string {
-  block_0:
-    %0 = LoadVar("this") -> C
-    %1 = LoadField(%0, "bid")
-    Return(%1)
+function @C.onlyB(this: &C) -> string {
+  L0:
+    %0 = loadvar.C this
+    %1 = loadfield.string %0, "bid"
+    ret %1
 }
 
-function C.root(this: &C) -> string {
-  block_0:
-    %0 = LoadVar("this") -> C
-    %1 = LoadField(%0, "id")
-    Return(%1)
+function @C.root(this: &C) -> string {
+  L0:
+    %0 = loadvar.C this
+    %1 = loadfield.string %0, "id"
+    ret %1
 }
 
-function D.D(id: string, bid: string, cid: string, did: string) -> D {
-  block_0:
-    %0 = Allocate(D, [])
-    DeclareLocal("this", D, %0)
-    %1 = LoadVar("id") -> string
-    %2 = LoadVar("bid") -> string
-    %3 = LoadVar("cid") -> string
-    %4 = Call(C.C, [%1, %2, %3], ["own", "own", "own"]) -> C
-    %5 = LoadVar("this") -> D
-    %6 = LoadField(%4, "id")
-    StoreField(%5, "id", %6)
-    %7 = LoadField(%4, "bid")
-    StoreField(%5, "bid", %7)
-    %8 = LoadField(%4, "cid")
-    StoreField(%5, "cid", %8)
-    Call(free_shallow, [%4], ["own"])
-    %9 = LoadVar("did") -> string
-    %10 = LoadVar("this") -> D
-    StoreField(%10, "did", %9)
-    %11 = LoadVar("this") -> D
-    Return(%11)
+function @D.D(id: string, bid: string, cid: string, did: string) -> D {
+  L0:
+    %0 = alloc.D()
+    local this: D = %0
+    %1 = loadvar.string id
+    %2 = loadvar.string bid
+    %3 = loadvar.string cid
+    %4 = call.C @C.C(%1 own, %2 own, %3 own)
+    %5 = loadvar.D this
+    %6 = loadfield.string %4, "id"
+    storefield %5, "id", %6
+    %7 = loadfield.string %4, "bid"
+    storefield %5, "bid", %7
+    %8 = loadfield.string %4, "cid"
+    storefield %5, "cid", %8
+    call @free_shallow(%4 own)
+    %9 = loadvar.string did
+    %10 = loadvar.D this
+    storefield %10, "did", %9
+    %11 = loadvar.D this
+    ret %11
 }
 
-function D.chain(this: &D) -> string {
-  block_0:
-    %0 = StringLiteral("A(", string)
-    %1 = LoadVar("this") -> D
-    %2 = LoadField(%1, "id")
-    %3 = BinaryOp("+", %0, %2)
-    %4 = StringLiteral(")->B(", string)
-    %5 = BinaryOp("+", %3, %4)
-    %6 = LoadVar("this") -> D
-    %7 = LoadField(%6, "bid")
-    %8 = BinaryOp("+", %5, %7)
-    %9 = StringLiteral(")->C(", string)
-    %10 = BinaryOp("+", %8, %9)
-    %11 = LoadVar("this") -> D
-    %12 = LoadField(%11, "cid")
-    %13 = BinaryOp("+", %10, %12)
-    %14 = StringLiteral(")->D(", string)
-    %15 = BinaryOp("+", %13, %14)
-    %16 = LoadVar("this") -> D
-    %17 = LoadField(%16, "did")
-    %18 = BinaryOp("+", %15, %17)
-    %19 = StringLiteral(")", string)
-    %20 = BinaryOp("+", %18, %19)
-    Return(%20)
+function @D.chain(this: &D) -> string {
+  L0:
+    %0 = strconst "A("
+    %1 = loadvar.D this
+    %2 = loadfield.string %1, "id"
+    %3 = binop "+", %0, %2
+    %4 = strconst ")->B("
+    %5 = binop "+", %3, %4
+    %6 = loadvar.D this
+    %7 = loadfield.string %6, "bid"
+    %8 = binop "+", %5, %7
+    %9 = strconst ")->C("
+    %10 = binop "+", %8, %9
+    %11 = loadvar.D this
+    %12 = loadfield.string %11, "cid"
+    %13 = binop "+", %10, %12
+    %14 = strconst ")->D("
+    %15 = binop "+", %13, %14
+    %16 = loadvar.D this
+    %17 = loadfield.string %16, "did"
+    %18 = binop "+", %15, %17
+    %19 = strconst ")"
+    %20 = binop "+", %18, %19
+    ret %20
 }
 
-function D.onlyC(this: &D) -> string {
-  block_0:
-    %0 = LoadVar("this") -> D
-    %1 = LoadField(%0, "cid")
-    Return(%1)
+function @D.onlyC(this: &D) -> string {
+  L0:
+    %0 = loadvar.D this
+    %1 = loadfield.string %0, "cid"
+    ret %1
 }
 
-function D.onlyB(this: &D) -> string {
-  block_0:
-    %0 = LoadVar("this") -> D
-    %1 = LoadField(%0, "bid")
-    Return(%1)
+function @D.onlyB(this: &D) -> string {
+  L0:
+    %0 = loadvar.D this
+    %1 = loadfield.string %0, "bid"
+    ret %1
 }
 
-function D.root(this: &D) -> string {
-  block_0:
-    %0 = LoadVar("this") -> D
-    %1 = LoadField(%0, "id")
-    Return(%1)
+function @D.root(this: &D) -> string {
+  L0:
+    %0 = loadvar.D this
+    %1 = loadfield.string %0, "id"
+    ret %1
 }
 
-function main() -> void {
-  block_0:
-    %0 = StringLiteral("Jane", string)
-    %1 = IntLiteral(18, int32)
-    %2 = StringLiteral("School", string)
-    %3 = Call(Student.Student, [%0, %1, %2], ["own", "own", "own"]) -> Student
-    DeclareLocal("s", Student, %3)
-    %4 = LoadVar("s") -> Student
-    %5 = MethodCall(%4, "describe", [], []) -> string
-    Call(println, [%5], ["borrow"])
-    %6 = LoadVar("s") -> Student
-    %7 = LoadField(%6, "name")
-    Call(println, [%7], ["borrow"])
-    %8 = LoadVar("s") -> Student
-    %9 = LoadField(%8, "age")
-    Call(println, [%9], ["borrow"])
-    %10 = LoadVar("s") -> Student
-    Drop(%10)
-    %11 = StringLiteral("a", string)
-    %12 = StringLiteral("b", string)
-    %13 = StringLiteral("c", string)
-    %14 = StringLiteral("d", string)
-    %15 = Call(D.D, [%11, %12, %13, %14], ["own", "own", "own", "own"]) -> D
-    DeclareLocal("d", D, %15)
-    %16 = LoadVar("d") -> D
-    %17 = MethodCall(%16, "chain", [], []) -> string
-    Call(println, [%17], ["borrow"])
-    %18 = LoadVar("d") -> D
-    %19 = LoadField(%18, "id")
-    Call(println, [%19], ["borrow"])
-    %20 = LoadVar("d") -> D
-    %21 = LoadField(%20, "bid")
-    Call(println, [%21], ["borrow"])
-    %22 = LoadVar("d") -> D
-    %23 = LoadField(%22, "cid")
-    Call(println, [%23], ["borrow"])
-    %24 = LoadVar("d") -> D
-    %25 = LoadField(%24, "did")
-    Call(println, [%25], ["borrow"])
-    %26 = LoadVar("d") -> D
-    %27 = MethodCall(%26, "root", [], []) -> string
-    Call(println, [%27], ["borrow"])
-    %28 = LoadVar("d") -> D
-    %29 = MethodCall(%28, "onlyB", [], []) -> string
-    Call(println, [%29], ["borrow"])
-    %30 = LoadVar("d") -> D
-    %31 = MethodCall(%30, "onlyC", [], []) -> string
-    Call(println, [%31], ["borrow"])
-    %32 = LoadVar("d") -> D
-    Drop(%32)
-    Return()
+function @main() -> void {
+  L0:
+    %0 = strconst "Jane"
+    %1 = const.int32 18
+    %2 = strconst "School"
+    %3 = call.Student @Student.Student(%0 own, %1 own, %2 own)
+    local s: Student = %3
+    %4 = loadvar.Student s
+    %5 = mcall.string %4, "describe"()
+    call @println(%5 borrow)
+    %6 = loadvar.Student s
+    %7 = loadfield.string %6, "name"
+    call @println(%7 borrow)
+    %8 = loadvar.Student s
+    %9 = loadfield.int32 %8, "age"
+    call @println(%9 borrow)
+    %10 = loadvar.Student s
+    drop %10
+    %11 = strconst "a"
+    %12 = strconst "b"
+    %13 = strconst "c"
+    %14 = strconst "d"
+    %15 = call.D @D.D(%11 own, %12 own, %13 own, %14 own)
+    local d: D = %15
+    %16 = loadvar.D d
+    %17 = mcall.string %16, "chain"()
+    call @println(%17 borrow)
+    %18 = loadvar.D d
+    %19 = loadfield.string %18, "id"
+    call @println(%19 borrow)
+    %20 = loadvar.D d
+    %21 = loadfield.string %20, "bid"
+    call @println(%21 borrow)
+    %22 = loadvar.D d
+    %23 = loadfield.string %22, "cid"
+    call @println(%23 borrow)
+    %24 = loadvar.D d
+    %25 = loadfield.string %24, "did"
+    call @println(%25 borrow)
+    %26 = loadvar.D d
+    %27 = mcall.string %26, "root"()
+    call @println(%27 borrow)
+    %28 = loadvar.D d
+    %29 = mcall.string %28, "onlyB"()
+    call @println(%29 borrow)
+    %30 = loadvar.D d
+    %31 = mcall.string %30, "onlyC"()
+    call @println(%31 borrow)
+    %32 = loadvar.D d
+    drop %32
+    ret
 }

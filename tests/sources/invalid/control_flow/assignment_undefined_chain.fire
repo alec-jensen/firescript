@@ -1,0 +1,9 @@
+// Assigning to an undefined variable whose right-hand side is itself an
+// undefined identifier: neither side can be given a type, so the implicit
+// declaration path in resolve_variable_types's VARIABLE_ASSIGNMENT handling
+// falls through to reporting the identifier as undefined.
+int32 main() {
+    x = y;  //~ ERROR FS-PARSE-0003 @9
+//~^ ERROR FS-PARSE-0003 @5
+    return 0;
+}

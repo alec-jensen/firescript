@@ -145,7 +145,6 @@ acct = acct.upgrade(); // rebind because ownership moved and was returned
 ### 10. Interop and Backends
 
 - Native: Drops become direct destructor calls.
-- JavaScript: Destruction logic executes at specified points; underlying JS GC handles memory backing where applicable; resource closures are deterministic.
 
 ### 11. Diagnostics
 

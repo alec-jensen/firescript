@@ -1,0 +1,7 @@
+// Semantic type error: modulo requires same-type integer operands.
+
+void modulo_mismatch() {
+    int32 a = 5;
+    int64 b = 6;  //~ ERROR FS-SEM-0002 @11
+    int32 c = a % b;  //~ ERROR FS-SEM-0010 @17
+}

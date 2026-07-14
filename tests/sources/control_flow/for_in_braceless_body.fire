@@ -1,0 +1,14 @@
+// A for-in loop with a braceless (single-statement) body -- exercises the
+// `_parse_braceless_body` fallback for for-in loops specifically (as
+// opposed to the brace-delimited body path already covered elsewhere).
+import @firescript/std.io.println;
+
+int32[] arr = [1, 2, 3];
+for (int32 i in arr)
+    println(i);
+
+/* EXPECT
+1
+2
+3
+*/

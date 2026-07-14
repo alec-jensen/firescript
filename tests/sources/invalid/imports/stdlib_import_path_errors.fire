@@ -1,0 +1,9 @@
+// Malformed @firescript/ stdlib import paths.
+
+// A dot at the very end of the file (no identifier/'*'/'{' following).
+import @firescript/std.  //~ ERROR FS-PARSE-0010 @24
+
+// Runaway dotted-path parsing hits the iteration guard (this is a
+// pathological/synthetic path, not a realistic module name).
+import @firescript/std.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a;  //~ ERROR FS-PARSE-0012 @63
+//~^ ERROR FS-PARSE-0010 @73

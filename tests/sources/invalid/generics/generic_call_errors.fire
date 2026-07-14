@@ -23,3 +23,8 @@ int32 b = identity<int32>;  //~ ERROR FS-PARSE-0010 @26
 Box<int32> c = Box<5>(1);  //~ ERROR FS-PARSE-0010 @20
 //~^ ERROR FS-PARSE-0010 @20
 //~^^ ERROR FS-PARSE-0003 @16
+
+// Missing '>' to close a generic function call's type-argument list
+int32 d = identity<int32(5);  //~ ERROR FS-PARSE-0010 @25
+//~^ ERROR FS-PARSE-0010 @25
+//~^^ ERROR FS-PARSE-0003 @11

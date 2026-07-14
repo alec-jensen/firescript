@@ -1,0 +1,25 @@
+// Explicit type-qualified constructor call: ClassName.ClassName(args).
+// This is parsed as a TYPE_METHOD_CALL (same node used for Type.staticMethod(...))
+// where the resolved method happens to be the constructor itself
+// (is_static is False, but its registered return type equals the class
+// name, so it's accepted as a constructor call rather than rejected).
+import @firescript/std.io.println;
+
+class Point {
+    int32 x;
+    int32 y;
+
+    Point(int32 x, int32 y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+Point p = Point.Point(3, 4);
+println(p.x);
+println(p.y);
+
+/* EXPECT
+3
+4
+*/

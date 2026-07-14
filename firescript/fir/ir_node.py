@@ -7,7 +7,12 @@ readable.
 
 Every instruction knows how to format itself deterministically via
 `format(resolve)`, where `resolve` maps a Value to its dump name
-("%0", "%1", or a parameter name).
+("%0", "%1", or a parameter name). The textual grammar mirrors FLIR's
+(`opcode.type operands`, `@`-prefixed symbols, `L<n>` blocks) so the two
+IRs read as one family at different abstraction levels: FIR keeps
+firescript-level types (int64, string, generic T, nullable ?) and
+still-unresolved ops (a generic BinaryOp "+" rather than FLIR's add.i64),
+while FLIR's mnemonics are already monomorphic and machine-typed.
 """
 
 from __future__ import annotations
@@ -48,7 +53,7 @@ Resolver = Callable[[Value], str]
 class Instruction:
     """Base class for all FIR instructions."""
 
-    opcode: str = "Instruction"
+    opcode: str = "inst"
 
     def __init__(self, operands: Optional[list[Value]] = None, result_type: Optional[FIRType] = None):
         self.operands: list[Value] = operands or []
@@ -67,15 +72,21 @@ class Instruction:
 
     def format(self, resolve: Resolver) -> str:
         args = ", ".join(resolve(op) for op in self.operands)
-        return f"{self.opcode}({args})"
+        return f"{self.opcode} {args}".rstrip()
 
 
-def _fmt_value_list(values: list[Value], resolve: Resolver) -> str:
+def _fmt_args(values: list[Value], resolve: Resolver) -> str:
+    """Comma-joined operand list, used inside parens: op.type(a, b)."""
+    return ", ".join(resolve(v) for v in values)
+
+
+def _fmt_array_elems(values: list[Value], resolve: Resolver) -> str:
+    """Bracketed element list for array literal values: [a, b]."""
     return "[" + ", ".join(resolve(v) for v in values) + "]"
 
 
-def _fmt_mode_list(modes: list[str]) -> str:
-    return "[" + ", ".join(f'"{m}"' for m in modes) + "]"
+def _fmt_args_with_modes(values: list[Value], modes: list[str], resolve: Resolver) -> str:
+    return ", ".join(f"{resolve(v)} {m}" for v, m in zip(values, modes))
 
 
 # ---------------------------------------------------------------------------
@@ -83,79 +94,78 @@ def _fmt_mode_list(modes: list[str]) -> str:
 # ---------------------------------------------------------------------------
 
 class IntLiteralInst(Instruction):
-    opcode = "IntLiteral"
+    opcode = "const"
 
     def __init__(self, text: str, result_type: FIRType):
         super().__init__(result_type=result_type)
         self.text = text  # source text, normalized (suffix/underscores removed)
 
     def format(self, resolve: Resolver) -> str:
-        return f"IntLiteral({self.text}, {self.result_type.render()})"
+        return f"const.{self.result_type.render()} {self.text}"
 
 
 class FloatLiteralInst(Instruction):
-    opcode = "FloatLiteral"
+    opcode = "fconst"
 
     def __init__(self, text: str, result_type: FIRType):
         super().__init__(result_type=result_type)
         self.text = text
 
     def format(self, resolve: Resolver) -> str:
-        return f"FloatLiteral({self.text}, {self.result_type.render()})"
+        return f"fconst.{self.result_type.render()} {self.text}"
 
 
 class BoolLiteralInst(Instruction):
-    opcode = "BoolLiteral"
+    opcode = "bconst"
 
     def __init__(self, value: bool, result_type: FIRType):
         super().__init__(result_type=result_type)
         self.value = value
 
     def format(self, resolve: Resolver) -> str:
-        text = "true" if self.value else "false"
-        return f"BoolLiteral({text}, {self.result_type.render()})"
+        return f"bconst {'true' if self.value else 'false'}"
 
 
 class StringLiteralInst(Instruction):
-    opcode = "StringLiteral"
+    opcode = "strconst"
 
     def __init__(self, text: str, result_type: FIRType):
         super().__init__(result_type=result_type)
         self.text = text  # raw contents without surrounding quotes
 
     def format(self, resolve: Resolver) -> str:
-        return f'StringLiteral("{self.text}", {self.result_type.render()})'
+        return f'strconst "{self.text}"'
 
 
 class CharLiteralInst(Instruction):
-    opcode = "CharLiteral"
+    opcode = "cconst"
 
     def __init__(self, text: str, result_type: FIRType):
         super().__init__(result_type=result_type)
         self.text = text  # raw contents without surrounding quotes
 
     def format(self, resolve: Resolver) -> str:
-        return f"CharLiteral('{self.text}', {self.result_type.render()})"
+        return f"cconst '{self.text}'"
 
 
 class NullLiteralInst(Instruction):
-    opcode = "NullLiteral"
+    opcode = "nullconst"
 
     def __init__(self, result_type: FIRType):
         super().__init__(result_type=result_type)
 
     def format(self, resolve: Resolver) -> str:
-        return f"NullLiteral({self.result_type.render()})"
+        return f"nullconst {self.result_type.render()}"
 
 
 class ArrayLiteralInst(Instruction):
-    opcode = "ArrayLiteral"
+    opcode = "arrayconst"
 
     def __init__(self, elements: list[Value], result_type: FIRType):
         super().__init__(operands=list(elements), result_type=result_type)
 
     def format(self, resolve: Resolver) -> str:
-        return f"ArrayLiteral({_fmt_value_list(self.operands, resolve)}, {self.result_type.render()})"
+        return f"arrayconst.{self.result_type.render()} {_fmt_array_elems(self.operands, resolve)}"
 
 
 # ---------------------------------------------------------------------------
@@ -163,35 +173,35 @@ class ArrayLiteralInst(Instruction):
 # ---------------------------------------------------------------------------
 
 class BinaryOpInst(Instruction):
-    opcode = "BinaryOp"
+    opcode = "binop"
 
     def __init__(self, op: str, lhs: Value, rhs: Value, result_type: FIRType):
         super().__init__(operands=[lhs, rhs], result_type=result_type)
         self.op = op
 
     def format(self, resolve: Resolver) -> str:
-        return f'BinaryOp("{self.op}", {resolve(self.operands[0])}, {resolve(self.operands[1])})'
+        return f'binop "{self.op}", {resolve(self.operands[0])}, {resolve(self.operands[1])}'
 
 
 class UnaryOpInst(Instruction):
-    opcode = "UnaryOp"
+    opcode = "unop"
 
     def __init__(self, op: str, operand: Value, result_type: FIRType):
         super().__init__(operands=[operand], result_type=result_type)
         self.op = op
 
     def format(self, resolve: Resolver) -> str:
-        return f'UnaryOp("{self.op}", {resolve(self.operands[0])})'
+        return f'unop "{self.op}", {resolve(self.operands[0])}'
 
 
 class CastInst(Instruction):
-    opcode = "Cast"
+    opcode = "cast"
 
     def __init__(self, value: Value, target_type: FIRType):
         super().__init__(operands=[value], result_type=target_type)
 
     def format(self, resolve: Resolver) -> str:
-        return f"Cast({resolve(self.operands[0])}, {self.result_type.render()})"
+        return f"cast.{self.result_type.render()} {resolve(self.operands[0])}"
 
 
 # ---------------------------------------------------------------------------
@@ -201,28 +211,28 @@ class CastInst(Instruction):
 class AllocateInst(Instruction):
     """Construct a class instance; args are constructor arguments."""
 
-    opcode = "Allocate"
+    opcode = "alloc"
 
     def __init__(self, class_type: FIRType, args: list[Value]):
         super().__init__(operands=list(args), result_type=class_type)
 
     def format(self, resolve: Resolver) -> str:
-        return f"Allocate({self.result_type.render()}, {_fmt_value_list(self.operands, resolve)})"
+        return f"alloc.{self.result_type.render()}({_fmt_args(self.operands, resolve)})"
 
 
 class LoadFieldInst(Instruction):
-    opcode = "LoadField"
+    opcode = "loadfield"
 
     def __init__(self, obj: Value, field: str, result_type: FIRType):
         super().__init__(operands=[obj], result_type=result_type)
         self.field = field
 
     def format(self, resolve: Resolver) -> str:
-        return f'LoadField({resolve(self.operands[0])}, "{self.field}")'
+        return f'loadfield.{self.result_type.render()} {resolve(self.operands[0])}, "{self.field}"'
 
 
 class StoreFieldInst(Instruction):
-    opcode = "StoreField"
+    opcode = "storefield"
 
     def __init__(self, obj: Value, field: str, value: Value):
         super().__init__(operands=[obj, value])
@@ -230,15 +240,15 @@ class StoreFieldInst(Instruction):
 
     def format(self, resolve: Resolver) -> str:
         return (
-            f'StoreField({resolve(self.operands[0])}, "{self.field}", '
-            f"{resolve(self.operands[1])})"
+            f'storefield {resolve(self.operands[0])}, "{self.field}", '
+            f"{resolve(self.operands[1])}"
         )
 
 
 class ConstructVariantInst(Instruction):
     """Construct an enum value with a given active variant and payload."""
 
-    opcode = "ConstructVariant"
+    opcode = "ctorvariant"
 
     def __init__(self, enum_type: FIRType, variant_name: str, payload: list[Value]):
         super().__init__(operands=list(payload), result_type=enum_type)
@@ -246,21 +256,21 @@ class ConstructVariantInst(Instruction):
 
     def format(self, resolve: Resolver) -> str:
         return (
-            f'ConstructVariant({self.result_type.render()}, "{self.variant_name}", '
-            f"{_fmt_value_list(self.operands, resolve)})"
+            f'ctorvariant.{self.result_type.render()} "{self.variant_name}"'
+            f"({_fmt_args(self.operands, resolve)})"
         )
 
 
 class ExtractTagInst(Instruction):
     """Read the active-variant tag (discriminant) from an enum value."""
 
-    opcode = "ExtractTag"
+    opcode = "extracttag"
 
     def __init__(self, enum_value: Value, result_type: FIRType):
         super().__init__(operands=[enum_value], result_type=result_type)
 
     def format(self, resolve: Resolver) -> str:
-        return f"ExtractTag({resolve(self.operands[0])})"
+        return f"extracttag.{self.result_type.render()} {resolve(self.operands[0])}"
 
 
 class ExtractPayloadFieldInst(Instruction):
@@ -271,7 +281,7 @@ class ExtractPayloadFieldInst(Instruction):
     arm block.
     """
 
-    opcode = "ExtractPayloadField"
+    opcode = "extractfield"
 
     def __init__(self, enum_value: Value, variant_name: str, field_index: int, result_type: FIRType):
         super().__init__(operands=[enum_value], result_type=result_type)
@@ -280,30 +290,30 @@ class ExtractPayloadFieldInst(Instruction):
 
     def format(self, resolve: Resolver) -> str:
         return (
-            f'ExtractPayloadField({resolve(self.operands[0])}, "{self.variant_name}", '
-            f"{self.field_index})"
+            f'extractfield.{self.result_type.render()} {resolve(self.operands[0])}, '
+            f'"{self.variant_name}", {self.field_index}'
         )
 
 
 class IndexArrayInst(Instruction):
-    opcode = "IndexArray"
+    opcode = "indexarray"
 
     def __init__(self, array: Value, index: Value, result_type: FIRType):
         super().__init__(operands=[array, index], result_type=result_type)
 
     def format(self, resolve: Resolver) -> str:
-        return f"IndexArray({resolve(self.operands[0])}, {resolve(self.operands[1])})"
+        return f"indexarray.{self.result_type.render()} {resolve(self.operands[0])}, {resolve(self.operands[1])}"
 
 
 class StoreArrayInst(Instruction):
-    opcode = "StoreArray"
+    opcode = "storearray"
 
     def __init__(self, array: Value, index: Value, value: Value):
         super().__init__(operands=[array, index, value])
 
     def format(self, resolve: Resolver) -> str:
         ops = ", ".join(resolve(op) for op in self.operands)
-        return f"StoreArray({ops})"
+        return f"storearray {ops}"
 
 
 # ---------------------------------------------------------------------------
@@ -313,7 +323,7 @@ class StoreArrayInst(Instruction):
 class DeclareLocalInst(Instruction):
     """Introduce a named local binding, optionally with an initial value."""
 
-    opcode = "DeclareLocal"
+    opcode = "local"
 
     def __init__(self, name: str, var_type: FIRType, init: Optional[Value] = None):
         super().__init__(operands=[init] if init is not None else [])
@@ -322,30 +332,30 @@ class DeclareLocalInst(Instruction):
 
     def format(self, resolve: Resolver) -> str:
         if self.operands:
-            return f'DeclareLocal("{self.name}", {self.var_type.render()}, {resolve(self.operands[0])})'
-        return f'DeclareLocal("{self.name}", {self.var_type.render()})'
+            return f"local {self.name}: {self.var_type.render()} = {resolve(self.operands[0])}"
+        return f"local {self.name}: {self.var_type.render()}"
 
 
 class LoadVarInst(Instruction):
-    opcode = "LoadVar"
+    opcode = "loadvar"
 
     def __init__(self, name: str, result_type: FIRType):
         super().__init__(result_type=result_type)
         self.name = name
 
     def format(self, resolve: Resolver) -> str:
-        return f'LoadVar("{self.name}") -> {self.result_type.render()}'
+        return f"loadvar.{self.result_type.render()} {self.name}"
 
 
 class StoreVarInst(Instruction):
-    opcode = "StoreVar"
+    opcode = "storevar"
 
     def __init__(self, name: str, value: Value):
         super().__init__(operands=[value])
         self.name = name
 
     def format(self, resolve: Resolver) -> str:
-        return f'StoreVar("{self.name}", {resolve(self.operands[0])})'
+        return f"storevar {self.name}, {resolve(self.operands[0])}"
 
 
 # ---------------------------------------------------------------------------
@@ -353,14 +363,14 @@ class StoreVarInst(Instruction):
 # ---------------------------------------------------------------------------
 
 class MoveInst(Instruction):
-    opcode = "Move"
+    opcode = "move"
 
     def __init__(self, value: Value):
         super().__init__(operands=[value], result_type=value.result_type)
 
 
 class BorrowInst(Instruction):
-    opcode = "Borrow"
+    opcode = "borrow"
 
     def __init__(self, value: Value, mutable: bool = False):
         super().__init__(operands=[value], result_type=value.result_type)
@@ -368,19 +378,19 @@ class BorrowInst(Instruction):
 
     def format(self, resolve: Resolver) -> str:
         if self.mutable:
-            return f"Borrow({resolve(self.operands[0])}, mut)"
-        return f"Borrow({resolve(self.operands[0])})"
+            return f"borrow {resolve(self.operands[0])}, mut"
+        return f"borrow {resolve(self.operands[0])}"
 
 
 class CloneInst(Instruction):
-    opcode = "Clone"
+    opcode = "clone"
 
     def __init__(self, value: Value):
         super().__init__(operands=[value], result_type=value.result_type)
 
 
 class DropInst(Instruction):
-    opcode = "Drop"
+    opcode = "drop"
 
     def __init__(self, value: Value):
         super().__init__(operands=[value])
@@ -391,7 +401,7 @@ class DropInst(Instruction):
 # ---------------------------------------------------------------------------
 
 class CallInst(Instruction):
-    opcode = "Call"
+    opcode = "call"
 
     def __init__(
         self,
@@ -405,17 +415,13 @@ class CallInst(Instruction):
         self.arg_modes = arg_modes or ["own"] * len(args)
 
     def format(self, resolve: Resolver) -> str:
-        text = (
-            f"Call({self.function_ref}, {_fmt_value_list(self.operands, resolve)}, "
-            f"{_fmt_mode_list(self.arg_modes)})"
-        )
-        if self.result_type is not None:
-            text += f" -> {self.result_type.render()}"
-        return text
+        args = _fmt_args_with_modes(self.operands, self.arg_modes, resolve)
+        opcode = f"call.{self.result_type.render()}" if self.result_type is not None else "call"
+        return f"{opcode} @{self.function_ref}({args})"
 
 
 class MethodCallInst(Instruction):
-    opcode = "MethodCall"
+    opcode = "mcall"
 
     def __init__(
         self,
@@ -431,11 +437,9 @@ class MethodCallInst(Instruction):
 
     def format(self, resolve: Resolver) -> str:
         receiver = resolve(self.operands[0])
-        args = _fmt_value_list(self.operands[1:], resolve)
-        text = f'MethodCall({receiver}, "{self.method}", {args}, {_fmt_mode_list(self.arg_modes)})'
-        if self.result_type is not None:
-            text += f" -> {self.result_type.render()}"
-        return text
+        args = _fmt_args_with_modes(self.operands[1:], self.arg_modes, resolve)
+        opcode = f"mcall.{self.result_type.render()}" if self.result_type is not None else "mcall"
+        return f'{opcode} {receiver}, "{self.method}"({args})'
 
 
 # ---------------------------------------------------------------------------
@@ -445,50 +449,47 @@ class MethodCallInst(Instruction):
 class YieldInst(Instruction):
     """Yield a value from a generator function body."""
 
-    opcode = "Yield"
+    opcode = "yield"
 
     def __init__(self, value: Value):
         super().__init__(operands=[value])
 
 
 class GenNewInst(Instruction):
-    """Instantiate a generator: GenNew(name, [args]) -> generator<T>."""
+    """Instantiate a generator: gennew.generator<T> @name(args)."""
 
-    opcode = "GenNew"
+    opcode = "gennew"
 
     def __init__(self, generator_ref: str, args: list[Value], result_type: FIRType):
         super().__init__(operands=list(args), result_type=result_type)
         self.generator_ref = generator_ref
 
     def format(self, resolve: Resolver) -> str:
-        return (
-            f"GenNew({self.generator_ref}, {_fmt_value_list(self.operands, resolve)})"
-            f" -> {self.result_type.render()}"
-        )
+        return f"gennew.{self.result_type.render()} @{self.generator_ref}({_fmt_args(self.operands, resolve)})"
 
 
 class GenNextInst(Instruction):
     """Advance a generator; result is true while a value was produced."""
 
-    opcode = "GenNext"
+    opcode = "gennext"
 
     def __init__(self, generator: Value, result_type: FIRType):
         super().__init__(operands=[generator], result_type=result_type)
 
     def format(self, resolve: Resolver) -> str:
-        return f"GenNext({resolve(self.operands[0])}) -> {self.result_type.render()}"
+        return f"gennext.{self.result_type.render()} {resolve(self.operands[0])}"
 
 
 class GenValueInst(Instruction):
     """Read the current value of a generator after a successful GenNext."""
 
-    opcode = "GenValue"
+    opcode = "genvalue"
 
     def __init__(self, generator: Value, result_type: FIRType):
         super().__init__(operands=[generator], result_type=result_type)
 
     def format(self, resolve: Resolver) -> str:
-        return f"GenValue({resolve(self.operands[0])}) -> {self.result_type.render()}"
+        return f"genvalue.{self.result_type.render()} {resolve(self.operands[0])}"
 
 
 # ---------------------------------------------------------------------------
@@ -500,19 +501,19 @@ class Terminator(Instruction):
 
 
 class ReturnInst(Terminator):
-    opcode = "Return"
+    opcode = "ret"
 
     def __init__(self, value: Optional[Value] = None):
         super().__init__(operands=[value] if value is not None else [])
 
     def format(self, resolve: Resolver) -> str:
         if self.operands:
-            return f"Return({resolve(self.operands[0])})"
-        return "Return()"
+            return f"ret {resolve(self.operands[0])}"
+        return "ret"
 
 
 class BranchInst(Terminator):
-    opcode = "Branch"
+    opcode = "br"
 
     def __init__(self, cond: Value, true_block: str, false_block: str):
         super().__init__(operands=[cond])
@@ -520,25 +521,25 @@ class BranchInst(Terminator):
         self.false_block = false_block
 
     def format(self, resolve: Resolver) -> str:
-        return f"Branch({resolve(self.operands[0])}, {self.true_block}, {self.false_block})"
+        return f"br {resolve(self.operands[0])}, {self.true_block}, {self.false_block}"
 
 
 class JumpInst(Terminator):
-    opcode = "Jump"
+    opcode = "jmp"
 
     def __init__(self, target_block: str):
         super().__init__()
         self.target_block = target_block
 
     def format(self, resolve: Resolver) -> str:
-        return f"Jump({self.target_block})"
+        return f"jmp {self.target_block}"
 
 
 class UnreachableInst(Terminator):
-    opcode = "Unreachable"
+    opcode = "unreachable"
 
     def format(self, resolve: Resolver) -> str:
-        return "Unreachable()"
+        return "unreachable"
 
 
 # ---------------------------------------------------------------------------

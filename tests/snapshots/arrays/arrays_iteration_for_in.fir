@@ -1,71 +1,71 @@
-module arrays_iteration_for_in
+fir module arrays_iteration_for_in
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function main() -> void {
-  block_0:
-    %0 = IntLiteral(5, int32)
-    %1 = IntLiteral(10, int32)
-    %2 = IntLiteral(15, int32)
-    %3 = IntLiteral(20, int32)
-    %4 = ArrayLiteral([%0, %1, %2, %3], int32[4])
-    DeclareLocal("nums", int32[4], %4)
-    %5 = IntLiteral(0, int32)
-    DeclareLocal("__i_n", int32, %5)
-    Jump(block_1)
+function @main() -> void {
+  L0:
+    %0 = const.int32 5
+    %1 = const.int32 10
+    %2 = const.int32 15
+    %3 = const.int32 20
+    %4 = arrayconst.int32[4] [%0, %1, %2, %3]
+    local nums: int32[4] = %4
+    %5 = const.int32 0
+    local __i_n: int32 = %5
+    jmp L1
 
-  block_1:
-    %6 = LoadVar("__i_n") -> int32
-    %7 = IntLiteral(4, int32)
-    %8 = BinaryOp("<", %6, %7)
-    Branch(%8, block_2, block_3)
+  L1:
+    %6 = loadvar.int32 __i_n
+    %7 = const.int32 4
+    %8 = binop "<", %6, %7
+    br %8, L2, L3
 
-  block_2:
-    %9 = LoadVar("nums") -> int32[4]
-    %10 = LoadVar("__i_n") -> int32
-    %11 = IndexArray(%9, %10)
-    DeclareLocal("n", int32, %11)
-    %12 = LoadVar("n") -> int32
-    Call(println, [%12], ["borrow"])
-    Jump(block_4)
+  L2:
+    %9 = loadvar.int32[4] nums
+    %10 = loadvar.int32 __i_n
+    %11 = indexarray.int32 %9, %10
+    local n: int32 = %11
+    %12 = loadvar.int32 n
+    call @println(%12 borrow)
+    jmp L4
 
-  block_3:
-    %13 = LoadVar("nums") -> int32[4]
-    Drop(%13)
-    Return()
+  L3:
+    %13 = loadvar.int32[4] nums
+    drop %13
+    ret
 
-  block_4:
-    %14 = LoadVar("__i_n") -> int32
-    %15 = IntLiteral(1, int32)
-    %16 = BinaryOp("+", %14, %15)
-    StoreVar("__i_n", %16)
-    Jump(block_1)
+  L4:
+    %14 = loadvar.int32 __i_n
+    %15 = const.int32 1
+    %16 = binop "+", %14, %15
+    storevar __i_n, %16
+    jmp L1
 }

@@ -13,7 +13,7 @@ Every FIR module is validated on every compilation before lowering; see [ir_veri
 
 ## Core Concepts
 
-- Instructions: `op(args) → result_type`
+- Instructions: `%n = opcode.type operands` (or `opcode operands` when the instruction produces no value)
 - Value categories: `copyable` | `owned`
 - Basic blocks: sequences of instructions + terminator (no block parameters)
 - OwnershipMap: binding → VALID/MOVED/MAYBE_MOVED/BORROWED
@@ -35,45 +35,49 @@ FIRModule
 
 ## Instruction Set (summary)
 
-- Literals: `IntLiteral`, `FloatLiteral`, `StringLiteral`, `CharLiteral`, `BoolLiteral`, `NullLiteral`, `ArrayLiteral`
-- Arithmetic: `BinaryOp`, `UnaryOp`, `Cast`
-- Memory: `Allocate`, `LoadField`, `StoreField`, `IndexArray`, `StoreArray`
-- Locals: `DeclareLocal`, `LoadVar`, `StoreVar` (FIR is not SSA; mutable locals are explicit named slots instead of block parameters)
-- Ownership: `Move`, `Borrow`, `Clone`, `Drop`
-- Calls: `Call`, `MethodCall`
-- Generators: `Yield`, `GenNew(name, [args]) -> generator<T>`, `GenNext(gen) -> bool`, `GenValue(gen) -> T` (generator functions render with the `generator` keyword instead of `function`; `for-in` over a generator converts to a GenNew/GenNext/GenValue loop)
-- Control: `Branch`, `Jump`, `Return`, `Unreachable`
+- Literals: `const` (int), `fconst` (float), `strconst`, `cconst` (char), `bconst`, `nullconst`, `arrayconst`
+- Arithmetic: `binop`, `unop`, `cast`
+- Memory: `alloc`, `loadfield`, `storefield`, `indexarray`, `storearray`
+- Locals: `local`, `loadvar`, `storevar` (FIR is not SSA; mutable locals are explicit named bindings instead of block parameters)
+- Ownership: `move`, `borrow`, `clone`, `drop`
+- Calls: `call`, `mcall`
+- Generators: `yield`, `gennew.generator<T> @name(args)`, `gennext.bool gen`, `genvalue.T gen` (generator functions render with the `generator` keyword instead of `function`; `for-in` over a generator converts to a gennew/gennext/genvalue loop)
+- Control: `br`, `jmp`, `ret`, `unreachable`
+
+The textual grammar deliberately mirrors [flir_spec.md](flir_spec.md)'s (`opcode.type operands`, `@`-prefixed symbols, `L<n>` blocks) so FIR and FLIR dumps read as one family at two abstraction levels, rather than as two unrelated notations. What still differs, on purpose, is the *level*: FIR types stay firescript-level (`int64`, `string`, a still-unresolved generic `T`, `int32?`) and some ops stay polymorphic/unresolved (a generic `binop "+"` that could be integer addition or string concatenation, still-intact class/generic identity) where FLIR's mnemonics are already monomorphic and machine-typed (`add.i64`, `ptr<i8>`, a concrete runtime call for that same `+`).
 
 ### Dump format rules
 
 - Value numbers `%N` are assigned in (block order, instruction order) within each function; dumps are deterministic.
-- Instructions that produce no value (`StoreField`, `StoreArray`, `StoreVar`, `DeclareLocal`, `Drop`, `Yield`, void `Call`s) are not numbered.
+- Basic blocks are labeled `L0`, `L1`, ... in creation order (matches FLIR).
+- Function names and call/method-call/gennew targets are `@`-prefixed symbols (matches FLIR).
+- Instructions that produce no value (`storefield`, `storearray`, `storevar`, `local`, `drop`, `yield`, void `call`s) are not numbered.
 - Function parameters are referenced by name in operand position.
 - Parameter passing modes render as `name: T` (owned), `name: &T` (borrow), `name: &mut T` (mutable borrow).
-- `Call`/`MethodCall` render their argument modes and, when non-void, a trailing `-> type`.
+- `call`/`mcall` render each argument's ownership mode inline after the value (`%v own`, `%v borrow`) and, when the callee returns a value, a `.type` suffix on the opcode itself (`call.int32 @f(...)`) rather than a trailing `-> type`.
 
 ## Textual Representation
 
 FIR is designed to be directly dumpable for debugging. Example:
 
 ```
-module firescript
+fir module firescript
 
 type Point copyable {
   x: int32
   y: int32
 }
 
-function main() -> void {
-  block_0:
-    %0 = IntLiteral(10, int32)
-    %1 = IntLiteral(20, int32)
-    %2 = Allocate(Point, [%0, %1])
-    %3 = LoadField(%2, "x")
-    %4 = Call(distance, [%3, %3]) -> int32
-    %5 = Call(println, [%4]) -> void
-    Drop(%2)
-    Return()
+function @main() -> void {
+  L0:
+    %0 = const.int32 10
+    %1 = const.int32 20
+    %2 = alloc.Point(%0, %1)
+    %3 = loadfield.int32 %2, "x"
+    %4 = call.int32 @distance(%3 own, %3 own)
+    call @println(%4 own)
+    drop %2
+    ret
 }
 ```
 
@@ -82,30 +86,30 @@ function main() -> void {
 This example keeps classes, ownership, and control flow visible in FIR:
 
 ```
-module firescript
+fir module firescript
 
 type Counter owned {
   value: int32
 }
 
-function bump_or_reset(counter: Counter, should_reset: bool) -> int32 {
-  block_0:
-    %0 = LoadField(counter, "value")
-    Branch(should_reset, block_1, block_2)
+function @bump_or_reset(counter: Counter, should_reset: bool) -> int32 {
+  L0:
+    %0 = loadfield.int32 counter, "value"
+    br should_reset, L1, L2
 
-  block_1:
-    %1 = IntLiteral(0, int32)
-    StoreField(counter, "value", %1)
-    Drop(counter)
-    Return(%1)
+  L1:
+    %1 = const.int32 0
+    storefield counter, "value", %1
+    drop counter
+    ret %1
 
-  block_2:
-    %2 = IntLiteral(1, int32)
-    %3 = BinaryOp("+", %0, %2)
-    StoreField(counter, "value", %3)
-    Call(println, [%3], ["borrow"])
-    Drop(counter)
-    Return(%3)
+  L2:
+    %2 = const.int32 1
+    %3 = binop "+", %0, %2
+    storefield counter, "value", %3
+    call @println(%3 borrow)
+    drop counter
+    ret %3
 }
 ```
 
@@ -118,17 +122,17 @@ type Box<T> owned {
   value: T
 }
 
-function<T> unwrap_or_default(box: Box<T>, fallback: T) -> T {
-  block_0:
-    %0 = LoadField(box, "value")
-    %1 = Call(is_default, [%0]) -> bool
-    Branch(%1, block_1, block_2)
+function<T> @unwrap_or_default(box: Box<T>, fallback: T) -> T {
+  L0:
+    %0 = loadfield.T box, "value"
+    %1 = call.bool @is_default(%0 borrow)
+    br %1, L1, L2
 
-  block_1:
-    Return(fallback)
+  L1:
+    ret fallback
 
-  block_2:
-    Return(%0)
+  L2:
+    ret %0
 }
 ```
 

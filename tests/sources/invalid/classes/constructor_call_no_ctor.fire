@@ -1,0 +1,10 @@
+// Semantic error: 'new ClassName(...)' where the class has no declared
+// constructor.
+
+class NoCtor {
+    int32 x;
+}
+
+void constructor_call_no_ctor() {
+    NoCtor obj = new NoCtor(5);  //~ ERROR FS-SEM-0010 @22
+}

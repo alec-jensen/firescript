@@ -1,0 +1,70 @@
+// Malformed constructor parameter lists: ClassName(...) { ... } is parsed by
+// a separate code path from a normal method (declarations.py's
+// _parse_class_definition has a dedicated "constructor without explicit
+// return type" branch), so these same error conditions as
+// class_def_syntax_errors.fire need their own constructor-shaped cases to
+// exercise that branch.
+
+// Receiver must be 'this' after '&' (constructor form)
+class CR1 {
+    int32 v;
+
+    CR1(&other) {  //~ ERROR FS-PARSE-0010 @10
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
+    }
+}
+
+// 'owned' receiver must be 'this' (constructor form)
+class CR2 {
+    int32 v;
+
+    CR2(owned other) {  //~ ERROR FS-PARSE-0010 @15
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
+    }
+}
+
+// Constructor parameter type invalid
+class CP1 {
+    int32 v;
+
+    CP1(! x) {  //~ ERROR FS-PARSE-0010 @9
+//~^ ERROR FS-PARSE-0010 @11
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
+    }
+}
+
+// Array parameters are not supported for constructors
+class CP2 {
+    int32 v;
+
+    CP2(int32[] xs) {  //~ ERROR FS-PARSE-0012 @14
+        this.v = 1;
+    }
+}
+
+// Missing constructor parameter name
+class CP3 {
+    int32 v;
+
+    CP3(int32) {  //~ ERROR FS-PARSE-0010 @14
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
+    }
+}
+
+// Missing ')' after constructor parameters
+class CP4 {
+    int32 v;
+
+    CP4(int32 x {  //~ ERROR FS-PARSE-0010 @17
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
+    }
+}
+
+// Missing '{' to start constructor body
+class CP5 {
+    int32 v;
+
+    CP5(int32 x)
+    int32 y = 1;  //~ ERROR FS-PARSE-0010 @5
+}
+

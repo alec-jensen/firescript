@@ -1,0 +1,60 @@
+import @firescript/std.io.println;
+
+// A class holding a copyable (by-value) struct field: assigning/reading
+// the whole nested struct (not just its scalar sub-fields) exercises the
+// struct-sized Load/Store paths in flir_to_asm.py (_emit_load /
+// _emit_store's `t.kind == "struct"` branches), which whole-object field
+// access alone (as in functions_many_params.fire) doesn't reach.
+
+copyable class Point {
+    int32 x;
+    int32 y;
+
+    Point(int32 x, int32 y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+class Line {
+    Point start;
+    Point end;
+
+    Line(&mut this, Point start, Point end) {
+        this.start = start;
+        this.end = end;
+    }
+
+    Point midpointStart(&this) {
+        return this.start;
+    }
+}
+
+Point a = Point(0, 0);
+Point b = Point(4, 8);
+Line l = new Line(a, b);
+
+println(l.start.x);
+println(l.start.y);
+println(l.end.x);
+println(l.end.y);
+
+Point copied = l.midpointStart();
+println(copied.x);
+println(copied.y);
+
+// Whole-struct field-to-field assignment.
+l.start = l.end;
+println(l.start.x);
+println(l.start.y);
+
+/* EXPECT
+0
+0
+4
+8
+0
+0
+4
+8
+*/

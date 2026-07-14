@@ -1,5 +1,10 @@
 import @firescript/std.io.println;
 
+// A top-level 'export' applied to an enum definition.
+export enum Exported {
+    Only
+}
+
 enum Color {
     Red,
     Green,

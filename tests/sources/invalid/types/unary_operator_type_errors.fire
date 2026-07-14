@@ -1,0 +1,16 @@
+// Type errors for unary operators.
+bool notMismatch() {
+    int32 x = 5;
+    bool y = !x;  //~ ERROR FS-SEM-0010 @14
+    return y;
+}
+
+int32 negateUndefined() {
+    int32 y = -undef;  //~ ERROR FS-PARSE-0003 @16
+    return y;
+}
+
+int32 main() {
+    undef2++;  //~ ERROR FS-PARSE-0003 @5
+    return 0;
+}

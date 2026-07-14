@@ -1,163 +1,163 @@
-module operators_logical
+fir module operators_logical
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function main() -> void {
-  block_0:
-    %0 = StringLiteral("=== Logical Operators ===", string)
-    Call(println, [%0], ["borrow"])
-    %1 = StringLiteral("--- Boolean Basics ---", string)
-    Call(println, [%1], ["borrow"])
-    %2 = BoolLiteral(true, bool)
-    DeclareLocal("t", bool, %2)
-    %3 = BoolLiteral(false, bool)
-    DeclareLocal("f", bool, %3)
-    %4 = LoadVar("t") -> bool
-    Call(println, [%4], ["borrow"])
-    %5 = LoadVar("f") -> bool
-    Call(println, [%5], ["borrow"])
-    %6 = LoadVar("t") -> bool
-    %7 = BoolLiteral(true, bool)
-    %8 = BinaryOp("==", %6, %7)
-    Call(println, [%8], ["borrow"])
-    %9 = LoadVar("f") -> bool
-    %10 = BoolLiteral(false, bool)
-    %11 = BinaryOp("==", %9, %10)
-    Call(println, [%11], ["borrow"])
-    %12 = LoadVar("t") -> bool
-    %13 = LoadVar("f") -> bool
-    %14 = BinaryOp("==", %12, %13)
-    Call(println, [%14], ["borrow"])
-    %15 = StringLiteral("--- Logical Conditions ---", string)
-    Call(println, [%15], ["borrow"])
-    %16 = IntLiteral(10, int32)
-    DeclareLocal("a", int32, %16)
-    %17 = IntLiteral(5, int32)
-    DeclareLocal("b", int32, %17)
-    %18 = IntLiteral(15, int32)
-    DeclareLocal("c", int32, %18)
-    %19 = LoadVar("a") -> int32
-    %20 = LoadVar("b") -> int32
-    %21 = BinaryOp(">", %19, %20)
-    DeclareLocal("__sc_1", bool, %21)
-    %22 = LoadVar("__sc_1") -> bool
-    Branch(%22, block_2, block_3)
+function @main() -> void {
+  L0:
+    %0 = strconst "=== Logical Operators ==="
+    call @println(%0 borrow)
+    %1 = strconst "--- Boolean Basics ---"
+    call @println(%1 borrow)
+    %2 = bconst true
+    local t: bool = %2
+    %3 = bconst false
+    local f: bool = %3
+    %4 = loadvar.bool t
+    call @println(%4 borrow)
+    %5 = loadvar.bool f
+    call @println(%5 borrow)
+    %6 = loadvar.bool t
+    %7 = bconst true
+    %8 = binop "==", %6, %7
+    call @println(%8 borrow)
+    %9 = loadvar.bool f
+    %10 = bconst false
+    %11 = binop "==", %9, %10
+    call @println(%11 borrow)
+    %12 = loadvar.bool t
+    %13 = loadvar.bool f
+    %14 = binop "==", %12, %13
+    call @println(%14 borrow)
+    %15 = strconst "--- Logical Conditions ---"
+    call @println(%15 borrow)
+    %16 = const.int32 10
+    local a: int32 = %16
+    %17 = const.int32 5
+    local b: int32 = %17
+    %18 = const.int32 15
+    local c: int32 = %18
+    %19 = loadvar.int32 a
+    %20 = loadvar.int32 b
+    %21 = binop ">", %19, %20
+    local __sc_1: bool = %21
+    %22 = loadvar.bool __sc_1
+    br %22, L2, L3
 
-  block_1:
-    %23 = LoadVar("a") -> int32
-    %24 = LoadVar("b") -> int32
-    %25 = BinaryOp("<", %23, %24)
-    DeclareLocal("__sc_2", bool, %25)
-    %26 = LoadVar("__sc_2") -> bool
-    Branch(%26, block_7, block_6)
+  L1:
+    %23 = loadvar.int32 a
+    %24 = loadvar.int32 b
+    %25 = binop "<", %23, %24
+    local __sc_2: bool = %25
+    %26 = loadvar.bool __sc_2
+    br %26, L7, L6
 
-  block_2:
-    %27 = LoadVar("a") -> int32
-    %28 = LoadVar("c") -> int32
-    %29 = BinaryOp("<", %27, %28)
-    StoreVar("__sc_1", %29)
-    Jump(block_3)
+  L2:
+    %27 = loadvar.int32 a
+    %28 = loadvar.int32 c
+    %29 = binop "<", %27, %28
+    storevar __sc_1, %29
+    jmp L3
 
-  block_3:
-    %30 = LoadVar("__sc_1") -> bool
-    Branch(%30, block_4, block_1)
+  L3:
+    %30 = loadvar.bool __sc_1
+    br %30, L4, L1
 
-  block_4:
-    %31 = StringLiteral("a is between b and c", string)
-    Call(println, [%31], ["borrow"])
-    Jump(block_1)
+  L4:
+    %31 = strconst "a is between b and c"
+    call @println(%31 borrow)
+    jmp L1
 
-  block_5:
-    %32 = LoadVar("a") -> int32
-    %33 = LoadVar("b") -> int32
-    %34 = BinaryOp("<", %32, %33)
-    DeclareLocal("__sc_3", bool, %34)
-    %35 = LoadVar("__sc_3") -> bool
-    Branch(%35, block_11, block_10)
+  L5:
+    %32 = loadvar.int32 a
+    %33 = loadvar.int32 b
+    %34 = binop "<", %32, %33
+    local __sc_3: bool = %34
+    %35 = loadvar.bool __sc_3
+    br %35, L11, L10
 
-  block_6:
-    %36 = LoadVar("a") -> int32
-    %37 = IntLiteral(0, int32)
-    %38 = BinaryOp(">", %36, %37)
-    StoreVar("__sc_2", %38)
-    Jump(block_7)
+  L6:
+    %36 = loadvar.int32 a
+    %37 = const.int32 0
+    %38 = binop ">", %36, %37
+    storevar __sc_2, %38
+    jmp L7
 
-  block_7:
-    %39 = LoadVar("__sc_2") -> bool
-    Branch(%39, block_8, block_5)
+  L7:
+    %39 = loadvar.bool __sc_2
+    br %39, L8, L5
 
-  block_8:
-    %40 = StringLiteral("a meets at least one condition", string)
-    Call(println, [%40], ["borrow"])
-    Jump(block_5)
+  L8:
+    %40 = strconst "a meets at least one condition"
+    call @println(%40 borrow)
+    jmp L5
 
-  block_9:
-    %41 = LoadVar("t") -> bool
-    DeclareLocal("__sc_4", bool, %41)
-    %42 = LoadVar("__sc_4") -> bool
-    Branch(%42, block_14, block_15)
+  L9:
+    %41 = loadvar.bool t
+    local __sc_4: bool = %41
+    %42 = loadvar.bool __sc_4
+    br %42, L14, L15
 
-  block_10:
-    %43 = LoadVar("t") -> bool
-    %44 = UnaryOp("!", %43)
-    StoreVar("__sc_3", %44)
-    Jump(block_11)
+  L10:
+    %43 = loadvar.bool t
+    %44 = unop "!", %43
+    storevar __sc_3, %44
+    jmp L11
 
-  block_11:
-    %45 = LoadVar("__sc_3") -> bool
-    %46 = UnaryOp("!", %45)
-    Branch(%46, block_12, block_9)
+  L11:
+    %45 = loadvar.bool __sc_3
+    %46 = unop "!", %45
+    br %46, L12, L9
 
-  block_12:
-    %47 = StringLiteral("not/or combination works", string)
-    Call(println, [%47], ["borrow"])
-    Jump(block_9)
+  L12:
+    %47 = strconst "not/or combination works"
+    call @println(%47 borrow)
+    jmp L9
 
-  block_13:
-    %48 = StringLiteral("=== All logical operator tests passed ===", string)
-    Call(println, [%48], ["borrow"])
-    Return()
+  L13:
+    %48 = strconst "=== All logical operator tests passed ==="
+    call @println(%48 borrow)
+    ret
 
-  block_14:
-    %49 = LoadVar("f") -> bool
-    %50 = UnaryOp("!", %49)
-    StoreVar("__sc_4", %50)
-    Jump(block_15)
+  L14:
+    %49 = loadvar.bool f
+    %50 = unop "!", %49
+    storevar __sc_4, %50
+    jmp L15
 
-  block_15:
-    %51 = LoadVar("__sc_4") -> bool
-    Branch(%51, block_16, block_13)
+  L15:
+    %51 = loadvar.bool __sc_4
+    br %51, L16, L13
 
-  block_16:
-    %52 = StringLiteral("and/not combination works", string)
-    Call(println, [%52], ["borrow"])
-    Jump(block_13)
+  L16:
+    %52 = strconst "and/not combination works"
+    call @println(%52 borrow)
+    jmp L13
 }

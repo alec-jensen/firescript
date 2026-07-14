@@ -1,0 +1,11 @@
+// Parser edge case: in deferred-import-resolution mode (an import is
+// present), a call-like expression on an identifier that isn't yet a known
+// generic class/function is parsed speculatively as a generic constructor
+// call with an empty type argument list, deferring the real error to
+// import resolution.
+
+import @firescript/std.io.println;
+
+void deferred_generic_call_empty_type_args() {
+    Unresolved<>(5);  //~ ERROR FS-PARSE-0010 @5
+}

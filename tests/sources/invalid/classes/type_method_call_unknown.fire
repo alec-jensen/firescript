@@ -1,0 +1,12 @@
+// Semantic error: calling an unknown static method/constructor via
+// 'Type.method(...)' syntax.
+
+class Utils {
+    static int32 identity(int32 x) {
+        return x;
+    }
+}
+
+void type_method_call_unknown() {
+    int32 y = Utils.doesNotExist(5);  //~ ERROR FS-SEM-0010 @21
+}

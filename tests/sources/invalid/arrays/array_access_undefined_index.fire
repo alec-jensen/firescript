@@ -1,0 +1,7 @@
+// Semantic error: array index expression references an undefined
+// identifier, so its type cannot be determined.
+
+void array_access_undefined_index() {
+    int32[] arr = [1, 2, 3];
+    int32 v = arr[undefinedIndex];  //~ ERROR FS-PARSE-0003 @19
+}

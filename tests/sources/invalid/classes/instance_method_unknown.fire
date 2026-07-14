@@ -1,0 +1,14 @@
+// Semantic error: calling an unknown method on a class instance.
+
+class Counter {
+    int32 value;
+
+    Counter(int32 value) {
+        this.value = value;
+    }
+}
+
+void instance_method_unknown() {
+    Counter c = new Counter(0);
+    c.frobnicate();  //~ ERROR FS-SEM-0010 @5
+}

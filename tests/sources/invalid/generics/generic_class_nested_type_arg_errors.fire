@@ -1,0 +1,20 @@
+// Malformed nested type-argument lists and missing closing '>' in generic
+// class instantiations.
+class Pair<T, U> {
+    T a;
+    U b;
+
+    Pair(T a, U b) {
+        this.a = a;
+        this.b = b;
+    }
+}
+
+// Missing type argument inside a nested generic type argument.
+int32 main() {
+    Pair<Pair<,int32>, int32> p = Pair(Pair(1, 2), 3);  //~ ERROR FS-PARSE-0010 @15
+//~^ ERROR FS-PARSE-0010 @21
+//~^^ ERROR FS-PARSE-0010 @29
+//~^^^ ERROR FS-PARSE-0003 @31
+    return 0;
+}

@@ -1,0 +1,24 @@
+// Malformed `new` constructor-call syntax.
+copyable class Pair<T, U> {
+    T first;
+    U second;
+
+    Pair(T first, U second) {
+        this.first = first;
+        this.second = second;
+    }
+}
+
+// Unknown type name after 'new'.
+int32 a = 0;
+a = new NotAClass();  //~ ERROR FS-PARSE-0012 @9
+//~^ ERROR FS-SEM-0010 @9
+
+// Missing '(' after constructor type.
+Pair<int32, int32> p = new Pair<int32, int32>;  //~ ERROR FS-PARSE-0010 @46
+//~^ ERROR FS-PARSE-0010 @46
+
+// Malformed generic type-argument list in `new Generic<...>(...)`.
+Pair<int32, int32> q = new Pair<5, int32>(1, 2);  //~ ERROR FS-PARSE-0010 @33
+//~^ ERROR FS-PARSE-0010 @33
+//~^^ ERROR FS-PARSE-0010 @41

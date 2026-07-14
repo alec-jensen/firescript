@@ -1,0 +1,7 @@
+// Malformed if-condition expression where parse_expression fails but
+// leaves the ')' as the very next token, so the if-statement parser's
+// error-recovery path consumes it directly instead of falling through to
+// a second "expected ')'" diagnostic.
+if (,) {  //~ ERROR FS-PARSE-0012 @5
+    int32 x = 1;
+}

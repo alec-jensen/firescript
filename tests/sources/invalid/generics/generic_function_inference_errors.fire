@@ -1,0 +1,24 @@
+// Generic function type-argument inference failures: a type parameter that
+// doesn't appear in any parameter position can't be inferred from the call
+// site, and a constraint violation once a type is otherwise inferred.
+T make<T>() {
+    int32 x = 5;
+    return x;
+}
+
+constraint Numeric = int32 | float32;
+
+T addNumeric<T: Numeric>(T a, T b) {
+    return a + b;
+}
+
+int32 cannotInfer() {
+    int32 y = make();  //~ ERROR FS-SEM-0010 @15
+//~^ ERROR FS-SEM-0002 @11
+    return y;
+}
+
+int32 main() {
+    bool x = addNumeric(true, true);  //~ ERROR FS-SEM-0010 @14
+    return 0;
+}

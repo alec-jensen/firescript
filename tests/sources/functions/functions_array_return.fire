@@ -1,0 +1,18 @@
+// Function returning an array type: exercises array-typed function call results
+// used inside further expressions (array access, array methods).
+
+import @firescript/std.io.println;
+
+int32[] identity(int32[] arr) {
+    return arr;
+}
+
+int32[3] source = [10, 20, 30];
+int32[] first = identity(source);
+println(first[0]);
+println(first[1] + first[2]);
+
+/* EXPECT
+10
+50
+*/

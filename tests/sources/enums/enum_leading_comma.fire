@@ -1,0 +1,18 @@
+// A stray leading comma before the first enum variant is tolerated.
+import @firescript/std.io.println;
+
+enum Color {
+    , Red,
+    Green
+}
+
+Color c = Color.Red;
+
+match c {
+    Color.Red -> println("red"),
+    Color.Green -> println("green"),
+}
+
+/* EXPECT
+red
+*/

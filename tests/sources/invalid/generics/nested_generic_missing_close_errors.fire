@@ -1,0 +1,14 @@
+// Nested generic type argument list missing its closing '>' in a variable
+// declaration: Pair<Pair<int32, int32, string p; -- the inner Pair<...>
+// never gets a closing '>' before the declared variable name.
+copyable class Pair<T, U> {
+    T first;
+    U second;
+
+    Pair(T first, U second) {
+        this.first = first;
+        this.second = second;
+    }
+}
+
+Pair<Pair<int32, int32, string p;  //~ ERROR FS-PARSE-0010 @32

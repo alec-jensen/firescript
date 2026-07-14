@@ -1,0 +1,15 @@
+// Semantic error: 'this.super(...)' where the base class has no declared
+// constructor.
+
+class Base {
+    int32 x;
+}
+
+class Derived from Base {
+    int32 y;
+
+    Derived(int32 y) {
+        this.super();  //~ ERROR FS-SEM-0010 @14
+        this.y = y;
+    }
+}

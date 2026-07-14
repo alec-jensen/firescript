@@ -1,0 +1,25 @@
+// An implicitly-declared variable whose right-hand side is a plain
+// (non-constructor, non-user-type) function call gets no inferred type.
+// Calling a method on it later re-derives the (still-unknown) type from
+// the scope table rather than the identifier's own annotation -- exercises
+// the current_scope-lookup fallback in resolve_variable_types's
+// VARIABLE_ASSIGNMENT/METHOD_CALL inference path.
+import @firescript/std.io.println;
+
+class Foo {
+    int32 v;
+
+    Foo(int32 v) {
+        this.v = v;
+    }
+
+    int32 get() {
+        return this.v;
+    }
+}
+
+int32 main() {
+    a = println(1);  //~ ERROR FS-PARSE-0003 @5
+    b = a.get();  //~ ERROR FS-PARSE-0003 @5
+    return 0;
+}

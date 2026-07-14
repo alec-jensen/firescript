@@ -1,168 +1,168 @@
-module nullable_advanced
+fir module nullable_advanced
 
 type Config owned {
   host: string
   port: string
 }
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function Config.Config(host: string, port: string) -> Config {
-  block_0:
-    %0 = Allocate(Config, [])
-    DeclareLocal("this", Config, %0)
-    %1 = LoadVar("host") -> string
-    %2 = LoadVar("this") -> Config
-    StoreField(%2, "host", %1)
-    %3 = LoadVar("port") -> string
-    %4 = LoadVar("this") -> Config
-    StoreField(%4, "port", %3)
-    %5 = LoadVar("this") -> Config
-    Return(%5)
+function @Config.Config(host: string, port: string) -> Config {
+  L0:
+    %0 = alloc.Config()
+    local this: Config = %0
+    %1 = loadvar.string host
+    %2 = loadvar.Config this
+    storefield %2, "host", %1
+    %3 = loadvar.string port
+    %4 = loadvar.Config this
+    storefield %4, "port", %3
+    %5 = loadvar.Config this
+    ret %5
 }
 
-function Config.address(this: &Config) -> string {
-  block_0:
-    %0 = LoadVar("this") -> Config
-    %1 = LoadField(%0, "port")
-    %2 = NullLiteral(string?)
-    %3 = BinaryOp("!=", %1, %2)
-    Branch(%3, block_2, block_1)
+function @Config.address(this: &Config) -> string {
+  L0:
+    %0 = loadvar.Config this
+    %1 = loadfield.string %0, "port"
+    %2 = nullconst string?
+    %3 = binop "!=", %1, %2
+    br %3, L2, L1
 
-  block_1:
-    %4 = LoadVar("this") -> Config
-    %5 = LoadField(%4, "host")
-    Return(%5)
+  L1:
+    %4 = loadvar.Config this
+    %5 = loadfield.string %4, "host"
+    ret %5
 
-  block_2:
-    %6 = LoadVar("this") -> Config
-    %7 = LoadField(%6, "host")
-    %8 = StringLiteral(":", string)
-    %9 = BinaryOp("+", %7, %8)
-    %10 = LoadVar("this") -> Config
-    %11 = LoadField(%10, "port")
-    %12 = BinaryOp("+", %9, %11)
-    Return(%12)
+  L2:
+    %6 = loadvar.Config this
+    %7 = loadfield.string %6, "host"
+    %8 = strconst ":"
+    %9 = binop "+", %7, %8
+    %10 = loadvar.Config this
+    %11 = loadfield.string %10, "port"
+    %12 = binop "+", %9, %11
+    ret %12
 }
 
-function main() -> void {
-  block_0:
-    %0 = StringLiteral("localhost", string)
-    %1 = StringLiteral("8080", string)
-    %2 = Call(Config.Config, [%0, %1], ["own", "own"]) -> Config
-    DeclareLocal("c1", Config, %2)
-    %3 = StringLiteral("example.com", string)
-    %4 = StringLiteral("1111", string)
-    %5 = Call(Config.Config, [%3, %4], ["own", "own"]) -> Config
-    DeclareLocal("c2", Config, %5)
-    %6 = LoadVar("c1") -> Config
-    %7 = MethodCall(%6, "address", [], []) -> string
-    Call(println, [%7], ["borrow"])
-    %8 = LoadVar("c1") -> Config
-    Drop(%8)
-    %9 = LoadVar("c2") -> Config
-    %10 = MethodCall(%9, "address", [], []) -> string
-    Call(println, [%10], ["borrow"])
-    %11 = LoadVar("c2") -> Config
-    Drop(%11)
-    %12 = StringLiteral("first", string)
-    DeclareLocal("a", string?, %12)
-    %13 = NullLiteral(string?)
-    DeclareLocal("b", string?, %13)
-    %14 = StringLiteral("third", string)
-    DeclareLocal("c", string?, %14)
-    %15 = IntLiteral(0, int32)
-    DeclareLocal("count", int32, %15)
-    %16 = LoadVar("a") -> string?
-    %17 = NullLiteral(string?)
-    %18 = BinaryOp("!=", %16, %17)
-    Branch(%18, block_2, block_1)
+function @main() -> void {
+  L0:
+    %0 = strconst "localhost"
+    %1 = strconst "8080"
+    %2 = call.Config @Config.Config(%0 own, %1 own)
+    local c1: Config = %2
+    %3 = strconst "example.com"
+    %4 = strconst "1111"
+    %5 = call.Config @Config.Config(%3 own, %4 own)
+    local c2: Config = %5
+    %6 = loadvar.Config c1
+    %7 = mcall.string %6, "address"()
+    call @println(%7 borrow)
+    %8 = loadvar.Config c1
+    drop %8
+    %9 = loadvar.Config c2
+    %10 = mcall.string %9, "address"()
+    call @println(%10 borrow)
+    %11 = loadvar.Config c2
+    drop %11
+    %12 = strconst "first"
+    local a: string? = %12
+    %13 = nullconst string?
+    local b: string? = %13
+    %14 = strconst "third"
+    local c: string? = %14
+    %15 = const.int32 0
+    local count: int32 = %15
+    %16 = loadvar.string? a
+    %17 = nullconst string?
+    %18 = binop "!=", %16, %17
+    br %18, L2, L1
 
-  block_1:
-    %19 = LoadVar("a") -> string?
-    Drop(%19)
-    %20 = LoadVar("b") -> string?
-    %21 = NullLiteral(string?)
-    %22 = BinaryOp("!=", %20, %21)
-    Branch(%22, block_4, block_3)
+  L1:
+    %19 = loadvar.string? a
+    drop %19
+    %20 = loadvar.string? b
+    %21 = nullconst string?
+    %22 = binop "!=", %20, %21
+    br %22, L4, L3
 
-  block_2:
-    %23 = LoadVar("count") -> int32
-    %24 = IntLiteral(1, int32)
-    %25 = BinaryOp("+", %23, %24)
-    StoreVar("count", %25)
-    Jump(block_1)
+  L2:
+    %23 = loadvar.int32 count
+    %24 = const.int32 1
+    %25 = binop "+", %23, %24
+    storevar count, %25
+    jmp L1
 
-  block_3:
-    %26 = LoadVar("b") -> string?
-    Drop(%26)
-    %27 = LoadVar("c") -> string?
-    %28 = NullLiteral(string?)
-    %29 = BinaryOp("!=", %27, %28)
-    Branch(%29, block_6, block_5)
+  L3:
+    %26 = loadvar.string? b
+    drop %26
+    %27 = loadvar.string? c
+    %28 = nullconst string?
+    %29 = binop "!=", %27, %28
+    br %29, L6, L5
 
-  block_4:
-    %30 = LoadVar("count") -> int32
-    %31 = IntLiteral(1, int32)
-    %32 = BinaryOp("+", %30, %31)
-    StoreVar("count", %32)
-    Jump(block_3)
+  L4:
+    %30 = loadvar.int32 count
+    %31 = const.int32 1
+    %32 = binop "+", %30, %31
+    storevar count, %32
+    jmp L3
 
-  block_5:
-    %33 = LoadVar("c") -> string?
-    Drop(%33)
-    %34 = LoadVar("count") -> int32
-    Call(println, [%34], ["borrow"])
-    %35 = NullLiteral(string?)
-    DeclareLocal("val", string?, %35)
-    %36 = LoadVar("val") -> string?
-    %37 = NullLiteral(string?)
-    %38 = BinaryOp("==", %36, %37)
-    Call(println, [%38], ["borrow"])
-    %39 = StringLiteral("assigned", string)
-    %40 = LoadVar("val") -> string?
-    Drop(%40)
-    StoreVar("val", %39)
-    %41 = LoadVar("val") -> string?
-    %42 = NullLiteral(string?)
-    %43 = BinaryOp("!=", %41, %42)
-    Call(println, [%43], ["borrow"])
-    %44 = LoadVar("val") -> string?
-    Drop(%44)
-    Return()
+  L5:
+    %33 = loadvar.string? c
+    drop %33
+    %34 = loadvar.int32 count
+    call @println(%34 borrow)
+    %35 = nullconst string?
+    local val: string? = %35
+    %36 = loadvar.string? val
+    %37 = nullconst string?
+    %38 = binop "==", %36, %37
+    call @println(%38 borrow)
+    %39 = strconst "assigned"
+    %40 = loadvar.string? val
+    drop %40
+    storevar val, %39
+    %41 = loadvar.string? val
+    %42 = nullconst string?
+    %43 = binop "!=", %41, %42
+    call @println(%43 borrow)
+    %44 = loadvar.string? val
+    drop %44
+    ret
 
-  block_6:
-    %45 = LoadVar("count") -> int32
-    %46 = IntLiteral(1, int32)
-    %47 = BinaryOp("+", %45, %46)
-    StoreVar("count", %47)
-    Jump(block_5)
+  L6:
+    %45 = loadvar.int32 count
+    %46 = const.int32 1
+    %47 = binop "+", %45, %46
+    storevar count, %47
+    jmp L5
 }

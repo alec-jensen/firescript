@@ -1,79 +1,79 @@
-module memory_class_owned_fields
+fir module memory_class_owned_fields
 
 type Person owned {
   name: string
   age: int32
 }
 
-function<T> print(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("text", string, %1)
-    %2 = LoadVar("text") -> string
-    Call(stdout, [%2], ["borrow"])
-    %3 = LoadVar("text") -> string
-    Drop(%3)
-    Return()
+function<T> @print(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local text: string = %1
+    %2 = loadvar.string text
+    call @stdout(%2 borrow)
+    %3 = loadvar.string text
+    drop %3
+    ret
 }
 
-function<T> println(value: &T) -> void {
-  block_0:
-    %0 = LoadVar("value") -> T
-    %1 = Cast(%0, string)
-    DeclareLocal("cast_text", string, %1)
-    %2 = LoadVar("cast_text") -> string
-    %3 = StringLiteral("\n", string)
-    %4 = BinaryOp("+", %2, %3)
-    DeclareLocal("text", string, %4)
-    %5 = LoadVar("cast_text") -> string
-    Drop(%5)
-    %6 = LoadVar("text") -> string
-    Call(stdout, [%6], ["borrow"])
-    %7 = LoadVar("text") -> string
-    Drop(%7)
-    Return()
+function<T> @println(value: &T) -> void {
+  L0:
+    %0 = loadvar.T value
+    %1 = cast.string %0
+    local cast_text: string = %1
+    %2 = loadvar.string cast_text
+    %3 = strconst "\n"
+    %4 = binop "+", %2, %3
+    local text: string = %4
+    %5 = loadvar.string cast_text
+    drop %5
+    %6 = loadvar.string text
+    call @stdout(%6 borrow)
+    %7 = loadvar.string text
+    drop %7
+    ret
 }
 
-function Person.Person(name: string, age: int32) -> Person {
-  block_0:
-    %0 = Allocate(Person, [])
-    DeclareLocal("this", Person, %0)
-    %1 = LoadVar("name") -> string
-    %2 = LoadVar("this") -> Person
-    StoreField(%2, "name", %1)
-    %3 = LoadVar("age") -> int32
-    %4 = LoadVar("this") -> Person
-    StoreField(%4, "age", %3)
-    %5 = LoadVar("this") -> Person
-    Return(%5)
+function @Person.Person(name: string, age: int32) -> Person {
+  L0:
+    %0 = alloc.Person()
+    local this: Person = %0
+    %1 = loadvar.string name
+    %2 = loadvar.Person this
+    storefield %2, "name", %1
+    %3 = loadvar.int32 age
+    %4 = loadvar.Person this
+    storefield %4, "age", %3
+    %5 = loadvar.Person this
+    ret %5
 }
 
-function Person.greet(this: &Person) -> string {
-  block_0:
-    %0 = StringLiteral("Hello, ", string)
-    %1 = LoadVar("this") -> Person
-    %2 = LoadField(%1, "name")
-    %3 = BinaryOp("+", %0, %2)
-    Return(%3)
+function @Person.greet(this: &Person) -> string {
+  L0:
+    %0 = strconst "Hello, "
+    %1 = loadvar.Person this
+    %2 = loadfield.string %1, "name"
+    %3 = binop "+", %0, %2
+    ret %3
 }
 
-function main() -> void {
-  block_0:
-    %0 = StringLiteral("Alice", string)
-    %1 = IntLiteral(30, int32)
-    %2 = Call(Person.Person, [%0, %1], ["own", "own"]) -> Person
-    DeclareLocal("p", Person, %2)
-    %3 = LoadVar("p") -> Person
-    %4 = LoadField(%3, "name")
-    Call(println, [%4], ["borrow"])
-    %5 = LoadVar("p") -> Person
-    %6 = LoadField(%5, "age")
-    Call(println, [%6], ["borrow"])
-    %7 = LoadVar("p") -> Person
-    %8 = MethodCall(%7, "greet", [], []) -> string
-    Call(println, [%8], ["borrow"])
-    %9 = LoadVar("p") -> Person
-    Drop(%9)
-    Return()
+function @main() -> void {
+  L0:
+    %0 = strconst "Alice"
+    %1 = const.int32 30
+    %2 = call.Person @Person.Person(%0 own, %1 own)
+    local p: Person = %2
+    %3 = loadvar.Person p
+    %4 = loadfield.string %3, "name"
+    call @println(%4 borrow)
+    %5 = loadvar.Person p
+    %6 = loadfield.int32 %5, "age"
+    call @println(%6 borrow)
+    %7 = loadvar.Person p
+    %8 = mcall.string %7, "greet"()
+    call @println(%8 borrow)
+    %9 = loadvar.Person p
+    drop %9
+    ret
 }
