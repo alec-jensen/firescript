@@ -1,0 +1,14 @@
+// Regression test: `import module.symbol as alias;` used to parse and pass
+// semantic analysis but any call site using the alias failed at FLIR
+// lowering with "call to unknown function <alias>" -- the alias was
+// recorded on the IMPORT_STATEMENT node but nothing downstream ever
+// consulted it. Fixed in imports.py's apply_symbol_aliases(), which
+// rewrites alias call sites back to the imported symbol's original name
+// right after each module (including the entry module) is parsed.
+import @firescript/std.io.println as show;
+
+show(5);
+
+/* EXPECT
+5
+*/

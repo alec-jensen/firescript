@@ -32,10 +32,15 @@ import src.utils.utils.*
 
 Only exported symbols are eligible for import, including wildcard imports. Module-private top-level declarations remain visible only inside the defining file.
 
-- Aliasing imports ([PLANNED] — parsed, but aliased access is not yet implemented):
+- Aliasing a symbol import ([IMPLEMENTED]): call sites using the alias resolve to the imported symbol.
 
 ```firescript
 import src.utils.utils.helper as help
+```
+
+- Aliasing a whole-module import ([PLANNED] — parsed, but qualified access through the alias is not yet implemented):
+
+```firescript
 import src.utils.utils as Utils
 ```
 
@@ -153,5 +158,6 @@ import src.utils.utils.{helper, CONSTANT}
 - [IMPLEMENTED] Symbol imports (`import module.{a, b}`)
 - [IMPLEMENTED] Cyclic import detection
 - [IMPLEMENTED] Standard library imports (`import @firescript/std...`)
+- [IMPLEMENTED] Symbol import aliases (`import module.symbol as alias`)
 - [PLANNED] Module aliases and qualified access (e.g., `import module as M`, `M.helper()`)
 - [PLANNED] External packages (`@user/package`)

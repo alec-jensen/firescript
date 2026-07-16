@@ -11,7 +11,7 @@ from lexer import Lexer, Token
 from parser import Parser, ASTNode
 from enums import NodeTypes
 from errors import UndefinedIdentifierError
-from imports import ModuleResolver, Module, build_merged_ast
+from imports import ModuleResolver, Module, build_merged_ast, apply_symbol_aliases
 
 
 def _hydrate_parser_symbols_from_merged_ast(parser_instance: Parser, merged_ast: ASTNode) -> None:
@@ -107,6 +107,7 @@ def resolve_imports_and_deferred_identifiers(
     entry_abs = os.path.abspath(file_path)
     dotted = resolver.path_to_dotted(entry_abs)
     entry_mod_obj = Module(dotted=dotted, path=entry_abs, ast=ast)
+    apply_symbol_aliases(entry_mod_obj)
     resolver.modules[dotted] = entry_mod_obj
 
     for imp in entry_mod_obj.imports:

@@ -455,6 +455,7 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
             scope_stack.clear()
             loop_boundaries.clear()
             scope_stack.append([])
+            is_constructor = bool(getattr(node, "is_constructor", False))
             for c in node.children[:-1]:
                 if c.node_type == NodeTypes.PARAMETER:
                     var_maps[-1][c.name] = (c.var_type, c.is_array, "param")
@@ -466,7 +467,24 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
                     # covers it too. Without this, a function that never
                     # explicitly consumes its own owned parameter silently
                     # leaked it (FIRV-O3).
-                    if not getattr(c, "is_borrowed", False) and is_owned(c.var_type, c.is_array):
+                    #
+                    # A constructor's `this` receiver is exempt even when
+                    # written `owned this`: ast_to_fir.py's _convert_method
+                    # drops it from the actual FIR signature and always
+                    # allocates its own fresh `this`, which it implicitly
+                    # returns at the end of the constructor. Registering it
+                    # here would insert a drop for a value that synthesized
+                    # return is about to read again -- a use-after-drop.
+                    is_ctor_this_receiver = (
+                        is_constructor
+                        and getattr(c, "is_receiver", False)
+                        and c.name == "this"
+                    )
+                    if (
+                        not is_ctor_this_receiver
+                        and not getattr(c, "is_borrowed", False)
+                        and is_owned(c.var_type, c.is_array)
+                    ):
                         scope_stack[-1].append((c.name, c.var_type, c.is_array))
             body = node.children[-1] if node.children else None
             if body is not None:

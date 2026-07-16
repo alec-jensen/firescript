@@ -556,6 +556,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **classes_constructor_owned_borrowed_param.fire** - Constructor with `owned`/borrowed markers on regular (non-receiver) parameters, following an explicit receiver
 - **classes_new_constructor_syntax.fire** - Java-like `new ClassName(args)` constructor syntax, an alternate to the direct `ClassName(args)` form
 - **type_method_call_constructor_form.fire** - Type-qualified `ClassName.methodName(args)` call form resolving to a static method (as opposed to the constructor-via-`ClassName.ClassName(args)` case covered by `classes_explicit_constructor_call.fire`)
+- **classes_owned_this_constructor.fire** - Regression: `owned this` as a constructor receiver (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
 
 ### `generics/`
 - **generics_basic.fire** - Basic generic functions
@@ -578,7 +579,8 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **imports_wildcard.fire** - Wildcard imports (`utils.*`)
 - **export_visibility.fire** - Importing an explicitly exported symbol (`visibility_provider.addOne`)
 - **utils.fire**, **math_utils.fire**, **string_utils.fire**, **visibility_provider.fire** - Helper modules, not standalone tests
-- **imports_alias.fire** - Import aliasing (`as`) on a symbol import and on a whole-module import. Note: aliased symbol imports parse and pass `--check`, but calling through the alias currently fails at FIR->FLIR lowering ("call to unknown function") -- documented, not fixed (flagged separately)
+- **imports_alias.fire** - Import aliasing (`as`) on a symbol import and on a whole-module import; calls through the symbol alias. Qualified access through a module alias (e.g. `U.helper(...)`) is still `[PLANNED]` (see `docs/reference/imports.md`), so the whole-module alias is imported but only called through its unaliased import
+- **imports_symbol_alias.fire** - Regression: calling through an aliased symbol import (`import x.y as z; z();`) (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
 
 ### `io/`
 - **io_test.fire** - Input/output functions
@@ -637,7 +639,7 @@ Prefer many small, single-behavior `.fire` files over one large multi-assertion 
 
 ## Known-Failing Regression Tests
 
-`tests/sources/known_issues/*.fire` cases are **expected to fail** under the `run` kind right now — they were added to lock in known compiler bugs before a fix lands, per CLAUDE.md's "always add a test that would have failed before the fix" rule, applied here in advance of the fix rather than alongside it. Do not "fix" them by editing the EXPECT block or deleting the case; they should start passing once the underlying bug referenced in each file's header comment is fixed, at which point re-run with `--update`, review the diff, and move the file into its normal feature category. As of this writing the category is empty -- the three prior entries (`Option`/`CopyableOption` `isSome()`/`isNone()` wrong values, and two generic-call FIR->FLIR lowering crashes) were all traced to one root cause in `ast_to_fir.py`'s `_find_method_def()`/`_expr_type()` (methods/calls on a class or function imported from another module could resolve against a stale or unsubstituted generic type instead of the concrete instantiation) and fixed; the regression tests now live at `std/types/option_issome_isnone.fire`, `generics/generic_nested_call.fire`, and `generics/generic_method_if_condition.fire`.
+`tests/sources/known_issues/*.fire` cases are **expected to fail** under the `run` kind right now — they were added to lock in known compiler bugs before a fix lands, per CLAUDE.md's "always add a test that would have failed before the fix" rule, applied here in advance of the fix rather than alongside it. Do not "fix" them by editing the EXPECT block or deleting the case; they should start passing once the underlying bug referenced in each file's header comment is fixed, at which point re-run with `--update`, review the diff, and move the file into its normal feature category. As of this writing the category is empty -- the three prior entries (`Option`/`CopyableOption` `isSome()`/`isNone()` wrong values, and two generic-call FIR->FLIR lowering crashes) were all traced to one root cause in `ast_to_fir.py`'s `_find_method_def()`/`_expr_type()` (methods/calls on a class or function imported from another module could resolve against a stale or unsubstituted generic type instead of the concrete instantiation) and fixed; the regression tests now live at `std/types/option_issome_isnone.fire`, `generics/generic_nested_call.fire`, and `generics/generic_method_if_condition.fire`. Two more entries (`owned this` constructor receivers dropping `this` before the constructor's synthesized return, and aliased-import call sites never being rewritten to the original symbol name) were fixed since; those regression tests now live at `classes/classes_owned_this_constructor.fire` and `imports/imports_symbol_alias.fire`.
 
 This category is specifically for currently-known, not-yet-fixed bugs (expected to fail). Normal regression tests added alongside a fix (per CLAUDE.md's standard "Bug Fix Tests" workflow — a test that would have failed before the fix and passes after) go in their feature's regular category directory, not here.
 

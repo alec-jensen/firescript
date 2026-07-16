@@ -1,0 +1,25 @@
+// Regression test: `owned this` as a constructor receiver used to parse
+// successfully but emit invalid FIR -- `this` was dropped as an ordinary
+// owned local at scope exit and then read again by the implicit "return
+// this" the constructor synthesizes, so FIR ownership verification failed
+// with FIRV-O1 (use after drop). Fixed in preprocessor.py's drop-insertion
+// pass by exempting a constructor's own `this` receiver, since
+// ast_to_fir.py's _convert_method always allocates its own fresh `this`
+// for a constructor and implicitly returns it regardless of the receiver
+// parameter.
+import @firescript/std.io.println;
+
+class Box {
+    v: int32;
+
+    fn Box(owned this, v: int32) {
+        this.v = v;
+    }
+}
+
+b: Box = Box(5);
+println(b.v);
+
+/* EXPECT
+5
+*/

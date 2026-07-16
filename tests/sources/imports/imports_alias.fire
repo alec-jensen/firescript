@@ -1,17 +1,16 @@
 // Import aliasing: 'as' on a symbol import and on a whole-module import.
-// Note: aliased *symbol* imports only exercise the parser/import-resolution
-// path here -- calling through the alias currently fails at FIR->FLIR
-// lowering ("call to unknown function <alias>"); qualified access through a
-// module alias (e.g. `U.helper(...)`) is separately not implemented
-// (docs/reference/imports.md marks qualified access as [PLANNED]). So this
-// test imports both aliased forms but calls through the original names.
+// Note: qualified access through a module alias (e.g. `U.helper(...)`) is
+// not implemented (docs/reference/imports.md marks qualified access as
+// [PLANNED]), so `utils as U` is imported but only called through the
+// unqualified `helper` import; the aliased *symbol* import (`p`) is called
+// directly through its alias.
 import @firescript/std.io.println;
 import @firescript/std.io.println as p;
 import utils as U;
 import utils.helper;
 
 fn main() -> void {
-    println(helper(5));
+    p(helper(5));
 }
 
 /* EXPECT

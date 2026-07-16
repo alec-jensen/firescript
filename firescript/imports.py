@@ -31,6 +31,47 @@ def iter_imports(ast: ASTNode) -> Iterable[ImportSpec]:
             yield ImportSpec(module_path, kind, symbols, alias, span)
 
 
+def _collect_symbol_alias_map(imports: Iterable[ImportSpec]) -> Dict[str, str]:
+    """Map each locally-aliased imported symbol's alias back to its
+    original (canonical) name, for both `import module.symbol as alias`
+    and `import module.{a as x, b}` forms."""
+    aliases: Dict[str, str] = {}
+    for imp in imports:
+        if imp.kind != "symbols":
+            continue
+        for sym in imp.symbols:
+            alias = sym.get("alias")
+            name = sym.get("name")
+            if alias and name and alias != name:
+                aliases[alias] = name
+    return aliases
+
+
+def _rewrite_symbol_aliases(node: ASTNode, alias_map: Dict[str, str]) -> None:
+    if not alias_map:
+        return
+    if node.node_type in (NodeTypes.FUNCTION_CALL, NodeTypes.IDENTIFIER, NodeTypes.CONSTRUCTOR_CALL):
+        if node.name in alias_map:
+            node.name = alias_map[node.name]
+    for child in getattr(node, "children", []) or []:
+        _rewrite_symbol_aliases(child, alias_map)
+
+
+def apply_symbol_aliases(mod: "Module") -> None:
+    """Rewrite call-site references to a module's aliased imports back to
+    the imported symbol's original name, in place.
+
+    The parser records the alias on the IMPORT_STATEMENT node's symbol
+    entries, but nothing downstream (ast_to_fir.py / flir/lowering.py)
+    ever looks up a call by anything but the callee's real name --
+    without this, `import x.y as z; z();` parsed and passed semantic
+    analysis but failed at FLIR lowering with "call to unknown function z".
+    """
+    alias_map = _collect_symbol_alias_map(mod.imports)
+    if alias_map:
+        _rewrite_symbol_aliases(mod.ast, alias_map)
+
+
 @dataclass
 class Module:
     dotted: str
@@ -145,6 +186,7 @@ class ModuleResolver:
 
         ast, source_text = self.parse_file(path)
         mod = Module(dotted, path, ast, source_text)
+        apply_symbol_aliases(mod)
         self.modules[dotted] = mod
 
         # Resolve dependencies (DFS)
