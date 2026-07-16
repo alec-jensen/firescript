@@ -1710,10 +1710,14 @@
 </code></pre>
 <p>Only exported symbols are eligible for import, including wildcard imports. Module-private top-level declarations remain visible only inside the defining file.</p>
 <ul>
-<li>Aliasing imports ([PLANNED] — parsed, but aliased access is not yet implemented):</li>
+<li>Aliasing a symbol import ([IMPLEMENTED]): call sites using the alias resolve to the imported symbol.</li>
 </ul>
 <pre><code class="language-firescript">import src.utils.utils.helper as help
-import src.utils.utils as Utils
+</code></pre>
+<ul>
+<li>Aliasing a whole-module import ([PLANNED] — parsed, but qualified access through the alias is not yet implemented):</li>
+</ul>
+<pre><code class="language-firescript">import src.utils.utils as Utils
 </code></pre>
 <h3 id="importing-standard-library-modules-and-external-packages">Importing standard library modules and external packages<a class="headerlink" href="#importing-standard-library-modules-and-external-packages" title="Permanent link">&para;</a></h3>
 <p>Standard library imports under the <code>@firescript/std</code> namespace are implemented. The <code>@user/package</code> form is reserved for future package management:</p>
@@ -1835,6 +1839,7 @@ import @firescript/std.math.sqrt as squareRoot
 <li>[IMPLEMENTED] Symbol imports (<code>import module.{a, b}</code>)</li>
 <li>[IMPLEMENTED] Cyclic import detection</li>
 <li>[IMPLEMENTED] Standard library imports (<code>import @firescript/std...</code>)</li>
+<li>[IMPLEMENTED] Symbol import aliases (<code>import module.symbol as alias</code>)</li>
 <li>[PLANNED] Module aliases and qualified access (e.g., <code>import module as M</code>, <code>M.helper()</code>)</li>
 <li>[PLANNED] External packages (<code>@user/package</code>)</li>
 </ul>
