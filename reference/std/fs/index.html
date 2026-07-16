@@ -1043,10 +1043,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#readbytesint32-bytes" class="md-nav__link">
+  <a href="#readbytesbytes-int32" class="md-nav__link">
     <span class="md-ellipsis">
       
-        readBytes(int32 bytes)
+        readBytes(bytes: int32)
       
     </span>
   </a>
@@ -1054,10 +1054,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#writeallstring-data" class="md-nav__link">
+  <a href="#writealldata-string" class="md-nav__link">
     <span class="md-ellipsis">
       
-        writeAll(string data)
+        writeAll(data: string)
       
     </span>
   </a>
@@ -1065,10 +1065,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#appendallstring-data" class="md-nav__link">
+  <a href="#appendalldata-string" class="md-nav__link">
     <span class="md-ellipsis">
       
-        appendAll(string data)
+        appendAll(data: string)
       
     </span>
   </a>
@@ -1098,10 +1098,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#renametostring-new_path" class="md-nav__link">
+  <a href="#renametonew_path-string" class="md-nav__link">
     <span class="md-ellipsis">
       
-        renameTo(string new_path)
+        renameTo(new_path: string)
       
     </span>
   </a>
@@ -1109,10 +1109,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#movetostring-dst_path" class="md-nav__link">
+  <a href="#movetodst_path-string" class="md-nav__link">
     <span class="md-ellipsis">
       
-        moveTo(string dst_path)
+        moveTo(dst_path: string)
       
     </span>
   </a>
@@ -1627,10 +1627,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#readbytesint32-bytes" class="md-nav__link">
+  <a href="#readbytesbytes-int32" class="md-nav__link">
     <span class="md-ellipsis">
       
-        readBytes(int32 bytes)
+        readBytes(bytes: int32)
       
     </span>
   </a>
@@ -1638,10 +1638,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#writeallstring-data" class="md-nav__link">
+  <a href="#writealldata-string" class="md-nav__link">
     <span class="md-ellipsis">
       
-        writeAll(string data)
+        writeAll(data: string)
       
     </span>
   </a>
@@ -1649,10 +1649,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#appendallstring-data" class="md-nav__link">
+  <a href="#appendalldata-string" class="md-nav__link">
     <span class="md-ellipsis">
       
-        appendAll(string data)
+        appendAll(data: string)
       
     </span>
   </a>
@@ -1682,10 +1682,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#renametostring-new_path" class="md-nav__link">
+  <a href="#renametonew_path-string" class="md-nav__link">
     <span class="md-ellipsis">
       
-        renameTo(string new_path)
+        renameTo(new_path: string)
       
     </span>
   </a>
@@ -1693,10 +1693,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#movetostring-dst_path" class="md-nav__link">
+  <a href="#movetodst_path-string" class="md-nav__link">
     <span class="md-ellipsis">
       
-        moveTo(string dst_path)
+        moveTo(dst_path: string)
       
     </span>
   </a>
@@ -1888,22 +1888,22 @@
 <h3 id="file"><code>File</code><a class="headerlink" href="#file" title="Permanent link">&para;</a></h3>
 <p>Represents a file path and provides methods for common file operations.</p>
 <pre><code class="language-firescript">class File {
-    string path;
+    path: string;
 
-    File(&amp;mut this, string path);
+    fn File(&amp;mut this, path: string);
 
-    FileResult read(&amp;this);
-    FileResult readBytes(&amp;this, int32 bytes);
-    FileResult writeAll(&amp;this, string data);
-    FileResult appendAll(&amp;this, string data);
-    bool exists(&amp;this);
-    FileResult remove(&amp;this);
-    FileResult renameTo(&amp;mut this, string new_path);
-    FileResult moveTo(&amp;mut this, string dst_path);
+    fn read(&amp;this) -&gt; FileResult;
+    fn readBytes(&amp;this, bytes: int32) -&gt; FileResult;
+    fn writeAll(&amp;this, data: string) -&gt; FileResult;
+    fn appendAll(&amp;this, data: string) -&gt; FileResult;
+    fn exists(&amp;this) -&gt; bool;
+    fn remove(&amp;this) -&gt; FileResult;
+    fn renameTo(&amp;mut this, new_path: string) -&gt; FileResult;
+    fn moveTo(&amp;mut this, dst_path: string) -&gt; FileResult;
 }
 </code></pre>
 <p><strong>Constructor:</strong></p>
-<pre><code class="language-firescript">File(&amp;mut this, string path)
+<pre><code class="language-firescript">fn File(&amp;mut this, path: string)
 </code></pre>
 <p>Create a <code>File</code> instance for the given path. The path is stored but the file is not opened until an operation is called.</p>
 <p><strong>Parameters:</strong>
@@ -1911,20 +1911,20 @@
 <p><strong>Example:</strong></p>
 <pre><code class="language-firescript">import @firescript/std.fs.File;
 
-File myFile = File(&quot;hello.txt&quot;);
+myFile: File = File(&quot;hello.txt&quot;);
 </code></pre>
 <h3 id="fileresult"><code>FileResult</code><a class="headerlink" href="#fileresult" title="Permanent link">&para;</a></h3>
 <p>Encapsulates the result of a file operation.</p>
 <pre><code class="language-firescript">class FileResult {
-    int32 status;
-    string data;
+    status: int32;
+    data: string;
 
-    FileResult(int32 status, string data);
+    fn FileResult(status: int32, data: string);
 
-    bool ok(&amp;this);
-    int32 err_code(&amp;this);
-    int32 result_status(&amp;this);
-    string result_data(&amp;this);
+    fn ok(&amp;this) -&gt; bool;
+    fn err_code(&amp;this) -&gt; int32;
+    fn result_status(&amp;this) -&gt; int32;
+    fn result_data(&amp;this) -&gt; string;
 }
 </code></pre>
 <p><strong>Fields:</strong>
@@ -1933,7 +1933,7 @@ File myFile = File(&quot;hello.txt&quot;);
 <p><strong>Check the status:</strong> A negative <code>status</code> indicates an error. Use <code>FileResult</code> methods to inspect results.</p>
 <h2 id="file-methods">File Methods<a class="headerlink" href="#file-methods" title="Permanent link">&para;</a></h2>
 <h3 id="read"><code>read()</code><a class="headerlink" href="#read" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">FileResult read(&amp;this)
+<pre><code class="language-firescript">fn read(&amp;this) -&gt; FileResult
 </code></pre>
 <p>Read the entire file contents into a string.</p>
 <p><strong>Returns:</strong> <code>FileResult</code> with status = bytes read (on success) or negative error code</p>
@@ -1941,44 +1941,44 @@ File myFile = File(&quot;hello.txt&quot;);
 <pre><code class="language-firescript">import @firescript/std.fs.File;
 import @firescript/std.io.println;
 
-File f = File(&quot;data.txt&quot;);
-FileResult r = f.read();
+f: File = File(&quot;data.txt&quot;);
+r: FileResult = f.read();
 if (r.ok()) {
     println(r.result_data());
 }
 </code></pre>
-<h3 id="readbytesint32-bytes"><code>readBytes(int32 bytes)</code><a class="headerlink" href="#readbytesint32-bytes" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">FileResult readBytes(&amp;this, int32 bytes)
+<h3 id="readbytesbytes-int32"><code>readBytes(bytes: int32)</code><a class="headerlink" href="#readbytesbytes-int32" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">fn readBytes(&amp;this, bytes: int32) -&gt; FileResult
 </code></pre>
 <p>Read up to the specified number of bytes.</p>
 <p><strong>Parameters:</strong>
 - <code>bytes</code>: Maximum bytes to read</p>
 <p><strong>Returns:</strong> <code>FileResult</code> with status = bytes actually read</p>
 <p><strong>Example:</strong></p>
-<pre><code class="language-firescript">FileResult chunk = f.readBytes(1024);
+<pre><code class="language-firescript">chunk: FileResult = f.readBytes(1024);
 </code></pre>
-<h3 id="writeallstring-data"><code>writeAll(string data)</code><a class="headerlink" href="#writeallstring-data" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">FileResult writeAll(&amp;this, string data)
+<h3 id="writealldata-string"><code>writeAll(data: string)</code><a class="headerlink" href="#writealldata-string" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">fn writeAll(&amp;this, data: string) -&gt; FileResult
 </code></pre>
 <p>Write data to the file, overwriting if it exists.</p>
 <p><strong>Parameters:</strong>
 - <code>data</code>: String data to write</p>
 <p><strong>Returns:</strong> <code>FileResult</code> with status = bytes written (on success) or error code</p>
 <p><strong>Example:</strong></p>
-<pre><code class="language-firescript">FileResult w = f.writeAll(&quot;Hello!&quot;);
+<pre><code class="language-firescript">w: FileResult = f.writeAll(&quot;Hello!&quot;);
 </code></pre>
-<h3 id="appendallstring-data"><code>appendAll(string data)</code><a class="headerlink" href="#appendallstring-data" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">FileResult appendAll(&amp;this, string data)
+<h3 id="appendalldata-string"><code>appendAll(data: string)</code><a class="headerlink" href="#appendalldata-string" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">fn appendAll(&amp;this, data: string) -&gt; FileResult
 </code></pre>
 <p>Append data to the end of the file.</p>
 <p><strong>Parameters:</strong>
 - <code>data</code>: String data to append</p>
 <p><strong>Returns:</strong> <code>FileResult</code> with status = bytes written (on success) or error code</p>
 <p><strong>Example:</strong></p>
-<pre><code class="language-firescript">FileResult a = f.appendAll(&quot;\nMore text&quot;);
+<pre><code class="language-firescript">a: FileResult = f.appendAll(&quot;\nMore text&quot;);
 </code></pre>
 <h3 id="exists"><code>exists()</code><a class="headerlink" href="#exists" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">bool exists(&amp;this)
+<pre><code class="language-firescript">fn exists(&amp;this) -&gt; bool
 </code></pre>
 <p>Check if the file exists and is readable.</p>
 <p><strong>Returns:</strong> <code>true</code> if file exists and can be opened for reading, <code>false</code> otherwise</p>
@@ -1988,15 +1988,15 @@ if (r.ok()) {
 }
 </code></pre>
 <h3 id="remove"><code>remove()</code><a class="headerlink" href="#remove" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">FileResult remove(&amp;this)
+<pre><code class="language-firescript">fn remove(&amp;this) -&gt; FileResult
 </code></pre>
 <p>Delete the file.</p>
 <p><strong>Returns:</strong> <code>FileResult</code> with status = 0 on success, negative error code on failure</p>
 <p><strong>Example:</strong></p>
 <pre><code class="language-firescript">f.remove();
 </code></pre>
-<h3 id="renametostring-new_path"><code>renameTo(string new_path)</code><a class="headerlink" href="#renametostring-new_path" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">FileResult renameTo(&amp;mut this, string new_path)
+<h3 id="renametonew_path-string"><code>renameTo(new_path: string)</code><a class="headerlink" href="#renametonew_path-string" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">fn renameTo(&amp;mut this, new_path: string) -&gt; FileResult
 </code></pre>
 <p>Rename (or move within same filesystem) to a new path. Updates the <code>File</code> path on success.</p>
 <p><strong>Parameters:</strong>
@@ -2005,8 +2005,8 @@ if (r.ok()) {
 <p><strong>Example:</strong></p>
 <pre><code class="language-firescript">f.renameTo(&quot;newname.txt&quot;);
 </code></pre>
-<h3 id="movetostring-dst_path"><code>moveTo(string dst_path)</code><a class="headerlink" href="#movetostring-dst_path" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">FileResult moveTo(&amp;mut this, string dst_path)
+<h3 id="movetodst_path-string"><code>moveTo(dst_path: string)</code><a class="headerlink" href="#movetodst_path-string" title="Permanent link">&para;</a></h3>
+<pre><code class="language-firescript">fn moveTo(&amp;mut this, dst_path: string) -&gt; FileResult
 </code></pre>
 <p>Move file to a new location with cross-filesystem fallback. On cross-device moves, automatically falls back to copy + delete.
 Updates the <code>File</code> path on success.</p>
@@ -2018,7 +2018,7 @@ Updates the <code>File</code> path on success.</p>
 </code></pre>
 <h2 id="fileresult-methods">FileResult Methods<a class="headerlink" href="#fileresult-methods" title="Permanent link">&para;</a></h2>
 <h3 id="ok"><code>ok()</code><a class="headerlink" href="#ok" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">bool ok(&amp;this)
+<pre><code class="language-firescript">fn ok(&amp;this) -&gt; bool
 </code></pre>
 <p>Check if operation succeeded (status &gt;= 0).</p>
 <p><strong>Example:</strong></p>
@@ -2027,21 +2027,21 @@ Updates the <code>File</code> path on success.</p>
 }
 </code></pre>
 <h3 id="err_code"><code>err_code()</code><a class="headerlink" href="#err_code" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int32 err_code(&amp;this)
+<pre><code class="language-firescript">fn err_code(&amp;this) -&gt; int32
 </code></pre>
 <p>Extract the error code (positive errno value). Returns 0 if operation succeeded.</p>
 <p><strong>Example:</strong></p>
-<pre><code class="language-firescript">int32 err = result.err_code();
+<pre><code class="language-firescript">err: int32 = result.err_code();
 if (err &gt; 0) {
     println(&quot;Error: &quot; + (err as string));
 }
 </code></pre>
 <h3 id="result_status"><code>result_status()</code><a class="headerlink" href="#result_status" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int32 result_status(&amp;this)
+<pre><code class="language-firescript">fn result_status(&amp;this) -&gt; int32
 </code></pre>
 <p>Get the raw status field (positive on success, negative errno on failure).</p>
 <h3 id="result_data"><code>result_data()</code><a class="headerlink" href="#result_data" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">string result_data(&amp;this)
+<pre><code class="language-firescript">fn result_data(&amp;this) -&gt; string
 </code></pre>
 <p>Get the data field (file contents for reads, empty for writes).</p>
 <h2 id="error-codes">Error Codes<a class="headerlink" href="#error-codes" title="Permanent link">&para;</a></h2>
@@ -2058,16 +2058,16 @@ if (err &gt; 0) {
 <pre><code class="language-firescript">import @firescript/std.fs.File;
 import @firescript/std.io.println;
 
-File config = File(&quot;config.txt&quot;);
+config: File = File(&quot;config.txt&quot;);
 
 // Write
-FileResult write_result = config.writeAll(&quot;setting=value&quot;);
+write_result: FileResult = config.writeAll(&quot;setting=value&quot;);
 if (write_result.ok()) {
     println(&quot;Configuration saved&quot;);
 }
 
 // Read
-FileResult read_result = config.read();
+read_result: FileResult = config.read();
 if (read_result.ok()) {
     println(&quot;Configuration: &quot; + read_result.result_data());
 }

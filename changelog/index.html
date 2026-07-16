@@ -2027,8 +2027,19 @@
 </ul>
 <h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
 <ul>
+<li>firescript now uses <strong>postfix type declarations</strong> everywhere, Rust/TypeScript-style, instead of the previous C-style prefix syntax. This is a whole-language syntax change:</li>
+<li>Variables and constants: <code>int32 a = 5;</code> → <code>a: int32 = 5;</code>; <code>const float64 PI = 3.14;</code> → <code>const PI: float64 = 3.14;</code>.</li>
+<li>Nullable markers move to the type: <code>int32 a? = null;</code> → <code>a: int32? = null;</code>.</li>
+<li>Ownership/borrow modifiers move to the <em>name</em>, matching how method receivers already write <code>&amp;this</code>/<code>&amp;mut this</code>/<code>owned this</code>: <code>owned Type name</code> → <code>owned name: Type</code>; <code>&amp;Type name</code> → <code>&amp;name: Type</code>; <code>&amp;mut Type name</code> → <code>&amp;mut name: Type</code>. This only affects parameters — modifiers were never valid on variables, fields, or return types.</li>
+<li>Arrays stay attached to the type as a unit: <code>int32[N] name;</code> → <code>name: int32[N];</code>.</li>
+<li>Class fields: <code>int32 age;</code> → <code>age: int32;</code>. Enum variant payloads: <code>Circle(float64 radius)</code> → <code>Circle(radius: float64)</code>.</li>
+<li><code>for</code>-loops: <code>for (int32 i = 0; ...)</code> → <code>for (i: int32 = 0; ...)</code>; <code>for (int32 x in xs)</code> → <code>for (x: int32 in xs)</code>.</li>
+<li>A new <code>fn</code> keyword now introduces every callable — top-level functions, instance methods, static methods, and constructors — with a Rust-style <code>-&gt; ReturnType</code> arrow: <code>int32 add(int32 a, int32 b) { }</code> → <code>fn add(a: int32, b: int32) -&gt; int32 { }</code>. Constructors take <code>fn</code> too but never a return type: <code>ClassName(int32 x) { }</code> → <code>fn ClassName(x: int32) { }</code>.</li>
+<li>Generators are no longer a distinct declaration form — <code>generator&lt;int32&gt; countdown(int32 n) { }</code> is now an ordinary function whose return type happens to be <code>generator&lt;T&gt;</code>: <code>fn countdown(n: int32) -&gt; generator&lt;int32&gt; { }</code>.</li>
+<li>Casts (<code>expr as Type</code>), match-arm bindings (<code>field: local</code>), and generic constraints (<code>T: int32 | float64</code>) were already postfix and are unchanged.</li>
 <li><code>match</code> is now a reserved keyword. <code>@firescript/std.regex</code>'s <code>match(pattern, text)</code> function (added in 0.5.0) has been renamed to <code>find_match(pattern, text)</code> to avoid the collision; <code>is_match</code> is unaffected.</li>
 <li>The <code>-t</code>/<code>--target</code> flag (<code>native</code>/<code>web</code>) has been removed. It is replaced by two separate flags, <code>--platform</code> (<code>windows</code>, <code>linux</code>, <code>macos</code>, <code>bare-metal</code>) and <code>--arch</code> (<code>x86_64</code>, <code>i686</code>, <code>aarch64</code>, <code>armv7</code>, <code>riscv64</code>, <code>riscv32</code>), which can be combined for cross-compilation; either or both may be omitted to default to the host platform/architecture. Only <code>--platform windows --arch x86_64</code> is currently implemented — any other combination fails with a clear "unsupported target" error rather than compiling.</li>
+<li>Bare assignment to a name that was never declared (e.g. <code>w = Widget(7);</code> with no preceding <code>w: Widget = ...</code>) is no longer accepted as an implicit declaration. Every variable must now be explicitly declared with <code>name: Type = ...</code> before its first assignment or use; assigning to an undeclared name is a compile error (<code>FS-PARSE-0003</code>, undefined identifier).</li>
 </ul>
 <h3 id="bug-fixes">Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">&para;</a></h3>
 <ul>
@@ -2045,8 +2056,8 @@
 <h3 id="new-language-features_1">New Language Features<a class="headerlink" href="#new-language-features_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Added generator functions with <code>generator&lt;T&gt;</code> syntax: lazy iterables that produce values on demand via <code>yield</code>. Generators compile to state-machine structs with resumable next-functions. User-defined generators and <code>for-in</code> loops over generators are both supported.</li>
-<li>Added <code>@firescript/std.ranges</code> standard library module with <code>range(end)</code>, <code>rangeFrom(start, end)</code>, and <code>rangeStep(start, end, step)</code> generators, enabling <code>for (int32 i in range(5))</code> style loops.</li>
-<li>Added <code>char</code> type — a copyable, stack-allocated scalar representing a single character. Initialized with single-character string literals (<code>char c = "A"</code>).</li>
+<li>Added <code>@firescript/std.ranges</code> standard library module with <code>range(end)</code>, <code>rangeFrom(start, end)</code>, and <code>rangeStep(start, end, step)</code> generators, enabling <code>for (i: int32 in range(5))</code> style loops.</li>
+<li>Added <code>char</code> type — a copyable, stack-allocated scalar representing a single character. Initialized with single-character string literals (<code>c: char = "A"</code>).</li>
 <li>Added character literal syntax with single quotes (<code>'A'</code>, <code>'\n'</code>).</li>
 <li>Added <code>&amp;mut this</code> receiver syntax for mutable borrowing in methods. Methods can now declare <code>&amp;this</code> for read-only access or <code>&amp;mut this</code> for mutable access, with compiler enforcement preventing field mutation through read-only receivers.</li>
 <li>Added <code>string.length()</code> method, returning an <code>int32</code> count of characters.</li>
@@ -2061,7 +2072,7 @@
 <li>Added support for logical operators <code>&amp;&amp;</code>, <code>||</code>, and unary <code>!</code> in expressions and conditions.</li>
 <li>Added support for exponentiation operator <code>**</code>.</li>
 <li>Added sized array declarations with optional initializers (e.g., <code>int32[10]</code> or <code>int32[10] = [1, 2, 3]</code>). Arrays without explicit initializers are zero-initialized.</li>
-<li>Added string iteration in <code>for-in</code> loops (e.g., <code>for (string ch in "hello")</code>), iterating over individual characters.</li>
+<li>Added string iteration in <code>for-in</code> loops (e.g., <code>for (ch: string in "hello")</code>), iterating over individual characters.</li>
 <li>Added string-to-numeric type casting via <code>as</code> operator (e.g., <code>("42" as int32)</code>, <code>("3.14" as float64)</code>).</li>
 <li>Added <code>@firescript/std.fcl</code> standard library module with FCL (FireScript Configuration Language) lexer for parsing configuration data.</li>
 </ul>

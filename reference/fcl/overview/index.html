@@ -1535,12 +1535,12 @@ Files are primarily declarative, while still allowing constrained expressions in
 <h3 id="class-based-runtime-loading-firescript">Class-based runtime loading (firescript)<a class="headerlink" href="#class-based-runtime-loading-firescript" title="Permanent link">&para;</a></h3>
 <p>When loading fcl at runtime, define the expected structure as a class in firescript:</p>
 <pre><code class="language-firescript">class RuntimeConfig {
-    string environment;
-    string logLevel;
-    int32 port;
+    environment: string;
+    logLevel: string;
+    port: int32;
 }
 
-RuntimeConfig cfg = load_config&lt;RuntimeConfig&gt;(&quot;config.fcl&quot;);
+cfg: RuntimeConfig = load_config&lt;RuntimeConfig&gt;(&quot;config.fcl&quot;);
 </code></pre>
 <h3 id="allowed">Allowed<a class="headerlink" href="#allowed" title="Permanent link">&para;</a></h3>
 <ul>

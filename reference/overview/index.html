@@ -1598,16 +1598,16 @@
 <pre><code class="language-firescript">import @firescript/std.io.println;
 
 // Calculate fibonacci numbers
-int32 i = 0;
-int32 j = 1;
-int32 count = 10;
+i: int32 = 0;
+j: int32 = 1;
+count: int32 = 10;
 
 println(&quot;Fibonacci Sequence:&quot;);
 println(i);
 println(j);
 
 while (count &gt; 0) {
-    int32 next = i + j;
+    next: int32 = i + j;
     println(next);
     i = j;
     j = next;

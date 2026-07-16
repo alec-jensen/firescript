@@ -1989,7 +1989,7 @@
 <p>Example:</p>
 <pre><code class="language-firescript">import @firescript/std.io.print;
 
-int8 age = 18;
+age: int8 = 18;
 if (age &gt;= 18) {
     print(&quot;You are eligible to vote&quot;);
 }
@@ -2005,7 +2005,7 @@ if (age &gt;= 18) {
 <p>Example:</p>
 <pre><code class="language-firescript">import @firescript/std.io.print;
 
-int8 score = 65;
+score: int8 = 65;
 if (score &gt;= 70) {
     print(&quot;Pass&quot;);
 } else {
@@ -2027,7 +2027,7 @@ if (score &gt;= 70) {
 <p>Example:</p>
 <pre><code class="language-firescript">import @firescript/std.io.print;
 
-int8 grade = 85;
+grade: int8 = 85;
 
 if (grade &gt;= 90) {
     print(&quot;A&quot;);
@@ -2045,8 +2045,8 @@ if (grade &gt;= 90) {
 <p>Conditional statements can be nested within other conditional statements:</p>
 <pre><code class="language-firescript">import @firescript/std.io.print;
 
-bool hasDiscount = true;
-int8 totalAmount = 120;
+hasDiscount: bool = true;
+totalAmount: int8 = 120;
 
 if (totalAmount &gt; 100) {
     if (hasDiscount) {
@@ -2073,8 +2073,8 @@ if (totalAmount &gt; 100) {
 <p>Example:</p>
 <pre><code class="language-firescript">import @firescript/std.io.print;
 
-int8 age = 25;
-bool hasLicense = true;
+age: int8 = 25;
+hasLicense: bool = true;
 
 if (age &gt;= 18 &amp;&amp; hasLicense) {
     print(&quot;You can drive&quot;);
@@ -2095,7 +2095,7 @@ if (!(age &lt; 18 || !hasLicense)) {
 <p>Example:</p>
 <pre><code class="language-firescript">import @firescript/std.io.print;
 
-uint8 count = 0;
+count: uint8 = 0;
 while (count &lt; 5) {
     print(count);
     count = count + 1;
@@ -2120,7 +2120,7 @@ while (count &lt; 5) {
 <p>Example:</p>
 <pre><code class="language-firescript">import @firescript/std.io.print;
 
-uint8 i = 0;
+i: uint8 = 0;
 while (i &lt; 10) {
     i = i + 1;
 
@@ -2140,9 +2140,9 @@ while (i &lt; 10) {
 <p>Loops and conditional statements can be combined to create powerful control flows:</p>
 <pre><code class="language-firescript">import @firescript/std.io.print;
 
-int8[10] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-int8 sum = 0;
-uint8 i = 0;
+numbers: int8[10] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+sum: int8 = 0;
+i: uint8 = 0;
 
 while (i &lt; numbers.length()) {
     if (numbers[i] % 2 == 0) {
@@ -2159,19 +2159,19 @@ print(sum); // Outputs: 30 (2 + 4 + 6 + 8 + 10)
 <p>C-style for loops consist of three parts: initialization, condition, and increment. They are ideal for counting iterations.</p>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 
-for (int32 i = 0; i &lt; 5; i++) {
+for (i: int32 = 0; i &lt; 5; i++) {
     println(i);
 }
 </code></pre>
 <p>Any or all parts can be omitted:</p>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 
-int32 i = 0;
+i: int32 = 0;
 for (; i &lt; 5; i++) {  // Init omitted
     println(i);
 }
 
-for (int32 j = 0; j &lt; 10;) {  // Increment omitted
+for (j: int32 = 0; j &lt; 10;) {  // Increment omitted
     println(j);
     j++;
 }
@@ -2179,21 +2179,21 @@ for (int32 j = 0; j &lt; 10;) {  // Increment omitted
 <p>Variables declared in the initialization section are scoped to the for loop:</p>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 
-for (int32 i = 0; i &lt; 3; i++) {
+for (i: int32 = 0; i &lt; 3; i++) {
     println(i);
 }
 // i is not accessible here
 
 // This is valid - i is redeclared in a new scope
-for (int32 i = 0; i &lt; 5; i++) {
+for (i: int32 = 0; i &lt; 5; i++) {
     println(i);
 }
 </code></pre>
 <p>Nested for loops:</p>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 
-for (int32 i = 0; i &lt; 3; i++) {
-    for (int32 j = 0; j &lt; 3; j++) {
+for (i: int32 = 0; i &lt; 3; i++) {
+    for (j: int32 = 0; j &lt; 3; j++) {
         println(i * 3 + j);
     }
 }
@@ -2202,23 +2202,23 @@ for (int32 i = 0; i &lt; 3; i++) {
 <p>For-in loops iterate over elements in a collection (arrays, strings, or generators). The loop variable must be declared with a type:</p>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 
-int32[5] numbers = [1, 2, 3, 4, 5];
-for (int32 num in numbers) {
+numbers: int32[5] = [1, 2, 3, 4, 5];
+for (num: int32 in numbers) {
     println(num);
 }
 </code></pre>
 <p>For-in with array literals:</p>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 
-for (int32 value in [10, 20, 30, 40, 50]) {
+for (value: int32 in [10, 20, 30, 40, 50]) {
     println(value);
 }
 </code></pre>
 <p>String iteration with for-in:</p>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 
-string text = &quot;hello&quot;;
-for (string ch in text) {
+text: string = &quot;hello&quot;;
+for (ch: string in text) {
     println(ch);  // Prints each character: h, e, l, l, o
 }
 </code></pre>
@@ -2229,15 +2229,15 @@ import @firescript/std.ranges.range;
 import @firescript/std.ranges.rangeFrom;
 import @firescript/std.ranges.rangeStep;
 
-for (int32 i in range(5)) {
+for (i: int32 in range(5)) {
     println(i);  // 0, 1, 2, 3, 4
 }
 
-for (int32 i in rangeFrom(2, 6)) {
+for (i: int32 in rangeFrom(2, 6)) {
     println(i);  // 2, 3, 4, 5
 }
 
-for (int32 i in rangeStep(0, 10, 3)) {
+for (i: int32 in rangeStep(0, 10, 3)) {
     println(i);  // 0, 3, 6, 9
 }
 </code></pre>
@@ -2245,15 +2245,15 @@ for (int32 i in rangeStep(0, 10, 3)) {
 <p><code>for-in</code> also works over any generator function, including user-defined ones (see <a href="../functions/">Functions &amp; Methods</a> for generator definitions):</p>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 
-generator&lt;int32&gt; countdown(int32 n) {
-    int32 i = n;
+fn countdown(n: int32) -&gt; generator&lt;int32&gt; {
+    i: int32 = n;
     while (i &gt; 0) {
         yield i;
         i -= 1;
     }
 }
 
-for (int32 v in countdown(3)) {
+for (v: int32 in countdown(3)) {
     println(v);  // 3, 2, 1
 }
 </code></pre>
@@ -2262,7 +2262,7 @@ for (int32 v in countdown(3)) {
 <pre><code class="language-firescript">import @firescript/std.io.println;
 
 // Break: exit the loop early
-for (int32 i = 0; i &lt; 10; i++) {
+for (i: int32 = 0; i &lt; 10; i++) {
     if (i == 5) {
         break;  // Exit when i reaches 5
     }
@@ -2270,7 +2270,7 @@ for (int32 i = 0; i &lt; 10; i++) {
 }
 
 // Continue: skip to next iteration
-for (int32 i = 0; i &lt; 5; i++) {
+for (i: int32 = 0; i &lt; 5; i++) {
     if (i == 2) {
         continue;  // Skip when i is 2
     }
@@ -2281,7 +2281,7 @@ for (int32 i = 0; i &lt; 5; i++) {
 <p>The following control flow features are planned but not yet implemented in the current compiler:</p>
 <h3 id="ternary-operator">Ternary Operator<a class="headerlink" href="#ternary-operator" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Future syntax
-int8 max = ternary a &gt; b then a else b;
+max: int8 = ternary a &gt; b then a else b;
 </code></pre>
 <h3 id="switch-statements">Switch Statements<a class="headerlink" href="#switch-statements" title="Permanent link">&para;</a></h3>
 <p>Switch statements provide a way to execute different parts of code based on the value of a variable:</p>

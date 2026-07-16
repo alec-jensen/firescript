@@ -1727,35 +1727,35 @@
 <h2 id="declaration-and-initialization">Declaration and Initialization<a class="headerlink" href="#declaration-and-initialization" title="Permanent link">&para;</a></h2>
 <p>Arrays are declared by appending <code>[N]</code> to any valid type, where <code>N</code> is the fixed size. Arrays can be initialized with values in square brackets, or left uninitialized to be zero-initialized. When an initializer is provided, the size may be omitted (<code>T[]</code>) and is inferred from the initializer:</p>
 <pre><code class="language-firescript">// Array initialization with explicit values
-int8[5] numbers = [10, 20, 30, 40, 50];
-string[3] names = [&quot;Alice&quot;, &quot;Bob&quot;, &quot;Charlie&quot;];
-bool[3] flags = [true, false, true];
+numbers: int8[5] = [10, 20, 30, 40, 50];
+names: string[3] = [&quot;Alice&quot;, &quot;Bob&quot;, &quot;Charlie&quot;];
+flags: bool[3] = [true, false, true];
 
 // Size inferred from the initializer
-int32[] inferred = [1, 2, 3, 4, 5];   // int32[5]
+inferred: int32[] = [1, 2, 3, 4, 5];   // int32[5]
 
 // Array with declared size, zero-initialized
-int32[10] zeros = [];           // All elements are 0
-float32[100] empty = [];        // All elements are 0.0
+zeros: int32[10] = [];           // All elements are 0
+empty: float32[100] = [];        // All elements are 0.0
 
 // Array with declared size and partial initializer
-int32[5] partial = [1, 2, 3];   // Error: initializer size must match declared size
+partial: int32[5] = [1, 2, 3];   // Error: initializer size must match declared size
 </code></pre>
 <p>All elements in an array must be of the same type as specified in the declaration. The declared size must match the number of initializer elements if an initializer is provided.</p>
 <h2 id="accessing-array-elements">Accessing Array Elements<a class="headerlink" href="#accessing-array-elements" title="Permanent link">&para;</a></h2>
 <p>Individual array elements can be accessed using zero-based indexing:</p>
-<pre><code class="language-firescript">int8[5] scores = [85, 92, 78, 90, 88];
+<pre><code class="language-firescript">scores: int8[5] = [85, 92, 78, 90, 88];
 
 // Access individual elements
-int8 firstScore = scores[0];    // 85
-int8 thirdScore = scores[2];    // 78
+firstScore: int8 = scores[0];    // 85
+thirdScore: int8 = scores[2];    // 78
 
 // Modifying elements
 scores[1] = 95;                // Array becomes [85, 95, 78, 90, 88]
 
 // Negative indexing (from end)
-int8 lastScore = scores[-1];    // 88 (last element)
-int8 secondLast = scores[-2];   // 90 (second to last)
+lastScore: int8 = scores[-1];    // 88 (last element)
+secondLast: int8 = scores[-2];   // 90 (second to last)
 </code></pre>
 <p>⚠️ <strong>Warning:</strong> Accessing an index outside the array bounds will cause a runtime error. Always ensure your index is valid before access.</p>
 <h2 id="array-operations">Array Operations<a class="headerlink" href="#array-operations" title="Permanent link">&para;</a></h2>
@@ -1763,38 +1763,38 @@ int8 secondLast = scores[-2];   // 90 (second to last)
 <ul>
 <li><strong><code>length()</code></strong> – Method that returns the current size of the array</li>
 </ul>
-<pre><code class="language-firescript">int8[5] data = [5, 10, 15, 20, 25];
-int8 size = data.length();      // size = 5
+<pre><code class="language-firescript">data: int8[5] = [5, 10, 15, 20, 25];
+size: int8 = data.length();      // size = 5
 </code></pre>
 <h2 id="working-with-arrays">Working with Arrays<a class="headerlink" href="#working-with-arrays" title="Permanent link">&para;</a></h2>
 <h3 id="iterating-over-arrays">Iterating Over Arrays<a class="headerlink" href="#iterating-over-arrays" title="Permanent link">&para;</a></h3>
 <p>Use a <code>while</code> loop with an index variable, or a <code>for-in</code> loop to iterate over array elements:</p>
-<pre><code class="language-firescript">string[5] cities = [&quot;New York&quot;, &quot;London&quot;, &quot;Tokyo&quot;, &quot;Paris&quot;, &quot;Sydney&quot;];
+<pre><code class="language-firescript">cities: string[5] = [&quot;New York&quot;, &quot;London&quot;, &quot;Tokyo&quot;, &quot;Paris&quot;, &quot;Sydney&quot;];
 
 // Using while loop with index
-uint8 i = 0;
+i: uint8 = 0;
 while (i &lt; cities.length()) {
     print(cities[i]);
     i = i + 1;
 }
 
 // Using for-in loop (preferred)
-for (string city in cities) {
+for (city: string in cities) {
     print(city);
 }
 </code></pre>
 <p>String iteration is also supported with <code>for-in</code>, iterating over individual characters:</p>
-<pre><code class="language-firescript">string text = &quot;hello&quot;;
-for (string ch in text) {
+<pre><code class="language-firescript">text: string = &quot;hello&quot;;
+for (ch: string in text) {
     print(ch);  // Prints: h, e, l, l, o
 }
 </code></pre>
 <h3 id="array-as-function-arguments">Array as Function Arguments<a class="headerlink" href="#array-as-function-arguments" title="Permanent link">&para;</a></h3>
 <p>Arrays can be passed to functions. Array parameters may be unsized (<code>T[]</code>), accepting an array of any length:</p>
 <pre><code class="language-firescript">// Function with array parameter
-int32 sum(int32[] numbers) {
-    int32 total = 0;
-    int32 i = 0;
+fn sum(numbers: int32[]) -&gt; int32 {
+    total: int32 = 0;
+    i: int32 = 0;
     while (i &lt; numbers.length()) {
         total = total + numbers[i];
         i = i + 1;
@@ -1803,8 +1803,8 @@ int32 sum(int32[] numbers) {
 }
 
 // Usage
-int32[] values = [1, 2, 3, 4, 5];
-int32 result = sum(values);  // 15
+values: int32[] = [1, 2, 3, 4, 5];
+result: int32 = sum(values);  // 15
 </code></pre>
 <p>Arrays are Owned values, so passing one to an owned parameter moves it. Use a borrowed parameter (<code>&amp;int32[] numbers</code>) to keep using the array at the call site afterwards — see <a href="../memory_management/">Memory Management</a>.</p>
 <h3 id="nested-arrays">Nested Arrays<a class="headerlink" href="#nested-arrays" title="Permanent link">&para;</a></h3>
@@ -1817,14 +1817,14 @@ int8[3][3] matrix = [
 ];
 
 // Accessing elements
-int8 element = matrix[1][2];  // 6
+element: int8 = matrix[1][2];  // 6
 </code></pre>
 <h2 id="common-array-patterns">Common Array Patterns<a class="headerlink" href="#common-array-patterns" title="Permanent link">&para;</a></h2>
 <h3 id="finding-an-element">Finding an Element<a class="headerlink" href="#finding-an-element" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int8[5] numbers = [10, 20, 30, 40, 50];
-int8 target = 30;
-int8 index = -1;
-uint8 i = 0;
+<pre><code class="language-firescript">numbers: int8[5] = [10, 20, 30, 40, 50];
+target: int8 = 30;
+index: int8 = -1;
+i: uint8 = 0;
 
 while (i &lt; numbers.length()) {
     if (numbers[i] == target) {
@@ -1837,9 +1837,9 @@ while (i &lt; numbers.length()) {
 // index = 2 if found, -1 if not found
 </code></pre>
 <h3 id="counting-occurrences">Counting Occurrences<a class="headerlink" href="#counting-occurrences" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int8[10] data = [1, 2, 1, 3, 1, 2, 1, 4, 5, 1];
-int8 count = 0;
-for (int8 val in data) {
+<pre><code class="language-firescript">data: int8[10] = [1, 2, 1, 3, 1, 2, 1, 4, 5, 1];
+count: int8 = 0;
+for (val: int8 in data) {
     if (val == 1) {
         count = count + 1;
     }
@@ -1852,8 +1852,8 @@ for (int8 val in data) {
 <li><strong>Array slicing</strong> (<code>arr[start:end:step]</code>) – Extract a portion of the array</li>
 </ul>
 <pre><code class="language-firescript">// Future syntax
-int8[5] numbers = [10, 20, 30, 40, 50];
-int8[3] subset = numbers[1:4];  // Would be [20, 30, 40]
+numbers: int8[5] = [10, 20, 30, 40, 50];
+subset: int8[3] = numbers[1:4];  // Would be [20, 30, 40]
 </code></pre>
 <ul>
 <li>
@@ -1868,35 +1868,35 @@ int8[3] subset = numbers[1:4];  // Would be [20, 30, 40]
 </ul>
 <p>Will use SIMD where possible for performance.</p>
 <pre><code class="language-firescript">// Future syntax
-int8[3] a = [1, 2, 3];
-int8[3] b = [4, 5, 6];
+a: int8[3] = [1, 2, 3];
+b: int8[3] = [4, 5, 6];
 
 // add arrays element-wise
-int8[3] c = a + b;  // Would be [5, 7, 9]
+c: int8[3] = a + b;  // Would be [5, 7, 9]
 
 // subtract arrays element-wise
-int8[3] e = b - a;  // Would be [3, 3, 3]
+e: int8[3] = b - a;  // Would be [3, 3, 3]
 
 // add scalar to array
-int8[3] g = a + 2;  // Would be [3, 4, 5]
+g: int8[3] = a + 2;  // Would be [3, 4, 5]
 
 // subtract scalar from array
-int8[3] h = b - 1;  // Would be [3, 4, 5]
+h: int8[3] = b - 1;  // Would be [3, 4, 5]
 
 // multiply arrays element-wise
-int8[3] j = a * b;  // Would be [4, 10, 18]
+j: int8[3] = a * b;  // Would be [4, 10, 18]
 
 // divide arrays element-wise
-int8[3] k = b / a;  // Would be [4, 2, 2]
+k: int8[3] = b / a;  // Would be [4, 2, 2]
 
 // multiply arrays by scalar
-int8[3] d = a * 2;  // Would be [2, 4, 6]
+d: int8[3] = a * 2;  // Would be [2, 4, 6]
 
 // divide arrays by scalar
-int8[3] f = b / 2;  // Would be [2, 2, 3]
+f: int8[3] = b / 2;  // Would be [2, 2, 3]
 
 // dot product of two arrays
-int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
+dotProduct: int8 = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
 </code></pre>
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <p>Arrays are functional but with limited operations in the current compiler:</p>

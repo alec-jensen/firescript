@@ -1719,28 +1719,28 @@
 </tr>
 </tbody>
 </table>
-<pre><code class="language-firescript">int32 a = 10;
-int32 b = 3;
+<pre><code class="language-firescript">a: int32 = 10;
+b: int32 = 3;
 
-int32 sum  = a + b;   // 13
-int32 diff = a - b;   // 7
-int32 prod = a * b;   // 30
-int32 quot = a / b;   // 3  (integer division truncates toward zero)
-int32 rem  = a % b;   // 1
-int32 pow  = a ** b;  // 1000
+sum: int32  = a + b;   // 13
+diff: int32 = a - b;   // 7
+prod: int32 = a * b;   // 30
+quot: int32 = a / b;   // 3  (integer division truncates toward zero)
+rem: int32  = a % b;   // 1
+pow: int32  = a ** b;  // 1000
 </code></pre>
 <p>Integer division truncates toward zero. Modulo returns the remainder with the same sign as the dividend (C-style, not Python-style).</p>
 <p>The <code>+</code> operator is also used for string concatenation. Both operands must be strings — there is no implicit conversion. Cast non-string values explicitly with <code>as</code>:</p>
-<pre><code class="language-firescript">string msg = &quot;Value: &quot; + (42 as string);  // &quot;Value: 42&quot;
+<pre><code class="language-firescript">msg: string = &quot;Value: &quot; + (42 as string);  // &quot;Value: 42&quot;
 // string bad = &quot;Value: &quot; + 42;           // ❌ Error: cannot concatenate string and int32
 </code></pre>
 <h2 id="assignment-operators">Assignment Operators<a class="headerlink" href="#assignment-operators" title="Permanent link">&para;</a></h2>
 <p>The basic assignment operator <code>=</code> stores a value in a variable. For Owned types (strings, arrays, user-defined classes), assignment performs a <strong>move</strong> — the source is invalidated. For Copyable types (<code>intN</code>, <code>floatN</code>, <code>bool</code>), assignment performs a bitwise copy.</p>
-<pre><code class="language-firescript">int32 x = 10;
+<pre><code class="language-firescript">x: int32 = 10;
 x = 20;         // x is now 20
 
-string a = &quot;hello&quot;;
-string b = a;   // a is moved into b; a is no longer valid
+a: string = &quot;hello&quot;;
+b: string = a;   // a is moved into b; a is no longer valid
 </code></pre>
 <p>See <a href="../memory_management/">Memory Management</a> for full move/copy semantics.</p>
 <h2 id="compound-assignment-operators">Compound Assignment Operators<a class="headerlink" href="#compound-assignment-operators" title="Permanent link">&para;</a></h2>
@@ -1779,7 +1779,7 @@ string b = a;   // a is moved into b; a is no longer valid
 </tr>
 </tbody>
 </table>
-<pre><code class="language-firescript">int32 n = 10;
+<pre><code class="language-firescript">n: int32 = 10;
 n += 5;   // n = 15
 n -= 3;   // n = 12
 n *= 2;   // n = 24
@@ -1810,17 +1810,17 @@ n **= 3;  // n = 8
 </tr>
 </tbody>
 </table>
-<pre><code class="language-firescript">int32 i = 0;
+<pre><code class="language-firescript">i: int32 = 0;
 i++;   // i = 1
 i++;   // i = 2
 i--;   // i = 1
 </code></pre>
 <p>These are most commonly used in <code>for</code> loop increments:</p>
-<pre><code class="language-firescript">for (int32 i = 0; i &lt; 5; i++) {
+<pre><code class="language-firescript">for (i: int32 = 0; i &lt; 5; i++) {
     // i = 0, 1, 2, 3, 4
 }
 </code></pre>
-<p>⚠️ <strong>Note:</strong> <code>++</code> and <code>--</code> are statements, not expressions. Using them as values (e.g., <code>int32 j = i++</code>) is not supported.</p>
+<p>⚠️ <strong>Note:</strong> <code>++</code> and <code>--</code> are statements, not expressions. Using them as values (e.g., <code>j: int32 = i++</code>) is not supported.</p>
 <h2 id="comparison-operators">Comparison Operators<a class="headerlink" href="#comparison-operators" title="Permanent link">&para;</a></h2>
 <p>Comparison operators evaluate to <code>bool</code>. Both operands must be the same type.</p>
 <table>
@@ -1857,15 +1857,15 @@ i--;   // i = 1
 </tr>
 </tbody>
 </table>
-<pre><code class="language-firescript">int32 a = 5;
-int32 b = 10;
+<pre><code class="language-firescript">a: int32 = 5;
+b: int32 = 10;
 
-bool eq  = a == b;  // false
-bool neq = a != b;  // true
-bool lt  = a &lt; b;   // true
-bool gt  = a &gt; b;   // false
-bool lte = a &lt;= b;  // true
-bool gte = a &gt;= b;  // false
+eq: bool  = a == b;  // false
+neq: bool = a != b;  // true
+lt: bool  = a &lt; b;   // true
+gt: bool  = a &gt; b;   // false
+lte: bool = a &lt;= b;  // true
+gte: bool = a &gt;= b;  // false
 </code></pre>
 <p>Strings support <code>==</code> and <code>!=</code> for equality by value. Ordering comparisons (<code>&lt;</code>, <code>&gt;</code>, etc.) on strings are not supported.</p>
 <h2 id="logical-operators">Logical Operators<a class="headerlink" href="#logical-operators" title="Permanent link">&para;</a></h2>
@@ -1896,19 +1896,19 @@ bool gte = a &gt;= b;  // false
 </tr>
 </tbody>
 </table>
-<pre><code class="language-firescript">bool a = true;
-bool b = false;
+<pre><code class="language-firescript">a: bool = true;
+b: bool = false;
 
-bool and = a &amp;&amp; b;  // false
-bool or  = a || b;  // true
-bool not = !a;      // false
+and: bool = a &amp;&amp; b;  // false
+or: bool  = a || b;  // true
+not: bool = !a;      // false
 </code></pre>
 <p>Short-circuit examples:</p>
 <pre><code class="language-firescript">// right side is never evaluated if left is false
-bool result = isReady() &amp;&amp; doWork();
+result: bool = isReady() &amp;&amp; doWork();
 
 // right side is never evaluated if left is true
-bool fallback = hasCache() || loadFromDisk();
+fallback: bool = hasCache() || loadFromDisk();
 </code></pre>
 <h2 id="cast-operator">Cast Operator<a class="headerlink" href="#cast-operator" title="Permanent link">&para;</a></h2>
 <p>The <code>as</code> operator performs an explicit type conversion. It is a postfix operator with higher precedence than arithmetic. Parentheses are recommended when mixing with other operators for clarity.</p>
@@ -1921,28 +1921,28 @@ bool fallback = hasCache() || loadFromDisk();
 <li>Built-in types to <code>string</code> (numeric types, <code>bool</code>, <code>char</code>)</li>
 </ul>
 <p>Casts <em>to</em> <code>bool</code> or <code>char</code> are not supported.</p>
-<pre><code class="language-firescript">int16 small  = 300i16;
-int32 wide   = small as int32;   // widening: 300
-int8  narrow = small as int8;    // narrowing: truncates to fit
+<pre><code class="language-firescript">small: int16  = 300i16;
+wide: int32   = small as int32;   // widening: 300
+narrow: int8 = small as int8;    // narrowing: truncates to fit
 
-float64 pi  = 3.14159f64;
-int32   ipi = pi as int32;       // 3 (truncates toward zero)
+pi: float64  = 3.14159f64;
+ipi: int32 = pi as int32;       // 3 (truncates toward zero)
 
-string s = 42 as string;         // &quot;42&quot;
-int32  n = &quot;100&quot; as int32;       // 100
+s: string = 42 as string;         // &quot;42&quot;
+n: int32 = &quot;100&quot; as int32;       // 100
 
-string t = true as string;       // &quot;true&quot;
+t: string = true as string;       // &quot;true&quot;
 </code></pre>
 <p>⚠️ <strong>Note:</strong> Java/C-style casts (<code>(int32)value</code>) are not supported. Always use the postfix <code>as</code> form.</p>
 <h2 id="ternary-operator">Ternary Operator<a class="headerlink" href="#ternary-operator" title="Permanent link">&para;</a></h2>
 <p><strong>[PLANNED] — not yet implemented.</strong></p>
 <p>A ternary expression is planned using the reserved <code>ternary</code> keyword:</p>
 <pre><code class="language-firescript">// Future syntax
-int8 max = ternary a &gt; b then a else b;
+max: int8 = ternary a &gt; b then a else b;
 </code></pre>
 <p>Use an <code>if/else</code> block in the meantime:</p>
 <pre><code class="language-firescript">// Instead of a ternary expression:
-int32 abs = 0;
+abs: int32 = 0;
 if (x &lt; 0) {
     abs = -x;
 } else {
@@ -2050,44 +2050,44 @@ if (x &lt; 0) {
 </tbody>
 </table>
 <p>Use parentheses to make evaluation order explicit when combining operators from different levels:</p>
-<pre><code class="language-firescript">int32 result = 2 + 3 * 4;          // 14 (not 20)
-int32 result = (2 + 3) * 4;        // 20
+<pre><code class="language-firescript">result: int32 = 2 + 3 * 4;          // 14 (not 20)
+result: int32 = (2 + 3) * 4;        // 20
 
-bool check = a + 1 &gt; b &amp;&amp; c != 0;  // ((a + 1) &gt; b) &amp;&amp; (c != 0)
+check: bool = a + 1 &gt; b &amp;&amp; c != 0;  // ((a + 1) &gt; b) &amp;&amp; (c != 0)
 </code></pre>
 <h2 id="array-operators">Array Operators<a class="headerlink" href="#array-operators" title="Permanent link">&para;</a></h2>
 <p><strong>[PLANNED] — not yet implemented.</strong></p>
 <p>The following operators are planned for arrays:</p>
 <pre><code class="language-firescript">// Future syntax
-int8[3] a = [1, 2, 3];
-int8[3] b = [4, 5, 6];
+a: int8[3] = [1, 2, 3];
+b: int8[3] = [4, 5, 6];
 
 // add arrays element-wise
-int8[3] c = a + b;  // Would be [5, 7, 9]
+c: int8[3] = a + b;  // Would be [5, 7, 9]
 
 // subtract arrays element-wise
-int8[3] e = b - a;  // Would be [3, 3, 3]
+e: int8[3] = b - a;  // Would be [3, 3, 3]
 
 // add scalar to array
-int8[3] g = a + 2;  // Would be [3, 4, 5]
+g: int8[3] = a + 2;  // Would be [3, 4, 5]
 
 // subtract scalar from array
-int8[3] h = b - 1;  // Would be [3, 4, 5]
+h: int8[3] = b - 1;  // Would be [3, 4, 5]
 
 // multiply arrays element-wise
-int8[3] j = a * b;  // Would be [4, 10, 18]
+j: int8[3] = a * b;  // Would be [4, 10, 18]
 
 // divide arrays element-wise
-int8[3] k = b / a;  // Would be [4, 2, 2]
+k: int8[3] = b / a;  // Would be [4, 2, 2]
 
 // multiply arrays by scalar
-int8[3] d = a * 2;  // Would be [2, 4, 6]
+d: int8[3] = a * 2;  // Would be [2, 4, 6]
 
 // divide arrays by scalar
-int8[3] f = b / 2;  // Would be [2, 2, 3]
+f: int8[3] = b / 2;  // Would be [2, 2, 3]
 
 // dot product of two arrays
-int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
+dotProduct: int8 = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
 </code></pre>
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <table>

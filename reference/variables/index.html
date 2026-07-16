@@ -1667,19 +1667,19 @@
 </ul>
 <p>In regex form: <code>[a-zA-Z_][a-zA-Z0-9_]*</code></p>
 <h3 id="valid-examples">Valid examples<a class="headerlink" href="#valid-examples" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int32 x = 0;
-int32 _private = 1;
-int32 camelCase = 2;
-int32 SCREAMING_SNAKE = 3;
-int32 value42 = 4;
-int32 __double_under = 5;
+<pre><code class="language-firescript">x: int32 = 0;
+_private: int32 = 1;
+camelCase: int32 = 2;
+SCREAMING_SNAKE: int32 = 3;
+value42: int32 = 4;
+__double_under: int32 = 5;
 </code></pre>
 <h3 id="invalid-examples">Invalid examples<a class="headerlink" href="#invalid-examples" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int32 42value = 0;   // cannot start with a digit
-int32 my-var = 0;    // hyphens are not allowed
-int32 my var = 0;    // spaces are not allowed
-int32 return = 0;    // reserved keyword
-int32 int32 = 0;     // reserved type name
+<pre><code class="language-firescript">42value: int32 = 0;   // cannot start with a digit
+my-var: int32 = 0;    // hyphens are not allowed
+my var: int32 = 0;    // spaces are not allowed
+return: int32 = 0;    // reserved keyword
+int32: int32 = 0;     // reserved type name
 </code></pre>
 <h3 id="reserved-keywords-and-type-names">Reserved keywords and type names<a class="headerlink" href="#reserved-keywords-and-type-names" title="Permanent link">&para;</a></h3>
 <p>The following words are reserved and cannot be used as identifiers:</p>
@@ -1720,33 +1720,33 @@ int32 int32 = 0;     // reserved type name
 <p>The <code>char</code> type name is also reserved in type positions.</p>
 <h2 id="declaration-and-initialization">Declaration and Initialization<a class="headerlink" href="#declaration-and-initialization" title="Permanent link">&para;</a></h2>
 <p>Variables in firescript must be declared with an explicit type and initialized in the same statement:</p>
-<pre><code class="language-firescript">int8 age = 30;
-string name = &quot;Alice&quot;;
-bool isRegistered = false;
+<pre><code class="language-firescript">age: int8 = 30;
+name: string = &quot;Alice&quot;;
+isRegistered: bool = false;
 </code></pre>
 <h3 id="type-inference">Type Inference<a class="headerlink" href="#type-inference" title="Permanent link">&para;</a></h3>
 <p>firescript does not support automatic type inference:</p>
 <pre><code class="language-firescript">var score = 95;  // Not supported - must specify the type explicitly
-int8 score = 95;  // Supported
+score: int8 = 95;  // Supported
 </code></pre>
 <h3 id="constants">Constants<a class="headerlink" href="#constants" title="Permanent link">&para;</a></h3>
 <p>Use the <code>const</code> keyword to declare immutable variables:</p>
-<pre><code class="language-firescript">const int8 MAX_USERS = 100;
-const string APP_VERSION = &quot;1.0.0&quot;;
+<pre><code class="language-firescript">const MAX_USERS: int8 = 100;
+const APP_VERSION: string = &quot;1.0.0&quot;;
 </code></pre>
 <p>Constants must be initialized when declared and cannot be reassigned later:</p>
-<pre><code class="language-firescript">const float32 PI = 3.14;
+<pre><code class="language-firescript">const PI: float32 = 3.14;
 PI = 3.14159;  // Error: cannot reassign a constant
 </code></pre>
 <h2 id="nullability-implemented">Nullability [IMPLEMENTED]<a class="headerlink" href="#nullability-implemented" title="Permanent link">&para;</a></h2>
 <p>By default, variables cannot be assigned <code>null</code>. A trailing <code>?</code> after the variable name explicitly allows it to hold <code>null</code>:</p>
-<pre><code class="language-firescript">string username? = null;  // Valid
-string password = null;   // Invalid - non-nullable type cannot hold null
+<pre><code class="language-firescript">username: string? = null;  // Valid
+password: string = null;   // Invalid - non-nullable type cannot hold null
 </code></pre>
 <p>Attempting to use a nullable variable without checking for null may result in runtime errors:</p>
 <pre><code class="language-firescript">import @firescript/std.io.print;
 
-string message? = null;
+message: string? = null;
 
 // Safe access pattern
 if (message != null) {

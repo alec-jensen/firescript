@@ -1060,10 +1060,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#bool-is_matchstring-pattern-string-text" class="md-nav__link">
+  <a href="#fn-is_matchpattern-string-text-string-bool" class="md-nav__link">
     <span class="md-ellipsis">
       
-        bool is_match(string pattern, string text)
+        fn is_match(pattern: string, text: string) -&gt; bool
       
     </span>
   </a>
@@ -1071,10 +1071,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bool-find_matchstring-pattern-string-text" class="md-nav__link">
+  <a href="#fn-find_matchpattern-string-text-string-bool" class="md-nav__link">
     <span class="md-ellipsis">
       
-        bool find_match(string pattern, string text)
+        fn find_match(pattern: string, text: string) -&gt; bool
       
     </span>
   </a>
@@ -1082,10 +1082,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#int32-find_atstring-pattern-string-text-int32-start_pos" class="md-nav__link">
+  <a href="#fn-find_atpattern-string-text-string-start_pos-int32-int32" class="md-nav__link">
     <span class="md-ellipsis">
       
-        int32 find_at(string pattern, string text, int32 start_pos)
+        fn find_at(pattern: string, text: string, start_pos: int32) -&gt; int32
       
     </span>
   </a>
@@ -1093,10 +1093,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#string-last_errorstring-pattern" class="md-nav__link">
+  <a href="#fn-last_errorpattern-string-string" class="md-nav__link">
     <span class="md-ellipsis">
       
-        string last_error(string pattern)
+        fn last_error(pattern: string) -&gt; string
       
     </span>
   </a>
@@ -1477,10 +1477,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#bool-is_matchstring-pattern-string-text" class="md-nav__link">
+  <a href="#fn-is_matchpattern-string-text-string-bool" class="md-nav__link">
     <span class="md-ellipsis">
       
-        bool is_match(string pattern, string text)
+        fn is_match(pattern: string, text: string) -&gt; bool
       
     </span>
   </a>
@@ -1488,10 +1488,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bool-find_matchstring-pattern-string-text" class="md-nav__link">
+  <a href="#fn-find_matchpattern-string-text-string-bool" class="md-nav__link">
     <span class="md-ellipsis">
       
-        bool find_match(string pattern, string text)
+        fn find_match(pattern: string, text: string) -&gt; bool
       
     </span>
   </a>
@@ -1499,10 +1499,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#int32-find_atstring-pattern-string-text-int32-start_pos" class="md-nav__link">
+  <a href="#fn-find_atpattern-string-text-string-start_pos-int32-int32" class="md-nav__link">
     <span class="md-ellipsis">
       
-        int32 find_at(string pattern, string text, int32 start_pos)
+        fn find_at(pattern: string, text: string, start_pos: int32) -&gt; int32
       
     </span>
   </a>
@@ -1510,10 +1510,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#string-last_errorstring-pattern" class="md-nav__link">
+  <a href="#fn-last_errorpattern-string-string" class="md-nav__link">
     <span class="md-ellipsis">
       
-        string last_error(string pattern)
+        fn last_error(pattern: string) -&gt; string
       
     </span>
   </a>
@@ -1676,29 +1676,29 @@ println(find_at(&quot;script&quot;, &quot;firescript&quot;, 4));
 println(last_error(&quot;[ab&quot;));
 </code></pre>
 <h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
-<h3 id="bool-is_matchstring-pattern-string-text"><code>bool is_match(string pattern, string text)</code><a class="headerlink" href="#bool-is_matchstring-pattern-string-text" title="Permanent link">&para;</a></h3>
+<h3 id="fn-is_matchpattern-string-text-string-bool"><code>fn is_match(pattern: string, text: string) -&gt; bool</code><a class="headerlink" href="#fn-is_matchpattern-string-text-string-bool" title="Permanent link">&para;</a></h3>
 <p>Returns <code>true</code> when the pattern matches the input text. Without anchors, the pattern must match the entire input; <code>^</code> and <code>$</code> control anchoring explicitly.</p>
-<h3 id="bool-find_matchstring-pattern-string-text"><code>bool find_match(string pattern, string text)</code><a class="headerlink" href="#bool-find_matchstring-pattern-string-text" title="Permanent link">&para;</a></h3>
+<h3 id="fn-find_matchpattern-string-text-string-bool"><code>fn find_match(pattern: string, text: string) -&gt; bool</code><a class="headerlink" href="#fn-find_matchpattern-string-text-string-bool" title="Permanent link">&para;</a></h3>
 <p>Alias of <code>is_match</code>. Named <code>match</code> prior to 0.6.0; renamed because <code>match</code> is now a reserved keyword.</p>
-<h3 id="int32-find_atstring-pattern-string-text-int32-start_pos"><code>int32 find_at(string pattern, string text, int32 start_pos)</code><a class="headerlink" href="#int32-find_atstring-pattern-string-text-int32-start_pos" title="Permanent link">&para;</a></h3>
+<h3 id="fn-find_atpattern-string-text-string-start_pos-int32-int32"><code>fn find_at(pattern: string, text: string, start_pos: int32) -&gt; int32</code><a class="headerlink" href="#fn-find_atpattern-string-text-string-start_pos-int32-int32" title="Permanent link">&para;</a></h3>
 <p>Position-aware matching: returns the length of the match starting at <code>start_pos</code>, or <code>-1</code> if there is no match at that position.</p>
-<h3 id="string-last_errorstring-pattern"><code>string last_error(string pattern)</code><a class="headerlink" href="#string-last_errorstring-pattern" title="Permanent link">&para;</a></h3>
+<h3 id="fn-last_errorpattern-string-string"><code>fn last_error(pattern: string) -&gt; string</code><a class="headerlink" href="#fn-last_errorpattern-string-string" title="Permanent link">&para;</a></h3>
 <p>Validates a pattern and returns an empty string when the pattern is usable. If validation fails, it returns a short error message.</p>
 <h3 id="regexpattern"><code>RegexPattern</code><a class="headerlink" href="#regexpattern" title="Permanent link">&para;</a></h3>
 <p>The <code>RegexPattern</code> class (<code>@firescript/std.regex.pattern.RegexPattern</code>) lets you construct a pattern once and match it repeatedly:</p>
 <pre><code class="language-firescript">import @firescript/std.regex.pattern.RegexPattern;
 import @firescript/std.io.println;
 
-RegexPattern p = RegexPattern(&quot;[a-z]+&quot;);
+p: RegexPattern = RegexPattern(&quot;[a-z]+&quot;);
 println(p.is_match(&quot;firescript&quot;));
 println(p.find_at(&quot;firescript&quot;, 4));
 </code></pre>
 <p>Methods:</p>
 <ul>
-<li><code>bool is_match(&amp;this, string &amp;text)</code> — match against the text</li>
-<li><code>bool matches(&amp;this, string &amp;text)</code> — alias of <code>is_match</code></li>
-<li><code>int32 find_at(&amp;this, string &amp;text, int32 start_pos)</code> — position-aware matching</li>
-<li><code>string last_error(&amp;this)</code> — pattern validation error, or empty string</li>
+<li><code>fn is_match(&amp;this, &amp;text: string) -&gt; bool</code> — match against the text</li>
+<li><code>fn matches(&amp;this, &amp;text: string) -&gt; bool</code> — alias of <code>is_match</code></li>
+<li><code>fn find_at(&amp;this, &amp;text: string, start_pos: int32) -&gt; int32</code> — position-aware matching</li>
+<li><code>fn last_error(&amp;this) -&gt; string</code> — pattern validation error, or empty string</li>
 </ul>
 <h2 id="supported-syntax">Supported Syntax<a class="headerlink" href="#supported-syntax" title="Permanent link">&para;</a></h2>
 <p>The current matcher supports:</p>

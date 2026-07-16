@@ -2094,7 +2094,7 @@
 <li>Copyable values never have drops.</li>
 </ul>
 <p>Example (illustrative — user-defined <code>drop</code> is planned):</p>
-<pre><code class="language-firescript">File f = File(&quot;log.txt&quot;);
+<pre><code class="language-firescript">f: File = File(&quot;log.txt&quot;);
 f.writeAll(&quot;hello&quot;);
 // f dropped here even on early return; a future File.drop could close a held descriptor.
 </code></pre>
@@ -2109,7 +2109,7 @@ f.writeAll(&quot;hello&quot;);
 - Methods always receive the value by copy; “consuming” semantics do not apply.</p>
 <p>Consuming example ([PLANNED] — consuming receivers are not yet supported):</p>
 <pre><code class="language-firescript">// Future syntax
-Account upgrade(this) {
+fn upgrade(this) -&gt; Account {
   // ... mutate internal state
   return this;
 }
@@ -2147,70 +2147,70 @@ acct = acct.upgrade(); // rebind because ownership moved and was returned
 4. No disallowed interior references.</p>
 <p>Example:</p>
 <pre><code class="language-firescript">copyable class Vec2 {
-    float32 x; // float32 is Copyable
-    float32 y;
+    x: float32; // float32 is Copyable
+    y: float32;
 }
 </code></pre>
 <p><code>Vec2</code> values copy bitwise; moves do not invalidate the source.</p>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
 <p>The following examples illustrate planned semantics. Some features (e.g., full last-use optimization) may not yet be implemented.</p>
 <h3 id="example-move-vs-copy-takeaway-owned-moves-copyable-copies">Example: Move vs Copy (Takeaway: Owned moves; Copyable copies)<a class="headerlink" href="#example-move-vs-copy-takeaway-owned-moves-copyable-copies" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">Object o1 = Object(); // owned
-Object o2 = o1;      // move; o1 invalid afterward
+<pre><code class="language-firescript">o1: Object = Object(); // owned
+o2: Object = o1;      // move; o1 invalid afterward
 // print(o1);        // error: moved value
 
-int8 x = 42;
-int8 y = x;          // copy (Copyable); x still valid
+x: int8 = 42;
+y: int8 = x;          // copy (Copyable); x still valid
 print(x);           // OK
 </code></pre>
 <h3 id="example-clone-takeaway-explicit-duplication-for-owned-planned">Example: Clone (Takeaway: explicit duplication for Owned) [PLANNED]<a class="headerlink" href="#example-clone-takeaway-explicit-duplication-for-owned-planned" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Future syntax — .clone() is not yet implemented
-string s1 = &quot;fire&quot;;
-string s2 = s1.clone(); // independent
+s1: string = &quot;fire&quot;;
+s2: string = s1.clone(); // independent
 print(s1);
 print(s2);
 </code></pre>
 <h3 id="example-borrowed-parameter-owned-only">Example: Borrowed Parameter (Owned only)<a class="headerlink" href="#example-borrowed-parameter-owned-only" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int32 length(&amp;string s) {
+<pre><code class="language-firescript">fn length(&amp;s: string) -&gt; int32 {
     return s.length();
 }
 
-string name = &quot;firescript&quot;;
-int32 n = length(name); // borrow; name still valid
+name: string = &quot;firescript&quot;;
+n: int32 = length(name); // borrow; name still valid
 </code></pre>
 <h3 id="example-invalid-borrow-of-copyable-compile-error">Example: Invalid Borrow of Copyable (Compile Error)<a class="headerlink" href="#example-invalid-borrow-of-copyable-compile-error" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">int8 id = 10;
+<pre><code class="language-firescript">id: int8 = 10;
 printId(&amp;id);   // ERROR: cannot borrow Copyable type 'int8'; remove '&amp;'
 
 // Correct version:
-void printId(int8 v) {
+fn printId(v: int8) -&gt; void {
     print(v);
 }
 printId(id);    // copies 'id'
 print(id);      // still valid
 </code></pre>
 <h3 id="example-owned-parameter-consumed-move">Example: Owned Parameter Consumed (Move)<a class="headerlink" href="#example-owned-parameter-consumed-move" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">void addUser(string username);  // Plain 'string' means owned/move
+<pre><code class="language-firescript">fn addUser(username: string) -&gt; void;  // Plain 'string' means owned/move
 
-string u = &quot;alice&quot;;
+u: string = &quot;alice&quot;;
 addUser(u);   // move; u invalid afterward
 // print(u);  // ERROR: use after move
 </code></pre>
 <p>Or equivalently with explicit <code>owned</code>:</p>
-<pre><code class="language-firescript">void addUser(owned string username);  // Explicit owned
+<pre><code class="language-firescript">fn addUser(owned username: string) -&gt; void;  // Explicit owned
 
-string u = &quot;alice&quot;;
+u: string = &quot;alice&quot;;
 addUser(u);   // move; u invalid afterward
 </code></pre>
 <h3 id="example-returning-borrow-owned-only-non-escaping-planned">Example: Returning Borrow (Owned Only, Non-Escaping) [PLANNED]<a class="headerlink" href="#example-returning-borrow-owned-only-non-escaping-planned" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Future syntax — borrow return types are not yet supported
-&amp;string head(&amp;string[] xs) {
+fn head(&amp;xs: string[]) -&gt; &amp;string {
     return xs[0];   // OK: element owned by caller's array
 }
 </code></pre>
 <h3 id="example-consuming-method-planned">Example: Consuming Method [PLANNED]<a class="headerlink" href="#example-consuming-method-planned" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">// Future syntax — consuming receivers are not yet supported
-Account activate(owned this) {
+fn activate(owned this) -&gt; Account {
     // mutate state
     return this;
 }

@@ -1568,17 +1568,17 @@
 <h2 id="tuplet-u"><code>Tuple&lt;T, U&gt;</code><a class="headerlink" href="#tuplet-u" title="Permanent link">&para;</a></h2>
 <p>A pair of values of potentially different types.</p>
 <pre><code class="language-firescript">class Tuple&lt;T, U&gt; {
-    T first;
-    U second;
+    first: T;
+    second: U;
 
-    Tuple(T first, U second);
+    fn Tuple(first: T, second: U);
 }
 </code></pre>
 <p><strong>Example:</strong></p>
 <pre><code class="language-firescript">import @firescript/std.types.Tuple;
 import @firescript/std.io.println;
 
-Tuple&lt;int32, string&gt; pair = Tuple&lt;int32, string&gt;(42, &quot;answer&quot;);
+pair: Tuple&lt;int32, string&gt; = Tuple&lt;int32, string&gt;(42, &quot;answer&quot;);
 println(pair.first);   // 42
 println(pair.second);  // answer
 </code></pre>
@@ -1586,27 +1586,27 @@ println(pair.second);  // answer
 <h2 id="copyabletuplet-u"><code>CopyableTuple&lt;T, U&gt;</code><a class="headerlink" href="#copyabletuplet-u" title="Permanent link">&para;</a></h2>
 <p>A copyable variant of <code>Tuple</code> for use with copyable types only.</p>
 <pre><code class="language-firescript">copyable class CopyableTuple&lt;T, U&gt; {
-    T first;
-    U second;
+    first: T;
+    second: U;
 
-    CopyableTuple(T first, U second);
+    fn CopyableTuple(first: T, second: U);
 }
 </code></pre>
 <p><strong>Example:</strong></p>
 <pre><code class="language-firescript">import @firescript/std.types.CopyableTuple;
 
-CopyableTuple&lt;float64, float64&gt; coord = CopyableTuple&lt;float64, float64&gt;(3.14, 2.71);
-CopyableTuple&lt;float64, float64&gt; copy = coord;  // copies
+coord: CopyableTuple&lt;float64, float64&gt; = CopyableTuple&lt;float64, float64&gt;(3.14, 2.71);
+copy: CopyableTuple&lt;float64, float64&gt; = coord;  // copies
 </code></pre>
 <h2 id="optiont-implemented"><code>Option&lt;T&gt;</code> [IMPLEMENTED]<a class="headerlink" href="#optiont-implemented" title="Permanent link">&para;</a></h2>
 <p>An optional value of type <code>T</code>. Use this to represent potentially missing values without explicit nullability.</p>
 <pre><code class="language-firescript">class Option&lt;T?&gt; {
-    T value?;
+    value: T?;
 
-    Option(T value?);
+    fn Option(value: T?);
 
-    bool isSome();
-    bool isNone();
+    fn isSome() -&gt; bool;
+    fn isNone() -&gt; bool;
 }
 </code></pre>
 <p><strong>Methods:</strong></p>
@@ -1619,8 +1619,8 @@ CopyableTuple&lt;float64, float64&gt; copy = coord;  // copies
 <pre><code class="language-firescript">import @firescript/std.types.Option;
 import @firescript/std.io.println;
 
-Option&lt;string&gt; maybe_name = Option&lt;string&gt;(&quot;Alice&quot;);
-bool present = maybe_name.isSome();
+maybe_name: Option&lt;string&gt; = Option&lt;string&gt;(&quot;Alice&quot;);
+present: bool = maybe_name.isSome();
 if (present) {
     println(maybe_name.value);
 }
@@ -1629,12 +1629,12 @@ if (present) {
 <h2 id="copyableoptiont-implemented"><code>CopyableOption&lt;T&gt;</code> [IMPLEMENTED]<a class="headerlink" href="#copyableoptiont-implemented" title="Permanent link">&para;</a></h2>
 <p>A copyable variant of <code>Option</code> for copyable types.</p>
 <pre><code class="language-firescript">copyable class CopyableOption&lt;T?&gt; {
-    T value?;
+    value: T?;
 
-    CopyableOption(T value?);
+    fn CopyableOption(value: T?);
 
-    bool isSome();
-    bool isNone();
+    fn isSome() -&gt; bool;
+    fn isNone() -&gt; bool;
 }
 </code></pre>
 <p><strong>Example:</strong></p>
@@ -1642,8 +1642,8 @@ if (present) {
 <pre><code class="language-firescript">import @firescript/std.types.CopyableOption;
 import @firescript/std.io.println;
 
-CopyableOption&lt;int32&gt; maybe_count = CopyableOption&lt;int32&gt;(5);
-bool present = maybe_count.isSome();
+maybe_count: CopyableOption&lt;int32&gt; = CopyableOption&lt;int32&gt;(5);
+present: bool = maybe_count.isSome();
 if (present) {
     println(maybe_count.value);
 }
@@ -1659,7 +1659,7 @@ if (present) {
 import @firescript/std.io.println;
 
 // Tuple usage
-Tuple&lt;int32, string&gt; user = Tuple&lt;int32, string&gt;(1, &quot;alice&quot;);
+user: Tuple&lt;int32, string&gt; = Tuple&lt;int32, string&gt;(1, &quot;alice&quot;);
 println(&quot;User ID: &quot; + (user.first as string));
 println(user.second);
 </code></pre>

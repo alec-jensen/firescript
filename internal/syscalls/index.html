@@ -1378,8 +1378,8 @@
 <h2 id="return-type-syscallresult">Return Type: <code>SyscallResult</code><a class="headerlink" href="#return-type-syscallresult" title="Permanent link">&para;</a></h2>
 <p>All syscalls return a <code>SyscallResult</code> copyable class defined in the standard library:</p>
 <pre><code class="language-firescript">copyable class SyscallResult {
-    int32 status;
-    string data;
+    status: int32;
+    data: string;
 }
 </code></pre>
 <ul>
@@ -1488,8 +1488,8 @@
 <h3 id="example-usage">Example Usage<a class="headerlink" href="#example-usage" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">directive enable_syscalls;
 
-SyscallResult open1 = syscall_open(&quot;output1.txt&quot;, &quot;w&quot;);
-SyscallResult open2 = syscall_open(&quot;output2.txt&quot;, &quot;w&quot;);
+open1: SyscallResult = syscall_open(&quot;output1.txt&quot;, &quot;w&quot;);
+open2: SyscallResult = syscall_open(&quot;output2.txt&quot;, &quot;w&quot;);
 
 if open1.status &gt;= 0 and open2.status &gt;= 0 {
     syscall_write(open1.status, &quot;foo&quot;);
@@ -1499,7 +1499,7 @@ if open1.status &gt;= 0 and open2.status &gt;= 0 {
     syscall_close(open2.status);
 }
 
-SyscallResult r = syscall_read(open1.status, 64);
+r: SyscallResult = syscall_read(open1.status, 64);
 if r.status &gt;= 0 {
     // r.data contains the bytes read
 }

@@ -1623,23 +1623,23 @@
 <p>For the purposes of most code, firescript does not provide any built-in functions. Things like io and math are provided by the standard library.</p>
 <h2 id="user-defined-functions">User-defined Functions<a class="headerlink" href="#user-defined-functions" title="Permanent link">&para;</a></h2>
 <pre><code class="language-firescript">// Basic function definition
-returnType functionName(paramType1 param1, paramType2 param2) {
+fn functionName(param1: paramType1, param2: paramType2) -&gt; returnType {
     // function body
     return returnValue;
 }
 
 // Examples:
-int32 add(int32 a, int32 b) {
+fn add(a: int32, b: int32) -&gt; int32 {
     return a + b;
 }
 
-void greet(string name) {
+fn greet(name: string) -&gt; void {
     print(&quot;Hello, &quot; + name);
 }
 
-float32 calculateAverage(&amp;int32[] numbers) {
-    int32 sum = 0;
-    int32 i = 0;
+fn calculateAverage(&amp;numbers: int32[]) -&gt; float32 {
+    sum: int32 = 0;
+    i: int32 = 0;
     while (i &lt; numbers.length()) {
         sum = sum + numbers[i];
         i = i + 1;
@@ -1659,28 +1659,28 @@ float32 calculateAverage(&amp;int32[] numbers) {
 <p>See <a href="../memory_management/">Memory Management</a> for the full rules.</p>
 <h2 id="generic-functions">Generic Functions<a class="headerlink" href="#generic-functions" title="Permanent link">&para;</a></h2>
 <p>Functions can declare type parameters in angle brackets after the function name. The compiler monomorphizes each unique instantiation at compile time. Type parameters can be constrained with type unions or named constraint aliases (see <a href="../type_system/#generics">Type System — Generics</a>):</p>
-<pre><code class="language-firescript">T max&lt;T: int32 | int64&gt;(T a, T b) {
+<pre><code class="language-firescript">fn max&lt;T: int32 | int64&gt;(a: T, b: T) -&gt; T {
     if (a &gt; b) {
         return a;
     }
     return b;
 }
 
-int32 larger = max(10, 20);  // T inferred as int32
+larger: int32 = max(10, 20);  // T inferred as int32
 </code></pre>
 <h2 id="generator-functions">Generator Functions<a class="headerlink" href="#generator-functions" title="Permanent link">&para;</a></h2>
 <p>A generator function produces a lazy sequence of values with <code>yield</code>. Generators are declared with the <code>generator&lt;T&gt;</code> return type and are consumed with <code>for-in</code> loops:</p>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 
-generator&lt;int32&gt; countdown(int32 n) {
-    int32 i = n;
+fn countdown(n: int32) -&gt; generator&lt;int32&gt; {
+    i: int32 = n;
     while (i &gt; 0) {
         yield i;
         i -= 1;
     }
 }
 
-for (int32 v in countdown(3)) {
+for (v: int32 in countdown(3)) {
     println(v);  // 3, 2, 1
 }
 </code></pre>
@@ -1688,22 +1688,22 @@ for (int32 v in countdown(3)) {
 <h2 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h2>
 <p>Methods are functions that belong to class instances. Methods declare a receiver: <code>&amp;this</code> for read-only access, <code>&amp;mut this</code> for mutable access. Static methods belong to the class itself and take no receiver:</p>
 <pre><code class="language-firescript">class Person {
-    string name;
-    int32 age;
+    name: string;
+    age: int32;
 
     // Constructor
-    Person(&amp;mut this, string name, int32 age) {
+    fn Person(&amp;mut this, name: string, age: int32) {
         this.name = name;
         this.age = age;
     }
 
     // Instance method (read-only receiver)
-    string introduce(&amp;this) {
+    fn introduce(&amp;this) -&gt; string {
         return &quot;My name is &quot; + this.name + &quot; and I'm &quot; + (this.age as string) + &quot; years old&quot;;
     }
 
     // Static method
-    static string getSpecies() {
+    static fn getSpecies() -&gt; string {
         return &quot;Human&quot;;
     }
 }
@@ -1733,7 +1733,7 @@ for (int32 v in countdown(3)) {
 <li>Optional parameters with default values:</li>
 </ul>
 <pre><code class="language-firescript">// Future syntax
-void greet(string name, string greeting = &quot;Hello&quot;) {
+fn greet(name: string, greeting: string = &quot;Hello&quot;) -&gt; void {
     print(greeting + &quot;, &quot; + name);
 }
 </code></pre>
@@ -1747,9 +1747,9 @@ calculateRectangle(width: 10, height: 20);
 <li>Variadic parameters (variable number of arguments):</li>
 </ul>
 <pre><code class="language-firescript">// Future syntax
-int32 sum(int32... numbers) {
-    int32 total = 0;
-    for (int32 num in numbers) {
+fn sum(numbers: int32...) -&gt; int32 {
+    total: int32 = 0;
+    for (num: int32 in numbers) {
         total = total + num;
     }
     return total;
@@ -1759,11 +1759,11 @@ int32 sum(int32... numbers) {
 <li>Function overloading:</li>
 </ul>
 <pre><code class="language-firescript">// Future syntax
-int32 add(int32 a, int32 b) {
+fn add(a: int32, b: int32) -&gt; int32 {
     return a + b;
 }
 
-float32 add(float32 a, float32 b) {
+fn add(a: float32, b: float32) -&gt; float32 {
     return a + b;
 }
 </code></pre>
