@@ -6,7 +6,7 @@ enum Color {
     Green
 }
 
-Color c = Color.Red;
+c: Color = Color.Red;
 
 match c {
     Color.Red -> println("red"),

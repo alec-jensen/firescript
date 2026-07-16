@@ -4,11 +4,11 @@ import @firescript/std.io.println;
 
 constraint NumericAndComparable = int32 & Comparable;
 
-T identity<T: NumericAndComparable>(T x) {
+fn identity<T: NumericAndComparable>(x: T) -> T {
     return x;
 }
 
-void main() {
+fn main() -> void {
     println(identity(7i32));
 }
 

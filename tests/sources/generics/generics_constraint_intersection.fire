@@ -2,11 +2,11 @@ import @firescript/std.io.println;
 
 constraint Combo = int32 & float64;
 
-T identity<T: Combo>(T x) {
+fn identity<T: Combo>(x: T) -> T {
     return x;
 }
 
-int32 y = identity(5i32);
+y: int32 = identity(5i32);
 println(y);
 
 /* EXPECT

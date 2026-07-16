@@ -1,19 +1,19 @@
 import @firescript/std.io.println;
 
-int32[3] nums = [1, 2, 3];
-string s1 = nums as string;
+nums: int32[3] = [1, 2, 3];
+s1: string = nums as string;
 println(s1);
 
-float64[2] fs = [1.5, 2.5];
-string s2 = fs as string;
+fs: float64[2] = [1.5, 2.5];
+s2: string = fs as string;
 println(s2);
 
-string[2] words = ["hi", "there"];
-string s3 = words as string;
+words: string[2] = ["hi", "there"];
+s3: string = words as string;
 println(s3);
 
-int32[0] empty;
-string s4 = empty as string;
+empty: int32[0];
+s4: string = empty as string;
 println(s4);
 
 /* EXPECT

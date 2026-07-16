@@ -84,130 +84,34 @@ class StatementsMixin(ExpressionsMixin):
         return if_node
 
     def parse_variable_declaration(self):
-        """Parse variable declarations like: [const] type [ [] ] name[?] = expr"""
-        is_nullable = False
+        """Parse variable declarations like: [const] name ':' TypeExpr ['=' expr]"""
         is_const = False
-        # Modifiers
         if self.current_token and self.current_token.type == "CONST":
             is_const = True
             self.advance()
 
-        # Type
-        next_tok = self.peek()
-        is_deferred_named_type = (
-            self.defer_undefined_identifiers
-            and self.current_token is not None
-            and self.current_token.type == "IDENTIFIER"
-            and bool(self.current_token.value.strip())
-            and next_tok is not None
-            and next_tok.type == "IDENTIFIER"
-        )
-        is_deferred_generic = (
-            self.defer_undefined_identifiers
-            and self.current_token is not None
-            and self.current_token.type == "IDENTIFIER"
-            and bool(self.current_token.value.strip())
-            and next_tok is not None
-            and next_tok.type == "LESS_THAN"
-        )
-        if not (self.current_token and (self._is_type_token(self.current_token) or is_deferred_generic or is_deferred_named_type)):
-            self.expected_token_error("type in variable declaration", self.current_token)
-            return None
-        type_token = self.current_token
-        self.advance()
-
-        # Check for generic class instantiation: TypeName<T1, T2>
-        composite_type: Optional[str] = None
-        if (
-            type_token.type == "IDENTIFIER"
-            and (
-                type_token.value in self.generic_class_templates
-                or (
-                    self.defer_undefined_identifiers
-                    and self.current_token
-                    and self.current_token.type == "LESS_THAN"
-                )
-            )
-            and self.current_token
-            and self.current_token.type == "LESS_THAN"
-        ):
-            # Parse type arguments
-            self.advance()  # consume <
-            type_args: list[str] = []
-            while True:
-                if not (self.current_token and self._is_type_token(self.current_token)):
-                    self.expected_token_error("type argument in generic class instantiation", self.current_token)
-                    return None
-                targ_tok = self.current_token
-                self.advance()
-                type_arg_name = self._normalize_type_name(targ_tok)
-                # Recursively handle nested generic type args: e.g. Pair<Pair<int32,int32>, string>
-                if (
-                    targ_tok.type == "IDENTIFIER"
-                    and targ_tok.value in self.generic_class_templates
-                    and self.current_token
-                    and self.current_token.type == "LESS_THAN"
-                ):
-                    self.advance()  # consume nested <
-                    nested_args: list[str] = []
-                    while True:
-                        if not (self.current_token and self._is_type_token(self.current_token)):
-                            self.expected_token_error("type argument in nested generic class instantiation", self.current_token)
-                            return None
-                        ntarg_tok = self.current_token
-                        self.advance()
-                        nested_args.append(self._normalize_type_name(ntarg_tok))
-                        if self.current_token and self.current_token.type == "COMMA":
-                            self.advance()
-                            continue
-                        break
-                    if not (self.current_token and self.current_token.type == "GREATER_THAN"):
-                        self.expected_token_error("'>' to close nested generic type arguments", self.current_token)
-                        return None
-                    self.advance()  # consume >
-                    type_arg_name = self._register_generic_class_instance(targ_tok.value, nested_args)
-                type_args.append(type_arg_name)
-                if self.current_token and self.current_token.type == "COMMA":
-                    self.advance()
-                    continue
-                break
-            if not (self.current_token and self.current_token.type == "GREATER_THAN"):
-                self.expected_token_error("'>' to close generic type arguments", self.current_token)
-                return None
-            self.advance()  # consume >
-            composite_type = self._register_generic_class_instance(type_token.value, type_args)
-
-        # Optional array suffix [] or [N]
-        is_array = False
-        array_size = None
-        if self.current_token and self.current_token.type == "OPEN_BRACKET":
-            self.advance()
-            if self.current_token and self.current_token.type == "INTEGER_LITERAL":
-                try:
-                    array_size = int(self.current_token.value)
-                except ValueError:
-                    self.expected_token_error("integer size in array type declaration", self.current_token)
-                    return None
-                self.advance()
-            if not self.consume("CLOSE_BRACKET"):
-                self.expected_token_error(
-                    "']' after '[' in array type declaration",
-                    self.current_token,
-                )
-                return None
-            is_array = True
-
-        # Identifier
         identifier = self.consume_name()
         if identifier is None:
-            self.expected_token_error("variable name after type", self.current_token)
+            self.expected_token_error("variable name", self.current_token)
             return None
 
-        # Optional nullable marker: name?
-        if self.current_token and self.current_token.type == "QUESTION":
-            is_nullable = True
-            self.advance()
+        if not self.consume("COLON"):
+            self.expected_token_error("':' after variable name", self.current_token)
+            return None
 
+        parsed_type = self._parse_type_expression()
+        if parsed_type is None:
+            return None
+        if self._reject_ownership_modifiers(parsed_type, "a variable declaration"):
+            return None
+
+        return self._finish_variable_declaration(identifier, is_const, parsed_type)
+
+    def _finish_variable_declaration(self, identifier, is_const: bool, parsed_type):
+        """Parse the `['=' expr]` tail and build the VARIABLE_DECLARATION node,
+        given a name and already-parsed TypeExpr. Shared by parse_variable_declaration
+        and the C-style for-loop init (`for (i: int32 = 0; ...)`), which parses the
+        same `name ':' TypeExpr` prefix while disambiguating from for-in."""
         # Assignment - optional when array size is explicitly declared
         if self.current_token and self.current_token.type == "ASSIGN":
             self.advance()
@@ -218,7 +122,7 @@ class StatementsMixin(ExpressionsMixin):
                     self.current_token,
                 )
                 return None
-        elif array_size is not None:
+        elif parsed_type.array_size is not None:
             # Sized array with no initializer: synthesize an empty array literal
             # Codegen will zero-initialize based on array_size
             value = ASTNode(NodeTypes.ARRAY_LITERAL, identifier, "array", [], identifier.index)
@@ -226,22 +130,21 @@ class StatementsMixin(ExpressionsMixin):
             self.expected_token_error("'=' in variable declaration", self.current_token)
             return None
 
-        effective_type = composite_type if composite_type is not None else self._normalize_type_name(type_token)
         node = ASTNode(
             NodeTypes.VARIABLE_DECLARATION,
             identifier,
             identifier.value,
             [value],
             identifier.index,
-            effective_type,
-            is_nullable,
+            parsed_type.base,
+            parsed_type.is_nullable,
             is_const,
             None,  # return_type
-            is_array,
+            parsed_type.is_array,
             is_ref_counted=(
-                True if (type_token.value in ("string",) or is_array) else False
+                True if (parsed_type.base == "string" or parsed_type.is_array) else False
             ),
-            array_size=array_size,
+            array_size=parsed_type.array_size,
         )
         return node
 
@@ -370,48 +273,38 @@ class StatementsMixin(ExpressionsMixin):
             self.expected_token_error("'(' after 'for'", self.current_token or for_token)
             return None
         
-        # Try to determine if this is a C-style for or for-in loop
-        # We need to look ahead to see if there's an 'in' keyword
-        # Check for pattern: type identifier in expression
-        is_for_in = False
-        if self.current_token and self.current_token.type in self.TYPE_TOKEN_NAMES:
-            # Check if there's IDENTIFIER then IN
-            next_token = self.peek(1)
-            next_next_token = self.peek(2)
-            if (next_token and next_token.type == "IDENTIFIER" and
-                next_next_token and next_next_token.type == "IN"):
-                is_for_in = True
-        
-        if is_for_in:
-            # Parse for-in loop: for (type item in collection)
-            # Expect a type declaration first
-            if not self.current_token or self.current_token.type not in self.TYPE_TOKEN_NAMES:
-                self.expected_token_error("type for loop variable", self.current_token or for_token)
-                return None
-            
-            var_type = self.current_token
-            self.advance()
-            
-            if not self.current_token or self.current_token.type != "IDENTIFIER":
-                self.expected_token_error("loop variable name after type", self.current_token or for_token)
-                return None
-            
+        # C-style init (`i: int32 = 0; ...`) and for-in (`i: int32 in xs`) share
+        # the same `IDENTIFIER ':' TypeExpr` prefix -- only what follows the type
+        # ('in' vs anything else) tells them apart, so parse that prefix once
+        # before branching.
+        loop_var = None
+        parsed_type = None
+        if self.current_token and self.current_token.type == "IDENTIFIER" and self.peek(1) and self.peek(1).type == "COLON":
             loop_var = self.current_token
             self.advance()
-            
-            if not self.consume("IN"):
-                self.expected_token_error("'in' after loop variable", self.current_token or loop_var)
+            self.consume("COLON")
+            parsed_type = self._parse_type_expression()
+            if parsed_type is None:
                 return None
-            
+
+        is_for_in = loop_var is not None and self.current_token and self.current_token.type == "IN"
+
+        if is_for_in:
+            # Parse for-in loop: for (item: TypeExpr in collection)
+            if self._reject_ownership_modifiers(parsed_type, "a for-in loop variable"):
+                return None
+
+            self.consume("IN")
+
             collection = self.parse_expression()
             if collection is None:
                 self.expected_token_error("collection expression after 'in'", self.current_token or for_token)
                 return None
-            
+
             if not self.consume("CLOSE_PAREN"):
                 self.expected_token_error("')' after for-in header", self.current_token or for_token)
                 return None
-            
+
             # Parse body
             if self.current_token and self.current_token.type == "OPEN_BRACE":
                 body = self.parse_scope()
@@ -419,7 +312,7 @@ class StatementsMixin(ExpressionsMixin):
                     return None
             else:
                 body = self._parse_braceless_body(for_token)
-            
+
             # Create a variable declaration node for the loop variable
             # Store type info as attributes, not as child nodes (following parse_variable_declaration pattern)
             identifier_node = ASTNode(
@@ -429,23 +322,24 @@ class StatementsMixin(ExpressionsMixin):
                 [],
                 loop_var.index,
             )
-            
+
             # Create a variable declaration for the loop variable
             var_decl = ASTNode(
                 NodeTypes.VARIABLE_DECLARATION,
                 loop_var,
                 loop_var.value,
                 [identifier_node],  # The identifier is the child
-                var_type.index,
-                self._normalize_type_name(var_type),  # var_type as attribute
-                False,  # is_nullable
+                loop_var.index,
+                parsed_type.base,  # var_type as attribute
+                parsed_type.is_nullable,
                 False,  # is_const
                 None,   # return_type
-                False,  # is_array
+                parsed_type.is_array,
                 False,  # is_ref_counted
+                array_size=parsed_type.array_size,
             )
             identifier_node.parent = var_decl
-            
+
             for_in_node = ASTNode(
                 NodeTypes.FOR_IN_STATEMENT,
                 for_token,
@@ -464,13 +358,17 @@ class StatementsMixin(ExpressionsMixin):
             # Parse C-style for loop: for (init; condition; increment)
             # Parse init (can be variable declaration or expression statement)
             init = None
-            if self.current_token and self.current_token.type != "SEMICOLON":
-                # Check if it's a variable declaration
-                if self.current_token.type in self.TYPE_TOKEN_NAMES:
-                    init = self.parse_variable_declaration()
-                else:
-                    init = self.parse_expression()
-            
+            if loop_var is not None:
+                # Already consumed `name ':' TypeExpr` in the shared prefix above;
+                # finish it as a declaration (`i: int32 = 0`).
+                if self._reject_ownership_modifiers(parsed_type, "a variable declaration"):
+                    return None
+                init = self._finish_variable_declaration(loop_var, False, parsed_type)
+                if init is None:
+                    return None
+            elif self.current_token and self.current_token.type != "SEMICOLON":
+                init = self.parse_expression()
+
             if not self.consume("SEMICOLON"):
                 self.expected_token_error("';' after for loop init", self.current_token or for_token)
                 return None
@@ -548,12 +446,6 @@ class StatementsMixin(ExpressionsMixin):
             bad_tok = self.current_token
             self.advance()
             self.invalid_expression_error(f"Unexpected character '{bad_tok.value}'", bad_tok)
-            return None
-        # Handle generator definitions
-        if self.current_token and self.current_token.type == "GENERATOR":
-            parse_gen = getattr(self, "_parse_generator_definition", None)
-            if callable(parse_gen):
-                return parse_gen()
             return None
         # Handle yield statements
         if self.current_token and self.current_token.type == "YIELD":
@@ -644,28 +536,10 @@ class StatementsMixin(ExpressionsMixin):
         token_type = self.current_token.type
         next_token = self.peek()
 
-        # Variable Declaration: type tokens or const modifier can start a declaration
-        if self._is_type_token(self.current_token) or token_type == "CONST":
-            return self.parse_variable_declaration()
-
-        # Deferred-import mode: IDENT IDENT = ... is a named-type variable declaration
-        # for imported class/types that are not yet known during the initial parse.
-        elif (
-            self.defer_undefined_identifiers
-            and token_type == "IDENTIFIER"
-            and next_token
-            and next_token.type == "IDENTIFIER"
-        ):
-            return self.parse_variable_declaration()
-
-        # Deferred-import mode: IDENT<TYPE_ARGS> var_name = ...  is a generic class var declaration
-        # even when the class is not yet known (it comes from an imported module).
-        elif (
-            self.defer_undefined_identifiers
-            and token_type == "IDENTIFIER"
-            and next_token
-            and next_token.type == "LESS_THAN"
-            and self._looks_like_generic_var_decl()
+        # Variable Declaration: 'const' or 'name :' starts a declaration
+        # ('name' may be IDENTIFIER or a keyword usable as a name, per consume_name()).
+        if token_type == "CONST" or (
+            token_type in ("IDENTIFIER", "AS", "OWNED") and next_token and next_token.type == "COLON"
         ):
             return self.parse_variable_declaration()
 

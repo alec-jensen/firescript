@@ -20,29 +20,29 @@ println(-2 + 5);           // 3, not -7
 println(-3 * -3);          // 9
 
 // Comparison binds looser than arithmetic
-bool r1 = 2 + 3 > 4;      // true  (5 > 4)
-bool r2 = 2 + 3 < 4;      // false (5 < 4)
-bool r3 = 2 * 3 == 6;     // true
-bool r4 = 10 - 4 != 7;    // true  (6 != 7)
+r1: bool = 2 + 3 > 4;      // true  (5 > 4)
+r2: bool = 2 + 3 < 4;      // false (5 < 4)
+r3: bool = 2 * 3 == 6;     // true
+r4: bool = 10 - 4 != 7;    // true  (6 != 7)
 println(r1);
 println(r2);
 println(r3);
 println(r4);
 
 // Logical AND binds tighter than logical OR
-bool r5 = true || false && false;   // true  (false&&false=false, true||false=true)
-bool r6 = false && true || true;    // true  (false&&true=false, false||true=true)
-bool r7 = false && false || false;  // false
+r5: bool = true || false && false;   // true  (false&&false=false, true||false=true)
+r6: bool = false && true || true;    // true  (false&&true=false, false||true=true)
+r7: bool = false && false || false;  // false
 println(r5);
 println(r6);
 println(r7);
 
 // Mixed arithmetic and comparison
-int32 a = 4;
-int32 b = 2;
-int32 c = 3;
-bool r8 = a + b * c > a * b + c;   // 4+6=10 > 8+3=11 → false
-bool r9 = a * b + c == a + b + c;  // 8+3=11 == 4+2+3=9 → false
+a: int32 = 4;
+b: int32 = 2;
+c: int32 = 3;
+r8: bool = a + b * c > a * b + c;   // 4+6=10 > 8+3=11 → false
+r9: bool = a * b + c == a + b + c;  // 8+3=11 == 4+2+3=9 → false
 println(r8);
 println(r9);
 

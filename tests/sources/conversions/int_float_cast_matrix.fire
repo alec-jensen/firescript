@@ -21,35 +21,35 @@ println("-- uint64 <-> float --");
 // completely unusable today, which is a genuine compiler bug, not a
 // problem with this test; reported separately rather than worked around
 // by fixing compiler source here.
-float64 bigF = 1.8e19;
-uint64 bigFAsU = bigF as uint64;
+bigF: float64 = 1.8e19;
+bigFAsU: uint64 = bigF as uint64;
 println(bigFAsU);
 
-float64 smallF = 42.0;
-uint64 smallFAsU = smallF as uint64;
+smallF: float64 = 42.0;
+smallFAsU: uint64 = smallF as uint64;
 println(smallFAsU);
 
 // float32 (not just float64) source into uint64: exercises the
 // cvtss2sd upconversion inside the float->u64 sign-bit-correction path.
-float32 bigF32 = 1.8e19f32;
-uint64 bigF32AsU = bigF32 as uint64;
+bigF32: float32 = 1.8e19f32;
+bigF32AsU: uint64 = bigF32 as uint64;
 println(bigF32AsU);
 
 println("-- float to narrow int/uint --");
-float64 f1 = 200.9;
-int8 f1i8 = f1 as int8;
+f1: float64 = 200.9;
+f1i8: int8 = f1 as int8;
 println(f1i8);
 
-int16 f1i16 = f1 as int16;
+f1i16: int16 = f1 as int16;
 println(f1i16);
 
-uint8 f1u8 = f1 as uint8;
+f1u8: uint8 = f1 as uint8;
 println(f1u8);
 
-uint16 f1u16 = f1 as uint16;
+f1u16: uint16 = f1 as uint16;
 println(f1u16);
 
-uint32 f1u32 = f1 as uint32;
+f1u32: uint32 = f1 as uint32;
 println(f1u32);
 
 /* EXPECT

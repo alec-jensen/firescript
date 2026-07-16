@@ -3,7 +3,7 @@
 // skip over it and keep parsing rather than looping forever.
 import @firescript/std.io.println;
 
-int32 addOne(int32 x) {
+fn addOne(x: int32) -> int32 {
     ]
     return x + 1;
 }

@@ -3,33 +3,33 @@
 
 constraint Numeric = int8 | int16 | int32 | int64 | uint8 | uint16 | uint32 | uint64 | float32 | float64 | float128;
 
-const float64 PI64 = 3.141592653589793f64;
-const float64 PI_2_64 = 1.5707963267948966f64;
+const PI64: float64 = 3.141592653589793f64;
+const PI_2_64: float64 = 1.5707963267948966f64;
 
-const float64 TWO_PI = PI64 * 2.0;
+const TWO_PI: float64 = PI64 * 2.0;
 
-export T abs<T: Numeric>(T x, T zero) {
+export fn abs<T: Numeric>(x: T, zero: T) -> T {
 	if (x < zero) {
 		return -x;
 	}
 	return x;
 }
 
-export T min<T: Numeric>(T a, T b) {
+export fn min<T: Numeric>(a: T, b: T) -> T {
 	if (a < b) {
 		return a;
 	}
 	return b;
 }
 
-export T max<T: Numeric>(T a, T b) {
+export fn max<T: Numeric>(a: T, b: T) -> T {
 	if (a > b) {
 		return a;
 	}
 	return b;
 }
 
-export T clamp<T: Numeric>(T x, T lo, T hi) {
+export fn clamp<T: Numeric>(x: T, lo: T, hi: T) -> T {
 	if (x < lo) {
 		return lo;
 	}
@@ -39,21 +39,21 @@ export T clamp<T: Numeric>(T x, T lo, T hi) {
 	return x;
 }
 
-T lerp<T: Numeric>(T a, T b, T t) {
+fn lerp<T: Numeric>(a: T, b: T, t: T) -> T {
 	return a + (b - a) * t;
 }
 
-float64 deg_to_rad(float64 degrees) {
+fn deg_to_rad(degrees: float64) -> float64 {
 	return degrees * (PI64 / 180.0);
 }
 
-float64 rad_to_deg(float64 radians) {
+fn rad_to_deg(radians: float64) -> float64 {
 	return radians * (180.0 / PI64);
 }
 
-T pow_int<T: Numeric>(T base, int32 exp, T one) {
-	T result = one;
-	int32 i = 0;
+fn pow_int<T: Numeric>(base: T, exp: int32, one: T) -> T {
+	result: T = one;
+	i: int32 = 0;
 	while (i < exp) {
 		result = result * base;
 		i++;
@@ -61,9 +61,9 @@ T pow_int<T: Numeric>(T base, int32 exp, T one) {
 	return result;
 }
 
-float64 pow(float64 base, int32 exp) {
-	float64 result = 1.0;
-	int32 i = 0;
+fn pow(base: float64, exp: int32) -> float64 {
+	result: float64 = 1.0;
+	i: int32 = 0;
 	while (i < exp) {
 		result = result * base;
 		i++;
@@ -71,12 +71,12 @@ float64 pow(float64 base, int32 exp) {
 	return result;
 }
 
-float64 sqrt(float64 x) {
+fn sqrt(x: float64) -> float64 {
 	if (x <= 0.0) {
 		return 0.0;
 	}
-	float64 guess = x;
-	int32 i = 0;
+	guess: float64 = x;
+	i: int32 = 0;
 	while (i < 20) {
 		guess = 0.5 * (guess + (x / guess));
 		i++;
@@ -84,7 +84,7 @@ float64 sqrt(float64 x) {
 	return guess;
 }
 
-float64 _wrap_radians(float64 x) {
+fn _wrap_radians(x: float64) -> float64 {
 	while (x > PI64) {
 		x = x - TWO_PI;
 	}
@@ -94,14 +94,14 @@ float64 _wrap_radians(float64 x) {
 	return x;
 }
 
-float64 sin(float64 x) {
+fn sin(x: float64) -> float64 {
 	x = _wrap_radians(x);
-	float64 term = x;
-	float64 sum = x;
-	int32 n = 1;
+	term: float64 = x;
+	sum: float64 = x;
+	n: int32 = 1;
 	while (n < 6) {
-		float64 n_f64 = (n as float64);
-		float64 denom = (2.0 * n_f64) * (2.0 * n_f64 + 1.0);
+		n_f64: float64 = (n as float64);
+		denom: float64 = (2.0 * n_f64) * (2.0 * n_f64 + 1.0);
 		term = -term * x * x / denom;
 		sum = sum + term;
 		n++;
@@ -109,14 +109,14 @@ float64 sin(float64 x) {
 	return sum;
 }
 
-float64 cos(float64 x) {
+fn cos(x: float64) -> float64 {
 	x = _wrap_radians(x);
-	float64 term = 1.0;
-	float64 sum = 1.0;
-	int32 n = 1;
+	term: float64 = 1.0;
+	sum: float64 = 1.0;
+	n: int32 = 1;
 	while (n < 6) {
-		float64 n_f64 = (n as float64);
-		float64 denom = (2.0 * n_f64 - 1.0) * (2.0 * n_f64);
+		n_f64: float64 = (n as float64);
+		denom: float64 = (2.0 * n_f64 - 1.0) * (2.0 * n_f64);
 		term = -term * x * x / denom;
 		sum = sum + term;
 		n++;
@@ -124,7 +124,7 @@ float64 cos(float64 x) {
 	return sum;
 }
 
-float64 tan(float64 x) {
-	float64 c = cos(x);
+fn tan(x: float64) -> float64 {
+	c: float64 = cos(x);
 	return sin(x) / c;
 }

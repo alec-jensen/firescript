@@ -9,15 +9,15 @@ import @firescript/std.io.println;
 import @firescript/std.types.Option;
 import @firescript/std.types.CopyableOption;
 
-Option<int32> some_opt = Option<int32>(42);
-bool some_is_some = some_opt.isSome();
-bool some_is_none = some_opt.isNone();
+some_opt: Option<int32> = Option<int32>(42);
+some_is_some: bool = some_opt.isSome();
+some_is_none: bool = some_opt.isNone();
 println(some_is_some);
 println(some_is_none);
 
-CopyableOption<int32> csome = CopyableOption<int32>(7);
-bool csome_is_some = csome.isSome();
-bool csome_is_none = csome.isNone();
+csome: CopyableOption<int32> = CopyableOption<int32>(7);
+csome_is_some: bool = csome.isSome();
+csome_is_none: bool = csome.isNone();
 println(csome_is_some);
 println(csome_is_none);
 

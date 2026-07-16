@@ -1,6 +1,6 @@
 import @firescript/std.io.println;
 
-int32[] mutable = [10, 20, 30];
+mutable: int32[] = [10, 20, 30];
 println(mutable[1]);
 mutable[1] = 99;
 println(mutable[1]);

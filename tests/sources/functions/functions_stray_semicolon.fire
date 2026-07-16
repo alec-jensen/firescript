@@ -1,6 +1,6 @@
 import @firescript/std.io.println;
 
-void greet() {
+fn greet() -> void {
     ;
     println("hi");
 }

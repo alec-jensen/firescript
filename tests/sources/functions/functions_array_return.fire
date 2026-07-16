@@ -3,12 +3,12 @@
 
 import @firescript/std.io.println;
 
-int32[] identity(int32[] arr) {
+fn identity(arr: int32[]) -> int32[] {
     return arr;
 }
 
-int32[3] source = [10, 20, 30];
-int32[] first = identity(source);
+source: int32[3] = [10, 20, 30];
+first: int32[] = identity(source);
 println(first[0]);
 println(first[1] + first[2]);
 

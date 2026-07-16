@@ -22,49 +22,49 @@ directive enable_lowlevel_runtime;
 
 // ---- Decode helpers ----
 
-uint64 f128_ext_sign(uint64 hi) {
+fn f128_ext_sign(hi: uint64) -> uint64 {
     return hi / 9223372036854775808u64;
 }
 
-uint64 f128_ext_exp(uint64 hi) {
+fn f128_ext_exp(hi: uint64) -> uint64 {
     return (hi / 281474976710656u64) % 32768u64;
 }
 
-uint64 f128_ext_hisig(uint64 hi) {
+fn f128_ext_hisig(hi: uint64) -> uint64 {
     return hi % 281474976710656u64;
 }
 
-bool f128_is_nan(uint64 ahi, uint64 alo) {
-    uint64 exp = f128_ext_exp(ahi);
+fn f128_is_nan(ahi: uint64, alo: uint64) -> bool {
+    exp: uint64 = f128_ext_exp(ahi);
     if (exp != 32767u64) {
         return false;
     }
-    uint64 hisig = f128_ext_hisig(ahi);
+    hisig: uint64 = f128_ext_hisig(ahi);
     return hisig != 0u64 || alo != 0u64;
 }
 
-bool f128_is_inf_nonan(uint64 ahi, uint64 alo) {
+fn f128_is_inf_nonan(ahi: uint64, alo: uint64) -> bool {
     // Infinity: exp == 0x7FFF and sig == 0.
     if (f128_ext_exp(ahi) != 32767u64) { return false; }
     return f128_ext_hisig(ahi) == 0u64 && alo == 0u64;
 }
 
-bool f128_is_zero(uint64 ahi, uint64 alo) {
-    uint64 hi_nosign = ahi % 9223372036854775808u64;
+fn f128_is_zero(ahi: uint64, alo: uint64) -> bool {
+    hi_nosign: uint64 = ahi % 9223372036854775808u64;
     return hi_nosign == 0u64 && alo == 0u64;
 }
 
 // ---- 128-bit unsigned arithmetic ----
 
 // lo part of (ahi,alo) + (bhi,blo)
-uint64 u128_add_lo(uint64 ahi, uint64 alo, uint64 bhi, uint64 blo) {
+fn u128_add_lo(ahi: uint64, alo: uint64, bhi: uint64, blo: uint64) -> uint64 {
     return alo + blo;
 }
 
 // hi part of (ahi,alo) + (bhi,blo)
-uint64 u128_add_hi(uint64 ahi, uint64 alo, uint64 bhi, uint64 blo) {
-    uint64 sum_lo = alo + blo;
-    uint64 carry = 0u64;
+fn u128_add_hi(ahi: uint64, alo: uint64, bhi: uint64, blo: uint64) -> uint64 {
+    sum_lo: uint64 = alo + blo;
+    carry: uint64 = 0u64;
     if (sum_lo < alo) {
         carry = 1u64;
     }
@@ -72,13 +72,13 @@ uint64 u128_add_hi(uint64 ahi, uint64 alo, uint64 bhi, uint64 blo) {
 }
 
 // lo part of (ahi,alo) - (bhi,blo)  [requires a >= b]
-uint64 u128_sub_lo(uint64 ahi, uint64 alo, uint64 bhi, uint64 blo) {
+fn u128_sub_lo(ahi: uint64, alo: uint64, bhi: uint64, blo: uint64) -> uint64 {
     return alo - blo;
 }
 
 // hi part of (ahi,alo) - (bhi,blo)  [requires a >= b]
-uint64 u128_sub_hi(uint64 ahi, uint64 alo, uint64 bhi, uint64 blo) {
-    uint64 borrow = 0u64;
+fn u128_sub_hi(ahi: uint64, alo: uint64, bhi: uint64, blo: uint64) -> uint64 {
+    borrow: uint64 = 0u64;
     if (alo < blo) {
         borrow = 1u64;
     }
@@ -86,7 +86,7 @@ uint64 u128_sub_hi(uint64 ahi, uint64 alo, uint64 bhi, uint64 blo) {
 }
 
 // Compare unsigned 128-bit values: returns 1 if a>b, -1 if a<b, 0 if equal.
-int64 u128_cmp(uint64 ahi, uint64 alo, uint64 bhi, uint64 blo) {
+fn u128_cmp(ahi: uint64, alo: uint64, bhi: uint64, blo: uint64) -> int64 {
     if (ahi > bhi) { return 1i64; }
     if (ahi < bhi) { return -1i64; }
     if (alo > blo) { return 1i64; }
@@ -98,26 +98,26 @@ int64 u128_cmp(uint64 ahi, uint64 alo, uint64 bhi, uint64 blo) {
 // Right-shift a 128-bit significand (sig_hi, sig_lo) by one bit.
 // The bit shifted out of sig_lo is passed to f128_shr1_extra.
 
-uint64 f128_shr1_hi(uint64 sig_hi) {
+fn f128_shr1_hi(sig_hi: uint64) -> uint64 {
     return sig_hi / 2u64;
 }
 
-uint64 f128_shr1_lo(uint64 sig_hi, uint64 sig_lo) {
+fn f128_shr1_lo(sig_hi: uint64, sig_lo: uint64) -> uint64 {
     return (sig_hi % 2u64) * 9223372036854775808u64 + sig_lo / 2u64;
 }
 
 // The bit shifted out of sig_lo (for accumulating into extra):
-uint64 f128_shr1_out(uint64 sig_lo) {
+fn f128_shr1_out(sig_lo: uint64) -> uint64 {
     return sig_lo % 2u64;
 }
 
 // ---- Normalization helper ----
 // Count left-shifts needed to put the leading 1 at bit 48 of sig_hi.
 // Returns 200 if significand is zero.
-uint64 f128_clz113(uint64 sig_hi, uint64 sig_lo) {
-    uint64 count = 0u64;
-    uint64 h = sig_hi;
-    uint64 l = sig_lo;
+fn f128_clz113(sig_hi: uint64, sig_lo: uint64) -> uint64 {
+    count: uint64 = 0u64;
+    h: uint64 = sig_hi;
+    l: uint64 = sig_lo;
 
     if (h == 0u64) {
         if (l == 0u64) {
@@ -131,8 +131,8 @@ uint64 f128_clz113(uint64 sig_hi, uint64 sig_lo) {
 
     // Now h != 0. Count until h >= 2^48.
     while (h < 281474976710656u64) {
-        uint64 new_h = h * 2u64 + l / 9223372036854775808u64;
-        uint64 new_l = l * 2u64;
+        new_h: uint64 = h * 2u64 + l / 9223372036854775808u64;
+        new_l: uint64 = l * 2u64;
         h = new_h;
         l = new_l;
         count = count + 1u64;
@@ -146,12 +146,12 @@ uint64 f128_clz113(uint64 sig_hi, uint64 sig_lo) {
 
 // ---- Pack helpers ----
 
-float128 f128_pack(uint64 sign, uint64 exp, uint64 hisig, uint64 lo) {
-    uint64 hi = sign * 9223372036854775808u64 + exp * 281474976710656u64 + hisig;
+fn f128_pack(sign: uint64, exp: uint64, hisig: uint64, lo: uint64) -> float128 {
+    hi: uint64 = sign * 9223372036854775808u64 + exp * 281474976710656u64 + hisig;
     return f128_from_halves(lo, hi);
 }
 
-float128 f128_qnan() {
+fn f128_qnan() -> float128 {
     // Canonical quiet NaN: exp=0x7FFF, quiet bit set (bit 111 = bit 47 of hi_sig)
     // hi = 32767 * 2^48 + 2^47 = 9223090561878065152 + 140737488355328 = 9223231299366420480
     return f128_from_halves(0u64, 9223231299366420480u64);
@@ -159,27 +159,27 @@ float128 f128_qnan() {
 
 // ---- fs_rt_f128_add: correctly-rounded IEEE binary128 addition ----
 
-float128 fs_rt_f128_add(float128 a, float128 b) {
-    uint64 alo = f128_lo(a);
-    uint64 ahi = f128_hi(a);
-    uint64 blo = f128_lo(b);
-    uint64 bhi = f128_hi(b);
+fn fs_rt_f128_add(a: float128, b: float128) -> float128 {
+    alo: uint64 = f128_lo(a);
+    ahi: uint64 = f128_hi(a);
+    blo: uint64 = f128_lo(b);
+    bhi: uint64 = f128_hi(b);
 
     // NaN propagation.
     if (f128_is_nan(ahi, alo) || f128_is_nan(bhi, blo)) {
         return f128_qnan();
     }
 
-    uint64 a_sign = f128_ext_sign(ahi);
-    uint64 b_sign = f128_ext_sign(bhi);
-    uint64 a_exp  = f128_ext_exp(ahi);
-    uint64 b_exp  = f128_ext_exp(bhi);
-    uint64 a_hisig = f128_ext_hisig(ahi);
-    uint64 b_hisig = f128_ext_hisig(bhi);
+    a_sign: uint64 = f128_ext_sign(ahi);
+    b_sign: uint64 = f128_ext_sign(bhi);
+    a_exp: uint64  = f128_ext_exp(ahi);
+    b_exp: uint64  = f128_ext_exp(bhi);
+    a_hisig: uint64 = f128_ext_hisig(ahi);
+    b_hisig: uint64 = f128_ext_hisig(bhi);
 
     // Infinity cases.
-    bool a_inf = (a_exp == 32767u64) && (a_hisig == 0u64) && (alo == 0u64);
-    bool b_inf = (b_exp == 32767u64) && (b_hisig == 0u64) && (blo == 0u64);
+    a_inf: bool = (a_exp == 32767u64) && (a_hisig == 0u64) && (alo == 0u64);
+    b_inf: bool = (b_exp == 32767u64) && (b_hisig == 0u64) && (blo == 0u64);
     if (a_inf && b_inf) {
         if (a_sign != b_sign) { return f128_qnan(); }
         return f128_from_halves(alo, ahi);
@@ -188,8 +188,8 @@ float128 fs_rt_f128_add(float128 a, float128 b) {
     if (b_inf) { return f128_from_halves(blo, bhi); }
 
     // Zero cases.
-    bool a_zero = f128_is_zero(ahi, alo);
-    bool b_zero = f128_is_zero(bhi, blo);
+    a_zero: bool = f128_is_zero(ahi, alo);
+    b_zero: bool = f128_is_zero(bhi, blo);
     if (a_zero && b_zero) {
         if (a_sign == 1u64 && b_sign == 1u64) {
             return f128_from_halves(0u64, 9223372036854775808u64); // -0
@@ -200,26 +200,26 @@ float128 fs_rt_f128_add(float128 a, float128 b) {
     if (b_zero) { return f128_from_halves(alo, ahi); }
 
     // Build full significands with implicit leading 1 for normals.
-    bool a_sub = (a_exp == 0u64);
-    bool b_sub = (b_exp == 0u64);
+    a_sub: bool = (a_exp == 0u64);
+    b_sub: bool = (b_exp == 0u64);
 
-    uint64 as_hi = a_hisig;
+    as_hi: uint64 = a_hisig;
     if (!a_sub) { as_hi = a_hisig + 281474976710656u64; }
-    uint64 as_lo = alo;
-    uint64 bs_hi = b_hisig;
+    as_lo: uint64 = alo;
+    bs_hi: uint64 = b_hisig;
     if (!b_sub) { bs_hi = b_hisig + 281474976710656u64; }
-    uint64 bs_lo = blo;
+    bs_lo: uint64 = blo;
 
     // Effective exponent (subnormals use 1 instead of 0).
-    uint64 ae = a_exp;
+    ae: uint64 = a_exp;
     if (a_sub) { ae = 1u64; }
-    uint64 be = b_exp;
+    be: uint64 = b_exp;
     if (b_sub) { be = 1u64; }
 
     // Swap so a has the larger magnitude (for sign tracking).
-    uint64 res_sign = a_sign;
+    res_sign: uint64 = a_sign;
 
-    bool need_swap = false;
+    need_swap: bool = false;
     if (be > ae) {
         need_swap = true;
     } else if (be == ae) {
@@ -228,19 +228,19 @@ float128 fs_rt_f128_add(float128 a, float128 b) {
         }
     }
     if (need_swap) {
-        uint64 tmp_hi = as_hi; as_hi = bs_hi; bs_hi = tmp_hi;
-        uint64 tmp_lo = as_lo; as_lo = bs_lo; bs_lo = tmp_lo;
-        uint64 tmp_e  = ae;    ae = be;    be = tmp_e;
-        uint64 tmp_s  = a_sign; a_sign = b_sign; b_sign = tmp_s;
+        tmp_hi: uint64 = as_hi; as_hi = bs_hi; bs_hi = tmp_hi;
+        tmp_lo: uint64 = as_lo; as_lo = bs_lo; bs_lo = tmp_lo;
+        tmp_e: uint64  = ae;    ae = be;    be = tmp_e;
+        tmp_s: uint64  = a_sign; a_sign = b_sign; b_sign = tmp_s;
         res_sign = a_sign;
     }
 
-    bool do_sub = (a_sign != b_sign);
+    do_sub: bool = (a_sign != b_sign);
 
     // Align b's significand by right-shifting it by (ae - be) bits.
     // Accumulated rounding bits go into `extra` (64-bit sticky accumulator).
-    uint64 shift = ae - be;
-    uint64 extra = 0u64;
+    shift: uint64 = ae - be;
+    extra: uint64 = 0u64;
 
     if (shift >= 128u64) {
         if (bs_hi != 0u64 || bs_lo != 0u64) {
@@ -250,13 +250,13 @@ float128 fs_rt_f128_add(float128 a, float128 b) {
         bs_lo = 0u64;
     } else {
         // Shift using a loop (max 127 iterations; typical cases are < 120).
-        uint64 i = 0u64;
+        i: uint64 = 0u64;
         while (i < shift) {
-            uint64 out_bit = f128_shr1_out(bs_lo);
+            out_bit: uint64 = f128_shr1_out(bs_lo);
             // New extra: shift in the outgoing bit at the top, shift old extra down.
-            uint64 new_extra = out_bit * 9223372036854775808u64 + extra / 2u64;
-            uint64 new_lo = f128_shr1_lo(bs_hi, bs_lo);
-            uint64 new_hi = f128_shr1_hi(bs_hi);
+            new_extra: uint64 = out_bit * 9223372036854775808u64 + extra / 2u64;
+            new_lo: uint64 = f128_shr1_lo(bs_hi, bs_lo);
+            new_hi: uint64 = f128_shr1_hi(bs_hi);
             bs_hi = new_hi;
             bs_lo = new_lo;
             extra = new_extra;
@@ -265,9 +265,9 @@ float128 fs_rt_f128_add(float128 a, float128 b) {
     }
 
     // Compute result significand.
-    uint64 rs_hi = 0u64;
-    uint64 rs_lo = 0u64;
-    uint64 rs_extra = extra;
+    rs_hi: uint64 = 0u64;
+    rs_lo: uint64 = 0u64;
+    rs_extra: uint64 = extra;
 
     if (!do_sub) {
         // Same-sign addition.
@@ -275,13 +275,13 @@ float128 fs_rt_f128_add(float128 a, float128 b) {
         rs_hi = u128_add_hi(as_hi, as_lo, bs_hi, bs_lo);
         // Carry-out normalization: if rs_hi >= 2^49, shift right 1.
         if (rs_hi >= 562949953421312u64) {
-            uint64 out_bit = f128_shr1_out(rs_lo);
+            out_bit: uint64 = f128_shr1_out(rs_lo);
             rs_extra = out_bit * 9223372036854775808u64 + rs_extra / 2u64;
             rs_lo = f128_shr1_lo(rs_hi, rs_lo);
             rs_hi = f128_shr1_hi(rs_hi);
             ae = ae + 1u64;
             if (ae >= 32767u64) {
-                uint64 inf_hi = res_sign * 9223372036854775808u64 + 32767u64 * 281474976710656u64;
+                inf_hi: uint64 = res_sign * 9223372036854775808u64 + 32767u64 * 281474976710656u64;
                 return f128_from_halves(0u64, inf_hi);
             }
         }
@@ -290,17 +290,17 @@ float128 fs_rt_f128_add(float128 a, float128 b) {
         // The rounding bits in `extra` represent a fraction of b that was shifted out.
         // For subtraction, a non-zero extra means we need to borrow 1 ULP from
         // the significand difference, and the effective extra = 2^64 - extra.
-        uint64 extra_borrow = 0u64;
+        extra_borrow: uint64 = 0u64;
         if (extra != 0u64) {
             rs_extra = 0u64 - extra; // two's-complement negation of extra
             extra_borrow = 1u64;
         }
         // (as_hi,as_lo) - (bs_hi,bs_lo) - extra_borrow
-        uint64 lo_diff = as_lo - bs_lo;
-        uint64 borrow1 = 0u64;
+        lo_diff: uint64 = as_lo - bs_lo;
+        borrow1: uint64 = 0u64;
         if (as_lo < bs_lo) { borrow1 = 1u64; }
-        uint64 lo_diff2 = lo_diff - extra_borrow;
-        uint64 borrow2 = 0u64;
+        lo_diff2: uint64 = lo_diff - extra_borrow;
+        borrow2: uint64 = 0u64;
         if (lo_diff < extra_borrow) { borrow2 = 1u64; }
         rs_lo = lo_diff2;
         rs_hi = as_hi - bs_hi - borrow1 - borrow2;
@@ -315,7 +315,7 @@ float128 fs_rt_f128_add(float128 a, float128 b) {
     // After addition the result might have the leading 1 at bit 48 or above.
     // After subtraction it might have leading zeros.
     if (rs_hi < 281474976710656u64) {
-        uint64 lz = f128_clz113(rs_hi, rs_lo);
+        lz: uint64 = f128_clz113(rs_hi, rs_lo);
         if (lz < 200u64) {
             // Clamp left shift to avoid going below subnormal exponent.
             if (lz > ae) {
@@ -323,11 +323,11 @@ float128 fs_rt_f128_add(float128 a, float128 b) {
             }
             ae = ae - lz;
             // Left-shift (rs_hi, rs_lo) by lz bits, pulling from rs_extra.
-            uint64 j = 0u64;
+            j: uint64 = 0u64;
             while (j < lz) {
-                uint64 top_extra = rs_extra / 9223372036854775808u64;
+                top_extra: uint64 = rs_extra / 9223372036854775808u64;
                 rs_extra = rs_extra * 2u64;
-                uint64 top_lo = rs_lo / 9223372036854775808u64;
+                top_lo: uint64 = rs_lo / 9223372036854775808u64;
                 rs_lo = rs_lo * 2u64 + top_extra;
                 rs_hi = rs_hi * 2u64 + top_lo;
                 j = j + 1u64;
@@ -337,24 +337,24 @@ float128 fs_rt_f128_add(float128 a, float128 b) {
 
     // Handle any remaining carry (rs_hi >= 2^49 after the left-shift case somehow).
     while (rs_hi >= 562949953421312u64) {
-        uint64 out_bit = f128_shr1_out(rs_lo);
+        out_bit: uint64 = f128_shr1_out(rs_lo);
         rs_extra = out_bit * 9223372036854775808u64 + rs_extra / 2u64;
         rs_lo = f128_shr1_lo(rs_hi, rs_lo);
         rs_hi = f128_shr1_hi(rs_hi);
         ae = ae + 1u64;
         if (ae >= 32767u64) {
-            uint64 inf_hi = res_sign * 9223372036854775808u64 + 32767u64 * 281474976710656u64;
+            inf_hi: uint64 = res_sign * 9223372036854775808u64 + 32767u64 * 281474976710656u64;
             return f128_from_halves(0u64, inf_hi);
         }
     }
 
     // Round to nearest even.
     // rs_extra layout: bit 63 = guard, bits 62..0 = round+sticky combined.
-    uint64 guard = rs_extra / 9223372036854775808u64;
-    uint64 round_sticky = rs_extra % 9223372036854775808u64;
-    uint64 lsb = rs_lo % 2u64;
+    guard: uint64 = rs_extra / 9223372036854775808u64;
+    round_sticky: uint64 = rs_extra % 9223372036854775808u64;
+    lsb: uint64 = rs_lo % 2u64;
 
-    bool round_up = false;
+    round_up: bool = false;
     if (guard == 1u64) {
         if (round_sticky != 0u64) {
             round_up = true;
@@ -365,7 +365,7 @@ float128 fs_rt_f128_add(float128 a, float128 b) {
 
     if (round_up) {
         rs_lo = rs_lo + 1u64;
-        uint64 carry = 0u64;
+        carry: uint64 = 0u64;
         if (rs_lo == 0u64) { carry = 1u64; }
         rs_hi = rs_hi + carry;
         if (rs_hi >= 562949953421312u64) {
@@ -373,7 +373,7 @@ float128 fs_rt_f128_add(float128 a, float128 b) {
             rs_hi = f128_shr1_hi(rs_hi);
             ae = ae + 1u64;
             if (ae >= 32767u64) {
-                uint64 inf_hi = res_sign * 9223372036854775808u64 + 32767u64 * 281474976710656u64;
+                inf_hi: uint64 = res_sign * 9223372036854775808u64 + 32767u64 * 281474976710656u64;
                 return f128_from_halves(0u64, inf_hi);
             }
         }
@@ -382,8 +382,8 @@ float128 fs_rt_f128_add(float128 a, float128 b) {
     // Pack result.
     // For subnormal result (ae == 0): no implicit 1 to remove, exp = 0.
     // For normal result: remove implicit 1 from rs_hi.
-    uint64 final_exp = ae;
-    uint64 final_hisig = rs_hi;
+    final_exp: uint64 = ae;
+    final_hisig: uint64 = rs_hi;
     if (ae > 0u64 && rs_hi >= 281474976710656u64) {
         final_hisig = rs_hi - 281474976710656u64;
     } else {
@@ -395,29 +395,29 @@ float128 fs_rt_f128_add(float128 a, float128 b) {
 
 // ---- fs_rt_f128_sub: subtract via negating b and adding ----
 
-float128 fs_rt_f128_sub(float128 a, float128 b) {
-    uint64 bhi = f128_hi(b);
-    uint64 blo = f128_lo(b);
-    uint64 P2_63 = 9223372036854775808u64;
-    uint64 b_sign = bhi / P2_63;
-    uint64 new_bhi = 0u64;
+fn fs_rt_f128_sub(a: float128, b: float128) -> float128 {
+    bhi: uint64 = f128_hi(b);
+    blo: uint64 = f128_lo(b);
+    P2_63: uint64 = 9223372036854775808u64;
+    b_sign: uint64 = bhi / P2_63;
+    new_bhi: uint64 = 0u64;
     if (b_sign == 1u64) {
         new_bhi = bhi - P2_63;
     } else {
         new_bhi = bhi + P2_63;
     }
-    float128 neg_b = f128_from_halves(blo, new_bhi);
+    neg_b: float128 = f128_from_halves(blo, new_bhi);
     return fs_rt_f128_add(a, neg_b);
 }
 
 // ---- fs_rt_f128_neg: IEEE negation (flip sign bit, incl. zero/inf/nan) ----
 
-float128 fs_rt_f128_neg(float128 x) {
-    uint64 hi = f128_hi(x);
-    uint64 lo = f128_lo(x);
-    uint64 P2_63 = 9223372036854775808u64;
-    uint64 sign = hi / P2_63;
-    uint64 new_hi = 0u64;
+fn fs_rt_f128_neg(x: float128) -> float128 {
+    hi: uint64 = f128_hi(x);
+    lo: uint64 = f128_lo(x);
+    P2_63: uint64 = 9223372036854775808u64;
+    sign: uint64 = hi / P2_63;
+    new_hi: uint64 = 0u64;
     if (sign == 1u64) {
         new_hi = hi - P2_63;
     } else {
@@ -429,30 +429,30 @@ float128 fs_rt_f128_neg(float128 x) {
 // ---- mul / div helpers ----
 
 // High 64 bits of the full 128-bit product a*b (no shifts: 32-bit decomposition).
-uint64 f128_mul64hi(uint64 a, uint64 b) {
-    uint64 BASE = 4294967296u64; // 2^32
-    uint64 a_lo = a % BASE;
-    uint64 a_hi = a / BASE;
-    uint64 b_lo = b % BASE;
-    uint64 b_hi = b / BASE;
+fn f128_mul64hi(a: uint64, b: uint64) -> uint64 {
+    BASE: uint64 = 4294967296u64; // 2^32
+    a_lo: uint64 = a % BASE;
+    a_hi: uint64 = a / BASE;
+    b_lo: uint64 = b % BASE;
+    b_hi: uint64 = b / BASE;
 
-    uint64 ll = a_lo * b_lo;
-    uint64 lh = a_lo * b_hi;
-    uint64 hl = a_hi * b_lo;
-    uint64 hh = a_hi * b_hi;
+    ll: uint64 = a_lo * b_lo;
+    lh: uint64 = a_lo * b_hi;
+    hl: uint64 = a_hi * b_lo;
+    hh: uint64 = a_hi * b_hi;
 
-    uint64 mid = ll / BASE + (lh % BASE) + (hl % BASE);
+    mid: uint64 = ll / BASE + (lh % BASE) + (hl % BASE);
     return hh + lh / BASE + hl / BASE + mid / BASE;
 }
 
 // Left-shift a 113-bit significand (sh,sl) by k bits; helpers return the new hi/lo.
-uint64 f128_mul_shl_hi(uint64 sh, uint64 sl, uint64 k) {
-    uint64 h = sh;
-    uint64 l = sl;
-    uint64 i = 0u64;
+fn f128_mul_shl_hi(sh: uint64, sl: uint64, k: uint64) -> uint64 {
+    h: uint64 = sh;
+    l: uint64 = sl;
+    i: uint64 = 0u64;
     while (i < k) {
-        uint64 nh = h * 2u64 + l / 9223372036854775808u64;
-        uint64 nl = l * 2u64;
+        nh: uint64 = h * 2u64 + l / 9223372036854775808u64;
+        nl: uint64 = l * 2u64;
         h = nh;
         l = nl;
         i = i + 1u64;
@@ -460,13 +460,13 @@ uint64 f128_mul_shl_hi(uint64 sh, uint64 sl, uint64 k) {
     return h;
 }
 
-uint64 f128_mul_shl_lo(uint64 sh, uint64 sl, uint64 k) {
-    uint64 h = sh;
-    uint64 l = sl;
-    uint64 i = 0u64;
+fn f128_mul_shl_lo(sh: uint64, sl: uint64, k: uint64) -> uint64 {
+    h: uint64 = sh;
+    l: uint64 = sl;
+    i: uint64 = 0u64;
     while (i < k) {
-        uint64 nh = h * 2u64 + l / 9223372036854775808u64;
-        uint64 nl = l * 2u64;
+        nh: uint64 = h * 2u64 + l / 9223372036854775808u64;
+        nl: uint64 = l * 2u64;
         h = nh;
         l = nl;
         i = i + 1u64;
@@ -476,30 +476,30 @@ uint64 f128_mul_shl_lo(uint64 sh, uint64 sl, uint64 k) {
 
 // ---- fs_rt_f128_mul: correctly-rounded IEEE binary128 multiplication ----
 
-float128 fs_rt_f128_mul(float128 a, float128 b) {
-    uint64 alo = f128_lo(a);
-    uint64 ahi = f128_hi(a);
-    uint64 blo = f128_lo(b);
-    uint64 bhi = f128_hi(b);
+fn fs_rt_f128_mul(a: float128, b: float128) -> float128 {
+    alo: uint64 = f128_lo(a);
+    ahi: uint64 = f128_hi(a);
+    blo: uint64 = f128_lo(b);
+    bhi: uint64 = f128_hi(b);
 
-    uint64 P2_63 = 9223372036854775808u64; // 2^63
-    uint64 P2_48 = 281474976710656u64;     // 2^48
-    uint64 P2_49 = 562949953421312u64;     // 2^49
-    uint64 EXP_INF = 32767u64;
+    P2_63: uint64 = 9223372036854775808u64; // 2^63
+    P2_48: uint64 = 281474976710656u64;     // 2^48
+    P2_49: uint64 = 562949953421312u64;     // 2^49
+    EXP_INF: uint64 = 32767u64;
 
     // NaN propagation.
     if (f128_is_nan(ahi, alo) || f128_is_nan(bhi, blo)) {
         return f128_qnan();
     }
 
-    uint64 a_sign = f128_ext_sign(ahi);
-    uint64 b_sign = f128_ext_sign(bhi);
-    uint64 res_sign = (a_sign + b_sign) % 2u64; // sign_a XOR sign_b
+    a_sign: uint64 = f128_ext_sign(ahi);
+    b_sign: uint64 = f128_ext_sign(bhi);
+    res_sign: uint64 = (a_sign + b_sign) % 2u64; // sign_a XOR sign_b
 
-    bool a_inf = f128_is_inf_nonan(ahi, alo);
-    bool b_inf = f128_is_inf_nonan(bhi, blo);
-    bool a_zero = f128_is_zero(ahi, alo);
-    bool b_zero = f128_is_zero(bhi, blo);
+    a_inf: bool = f128_is_inf_nonan(ahi, alo);
+    b_inf: bool = f128_is_inf_nonan(bhi, blo);
+    a_zero: bool = f128_is_zero(ahi, alo);
+    b_zero: bool = f128_is_zero(bhi, blo);
 
     if (a_inf || b_inf) {
         // inf * 0 = NaN
@@ -514,16 +514,16 @@ float128 fs_rt_f128_mul(float128 a, float128 b) {
 
     // Build 113-bit significands and unbiased exponents.
     // value = M * 2^(E - 112), with M in [2^112, 2^113) after normalization.
-    uint64 a_exp = f128_ext_exp(ahi);
-    uint64 a_hisig = f128_ext_hisig(ahi);
-    uint64 b_exp = f128_ext_exp(bhi);
-    uint64 b_hisig = f128_ext_hisig(bhi);
+    a_exp: uint64 = f128_ext_exp(ahi);
+    a_hisig: uint64 = f128_ext_hisig(ahi);
+    b_exp: uint64 = f128_ext_exp(bhi);
+    b_hisig: uint64 = f128_ext_hisig(bhi);
 
-    uint64 ash = 0u64;
-    uint64 asl = 0u64;
-    int64 Ea = 0i64;
+    ash: uint64 = 0u64;
+    asl: uint64 = 0u64;
+    Ea: int64 = 0i64;
     if (a_exp == 0u64) {
-        uint64 k = f128_clz113(a_hisig, alo);
+        k: uint64 = f128_clz113(a_hisig, alo);
         ash = f128_mul_shl_hi(a_hisig, alo, k);
         asl = f128_mul_shl_lo(a_hisig, alo, k);
         Ea = 1i64 - 16383i64 - (k as int64);
@@ -533,11 +533,11 @@ float128 fs_rt_f128_mul(float128 a, float128 b) {
         Ea = (a_exp as int64) - 16383i64;
     }
 
-    uint64 bsh = 0u64;
-    uint64 bsl = 0u64;
-    int64 Eb = 0i64;
+    bsh: uint64 = 0u64;
+    bsl: uint64 = 0u64;
+    Eb: int64 = 0i64;
     if (b_exp == 0u64) {
-        uint64 k = f128_clz113(b_hisig, blo);
+        k: uint64 = f128_clz113(b_hisig, blo);
         bsh = f128_mul_shl_hi(b_hisig, blo, k);
         bsl = f128_mul_shl_lo(b_hisig, blo, k);
         Eb = 1i64 - 16383i64 - (k as int64);
@@ -548,64 +548,64 @@ float128 fs_rt_f128_mul(float128 a, float128 b) {
     }
 
     // 128x128 -> 256-bit product (p3,p2,p1,p0).
-    uint64 ll_lo = asl * bsl;
-    uint64 ll_hi = f128_mul64hi(asl, bsl);
-    uint64 lh_lo = asl * bsh;
-    uint64 lh_hi = f128_mul64hi(asl, bsh);
-    uint64 hl_lo = ash * bsl;
-    uint64 hl_hi = f128_mul64hi(ash, bsl);
-    uint64 hh_lo = ash * bsh;
-    uint64 hh_hi = f128_mul64hi(ash, bsh);
+    ll_lo: uint64 = asl * bsl;
+    ll_hi: uint64 = f128_mul64hi(asl, bsl);
+    lh_lo: uint64 = asl * bsh;
+    lh_hi: uint64 = f128_mul64hi(asl, bsh);
+    hl_lo: uint64 = ash * bsl;
+    hl_hi: uint64 = f128_mul64hi(ash, bsl);
+    hh_lo: uint64 = ash * bsh;
+    hh_hi: uint64 = f128_mul64hi(ash, bsh);
 
-    uint64 p0 = ll_lo;
-    uint64 s = ll_hi + lh_lo;
-    uint64 c1 = 0u64;
+    p0: uint64 = ll_lo;
+    s: uint64 = ll_hi + lh_lo;
+    c1: uint64 = 0u64;
     if (s < ll_hi) { c1 = 1u64; }
-    uint64 s2 = s + hl_lo;
-    uint64 c2 = 0u64;
+    s2: uint64 = s + hl_lo;
+    c2: uint64 = 0u64;
     if (s2 < s) { c2 = 1u64; }
-    uint64 p1 = s2;
-    uint64 carry1 = c1 + c2;
+    p1: uint64 = s2;
+    carry1: uint64 = c1 + c2;
 
-    uint64 t = lh_hi + hl_hi;
-    uint64 c3 = 0u64;
+    t: uint64 = lh_hi + hl_hi;
+    c3: uint64 = 0u64;
     if (t < lh_hi) { c3 = 1u64; }
-    uint64 t2 = t + hh_lo;
-    uint64 c4 = 0u64;
+    t2: uint64 = t + hh_lo;
+    c4: uint64 = 0u64;
     if (t2 < t) { c4 = 1u64; }
-    uint64 t3 = t2 + carry1;
-    uint64 c5 = 0u64;
+    t3: uint64 = t2 + carry1;
+    c5: uint64 = 0u64;
     if (t3 < t2) { c5 = 1u64; }
-    uint64 p2 = t3;
-    uint64 carry2 = c3 + c4 + c5;
-    uint64 p3 = hh_hi + carry2;
+    p2: uint64 = t3;
+    carry2: uint64 = c3 + c4 + c5;
+    p3: uint64 = hh_hi + carry2;
 
     // value = P * 2^pexp.
-    int64 pexp = Ea + Eb - 224i64;
+    pexp: int64 = Ea + Eb - 224i64;
 
     // Leading bit L of P (224 or 225). p3 holds bits[255:192];
     // bit 225 -> p3 bit 33 (2^33 = 8589934592).
-    int64 L = 224i64;
+    L: int64 = 224i64;
     if ((p3 / 8589934592u64) % 2u64 == 1u64) {
         L = 225i64;
     }
 
     // Unrounded biased exponent if normal.
-    int64 biased = L + pexp + 16383i64;
-    int64 shift_norm = L - 112i64;
-    int64 extra = 0i64;
+    biased: int64 = L + pexp + 16383i64;
+    shift_norm: int64 = L - 112i64;
+    extra: int64 = 0i64;
     if (biased < 1i64) {
         extra = 1i64 - biased;
     }
-    int64 total_shift = shift_norm + extra;
+    total_shift: int64 = shift_norm + extra;
     if (total_shift > 260i64) { total_shift = 260i64; }
 
     // Shift the 4-limb product right by total_shift, accumulating guard/sticky.
-    uint64 guard = 0u64;
-    uint64 sticky = 0u64;
-    int64 i = 0i64;
+    guard: uint64 = 0u64;
+    sticky: uint64 = 0u64;
+    i: int64 = 0i64;
     while (i < total_shift) {
-        uint64 out = p0 % 2u64;
+        out: uint64 = p0 % 2u64;
         if (sticky == 1u64 || guard == 1u64) { sticky = 1u64; } else { sticky = 0u64; }
         guard = out;
         p0 = p0 / 2u64 + (p1 % 2u64) * P2_63;
@@ -615,17 +615,17 @@ float128 fs_rt_f128_mul(float128 a, float128 b) {
         i = i + 1i64;
     }
 
-    uint64 Rh = p1;
-    uint64 Rl = p0;
+    Rh: uint64 = p1;
+    Rl: uint64 = p0;
 
     // Round to nearest even.
-    uint64 lsb = Rl % 2u64;
+    lsb: uint64 = Rl % 2u64;
     if (guard == 1u64 && (sticky == 1u64 || lsb == 1u64)) {
         Rl = Rl + 1u64;
         if (Rl == 0u64) { Rh = Rh + 1u64; }
     }
 
-    int64 out_exp = 0i64;
+    out_exp: int64 = 0i64;
     if (biased >= 1i64) { out_exp = biased; }
 
     // Rounding carry can push R to 2^113 (Rh reaches 2^49).
@@ -651,29 +651,29 @@ float128 fs_rt_f128_mul(float128 a, float128 b) {
 
 // ---- fs_rt_f128_div: correctly-rounded IEEE binary128 division ----
 
-float128 fs_rt_f128_div(float128 a, float128 b) {
-    uint64 alo = f128_lo(a);
-    uint64 ahi = f128_hi(a);
-    uint64 blo = f128_lo(b);
-    uint64 bhi = f128_hi(b);
+fn fs_rt_f128_div(a: float128, b: float128) -> float128 {
+    alo: uint64 = f128_lo(a);
+    ahi: uint64 = f128_hi(a);
+    blo: uint64 = f128_lo(b);
+    bhi: uint64 = f128_hi(b);
 
-    uint64 P2_63 = 9223372036854775808u64; // 2^63
-    uint64 P2_48 = 281474976710656u64;     // 2^48
-    uint64 P2_49 = 562949953421312u64;     // 2^49
-    uint64 EXP_INF = 32767u64;
+    P2_63: uint64 = 9223372036854775808u64; // 2^63
+    P2_48: uint64 = 281474976710656u64;     // 2^48
+    P2_49: uint64 = 562949953421312u64;     // 2^49
+    EXP_INF: uint64 = 32767u64;
 
     if (f128_is_nan(ahi, alo) || f128_is_nan(bhi, blo)) {
         return f128_qnan();
     }
 
-    uint64 a_sign = f128_ext_sign(ahi);
-    uint64 b_sign = f128_ext_sign(bhi);
-    uint64 res_sign = (a_sign + b_sign) % 2u64;
+    a_sign: uint64 = f128_ext_sign(ahi);
+    b_sign: uint64 = f128_ext_sign(bhi);
+    res_sign: uint64 = (a_sign + b_sign) % 2u64;
 
-    bool a_inf = f128_is_inf_nonan(ahi, alo);
-    bool b_inf = f128_is_inf_nonan(bhi, blo);
-    bool a_zero = f128_is_zero(ahi, alo);
-    bool b_zero = f128_is_zero(bhi, blo);
+    a_inf: bool = f128_is_inf_nonan(ahi, alo);
+    b_inf: bool = f128_is_inf_nonan(bhi, blo);
+    a_zero: bool = f128_is_zero(ahi, alo);
+    b_zero: bool = f128_is_zero(bhi, blo);
 
     if (a_inf && b_inf) { return f128_qnan(); }   // inf/inf = NaN
     if (a_zero && b_zero) { return f128_qnan(); }  // 0/0 = NaN
@@ -682,16 +682,16 @@ float128 fs_rt_f128_div(float128 a, float128 b) {
     if (b_zero) { return f128_pack(res_sign, EXP_INF, 0u64, 0u64); }   // finite/0 = inf
     if (a_zero) { return f128_pack(res_sign, 0u64, 0u64, 0u64); }      // 0/finite = 0
 
-    uint64 a_exp = f128_ext_exp(ahi);
-    uint64 a_hisig = f128_ext_hisig(ahi);
-    uint64 b_exp = f128_ext_exp(bhi);
-    uint64 b_hisig = f128_ext_hisig(bhi);
+    a_exp: uint64 = f128_ext_exp(ahi);
+    a_hisig: uint64 = f128_ext_hisig(ahi);
+    b_exp: uint64 = f128_ext_exp(bhi);
+    b_hisig: uint64 = f128_ext_hisig(bhi);
 
-    uint64 ash = 0u64;
-    uint64 asl = 0u64;
-    int64 Ea = 0i64;
+    ash: uint64 = 0u64;
+    asl: uint64 = 0u64;
+    Ea: int64 = 0i64;
     if (a_exp == 0u64) {
-        uint64 k = f128_clz113(a_hisig, alo);
+        k: uint64 = f128_clz113(a_hisig, alo);
         ash = f128_mul_shl_hi(a_hisig, alo, k);
         asl = f128_mul_shl_lo(a_hisig, alo, k);
         Ea = 1i64 - 16383i64 - (k as int64);
@@ -701,11 +701,11 @@ float128 fs_rt_f128_div(float128 a, float128 b) {
         Ea = (a_exp as int64) - 16383i64;
     }
 
-    uint64 bsh = 0u64;
-    uint64 bsl = 0u64;
-    int64 Eb = 0i64;
+    bsh: uint64 = 0u64;
+    bsl: uint64 = 0u64;
+    Eb: int64 = 0i64;
     if (b_exp == 0u64) {
-        uint64 k = f128_clz113(b_hisig, blo);
+        k: uint64 = f128_clz113(b_hisig, blo);
         bsh = f128_mul_shl_hi(b_hisig, blo, k);
         bsl = f128_mul_shl_lo(b_hisig, blo, k);
         Eb = 1i64 - 16383i64 - (k as int64);
@@ -717,91 +717,91 @@ float128 fs_rt_f128_div(float128 a, float128 b) {
 
     // Long division: Q = floor((Ma << S) / Mb), S = 115. Q has 114 or 115 bits.
     // Iterate over Ma's 128 bit positions then S zero bits, restoring division.
-    uint64 S = 115u64;
-    uint64 rem_h = 0u64;
-    uint64 rem_l = 0u64;
-    uint64 q_h = 0u64;
-    uint64 q_l = 0u64;
-    uint64 total = 128u64 + S;
-    uint64 it = 0u64;
+    S: uint64 = 115u64;
+    rem_h: uint64 = 0u64;
+    rem_l: uint64 = 0u64;
+    q_h: uint64 = 0u64;
+    q_l: uint64 = 0u64;
+    total: uint64 = 128u64 + S;
+    it: uint64 = 0u64;
     while (it < total) {
         // next bit of Ma (MSB first), then zeros.
-        uint64 nb = 0u64;
+        nb: uint64 = 0u64;
         if (it < 128u64) {
-            uint64 bp = 127u64 - it;
+            bp: uint64 = 127u64 - it;
             if (bp >= 64u64) {
-                uint64 sh = bp - 64u64;
-                uint64 divisor = 1u64;
-                uint64 j = 0u64;
+                sh: uint64 = bp - 64u64;
+                divisor: uint64 = 1u64;
+                j: uint64 = 0u64;
                 while (j < sh) { divisor = divisor * 2u64; j = j + 1u64; }
                 nb = (ash / divisor) % 2u64;
             } else {
-                uint64 divisor = 1u64;
-                uint64 j = 0u64;
+                divisor: uint64 = 1u64;
+                j: uint64 = 0u64;
                 while (j < bp) { divisor = divisor * 2u64; j = j + 1u64; }
                 nb = (asl / divisor) % 2u64;
             }
         }
         // rem = (rem << 1) | nb
-        uint64 nrh = rem_h * 2u64 + rem_l / P2_63;
-        uint64 nrl = rem_l * 2u64 + nb;
+        nrh: uint64 = rem_h * 2u64 + rem_l / P2_63;
+        nrl: uint64 = rem_l * 2u64 + nb;
         rem_h = nrh;
         rem_l = nrl;
         // if rem >= Mb: rem -= Mb; qbit = 1
-        uint64 qb = 0u64;
-        bool ge = true;
+        qb: uint64 = 0u64;
+        ge: bool = true;
         if (rem_h < bsh) { ge = false; }
         else if (rem_h == bsh && rem_l < bsl) { ge = false; }
         if (ge) {
-            uint64 borrow = 0u64;
+            borrow: uint64 = 0u64;
             if (rem_l < bsl) { borrow = 1u64; }
-            uint64 dlo = rem_l - bsl;
+            dlo: uint64 = rem_l - bsl;
             rem_h = rem_h - bsh - borrow;
             rem_l = dlo;
             qb = 1u64;
         }
         // q = (q << 1) | qb
-        uint64 nqh = q_h * 2u64 + q_l / P2_63;
-        uint64 nql = q_l * 2u64 + qb;
+        nqh: uint64 = q_h * 2u64 + q_l / P2_63;
+        nql: uint64 = q_l * 2u64 + qb;
         q_h = nqh;
         q_l = nql;
         it = it + 1u64;
     }
 
-    uint64 rem_nz = 0u64;
+    rem_nz: uint64 = 0u64;
     if (rem_h != 0u64 || rem_l != 0u64) { rem_nz = 1u64; }
 
-    int64 qexp = Ea - Eb - (S as int64);
+    qexp: int64 = Ea - Eb - (S as int64);
 
     // Leading bit L of Q (Q in (2^113, 2^115)). Find highest set bit of (q_h,q_l).
-    int64 L = 0i64;
+    L: int64 = 0i64;
     if (q_h != 0u64) {
-        uint64 v = q_h;
-        int64 pos = 64i64;
+        v: uint64 = q_h;
+        pos: int64 = 64i64;
         while (v >= 2u64) { v = v / 2u64; pos = pos + 1i64; }
         L = pos;
     } else {
-        uint64 v = q_l;
-        int64 pos = 0i64;
+        v: uint64 = q_l;
+        pos: int64 = 0i64;
         while (v >= 2u64) { v = v / 2u64; pos = pos + 1i64; }
         L = pos;
     }
 
-    int64 biased = L + qexp + 16383i64;
-    int64 shift_norm = L - 112i64;
-    int64 extra = 0i64;
+    biased: int64 = L + qexp + 16383i64;
+    shift_norm: int64 = L - 112i64;
+    extra: int64 = 0i64;
     if (biased < 1i64) {
         extra = 1i64 - biased;
     }
-    int64 total_shift = shift_norm + extra;
+    total_shift: int64 = shift_norm + extra;
     if (total_shift > 260i64) { total_shift = 260i64; }
 
     // Shift Q (in q_h:q_l) right by total_shift with guard/sticky.
-    uint64 guard = 0u64;
-    uint64 sticky = rem_nz; // remainder feeds sticky.
-    int64 i = 0i64;
+    guard: uint64 = 0u64;
+    sticky: uint64 = rem_nz; // remainder feeds sticky.
+    i: int64 = 0i64;
     while (i < total_shift) {
-        uint64 out = q_l % 2u64;
+        out: uint64 = q_l % 2u64;
         if (sticky == 1u64 || guard == 1u64) { sticky = 1u64; } else { sticky = 0u64; }
         guard = out;
         q_l = q_l / 2u64 + (q_h % 2u64) * P2_63;
@@ -809,16 +809,16 @@ float128 fs_rt_f128_div(float128 a, float128 b) {
         i = i + 1i64;
     }
 
-    uint64 Rh = q_h;
-    uint64 Rl = q_l;
+    Rh: uint64 = q_h;
+    Rl: uint64 = q_l;
 
-    uint64 lsb = Rl % 2u64;
+    lsb: uint64 = Rl % 2u64;
     if (guard == 1u64 && (sticky == 1u64 || lsb == 1u64)) {
         Rl = Rl + 1u64;
         if (Rl == 0u64) { Rh = Rh + 1u64; }
     }
 
-    int64 out_exp = 0i64;
+    out_exp: int64 = 0i64;
     if (biased >= 1i64) { out_exp = biased; }
 
     if (Rh >= P2_49) {
@@ -843,20 +843,20 @@ float128 fs_rt_f128_div(float128 a, float128 b) {
 // ---- Comparison helper: unsigned magnitude comparison ----
 
 // True if |a| < |b| (ignoring sign bits).
-bool f128_mag_lt(uint64 ahi, uint64 alo, uint64 bhi, uint64 blo) {
-    uint64 P2_63 = 9223372036854775808u64;
-    uint64 am = ahi % P2_63;
-    uint64 bm = bhi % P2_63;
+fn f128_mag_lt(ahi: uint64, alo: uint64, bhi: uint64, blo: uint64) -> bool {
+    P2_63: uint64 = 9223372036854775808u64;
+    am: uint64 = ahi % P2_63;
+    bm: uint64 = bhi % P2_63;
     if (am < bm) { return true; }
     if (am > bm) { return false; }
     return alo < blo;
 }
 
 // True if |a| > |b|.
-bool f128_mag_gt(uint64 ahi, uint64 alo, uint64 bhi, uint64 blo) {
-    uint64 P2_63 = 9223372036854775808u64;
-    uint64 am = ahi % P2_63;
-    uint64 bm = bhi % P2_63;
+fn f128_mag_gt(ahi: uint64, alo: uint64, bhi: uint64, blo: uint64) -> bool {
+    P2_63: uint64 = 9223372036854775808u64;
+    am: uint64 = ahi % P2_63;
+    bm: uint64 = bhi % P2_63;
     if (am > bm) { return true; }
     if (am < bm) { return false; }
     return alo > blo;
@@ -864,49 +864,49 @@ bool f128_mag_gt(uint64 ahi, uint64 alo, uint64 bhi, uint64 blo) {
 
 // ---- Comparisons ----
 
-bool fs_rt_f128_eq(float128 a, float128 b) {
-    uint64 alo = f128_lo(a);
-    uint64 ahi = f128_hi(a);
-    uint64 blo = f128_lo(b);
-    uint64 bhi = f128_hi(b);
+fn fs_rt_f128_eq(a: float128, b: float128) -> bool {
+    alo: uint64 = f128_lo(a);
+    ahi: uint64 = f128_hi(a);
+    blo: uint64 = f128_lo(b);
+    bhi: uint64 = f128_hi(b);
 
     if (f128_is_nan(ahi, alo) || f128_is_nan(bhi, blo)) { return false; }
 
-    bool a_zero = f128_is_zero(ahi, alo);
-    bool b_zero = f128_is_zero(bhi, blo);
+    a_zero: bool = f128_is_zero(ahi, alo);
+    b_zero: bool = f128_is_zero(bhi, blo);
     if (a_zero && b_zero) { return true; }
 
     return alo == blo && ahi == bhi;
 }
 
-bool fs_rt_f128_ne(float128 a, float128 b) {
-    uint64 alo = f128_lo(a);
-    uint64 ahi = f128_hi(a);
-    uint64 blo = f128_lo(b);
-    uint64 bhi = f128_hi(b);
+fn fs_rt_f128_ne(a: float128, b: float128) -> bool {
+    alo: uint64 = f128_lo(a);
+    ahi: uint64 = f128_hi(a);
+    blo: uint64 = f128_lo(b);
+    bhi: uint64 = f128_hi(b);
 
     if (f128_is_nan(ahi, alo) || f128_is_nan(bhi, blo)) { return true; }
 
-    bool a_zero = f128_is_zero(ahi, alo);
-    bool b_zero = f128_is_zero(bhi, blo);
+    a_zero: bool = f128_is_zero(ahi, alo);
+    b_zero: bool = f128_is_zero(bhi, blo);
     if (a_zero && b_zero) { return false; }
 
     return alo != blo || ahi != bhi;
 }
 
-bool fs_rt_f128_lt(float128 a, float128 b) {
-    uint64 alo = f128_lo(a);
-    uint64 ahi = f128_hi(a);
-    uint64 blo = f128_lo(b);
-    uint64 bhi = f128_hi(b);
+fn fs_rt_f128_lt(a: float128, b: float128) -> bool {
+    alo: uint64 = f128_lo(a);
+    ahi: uint64 = f128_hi(a);
+    blo: uint64 = f128_lo(b);
+    bhi: uint64 = f128_hi(b);
 
     if (f128_is_nan(ahi, alo) || f128_is_nan(bhi, blo)) { return false; }
 
-    uint64 a_sign = f128_ext_sign(ahi);
-    uint64 b_sign = f128_ext_sign(bhi);
+    a_sign: uint64 = f128_ext_sign(ahi);
+    b_sign: uint64 = f128_ext_sign(bhi);
 
-    bool a_zero = f128_is_zero(ahi, alo);
-    bool b_zero = f128_is_zero(bhi, blo);
+    a_zero: bool = f128_is_zero(ahi, alo);
+    b_zero: bool = f128_is_zero(bhi, blo);
     if (a_zero && b_zero) { return false; }
 
     if (a_sign != b_sign) {
@@ -919,19 +919,19 @@ bool fs_rt_f128_lt(float128 a, float128 b) {
     }
 }
 
-bool fs_rt_f128_le(float128 a, float128 b) {
-    uint64 alo = f128_lo(a);
-    uint64 ahi = f128_hi(a);
-    uint64 blo = f128_lo(b);
-    uint64 bhi = f128_hi(b);
+fn fs_rt_f128_le(a: float128, b: float128) -> bool {
+    alo: uint64 = f128_lo(a);
+    ahi: uint64 = f128_hi(a);
+    blo: uint64 = f128_lo(b);
+    bhi: uint64 = f128_hi(b);
 
     if (f128_is_nan(ahi, alo) || f128_is_nan(bhi, blo)) { return false; }
 
-    uint64 a_sign = f128_ext_sign(ahi);
-    uint64 b_sign = f128_ext_sign(bhi);
+    a_sign: uint64 = f128_ext_sign(ahi);
+    b_sign: uint64 = f128_ext_sign(bhi);
 
-    bool a_zero = f128_is_zero(ahi, alo);
-    bool b_zero = f128_is_zero(bhi, blo);
+    a_zero: bool = f128_is_zero(ahi, alo);
+    b_zero: bool = f128_is_zero(bhi, blo);
     if (a_zero && b_zero) { return true; }
 
     if (a_sign != b_sign) {
@@ -944,11 +944,11 @@ bool fs_rt_f128_le(float128 a, float128 b) {
     }
 }
 
-bool fs_rt_f128_gt(float128 a, float128 b) {
+fn fs_rt_f128_gt(a: float128, b: float128) -> bool {
     return fs_rt_f128_lt(b, a);
 }
 
-bool fs_rt_f128_ge(float128 a, float128 b) {
+fn fs_rt_f128_ge(a: float128, b: float128) -> bool {
     return fs_rt_f128_le(b, a);
 }
 
@@ -970,30 +970,30 @@ bool fs_rt_f128_ge(float128 a, float128 b) {
 
 // Right-shift a 128-bit value (hi,lo) by k bits (0 <= k <= 64), return the lo
 // 64 bits of the result.  hi part is dropped above bit 63 of the result.
-uint64 f128_shr_lo(uint64 hi, uint64 lo, uint64 k) {
+fn f128_shr_lo(hi: uint64, lo: uint64, k: uint64) -> uint64 {
     if (k == 0u64) {
         return lo;
     }
     if (k >= 64u64) {
         // Shift hi down by (k-64); only meaningful when result still fits.
-        uint64 kk = k - 64u64;
+        kk: uint64 = k - 64u64;
         if (kk >= 64u64) {
             return 0u64;
         }
         return hi / rt_pow2(kk);
     }
-    uint64 p = rt_pow2(k);
-    uint64 low = lo / p;
+    p: uint64 = rt_pow2(k);
+    low: uint64 = lo / p;
     // bits pulled down from hi occupy the top k bits.
-    uint64 hi_low = hi % p;             // low k bits of hi
-    uint64 shifted_in = hi_low * rt_pow2(64u64 - k);
+    hi_low: uint64 = hi % p;             // low k bits of hi
+    shifted_in: uint64 = hi_low * rt_pow2(64u64 - k);
     return low + shifted_in;
 }
 
 // 2^k for 0 <= k <= 63 (k==64 returns 0 by wrap; callers avoid that).
-uint64 rt_pow2(uint64 k) {
-    uint64 r = 1u64;
-    uint64 i = 0u64;
+fn rt_pow2(k: uint64) -> uint64 {
+    r: uint64 = 1u64;
+    i: uint64 = 0u64;
     while (i < k) {
         r = r * 2u64;
         i = i + 1u64;
@@ -1007,24 +1007,24 @@ uint64 rt_pow2(uint64 k) {
 // runtime free path ignores untracked pointers, so this is leak-safe but the
 // blocks are not auto-freed (acceptable for conversion outputs).
 
-uint64 f128_raw_alloc(uint64 n) {
+fn f128_raw_alloc(n: uint64) -> uint64 {
     if (n == 0u64) { n = 1u64; }
-    uint64 heap = win_get_process_heap();
+    heap: uint64 = win_get_process_heap();
     return win_heap_alloc(heap, 8u32, n);   // 8 = HEAP_ZERO_MEMORY
 }
 
-void f128_raw_free(uint64 p) {
-    uint64 heap = win_get_process_heap();
+fn f128_raw_free(p: uint64) -> void {
+    heap: uint64 = win_get_process_heap();
     win_heap_free(heap, 0u32, p);
 }
 
 // Duplicate a short literal into a fresh heap block (for "nan"/"inf"/"-inf").
-string f128_str_dup(string s) {
-    uint64 src = str_to_addr(s);
-    uint64 len = 0u64;
+fn f128_str_dup(s: string) -> string {
+    src: uint64 = str_to_addr(s);
+    len: uint64 = 0u64;
     while (mem_load_u8(src + len) != 0u8) { len = len + 1u64; }
-    uint64 dst = f128_raw_alloc(len + 1u64);
-    uint64 i = 0u64;
+    dst: uint64 = f128_raw_alloc(len + 1u64);
+    i: uint64 = 0u64;
     while (i < len) {
         mem_store_u8(dst + i, mem_load_u8(src + i));
         i = i + 1u64;
@@ -1035,25 +1035,25 @@ string f128_str_dup(string s) {
 
 // ---- integer -> float128 ----
 
-float128 fs_rt_u64_to_f128(uint64 x) {
+fn fs_rt_u64_to_f128(x: uint64) -> float128 {
     if (x == 0u64) {
         return f128_from_halves(0u64, 0u64);
     }
     // Find the position of the leading 1 (bitlen-1).
-    uint64 lead = 0u64;
-    uint64 t = x;
+    lead: uint64 = 0u64;
+    t: uint64 = x;
     while (t > 1u64) {
         t = t / 2u64;
         lead = lead + 1u64;
     }
     // value = x = 1.f * 2^lead ; exp = bias + lead.
-    uint64 exp = 16383u64 + lead;
+    exp: uint64 = 16383u64 + lead;
     // Significand (113-bit) = x placed with leading bit at position 112.
     // We need x << (112 - lead) as a 128-bit value, then drop the implicit 1.
     // x has (lead+1) bits; shifting left by (112-lead) puts leading bit at 112.
-    uint64 sh = 112u64 - lead;
-    uint64 hi_sig = 0u64;
-    uint64 lo_sig = 0u64;
+    sh: uint64 = 112u64 - lead;
+    hi_sig: uint64 = 0u64;
+    lo_sig: uint64 = 0u64;
     if (sh >= 64u64) {
         // All of x moves into the hi half.
         hi_sig = x * rt_pow2(sh - 64u64);
@@ -1066,16 +1066,16 @@ float128 fs_rt_u64_to_f128(uint64 x) {
         hi_sig = x / rt_pow2(64u64 - sh);
     }
     // Drop implicit 1: hi_sig currently has bit (112-64)=48 set.
-    uint64 hisig_field = hi_sig % 281474976710656u64;  // low 48 bits
+    hisig_field: uint64 = hi_sig % 281474976710656u64;  // low 48 bits
     return f128_pack(0u64, exp, hisig_field, lo_sig);
 }
 
-float128 fs_rt_i64_to_f128(int64 x) {
+fn fs_rt_i64_to_f128(x: int64) -> float128 {
     if (x == 0i64) {
         return f128_from_halves(0u64, 0u64);
     }
-    uint64 mag = 0u64;
-    uint64 sign = 0u64;
+    mag: uint64 = 0u64;
+    sign: uint64 = 0u64;
     if (x < 0i64) {
         sign = 1u64;
         // Negate carefully (handles INT64_MIN): mag = 2^64 - (uint64)x.
@@ -1083,10 +1083,10 @@ float128 fs_rt_i64_to_f128(int64 x) {
     } else {
         mag = x as uint64;
     }
-    float128 pos = fs_rt_u64_to_f128(mag);
+    pos: float128 = fs_rt_u64_to_f128(mag);
     if (sign == 1u64) {
-        uint64 phi = f128_hi(pos);
-        uint64 plo = f128_lo(pos);
+        phi: uint64 = f128_hi(pos);
+        plo: uint64 = f128_lo(pos);
         return f128_from_halves(plo, phi + 9223372036854775808u64);
     }
     return pos;
@@ -1096,53 +1096,53 @@ float128 fs_rt_i64_to_f128(int64 x) {
 
 // Magnitude integer part as u64 (low 64 bits). Assumes value is finite and
 // |value| >= 1. Returns the truncated integer magnitude mod 2^64.
-uint64 f128_trunc_mag(uint64 exp, uint64 hisig, uint64 lo) {
-    uint64 e = exp - 16383u64;            // unbiased exponent >= 0
+fn f128_trunc_mag(exp: uint64, hisig: uint64, lo: uint64) -> uint64 {
+    e: uint64 = exp - 16383u64;            // unbiased exponent >= 0
     // Full significand (1.f) as 128-bit: hi = hisig + 2^48, lo = lo.
-    uint64 sig_hi = hisig + 281474976710656u64;
-    uint64 sig_lo = lo;
+    sig_hi: uint64 = hisig + 281474976710656u64;
+    sig_lo: uint64 = lo;
     // Integer part = significand >> (112 - e).
     if (e >= 112u64) {
         // Shift left by (e - 112): result mod 2^64.
-        uint64 sl = e - 112u64;
+        sl: uint64 = e - 112u64;
         if (sl >= 64u64) {
             return 0u64;  // entire value shifted out of 64-bit window
         }
         // low 64 bits of (sig << sl):
-        uint64 from_lo = sig_lo * rt_pow2(sl);
-        uint64 from_hi = sig_hi * rt_pow2(sl);
-        uint64 carry_in = sig_lo / rt_pow2(64u64 - sl);
+        from_lo: uint64 = sig_lo * rt_pow2(sl);
+        from_hi: uint64 = sig_hi * rt_pow2(sl);
+        carry_in: uint64 = sig_lo / rt_pow2(64u64 - sl);
         return from_lo;  // only low 64 bits matter for the i64/u64 result
     }
-    uint64 k = 112u64 - e;                // 0 < k <= 112
+    k: uint64 = 112u64 - e;                // 0 < k <= 112
     return f128_shr_lo(sig_hi, sig_lo, k);
 }
 
-int64 fs_rt_f128_to_i64(float128 x) {
-    uint64 hi = f128_hi(x);
-    uint64 lo = f128_lo(x);
+fn fs_rt_f128_to_i64(x: float128) -> int64 {
+    hi: uint64 = f128_hi(x);
+    lo: uint64 = f128_lo(x);
     if (f128_is_nan(hi, lo)) { return 0i64; }
-    uint64 exp = f128_ext_exp(hi);
-    uint64 hisig = f128_ext_hisig(hi);
-    uint64 sign = f128_ext_sign(hi);
+    exp: uint64 = f128_ext_exp(hi);
+    hisig: uint64 = f128_ext_hisig(hi);
+    sign: uint64 = f128_ext_sign(hi);
     // Infinity -> 0.
     if (exp == 32767u64) { return 0i64; }
     // |value| < 1 -> 0.
     if (exp < 16383u64) { return 0i64; }
-    uint64 mag = f128_trunc_mag(exp, hisig, lo);
+    mag: uint64 = f128_trunc_mag(exp, hisig, lo);
     if (sign == 1u64) {
         return (0u64 - mag) as int64;
     }
     return mag as int64;
 }
 
-uint64 fs_rt_f128_to_u64(float128 x) {
-    uint64 hi = f128_hi(x);
-    uint64 lo = f128_lo(x);
+fn fs_rt_f128_to_u64(x: float128) -> uint64 {
+    hi: uint64 = f128_hi(x);
+    lo: uint64 = f128_lo(x);
     if (f128_is_nan(hi, lo)) { return 0u64; }
-    uint64 exp = f128_ext_exp(hi);
-    uint64 hisig = f128_ext_hisig(hi);
-    uint64 sign = f128_ext_sign(hi);
+    exp: uint64 = f128_ext_exp(hi);
+    hisig: uint64 = f128_ext_hisig(hi);
+    sign: uint64 = f128_ext_sign(hi);
     if (exp == 32767u64) { return 0u64; }   // inf
     if (sign == 1u64) { return 0u64; }       // negative -> 0
     if (exp < 16383u64) { return 0u64; }     // |value| < 1
@@ -1151,12 +1151,12 @@ uint64 fs_rt_f128_to_u64(float128 x) {
 
 // ---- float64 -> float128 (exact) ----
 
-float128 fs_rt_f64_to_f128(float64 x) {
-    uint64 bits = f64_bits(x);
-    uint64 sign = bits / 9223372036854775808u64;
-    uint64 exp64 = (bits / 4503599627370496u64) % 2048u64;
-    uint64 sig64 = bits % 4503599627370496u64;
-    uint64 sign_hi = sign * 9223372036854775808u64;
+fn fs_rt_f64_to_f128(x: float64) -> float128 {
+    bits: uint64 = f64_bits(x);
+    sign: uint64 = bits / 9223372036854775808u64;
+    exp64: uint64 = (bits / 4503599627370496u64) % 2048u64;
+    sig64: uint64 = bits % 4503599627370496u64;
+    sign_hi: uint64 = sign * 9223372036854775808u64;
 
     if (exp64 == 2047u64) {
         if (sig64 != 0u64) {
@@ -1167,18 +1167,18 @@ float128 fs_rt_f64_to_f128(float64 x) {
             // sig64 << 60: low 4 bits of sig64 go to lo top, rest to hi.
             // sig64 * 2^60 spans 128 bits: contribution to hi (bits 64..) =
             // sig64 / 2^4 ; contribution to lo = (sig64 % 2^4) * 2^60.
-            uint64 add_hi = sig64 / 16u64;
-            uint64 add_lo = (sig64 % 16u64) * 1152921504606846976u64; // 2^60
+            add_hi: uint64 = sig64 / 16u64;
+            add_lo: uint64 = (sig64 % 16u64) * 1152921504606846976u64; // 2^60
             // OR-in the quiet bit (bit 47 of the hi field) without carrying.
-            uint64 quiet = 140737488355328u64;   // 2^47
+            quiet: uint64 = 140737488355328u64;   // 2^47
             if ((add_hi / quiet) % 2u64 == 0u64) {
                 add_hi = add_hi + quiet;
             }
-            uint64 hi = sign_hi + 32767u64 * 281474976710656u64 + add_hi % 281474976710656u64;
+            hi: uint64 = sign_hi + 32767u64 * 281474976710656u64 + add_hi % 281474976710656u64;
             return f128_from_halves(add_lo, hi);
         }
         // Infinity.
-        uint64 hi = sign_hi + 32767u64 * 281474976710656u64;
+        hi: uint64 = sign_hi + 32767u64 * 281474976710656u64;
         return f128_from_halves(0u64, hi);
     }
 
@@ -1187,19 +1187,19 @@ float128 fs_rt_f64_to_f128(float64 x) {
             return f128_from_halves(0u64, sign_hi);  // +/-0
         }
         // Subnormal f64 = sig64 * 2^(-1074). Normalize into a f128 normal.
-        uint64 lead = 0u64;
-        uint64 t = sig64;
+        lead: uint64 = 0u64;
+        t: uint64 = sig64;
         while (t > 1u64) {
             t = t / 2u64;
             lead = lead + 1u64;
         }
         // value = sig64 * 2^(-1074); biased exp = (lead - 1074) + 16383.
-        uint64 new_exp = (lead + 16383u64) - 1074u64;
+        new_exp: uint64 = (lead + 16383u64) - 1074u64;
         // new_sig = (sig64 - 2^lead) << (112 - lead), placed at bit 112.
-        uint64 frac = sig64 - rt_pow2(lead);
-        uint64 sh = 112u64 - lead;
-        uint64 hi_sig = 0u64;
-        uint64 lo_sig = 0u64;
+        frac: uint64 = sig64 - rt_pow2(lead);
+        sh: uint64 = 112u64 - lead;
+        hi_sig: uint64 = 0u64;
+        lo_sig: uint64 = 0u64;
         if (sh >= 64u64) {
             hi_sig = frac * rt_pow2(sh - 64u64);
         } else if (sh == 0u64) {
@@ -1208,16 +1208,16 @@ float128 fs_rt_f64_to_f128(float64 x) {
             lo_sig = frac * rt_pow2(sh);
             hi_sig = frac / rt_pow2(64u64 - sh);
         }
-        uint64 hi = sign_hi + new_exp * 281474976710656u64 + hi_sig % 281474976710656u64;
+        hi: uint64 = sign_hi + new_exp * 281474976710656u64 + hi_sig % 281474976710656u64;
         return f128_from_halves(lo_sig, hi);
     }
 
     // Normal f64: exp128 = (exp64 - 1023) + 16383 = exp64 + 15360.
-    uint64 new_exp = exp64 + 15360u64;
+    new_exp: uint64 = exp64 + 15360u64;
     // new_sig = sig64 << 60 (112 - 52 = 60).
-    uint64 add_hi = sig64 / 16u64;                          // sig64 >> 4
-    uint64 add_lo = (sig64 % 16u64) * 1152921504606846976u64; // (sig64 & 15) << 60
-    uint64 hi = sign_hi + new_exp * 281474976710656u64 + add_hi % 281474976710656u64;
+    add_hi: uint64 = sig64 / 16u64;                          // sig64 >> 4
+    add_lo: uint64 = (sig64 % 16u64) * 1152921504606846976u64; // (sig64 & 15) << 60
+    hi: uint64 = sign_hi + new_exp * 281474976710656u64 + add_hi % 281474976710656u64;
     return f128_from_halves(add_lo, hi);
 }
 
@@ -1227,21 +1227,21 @@ float128 fs_rt_f64_to_f128(float64 x) {
 // and then reconstruct the float64 value arithmetically (powers of two are
 // exact in binary64). NaN -> canonical qNaN; inf/overflow -> +/-inf.
 
-float64 rt_f64_from_fields(uint64 sign, uint64 exp64, uint64 sig64) {
+fn rt_f64_from_fields(sign: uint64, exp64: uint64, sig64: uint64) -> float64 {
     // Special encodings produced via arithmetic.
     if (exp64 == 2047u64) {
-        float64 big = 1.0e300;
-        float64 inf = big * big;        // +inf
+        big: float64 = 1.0e300;
+        inf: float64 = big * big;        // +inf
         if (sig64 != 0u64) {
-            float64 z = 0.0;
+            z: float64 = 0.0;
             return z / z;               // nan
         }
         if (sign == 1u64) { return -inf; }
         return inf;
     }
     // Build mantissa magnitude.
-    float64 mant = 0.0;
-    float64 e = 0.0;        // unbiased binary exponent applied to mant
+    mant: float64 = 0.0;
+    e: float64 = 0.0;        // unbiased binary exponent applied to mant
     if (exp64 == 0u64) {
         // Subnormal/zero: value = sig64 * 2^(-1074).
         mant = (sig64 as int64) as float64;
@@ -1252,24 +1252,24 @@ float64 rt_f64_from_fields(uint64 sign, uint64 exp64, uint64 sig64) {
         e = ((exp64 as int64) as float64) - 1075.0;
     }
     // Scale by 2^e via exact repeated multiply/divide by 2.
-    float64 val = mant;
+    val: float64 = mant;
     if (e >= 0.0) {
-        int64 k = e as int64;
+        k: int64 = e as int64;
         while (k > 0i64) { val = val * 2.0; k = k - 1i64; }
     } else {
-        int64 k = (-e) as int64;
+        k: int64 = (-e) as int64;
         while (k > 0i64) { val = val / 2.0; k = k - 1i64; }
     }
     if (sign == 1u64) { return -val; }
     return val;
 }
 
-float64 fs_rt_f128_to_f64(float128 x) {
-    uint64 hi = f128_hi(x);
-    uint64 lo = f128_lo(x);
-    uint64 sign = f128_ext_sign(hi);
-    uint64 exp = f128_ext_exp(hi);
-    uint64 hisig = f128_ext_hisig(hi);
+fn fs_rt_f128_to_f64(x: float128) -> float64 {
+    hi: uint64 = f128_hi(x);
+    lo: uint64 = f128_lo(x);
+    sign: uint64 = f128_ext_sign(hi);
+    exp: uint64 = f128_ext_exp(hi);
+    hisig: uint64 = f128_ext_hisig(hi);
 
     if (f128_is_nan(hi, lo)) {
         return rt_f64_from_fields(0u64, 2047u64, 1u64);  // canonical qNaN
@@ -1284,11 +1284,11 @@ float64 fs_rt_f128_to_f64(float128 x) {
     // Unbiased binary exponent E of the value (1.f * 2^E for normals).
     // For subnormals exp==0 -> effective exponent (1-16383) with leading 0.
     // We work with the full significand and its top set bit.
-    uint64 sig_hi = hisig;
-    int64 E = 0i64;
+    sig_hi: uint64 = hisig;
+    E: int64 = 0i64;
     if (exp == 0u64) {
         // Subnormal f128: value = sig * 2^(1-16383-112). Find leading bit.
-        uint64 cl = f128_clz113(hisig, lo);   // shifts to bring lead to bit 48
+        cl: uint64 = f128_clz113(hisig, lo);   // shifts to bring lead to bit 48
         // leading bit position = 112 - cl ; E = (leadpos) + (1 - 16383 - 112)
         // = (112 - cl) - 16494 = -16382 - cl.
         E = (-16382i64) - (cl as int64);
@@ -1309,13 +1309,13 @@ float64 fs_rt_f128_to_f64(float128 x) {
 
     // Build the 113-bit significand integer aligned with leading 1 at bit 112.
     // For normals it already is. For subnormals, left-shift so leading 1 at 112.
-    uint64 s_hi = sig_hi;
-    uint64 s_lo = lo;
+    s_hi: uint64 = sig_hi;
+    s_lo: uint64 = lo;
     if (exp == 0u64) {
-        uint64 cl = f128_clz113(hisig, lo);
-        uint64 j = 0u64;
+        cl: uint64 = f128_clz113(hisig, lo);
+        j: uint64 = 0u64;
         while (j < cl) {
-            uint64 top_lo = s_lo / 9223372036854775808u64;
+            top_lo: uint64 = s_lo / 9223372036854775808u64;
             s_lo = s_lo * 2u64;
             s_hi = s_hi * 2u64 + top_lo;
             j = j + 1u64;
@@ -1332,8 +1332,8 @@ float64 fs_rt_f128_to_f64(float128 x) {
     // For a normal f64 result, we keep 52 fraction bits => drop 60 bits.
     // For a subnormal f64 result, we keep fewer bits (the value is shifted so
     // that its exponent is fixed at -1074): drop = 60 + (-1022 - E).
-    int64 drop = 60i64;
-    bool subnormal = false;
+    drop: int64 = 60i64;
+    subnormal: bool = false;
     if (E < -1022i64) {
         subnormal = true;
         drop = 60i64 + ((-1022i64) - E);   // extra bits to drop
@@ -1341,18 +1341,18 @@ float64 fs_rt_f128_to_f64(float128 x) {
 
     // full integer significand value M = 2^112 + (s_hi,s_lo)  (113-bit)
     // We want round(M / 2^drop) with RNE, then it has (113 - drop) bits.
-    uint64 m_hi = s_hi + 281474976710656u64;  // add implicit 1 at bit 112
-    uint64 m_lo = s_lo;
+    m_hi: uint64 = s_hi + 281474976710656u64;  // add implicit 1 at bit 112
+    m_lo: uint64 = s_lo;
 
     // Round M (128-bit, really 113-bit) right by `drop` bits, RNE.
-    uint64 r_hi = m_hi;
-    uint64 r_lo = m_lo;
-    uint64 guard = 0u64;
-    uint64 sticky = 0u64;
-    int64 d = drop;
+    r_hi: uint64 = m_hi;
+    r_lo: uint64 = m_lo;
+    guard: uint64 = 0u64;
+    sticky: uint64 = 0u64;
+    d: int64 = drop;
     // Shift right one bit at a time, tracking guard (last out) and sticky.
     while (d > 0i64) {
-        uint64 out = r_lo % 2u64;
+        out: uint64 = r_lo % 2u64;
         if (guard == 1u64) {
             // previous guard becomes sticky
             sticky = sticky + 1u64;
@@ -1360,13 +1360,13 @@ float64 fs_rt_f128_to_f64(float128 x) {
         }
         guard = out;
         // r >>= 1
-        uint64 newlo = (r_hi % 2u64) * 9223372036854775808u64 + r_lo / 2u64;
+        newlo: uint64 = (r_hi % 2u64) * 9223372036854775808u64 + r_lo / 2u64;
         r_hi = r_hi / 2u64;
         r_lo = newlo;
         d = d - 1i64;
     }
     // Apply RNE: round up if guard==1 and (sticky!=0 or lsb of r is 1).
-    bool round_up = false;
+    round_up: bool = false;
     if (guard == 1u64) {
         if (sticky != 0u64) {
             round_up = true;
@@ -1383,21 +1383,21 @@ float64 fs_rt_f128_to_f64(float128 x) {
     if (subnormal) {
         // r is the 52-bit (or fewer) significand at exponent -1074.
         // If it carried up to 2^52, it becomes the smallest normal.
-        uint64 sig = r_lo;     // fits in <= 53 bits, hi is 0
+        sig: uint64 = r_lo;     // fits in <= 53 bits, hi is 0
         if (r_hi != 0u64) {
             // r >= 2^64; only possible if extremely close to normal boundary
             sig = r_lo;        // low 64 bits; high bit handled below
         }
         if (sig >= 4503599627370496u64) {
             // carried into normal range -> exponent 1, sig low 52 bits
-            uint64 frac = sig - 4503599627370496u64;
+            frac: uint64 = sig - 4503599627370496u64;
             return rt_f64_from_fields(sign, 1u64, frac);
         }
         return rt_f64_from_fields(sign, 0u64, sig);
     } else {
         // Normal: r has 53 bits (leading 1 at bit 52) unless rounding carried.
-        uint64 sig = r_lo;
-        int64 ebias = E + 1023i64;
+        sig: uint64 = r_lo;
+        ebias: int64 = E + 1023i64;
         if (sig >= 9007199254740992u64) {
             // carried to 2^53 -> shift right one, bump exponent.
             sig = sig / 2u64;
@@ -1410,7 +1410,7 @@ float64 fs_rt_f128_to_f64(float128 x) {
             // Shouldn't happen given subnormal branch, but guard anyway.
             return rt_f64_from_fields(sign, 0u64, 0u64);
         }
-        uint64 frac = sig - 4503599627370496u64;  // drop implicit 1 (2^52)
+        frac: uint64 = sig - 4503599627370496u64;  // drop implicit 1 (2^52)
         return rt_f64_from_fields(sign, ebias as uint64, frac);
     }
 }
@@ -1433,37 +1433,37 @@ float64 fs_rt_f128_to_f64(float128 x) {
 // Sizing: max |2^16384| ~ 4933 integer digits; min subnormal 2^-16494 ~ 16494
 // fraction digits.  ANCHOR = 16 + 5024; total buffer = 16 + 5024 + 16640.
 
-uint64 RT_F128_ANCHOR_OFF() { return 5040u64; }   // 16 + 5024
+fn RT_F128_ANCHOR_OFF() -> uint64 { return 5040u64; }   // 16 + 5024
 
 // Lay down the decimal digits of a 128-bit integer (hi,lo), most significant
 // first, ending just before `anchor`. Returns int_len.
-uint64 rt_u128_decimal_digits(uint64 hi, uint64 lo, uint64 anchor) {
-    uint64 int_len = 0u64;
-    uint64 h = hi;
-    uint64 l = lo;
+fn rt_u128_decimal_digits(hi: uint64, lo: uint64, anchor: uint64) -> uint64 {
+    int_len: uint64 = 0u64;
+    h: uint64 = hi;
+    l: uint64 = lo;
     if (h == 0u64 && l == 0u64) {
         return 0u64;
     }
     while (h != 0u64 || l != 0u64) {
         // divmod (h,l) by 10.
-        uint64 rem = 0u64;
+        rem: uint64 = 0u64;
         // process hi then lo: combine 128-bit / 10.
         // hi part:
-        uint64 hq = h / 10u64;
-        uint64 hr = h % 10u64;
+        hq: uint64 = h / 10u64;
+        hr: uint64 = h % 10u64;
         // bring hr into the low part: value = hr * 2^64 + l.
         // We need (hr * 2^64 + l) / 10 and remainder.
         // 2^64 = 10 * 1844674407370955161 + 6.  Use long division by splitting.
         // Compute q_lo and r over 128-bit (hr (<10), l).
         // Use: total = hr*2^64 + l. Do it via two 32-bit-ish chunks to avoid
         // overflow: split l into high/low 32 bits.
-        uint64 high = hr * 4294967296u64 + l / 4294967296u64;  // top 96..32 bits worth
-        uint64 q1 = high / 10u64;
-        uint64 r1 = high % 10u64;
-        uint64 low = r1 * 4294967296u64 + l % 4294967296u64;
-        uint64 q0 = low / 10u64;
-        uint64 r0 = low % 10u64;
-        uint64 lq = q1 * 4294967296u64 + q0;
+        high: uint64 = hr * 4294967296u64 + l / 4294967296u64;  // top 96..32 bits worth
+        q1: uint64 = high / 10u64;
+        r1: uint64 = high % 10u64;
+        low: uint64 = r1 * 4294967296u64 + l % 4294967296u64;
+        q0: uint64 = low / 10u64;
+        r0: uint64 = low % 10u64;
+        lq: uint64 = q1 * 4294967296u64 + q0;
         rem = r0;
         h = hq;
         l = lq;
@@ -1474,18 +1474,18 @@ uint64 rt_u128_decimal_digits(uint64 hi, uint64 lo, uint64 anchor) {
 }
 
 // Build the exact decimal expansion buffer for M * 2^bexp.
-uint64 rt_f128_decimal(uint64 mant_hi, uint64 mant_lo, int64 bexp) {
-    uint64 buf = f128_raw_alloc(16u64 + 5024u64 + 16640u64 + 16u64);
-    uint64 anchor = buf + RT_F128_ANCHOR_OFF();
-    uint64 int_len = rt_u128_decimal_digits(mant_hi, mant_lo, anchor);
-    uint64 frac_len = 0u64;
+fn rt_f128_decimal(mant_hi: uint64, mant_lo: uint64, bexp: int64) -> uint64 {
+    buf: uint64 = f128_raw_alloc(16u64 + 5024u64 + 16640u64 + 16u64);
+    anchor: uint64 = buf + RT_F128_ANCHOR_OFF();
+    int_len: uint64 = rt_u128_decimal_digits(mant_hi, mant_lo, anchor);
+    frac_len: uint64 = 0u64;
 
     while (bexp > 0i64) {
-        uint64 carry = 0u64;
-        uint64 i = frac_len;
+        carry: uint64 = 0u64;
+        i: uint64 = frac_len;
         while (i > 0u64) {
-            uint64 idx = anchor + i - 1u64;
-            uint64 d = (mem_load_u8(idx) as uint64) * 2u64 + carry;
+            idx: uint64 = anchor + i - 1u64;
+            d: uint64 = (mem_load_u8(idx) as uint64) * 2u64 + carry;
             mem_store_u8(idx, (d % 10u64) as uint8);
             carry = d / 10u64;
             i = i - 1u64;
@@ -1493,10 +1493,10 @@ uint64 rt_f128_decimal(uint64 mant_hi, uint64 mant_lo, int64 bexp) {
         while (frac_len > 0u64 && mem_load_u8(anchor + frac_len - 1u64) == 0u8) {
             frac_len = frac_len - 1u64;
         }
-        uint64 j = 0u64;
+        j: uint64 = 0u64;
         while (j < int_len) {
-            uint64 idx2 = anchor - 1u64 - j;
-            uint64 d2 = (mem_load_u8(idx2) as uint64) * 2u64 + carry;
+            idx2: uint64 = anchor - 1u64 - j;
+            d2: uint64 = (mem_load_u8(idx2) as uint64) * 2u64 + carry;
             mem_store_u8(idx2, (d2 % 10u64) as uint8);
             carry = d2 / 10u64;
             j = j + 1u64;
@@ -1513,14 +1513,14 @@ uint64 rt_f128_decimal(uint64 mant_hi, uint64 mant_lo, int64 bexp) {
     // We cap the materialized fraction at FRAC_CAP digits and fold any further
     // nonzero tail into a sticky marker on the last kept digit, which preserves
     // round-half-to-even at 6 fraction digits.
-    uint64 FRAC_CAP = 24u64;
-    bool tail_sticky = false;
+    FRAC_CAP: uint64 = 24u64;
+    tail_sticky: bool = false;
     while (bexp < 0i64) {
-        uint64 rem = 0u64;
-        uint64 i2 = 0u64;
+        rem: uint64 = 0u64;
+        i2: uint64 = 0u64;
         while (i2 < int_len) {
-            uint64 idx3 = anchor - int_len + i2;
-            uint64 cur = rem * 10u64 + (mem_load_u8(idx3) as uint64);
+            idx3: uint64 = anchor - int_len + i2;
+            cur: uint64 = rem * 10u64 + (mem_load_u8(idx3) as uint64);
             mem_store_u8(idx3, (cur / 2u64) as uint8);
             rem = cur % 2u64;
             i2 = i2 + 1u64;
@@ -1528,10 +1528,10 @@ uint64 rt_f128_decimal(uint64 mant_hi, uint64 mant_lo, int64 bexp) {
         while (int_len > 0u64 && mem_load_u8(anchor - int_len) == 0u8) {
             int_len = int_len - 1u64;
         }
-        uint64 k = 0u64;
+        k: uint64 = 0u64;
         while (k < frac_len) {
-            uint64 idx4 = anchor + k;
-            uint64 cur2 = rem * 10u64 + (mem_load_u8(idx4) as uint64);
+            idx4: uint64 = anchor + k;
+            cur2: uint64 = rem * 10u64 + (mem_load_u8(idx4) as uint64);
             mem_store_u8(idx4, (cur2 / 2u64) as uint8);
             rem = cur2 % 2u64;
             k = k + 1u64;
@@ -1549,8 +1549,8 @@ uint64 rt_f128_decimal(uint64 mant_hi, uint64 mant_lo, int64 bexp) {
     if (tail_sticky && frac_len > 0u64) {
         // Force the last kept fraction digit odd so the "more nonzero follows"
         // check during rounding sees a tail. (Only matters far past 6 digits.)
-        uint64 last = anchor + frac_len - 1u64;
-        uint8 dv = mem_load_u8(last);
+        last: uint64 = anchor + frac_len - 1u64;
+        dv: uint8 = mem_load_u8(last);
         if (dv % 2u8 == 0u8) {
             mem_store_u8(last, dv + 1u8);
         }
@@ -1562,20 +1562,20 @@ uint64 rt_f128_decimal(uint64 mant_hi, uint64 mant_lo, int64 bexp) {
 
 // Round the digit array at `keep` fraction digits, round-half-to-even.
 // Returns new int_len (carry may add a leading integer digit).
-uint64 rt_f128_round_frac(uint64 buf, uint64 keep) {
-    uint64 anchor = buf + RT_F128_ANCHOR_OFF();
-    uint64 int_len = mem_load_u64(buf);
-    uint64 frac_len = mem_load_u64(buf + 8u64);
+fn rt_f128_round_frac(buf: uint64, keep: uint64) -> uint64 {
+    anchor: uint64 = buf + RT_F128_ANCHOR_OFF();
+    int_len: uint64 = mem_load_u64(buf);
+    frac_len: uint64 = mem_load_u64(buf + 8u64);
     if (frac_len <= keep) {
         return int_len;
     }
-    uint8 next = mem_load_u8(anchor + keep);
-    bool round_up = false;
+    next: uint8 = mem_load_u8(anchor + keep);
+    round_up: bool = false;
     if (next > 5u8) {
         round_up = true;
     } else if (next == 5u8) {
-        bool more = false;
-        uint64 i = keep + 1u64;
+        more: bool = false;
+        i: uint64 = keep + 1u64;
         while (i < frac_len) {
             if (mem_load_u8(anchor + i) != 0u8) {
                 more = true;
@@ -1586,7 +1586,7 @@ uint64 rt_f128_round_frac(uint64 buf, uint64 keep) {
         if (more) {
             round_up = true;
         } else {
-            uint8 prev = 0u8;
+            prev: uint8 = 0u8;
             if (keep > 0u64) {
                 prev = mem_load_u8(anchor + keep - 1u64);
             } else if (int_len > 0u64) {
@@ -1598,11 +1598,11 @@ uint64 rt_f128_round_frac(uint64 buf, uint64 keep) {
         }
     }
     if (round_up) {
-        uint64 j = keep;
-        bool carry = true;
+        j: uint64 = keep;
+        carry: bool = true;
         while (j > 0u64 && carry) {
-            uint64 idx = anchor + j - 1u64;
-            uint8 d = mem_load_u8(idx) + 1u8;
+            idx: uint64 = anchor + j - 1u64;
+            d: uint8 = mem_load_u8(idx) + 1u8;
             if (d == 10u8) {
                 mem_store_u8(idx, 0u8);
             } else {
@@ -1611,10 +1611,10 @@ uint64 rt_f128_round_frac(uint64 buf, uint64 keep) {
             }
             j = j - 1u64;
         }
-        uint64 k = 0u64;
+        k: uint64 = 0u64;
         while (k < int_len && carry) {
-            uint64 idx2 = anchor - 1u64 - k;
-            uint8 d2 = mem_load_u8(idx2) + 1u8;
+            idx2: uint64 = anchor - 1u64 - k;
+            d2: uint8 = mem_load_u8(idx2) + 1u8;
             if (d2 == 10u8) {
                 mem_store_u8(idx2, 0u8);
             } else {
@@ -1635,13 +1635,13 @@ uint64 rt_f128_round_frac(uint64 buf, uint64 keep) {
 
 // ---- float128 -> string : printf "%f" (fixed, 6 fraction digits) ----
 
-string fs_rt_f128_to_str(float128 x) {
-    uint64 hi = f128_hi(x);
-    uint64 lo = f128_lo(x);
-    uint64 sign = f128_ext_sign(hi);
-    uint64 exp = f128_ext_exp(hi);
-    uint64 hisig = f128_ext_hisig(hi);
-    bool negative = sign == 1u64;
+fn fs_rt_f128_to_str(x: float128) -> string {
+    hi: uint64 = f128_hi(x);
+    lo: uint64 = f128_lo(x);
+    sign: uint64 = f128_ext_sign(hi);
+    exp: uint64 = f128_ext_exp(hi);
+    hisig: uint64 = f128_ext_hisig(hi);
+    negative: bool = sign == 1u64;
 
     if (exp == 32767u64) {
         if (hisig != 0u64 || lo != 0u64) {
@@ -1652,8 +1652,8 @@ string fs_rt_f128_to_str(float128 x) {
     }
 
     // Significand integer M and binary exponent bexp such that value = M*2^bexp.
-    uint64 mant_hi = hisig;
-    int64 bexp = 0i64;
+    mant_hi: uint64 = hisig;
+    bexp: int64 = 0i64;
     if (exp == 0u64) {
         // Subnormal/zero: M = sig, bexp = 1 - 16383 - 112 = -16494.
         bexp = -16494i64;
@@ -1663,16 +1663,16 @@ string fs_rt_f128_to_str(float128 x) {
         bexp = (exp as int64) - 16495i64;
     }
 
-    uint64 dec = rt_f128_decimal(mant_hi, lo, bexp);
-    uint64 anchor = dec + RT_F128_ANCHOR_OFF();
-    uint64 int_len = rt_f128_round_frac(dec, 6u64);
-    uint64 frac_len = mem_load_u64(dec + 8u64);
+    dec: uint64 = rt_f128_decimal(mant_hi, lo, bexp);
+    anchor: uint64 = dec + RT_F128_ANCHOR_OFF();
+    int_len: uint64 = rt_f128_round_frac(dec, 6u64);
+    frac_len: uint64 = mem_load_u64(dec + 8u64);
 
-    uint64 out_len = int_len + 8u64;
+    out_len: uint64 = int_len + 8u64;
     if (int_len == 0u64) { out_len = out_len + 1u64; }
     if (negative) { out_len = out_len + 1u64; }
-    uint64 out = f128_raw_alloc(out_len + 1u64);
-    uint64 pos = 0u64;
+    out: uint64 = f128_raw_alloc(out_len + 1u64);
+    pos: uint64 = 0u64;
     if (negative) {
         mem_store_u8(out + pos, 45u8);
         pos = pos + 1u64;
@@ -1681,7 +1681,7 @@ string fs_rt_f128_to_str(float128 x) {
         mem_store_u8(out + pos, 48u8);
         pos = pos + 1u64;
     } else {
-        uint64 i = 0u64;
+        i: uint64 = 0u64;
         while (i < int_len) {
             mem_store_u8(out + pos, mem_load_u8(anchor - int_len + i) + 48u8);
             pos = pos + 1u64;
@@ -1690,9 +1690,9 @@ string fs_rt_f128_to_str(float128 x) {
     }
     mem_store_u8(out + pos, 46u8);
     pos = pos + 1u64;
-    uint64 f = 0u64;
+    f: uint64 = 0u64;
     while (f < 6u64) {
-        uint8 d = 0u8;
+        d: uint8 = 0u8;
         if (f < frac_len) {
             d = mem_load_u8(anchor + f);
         }
@@ -1722,38 +1722,38 @@ string fs_rt_f128_to_str(float128 x) {
 // A bignum lives at a base address: [0]=len (u64, number of 32-bit limbs),
 // followed by len u32 limbs stored as u64 each (8 bytes) for simplicity.
 
-uint64 bn_alloc(uint64 cap_limbs) {
-    uint64 b = f128_raw_alloc(8u64 + cap_limbs * 8u64);
+fn bn_alloc(cap_limbs: uint64) -> uint64 {
+    b: uint64 = f128_raw_alloc(8u64 + cap_limbs * 8u64);
     mem_store_u64(b, 0u64);
     return b;
 }
 
-uint64 bn_len(uint64 b) { return mem_load_u64(b); }
+fn bn_len(b: uint64) -> uint64 { return mem_load_u64(b); }
 
-uint64 bn_limb(uint64 b, uint64 i) {
+fn bn_limb(b: uint64, i: uint64) -> uint64 {
     return mem_load_u64(b + 8u64 + i * 8u64);
 }
 
-void bn_set_limb(uint64 b, uint64 i, uint64 v) {
+fn bn_set_limb(b: uint64, i: uint64, v: uint64) -> void {
     mem_store_u64(b + 8u64 + i * 8u64, v % 4294967296u64);
 }
 
-void bn_set_len(uint64 b, uint64 n) { mem_store_u64(b, n); }
+fn bn_set_len(b: uint64, n: uint64) -> void { mem_store_u64(b, n); }
 
-void bn_normalize(uint64 b) {
-    uint64 n = bn_len(b);
+fn bn_normalize(b: uint64) -> void {
+    n: uint64 = bn_len(b);
     while (n > 0u64 && bn_limb(b, n - 1u64) == 0u64) {
         n = n - 1u64;
     }
     bn_set_len(b, n);
 }
 
-bool bn_is_zero(uint64 b) {
+fn bn_is_zero(b: uint64) -> bool {
     return bn_len(b) == 0u64;
 }
 
 // b = small integer value.
-void bn_set_small(uint64 b, uint64 v) {
+fn bn_set_small(b: uint64, v: uint64) -> void {
     bn_set_limb(b, 0u64, v % 4294967296u64);
     bn_set_limb(b, 1u64, v / 4294967296u64);
     bn_set_len(b, 2u64);
@@ -1761,12 +1761,12 @@ void bn_set_small(uint64 b, uint64 v) {
 }
 
 // b = b * m + add, where m,add < 2^32.
-void bn_mul_add_small(uint64 b, uint64 m, uint64 add) {
-    uint64 n = bn_len(b);
-    uint64 carry = add;
-    uint64 i = 0u64;
+fn bn_mul_add_small(b: uint64, m: uint64, add: uint64) -> void {
+    n: uint64 = bn_len(b);
+    carry: uint64 = add;
+    i: uint64 = 0u64;
     while (i < n) {
-        uint64 cur = bn_limb(b, i) * m + carry;
+        cur: uint64 = bn_limb(b, i) * m + carry;
         bn_set_limb(b, i, cur % 4294967296u64);
         carry = cur / 4294967296u64;
         i = i + 1u64;
@@ -1780,20 +1780,20 @@ void bn_mul_add_small(uint64 b, uint64 m, uint64 add) {
 }
 
 // b = b * 2.
-void bn_mul2(uint64 b) {
+fn bn_mul2(b: uint64) -> void {
     bn_mul_add_small(b, 2u64, 0u64);
 }
 
 // Compare a and b: 1 if a>b, -1 if a<b, 0 equal.
-int64 bn_cmp(uint64 a, uint64 b) {
-    uint64 la = bn_len(a);
-    uint64 lb = bn_len(b);
+fn bn_cmp(a: uint64, b: uint64) -> int64 {
+    la: uint64 = bn_len(a);
+    lb: uint64 = bn_len(b);
     if (la > lb) { return 1i64; }
     if (la < lb) { return -1i64; }
-    uint64 i = la;
+    i: uint64 = la;
     while (i > 0u64) {
-        uint64 av = bn_limb(a, i - 1u64);
-        uint64 bv = bn_limb(b, i - 1u64);
+        av: uint64 = bn_limb(a, i - 1u64);
+        bv: uint64 = bn_limb(b, i - 1u64);
         if (av > bv) { return 1i64; }
         if (av < bv) { return -1i64; }
         i = i - 1u64;
@@ -1802,19 +1802,19 @@ int64 bn_cmp(uint64 a, uint64 b) {
 }
 
 // a = a - b  (requires a >= b).
-void bn_sub(uint64 a, uint64 b) {
-    uint64 la = bn_len(a);
-    uint64 lb = bn_len(b);
-    uint64 borrow = 0u64;
-    uint64 i = 0u64;
+fn bn_sub(a: uint64, b: uint64) -> void {
+    la: uint64 = bn_len(a);
+    lb: uint64 = bn_len(b);
+    borrow: uint64 = 0u64;
+    i: uint64 = 0u64;
     while (i < la) {
-        uint64 av = bn_limb(a, i);
-        uint64 bv = 0u64;
+        av: uint64 = bn_limb(a, i);
+        bv: uint64 = 0u64;
         if (i < lb) { bv = bn_limb(b, i); }
-        uint64 sub = av;
-        uint64 nb = 0u64;
+        sub: uint64 = av;
+        nb: uint64 = 0u64;
         // av - bv - borrow with base 2^32.
-        uint64 rhs = bv + borrow;
+        rhs: uint64 = bv + borrow;
         if (av < rhs) {
             sub = av + 4294967296u64 - rhs;
             nb = 1u64;
@@ -1830,9 +1830,9 @@ void bn_sub(uint64 a, uint64 b) {
 }
 
 // dst = src (copy), dst must have capacity.
-void bn_copy(uint64 dst, uint64 src) {
-    uint64 n = bn_len(src);
-    uint64 i = 0u64;
+fn bn_copy(dst: uint64, src: uint64) -> void {
+    n: uint64 = bn_len(src);
+    i: uint64 = 0u64;
     while (i < n) {
         bn_set_limb(dst, i, bn_limb(src, i));
         i = i + 1u64;
@@ -1841,11 +1841,11 @@ void bn_copy(uint64 dst, uint64 src) {
 }
 
 // Bit length of a bignum (0 for zero).
-int64 bn_bitlen(uint64 b) {
-    uint64 n = bn_len(b);
+fn bn_bitlen(b: uint64) -> int64 {
+    n: uint64 = bn_len(b);
     if (n == 0u64) { return 0i64; }
-    uint64 top = bn_limb(b, n - 1u64);
-    int64 bits = ((n - 1u64) as int64) * 32i64;
+    top: uint64 = bn_limb(b, n - 1u64);
+    bits: int64 = ((n - 1u64) as int64) * 32i64;
     while (top > 0u64) {
         bits = bits + 1i64;
         top = top / 2u64;
@@ -1854,28 +1854,28 @@ int64 bn_bitlen(uint64 b) {
 }
 
 // Test bit `pos` of bignum (0-indexed from LSB).
-uint64 bn_test_bit(uint64 b, int64 pos) {
-    uint64 limb = (pos as uint64) / 32u64;
+fn bn_test_bit(b: uint64, pos: int64) -> uint64 {
+    limb: uint64 = (pos as uint64) / 32u64;
     if (limb >= bn_len(b)) { return 0u64; }
-    uint64 bit = (pos as uint64) % 32u64;
-    uint64 v = bn_limb(b, limb);
+    bit: uint64 = (pos as uint64) % 32u64;
+    v: uint64 = bn_limb(b, limb);
     return (v / rt_pow2(bit)) % 2u64;
 }
 
 // q = floor(n / d), r = n - q*d.  Binary long division (MSB to LSB).
 // Set bit `pos` of q to 1 (q grows as needed).
-void bn_set_bit(uint64 q, int64 pos) {
-    uint64 limb = (pos as uint64) / 32u64;
-    uint64 bit = (pos as uint64) % 32u64;
-    uint64 cur_len = bn_len(q);
+fn bn_set_bit(q: uint64, pos: int64) -> void {
+    limb: uint64 = (pos as uint64) / 32u64;
+    bit: uint64 = (pos as uint64) % 32u64;
+    cur_len: uint64 = bn_len(q);
     while (cur_len <= limb) {
         bn_set_limb(q, cur_len, 0u64);
         cur_len = cur_len + 1u64;
     }
     bn_set_len(q, cur_len);
-    uint64 v = bn_limb(q, limb);
+    v: uint64 = bn_limb(q, limb);
     // set bit `bit`
-    uint64 mask = rt_pow2(bit);
+    mask: uint64 = rt_pow2(bit);
     if ((v / mask) % 2u64 == 0u64) {
         v = v + mask;
     }
@@ -1883,11 +1883,11 @@ void bn_set_bit(uint64 q, int64 pos) {
 }
 
 // q and r must be distinct preallocated bignums with adequate capacity.
-void bn_divmod(uint64 n, uint64 d, uint64 q, uint64 r) {
+fn bn_divmod(n: uint64, d: uint64, q: uint64, r: uint64) -> void {
     bn_set_len(q, 0u64);
     bn_set_len(r, 0u64);
-    int64 nb = bn_bitlen(n);
-    int64 i = nb - 1i64;
+    nb: int64 = bn_bitlen(n);
+    i: int64 = nb - 1i64;
     while (i >= 0i64) {
         // r = r*2 + bit_i(n)
         bn_mul2(r);
@@ -1906,17 +1906,17 @@ void bn_divmod(uint64 n, uint64 d, uint64 q, uint64 r) {
 
 // Extract low 128 bits of a bignum into (hi,lo) via out-params is unavailable;
 // return lo half, and provide bn_hi128 for the hi half.
-uint64 bn_lo128(uint64 b) {
-    uint64 n = bn_len(b);
-    uint64 l0 = 0u64; uint64 l1 = 0u64;
+fn bn_lo128(b: uint64) -> uint64 {
+    n: uint64 = bn_len(b);
+    l0: uint64 = 0u64; l1: uint64 = 0u64;
     if (n > 0u64) { l0 = bn_limb(b, 0u64); }
     if (n > 1u64) { l1 = bn_limb(b, 1u64); }
     return l1 * 4294967296u64 + l0;
 }
 
-uint64 bn_hi128(uint64 b) {
-    uint64 n = bn_len(b);
-    uint64 l2 = 0u64; uint64 l3 = 0u64;
+fn bn_hi128(b: uint64) -> uint64 {
+    n: uint64 = bn_len(b);
+    l2: uint64 = 0u64; l3: uint64 = 0u64;
     if (n > 2u64) { l2 = bn_limb(b, 2u64); }
     if (n > 3u64) { l3 = bn_limb(b, 3u64); }
     return l3 * 4294967296u64 + l2;
@@ -1930,42 +1930,41 @@ uint64 bn_hi128(uint64 b) {
 // q has its leading 1 at bit 112. `E` is the unbiased exponent of that bit.
 // `guard` = the bit immediately below bit 0 of q (the round bit), and
 // `sticky` = whether anything below the guard is nonzero.
-float128 rt_f128_assemble(uint64 sign, uint64 qhi, uint64 qlo, int64 E,
-                          uint64 guard, uint64 sticky) {
-    int64 biased = E + 16383i64;
+fn rt_f128_assemble(sign: uint64, qhi: uint64, qlo: uint64, E: int64, guard: uint64, sticky: uint64) -> float128 {
+    biased: int64 = E + 16383i64;
 
     if (biased >= 32767i64) {
         // Overflow -> inf.
-        uint64 hi = sign * 9223372036854775808u64 + 32767u64 * 281474976710656u64;
+        hi: uint64 = sign * 9223372036854775808u64 + 32767u64 * 281474976710656u64;
         return f128_from_halves(0u64, hi);
     }
 
-    uint64 hisig = qhi % 281474976710656u64;  // drop implicit 1 at bit 112
-    uint64 lo = qlo;
+    hisig: uint64 = qhi % 281474976710656u64;  // drop implicit 1 at bit 112
+    lo: uint64 = qlo;
 
     if (biased <= 0i64) {
         // Subnormal: need to shift the significand right by (1 - biased) bits,
         // gathering guard/sticky. The full significand including implicit 1 is
         // (qhi,qlo). Shift right by sh = (1 - biased).
-        int64 sh = 1i64 - biased;
-        uint64 fhi = qhi;       // includes implicit 1 at bit 112
-        uint64 flo = qlo;
+        sh: int64 = 1i64 - biased;
+        fhi: uint64 = qhi;       // includes implicit 1 at bit 112
+        flo: uint64 = qlo;
         // existing guard/sticky get pushed further down (all become sticky).
-        uint64 st = sticky;
+        st: uint64 = sticky;
         if (guard == 1u64) { st = 1u64; }
-        uint64 g = 0u64;
-        int64 c = 0i64;
+        g: uint64 = 0u64;
+        c: int64 = 0i64;
         while (c < sh) {
-            uint64 out = flo % 2u64;
+            out: uint64 = flo % 2u64;
             if (g == 1u64) { st = 1u64; }
             g = out;
-            uint64 newlo = (fhi % 2u64) * 9223372036854775808u64 + flo / 2u64;
+            newlo: uint64 = (fhi % 2u64) * 9223372036854775808u64 + flo / 2u64;
             fhi = fhi / 2u64;
             flo = newlo;
             c = c + 1i64;
         }
         // Round to nearest even.
-        bool ru = false;
+        ru: bool = false;
         if (g == 1u64) {
             if (st != 0u64) { ru = true; }
             else if (flo % 2u64 == 1u64) { ru = true; }
@@ -1977,16 +1976,16 @@ float128 rt_f128_assemble(uint64 sign, uint64 qhi, uint64 qlo, int64 E,
         // If it carried up into the normal range (bit 112 set), it becomes the
         // smallest normal with exp=1.
         if (fhi >= 281474976710656u64) {
-            uint64 hisn = fhi % 281474976710656u64;
-            uint64 hi = sign * 9223372036854775808u64 + 1u64 * 281474976710656u64 + hisn;
+            hisn: uint64 = fhi % 281474976710656u64;
+            hi: uint64 = sign * 9223372036854775808u64 + 1u64 * 281474976710656u64 + hisn;
             return f128_from_halves(flo, hi);
         }
-        uint64 hi = sign * 9223372036854775808u64 + fhi % 281474976710656u64;
+        hi: uint64 = sign * 9223372036854775808u64 + fhi % 281474976710656u64;
         return f128_from_halves(flo, hi);
     }
 
     // Normal: round to nearest even using guard/sticky.
-    bool round_up = false;
+    round_up: bool = false;
     if (guard == 1u64) {
         if (sticky != 0u64) {
             round_up = true;
@@ -2006,42 +2005,42 @@ float128 rt_f128_assemble(uint64 sign, uint64 qhi, uint64 qlo, int64 E,
             lo = 0u64;
             biased = biased + 1i64;
             if (biased >= 32767i64) {
-                uint64 hi = sign * 9223372036854775808u64 + 32767u64 * 281474976710656u64;
+                hi: uint64 = sign * 9223372036854775808u64 + 32767u64 * 281474976710656u64;
                 return f128_from_halves(0u64, hi);
             }
         }
     }
-    uint64 hi = sign * 9223372036854775808u64 + (biased as uint64) * 281474976710656u64 + hisig;
+    hi: uint64 = sign * 9223372036854775808u64 + (biased as uint64) * 281474976710656u64 + hisig;
     return f128_from_halves(lo, hi);
 }
 
-float128 fs_rt_str_to_f128(string s) {
-    uint64 addr = str_to_addr(s);
+fn fs_rt_str_to_f128(s: string) -> float128 {
+    addr: uint64 = str_to_addr(s);
     if (addr == 0u64) {
         return f128_from_halves(0u64, 0u64);
     }
     // Skip leading whitespace.
-    uint64 i = 0u64;
+    i: uint64 = 0u64;
     while (true) {
-        uint8 c = mem_load_u8(addr + i);
+        c: uint8 = mem_load_u8(addr + i);
         if (c == 32u8 || (c >= 9u8 && c <= 13u8)) {
             i = i + 1u64;
         } else {
             break;
         }
     }
-    uint64 sign = 0u64;
-    uint8 sc = mem_load_u8(addr + i);
+    sign: uint64 = 0u64;
+    sc: uint8 = mem_load_u8(addr + i);
     if (sc == 45u8) { sign = 1u64; i = i + 1u64; }
     else if (sc == 43u8) { i = i + 1u64; }
 
     // Check for inf / nan (case-insensitive first letter).
-    uint8 c0 = mem_load_u8(addr + i);
+    c0: uint8 = mem_load_u8(addr + i);
     if (c0 == 110u8 || c0 == 78u8) {        // 'n'/'N' -> nan
         return f128_qnan();
     }
     if (c0 == 105u8 || c0 == 73u8) {        // 'i'/'I' -> inf
-        uint64 hi = sign * 9223372036854775808u64 + 32767u64 * 281474976710656u64;
+        hi: uint64 = sign * 9223372036854775808u64 + 32767u64 * 281474976710656u64;
         return f128_from_halves(0u64, hi);
     }
 
@@ -2049,13 +2048,13 @@ float128 fs_rt_str_to_f128(string s) {
     // exponent. We accumulate the integer 'num' (all significant digits) and
     // track how many of them are fractional (frac_count), plus an explicit
     // exponent (exp10).
-    uint64 num = bn_alloc(1200u64);
+    num: uint64 = bn_alloc(1200u64);
     bn_set_len(num, 0u64);
-    int64 frac_count = 0i64;
-    bool any_digit = false;
-    bool seen_dot = false;
+    frac_count: int64 = 0i64;
+    any_digit: bool = false;
+    seen_dot: bool = false;
     while (true) {
-        uint8 c = mem_load_u8(addr + i);
+        c: uint8 = mem_load_u8(addr + i);
         if (c >= 48u8 && c <= 57u8) {
             bn_mul_add_small(num, 10u64, (c - 48u8) as uint64);
             if (seen_dot) { frac_count = frac_count + 1i64; }
@@ -2068,17 +2067,17 @@ float128 fs_rt_str_to_f128(string s) {
             break;
         }
     }
-    int64 exp10 = 0i64;
-    uint8 ec = mem_load_u8(addr + i);
+    exp10: int64 = 0i64;
+    ec: uint8 = mem_load_u8(addr + i);
     if (ec == 101u8 || ec == 69u8) {
         i = i + 1u64;
-        bool eneg = false;
-        uint8 es = mem_load_u8(addr + i);
+        eneg: bool = false;
+        es: uint8 = mem_load_u8(addr + i);
         if (es == 45u8) { eneg = true; i = i + 1u64; }
         else if (es == 43u8) { i = i + 1u64; }
-        int64 ev = 0i64;
+        ev: int64 = 0i64;
         while (true) {
-            uint8 c = mem_load_u8(addr + i);
+            c: uint8 = mem_load_u8(addr + i);
             if (c < 48u8 || c > 57u8) { break; }
             ev = ev * 10i64 + ((c - 48u8) as int64);
             i = i + 1u64;
@@ -2091,19 +2090,19 @@ float128 fs_rt_str_to_f128(string s) {
     }
 
     // Value = num * 10^(exp10 - frac_count).
-    int64 e10 = exp10 - frac_count;
+    e10: int64 = exp10 - frac_count;
 
     // Build numerator N and denominator D such that value = N / D, both
     // positive big integers.
-    uint64 N = bn_alloc(1300u64);
-    uint64 D = bn_alloc(1300u64);
+    N: uint64 = bn_alloc(1300u64);
+    D: uint64 = bn_alloc(1300u64);
     bn_copy(N, num);
     bn_set_small(D, 1u64);
     if (e10 >= 0i64) {
-        int64 k = e10;
+        k: int64 = e10;
         while (k > 0i64) { bn_mul_add_small(N, 10u64, 0u64); k = k - 1i64; }
     } else {
-        int64 k = -e10;
+        k: int64 = -e10;
         while (k > 0i64) { bn_mul_add_small(D, 10u64, 0u64); k = k - 1i64; }
     }
 
@@ -2113,48 +2112,48 @@ float128 fs_rt_str_to_f128(string s) {
     // ~120 bits (113 significand + several guard bits). Then value = Q*2^(-P)
     // plus a fractional remainder; we normalize Q down to 113 bits, collecting
     // guard + sticky from the discarded low bits and the division remainder.
-    int64 nbits = bn_bitlen(N);
-    int64 dbits = bn_bitlen(D);
-    int64 E0 = nbits - dbits;          // approx floor(log2(value))
+    nbits: int64 = bn_bitlen(N);
+    dbits: int64 = bn_bitlen(D);
+    E0: int64 = nbits - dbits;          // approx floor(log2(value))
 
     // Want quotient MSB around bit 117 (113 + 4 guard bits): P = 117 - E0.
-    int64 P = 117i64 - E0;
+    P: int64 = 117i64 - E0;
     if (P >= 0i64) {
-        int64 t = P;
+        t: int64 = P;
         while (t > 0i64) { bn_mul2(N); t = t - 1i64; }
     } else {
-        int64 t = -P;
+        t: int64 = -P;
         while (t > 0i64) { bn_mul2(D); t = t - 1i64; }
     }
 
-    uint64 Q = bn_alloc(1300u64);
-    uint64 R = bn_alloc(1300u64);
+    Q: uint64 = bn_alloc(1300u64);
+    R: uint64 = bn_alloc(1300u64);
     bn_divmod(N, D, Q, R);
 
-    int64 qbits = bn_bitlen(Q);
+    qbits: int64 = bn_bitlen(Q);
     // value = Q * 2^(-P) + (R/D) * 2^(-P).  R != 0 contributes sticky.
-    bool rem_nonzero = !bn_is_zero(R);
+    rem_nonzero: bool = !bn_is_zero(R);
 
     // Exponent of Q's MSB (bit qbits-1) in the true value:
     //   true_exp_of_MSB = (qbits - 1) - P
-    int64 E = (qbits - 1i64) - P;
+    E: int64 = (qbits - 1i64) - P;
 
     // Normalize Q so leading 1 is at bit 112. Right-shift by (qbits - 113),
     // collecting guard + sticky.
-    int64 drop = qbits - 113i64;
-    uint64 qhi = bn_hi128(Q);
-    uint64 qlo = bn_lo128(Q);
-    uint64 guard = 0u64;
-    uint64 sticky = 0u64;
+    drop: int64 = qbits - 113i64;
+    qhi: uint64 = bn_hi128(Q);
+    qlo: uint64 = bn_lo128(Q);
+    guard: uint64 = 0u64;
+    sticky: uint64 = 0u64;
     if (rem_nonzero) { sticky = 1u64; }
 
     if (drop > 0i64) {
-        int64 c = 0i64;
+        c: int64 = 0i64;
         while (c < drop) {
-            uint64 out = qlo % 2u64;
+            out: uint64 = qlo % 2u64;
             if (guard == 1u64) { sticky = 1u64; }
             guard = out;
-            uint64 newlo = (qhi % 2u64) * 9223372036854775808u64 + qlo / 2u64;
+            newlo: uint64 = (qhi % 2u64) * 9223372036854775808u64 + qlo / 2u64;
             qhi = qhi / 2u64;
             qlo = newlo;
             c = c + 1i64;
@@ -2162,10 +2161,10 @@ float128 fs_rt_str_to_f128(string s) {
     } else if (drop < 0i64) {
         // Q has fewer than 113 bits (value too small relative to guard budget).
         // Left-shift to place MSB at bit 112; no bits lost.
-        int64 c = 0i64;
-        int64 up = -drop;
+        c: int64 = 0i64;
+        up: int64 = -drop;
         while (c < up) {
-            uint64 top = qlo / 9223372036854775808u64;
+            top: uint64 = qlo / 9223372036854775808u64;
             qlo = qlo * 2u64;
             qhi = qhi * 2u64 + top;
             c = c + 1i64;

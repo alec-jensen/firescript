@@ -5,26 +5,26 @@ import @firescript/std.io.println;
 // array whose length is only known at runtime (a slot-tracked param array)
 // vs. one whose length is statically known (a fixed-size array literal).
 
-int32 sumOf(int32[] values) {
+fn sumOf(values: int32[]) -> int32 {
     // `mirror` has no declared size, so its length comes from propagating
     // the ("slot", "<name>_len") metadata of the `values` parameter.
-    int32[] mirror = values;
-    int32 total = 0i32;
-    for (int32 i = 0i32; i < mirror.length(); i++) {
+    mirror: int32[] = values;
+    total: int32 = 0i32;
+    for (i: int32 = 0i32; i < mirror.length(); i++) {
         total += mirror[i];
     }
     return total;
 }
 
-int32[3] fixed = [1i32, 2i32, 3i32];
+fixed: int32[3] = [1i32, 2i32, 3i32];
 // `copy` has no declared size either, but its initializer `fixed` has a
 // statically known size, so the length propagates as a ("const", 3) entry.
-int32[] copy = fixed;
+copy: int32[] = fixed;
 println(copy.length());
 println(copy[0i32]);
 println(copy[2i32]);
 
-int32[] source = [5i32, 10i32, 15i32, 20i32];
+source: int32[] = [5i32, 10i32, 15i32, 20i32];
 println(sumOf(source));
 
 /* EXPECT

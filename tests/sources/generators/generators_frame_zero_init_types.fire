@@ -20,15 +20,15 @@ import @firescript/std.io.println;
 // to a copyable class (a by-value struct, not a pointer) instead.
 
 copyable class Vec2 {
-    float32 x;
-    float32 y;
+    x: float32;
+    y: float32;
 }
 
-generator<int32> mixedLocals(int32 n) {
-    bool flag = true;
-    float128 big = 1.5f128;
-    Vec2 v = Vec2(1.0f32, 2.0f32);
-    int32 i = 0;
+fn mixedLocals(n: int32) -> generator<int32> {
+    flag: bool = true;
+    big: float128 = 1.5f128;
+    v: Vec2 = Vec2(1.0f32, 2.0f32);
+    i: int32 = 0;
     while (i < n) {
         if (flag) {
             yield i;
@@ -39,7 +39,7 @@ generator<int32> mixedLocals(int32 n) {
     println(v.x);
 }
 
-for (int32 x in mixedLocals(3)) {
+for (x: int32 in mixedLocals(3)) {
     println(x);
 }
 

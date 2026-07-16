@@ -2,14 +2,14 @@ import @firescript/std.fs.File;
 import @firescript/std.fs.FileResult;
 import @firescript/std.io.println;
 
-string path = "build/temp/std_fs_helpers.txt";
-string missing = "build/temp/does_not_exist_std_fs_helpers.txt";
-File file = File(path);
-File missingFile = File(missing);
+path: string = "build/temp/std_fs_helpers.txt";
+missing: string = "build/temp/does_not_exist_std_fs_helpers.txt";
+file: File = File(path);
+missingFile: File = File(missing);
 
-FileResult write_result = file.writeAll("one");
+write_result: FileResult = file.writeAll("one");
 println(write_result.result_status());
-FileResult append_result = file.appendAll(" two");
+append_result: FileResult = file.appendAll(" two");
 println(append_result.result_status());
 
 if (file.exists()) {
@@ -24,10 +24,10 @@ if (missingFile.exists()) {
     println("missing");
 }
 
-FileResult read_result = file.read();
+read_result: FileResult = file.read();
 println(read_result.result_status());
 println(read_result.result_data());
-FileResult missing_result = missingFile.read();
+missing_result: FileResult = missingFile.read();
 println(missing_result.err_code());
 
 /* EXPECT

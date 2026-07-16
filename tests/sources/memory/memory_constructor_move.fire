@@ -4,32 +4,32 @@
 import @firescript/std.io.println;
 
 class Point {
-    int32 x;
-    int32 y;
-    Point(&mut this, int32 x, int32 y) {
+    x: int32;
+    y: int32;
+    fn Point(&mut this, x: int32, y: int32) {
         this.x = x;
         this.y = y;
     }
 }
 
 class Rect {
-    Point topLeft;
-    Point bottomRight;
-    Rect(&mut this, Point tl, Point br) {
+    topLeft: Point;
+    bottomRight: Point;
+    fn Rect(&mut this, tl: Point, br: Point) {
         this.topLeft = tl;
         this.bottomRight = br;
     }
-    int32 width(&this) {
+    fn width(&this) -> int32 {
         return this.bottomRight.x - this.topLeft.x;
     }
-    int32 height(&this) {
+    fn height(&this) -> int32 {
         return this.bottomRight.y - this.topLeft.y;
     }
 }
 
-Point p1 = new Point(1, 2);
-Point p2 = new Point(7, 8);
-Rect r = new Rect(p1, p2);
+p1: Point = new Point(1, 2);
+p2: Point = new Point(7, 8);
+r: Rect = new Rect(p1, p2);
 println(r.topLeft.x);
 println(r.topLeft.y);
 println(r.bottomRight.x);

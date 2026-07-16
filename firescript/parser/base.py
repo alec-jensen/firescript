@@ -26,6 +26,41 @@ from errors import (
 from .ast_node import ASTNode
 
 
+class ParsedType:
+    """Result of parsing a postfix TypeExpr (see ParserBase._parse_type_expression)."""
+
+    __slots__ = (
+        "base",
+        "is_array",
+        "array_size",
+        "is_nullable",
+        "is_owned",
+        "is_borrowed",
+        "is_mutable_borrow",
+        "token",
+    )
+
+    def __init__(
+        self,
+        base: str,
+        is_array: bool = False,
+        array_size: Optional[int] = None,
+        is_nullable: bool = False,
+        is_owned: bool = False,
+        is_borrowed: bool = False,
+        is_mutable_borrow: bool = False,
+        token: Optional[Token] = None,
+    ):
+        self.base = base
+        self.is_array = is_array
+        self.array_size = array_size
+        self.is_nullable = is_nullable
+        self.is_owned = is_owned
+        self.is_borrowed = is_borrowed
+        self.is_mutable_borrow = is_mutable_borrow
+        self.token = token
+
+
 class ParserBase:
     # Recognized type token names emitted by the lexer
     TYPE_TOKEN_NAMES = {
@@ -186,6 +221,155 @@ class ParserBase:
         val = tok.value
         return self.LEGACY_TYPE_ALIASES.get(val, val)
 
+    def _parse_generic_instantiation(self, base_tok: Token) -> Optional[str]:
+        """Parse '<' TypeArg (',' TypeArg)* '>' after a generic class/template name has
+        already been consumed. Assumes current_token is '<' on entry. Type arguments may
+        themselves be nested generic instantiations (e.g. Pair<Pair<int32, int32>, string>).
+        Registers the monomorphized instance and returns the composite type string, e.g.
+        'Pair<int32, string>', or None on error.
+        """
+        self.advance()  # consume '<'
+        type_args: list[str] = []
+        while True:
+            if not (self.current_token and self._is_type_token(self.current_token)):
+                self.expected_token_error("type argument in generic instantiation", self.current_token)
+                return None
+            arg_tok = self.current_token
+            self.advance()
+            arg_name = self._normalize_type_name(arg_tok)
+            if (
+                arg_tok.type == "IDENTIFIER"
+                and arg_tok.value in self.generic_class_templates
+                and self.current_token
+                and self.current_token.type == "LESS_THAN"
+            ):
+                nested = self._parse_generic_instantiation(arg_tok)
+                if nested is None:
+                    return None
+                arg_name = nested
+            type_args.append(arg_name)
+            if self.current_token and self.current_token.type == "COMMA":
+                self.advance()
+                continue
+            break
+        if not (self.current_token and self.current_token.type == "GREATER_THAN"):
+            self.expected_token_error("'>' to close generic type arguments", self.current_token)
+            return None
+        self.advance()  # consume '>'
+        return self._register_generic_class_instance(base_tok.value, type_args)
+
+    def _parse_type_expression(self) -> Optional["ParsedType"]:
+        """Parse a postfix type expression: [owned | & ['mut']] BaseType [ArraySuffix] ['?']
+
+        BaseType is a primitive type, a user type (incl. generic instantiations like
+        Name<T1, T2>), or 'generator<T>'. This is the single place a type is parsed
+        everywhere one appears after a colon or '->': variable/const declarations,
+        parameters, fields, for-loop variables, enum payload fields, and return types.
+        """
+        is_owned = False
+        is_borrowed = False
+        is_mutable_borrow = False
+        if self.current_token and self.current_token.type == "OWNED":
+            is_owned = True
+            self.advance()
+        elif self.current_token and self.current_token.type == "AMPERSAND":
+            is_borrowed = True
+            self.advance()
+            if self.current_token and self.current_token.type == "MUT":
+                is_mutable_borrow = True
+                self.advance()
+
+        if self.current_token and self.current_token.type == "GENERATOR":
+            type_tok = self.current_token
+            self.advance()
+            if not self.consume("LESS_THAN"):
+                self.expected_token_error("'<' after 'generator'", self.current_token)
+                return None
+            inner = self._parse_type_expression()
+            if inner is None:
+                return None
+            if not self.consume("GREATER_THAN"):
+                self.expected_token_error("'>' to close generator type", self.current_token)
+                return None
+            base = f"generator<{inner.base}>"
+        else:
+            # A bare IDENTIFIER not yet registered as a known type is still accepted as a
+            # type name in deferred-import mode (forward reference to an imported class).
+            deferred_ok = (
+                self.defer_undefined_identifiers
+                and self.current_token is not None
+                and self.current_token.type == "IDENTIFIER"
+                and bool(self.current_token.value.strip())
+            )
+            if not (self.current_token and (self._is_type_token(self.current_token) or deferred_ok)):
+                self.expected_token_error("type", self.current_token)
+                return None
+            type_tok = self.current_token
+            self.advance()
+            base = self._normalize_type_name(type_tok)
+
+            if (
+                type_tok.type == "IDENTIFIER"
+                and self.current_token
+                and self.current_token.type == "LESS_THAN"
+                and (type_tok.value in self.generic_class_templates or self.defer_undefined_identifiers)
+            ):
+                composite = self._parse_generic_instantiation(type_tok)
+                if composite is None:
+                    return None
+                base = composite
+
+        is_array = False
+        array_size: Optional[int] = None
+        if self.current_token and self.current_token.type == "OPEN_BRACKET":
+            self.advance()
+            if self.current_token and self.current_token.type == "INTEGER_LITERAL":
+                try:
+                    array_size = int(self.current_token.value)
+                except ValueError:
+                    self.expected_token_error("integer size in array type", self.current_token)
+                    return None
+                self.advance()
+            if not self.consume("CLOSE_BRACKET"):
+                self.expected_token_error("']' after '[' in array type", self.current_token)
+                return None
+            is_array = True
+
+        is_nullable = False
+        if self.current_token and self.current_token.type == "QUESTION":
+            is_nullable = True
+            self.advance()
+
+        return ParsedType(
+            base=base,
+            is_array=is_array,
+            array_size=array_size,
+            is_nullable=is_nullable,
+            is_owned=is_owned,
+            is_borrowed=is_borrowed,
+            is_mutable_borrow=is_mutable_borrow,
+            token=type_tok,
+        )
+
+    def _reject_ownership_modifiers(self, parsed: "ParsedType", context: str) -> bool:
+        """Report an error if `parsed` carries 'owned'/'&'/'&mut', which are only
+        meaningful on parameters (and receivers). Returns True if an error was reported.
+        """
+        if parsed.is_owned or parsed.is_borrowed:
+            self.expected_token_error(f"type without 'owned'/'&' modifier in {context}", parsed.token)
+            return True
+        return False
+
+    def _validate_return_type(self, parsed: "ParsedType") -> bool:
+        """Return types don't support 'owned'/'&'/'&mut' or nullable '?' (only array
+        suffix is supported). Returns True if an error was reported."""
+        if self._reject_ownership_modifiers(parsed, "a return type"):
+            return True
+        if parsed.is_nullable:
+            self.expected_token_error("return type without nullable '?' (not yet supported)", parsed.token)
+            return True
+        return False
+
     def advance(self):
         """Advance the current token to the next non-whitespace token."""
         if self.current_token is None:
@@ -251,32 +435,6 @@ class ParserBase:
                 return -1  # hit a statement boundary — can't be a type param list
             i += 1
         return -1
-
-    def _looks_like_generic_var_decl(self) -> bool:
-        """Lookahead: current token is IDENTIFIER, next should be '<'.
-
-        Returns True when the token stream from the current position matches
-        the pattern ``IDENT < TYPE_ARGS > IDENT =`` (a generic variable
-        declaration), False otherwise.  Used in deferred-import mode to route
-        ``TypeName<T1, T2> varName = ...`` to ``parse_variable_declaration``
-        even when TypeName is not yet registered as a generic class template.
-        """
-        idx = self._current_token_index()
-        if idx < 0:
-            return False
-        n = len(self.tokens)
-        i = self._skip_ws_from(idx + 1)
-        if i >= n or self.tokens[i].type != "LESS_THAN":
-            return False
-        gt_idx = self._scan_matching_gt(i)
-        if gt_idx < 0:
-            return False
-        i = self._skip_ws_from(gt_idx + 1)
-        # Expect an IDENTIFIER (the variable name)
-        if i >= n or self.tokens[i].type != "IDENTIFIER" or not self.tokens[i].value.strip():
-            return False
-        i = self._skip_ws_from(i + 1)
-        return i < n and self.tokens[i].type == "ASSIGN"
 
     def _looks_like_generic_constructor_call(self) -> bool:
         """Lookahead: current token is '<'.

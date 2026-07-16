@@ -2,20 +2,20 @@
 // A Tuple holds two values of potentially different types.
 
 class Tuple<T, U> {
-    T first;
-    U second;
+    first: T;
+    second: U;
 
-    Tuple(T first, U second) {
+    fn Tuple(first: T, second: U) {
         this.first = first;
         this.second = second;
     }
 }
 
 copyable class CopyableTuple<T, U> {
-    T first;
-    U second;
+    first: T;
+    second: U;
 
-    CopyableTuple(T first, U second) {
+    fn CopyableTuple(first: T, second: U) {
         this.first = first;
         this.second = second;
     }

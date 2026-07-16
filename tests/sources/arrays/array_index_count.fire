@@ -1,13 +1,13 @@
 import @firescript/std.io.println;
 
-int32[] nums = [2i32, 4i32, 2i32, 8i32, 2i32];
+nums: int32[] = [2i32, 4i32, 2i32, 8i32, 2i32];
 println(nums.index(2i32));
 println(nums.index(8i32));
 println(nums.index(1i32));
 println(nums.count(2i32));
 println(nums.count(9i32));
 
-string[] words = ["red", "blue", "red", "green"];
+words: string[] = ["red", "blue", "red", "green"];
 println(words.index("red"));
 println(words.index("blue"));
 println(words.index("black"));

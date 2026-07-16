@@ -1,15 +1,15 @@
 import @firescript/std.io.println;
 
 class Box {
-    int32 v;
+    v: int32;
 
-    Box(&this, owned int32 a) {
+    fn Box(&this, a: owned int32) {
         println(a);
     }
 }
 
-void main() {
-    Box b = Box(7i32);
+fn main() -> void {
+    b: Box = Box(7i32);
 }
 
 /* EXPECT

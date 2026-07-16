@@ -10,7 +10,7 @@ import @firescript/std.io.println as p;
 import utils as U;
 import utils.helper;
 
-void main() {
+fn main() -> void {
     println(helper(5));
 }
 

@@ -1,8 +1,8 @@
 import @firescript/std.io.println;
 
-uint8 u8_min = 0u8;
-uint8 u8_max = 255u8;
-uint8 u8_test = 128u8;
+u8_min: uint8 = 0u8;
+u8_max: uint8 = 255u8;
+u8_test: uint8 = 128u8;
 println(u8_min);
 println(u8_max);
 println(u8_test);

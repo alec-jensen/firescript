@@ -3,7 +3,7 @@ import @firescript/std.io.println;
 
 enum Status {
     Ok,
-    Failed(int32 code),
+    Failed(code: int32),
 }
 
 // Note: functions returning arrays (e.g. `int32[] f() { ... }`) are not
@@ -15,11 +15,11 @@ enum Status {
 // untested elsewhere in the suite too) but is out of scope here -- avoided
 // below by not returning arrays from functions.
 
-string makeString() {
+fn makeString() -> string {
     return "abc";
 }
 
-Status makeStatus() {
+fn makeStatus() -> Status {
     return Status.Failed(42);
 }
 
@@ -27,7 +27,7 @@ Status makeStatus() {
 // exercising the temporary-array ownership drop path in
 // ast_to_fir.py::_convert_for_in_array (the array literal is always
 // "owned" per ArrayType.category, so the exit-block drop always applies).
-for (int32 y in [1, 2, 3]) {
+for (y: int32 in [1, 2, 3]) {
     println(y);
 }
 
@@ -41,13 +41,13 @@ for (int32 y in [1, 2, 3]) {
 // used for plain variable declarations, not for-in headers). This makes
 // ast_to_fir.py's _convert_for_in_string() str_char_code_at branch (the
 // loop_var_type_str != "string" case) unreachable via valid source.
-for (string c in makeString()) {
+for (c: string in makeString()) {
     println(c);
 }
 
 // match over a non-identifier scrutinee (function-call result): exercises
 // the temporary-scrutinee ownership drop path in _convert_match.
-int32 result = match makeStatus() {
+result: int32 = match makeStatus() {
     Status.Ok -> 0,
     Status.Failed(code) -> code
 };
@@ -56,14 +56,14 @@ println(result);
 // Sized array declared with no initializer at all (zero-initialized):
 // exercises the "else" branch of _convert_variable_declaration's
 // array-init handling.
-int32[4] uninitialized;
+uninitialized: int32[4];
 println(uninitialized[0]);
 
 // Sized array initialized from a non-array-literal expression (a bare
 // identifier naming another array): exercises the "elif init_node is not
 // None" branch (present initializer that isn't an ARRAY_LITERAL node).
-int32[3] src = [1, 2, 3];
-int32[3] fromExpr = src;
+src: int32[3] = [1, 2, 3];
+fromExpr: int32[3] = src;
 println(fromExpr[2]);
 
 /* EXPECT

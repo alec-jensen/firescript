@@ -3,8 +3,8 @@
 // opposed to the brace-delimited body path already covered elsewhere).
 import @firescript/std.io.println;
 
-int32[] arr = [1, 2, 3];
-for (int32 i in arr)
+arr: int32[] = [1, 2, 3];
+for (i: int32 in arr)
     println(i);
 
 /* EXPECT

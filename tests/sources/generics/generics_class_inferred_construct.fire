@@ -1,17 +1,17 @@
 import @firescript/std.io.println;
 
 copyable class Pair<T, U> {
-    T first;
-    U second;
+    first: T;
+    second: U;
 
-    Pair(T first, U second) {
+    fn Pair(first: T, second: U) {
         this.first = first;
         this.second = second;
     }
 }
 
 // Construct without repeating explicit type args; inferred from the declared LHS type.
-Pair<int32, string> p = Pair(1, "x");
+p: Pair<int32, string> = Pair(1, "x");
 println(p.first);
 println(p.second);
 

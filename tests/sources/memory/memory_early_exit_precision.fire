@@ -1,11 +1,11 @@
 import @firescript/std.io.println;
 
-void consume(string s) {
+fn consume(s: string) -> void {
     println("consume:" + s);
 }
 
-string demo(bool flag) {
-    string value = "x";
+fn demo(flag: bool) -> string {
+    value: string = "x";
 
     if (flag) {
         consume(value); // moved on this path

@@ -1,32 +1,32 @@
 import @firescript/std.io.println;
 
 // No parameters
-void greet() {
+fn greet() -> void {
     println("Hello from function!");
 }
 greet();
 
 // Return value, no parameters
-int32 getConstant() {
+fn getConstant() -> int32 {
     return 42;
 }
 println(getConstant());
 
 // Single parameter
-int32 double(int32 x) {
+fn double(x: int32) -> int32 {
     return x * 2;
 }
 println(double(5));
 println(double(10));
 
 // Multiple parameters
-int32 add(int32 a, int32 b) {
+fn add(a: int32, b: int32) -> int32 {
     return a + b;
 }
 println(add(3, 7));
 println(add(100, 200));
 
-int32 multiply(int32 x, int32 y) {
+fn multiply(x: int32, y: int32) -> int32 {
     return x * y;
 }
 println(multiply(4, 5));

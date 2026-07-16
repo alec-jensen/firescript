@@ -1,24 +1,24 @@
 import @firescript/std.io.println;
 
 // Basic char literal
-char a = 'A';
+a: char = 'A';
 println(a as string);
 
 // Escape char literals
-char tab = '\t';
-char newline = '\n';
-char backslash = '\\';
+tab: char = '\t';
+newline: char = '\n';
+backslash: char = '\\';
 println("t:" + tab as string + "|");
 println("n:" + newline as string + "|");
 println("bs:" + backslash as string + "|");
 
 // Char is copyable
-char b = a;
+b: char = a;
 println(b as string);
 
 // Digit char
-char zero = '0';
-char nine = '9';
+zero: char = '0';
+nine: char = '9';
 println(zero as string);
 println(nine as string);
 
@@ -26,7 +26,7 @@ println(nine as string);
 // `\<char>` pair, but only \n \t \r \0 \\ \' \" are known escapes
 // (firescript/flir/lowering.py's _CHAR_ESCAPES). Anything else falls back
 // to the escaped character's own code point (_char_code's fallback path).
-char unknownEscape = '\d';
+unknownEscape: char = '\d';
 println(unknownEscape as string);
 
 return 0;

@@ -6,21 +6,21 @@ println("=== Comparison Operators ===");
 
 // Equality
 println("--- Equality (==) ---");
-int32 a = 10;
-int32 b = 10;
-int32 c = 5;
+a: int32 = 10;
+b: int32 = 10;
+c: int32 = 5;
 println(a == b);  // true
 println(a == c);  // false
 
-string s1 = "hello";
-string s2 = "hello";
-string s3 = "world";
+s1: string = "hello";
+s2: string = "hello";
+s3: string = "world";
 println(s1 == s2);  // true
 println(s1 == s3);  // false
 
-bool t1 = true;
-bool t2 = true;
-bool f1 = false;
+t1: bool = true;
+t2: bool = true;
+f1: bool = false;
 println(t1 == t2);  // true
 println(t1 == f1);  // false
 
@@ -35,8 +35,8 @@ println(c < a);  // true
 println(a < c);  // false
 println(a < b);  // false
 
-float32 fc1 = 3.5f;
-float32 f2 = 7.2f;
+fc1: float32 = 3.5f;
+f2: float32 = 7.2f;
 println(fc1 < f2);  // true
 println(f2 < fc1);  // false
 
@@ -71,23 +71,23 @@ println(fc1 >= f2);  // false
 
 // Comparisons with different numeric types
 println("--- Different Numeric Types ---");
-int8 i8a = 10i8;
-int8 i8b = 5i8;
+i8a: int8 = 10i8;
+i8b: int8 = 5i8;
 println(i8a > i8b);  // true
 println(i8a == 10i8);  // true
 
-int64 i64a = 100i64;
-int64 i64b = 50i64;
+i64a: int64 = 100i64;
+i64b: int64 = 50i64;
 println(i64a > i64b);  // true
 println(i64a <= 100i64);  // true
 
-uint32 u32a = 50u32;
-uint32 u32b = 30u32;
+u32a: uint32 = 50u32;
+u32b: uint32 = 30u32;
 println(u32a > u32b);  // true
 println(u32a != u32b);  // true
 
-float64 d1 = 3.14;
-float64 d2 = 2.71;
+d1: float64 = 3.14;
+d2: float64 = 2.71;
 println(d1 > d2);  // true
 println(d1 >= 3.14);  // true
 

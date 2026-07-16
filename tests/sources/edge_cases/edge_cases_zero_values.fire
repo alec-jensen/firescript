@@ -1,9 +1,9 @@
 import @firescript/std.io.println;
 
-int32 zero_int = 0;
-float32 zero_float = 0.0f;
-bool zero_bool = false;
-string empty_str = "";
+zero_int: int32 = 0;
+zero_float: float32 = 0.0f;
+zero_bool: bool = false;
+empty_str: string = "";
 println(zero_int);
 println(zero_float);
 println(zero_bool);

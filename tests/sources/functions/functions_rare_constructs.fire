@@ -4,9 +4,9 @@ import @firescript/std.io.println;
 // Array function parameter (size not statically known at this scope):
 // exercises the array-method lowering path for an unsized array type
 // (.length() on a param, not a locally-sized array).
-int32 sumArray(int32[] values) {
-    int32 total = 0;
-    int32 i = 0;
+fn sumArray(values: int32[]) -> int32 {
+    total: int32 = 0;
+    i: int32 = 0;
     while (i < values.length()) {
         total += values[i];
         i += 1;
@@ -18,9 +18,9 @@ println(sumArray([1, 2, 3, 4]));
 // for-in over a named array identifier (not a literal): exercises
 // _array_size_of's identifier-lookup branch (statically known size read
 // from the scope table instead of an ARRAY_LITERAL node).
-int32[3] named = [100, 200, 300];
-int32 sum2 = 0;
-for (int32 v in named) {
+named: int32[3] = [100, 200, 300];
+sum2: int32 = 0;
+for (v: int32 in named) {
     sum2 += v;
 }
 println(sum2);

@@ -5,13 +5,13 @@
 import @firescript/std.io.println;
 
 // Bare identifier collection, string loop variable.
-string s = "abc";
-for (string c in s) {
+s: string = "abc";
+for (c: string in s) {
     println(c);
 }
 
 // Fresh string expression (not a bare identifier), with a continue.
-for (string c in "wxyz") {
+for (c: string in "wxyz") {
     if (c == "y") {
         continue;
     }
@@ -19,7 +19,7 @@ for (string c in "wxyz") {
 }
 
 // Fresh string expression, with a break.
-for (string c in "loop") {
+for (c: string in "loop") {
     if (c == "o") {
         break;
     }

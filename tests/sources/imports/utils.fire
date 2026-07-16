@@ -1,7 +1,7 @@
 //@ helper
 // Helper module with utility functions
-export int32 helper(int32 x) {
+export fn helper(x: int32) -> int32 {
     return x + 100;
 }
 
-export int32 CONSTANT = 42;
+export CONSTANT: int32 = 42;

@@ -13,12 +13,12 @@
 import @firescript/std.io.println;
 
 class Box {
-    int32 v;
+    v: int32;
 
-    Box(owned this, int32 v) {
+    fn Box(owned this, v: int32) {
         this.v = v;
     }
 }
 
-Box b = Box(5);
+b: Box = Box(5);
 println(b.v);

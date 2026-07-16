@@ -7,13 +7,13 @@ import @firescript/std.io.println;
 // dispatch chain in lower_generator (firescript/flir/lowering.py) that
 // picks among 2+ resume blocks by comparing the saved `_state` field.
 
-generator<int32> pair(int32 a, int32 b) {
+fn pair(a: int32, b: int32) -> generator<int32> {
     yield a;
     yield b;
     yield a + b;
 }
 
-for (int32 v in pair(10, 20)) {
+for (v: int32 in pair(10, 20)) {
     println(v);
 }
 

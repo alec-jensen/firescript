@@ -1,12 +1,12 @@
 import @firescript/std.io.println;
 
 enum Shape {
-    Circle(float64 radius),
-    Rectangle(float64 width, float64 height),
+    Circle(radius: float64),
+    Rectangle(width: float64, height: float64),
     Point
 }
 
-void describe(Shape s) {
+fn describe(s: Shape) -> void {
     match s {
         Shape.Circle(radius) -> {
             println("circle r=" + (radius as string));
@@ -25,7 +25,7 @@ describe(Shape.Rectangle(2.0, 5.0));
 describe(Shape.Point);
 
 // Field renaming (`field: local`) and field omission both work.
-void describeRenamed(Shape s) {
+fn describeRenamed(s: Shape) -> void {
     match s {
         Shape.Circle(radius: r) -> { println("renamed circle r=" + (r as string)); }
         Shape.Rectangle(width) -> { println("rect width only=" + (width as string)); }

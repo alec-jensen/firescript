@@ -1,12 +1,12 @@
 import @firescript/std.io.println;
 
 enum Shape {
-    Circle(float64 radius),
-    Rectangle(float64 width, float64 height),
+    Circle(radius: float64),
+    Rectangle(width: float64, height: float64),
     Point
 }
 
-float64 area(Shape s) {
+fn area(s: Shape) -> float64 {
     return match s {
         Shape.Circle(radius) -> 3.14159 * radius * radius,
         Shape.Rectangle(width, height) -> width * height,
@@ -19,8 +19,8 @@ println(area(Shape.Rectangle(3.0, 4.0)) as string);
 println(area(Shape.Point) as string);
 
 // Match-as-expression used directly in a variable declaration initializer.
-Shape s = Shape.Rectangle(5.0, 6.0);
-float64 a = match s {
+s: Shape = Shape.Rectangle(5.0, 6.0);
+a: float64 = match s {
     Shape.Circle(radius) -> radius,
     Shape.Rectangle(width, height) -> width + height,
     Shape.Point -> -1.0

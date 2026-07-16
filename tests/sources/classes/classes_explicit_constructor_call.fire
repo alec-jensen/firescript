@@ -6,16 +6,16 @@
 import @firescript/std.io.println;
 
 class Point {
-    int32 x;
-    int32 y;
+    x: int32;
+    y: int32;
 
-    Point(int32 x, int32 y) {
+    fn Point(x: int32, y: int32) {
         this.x = x;
         this.y = y;
     }
 }
 
-Point p = Point.Point(3, 4);
+p: Point = Point.Point(3, 4);
 println(p.x);
 println(p.y);
 

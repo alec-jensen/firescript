@@ -1,26 +1,26 @@
 //@ snapshot: fir, flir
 import @firescript/std.io.println;
 
-void take_ownership(string s) {
+fn take_ownership(s: string) -> void {
     println(s);
 }
 
-void borrow_only(&string s) {
+fn borrow_only(s: &string) -> void {
     println(s);
 }
 
 // Test 1: Move to function expecting ownership
-string s1 = "hello";
+s1: string = "hello";
 take_ownership(s1);
 
 // Test 2: Borrow to function expecting borrow
-string s2 = "world";
+s2: string = "world";
 borrow_only(s2);
 println(s2);  // OK - still valid
 
 // Test 3: Move via assignment
-string s3 = "test";
-string s4 = s3;
+s3: string = "test";
+s4: string = s3;
 println(s4);  // OK - s4 owns the value now
 
 /* EXPECT

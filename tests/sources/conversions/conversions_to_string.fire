@@ -1,15 +1,15 @@
 import @firescript/std.io.println;
 
-int32 num = 42;
-string str_num = (num as string);
+num: int32 = 42;
+str_num: string = (num as string);
 println(str_num);
 
-float32 fnum = 3.14f;
-string str_fnum = (fnum as string);
+fnum: float32 = 3.14f;
+str_fnum: string = (fnum as string);
 println(str_fnum);
 
-bool flag = true;
-string str_bool = (flag as string);
+flag: bool = true;
+str_bool: string = (flag as string);
 println(str_bool);
 
 /* EXPECT

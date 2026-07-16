@@ -2,27 +2,27 @@
 import @firescript/std.io.println;
 
 // Basic concatenation
-string s1 = "Hello";
-string s2 = "World";
-string greeting = s1 + ", " + s2 + "!";
+s1: string = "Hello";
+s2: string = "World";
+greeting: string = s1 + ", " + s2 + "!";
 println(greeting);
 
-string multi = "Line 1" + " " + "Line 2" + " " + "Line 3";
+multi: string = "Line 1" + " " + "Line 2" + " " + "Line 3";
 println(multi);
 
 // Concatenation with a cast expression
-int32 count = 5;
-string result = "Count: " + (count as string);
+count: int32 = 5;
+result: string = "Count: " + (count as string);
 println(result);
 
 // Concatenation via variables
-string name = "Alice";
-string age_str = "30";
-string info = "Name: " + name + ", Age: " + age_str;
+name: string = "Alice";
+age_str: string = "30";
+info: string = "Name: " + name + ", Age: " + age_str;
 println(info);
 
 // Repeated concatenation
-string build = "";
+build: string = "";
 build = build + "a";
 build = build + "b";
 build = build + "c";

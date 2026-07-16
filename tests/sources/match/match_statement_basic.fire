@@ -6,7 +6,7 @@ enum Color {
     Blue
 }
 
-void describe(Color c) {
+fn describe(c: Color) -> void {
     match c {
         Color.Red -> { println("red"); }
         Color.Green -> { println("green"); }

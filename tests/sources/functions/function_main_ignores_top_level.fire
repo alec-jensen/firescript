@@ -4,7 +4,7 @@ import @firescript/std.io.println;
 
 println("top-level ignored");
 
-void main() {
+fn main() -> void {
     println("only main runs");
 }
 

@@ -2,14 +2,14 @@
 import @firescript/std.io.println;
 
 // While loop
-int32 count = 0;
+count: int32 = 0;
 while (count < 5) {
     println(count);
     count++;
 }
 
 // While loop with break
-int32 i = 0;
+i: int32 = 0;
 while (i < 10) {
     if (i == 5) {
         break;
@@ -19,7 +19,7 @@ while (i < 10) {
 }
 
 // While loop with continue
-int32 j = 0;
+j: int32 = 0;
 while (j < 5) {
     j++;
     if (j == 3) {
@@ -29,9 +29,9 @@ while (j < 5) {
 }
 
 // Nested while loops
-int32 outer = 0;
+outer: int32 = 0;
 while (outer < 3) {
-    int32 inner = 0;
+    inner: int32 = 0;
     while (inner < 2) {
         println(outer * 10 + inner);
         inner++;

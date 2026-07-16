@@ -4,7 +4,7 @@ import @firescript/std.io.println;
 
 // Test 1: Array declaration and initialization
 println("Test 1: Array declaration and initialization");
-int32[] numbers = [10, 20, 30, 40, 50];
+numbers: int32[] = [10, 20, 30, 40, 50];
 println(numbers);
 
 // Test 2: Array indexing (access)
@@ -19,7 +19,7 @@ println(numbers.length()); // 5
 
 // Test 4: Iterate over array
 println("\nTest 4: Iterate over array");
-int32 i = 0;
+i: int32 = 0;
 while (i < numbers.length()) {
 	println(numbers[i]);
 	i = i + 1;
@@ -27,7 +27,7 @@ while (i < numbers.length()) {
 
 // Test 5: Array of strings
 println("\nTest 5: Array of strings");
-string[] names = ["Alice", "Bob", "Charlie"];
+names: string[] = ["Alice", "Bob", "Charlie"];
 println(names);
 println(names.length()); // 3
 println(names[1]);       // Bob

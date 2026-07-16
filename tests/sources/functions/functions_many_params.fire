@@ -7,24 +7,24 @@ import @firescript/std.io.println;
 // (integer, float, and copyable-struct parameter kinds).
 
 copyable class Point {
-    int32 x;
-    int32 y;
+    x: int32;
+    y: int32;
 
-    Point(int32 x, int32 y) {
+    fn Point(x: int32, y: int32) {
         this.x = x;
         this.y = y;
     }
 }
 
-int32 sumFiveInts(int32 a, int32 b, int32 c, int32 d, int32 e) {
+fn sumFiveInts(a: int32, b: int32, c: int32, d: int32, e: int32) -> int32 {
     return a + b + c + d + e;
 }
 
-float64 sumFiveFloats(float64 a, float64 b, float64 c, float64 d, float64 e) {
+fn sumFiveFloats(a: float64, b: float64, c: float64, d: float64, e: float64) -> float64 {
     return a + b + c + d + e;
 }
 
-int32 fifthIsStruct(int32 a, int32 b, int32 c, int32 d, Point p) {
+fn fifthIsStruct(a: int32, b: int32, c: int32, d: int32, p: Point) -> int32 {
     return a + b + c + d + p.x + p.y;
 }
 

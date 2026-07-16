@@ -1,10 +1,10 @@
 import @firescript/std.io.println;
 
-int32 int_val = 5;
-float32 float_val = 2.0f;
+int_val: int32 = 5;
+float_val: float32 = 2.0f;
 println((int_val as float32) / float_val);
 
-float32 f_result = (10 as float32) / 4.0f + 2.5f;
+f_result: float32 = (10 as float32) / 4.0f + 2.5f;
 println(f_result);
 
 /* EXPECT

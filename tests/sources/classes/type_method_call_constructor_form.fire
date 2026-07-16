@@ -5,14 +5,14 @@
 import @firescript/std.io.println;
 
 class Foo {
-    int32 v;
+    v: int32;
 
-    Foo(int32 v) {
+    fn Foo(v: int32) {
         this.v = v;
     }
 }
 
-Foo f = Foo.Foo(42);
+f: Foo = Foo.Foo(42);
 println(f.v);
 
 /* EXPECT

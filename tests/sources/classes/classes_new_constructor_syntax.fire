@@ -3,15 +3,15 @@
 import @firescript/std.io.println;
 
 class Box {
-    int32 v;
+    v: int32;
 
-    Box(int32 v) {
+    fn Box(v: int32) {
         this.v = v;
     }
 }
 
-void main() {
-    Box b = new Box(5i32);
+fn main() -> void {
+    b: Box = new Box(5i32);
     println(b.v);
 }
 

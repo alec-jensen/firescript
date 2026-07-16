@@ -1,8 +1,8 @@
 //@ snapshot: fir, flir
 import @firescript/std.io.println;
 
-int32[] nums = [5, 10, 15, 20];
-for (int32 n in nums) {
+nums: int32[] = [5, 10, 15, 20];
+for (n: int32 in nums) {
     println(n);
 }
 

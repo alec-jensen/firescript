@@ -1,9 +1,9 @@
 //@ helper
-export int32 addOne(int32 x) {
+export fn addOne(x: int32) -> int32 {
     return x + 1;
 }
 
-int32 hiddenValue = 99;
+hiddenValue: int32 = 99;
 
 /* EXPECT
 

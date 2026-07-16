@@ -1,10 +1,10 @@
 import @firescript/std.io.println;
 
-string single_char = "a";
+single_char: string = "a";
 println(single_char);
 println(single_char.length());
 
-string spaces = "   ";
+spaces: string = "   ";
 println(spaces.length());
 
 /* EXPECT

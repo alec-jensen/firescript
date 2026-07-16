@@ -3,14 +3,14 @@
 import @firescript/std.io.println;
 
 {
-    int32 x = 3;
+    x: int32 = 3;
     println(x);
     x = 42;
     println(x);
 }
 
 {
-    string s = "hello";
+    s: string = "hello";
     println(s);
     s = "world";
     println(s);

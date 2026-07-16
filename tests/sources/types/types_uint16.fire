@@ -1,7 +1,7 @@
 import @firescript/std.io.println;
 
-uint16 u16_max = 65535u16;
-uint16 u16_test = 30000u16;
+u16_max: uint16 = 65535u16;
+u16_test: uint16 = 30000u16;
 println(u16_max);
 println(u16_test);
 println(u16_test + 1000u16);

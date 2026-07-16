@@ -1,14 +1,14 @@
 // Top-level const declarations become module-level constants.
 import @firescript/std.io.println;
 
-const int32 MAX_USERS = 100;
-const float64 RATIO = 2.5;
-const int32 NEGATIVE = -7;
+const MAX_USERS: int32 = 100;
+const RATIO: float64 = 2.5;
+const NEGATIVE: int32 = -7;
 // float32 const: exercises codegen/x86_64/flir_to_asm.py's _emit_globals()
 // dedicated f32 branch (globals are loaded as full qwords, but an f32
 // global stores its 4-byte bit pattern in the low half via a distinct
 // code path from the f64/int branches).
-const float32 SCALE = 1.5f;
+const SCALE: float32 = 1.5f;
 // Non-numeric const initializers (string/bool/char) are deliberately not
 // exercised here as .fire source -- all three currently fail to compile
 // end-to-end for unrelated, pre-existing reasons downstream of

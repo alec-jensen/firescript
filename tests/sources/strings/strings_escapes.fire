@@ -1,15 +1,15 @@
 import @firescript/std.io.println;
 
-string newline = "Line1\nLine2";
+newline: string = "Line1\nLine2";
 println(newline);
 
-string tab = "Col1\tCol2\tCol3";
+tab: string = "Col1\tCol2\tCol3";
 println(tab);
 
-string quote = "She said \"Hello\"";
+quote: string = "She said \"Hello\"";
 println(quote);
 
-string backslash = "Path\\to\\file";
+backslash: string = "Path\\to\\file";
 println(backslash);
 
 /* EXPECT

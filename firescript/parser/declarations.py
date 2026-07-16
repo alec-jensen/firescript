@@ -39,209 +39,236 @@ class DeclarationsMixin(TypeSystemMixin):
         setattr(node, "source_file", self.filename)
         return node
 
-    def _parse_function_definition(self):
-        """Parse a function definition with optional array types: <type>[[]] <name>(<type>[[]] name, ...) { ... }"""
-        # Return type - can be a known type OR an IDENTIFIER (for generic type parameters)
-        # Check if this is a type token, or an IDENTIFIER followed by another IDENTIFIER and LESS_THAN (generic pattern)
-        is_valid_return_type = self._is_type_token(self.current_token)
-        
-        # Also allow IDENTIFIER if it could be a type parameter (will be validated after parsing type params)
-        if not is_valid_return_type and self.current_token and self.current_token.type == "IDENTIFIER":
-            # Peek ahead to see if this looks like a generic function: T funcName<...>
-            next_tok = self.peek(1)
-            second_tok = self.peek(2)
-            if next_tok and next_tok.type == "IDENTIFIER" and second_tok and second_tok.type == "LESS_THAN":
-                is_valid_return_type = True
-        
-        if not is_valid_return_type:
-            self.expected_token_error("return type at function definition", self.current_token)
-            return None
-        ret_type_token = self.current_token
-        self.advance()
+    def _parse_generic_type_param_list(self) -> Optional[tuple[list[str], dict[str, str]]]:
+        """Parse an optional '<' T [':' Constraint] (',' ...)* '>' type-parameter list.
 
-        # Optional array suffix for return type
-        ret_is_array = False
-        if self.current_token and self.current_token.type == "OPEN_BRACKET":
-            self.advance()
-            if not self.consume("CLOSE_BRACKET"):
-                self.expected_token_error(
-                    "']' after '[' in array return type", self.current_token
-                )
+        Assumes current_token is whatever follows the declaration name. Returns
+        ([], {}) if no '<' is present (no type parameters), or None on a parse error.
+        """
+        type_params: list[str] = []
+        type_constraints: dict[str, str] = {}
+        if not (self.current_token and self.current_token.type == "LESS_THAN"):
+            return type_params, type_constraints
+        self.advance()  # consume <
+        while True:
+            if not (self.current_token and self.current_token.type == "IDENTIFIER"):
+                self.expected_token_error("type parameter name", self.current_token)
                 return None
-            ret_is_array = True
+            tparam_tok = self.consume("IDENTIFIER")
+            if tparam_tok is None:
+                return None
+            type_params.append(tparam_tok.value)
+
+            # Parse optional constraint: T: Comparable or T: int32 | float64 or T: NumericPrimitive (alias)
+            if self.current_token and self.current_token.type == "COLON":
+                self.advance()  # consume :
+                constraint_parts = []
+                while True:
+                    # Constraints can be type names (int32, float64) or interface names (Comparable)
+                    # or constraint aliases (NumericPrimitive)
+                    if not (self.current_token and (self._is_type_token(self.current_token) or self.current_token.type == "IDENTIFIER")):
+                        self.expected_token_error("constraint type or interface", self.current_token)
+                        return None
+                    constraint_tok = self.current_token
+                    self.advance()
+                    if constraint_tok.value in self.constraint_aliases:
+                        constraint_parts.append(self.constraint_aliases[constraint_tok.value])
+                    else:
+                        constraint_parts.append(constraint_tok.value)
+                    # Check for union operator |
+                    if self.current_token and self.current_token.type == "PIPE":
+                        self.advance()  # consume |
+                        continue
+                    # Check for intersection operator &
+                    elif self.current_token and self.current_token.type == "AMPERSAND":
+                        self.advance()  # consume &
+                        constraint_parts.append("&")
+                        continue
+                    break
+                type_constraints[tparam_tok.value] = " | ".join(constraint_parts)
+
+            if self.current_token and self.current_token.type == "COMMA":
+                self.advance()  # consume ,
+                continue
+            break
+
+        if not (self.current_token and self.current_token.type == "GREATER_THAN"):
+            self.expected_token_error("'>' to close type parameters", self.current_token)
+            return None
+        self.advance()  # consume >
+        return type_params, type_constraints
+
+    def _parse_param_list(
+        self,
+        allow_receiver: bool = False,
+        allow_owned_receiver: bool = False,
+        receiver_class_name: Optional[str] = None,
+        allow_array: bool = True,
+        local_is_static: bool = False,
+    ) -> Optional[list[ASTNode]]:
+        """Parse a comma-separated parameter list: name ':' TypeExpr, ...
+
+        Assumes current_token is the first token after '(' (or ')'). Consumes up
+        to but not including the closing ')'. If allow_receiver, the first
+        parameter may instead be a receiver: '&this', '&mut this', or (if
+        allow_owned_receiver) 'owned this'.
+        """
+        params: list[ASTNode] = []
+        seen_receiver = False
+        if self.current_token and self.current_token.type != "CLOSE_PAREN":
+            while True:
+                if allow_receiver and not seen_receiver and self.current_token and self.current_token.type == "AMPERSAND":
+                    amp_tok = self.current_token
+                    self.advance()
+                    is_mutable_borrow = False
+                    if self.current_token and self.current_token.type == "MUT":
+                        is_mutable_borrow = True
+                        self.advance()
+                    th_tok = self.consume("IDENTIFIER")
+                    if th_tok is None or th_tok.value != "this":
+                        self.expected_token_error("'this' after '&' (or '&mut') for receiver", th_tok or amp_tok)
+                        return None
+                    if local_is_static:
+                        self.invalid_expression_error("Static methods cannot declare receiver parameter 'this'", th_tok)
+                        return None
+                    recv = ASTNode(
+                        NodeTypes.PARAMETER, th_tok, "this", [], th_tok.index,
+                        receiver_class_name, False, False, None, False, False,
+                    )
+                    setattr(recv, "is_borrowed", True)
+                    setattr(recv, "is_mutable_borrow", is_mutable_borrow)
+                    setattr(recv, "is_receiver", True)
+                    params.append(recv)
+                    seen_receiver = True
+                elif (
+                    allow_receiver and allow_owned_receiver and not seen_receiver
+                    and self.current_token and self.current_token.type == "OWNED"
+                    and self.peek(1) and self.peek(1).type == "IDENTIFIER" and self.peek(1).value == "this"
+                ):
+                    self.advance()  # consume 'owned'
+                    th_tok = self.consume("IDENTIFIER")  # 'this'
+                    recv = ASTNode(
+                        NodeTypes.PARAMETER, th_tok, "this", [], th_tok.index,
+                        receiver_class_name, False, False, None, False, False,
+                    )
+                    setattr(recv, "is_owned", True)
+                    setattr(recv, "is_receiver", True)
+                    params.append(recv)
+                    seen_receiver = True
+                else:
+                    pname_tok = self.consume_name()
+                    if pname_tok is None:
+                        self.expected_token_error("parameter name", self.current_token)
+                        return None
+                    if not self.consume("COLON"):
+                        self.expected_token_error("':' after parameter name", self.current_token)
+                        return None
+                    parsed = self._parse_type_expression()
+                    if parsed is None:
+                        return None
+                    if parsed.is_array and not allow_array:
+                        self.invalid_expression_error("Array parameters are not supported for methods", parsed.token)
+                        return None
+                    param_node = ASTNode(
+                        NodeTypes.PARAMETER,
+                        pname_tok,
+                        pname_tok.value,
+                        [],
+                        pname_tok.index,
+                        parsed.base,
+                        parsed.is_nullable,
+                        False,
+                        None,
+                        parsed.is_array,
+                        parsed.is_array,
+                        array_size=parsed.array_size,
+                    )
+                    setattr(param_node, "is_borrowed", parsed.is_borrowed)
+                    setattr(param_node, "is_mutable_borrow", parsed.is_mutable_borrow)
+                    if parsed.is_owned:
+                        setattr(param_node, "is_owned", True)
+                    params.append(param_node)
+                if self.current_token and self.current_token.type == "COMMA":
+                    self.advance()
+                    continue
+                break
+        return params
+
+    def _parse_function_definition(self):
+        """Parse: 'fn' name ['<' TypeParamList '>'] '(' ParamList ')' '->' TypeExpr '{' body '}'"""
+        fn_tok = self.consume("FN")
+        if fn_tok is None:
+            return None
 
         name_token = self.consume("IDENTIFIER")
         if name_token is None:
-            self.expected_token_error("function name after return type", self.current_token)
+            self.expected_token_error("function name after 'fn'", self.current_token)
             return None
-        
-        # Parse optional generic type parameters: <T, U, ...>
-        type_params: list[str] = []
-        type_constraints: dict[str, str] = {}
-        
-        if self.current_token and self.current_token.type == "LESS_THAN":
-            self.advance()  # consume <
-            # Parse type parameters
-            while True:
-                if not (self.current_token and self.current_token.type == "IDENTIFIER"):
-                    self.expected_token_error("type parameter name", self.current_token)
-                    return None
-                tparam_tok = self.consume("IDENTIFIER")
-                if tparam_tok is None:
-                    return None
-                type_params.append(tparam_tok.value)
-                
-                # Parse optional constraint: T: Comparable or T: int32 | float64 or T: NumericPrimitive (alias)
-                if self.current_token and self.current_token.type == "COLON":
-                    self.advance()  # consume :
-                    constraint_parts = []
-                    while True:
-                        # Constraints can be type names (int32, float64) or interface names (Comparable)
-                        # or constraint aliases (NumericPrimitive)
-                        # Type names come as TYPE tokens, interface names as IDENTIFIER tokens
-                        if not (self.current_token and (self._is_type_token(self.current_token) or self.current_token.type == "IDENTIFIER")):
-                            self.expected_token_error("constraint type or interface", self.current_token)
-                            return None
-                        
-                        constraint_tok = self.current_token
-                        self.advance()
-                        if constraint_tok is None:
-                            return None
-                        
-                        # Check if this is a constraint alias and expand it
-                        if constraint_tok.value in self.constraint_aliases:
-                            # Expand the alias inline
-                            alias_expansion = self.constraint_aliases[constraint_tok.value]
-                            constraint_parts.append(alias_expansion)
-                        else:
-                            constraint_parts.append(constraint_tok.value)
-                        
-                        # Check for union operator |
-                        if self.current_token and self.current_token.type == "PIPE":
-                            self.advance()  # consume |
-                            continue
-                        # Check for intersection operator &
-                        elif self.current_token and self.current_token.type == "AMPERSAND":
-                            self.advance()  # consume &
-                            constraint_parts.append("&")
-                            continue
-                        break
-                    
-                    type_constraints[tparam_tok.value] = " | ".join(constraint_parts)
-                
-                if self.current_token and self.current_token.type == "COMMA":
-                    self.advance()  # consume ,
-                    continue
-                break
-            
-            if not (self.current_token and self.current_token.type == "GREATER_THAN"):
-                self.expected_token_error("'>' to close type parameters", self.current_token)
-                return None
-            self.advance()  # consume >
-        
-        # Validate return type if it was an IDENTIFIER (type parameter or user-defined class)
-        if ret_type_token and ret_type_token.type == "IDENTIFIER" and ret_type_token.value not in self.TYPE_TOKEN_NAMES:
-            # It could be: 1) a type parameter, 2) a user-defined class, or 3) an error
-            is_type_param = ret_type_token.value in type_params
-            is_user_class = ret_type_token.value in self.user_types
-            if not is_type_param and not is_user_class:
-                self.invalid_expression_error(f"Return type '{ret_type_token.value}' is not a declared type parameter", ret_type_token)
-                return None
-        
+
+        type_param_result = self._parse_generic_type_param_list()
+        if type_param_result is None:
+            return None
+        type_params, type_constraints = type_param_result
+
         if not self.consume("OPEN_PAREN"):
             self.expected_token_error("'(' after function name", self.current_token)
             return None
 
-        # Set current type parameters for parsing function body
+        # Set current type parameters for parsing the parameter list, return type, and body
         prev_type_params = self._current_type_params
         self._current_type_params = type_params.copy()
 
-        params: list[ASTNode] = []
-        if self.current_token and self.current_token.type != "CLOSE_PAREN":
-            while True:
-                # Check for 'owned' keyword
-                p_is_owned = False
-                if self.current_token and self.current_token.type == "OWNED":
-                    p_is_owned = True
-                    self.advance()
+        params = self._parse_param_list(allow_array=True)
+        if params is None:
+            self._current_type_params = prev_type_params
+            return None
 
-                # Check for '&' borrow marker
-                p_is_borrowed = False
-                if self.current_token and self.current_token.type == "AMPERSAND":
-                    p_is_borrowed = True
-                    self.advance()
-
-                # Allow both built-in types and user-defined class types
-                if not (self.current_token and (self._is_type_token(self.current_token) or (
-                    self.current_token.type == "IDENTIFIER" and self.current_token.value in self.user_types
-                ))):
-                    self.expected_token_error("parameter type", self.current_token)
-                    return None
-                ptype_tok = self.current_token
-                self.advance()
-                # Optional array suffix for parameter type: [] or [N]
-                p_is_array = False
-                p_array_size = None
-                if self.current_token and self.current_token.type == "OPEN_BRACKET":
-                    self.advance()
-                    if self.current_token and self.current_token.type == "INTEGER_LITERAL":
-                        try:
-                            p_array_size = int(self.current_token.value)
-                        except ValueError:
-                            self.expected_token_error("integer size in array parameter type", self.current_token)
-                            return None
-                        self.advance()
-                    if not self.consume("CLOSE_BRACKET"):
-                        self.expected_token_error(
-                            "']' after '[' in array parameter type",
-                            self.current_token,
-                        )
-                        return None
-                    p_is_array = True
-                pname_tok = self.consume_name()
-                if pname_tok is None:
-                    self.expected_token_error("parameter name", self.current_token)
-                    return None
-                param_node = ASTNode(
-                    NodeTypes.PARAMETER,
-                    pname_tok,
-                    pname_tok.value,
-                    [],
-                    pname_tok.index,
-                    self._normalize_type_name(ptype_tok),
-                    False,
-                    False,
-                    None,
-                    p_is_array,
-                    p_is_array,
-                    array_size=p_array_size,
-                )
-                # Mark parameter as borrowed
-                setattr(param_node, "is_borrowed", p_is_borrowed)
-                if p_is_owned:
-                    setattr(param_node, "is_owned", True)
-                params.append(param_node)
-                if self.current_token and self.current_token.type == "COMMA":
-                    self.advance()
-                    continue
-                break
         if not self.consume("CLOSE_PAREN"):
             self.expected_token_error("')' after parameters", self.current_token)
+            self._current_type_params = prev_type_params
             return None
+
+        if not self.consume("ARROW"):
+            self.expected_token_error("'->' return type after ')'", self.current_token)
+            self._current_type_params = prev_type_params
+            return None
+        ret_parsed = self._parse_type_expression()
+        if ret_parsed is None:
+            self._current_type_params = prev_type_params
+            return None
+        if self._validate_return_type(ret_parsed):
+            self._current_type_params = prev_type_params
+            return None
+        # Validate an IDENTIFIER-based return type is a declared type parameter or user class
+        if (
+            ret_parsed.token
+            and ret_parsed.token.type == "IDENTIFIER"
+            and ret_parsed.token.value not in self.TYPE_TOKEN_NAMES
+            and ret_parsed.token.value not in type_params
+            and ret_parsed.token.value not in self.user_types
+            and not self.defer_undefined_identifiers
+        ):
+            self.invalid_expression_error(
+                f"Return type '{ret_parsed.token.value}' is not a declared type parameter", ret_parsed.token
+            )
+            self._current_type_params = prev_type_params
+            return None
+        return_type_value = ret_parsed.base + ("[]" if ret_parsed.is_array else "")
+        ret_is_array = ret_parsed.is_array
+
         if not (self.current_token and self.current_token.type == "OPEN_BRACE"):
             self.expected_token_error("'{' to start function body", self.current_token)
+            self._current_type_params = prev_type_params
             return None
         body_node = self.parse_scope()
         if body_node is None:
+            self._current_type_params = prev_type_params
             return None
-        base_ret_type = self._normalize_type_name(ret_type_token) if ret_type_token else None
-        return_type_value = (
-            (base_ret_type + "[]")
-            if (base_ret_type and ret_is_array)
-            else base_ret_type
-        )
+
+        is_generator = ret_parsed.base.startswith("generator<")
+        node_type = NodeTypes.GENERATOR_DEFINITION if is_generator else NodeTypes.FUNCTION_DEFINITION
         func_node = ASTNode(
-            NodeTypes.FUNCTION_DEFINITION,
+            node_type,
             name_token,
             name_token.value,
             [*params, body_node],
@@ -256,115 +283,17 @@ class DeclarationsMixin(TypeSystemMixin):
         # Attach generic metadata
         func_node.type_params = type_params
         func_node.type_constraints = type_constraints
-        
+        if is_generator:
+            func_node.yield_type = ret_parsed.base[len("generator<"):-1]
+
         # Restore previous type parameters
         self._current_type_params = prev_type_params
-        
-        if ret_type_token and name_token:
-            self.user_functions[name_token.value] = return_type_value
-            if type_params:
-                self.generic_functions[name_token.value] = type_params
-                self.generic_constraints[name_token.value] = type_constraints
+
+        self.user_functions[name_token.value] = return_type_value
+        if type_params:
+            self.generic_functions[name_token.value] = type_params
+            self.generic_constraints[name_token.value] = type_constraints
         return func_node
-
-    def _parse_generator_definition(self):
-        """Parse: generator<YieldType> name(params) { body }"""
-        gen_tok = self.consume("GENERATOR")
-        if gen_tok is None:
-            return None
-
-        if not self.consume("LESS_THAN"):
-            self.expected_token_error("'<' after 'generator'", self.current_token)
-            return None
-
-        if not self.current_token or not self._is_type_token(self.current_token):
-            self.expected_token_error("yield type inside 'generator<...>'", self.current_token)
-            return None
-        yield_type_tok = self.current_token
-        self.advance()
-
-        if not self.consume("GREATER_THAN"):
-            self.expected_token_error("'>' to close generator yield type", self.current_token)
-            return None
-
-        name_tok = self.consume("IDENTIFIER")
-        if name_tok is None:
-            self.expected_token_error("generator function name", self.current_token)
-            return None
-
-        if not self.consume("OPEN_PAREN"):
-            self.expected_token_error("'(' after generator name", self.current_token)
-            return None
-
-        params: list[ASTNode] = []
-        if self.current_token and self.current_token.type != "CLOSE_PAREN":
-            while True:
-                p_is_borrowed = False
-                if self.current_token and self.current_token.type == "AMPERSAND":
-                    p_is_borrowed = True
-                    self.advance()
-                if not (self.current_token and (self._is_type_token(self.current_token) or (
-                    self.current_token.type == "IDENTIFIER" and self.current_token.value in self.user_types
-                ))):
-                    self.expected_token_error("parameter type", self.current_token)
-                    return None
-                ptype_tok = self.current_token
-                self.advance()
-                pname_tok = self.consume_name()
-                if pname_tok is None:
-                    self.expected_token_error("parameter name", self.current_token)
-                    return None
-                p_type = self._normalize_type_name(ptype_tok)
-                param_node = ASTNode(
-                    NodeTypes.PARAMETER,
-                    pname_tok,
-                    pname_tok.value,
-                    [],
-                    pname_tok.index,
-                    p_type,
-                    False,
-                    False,
-                    None,
-                    False,
-                    False,
-                )
-                param_node.is_borrowed = p_is_borrowed
-                param_node.is_receiver = False
-                params.append(param_node)
-                if self.current_token and self.current_token.type == "COMMA":
-                    self.advance()
-                    continue
-                break
-
-        if not self.consume("CLOSE_PAREN"):
-            self.expected_token_error("')' after generator parameters", self.current_token)
-            return None
-
-        if not (self.current_token and self.current_token.type == "OPEN_BRACE"):
-            self.expected_token_error("'{' to start generator body", self.current_token)
-            return None
-        body_node = self.parse_scope()
-        if body_node is None:
-            return None
-
-        yield_type = self._normalize_type_name(yield_type_tok)
-        gen_node = ASTNode(
-            NodeTypes.GENERATOR_DEFINITION,
-            name_tok,
-            name_tok.value,
-            [*params, body_node],
-            name_tok.index,
-            None,
-            False,
-            False,
-            yield_type,
-            False,
-            False,
-        )
-        # Store yield type for retrieval by codegen
-        gen_node.yield_type = yield_type
-        self.user_functions[name_tok.value] = f"generator<{yield_type}>"
-        return gen_node
 
     def parse(self):
         logging.debug("Parsing tokens...")
@@ -461,86 +390,10 @@ class DeclarationsMixin(TypeSystemMixin):
                 if self.current_token and self.current_token.type == "SEMICOLON":
                     self.consume("SEMICOLON")
                 continue
-            # Generator function definition: generator<T> name(...) { ... }
-            if self.current_token.type == "GENERATOR":
-                gen = self._parse_generator_definition()
-                if gen:
-                    if getattr(self, "_pending_export", False):
-                        setattr(gen, "is_exported", True)
-                        self._pending_export = False
-                    gen.parent = self.ast
-                    self.ast.children.append(gen)
-                continue
-            # Try function definition first: <type> <identifier> '(' ... ')'{ ... }
-            # Also handle generic functions where return type might be a type parameter
+            # Function definition: 'fn' name(...) -> ReturnType { ... }
             stmt = None
-            # Check for function definition patterns
-            can_be_func = False
-            if self._is_type_token(self.current_token):
-                can_be_func = True
-            elif self.current_token and self.current_token.type == "IDENTIFIER":
-                # Could be a generic function with type parameter as return type
-                # Look for pattern: IDENTIFIER IDENTIFIER '<' ...
-                # Need to peek ahead more carefully to handle constraints with PIPE tokens
-                idx_cur = self._current_token_index()
-                if idx_cur + 2 < len(self.tokens):
-                    next1 = self.tokens[idx_cur + 1]
-                    next2 = self.tokens[idx_cur + 2]
-                    if next1.type == "IDENTIFIER" and next2.type == "LESS_THAN":
-                        can_be_func = True  # Likely a generic function
-            
-            if can_be_func:
-                idx_cur = self._current_token_index()
-                # Gather next few meaningful tokens to detect patterns
-                look = []
-                m = idx_cur + 1
-                while m < len(self.tokens) and len(look) < 30:  # Increased for generics with long constraints
-                    if self.tokens[m].type not in (
-                        "SINGLE_LINE_COMMENT",
-                        "MULTI_LINE_COMMENT_START",
-                        "MULTI_LINE_COMMENT_END",
-                    ):
-                        look.append(self.tokens[m])
-                    m += 1
-                # Patterns:
-                # 1) TYPE IDENTIFIER '('
-                # 2) TYPE '[' ']' IDENTIFIER '('
-                # 3) TYPE IDENTIFIER '<' ... '>' '('  (generic function)
-                is_func = False
-                if (
-                    len(look) >= 2
-                    and look[0].type == "IDENTIFIER"
-                    and look[1].type == "OPEN_PAREN"
-                ):
-                    is_func = True
-                elif (
-                    len(look) >= 4
-                    and look[0].type == "OPEN_BRACKET"
-                    and look[1].type == "CLOSE_BRACKET"
-                    and look[2].type == "IDENTIFIER"
-                    and look[3].type == "OPEN_PAREN"
-                ):
-                    is_func = True
-                elif (
-                    len(look) >= 3
-                    and look[0].type == "IDENTIFIER"
-                    and look[1].type == "LESS_THAN"
-                ):
-                    # Generic function: TYPE IDENTIFIER '<' ...
-                    # Look for matching '>' followed by '('
-                    angle_depth = 1
-                    i = 2
-                    while i < len(look) and angle_depth > 0:
-                        if look[i].type == "LESS_THAN":
-                            angle_depth += 1
-                        elif look[i].type == "GREATER_THAN":
-                            angle_depth -= 1
-                        i += 1
-                    # Check if we have '(' after the closing '>'
-                    if i < len(look) and look[i].type == "OPEN_PAREN":
-                        is_func = True
-                if is_func:
-                    stmt = self._parse_function_definition()
+            if self.current_token.type == "FN":
+                stmt = self._parse_function_definition()
             if stmt is None:
                 stmt = (
                     self._parse_statement()
@@ -916,6 +769,12 @@ class DeclarationsMixin(TypeSystemMixin):
             self.expected_token_error("class name after 'class'", self.current_token)
             return None
 
+        # Make the class's own name resolvable as a type immediately, so
+        # self-referential uses inside the body (e.g. a static factory method
+        # returning the enclosing class) parse correctly before the class is
+        # fully registered at the end of this method.
+        self.user_types.add(name_tok.value)
+
         # Parse optional generic type parameters: <T, U, ...>
         class_type_params: list[str] = []
         prev_class_type_params = self._current_type_params
@@ -975,293 +834,58 @@ class DeclarationsMixin(TypeSystemMixin):
             if self.current_token and self.current_token.type == "STATIC":
                 local_is_static = True
                 self.advance()
-            # Accept types that are either known types or the current class name (for methods/fields/constructors)
-            if not (self._is_type_token(self.current_token) or (
-                self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
-            )):
-                self.expected_token_error("field or method return type in class body", self.current_token)
-                # recover to ';' or '}'
-                while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
-                    self.advance()
-                if self.current_token and self.current_token.type == "SEMICOLON":
-                    self.advance()
-                continue
-            ftype_tok = self.current_token
-            self.advance()
 
-            # Special-case: constructor without explicit return type
-            # Pattern: ClassName(<params>) { ... }
-            if (
-                ftype_tok.type == "IDENTIFIER"
-                and ftype_tok.value == name_tok.value
-                and self.current_token
-                and self.current_token.type == "OPEN_PAREN"
-            ):
-                if local_is_static:
-                    self.invalid_expression_error("Constructors cannot be declared static", ftype_tok)
-                # Treat ftype_tok as the method name (constructor) and set return type to class name
-                method_name_tok = ftype_tok
-                # Parse parameters
-                self.consume("OPEN_PAREN")
-                params: list[ASTNode] = []
-                seen_receiver = False
-                if self.current_token and self.current_token.type != "CLOSE_PAREN":
-                    while True:
-                        # Borrowed receiver syntax: &this (read-only) or &mut this (mutable)
-                        if (not seen_receiver) and self.current_token and self.current_token.type == "AMPERSAND":
-                            amp_tok = self.current_token
-                            self.advance()
-                            is_mutable_borrow = False
-                            if self.current_token and self.current_token.type == "MUT":
-                                is_mutable_borrow = True
-                                self.advance()
-                            th_tok = self.consume("IDENTIFIER")
-                            if th_tok is None or th_tok.value != "this":
-                                self.expected_token_error("'this' after '&' (or '&mut') for receiver", th_tok or amp_tok)
-                                return None
-                            if local_is_static:
-                                self.invalid_expression_error("Static methods cannot declare receiver parameter 'this'", th_tok)
-                                return None
-                            recv = ASTNode(
-                                NodeTypes.PARAMETER,
-                                th_tok,
-                                "this",
-                                [],
-                                th_tok.index,
-                                self._normalize_type_name(name_tok),
-                                False,
-                                False,
-                                None,
-                                False,
-                                False,
-                            )
-                            setattr(recv, "is_borrowed", True)
-                            setattr(recv, "is_mutable_borrow", is_mutable_borrow)
-                            setattr(recv, "is_receiver", True)
-                            params.append(recv)
-                            seen_receiver = True
-                        # Check for 'owned this' consuming receiver
-                        elif (not seen_receiver) and self.current_token and self.current_token.type == "OWNED":
-                            owned_tok = self.current_token
-                            self.advance()
-                            th_tok = self.consume("IDENTIFIER")
-                            if th_tok is None or th_tok.value != "this":
-                                self.expected_token_error("'this' after 'owned' for receiver", th_tok or owned_tok)
-                                return None
-                            recv = ASTNode(
-                                NodeTypes.PARAMETER,
-                                th_tok,
-                                "this",
-                                [],
-                                th_tok.index,
-                                self._normalize_type_name(name_tok),
-                                False,
-                                False,
-                                None,
-                                False,
-                                False,
-                            )
-                            setattr(recv, "is_owned", True)
-                            setattr(recv, "is_receiver", True)
-                            params.append(recv)
-                            seen_receiver = True
-                        else:
-                            # Check for 'owned' keyword
-                            p_is_owned = False
-                            if self.current_token and self.current_token.type == "OWNED":
-                                p_is_owned = True
-                                self.advance()
-                            
-                            # Check for '&' borrow marker
-                            p_is_borrowed = False
-                            if self.current_token and self.current_token.type == "AMPERSAND":
-                                p_is_borrowed = True
-                                self.advance()
-                            
-                            # Parameter type: allow known types or current class name
-                            if not (self.current_token and (self._is_type_token(self.current_token) or (
-                                self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
-                            ))):
-                                self.expected_token_error("parameter type in method", self.current_token)
-                                return None
-                            ptype_tok = self.current_token
-                            self.advance()
-                            p_is_array = False
-                            if self.current_token and self.current_token.type == "OPEN_BRACKET":
-                                self.invalid_expression_error("Array parameters are not supported for methods", self.current_token)
-                                # try to recover
-                                while self.current_token and self.current_token.type != "CLOSE_PAREN":
-                                    self.advance()
-                                break
-                            pname_tok = self.consume_name()
-                            if pname_tok is None:
-                                self.expected_token_error("parameter name in method", self.current_token)
-                                return None
-                            # Check for nullable marker on parameter: name?
-                            p_is_nullable = False
-                            if self.current_token and self.current_token.type == "QUESTION":
-                                p_is_nullable = True
-                                self.advance()
-                            param_node = ASTNode(
-                                NodeTypes.PARAMETER,
-                                pname_tok,
-                                pname_tok.value,
-                                [],
-                                pname_tok.index,
-                                self._normalize_type_name(ptype_tok),
-                                p_is_nullable,
-                                False,
-                                None,
-                                p_is_array,
-                                p_is_array,
-                            )
-                            if p_is_borrowed:
-                                setattr(param_node, "is_borrowed", True)
-                            if p_is_owned:
-                                setattr(param_node, "is_owned", True)
-                            params.append(param_node)
-                        if self.current_token and self.current_token.type == "COMMA":
-                            self.advance()
-                            continue
-                        break
-                if not self.consume("CLOSE_PAREN"):
-                    self.expected_token_error("')' after method parameters", self.current_token)
-                    return None
-                if not (self.current_token and self.current_token.type == "OPEN_BRACE"):
-                    self.expected_token_error("'{' to start method body", self.current_token)
+            # Method or constructor: 'fn' name(...) ['->' TypeExpr] { ... }
+            if self.current_token and self.current_token.type == "FN":
+                self.advance()  # consume 'fn'
+                method_name_tok = self.consume("IDENTIFIER")
+                if method_name_tok is None:
+                    self.expected_token_error("method name after 'fn'", self.current_token)
+                    while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
+                        self.advance()
+                    if self.current_token and self.current_token.type == "SEMICOLON":
+                        self.advance()
+                    continue
+
+                is_constructor = method_name_tok.value == name_tok.value
+                if is_constructor and local_is_static:
+                    self.invalid_expression_error("Constructors cannot be declared static", method_name_tok)
+
+                if not self.consume("OPEN_PAREN"):
+                    self.expected_token_error("'(' after method name", self.current_token)
                     return None
 
-                self._class_context_stack.append((name_tok.value, True, base_class))
-                try:
-                    body_node = self.parse_scope()
-                finally:
-                    self._class_context_stack.pop()
-                if body_node is None:
-                    return None
-                # Constructor: no synthetic 'self' parameter
-                method_node = ASTNode(
-                    NodeTypes.CLASS_METHOD_DEFINITION,
-                    method_name_tok,
-                    method_name_tok.value,
-                    [*params, body_node],
-                    method_name_tok.index,
-                    None,
-                    False,
-                    False,
-                    name_tok.value,  # return type is the class itself
-                    False,
-                    False,
+                params = self._parse_param_list(
+                    allow_receiver=True,
+                    allow_owned_receiver=is_constructor,
+                    receiver_class_name=self._normalize_type_name(name_tok),
+                    allow_array=False,
+                    local_is_static=local_is_static,
                 )
-                setattr(method_node, "class_name", name_tok.value)
-                setattr(method_node, "is_constructor", True)
-                setattr(method_node, "is_static", False)
-                methods.append(method_node)
-                continue
-            # Look ahead: IDENTIFIER then '(' => method; IDENTIFIER then ';' => field
-            name_tok2 = self.consume("IDENTIFIER")
-            if name_tok2 is None:
-                self.expected_token_error("identifier after type in class body", self.current_token)
-                break
-            # Optional nullable marker on field/method return type: name?
-            local_is_nullable = False
-            if self.current_token and self.current_token.type == "QUESTION":
-                local_is_nullable = True
-                self.advance()
-            # Method definition
-            if self.current_token and self.current_token.type == "OPEN_PAREN":
-                # Determine if this is a constructor: method name equals class name
-                is_constructor = (name_tok2.value == name_tok.value)
-                # Parse parameters
-                self.consume("OPEN_PAREN")
-                params: list[ASTNode] = []
-                seen_receiver = False
-                if self.current_token and self.current_token.type != "CLOSE_PAREN":
-                    while True:
-                        # Borrowed receiver syntax: &this (read-only) or &mut this (mutable)
-                        if (not seen_receiver) and self.current_token and self.current_token.type == "AMPERSAND":
-                            amp_tok = self.current_token
-                            self.advance()
-                            is_mutable_borrow = False
-                            if self.current_token and self.current_token.type == "MUT":
-                                is_mutable_borrow = True
-                                self.advance()
-                            th_tok = self.consume("IDENTIFIER")
-                            if th_tok is None or th_tok.value != "this":
-                                self.expected_token_error("'this' after '&' (or '&mut') for receiver", th_tok or amp_tok)
-                                return None
-                            if local_is_static:
-                                self.invalid_expression_error("Static methods cannot declare receiver parameter 'this'", th_tok)
-                                return None
-                            recv = ASTNode(
-                                NodeTypes.PARAMETER,
-                                th_tok,
-                                "this",
-                                [],
-                                th_tok.index,
-                                self._normalize_type_name(name_tok),
-                                False,
-                                False,
-                                None,
-                                False,
-                                False,
-                            )
-                            setattr(recv, "is_borrowed", True)
-                            setattr(recv, "is_mutable_borrow", is_mutable_borrow)
-                            setattr(recv, "is_receiver", True)
-                            params.append(recv)
-                            seen_receiver = True
-                        else:
-                            # Parameter type: allow known types or current class name
-                            if not (self.current_token and (self._is_type_token(self.current_token) or (
-                                self.current_token.type == "IDENTIFIER" and self.current_token.value == name_tok.value
-                            ))):
-                                self.expected_token_error("parameter type in method", self.current_token)
-                                return None
-                            ptype_tok = self.current_token
-                            self.advance()
-                            p_is_array = False
-                            if self.current_token and self.current_token.type == "OPEN_BRACKET":
-                                self.invalid_expression_error("Array parameters are not supported for methods", self.current_token)
-                                # try to recover
-                                while self.current_token and self.current_token.type != "CLOSE_PAREN":
-                                    self.advance()
-                                break
-                            p_is_borrowed = False
-                            if self.current_token and self.current_token.type == "AMPERSAND":
-                                p_is_borrowed = True
-                                self.advance()
-                            pname_tok = self.consume_name()
-                            if pname_tok is None:
-                                self.expected_token_error("parameter name in method", self.current_token)
-                                return None
-                            # Check for nullable marker on parameter: name?
-                            p_is_nullable = False
-                            if self.current_token and self.current_token.type == "QUESTION":
-                                p_is_nullable = True
-                                self.advance()
-                            param_node = ASTNode(
-                                NodeTypes.PARAMETER,
-                                pname_tok,
-                                pname_tok.value,
-                                [],
-                                pname_tok.index,
-                                self._normalize_type_name(ptype_tok),
-                                p_is_nullable,
-                                False,
-                                None,
-                                p_is_array,
-                                p_is_array,
-                            )
-                            if p_is_borrowed:
-                                setattr(param_node, "is_borrowed", True)
-                            params.append(param_node)
-                        if self.current_token and self.current_token.type == "COMMA":
-                            self.advance()
-                            continue
-                        break
+                if params is None:
+                    return None
+
                 if not self.consume("CLOSE_PAREN"):
                     self.expected_token_error("')' after method parameters", self.current_token)
                     return None
+
+                return_type_value: Optional[str] = name_tok.value if is_constructor else None
+                if self.current_token and self.current_token.type == "ARROW":
+                    arrow_tok = self.current_token
+                    self.advance()
+                    ret_parsed = self._parse_type_expression()
+                    if ret_parsed is None:
+                        return None
+                    if is_constructor:
+                        self.invalid_expression_error("Constructors cannot declare a return type", arrow_tok)
+                    elif self._validate_return_type(ret_parsed):
+                        return None
+                    else:
+                        return_type_value = ret_parsed.base + ("[]" if ret_parsed.is_array else "")
+                elif not is_constructor:
+                    self.expected_token_error("'->' return type after ')'", self.current_token)
+                    return None
+
                 if not (self.current_token and self.current_token.type == "OPEN_BRACE"):
                     self.expected_token_error("'{' to start method body", self.current_token)
                     return None
@@ -1273,15 +897,16 @@ class DeclarationsMixin(TypeSystemMixin):
                     self._class_context_stack.pop()
                 if body_node is None:
                     return None
+
                 param_nodes = params
                 if not is_constructor and not local_is_static and not (params and params[0].name == "this"):
                     # Inject synthetic receiver named 'this' if not explicitly provided
                     self_param = ASTNode(
                         NodeTypes.PARAMETER,
-                        name_tok2,
+                        method_name_tok,
                         "this",
                         [],
-                        name_tok2.index,
+                        method_name_tok.index,
                         self._normalize_type_name(name_tok),
                         False,
                         False,
@@ -1294,34 +919,80 @@ class DeclarationsMixin(TypeSystemMixin):
 
                 method_node = ASTNode(
                     NodeTypes.CLASS_METHOD_DEFINITION,
-                    name_tok2,
-                    name_tok2.value,
+                    method_name_tok,
+                    method_name_tok.value,
                     [*param_nodes, body_node],
-                    name_tok2.index,
+                    method_name_tok.index,
                     None,
                     False,
                     False,
-                    self._normalize_type_name(ftype_tok),
+                    return_type_value,
                     False,
                     False,
                 )
-                # Tag class name on node for downstream passes
                 setattr(method_node, "class_name", name_tok.value)
                 setattr(method_node, "is_constructor", is_constructor)
                 setattr(method_node, "is_static", local_is_static)
                 methods.append(method_node)
-            else:
-                # Field declaration path
-                if not self.consume("SEMICOLON"):
-                    self.expected_token_error("';' after field declaration", self.current_token)
-                    while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
-                        self.advance()
-                    if self.current_token and self.current_token.type == "SEMICOLON":
-                        self.advance()
-                field_type = self._normalize_type_name(ftype_tok)
-                field_node = ASTNode(NodeTypes.CLASS_FIELD, name_tok2, name_tok2.value, [], name_tok2.index, var_type=field_type, is_nullable=local_is_nullable)
-                fields.append(field_node)
-                field_types[name_tok2.value] = field_type
+                continue
+
+            if local_is_static:
+                # 'static' was consumed but nothing that can follow it (only 'fn') was found.
+                self.expected_token_error("'fn' after 'static'", self.current_token)
+                while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
+                    self.advance()
+                if self.current_token and self.current_token.type == "SEMICOLON":
+                    self.advance()
+                continue
+
+            # Field declaration: name ':' TypeExpr ';'
+            field_name_tok = self.consume_name()
+            if field_name_tok is None:
+                self.expected_token_error("field name or 'fn' in class body", self.current_token)
+                while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
+                    self.advance()
+                if self.current_token and self.current_token.type == "SEMICOLON":
+                    self.advance()
+                continue
+            if not self.consume("COLON"):
+                self.expected_token_error("':' after field name", self.current_token)
+                while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
+                    self.advance()
+                if self.current_token and self.current_token.type == "SEMICOLON":
+                    self.advance()
+                continue
+            field_parsed = self._parse_type_expression()
+            if field_parsed is None:
+                while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
+                    self.advance()
+                if self.current_token and self.current_token.type == "SEMICOLON":
+                    self.advance()
+                continue
+            if self._reject_ownership_modifiers(field_parsed, "a class field"):
+                while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
+                    self.advance()
+                if self.current_token and self.current_token.type == "SEMICOLON":
+                    self.advance()
+                continue
+            if field_parsed.is_array:
+                self.invalid_expression_error("Array fields are not supported for classes", field_parsed.token)
+                while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
+                    self.advance()
+                if self.current_token and self.current_token.type == "SEMICOLON":
+                    self.advance()
+                continue
+            if not self.consume("SEMICOLON"):
+                self.expected_token_error("';' after field declaration", self.current_token)
+                while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
+                    self.advance()
+                if self.current_token and self.current_token.type == "SEMICOLON":
+                    self.advance()
+            field_node = ASTNode(
+                NodeTypes.CLASS_FIELD, field_name_tok, field_name_tok.value, [], field_name_tok.index,
+                var_type=field_parsed.base, is_nullable=field_parsed.is_nullable,
+            )
+            fields.append(field_node)
+            field_types[field_name_tok.value] = field_parsed.base
         # consume closing brace if present
         if self.current_token and self.current_token.type == "CLOSE_BRACE":
             self.consume("CLOSE_BRACE")
@@ -1486,16 +1157,22 @@ class DeclarationsMixin(TypeSystemMixin):
                 self.advance()  # consume '('
                 if self.current_token and self.current_token.type != "CLOSE_PAREN":
                     while True:
-                        if not self._is_type_token(self.current_token):
-                            self.expected_token_error("payload field type in enum variant", self.current_token)
-                            break
-                        type_tok = self.current_token
-                        self.advance()
                         field_tok = self.consume("IDENTIFIER")
                         if field_tok is None:
                             self.expected_token_error("payload field name in enum variant", self.current_token)
                             break
-                        field_type = self._normalize_type_name(type_tok)
+                        if not self.consume("COLON"):
+                            self.expected_token_error("':' after payload field name", self.current_token)
+                            break
+                        field_parsed = self._parse_type_expression()
+                        if field_parsed is None:
+                            break
+                        if self._reject_ownership_modifiers(field_parsed, "an enum payload field"):
+                            break
+                        if field_parsed.is_array:
+                            self.invalid_expression_error("Array payload fields are not supported for enum variants", field_parsed.token)
+                            break
+                        field_type = field_parsed.base
                         if any(fname == field_tok.value for fname, _ in payload_fields):
                             self.invalid_expression_error(
                                 f"Duplicate payload field '{field_tok.value}' in variant "

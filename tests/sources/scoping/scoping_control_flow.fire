@@ -1,39 +1,39 @@
 import @firescript/std.io.println;
 
 // If statement scope
-int32 condition = 1;
+condition: int32 = 1;
 if (condition > 0) {
-    int32 positive = 42;
+    positive: int32 = 42;
     println(positive);
 }
 
 // Else scope
 if (condition < 0) {
-    int32 negative = -1;
+    negative: int32 = -1;
     println(negative);
 } else {
-    int32 non_negative = 0;
+    non_negative: int32 = 0;
     println(non_negative);
 }
 
 // While loop scope
-int32 counter = 0;
+counter: int32 = 0;
 while (counter < 3) {
-    int32 loop_var = counter * 10;
+    loop_var: int32 = counter * 10;
     println(loop_var);
     counter++;
 }
 
 // For loop scope
-for (int32 i = 0; i < 3; i++) {
-    int32 loop_val = i * 100;
+for (i: int32 = 0; i < 3; i++) {
+    loop_val: int32 = i * 100;
     println(loop_val);
 }
 
 // For-in loop scope
-int32[] numbers = [1, 2, 3];
-for (int32 num in numbers) {
-    int32 doubled = num * 2;
+numbers: int32[] = [1, 2, 3];
+for (num: int32 in numbers) {
+    doubled: int32 = num * 2;
     println(doubled);
 }
 

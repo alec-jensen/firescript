@@ -3,7 +3,7 @@
 
 import @firescript/std.io.println;
 
-int64 fib(int64 n) {
+fn fib(n: int64) -> int64 {
     if (n <= 1i64) {
         return n;
     }

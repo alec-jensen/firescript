@@ -1,7 +1,7 @@
 // C-style for headers with omitted or expression (non-declaration) parts.
 import @firescript/std.io.println;
 
-int32 i = 0;
+i: int32 = 0;
 
 // No init clause
 for (; i < 3; i++) {
@@ -14,7 +14,7 @@ for (i++; i < 6; i++) {
 }
 
 // All three clauses empty; exit via break
-int32 k = 0;
+k: int32 = 0;
 for (;;) {
     k++;
     if (k >= 2) {
@@ -24,7 +24,7 @@ for (;;) {
 println(k);
 
 // No increment clause
-for (int32 m = 0; m < 2;) {
+for (m: int32 = 0; m < 2;) {
     println("m=" + (m as string));
     m++;
 }

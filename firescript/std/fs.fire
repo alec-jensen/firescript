@@ -3,78 +3,78 @@
 directive enable_syscalls;
 
 export class FileResult {
-    int32 status;
-    string data;
+    status: int32;
+    data: string;
 
-    FileResult(int32 status, string data) {
+    fn FileResult(status: int32, data: string) {
         this.status = status;
         this.data = data;
     }
 
-    bool ok(&this) {
+    fn ok(&this) -> bool {
         return this.status >= 0;
     }
 
-    int32 err_code(&this) {
+    fn err_code(&this) -> int32 {
         if (this.status < 0) {
             return -this.status;
         }
         return 0;
     }
 
-    int32 result_status(&this) {
+    fn result_status(&this) -> int32 {
         return this.status;
     }
 
-    string result_data(&this) {
+    fn result_data(&this) -> string {
         return "" + this.data;
     }
 }
 
 export class File {
-    string path;
+    path: string;
 
-    File(&mut this, string path) {
+    fn File(&mut this, path: string) {
         this.path = path;
     }
 
-    FileResult read(&this) {
+    fn read(&this) -> FileResult {
         return _read_internal(this.path, -1);
     }
 
-    FileResult readBytes(&this, int32 bytes) {
+    fn readBytes(&this, bytes: int32) -> FileResult {
         return _read_internal(this.path, bytes);
     }
 
-    FileResult writeAll(&this, string data) {
-        FileResult result = _write_mode(this.path, data, "w");
+    fn writeAll(&this, data: string) -> FileResult {
+        result: FileResult = _write_mode(this.path, data, "w");
         drop(data);
         return result;
     }
 
-    FileResult appendAll(&this, string data) {
-        FileResult result = _write_mode(this.path, data, "a");
+    fn appendAll(&this, data: string) -> FileResult {
+        result: FileResult = _write_mode(this.path, data, "a");
         drop(data);
         return result;
     }
 
-    bool exists(&this) {
-        SyscallResult open_result = syscall_open(this.path, "r");
+    fn exists(&this) -> bool {
+        open_result: SyscallResult = syscall_open(this.path, "r");
         if (open_result.status < 0) {
             return false;
         }
 
-        SyscallResult close_result = syscall_close(open_result.status);
+        close_result: SyscallResult = syscall_close(open_result.status);
         return close_result.status >= 0;
     }
 
-    FileResult remove(&this) {
-        SyscallResult result = syscall_remove(this.path);
+    fn remove(&this) -> FileResult {
+        result: SyscallResult = syscall_remove(this.path);
         return FileResult(result.status, "");
     }
 
-    FileResult renameTo(&mut this, string new_path) {
-        SyscallResult result = syscall_rename(this.path, new_path);
+    fn renameTo(&mut this, new_path: string) -> FileResult {
+        result: SyscallResult = syscall_rename(this.path, new_path);
         if (result.status >= 0) {
             this.path = new_path;
         } else {
@@ -83,8 +83,8 @@ export class File {
         return FileResult(result.status, "");
     }
 
-    FileResult moveTo(&mut this, string dst_path) {
-        SyscallResult result = syscall_move(this.path, dst_path);
+    fn moveTo(&mut this, dst_path: string) -> FileResult {
+        result: SyscallResult = syscall_move(this.path, dst_path);
         if (result.status >= 0) {
             this.path = dst_path;
         } else {
@@ -94,7 +94,7 @@ export class File {
     }
 }
 
-FileResult _read_internal(&string path, int32 max_bytes) {
+fn _read_internal(path: &string, max_bytes: int32) -> FileResult {
     if (max_bytes < -1) {
         return FileResult(-22, "");
     }
@@ -103,18 +103,18 @@ FileResult _read_internal(&string path, int32 max_bytes) {
         return FileResult(0, "");
     }
 
-    SyscallResult open_result = syscall_open(path, "r");
+    open_result: SyscallResult = syscall_open(path, "r");
     if (open_result.status < 0) {
         return FileResult(open_result.status, "");
     }
 
-    int32 fd = open_result.status;
-    string content = "";
-    int32 total = 0;
+    fd: int32 = open_result.status;
+    content: string = "";
+    total: int32 = 0;
 
     if (max_bytes == -1) {
         while (true) {
-            SyscallResult read_result = syscall_read(fd, 4096);
+            read_result: SyscallResult = syscall_read(fd, 4096);
             if (read_result.status < 0) {
                 syscall_close(fd);
                 return FileResult(read_result.status, "");
@@ -126,14 +126,14 @@ FileResult _read_internal(&string path, int32 max_bytes) {
             content = content + read_result.data;
         }
     } else {
-        int32 remaining = max_bytes;
+        remaining: int32 = max_bytes;
         while (remaining > 0) {
-            int32 request = remaining;
+            request: int32 = remaining;
             if (request > 4096) {
                 request = 4096;
             }
 
-            SyscallResult read_result = syscall_read(fd, request);
+            read_result: SyscallResult = syscall_read(fd, request);
             if (read_result.status < 0) {
                 syscall_close(fd);
                 return FileResult(read_result.status, "");
@@ -148,7 +148,7 @@ FileResult _read_internal(&string path, int32 max_bytes) {
         }
     }
 
-    SyscallResult close_result = syscall_close(fd);
+    close_result: SyscallResult = syscall_close(fd);
     if (close_result.status < 0) {
         return FileResult(close_result.status, "");
     }
@@ -156,15 +156,15 @@ FileResult _read_internal(&string path, int32 max_bytes) {
     return FileResult(total, content);
 }
 
-FileResult _write_mode(&string path, &string data, &string mode) {
-    SyscallResult open_result = syscall_open(path, mode);
+fn _write_mode(path: &string, data: &string, mode: &string) -> FileResult {
+    open_result: SyscallResult = syscall_open(path, mode);
     if (open_result.status < 0) {
         return FileResult(open_result.status, "");
     }
 
-    int32 fd = open_result.status;
-    SyscallResult write_result = syscall_write(fd, data);
-    SyscallResult close_result = syscall_close(fd);
+    fd: int32 = open_result.status;
+    write_result: SyscallResult = syscall_write(fd, data);
+    close_result: SyscallResult = syscall_close(fd);
 
     if (write_result.status < 0) {
         return FileResult(write_result.status, "");

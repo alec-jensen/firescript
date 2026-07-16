@@ -1,31 +1,31 @@
 class Option<T?> {
-    T value?;
+    value: T?;
 
-    Option(T value?) {
+    fn Option(value: T?) {
         this.value = value;
     }
 
-    bool isSome() {
+    fn isSome() -> bool {
         return this.value != null;
     }
 
-    bool isNone() {
+    fn isNone() -> bool {
         return this.value == null;
     }
 }
 
 copyable class CopyableOption<T?> {
-    T value?;
+    value: T?;
 
-    CopyableOption(T value?) {
+    fn CopyableOption(value: T?) {
         this.value = value;
     }
 
-    bool isSome() {
+    fn isSome() -> bool {
         return this.value != null;
     }
 
-    bool isNone() {
+    fn isNone() -> bool {
         return this.value == null;
     }
 }

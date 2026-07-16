@@ -4,7 +4,7 @@ import @firescript/std.io.println;
 println("=== Nullable Variables ===");
 
 // Nullable string initialized to null
-string a? = null;
+a: string? = null;
 if (a == null) {
     println("a is null");
 } else {
@@ -12,7 +12,7 @@ if (a == null) {
 }
 
 // Nullable string initialized to a value
-string b? = "hello";
+b: string? = "hello";
 if (b != null) {
     println(b);
 } else {
@@ -20,7 +20,7 @@ if (b != null) {
 }
 
 // Nullable string reassigned from null to a value
-string c? = null;
+c: string? = null;
 c = "world";
 if (c != null) {
     println(c);
@@ -29,7 +29,7 @@ if (c != null) {
 }
 
 // Nullable string reassigned from value to null
-string d? = "foo";
+d: string? = "foo";
 d = null;
 if (d == null) {
     println("d is null");

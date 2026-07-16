@@ -7,39 +7,39 @@ import @firescript/std.io.println;
 // access alone (as in functions_many_params.fire) doesn't reach.
 
 copyable class Point {
-    int32 x;
-    int32 y;
+    x: int32;
+    y: int32;
 
-    Point(int32 x, int32 y) {
+    fn Point(x: int32, y: int32) {
         this.x = x;
         this.y = y;
     }
 }
 
 class Line {
-    Point start;
-    Point end;
+    start: Point;
+    end: Point;
 
-    Line(&mut this, Point start, Point end) {
+    fn Line(&mut this, start: Point, end: Point) {
         this.start = start;
         this.end = end;
     }
 
-    Point midpointStart(&this) {
+    fn midpointStart(&this) -> Point {
         return this.start;
     }
 }
 
-Point a = Point(0, 0);
-Point b = Point(4, 8);
-Line l = new Line(a, b);
+a: Point = Point(0, 0);
+b: Point = Point(4, 8);
+l: Line = new Line(a, b);
 
 println(l.start.x);
 println(l.start.y);
 println(l.end.x);
 println(l.end.y);
 
-Point copied = l.midpointStart();
+copied: Point = l.midpointStart();
 println(copied.x);
 println(copied.y);
 

@@ -1,20 +1,20 @@
 import @firescript/std.io.println;
 
-int32 getFirst(int32[] arr) {
+fn getFirst(arr: int32[]) -> int32 {
     return arr[0];
 }
 
-int32[] nums = [99, 88, 77];
+nums: int32[] = [99, 88, 77];
 println(getFirst(nums));
 
-int32 arraySum(int32[] values) {
-    int32 total = 0;
-    for (int32 v in values) {
+fn arraySum(values: int32[]) -> int32 {
+    total: int32 = 0;
+    for (v: int32 in values) {
         total = total + v;
     }
     return total;
 }
-int32[] to_sum = [1, 2, 3, 4, 5];
+to_sum: int32[] = [1, 2, 3, 4, 5];
 println(arraySum(to_sum));  // 15
 
 /* EXPECT

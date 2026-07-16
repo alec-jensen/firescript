@@ -8,21 +8,21 @@ directive enable_process_args;
 
 import @firescript/std.regex.pattern.RegexPattern;
 
-export bool is_match(string pattern, string text) {
-    bool result = RegexPattern(pattern).is_match(text);
+export fn is_match(pattern: string, text: string) -> bool {
+    result: bool = RegexPattern(pattern).is_match(text);
     return result;
 }
 
-export bool find_match(string pattern, string text) {
-    bool result = RegexPattern(pattern).matches(text);
+export fn find_match(pattern: string, text: string) -> bool {
+    result: bool = RegexPattern(pattern).matches(text);
     return result;
 }
 
-export int32 find_at(string pattern, string text, int32 start_pos) {
-    int32 result = RegexPattern(pattern).find_at(text, start_pos);
+export fn find_at(pattern: string, text: string, start_pos: int32) -> int32 {
+    result: int32 = RegexPattern(pattern).find_at(text, start_pos);
     return result;
 }
 
-export string last_error(string pattern) {
+export fn last_error(pattern: string) -> string {
     return RegexPattern(pattern).last_error();
 }

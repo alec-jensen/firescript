@@ -29,25 +29,25 @@ directive enable_lowlevel_runtime;
 //   56: fd table ptr (64 slots of u64 HANDLE; fd = index + 3)
 // ---------------------------------------------------------------------
 
-uint64 rt_state() {
-    uint64 state = runtime_state_get();
+fn rt_state() -> uint64 {
+    state: uint64 = runtime_state_get();
     if (state != 0u64) {
         return state;
     }
-    uint64 heap = win_get_process_heap();
+    heap: uint64 = win_get_process_heap();
     // 0x8 = HEAP_ZERO_MEMORY
-    uint64 block = win_heap_alloc(heap, 8u32, 64u64);
+    block: uint64 = win_heap_alloc(heap, 8u32, 64u64);
     mem_store_u64(block, heap);
     runtime_state_set(block);
     return block;
 }
 
-uint64 rt_heap() {
-    uint64 state = rt_state();
+fn rt_heap() -> uint64 {
+    state: uint64 = rt_state();
     return mem_load_u64(state);
 }
 
-uint64 rt_raw_alloc(uint64 n) {
+fn rt_raw_alloc(n: uint64) -> uint64 {
     if (n == 0u64) {
         n = 1u64;
     }
@@ -56,26 +56,26 @@ uint64 rt_raw_alloc(uint64 n) {
 
 // ---- allocation registry (legacy double-free / literal-free guard) ----
 
-uint64 rt_reg_hash(uint64 p, uint64 cap) {
-    uint64 h = (p / 16u64) * 2654435761u64;
+fn rt_reg_hash(p: uint64, cap: uint64) -> uint64 {
+    h: uint64 = (p / 16u64) * 2654435761u64;
     return h % cap;
 }
 
-void rt_reg_grow() {
-    uint64 state = rt_state();
-    uint64 old_table = mem_load_u64(state + 8u64);
-    uint64 old_cap = mem_load_u64(state + 16u64);
-    uint64 new_cap = old_cap * 2u64;
+fn rt_reg_grow() -> void {
+    state: uint64 = rt_state();
+    old_table: uint64 = mem_load_u64(state + 8u64);
+    old_cap: uint64 = mem_load_u64(state + 16u64);
+    new_cap: uint64 = old_cap * 2u64;
     if (new_cap == 0u64) {
         new_cap = 256u64;
     }
-    uint64 new_table = rt_raw_alloc(new_cap * 8u64);
+    new_table: uint64 = rt_raw_alloc(new_cap * 8u64);
     if (old_table != 0u64) {
-        uint64 i = 0u64;
+        i: uint64 = 0u64;
         while (i < old_cap) {
-            uint64 entry = mem_load_u64(old_table + i * 8u64);
+            entry: uint64 = mem_load_u64(old_table + i * 8u64);
             if (entry > 1u64) {
-                uint64 slot = rt_reg_hash(entry, new_cap);
+                slot: uint64 = rt_reg_hash(entry, new_cap);
                 while (mem_load_u64(new_table + slot * 8u64) > 1u64) {
                     slot = (slot + 1u64) % new_cap;
                 }
@@ -89,21 +89,21 @@ void rt_reg_grow() {
     mem_store_u64(state + 16u64, new_cap);
 }
 
-void rt_reg_add(uint64 p) {
+fn rt_reg_add(p: uint64) -> void {
     if (p <= 1u64) {
         return;
     }
-    uint64 state = rt_state();
-    uint64 cap = mem_load_u64(state + 16u64);
-    uint64 count = mem_load_u64(state + 24u64);
+    state: uint64 = rt_state();
+    cap: uint64 = mem_load_u64(state + 16u64);
+    count: uint64 = mem_load_u64(state + 24u64);
     if (cap == 0u64 || count * 10u64 >= cap * 7u64) {
         rt_reg_grow();
         cap = mem_load_u64(state + 16u64);
     }
-    uint64 table = mem_load_u64(state + 8u64);
-    uint64 slot = rt_reg_hash(p, cap);
+    table: uint64 = mem_load_u64(state + 8u64);
+    slot: uint64 = rt_reg_hash(p, cap);
     while (true) {
-        uint64 entry = mem_load_u64(table + slot * 8u64);
+        entry: uint64 = mem_load_u64(table + slot * 8u64);
         if (entry <= 1u64) {
             mem_store_u64(table + slot * 8u64, p);
             mem_store_u64(state + 24u64, count + 1u64);
@@ -116,27 +116,27 @@ void rt_reg_add(uint64 p) {
     }
 }
 
-bool rt_reg_remove(uint64 p) {
+fn rt_reg_remove(p: uint64) -> bool {
     if (p <= 1u64) {
         return false;
     }
-    uint64 state = rt_state();
-    uint64 cap = mem_load_u64(state + 16u64);
+    state: uint64 = rt_state();
+    cap: uint64 = mem_load_u64(state + 16u64);
     if (cap == 0u64) {
         return false;
     }
-    uint64 table = mem_load_u64(state + 8u64);
-    uint64 slot = rt_reg_hash(p, cap);
-    uint64 probes = 0u64;
+    table: uint64 = mem_load_u64(state + 8u64);
+    slot: uint64 = rt_reg_hash(p, cap);
+    probes: uint64 = 0u64;
     while (probes < cap) {
-        uint64 entry = mem_load_u64(table + slot * 8u64);
+        entry: uint64 = mem_load_u64(table + slot * 8u64);
         if (entry == 0u64) {
             return false;
         }
         if (entry == p) {
             // 1 = tombstone
             mem_store_u64(table + slot * 8u64, 1u64);
-            uint64 count = mem_load_u64(state + 24u64);
+            count: uint64 = mem_load_u64(state + 24u64);
             mem_store_u64(state + 24u64, count - 1u64);
             return true;
         }
@@ -148,14 +148,14 @@ bool rt_reg_remove(uint64 p) {
 
 // ---- core allocation ABI ----
 
-string fs_rt_alloc_zeroed(int64 n) {
-    uint64 p = rt_raw_alloc(n as uint64);
+fn fs_rt_alloc_zeroed(n: int64) -> string {
+    p: uint64 = rt_raw_alloc(n as uint64);
     rt_reg_add(p);
     return addr_to_str(p);
 }
 
-void fs_rt_free(&string p) {
-    uint64 addr = str_to_addr(p);
+fn fs_rt_free(p: &string) -> void {
+    addr: uint64 = str_to_addr(p);
     if (addr == 0u64) {
         return;
     }
@@ -166,9 +166,9 @@ void fs_rt_free(&string p) {
     // ignored, matching the legacy runtime's registry semantics.
 }
 
-void fs_rt_zero_memory(&string p, int64 n) {
-    uint64 addr = str_to_addr(p);
-    uint64 i = 0u64;
+fn fs_rt_zero_memory(p: &string, n: int64) -> void {
+    addr: uint64 = str_to_addr(p);
+    i: uint64 = 0u64;
     while (i < (n as uint64)) {
         mem_store_u8(addr + i, 0u8);
         i = i + 1u64;
@@ -177,8 +177,8 @@ void fs_rt_zero_memory(&string p, int64 n) {
 
 // ---- integer exponentiation (** operator) ----
 
-int64 fs_rt_pow_i64(int64 base, int64 exp) {
-    int64 result = 1i64;
+fn fs_rt_pow_i64(base: int64, exp: int64) -> int64 {
+    result: int64 = 1i64;
     while (exp > 0i64) {
         result = result * base;
         exp = exp - 1i64;
@@ -186,18 +186,18 @@ int64 fs_rt_pow_i64(int64 base, int64 exp) {
     return result;
 }
 
-float64 fs_rt_pow_f64(float64 base, float64 exp) {
-    float64 result = 1.0;
+fn fs_rt_pow_f64(base: float64, exp: float64) -> float64 {
+    result: float64 = 1.0;
     if (exp < 0.0) {
-        float64 acc = 1.0;
-        int64 e = (-exp) as int64;
+        acc: float64 = 1.0;
+        e: int64 = (-exp) as int64;
         while (e > 0i64) {
             acc = acc * base;
             e = e - 1i64;
         }
         return 1.0 / acc;
     }
-    int64 e2 = exp as int64;
+    e2: int64 = exp as int64;
     while (e2 > 0i64) {
         result = result * base;
         e2 = e2 - 1i64;
@@ -207,25 +207,25 @@ float64 fs_rt_pow_f64(float64 base, float64 exp) {
 
 // ---- string primitives (strings are NUL-terminated byte buffers) ----
 
-uint64 rt_str_len_addr(uint64 addr) {
+fn rt_str_len_addr(addr: uint64) -> uint64 {
     if (addr == 0u64) {
         return 0u64;
     }
-    uint64 len = 0u64;
+    len: uint64 = 0u64;
     while (mem_load_u8(addr + len) != 0u8) {
         len = len + 1u64;
     }
     return len;
 }
 
-int32 fs_rt_str_length(&string s) {
+fn fs_rt_str_length(s: &string) -> int32 {
     return rt_str_len_addr(str_to_addr(s)) as int32;
 }
 
-string fs_rt_str_dup(&string s) {
-    uint64 src = str_to_addr(s);
-    uint64 len = rt_str_len_addr(src);
-    uint64 dst = rt_raw_alloc(len + 1u64);
+fn fs_rt_str_dup(s: &string) -> string {
+    src: uint64 = str_to_addr(s);
+    len: uint64 = rt_str_len_addr(src);
+    dst: uint64 = rt_raw_alloc(len + 1u64);
     rt_reg_add(dst);
     if (len > 0u64) {
         mem_copy(dst, src, len);
@@ -234,12 +234,12 @@ string fs_rt_str_dup(&string s) {
     return addr_to_str(dst);
 }
 
-string fs_rt_str_concat(&string a, &string b) {
-    uint64 pa = str_to_addr(a);
-    uint64 pb = str_to_addr(b);
-    uint64 la = rt_str_len_addr(pa);
-    uint64 lb = rt_str_len_addr(pb);
-    uint64 dst = rt_raw_alloc(la + lb + 1u64);
+fn fs_rt_str_concat(a: &string, b: &string) -> string {
+    pa: uint64 = str_to_addr(a);
+    pb: uint64 = str_to_addr(b);
+    la: uint64 = rt_str_len_addr(pa);
+    lb: uint64 = rt_str_len_addr(pb);
+    dst: uint64 = rt_raw_alloc(la + lb + 1u64);
     rt_reg_add(dst);
     if (la > 0u64) {
         mem_copy(dst, pa, la);
@@ -251,16 +251,16 @@ string fs_rt_str_concat(&string a, &string b) {
     return addr_to_str(dst);
 }
 
-bool fs_rt_str_eq(&string a, &string b) {
-    uint64 pa = str_to_addr(a);
-    uint64 pb = str_to_addr(b);
+fn fs_rt_str_eq(a: &string, b: &string) -> bool {
+    pa: uint64 = str_to_addr(a);
+    pb: uint64 = str_to_addr(b);
     if (pa == 0u64 || pb == 0u64) {
         return pa == pb;
     }
-    uint64 i = 0u64;
+    i: uint64 = 0u64;
     while (true) {
-        uint8 ca = mem_load_u8(pa + i);
-        uint8 cb = mem_load_u8(pb + i);
+        ca: uint8 = mem_load_u8(pa + i);
+        cb: uint8 = mem_load_u8(pb + i);
         if (ca != cb) {
             return false;
         }
@@ -272,10 +272,10 @@ bool fs_rt_str_eq(&string a, &string b) {
     return true;
 }
 
-string fs_rt_str_char_at(&string s, int32 index) {
-    uint64 src = str_to_addr(s);
-    uint64 len = rt_str_len_addr(src);
-    uint64 dst = rt_raw_alloc(2u64);
+fn fs_rt_str_char_at(s: &string, index: int32) -> string {
+    src: uint64 = str_to_addr(s);
+    len: uint64 = rt_str_len_addr(src);
+    dst: uint64 = rt_raw_alloc(2u64);
     rt_reg_add(dst);
     if (index >= 0 && (index as uint64) < len) {
         mem_store_u8(dst, mem_load_u8(src + (index as uint64)));
@@ -286,42 +286,42 @@ string fs_rt_str_char_at(&string s, int32 index) {
     return addr_to_str(dst);
 }
 
-uint8 fs_rt_str_char_code_at(&string s, int32 index) {
-    uint64 src = str_to_addr(s);
-    uint64 len = rt_str_len_addr(src);
+fn fs_rt_str_char_code_at(s: &string, index: int32) -> uint8 {
+    src: uint64 = str_to_addr(s);
+    len: uint64 = rt_str_len_addr(src);
     if (index < 0 || (index as uint64) >= len) {
         return 0u8;
     }
     return mem_load_u8(src + (index as uint64));
 }
 
-uint8 fs_rt_str_char_code(&string s) {
-    uint64 src = str_to_addr(s);
+fn fs_rt_str_char_code(s: &string) -> uint8 {
+    src: uint64 = str_to_addr(s);
     if (src == 0u64) {
         return 0u8;
     }
     return mem_load_u8(src);
 }
 
-int32 fs_rt_str_index_of(&string haystack, &string needle) {
-    uint64 ph = str_to_addr(haystack);
-    uint64 pn = str_to_addr(needle);
+fn fs_rt_str_index_of(haystack: &string, needle: &string) -> int32 {
+    ph: uint64 = str_to_addr(haystack);
+    pn: uint64 = str_to_addr(needle);
     if (ph == 0u64 || pn == 0u64) {
         return -1;
     }
-    uint64 lh = rt_str_len_addr(ph);
-    uint64 ln = rt_str_len_addr(pn);
+    lh: uint64 = rt_str_len_addr(ph);
+    ln: uint64 = rt_str_len_addr(pn);
     if (ln == 0u64) {
         return 0;
     }
     if (ln > lh) {
         return -1;
     }
-    uint64 last = lh - ln;
-    uint64 i = 0u64;
+    last: uint64 = lh - ln;
+    i: uint64 = 0u64;
     while (i <= last) {
-        uint64 j = 0u64;
-        bool matched = true;
+        j: uint64 = 0u64;
+        matched: bool = true;
         while (j < ln) {
             if (mem_load_u8(ph + i + j) != mem_load_u8(pn + j)) {
                 matched = false;
@@ -337,17 +337,17 @@ int32 fs_rt_str_index_of(&string haystack, &string needle) {
     return -1;
 }
 
-string fs_rt_str_slice(&string s, int32 start, int32 end) {
-    uint64 src = str_to_addr(s);
-    uint64 len = rt_str_len_addr(src);
-    int32 length = len as int32;
+fn fs_rt_str_slice(s: &string, start: int32, end: int32) -> string {
+    src: uint64 = str_to_addr(s);
+    len: uint64 = rt_str_len_addr(src);
+    length: int32 = len as int32;
     if (start < 0) { start = 0; }
     if (end < 0) { end = 0; }
     if (start > length) { start = length; }
     if (end > length) { end = length; }
     if (end < start) { end = start; }
-    int32 out_len = end - start;
-    uint64 dst = rt_raw_alloc((out_len as uint64) + 1u64);
+    out_len: int32 = end - start;
+    dst: uint64 = rt_raw_alloc((out_len as uint64) + 1u64);
     rt_reg_add(dst);
     if (out_len > 0) {
         mem_copy(dst, src + (start as uint64), out_len as uint64);
@@ -358,11 +358,11 @@ string fs_rt_str_slice(&string s, int32 start, int32 end) {
 
 // ---- integer -> string conversions ----
 
-string rt_u64_to_str_impl(uint64 v, bool negative) {
+fn rt_u64_to_str_impl(v: uint64, negative: bool) -> string {
     // Max u64 is 20 digits + sign + NUL.
-    uint64 buf = rt_raw_alloc(22u64);
+    buf: uint64 = rt_raw_alloc(22u64);
     rt_reg_add(buf);
-    uint64 pos = 21u64;
+    pos: uint64 = 21u64;
     mem_store_u8(buf + pos, 0u8);
     if (v == 0u64) {
         pos = pos - 1u64;
@@ -379,8 +379,8 @@ string rt_u64_to_str_impl(uint64 v, bool negative) {
     }
     // Shift to the buffer start so the returned pointer is the block start
     // (required for the allocation registry to recognize it on free).
-    uint64 out_len = 21u64 - pos;
-    uint64 i = 0u64;
+    out_len: uint64 = 21u64 - pos;
+    i: uint64 = 0u64;
     while (i < out_len) {
         mem_store_u8(buf + i, mem_load_u8(buf + pos + i));
         i = i + 1u64;
@@ -389,36 +389,36 @@ string rt_u64_to_str_impl(uint64 v, bool negative) {
     return addr_to_str(buf);
 }
 
-string fs_rt_i64_to_str(int64 v) {
+fn fs_rt_i64_to_str(v: int64) -> string {
     if (v < 0i64) {
         // Negate via u64 to handle INT64_MIN.
-        uint64 magnitude = 0u64 - (v as uint64);
+        magnitude: uint64 = 0u64 - (v as uint64);
         return rt_u64_to_str_impl(magnitude, true);
     }
     return rt_u64_to_str_impl(v as uint64, false);
 }
 
-string fs_rt_i32_to_str(int32 v) {
+fn fs_rt_i32_to_str(v: int32) -> string {
     return fs_rt_i64_to_str(v as int64);
 }
 
-string fs_rt_u64_to_str(uint64 v) {
+fn fs_rt_u64_to_str(v: uint64) -> string {
     return rt_u64_to_str_impl(v, false);
 }
 
-string fs_rt_u32_to_str(uint32 v) {
+fn fs_rt_u32_to_str(v: uint32) -> string {
     return rt_u64_to_str_impl(v as uint64, false);
 }
 
-string fs_rt_bool_to_str(bool v) {
+fn fs_rt_bool_to_str(v: bool) -> string {
     if (v) {
         return fs_rt_str_dup("true");
     }
     return fs_rt_str_dup("false");
 }
 
-string fs_rt_char_to_str(uint8 c) {
-    uint64 dst = rt_raw_alloc(2u64);
+fn fs_rt_char_to_str(c: uint8) -> string {
+    dst: uint64 = rt_raw_alloc(2u64);
     rt_reg_add(dst);
     mem_store_u8(dst, c);
     mem_store_u8(dst + 1u64, 0u8);
@@ -427,31 +427,31 @@ string fs_rt_char_to_str(uint8 c) {
 
 // ---- string -> number parsing (atoi/atoll/atof semantics) ----
 
-int64 rt_parse_int(uint64 addr) {
+fn rt_parse_int(addr: uint64) -> int64 {
     if (addr == 0u64) {
         return 0i64;
     }
-    uint64 i = 0u64;
+    i: uint64 = 0u64;
     // Skip leading whitespace (space, tab, newline, CR, FF, VT).
     while (true) {
-        uint8 c = mem_load_u8(addr + i);
+        c: uint8 = mem_load_u8(addr + i);
         if (c == 32u8 || (c >= 9u8 && c <= 13u8)) {
             i = i + 1u64;
         } else {
             break;
         }
     }
-    bool negative = false;
-    uint8 sign = mem_load_u8(addr + i);
+    negative: bool = false;
+    sign: uint8 = mem_load_u8(addr + i);
     if (sign == 45u8) { // '-'
         negative = true;
         i = i + 1u64;
     } else if (sign == 43u8) { // '+'
         i = i + 1u64;
     }
-    int64 value = 0i64;
+    value: int64 = 0i64;
     while (true) {
-        uint8 c = mem_load_u8(addr + i);
+        c: uint8 = mem_load_u8(addr + i);
         if (c < 48u8 || c > 57u8) {
             break;
         }
@@ -464,46 +464,46 @@ int64 rt_parse_int(uint64 addr) {
     return value;
 }
 
-int32 fs_rt_str_to_i32(&string s) {
+fn fs_rt_str_to_i32(s: &string) -> int32 {
     return rt_parse_int(str_to_addr(s)) as int32;
 }
 
-int64 fs_rt_str_to_i64(&string s) {
+fn fs_rt_str_to_i64(s: &string) -> int64 {
     return rt_parse_int(str_to_addr(s));
 }
 
-bool fs_rt_str_to_bool(&string s) {
+fn fs_rt_str_to_bool(s: &string) -> bool {
     if (fs_rt_str_eq(s, "true")) {
         return true;
     }
     return fs_rt_str_eq(s, "1");
 }
 
-float64 fs_rt_str_to_f64(&string s) {
-    uint64 addr = str_to_addr(s);
+fn fs_rt_str_to_f64(s: &string) -> float64 {
+    addr: uint64 = str_to_addr(s);
     if (addr == 0u64) {
         return 0.0;
     }
-    uint64 i = 0u64;
+    i: uint64 = 0u64;
     while (true) {
-        uint8 c = mem_load_u8(addr + i);
+        c: uint8 = mem_load_u8(addr + i);
         if (c == 32u8 || (c >= 9u8 && c <= 13u8)) {
             i = i + 1u64;
         } else {
             break;
         }
     }
-    bool negative = false;
-    uint8 sign = mem_load_u8(addr + i);
+    negative: bool = false;
+    sign: uint8 = mem_load_u8(addr + i);
     if (sign == 45u8) {
         negative = true;
         i = i + 1u64;
     } else if (sign == 43u8) {
         i = i + 1u64;
     }
-    float64 value = 0.0;
+    value: float64 = 0.0;
     while (true) {
-        uint8 c = mem_load_u8(addr + i);
+        c: uint8 = mem_load_u8(addr + i);
         if (c < 48u8 || c > 57u8) {
             break;
         }
@@ -512,9 +512,9 @@ float64 fs_rt_str_to_f64(&string s) {
     }
     if (mem_load_u8(addr + i) == 46u8) { // '.'
         i = i + 1u64;
-        float64 scale = 0.1;
+        scale: float64 = 0.1;
         while (true) {
-            uint8 c = mem_load_u8(addr + i);
+            c: uint8 = mem_load_u8(addr + i);
             if (c < 48u8 || c > 57u8) {
                 break;
             }
@@ -524,20 +524,20 @@ float64 fs_rt_str_to_f64(&string s) {
         }
     }
     // Exponent part (e/E).
-    uint8 e = mem_load_u8(addr + i);
+    e: uint8 = mem_load_u8(addr + i);
     if (e == 101u8 || e == 69u8) {
         i = i + 1u64;
-        bool exp_negative = false;
-        uint8 esign = mem_load_u8(addr + i);
+        exp_negative: bool = false;
+        esign: uint8 = mem_load_u8(addr + i);
         if (esign == 45u8) {
             exp_negative = true;
             i = i + 1u64;
         } else if (esign == 43u8) {
             i = i + 1u64;
         }
-        int32 exponent = 0;
+        exponent: int32 = 0;
         while (true) {
-            uint8 c = mem_load_u8(addr + i);
+            c: uint8 = mem_load_u8(addr + i);
             if (c < 48u8 || c > 57u8) {
                 break;
             }
@@ -561,17 +561,17 @@ float64 fs_rt_str_to_f64(&string s) {
 
 // ---- stdout ----
 
-void fs_rt_stdout(&string s) {
-    uint64 addr = str_to_addr(s);
+fn fs_rt_stdout(s: &string) -> void {
+    addr: uint64 = str_to_addr(s);
     if (addr == 0u64) {
         return;
     }
-    uint64 len = rt_str_len_addr(addr);
+    len: uint64 = rt_str_len_addr(addr);
     if (len == 0u64) {
         return;
     }
-    uint64 handle = win_get_std_handle(-11); // STD_OUTPUT_HANDLE
-    uint64 state = rt_state();
+    handle: uint64 = win_get_std_handle(-11); // STD_OUTPUT_HANDLE
+    state: uint64 = rt_state();
     win_write_file(handle, addr, len as uint32, state + 32u64, 0u64);
 }
 
@@ -587,23 +587,23 @@ void fs_rt_stdout(&string s) {
 // integer digits end just before ANCHOR (most significant first),
 // fraction digits start at ANCHOR. ANCHOR offset = 16 + 340.
 
-uint64 rt_f64_decimal(uint64 mant, int32 bexp) {
-    uint64 buf = rt_raw_alloc(16u64 + 340u64 + 1090u64);
-    uint64 anchor = buf + 356u64;
-    uint64 int_len = 0u64;
-    uint64 m = mant;
+fn rt_f64_decimal(mant: uint64, bexp: int32) -> uint64 {
+    buf: uint64 = rt_raw_alloc(16u64 + 340u64 + 1090u64);
+    anchor: uint64 = buf + 356u64;
+    int_len: uint64 = 0u64;
+    m: uint64 = mant;
     while (m > 0u64) {
         int_len = int_len + 1u64;
         mem_store_u8(anchor - int_len, (m % 10u64) as uint8);
         m = m / 10u64;
     }
-    uint64 frac_len = 0u64;
+    frac_len: uint64 = 0u64;
     while (bexp > 0) {
-        uint64 carry = 0u64;
-        uint64 i = frac_len;
+        carry: uint64 = 0u64;
+        i: uint64 = frac_len;
         while (i > 0u64) {
-            uint64 idx = anchor + i - 1u64;
-            uint64 d = (mem_load_u8(idx) as uint64) * 2u64 + carry;
+            idx: uint64 = anchor + i - 1u64;
+            d: uint64 = (mem_load_u8(idx) as uint64) * 2u64 + carry;
             mem_store_u8(idx, (d % 10u64) as uint8);
             carry = d / 10u64;
             i = i - 1u64;
@@ -611,10 +611,10 @@ uint64 rt_f64_decimal(uint64 mant, int32 bexp) {
         while (frac_len > 0u64 && mem_load_u8(anchor + frac_len - 1u64) == 0u8) {
             frac_len = frac_len - 1u64;
         }
-        uint64 j = 0u64;
+        j: uint64 = 0u64;
         while (j < int_len) {
-            uint64 idx2 = anchor - 1u64 - j;
-            uint64 d2 = (mem_load_u8(idx2) as uint64) * 2u64 + carry;
+            idx2: uint64 = anchor - 1u64 - j;
+            d2: uint64 = (mem_load_u8(idx2) as uint64) * 2u64 + carry;
             mem_store_u8(idx2, (d2 % 10u64) as uint8);
             carry = d2 / 10u64;
             j = j + 1u64;
@@ -627,11 +627,11 @@ uint64 rt_f64_decimal(uint64 mant, int32 bexp) {
         bexp = bexp - 1;
     }
     while (bexp < 0) {
-        uint64 rem = 0u64;
-        uint64 i2 = 0u64;
+        rem: uint64 = 0u64;
+        i2: uint64 = 0u64;
         while (i2 < int_len) {
-            uint64 idx3 = anchor - int_len + i2;
-            uint64 cur = rem * 10u64 + (mem_load_u8(idx3) as uint64);
+            idx3: uint64 = anchor - int_len + i2;
+            cur: uint64 = rem * 10u64 + (mem_load_u8(idx3) as uint64);
             mem_store_u8(idx3, (cur / 2u64) as uint8);
             rem = cur % 2u64;
             i2 = i2 + 1u64;
@@ -639,10 +639,10 @@ uint64 rt_f64_decimal(uint64 mant, int32 bexp) {
         while (int_len > 0u64 && mem_load_u8(anchor - int_len) == 0u8) {
             int_len = int_len - 1u64;
         }
-        uint64 k = 0u64;
+        k: uint64 = 0u64;
         while (k < frac_len) {
-            uint64 idx4 = anchor + k;
-            uint64 cur2 = rem * 10u64 + (mem_load_u8(idx4) as uint64);
+            idx4: uint64 = anchor + k;
+            cur2: uint64 = rem * 10u64 + (mem_load_u8(idx4) as uint64);
             mem_store_u8(idx4, (cur2 / 2u64) as uint8);
             rem = cur2 % 2u64;
             k = k + 1u64;
@@ -660,20 +660,20 @@ uint64 rt_f64_decimal(uint64 mant, int32 bexp) {
 
 // Round the digit array at `keep` fraction digits (round half to even).
 // Returns the new int_len (rounding can carry into a new leading digit).
-uint64 rt_dec_round_frac(uint64 buf, uint64 keep) {
-    uint64 anchor = buf + 356u64;
-    uint64 int_len = mem_load_u64(buf);
-    uint64 frac_len = mem_load_u64(buf + 8u64);
+fn rt_dec_round_frac(buf: uint64, keep: uint64) -> uint64 {
+    anchor: uint64 = buf + 356u64;
+    int_len: uint64 = mem_load_u64(buf);
+    frac_len: uint64 = mem_load_u64(buf + 8u64);
     if (frac_len <= keep) {
         return int_len;
     }
-    uint8 next = mem_load_u8(anchor + keep);
-    bool round_up = false;
+    next: uint8 = mem_load_u8(anchor + keep);
+    round_up: bool = false;
     if (next > 5u8) {
         round_up = true;
     } else if (next == 5u8) {
-        bool more = false;
-        uint64 i = keep + 1u64;
+        more: bool = false;
+        i: uint64 = keep + 1u64;
         while (i < frac_len) {
             if (mem_load_u8(anchor + i) != 0u8) {
                 more = true;
@@ -685,7 +685,7 @@ uint64 rt_dec_round_frac(uint64 buf, uint64 keep) {
             round_up = true;
         } else {
             // Exact tie: round half to even.
-            uint8 prev = 0u8;
+            prev: uint8 = 0u8;
             if (keep > 0u64) {
                 prev = mem_load_u8(anchor + keep - 1u64);
             } else if (int_len > 0u64) {
@@ -697,11 +697,11 @@ uint64 rt_dec_round_frac(uint64 buf, uint64 keep) {
         }
     }
     if (round_up) {
-        uint64 j = keep;
-        bool carry = true;
+        j: uint64 = keep;
+        carry: bool = true;
         while (j > 0u64 && carry) {
-            uint64 idx = anchor + j - 1u64;
-            uint8 d = mem_load_u8(idx) + 1u8;
+            idx: uint64 = anchor + j - 1u64;
+            d: uint8 = mem_load_u8(idx) + 1u8;
             if (d == 10u8) {
                 mem_store_u8(idx, 0u8);
             } else {
@@ -710,10 +710,10 @@ uint64 rt_dec_round_frac(uint64 buf, uint64 keep) {
             }
             j = j - 1u64;
         }
-        uint64 k = 0u64;
+        k: uint64 = 0u64;
         while (k < int_len && carry) {
-            uint64 idx2 = anchor - 1u64 - k;
-            uint8 d2 = mem_load_u8(idx2) + 1u8;
+            idx2: uint64 = anchor - 1u64 - k;
+            d2: uint8 = mem_load_u8(idx2) + 1u8;
             if (d2 == 10u8) {
                 mem_store_u8(idx2, 0u8);
             } else {
@@ -733,11 +733,11 @@ uint64 rt_dec_round_frac(uint64 buf, uint64 keep) {
 }
 
 // printf "%f" semantics: fixed notation, 6 fractional digits.
-string fs_rt_f64_to_str(float64 value) {
-    uint64 bits = f64_bits(value);
-    bool negative = bits >= 9223372036854775808u64;
-    uint64 exp_field = (bits / 4503599627370496u64) % 2048u64;
-    uint64 mant_field = bits % 4503599627370496u64;
+fn fs_rt_f64_to_str(value: float64) -> string {
+    bits: uint64 = f64_bits(value);
+    negative: bool = bits >= 9223372036854775808u64;
+    exp_field: uint64 = (bits / 4503599627370496u64) % 2048u64;
+    mant_field: uint64 = bits % 4503599627370496u64;
     if (exp_field == 2047u64) {
         if (mant_field != 0u64) {
             return fs_rt_str_dup("nan");
@@ -747,27 +747,27 @@ string fs_rt_f64_to_str(float64 value) {
         }
         return fs_rt_str_dup("inf");
     }
-    uint64 mant = mant_field;
-    int32 bexp = -1074;
+    mant: uint64 = mant_field;
+    bexp: int32 = -1074;
     if (exp_field != 0u64) {
         mant = mant_field + 4503599627370496u64;
         bexp = (exp_field as int32) - 1075;
     }
-    uint64 dec = rt_f64_decimal(mant, bexp);
-    uint64 anchor = dec + 356u64;
-    uint64 int_len = rt_dec_round_frac(dec, 6u64);
-    uint64 frac_len = mem_load_u64(dec + 8u64);
+    dec: uint64 = rt_f64_decimal(mant, bexp);
+    anchor: uint64 = dec + 356u64;
+    int_len: uint64 = rt_dec_round_frac(dec, 6u64);
+    frac_len: uint64 = mem_load_u64(dec + 8u64);
 
-    uint64 out_len = int_len + 8u64;
+    out_len: uint64 = int_len + 8u64;
     if (int_len == 0u64) {
         out_len = out_len + 1u64;
     }
     if (negative) {
         out_len = out_len + 1u64;
     }
-    uint64 out = rt_raw_alloc(out_len + 1u64);
+    out: uint64 = rt_raw_alloc(out_len + 1u64);
     rt_reg_add(out);
-    uint64 pos = 0u64;
+    pos: uint64 = 0u64;
     if (negative) {
         mem_store_u8(out + pos, 45u8);
         pos = pos + 1u64;
@@ -776,7 +776,7 @@ string fs_rt_f64_to_str(float64 value) {
         mem_store_u8(out + pos, 48u8);
         pos = pos + 1u64;
     } else {
-        uint64 i = 0u64;
+        i: uint64 = 0u64;
         while (i < int_len) {
             mem_store_u8(out + pos, mem_load_u8(anchor - int_len + i) + 48u8);
             pos = pos + 1u64;
@@ -785,9 +785,9 @@ string fs_rt_f64_to_str(float64 value) {
     }
     mem_store_u8(out + pos, 46u8);
     pos = pos + 1u64;
-    uint64 f = 0u64;
+    f: uint64 = 0u64;
     while (f < 6u64) {
-        uint8 d = 0u8;
+        d: uint8 = 0u8;
         if (f < frac_len) {
             d = mem_load_u8(anchor + f);
         }
@@ -800,17 +800,17 @@ string fs_rt_f64_to_str(float64 value) {
     return addr_to_str(out);
 }
 
-string fs_rt_f32_to_str(float32 fvalue) {
+fn fs_rt_f32_to_str(fvalue: float32) -> string {
     return fs_rt_f64_to_str(fvalue as float64);
 }
 
 // printf "%g" semantics: 6 significant digits, fixed or scientific,
 // trailing zeros stripped.
-string fs_rt_f64_to_repr(float64 value) {
-    uint64 bits = f64_bits(value);
-    bool negative = bits >= 9223372036854775808u64;
-    uint64 exp_field = (bits / 4503599627370496u64) % 2048u64;
-    uint64 mant_field = bits % 4503599627370496u64;
+fn fs_rt_f64_to_repr(value: float64) -> string {
+    bits: uint64 = f64_bits(value);
+    negative: bool = bits >= 9223372036854775808u64;
+    exp_field: uint64 = (bits / 4503599627370496u64) % 2048u64;
+    mant_field: uint64 = bits % 4503599627370496u64;
     if (exp_field == 2047u64) {
         if (mant_field != 0u64) {
             return fs_rt_str_dup("nan");
@@ -826,20 +826,20 @@ string fs_rt_f64_to_repr(float64 value) {
         }
         return fs_rt_str_dup("0");
     }
-    uint64 mant = mant_field;
-    int32 bexp = -1074;
+    mant: uint64 = mant_field;
+    bexp: int32 = -1074;
     if (exp_field != 0u64) {
         mant = mant_field + 4503599627370496u64;
         bexp = (exp_field as int32) - 1075;
     }
-    uint64 dec = rt_f64_decimal(mant, bexp);
-    uint64 anchor = dec + 356u64;
-    uint64 int_len = mem_load_u64(dec);
-    uint64 frac_len = mem_load_u64(dec + 8u64);
+    dec: uint64 = rt_f64_decimal(mant, bexp);
+    anchor: uint64 = dec + 356u64;
+    int_len: uint64 = mem_load_u64(dec);
+    frac_len: uint64 = mem_load_u64(dec + 8u64);
 
     // Decimal exponent of the leading significant digit.
-    int32 exp10 = 0;
-    uint64 sig_start_frac = 0u64;
+    exp10: int32 = 0;
+    sig_start_frac: uint64 = 0u64;
     if (int_len > 0u64) {
         exp10 = (int_len as int32) - 1;
     } else {
@@ -850,15 +850,15 @@ string fs_rt_f64_to_repr(float64 value) {
     }
 
     // Collect 6 significant digits (plus lookahead for rounding).
-    uint64 digits = rt_raw_alloc(16u64);
-    uint64 ndig = 0u64;
-    uint64 ii = 0u64;
-    bool more_nonzero = false;
-    uint8 next_digit = 0u8;
-    bool have_next = false;
+    digits: uint64 = rt_raw_alloc(16u64);
+    ndig: uint64 = 0u64;
+    ii: uint64 = 0u64;
+    more_nonzero: bool = false;
+    next_digit: uint8 = 0u8;
+    have_next: bool = false;
     if (int_len > 0u64) {
         while (ii < int_len) {
-            uint8 d = mem_load_u8(anchor - int_len + ii);
+            d: uint8 = mem_load_u8(anchor - int_len + ii);
             if (ndig < 6u64) {
                 mem_store_u8(digits + ndig, d);
                 ndig = ndig + 1u64;
@@ -870,9 +870,9 @@ string fs_rt_f64_to_repr(float64 value) {
             }
             ii = ii + 1u64;
         }
-        uint64 jj = 0u64;
+        jj: uint64 = 0u64;
         while (jj < frac_len) {
-            uint8 d2 = mem_load_u8(anchor + jj);
+            d2: uint8 = mem_load_u8(anchor + jj);
             if (ndig < 6u64) {
                 mem_store_u8(digits + ndig, d2);
                 ndig = ndig + 1u64;
@@ -885,9 +885,9 @@ string fs_rt_f64_to_repr(float64 value) {
             jj = jj + 1u64;
         }
     } else {
-        uint64 kk = sig_start_frac;
+        kk: uint64 = sig_start_frac;
         while (kk < frac_len) {
-            uint8 d3 = mem_load_u8(anchor + kk);
+            d3: uint8 = mem_load_u8(anchor + kk);
             if (ndig < 6u64) {
                 mem_store_u8(digits + ndig, d3);
                 ndig = ndig + 1u64;
@@ -907,7 +907,7 @@ string fs_rt_f64_to_repr(float64 value) {
     }
 
     // Round half to even at 6 significant digits.
-    bool round_up = false;
+    round_up: bool = false;
     if (have_next) {
         if (next_digit > 5u8) {
             round_up = true;
@@ -920,10 +920,10 @@ string fs_rt_f64_to_repr(float64 value) {
         }
     }
     if (round_up) {
-        uint64 rr = 6u64;
-        bool carry = true;
+        rr: uint64 = 6u64;
+        carry: bool = true;
         while (rr > 0u64 && carry) {
-            uint8 d4 = mem_load_u8(digits + rr - 1u64) + 1u8;
+            d4: uint8 = mem_load_u8(digits + rr - 1u64) + 1u8;
             if (d4 == 10u8) {
                 mem_store_u8(digits + rr - 1u64, 0u8);
             } else {
@@ -935,7 +935,7 @@ string fs_rt_f64_to_repr(float64 value) {
         if (carry) {
             // 999999 -> 100000 with exponent bump.
             mem_store_u8(digits, 1u8);
-            uint64 zz = 1u64;
+            zz: uint64 = 1u64;
             while (zz < 6u64) {
                 mem_store_u8(digits + zz, 0u8);
                 zz = zz + 1u64;
@@ -945,14 +945,14 @@ string fs_rt_f64_to_repr(float64 value) {
     }
 
     // Strip trailing zeros.
-    uint64 sig = 6u64;
+    sig: uint64 = 6u64;
     while (sig > 1u64 && mem_load_u8(digits + sig - 1u64) == 0u8) {
         sig = sig - 1u64;
     }
 
-    uint64 out = rt_raw_alloc(48u64);
+    out: uint64 = rt_raw_alloc(48u64);
     rt_reg_add(out);
-    uint64 pos = 0u64;
+    pos: uint64 = 0u64;
     if (negative) {
         mem_store_u8(out + pos, 45u8);
         pos = pos + 1u64;
@@ -965,7 +965,7 @@ string fs_rt_f64_to_repr(float64 value) {
         if (sig > 1u64) {
             mem_store_u8(out + pos, 46u8);
             pos = pos + 1u64;
-            uint64 s = 1u64;
+            s: uint64 = 1u64;
             while (s < sig) {
                 mem_store_u8(out + pos, mem_load_u8(digits + s) + 48u8);
                 pos = pos + 1u64;
@@ -974,7 +974,7 @@ string fs_rt_f64_to_repr(float64 value) {
         }
         mem_store_u8(out + pos, 101u8);
         pos = pos + 1u64;
-        int32 e = exp10;
+        e: int32 = exp10;
         if (e < 0) {
             mem_store_u8(out + pos, 45u8);
             e = -e;
@@ -992,10 +992,10 @@ string fs_rt_f64_to_repr(float64 value) {
         pos = pos + 1u64;
     } else if (exp10 >= 0) {
         // Fixed, point inside or right of the digits.
-        uint64 int_digits = (exp10 as uint64) + 1u64;
-        uint64 p2 = 0u64;
+        int_digits: uint64 = (exp10 as uint64) + 1u64;
+        p2: uint64 = 0u64;
         while (p2 < int_digits) {
-            uint8 d5 = 0u8;
+            d5: uint8 = 0u8;
             if (p2 < sig) {
                 d5 = mem_load_u8(digits + p2);
             }
@@ -1006,7 +1006,7 @@ string fs_rt_f64_to_repr(float64 value) {
         if (sig > int_digits) {
             mem_store_u8(out + pos, 46u8);
             pos = pos + 1u64;
-            uint64 p3 = int_digits;
+            p3: uint64 = int_digits;
             while (p3 < sig) {
                 mem_store_u8(out + pos, mem_load_u8(digits + p3) + 48u8);
                 pos = pos + 1u64;
@@ -1019,13 +1019,13 @@ string fs_rt_f64_to_repr(float64 value) {
         pos = pos + 1u64;
         mem_store_u8(out + pos, 46u8);
         pos = pos + 1u64;
-        int32 zeros = -exp10 - 1;
+        zeros: int32 = -exp10 - 1;
         while (zeros > 0) {
             mem_store_u8(out + pos, 48u8);
             pos = pos + 1u64;
             zeros = zeros - 1;
         }
-        uint64 p4 = 0u64;
+        p4: uint64 = 0u64;
         while (p4 < sig) {
             mem_store_u8(out + pos, mem_load_u8(digits + p4) + 48u8);
             pos = pos + 1u64;
@@ -1037,28 +1037,28 @@ string fs_rt_f64_to_repr(float64 value) {
     return addr_to_str(out);
 }
 
-string fs_rt_f32_to_repr(float32 fvalue) {
+fn fs_rt_f32_to_repr(fvalue: float32) -> string {
     return fs_rt_f64_to_repr(fvalue as float64);
 }
 
 // ---- process arguments (GetCommandLineA + Windows quoting rules) ----
 
-void rt_args_parse() {
-    uint64 state = rt_state();
+fn rt_args_parse() -> void {
+    state: uint64 = rt_state();
     if (mem_load_u64(state + 48u64) != 0u64) {
         return;
     }
-    uint64 cmd = win_get_command_line_a();
-    uint64 cmd_len = rt_str_len_addr(cmd);
+    cmd: uint64 = win_get_command_line_a();
+    cmd_len: uint64 = rt_str_len_addr(cmd);
     // Worst case every other char is an arg: cap argv at len/2 + 2.
-    uint64 argv = rt_raw_alloc((cmd_len / 2u64 + 2u64) * 8u64);
-    uint64 argc = 0u64;
-    uint64 i = 0u64;
-    uint64 scratch = rt_raw_alloc(cmd_len + 1u64);
+    argv: uint64 = rt_raw_alloc((cmd_len / 2u64 + 2u64) * 8u64);
+    argc: uint64 = 0u64;
+    i: uint64 = 0u64;
+    scratch: uint64 = rt_raw_alloc(cmd_len + 1u64);
     while (i < cmd_len) {
         // Skip whitespace between arguments.
         while (i < cmd_len) {
-            uint8 c = mem_load_u8(cmd + i);
+            c: uint8 = mem_load_u8(cmd + i);
             if (c == 32u8 || c == 9u8) {
                 i = i + 1u64;
             } else {
@@ -1068,25 +1068,25 @@ void rt_args_parse() {
         if (i >= cmd_len) {
             break;
         }
-        uint64 out_len = 0u64;
-        bool in_quotes = false;
+        out_len: uint64 = 0u64;
+        in_quotes: bool = false;
         while (i < cmd_len) {
-            uint8 c = mem_load_u8(cmd + i);
+            c: uint8 = mem_load_u8(cmd + i);
             if (!in_quotes && (c == 32u8 || c == 9u8)) {
                 break;
             }
             if (c == 92u8) { // backslash run
-                uint64 n_bs = 0u64;
+                n_bs: uint64 = 0u64;
                 while (i < cmd_len && mem_load_u8(cmd + i) == 92u8) {
                     n_bs = n_bs + 1u64;
                     i = i + 1u64;
                 }
-                bool followed_by_quote = i < cmd_len && mem_load_u8(cmd + i) == 34u8;
-                uint64 emit = n_bs;
+                followed_by_quote: bool = i < cmd_len && mem_load_u8(cmd + i) == 34u8;
+                emit: uint64 = n_bs;
                 if (followed_by_quote) {
                     emit = n_bs / 2u64;
                 }
-                uint64 b = 0u64;
+                b: uint64 = 0u64;
                 while (b < emit) {
                     mem_store_u8(scratch + out_len, 92u8);
                     out_len = out_len + 1u64;
@@ -1106,7 +1106,7 @@ void rt_args_parse() {
                 i = i + 1u64;
             }
         }
-        uint64 arg = rt_raw_alloc(out_len + 1u64);
+        arg: uint64 = rt_raw_alloc(out_len + 1u64);
         if (out_len > 0u64) {
             mem_copy(arg, scratch, out_len);
         }
@@ -1119,36 +1119,36 @@ void rt_args_parse() {
     mem_store_u64(state + 48u64, argv);
 }
 
-int32 fs_rt_argc() {
+fn fs_rt_argc() -> int32 {
     rt_args_parse();
-    uint64 state = rt_state();
+    state: uint64 = rt_state();
     return mem_load_u64(state + 40u64) as int32;
 }
 
-string fs_rt_argv_at(int32 index) {
+fn fs_rt_argv_at(index: int32) -> string {
     rt_args_parse();
-    uint64 state = rt_state();
-    uint64 argc = mem_load_u64(state + 40u64);
+    state: uint64 = rt_state();
+    argc: uint64 = mem_load_u64(state + 40u64);
     if (index < 0 || (index as uint64) >= argc) {
         return fs_rt_str_dup("");
     }
-    uint64 argv = mem_load_u64(state + 48u64);
-    uint64 arg = mem_load_u64(argv + (index as uint64) * 8u64);
-    string view = addr_to_str(arg);
-    string result = fs_rt_str_dup(view);
+    argv: uint64 = mem_load_u64(state + 48u64);
+    arg: uint64 = mem_load_u64(argv + (index as uint64) * 8u64);
+    view: string = addr_to_str(arg);
+    result: string = fs_rt_str_dup(view);
     return result;
 }
 
 // ---- syscalls over kernel32 (fd table maps small ints to HANDLEs) ----
 
 copyable class SyscallResult {
-    int32 status;
-    string data;
+    status: int32;
+    data: string;
 }
 
-uint64 rt_fd_table() {
-    uint64 state = rt_state();
-    uint64 table = mem_load_u64(state + 56u64);
+fn rt_fd_table() -> uint64 {
+    state: uint64 = rt_state();
+    table: uint64 = mem_load_u64(state + 56u64);
     if (table == 0u64) {
         table = rt_raw_alloc(64u64 * 8u64);
         mem_store_u64(state + 56u64, table);
@@ -1156,9 +1156,9 @@ uint64 rt_fd_table() {
     return table;
 }
 
-int32 rt_fd_register(uint64 handle) {
-    uint64 table = rt_fd_table();
-    uint64 i = 0u64;
+fn rt_fd_register(handle: uint64) -> int32 {
+    table: uint64 = rt_fd_table();
+    i: uint64 = 0u64;
     while (i < 64u64) {
         if (mem_load_u64(table + i * 8u64) == 0u64) {
             mem_store_u64(table + i * 8u64, handle);
@@ -1169,7 +1169,7 @@ int32 rt_fd_register(uint64 handle) {
     return -24; // -EMFILE
 }
 
-uint64 rt_fd_handle(int32 fd) {
+fn rt_fd_handle(fd: int32) -> uint64 {
     if (fd == 0) {
         return win_get_std_handle(-10);
     }
@@ -1182,21 +1182,21 @@ uint64 rt_fd_handle(int32 fd) {
     if (fd < 3 || fd >= 67) {
         return 0u64;
     }
-    uint64 table = rt_fd_table();
+    table: uint64 = rt_fd_table();
     return mem_load_u64(table + ((fd - 3) as uint64) * 8u64);
 }
 
-void rt_fd_release(int32 fd) {
+fn rt_fd_release(fd: int32) -> void {
     if (fd < 3 || fd >= 67) {
         return;
     }
-    uint64 table = rt_fd_table();
+    table: uint64 = rt_fd_table();
     mem_store_u64(table + ((fd - 3) as uint64) * 8u64, 0u64);
 }
 
 // Map a GetLastError code to a negated errno-style status (legacy ABI).
-int32 rt_win_err() {
-    uint32 err = win_get_last_error();
+fn rt_win_err() -> int32 {
+    err: uint32 = win_get_last_error();
     if (err == 2u32 || err == 3u32) {
         return -2; // ENOENT
     }
@@ -1215,10 +1215,10 @@ int32 rt_win_err() {
     return -(err as int32);
 }
 
-SyscallResult fs_rt_syscall_open(&string path, &string mode) {
-    uint32 access = 0u32;
-    uint32 disposition = 0u32;
-    bool append = false;
+fn fs_rt_syscall_open(path: &string, mode: &string) -> SyscallResult {
+    access: uint32 = 0u32;
+    disposition: uint32 = 0u32;
+    append: bool = false;
     if (fs_rt_str_eq(mode, "r")) {
         access = 2147483648u32;       // GENERIC_READ
         disposition = 3u32;           // OPEN_EXISTING
@@ -1238,7 +1238,7 @@ SyscallResult fs_rt_syscall_open(&string path, &string mode) {
     } else {
         return SyscallResult(-22, ""); // -EINVAL
     }
-    uint64 handle = win_create_file_a(
+    handle: uint64 = win_create_file_a(
         str_to_addr(path), access, 3u32, 0u64, disposition, 128u32, 0u64
     );
     if (handle == 18446744073709551615u64) { // INVALID_HANDLE_VALUE
@@ -1247,7 +1247,7 @@ SyscallResult fs_rt_syscall_open(&string path, &string mode) {
     if (append) {
         win_set_file_pointer(handle, 0, 0u64, 2u32); // FILE_END
     }
-    int32 fd = rt_fd_register(handle);
+    fd: int32 = rt_fd_register(handle);
     if (fd < 0) {
         win_close_handle(handle);
         return SyscallResult(fd, "");
@@ -1255,29 +1255,29 @@ SyscallResult fs_rt_syscall_open(&string path, &string mode) {
     return SyscallResult(fd, "");
 }
 
-SyscallResult fs_rt_syscall_read(int32 fd, int32 n) {
+fn fs_rt_syscall_read(fd: int32, n: int32) -> SyscallResult {
     if (n <= 0) {
         return SyscallResult(-22, "");
     }
-    uint64 handle = rt_fd_handle(fd);
+    handle: uint64 = rt_fd_handle(fd);
     if (handle == 0u64) {
         return SyscallResult(-9, ""); // -EBADF
     }
-    uint64 raw = rt_raw_alloc((n as uint64) + 1u64);
-    uint64 state = rt_state();
-    int32 ok = win_read_file(handle, raw, n as uint32, state + 32u64, 0u64);
+    raw: uint64 = rt_raw_alloc((n as uint64) + 1u64);
+    state: uint64 = rt_state();
+    ok: int32 = win_read_file(handle, raw, n as uint32, state + 32u64, 0u64);
     if (ok == 0) {
         win_heap_free(rt_heap(), 0u32, raw);
         return SyscallResult(rt_win_err(), "");
     }
-    uint64 got = mem_load_u64(state + 32u64) % 4294967296u64;
+    got: uint64 = mem_load_u64(state + 32u64) % 4294967296u64;
     // Text-mode semantics (legacy parity): CRLF -> LF.
-    uint64 dst = rt_raw_alloc(got + 1u64);
+    dst: uint64 = rt_raw_alloc(got + 1u64);
     rt_reg_add(dst);
-    uint64 src_i = 0u64;
-    uint64 dst_i = 0u64;
+    src_i: uint64 = 0u64;
+    dst_i: uint64 = 0u64;
     while (src_i < got) {
-        uint8 c = mem_load_u8(raw + src_i);
+        c: uint8 = mem_load_u8(raw + src_i);
         if (c == 13u8 && src_i + 1u64 < got && mem_load_u8(raw + src_i + 1u64) == 10u8) {
             src_i = src_i + 1u64;
         } else {
@@ -1291,23 +1291,23 @@ SyscallResult fs_rt_syscall_read(int32 fd, int32 n) {
     return SyscallResult(dst_i as int32, addr_to_str(dst));
 }
 
-SyscallResult fs_rt_syscall_write(int32 fd, &string buf) {
-    uint64 src = str_to_addr(buf);
+fn fs_rt_syscall_write(fd: int32, buf: &string) -> SyscallResult {
+    src: uint64 = str_to_addr(buf);
     if (src == 0u64) {
         return SyscallResult(-22, "");
     }
-    uint64 handle = rt_fd_handle(fd);
+    handle: uint64 = rt_fd_handle(fd);
     if (handle == 0u64) {
         return SyscallResult(-9, "");
     }
-    uint64 len = rt_str_len_addr(src);
+    len: uint64 = rt_str_len_addr(src);
     // Text-mode semantics (legacy parity): LF -> CRLF on disk; the
     // returned count is the pre-translation length.
-    uint64 expanded = rt_raw_alloc(len * 2u64 + 1u64);
-    uint64 src_j = 0u64;
-    uint64 out_j = 0u64;
+    expanded: uint64 = rt_raw_alloc(len * 2u64 + 1u64);
+    src_j: uint64 = 0u64;
+    out_j: uint64 = 0u64;
     while (src_j < len) {
-        uint8 c = mem_load_u8(src + src_j);
+        c: uint8 = mem_load_u8(src + src_j);
         if (c == 10u8) {
             mem_store_u8(expanded + out_j, 13u8);
             out_j = out_j + 1u64;
@@ -1316,8 +1316,8 @@ SyscallResult fs_rt_syscall_write(int32 fd, &string buf) {
         out_j = out_j + 1u64;
         src_j = src_j + 1u64;
     }
-    uint64 state = rt_state();
-    int32 ok = win_write_file(handle, expanded, out_j as uint32, state + 32u64, 0u64);
+    state: uint64 = rt_state();
+    ok: int32 = win_write_file(handle, expanded, out_j as uint32, state + 32u64, 0u64);
     win_heap_free(rt_heap(), 0u32, expanded);
     if (ok == 0) {
         return SyscallResult(rt_win_err(), "");
@@ -1325,54 +1325,54 @@ SyscallResult fs_rt_syscall_write(int32 fd, &string buf) {
     return SyscallResult(len as int32, "");
 }
 
-SyscallResult fs_rt_syscall_close(int32 fd) {
-    uint64 handle = rt_fd_handle(fd);
+fn fs_rt_syscall_close(fd: int32) -> SyscallResult {
+    handle: uint64 = rt_fd_handle(fd);
     if (handle == 0u64 || fd < 3) {
         return SyscallResult(-9, "");
     }
     rt_fd_release(fd);
-    int32 ok = win_close_handle(handle);
+    ok: int32 = win_close_handle(handle);
     if (ok == 0) {
         return SyscallResult(rt_win_err(), "");
     }
     return SyscallResult(0, "");
 }
 
-SyscallResult fs_rt_syscall_remove(&string path) {
-    int32 ok = win_delete_file_a(str_to_addr(path));
+fn fs_rt_syscall_remove(path: &string) -> SyscallResult {
+    ok: int32 = win_delete_file_a(str_to_addr(path));
     if (ok == 0) {
         return SyscallResult(rt_win_err(), "");
     }
     return SyscallResult(0, "");
 }
 
-SyscallResult fs_rt_syscall_rename(&string old_path, &string new_path) {
+fn fs_rt_syscall_rename(old_path: &string, new_path: &string) -> SyscallResult {
     // C rename() on Windows fails when the destination exists.
-    int32 ok = win_move_file_ex_a(str_to_addr(old_path), str_to_addr(new_path), 0u32);
+    ok: int32 = win_move_file_ex_a(str_to_addr(old_path), str_to_addr(new_path), 0u32);
     if (ok == 0) {
         return SyscallResult(rt_win_err(), "");
     }
     return SyscallResult(0, "");
 }
 
-SyscallResult fs_rt_syscall_move(&string src_path, &string dst_path) {
+fn fs_rt_syscall_move(src_path: &string, dst_path: &string) -> SyscallResult {
     // Rename first; fall back to copy + remove for cross-device moves
     // (legacy contract).
-    int32 ok = win_move_file_ex_a(str_to_addr(src_path), str_to_addr(dst_path), 0u32);
+    ok: int32 = win_move_file_ex_a(str_to_addr(src_path), str_to_addr(dst_path), 0u32);
     if (ok != 0) {
         return SyscallResult(0, "");
     }
-    int32 err = rt_win_err();
+    err: int32 = rt_win_err();
     if (err != -18) { // not EXDEV
         return SyscallResult(err, "");
     }
-    int32 copied = win_copy_file_a(str_to_addr(src_path), str_to_addr(dst_path), 0);
+    copied: int32 = win_copy_file_a(str_to_addr(src_path), str_to_addr(dst_path), 0);
     if (copied == 0) {
         return SyscallResult(rt_win_err(), "");
     }
-    int32 removed = win_delete_file_a(str_to_addr(src_path));
+    removed: int32 = win_delete_file_a(str_to_addr(src_path));
     if (removed == 0) {
-        int32 rm_err = rt_win_err();
+        rm_err: int32 = rt_win_err();
         win_delete_file_a(str_to_addr(dst_path));
         return SyscallResult(rm_err, "");
     }

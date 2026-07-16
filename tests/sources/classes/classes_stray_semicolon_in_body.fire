@@ -2,14 +2,14 @@ import @firescript/std.io.println;
 
 class Box {
     ;
-    int32 v;
+    v: int32;
 
-    Box(int32 v) {
+    fn Box(v: int32) {
         this.v = v;
     }
 }
 
-Box b = Box(7);
+b: Box = Box(7);
 println(b.v);
 
 /* EXPECT

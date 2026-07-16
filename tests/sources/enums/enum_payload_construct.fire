@@ -5,16 +5,16 @@ import @firescript/std.io.println;
 // for a later stage (see docs/internal/development/version_planning.md,
 // 0.6.0 "Griffin").
 enum Shape {
-    Circle(float64 radius),
-    Rectangle(float64 width, float64 height),
-    Labeled(int32 code, bool active),
+    Circle(radius: float64),
+    Rectangle(width: float64, height: float64),
+    Labeled(code: int32, active: bool),
     Point
 }
 
-Shape a = Shape.Circle(3.0);
-Shape b = Shape.Rectangle(2.0, 5.0);
-Shape c = Shape.Labeled(7, true);
-Shape d = Shape.Point;
+a: Shape = Shape.Circle(3.0);
+b: Shape = Shape.Rectangle(2.0, 5.0);
+c: Shape = Shape.Labeled(7, true);
+d: Shape = Shape.Point;
 
 // Reassignment across variants with different payload shapes must not
 // corrupt the shared tagged-union storage.

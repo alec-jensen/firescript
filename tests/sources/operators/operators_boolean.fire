@@ -1,8 +1,8 @@
 import @firescript/std.io.println;
 
 // Basic boolean literals
-bool t = true;
-bool f = false;
+t: bool = true;
+f: bool = false;
 
 // NOT
 println(!t);
@@ -27,10 +27,10 @@ println(!(t && f));
 println(!(t || f));
 
 // Boolean from comparisons
-int32 a = 5;
-int32 b = 10;
-bool gt = a > b;
-bool lt = a < b;
+a: int32 = 5;
+b: int32 = 10;
+gt: bool = a > b;
+lt: bool = a < b;
 println(gt);
 println(lt);
 println(gt && lt);
@@ -41,14 +41,14 @@ println(!gt);
 println(!lt);
 
 // Chained conditions
-int32 x = 3;
-bool inRange = x > 0 && x < 10;
-bool outRange = x < 0 || x > 10;
+x: int32 = 3;
+inRange: bool = x > 0 && x < 10;
+outRange: bool = x < 0 || x > 10;
 println(inRange);
 println(outRange);
 
 // bool variable reassignment
-bool flag = false;
+flag: bool = false;
 flag = true;
 println(flag);
 flag = !flag;

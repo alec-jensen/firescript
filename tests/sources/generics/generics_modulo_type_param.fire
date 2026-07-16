@@ -1,10 +1,10 @@
 import @firescript/std.io.println;
 
-T modOp<T>(T a, T b) {
+fn modOp<T>(a: T, b: T) -> T {
     return a % b;
 }
 
-int32 r = modOp(10i32, 3i32);
+r: int32 = modOp(10i32, 3i32);
 println(r);
 
 /* EXPECT

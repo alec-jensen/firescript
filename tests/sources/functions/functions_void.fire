@@ -1,6 +1,6 @@
 import @firescript/std.io.println;
 
-void printTwice(string msg) {
+fn printTwice(msg: string) -> void {
     println(msg);
     println(msg);
 }

@@ -14,13 +14,13 @@ import @firescript/std.io.println;
 }
 
 // Function with no body statements (just return)
-int32 immediate_return() {
+fn immediate_return() -> int32 {
     return 99;
 }
 println(immediate_return());
 
 // Multiple returns in function (all paths)
-string returnTest(int32 n) {
+fn returnTest(n: int32) -> string {
     if (n < 0) {
         return "negative";
     } else if (n == 0) {

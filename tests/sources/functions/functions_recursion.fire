@@ -1,6 +1,6 @@
 import @firescript/std.io.println;
 
-int32 factorial(int32 n) {
+fn factorial(n: int32) -> int32 {
     if (n <= 1) {
         return 1;
     }

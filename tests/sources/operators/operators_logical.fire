@@ -7,8 +7,8 @@ println("=== Logical Operators ===");
 
 // Boolean basics
 println("--- Boolean Basics ---");
-bool t = true;
-bool f = false;
+t: bool = true;
+f: bool = false;
 
 println(t);  // true
 println(f);  // false
@@ -18,9 +18,9 @@ println(t == f);  // false
 
 // Conditional logic using logical operators
 println("--- Logical Conditions ---");
-int32 a = 10;
-int32 b = 5;
-int32 c = 15;
+a: int32 = 10;
+b: int32 = 5;
+c: int32 = 15;
 
 if (a > b && a < c) {
     println("a is between b and c");

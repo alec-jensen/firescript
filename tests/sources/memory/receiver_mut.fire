@@ -2,46 +2,46 @@
 import @firescript/std.io.println;
 
 class Counter {
-    int32 count;
+    count: int32;
 
-    Counter(&mut this, int32 start) {
+    fn Counter(&mut this, start: int32) {
         this.count = start;
     }
 
-    void increment(&mut this) {
+    fn increment(&mut this) -> void {
         this.count = this.count + 1;
     }
 
-    void add(&mut this, int32 n) {
+    fn add(&mut this, n: int32) -> void {
         this.count = this.count + n;
     }
 
-    int32 value(&this) {
+    fn value(&this) -> int32 {
         return this.count;
     }
 }
 
 class Pair {
-    string first;
-    string second;
+    first: string;
+    second: string;
 
-    Pair(&mut this, string a, string b) {
+    fn Pair(&mut this, a: string, b: string) {
         this.first = a;
         this.second = b;
     }
 
-    void swap(&mut this) {
-        string tmp = this.first;
+    fn swap(&mut this) -> void {
+        tmp: string = this.first;
         this.first = this.second;
         this.second = tmp;
     }
 
-    string describe(&this) {
+    fn describe(&this) -> string {
         return this.first + "," + this.second;
     }
 }
 
-Counter c = new Counter(0);
+c: Counter = new Counter(0);
 c.increment();
 c.increment();
 c.increment();
@@ -50,7 +50,7 @@ println(c.value());
 c.add(10);
 println(c.value());
 
-Pair p = new Pair("hello", "world");
+p: Pair = new Pair("hello", "world");
 println(p.describe());
 p.swap();
 println(p.describe());

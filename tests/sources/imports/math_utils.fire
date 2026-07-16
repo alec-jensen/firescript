@@ -1,11 +1,11 @@
 //@ helper
 // Math utilities module
-export int32 square(int32 x) {
+export fn square(x: int32) -> int32 {
     return x * x;
 }
 
-export int32 double_val(int32 x) {
+export fn double_val(x: int32) -> int32 {
     return x + x;
 }
 
-export int32 MAX = 100;
+export MAX: int32 = 100;

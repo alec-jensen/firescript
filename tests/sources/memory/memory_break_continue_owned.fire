@@ -3,9 +3,9 @@
 
 import @firescript/std.io.println;
 
-int32 i = 0;
+i: int32 = 0;
 while (i < 5) {
-    string msg = "iter";
+    msg: string = "iter";
     if (i == 2) {
         i = i + 1;
         continue;

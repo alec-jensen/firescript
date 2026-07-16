@@ -1,7 +1,7 @@
 import @firescript/std.io.println;
 
-uint32 u32_max = 4294967295u32;
-uint32 u32_test = 1000000u32;
+u32_max: uint32 = 4294967295u32;
+u32_test: uint32 = 1000000u32;
 println(u32_max);
 println(u32_test);
 println(u32_test * 2u32);

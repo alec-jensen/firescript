@@ -1,9 +1,9 @@
 import @firescript/std.io.println;
 
-string emoji = "🔥";
+emoji: string = "🔥";
 println(emoji);
 
-string accents = "café";
+accents: string = "café";
 println(accents);
 
 /* EXPECT

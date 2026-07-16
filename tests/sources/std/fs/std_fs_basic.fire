@@ -2,25 +2,25 @@ import @firescript/std.fs.File;
 import @firescript/std.fs.FileResult;
 import @firescript/std.io.println;
 
-string path = "build/temp/std_fs_basic.txt";
-File file = File(path);
+path: string = "build/temp/std_fs_basic.txt";
+file: File = File(path);
 
-FileResult write_result = file.writeAll("alpha");
+write_result: FileResult = file.writeAll("alpha");
 println(write_result.result_status());
 
-FileResult append_result = file.appendAll(" beta");
+append_result: FileResult = file.appendAll(" beta");
 println(append_result.result_status());
 
-FileResult read_result = file.read();
+read_result: FileResult = file.read();
 println(read_result.result_status());
 println(read_result.result_data());
 
-FileResult read_five_result = file.readBytes(5);
+read_five_result: FileResult = file.readBytes(5);
 println(read_five_result.result_status());
 println(read_five_result.result_data());
 
-File missing_file = File("build/temp/does_not_exist_std_fs_basic.txt");
-FileResult missing_result = missing_file.read();
+missing_file: File = File("build/temp/does_not_exist_std_fs_basic.txt");
+missing_result: FileResult = missing_file.read();
 println(missing_result.result_status());
 
 /* EXPECT

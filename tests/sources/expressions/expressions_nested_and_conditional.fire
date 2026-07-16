@@ -1,10 +1,10 @@
 import @firescript/std.io.println;
 
-int32 result = ((10 + 5) * 2 - 6) / 3;
+result: int32 = ((10 + 5) * 2 - 6) / 3;
 println(result);  // ((15 * 2) - 6) / 3 = (30 - 6) / 3 = 8
 
 // Conditional value via if/else assignment
-int32 max_val = 0;
+max_val: int32 = 0;
 if (10 > 5) {
     max_val = 10;
 } else {

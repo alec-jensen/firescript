@@ -8,7 +8,7 @@
 import @firescript/std.io.println;
 import @firescript/std.types.Option;
 
-Option<int32> some_opt = Option<int32>(42);
+some_opt: Option<int32> = Option<int32>(42);
 if (some_opt.isSome()) {
     println("some");
 } else {

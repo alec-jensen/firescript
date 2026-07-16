@@ -3,8 +3,8 @@
 import @firescript/std.io.println;
 
 // Generic pair swap function
-void swap<T>(T a, T b) {
-    T temp = a;
+fn swap<T>(a: T, b: T) -> void {
+    temp: T = a;
     a = b;
     b = temp;
     println(a);
@@ -12,13 +12,13 @@ void swap<T>(T a, T b) {
 }
 
 // Test swapping int32 values
-int32 x = 5;
-int32 y = 10;
+x: int32 = 5;
+y: int32 = 10;
 swap(x, y);  // Should print 10, 5
 
 // Test swapping float64 values  
-float64 p = 1.5;
-float64 q = 2.5;
+p: float64 = 1.5;
+q: float64 = 2.5;
 swap(p, q);  // Should print 2.5, 1.5
 
 /* EXPECT

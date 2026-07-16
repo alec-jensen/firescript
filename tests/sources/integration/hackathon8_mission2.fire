@@ -3,12 +3,12 @@ import @firescript/std.fs.{File, FileResult};
 
 // Solution for a coding challenge, being used as a test
 
-File file = File("tests/sources/integration/hackathon8_mission2.txt");
+file: File = File("tests/sources/integration/hackathon8_mission2.txt");
 
-FileResult r = file.read();
+r: FileResult = file.read();
 
-bool contains(int16 n, &int16[] a) {
-    for (int16 e in a) {
+fn contains(n: int16, a: &int16[]) -> bool {
+    for (e: int16 in a) {
         if (e == n) {
             return true;
         }
@@ -18,27 +18,27 @@ bool contains(int16 n, &int16[] a) {
 }
 
 if (r.ok()) {
-    bool sign = false; // true: +, false: -
+    sign: bool = false; // true: +, false: -
 
-    bool not_first = false;
+    not_first: bool = false;
 
-    string number = "";
-    string input_data = r.result_data();
+    number: string = "";
+    input_data: string = r.result_data();
 
-    int16[1000] nums = [];
-    int8 idx = 0i8;
-    int16[1000] frequencies = [];
+    nums: int16[1000] = [];
+    idx: int8 = 0i8;
+    frequencies: int16[1000] = [];
 
-    for (string ch in input_data) {
+    for (ch: string in input_data) {
         if (ch == "+" || ch == "-") {
             if (not_first) {
                 // convert number to int, add/subtract based on sign
-                int16 n = (number as int16);
+                n: int16 = (number as int16);
 
                 if (contains(n, nums)) {
-                    int16 n_idx = 0i16;
+                    n_idx: int16 = 0i16;
 
-                    for (int16 n1 in nums) {
+                    for (n1: int16 in nums) {
                         if (n1 == n) {
                             break;
                         }
@@ -74,10 +74,10 @@ if (r.ok()) {
         }
     }
 
-    int16 max_n = -1i16;
-    int16 max_f = -1i16;
+    max_n: int16 = -1i16;
+    max_f: int16 = -1i16;
 
-    for (uint8 i=0u8; i<(idx as uint8) + 1u8;i++) {
+    for (i: uint8=0u8; i<(idx as uint8) + 1u8;i++) {
         if (frequencies[i] > max_f) {
             max_n = nums[i];
             max_f = frequencies[i];

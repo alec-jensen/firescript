@@ -1,5 +1,5 @@
 //@ helper
 // String utilities module
-export string wrap(string s) {
+export fn wrap(s: string) -> string {
     return "[" + s + "]";
 }

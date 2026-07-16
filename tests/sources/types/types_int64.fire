@@ -1,8 +1,8 @@
 //@ snapshot: fir, flir
 import @firescript/std.io.println;
 
-int64 i64_test = 9223372036854775807i64;
-int64 i64_negative = -9223372036854775808i64;
+i64_test: int64 = 9223372036854775807i64;
+i64_negative: int64 = -9223372036854775808i64;
 println(i64_test);
 println(i64_negative);
 println(i64_test / 1000i64);

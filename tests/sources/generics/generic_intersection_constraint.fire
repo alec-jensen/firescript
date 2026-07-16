@@ -2,11 +2,11 @@
 // primitive type and an interface/alias name: T: int32 & Comparable
 import @firescript/std.io.println;
 
-T identity<T: int32 & Comparable>(T x) {
+fn identity<T: int32 & Comparable>(x: T) -> T {
     return x;
 }
 
-void main() {
+fn main() -> void {
     println(identity(5i32));
 }
 

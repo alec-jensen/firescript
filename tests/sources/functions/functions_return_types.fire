@@ -1,17 +1,17 @@
 import @firescript/std.io.println;
 
-float32 divide(float32 a, float32 b) {
+fn divide(a: float32, b: float32) -> float32 {
     return a / b;
 }
 println(divide(10.0f, 4.0f));
 
-bool isEven(int32 n) {
+fn isEven(n: int32) -> bool {
     return (n % 2) == 0;
 }
 println(isEven(4));
 println(isEven(7));
 
-string makeGreeting(string name) {
+fn makeGreeting(name: string) -> string {
     return "Hello, " + name + "!";
 }
 println(makeGreeting("Alice"));
@@ -22,7 +22,7 @@ println(makeGreeting("Alice"));
 // ast_to_fir.py's _synthesize_zero() for bool/char/float128 (the
 // int/float32/float64 cases are already exercised by ordinary fallthrough
 // functions elsewhere; this file adds the remaining scalar types).
-bool alwaysFallsThrough(int32 n) {
+fn alwaysFallsThrough(n: int32) -> bool {
     if (n > 1000000) {
         return true;
     }
@@ -39,7 +39,7 @@ println(alwaysFallsThrough(5));
 // exercised at the FIR level instead, in
 // tests/python/fir/test_ast_to_fir_errors.py.
 
-float128 wideFallsThrough(int32 n) {
+fn wideFallsThrough(n: int32) -> float128 {
     if (n > 1000000) {
         return 1.5f128;
     }
@@ -50,7 +50,7 @@ println(wideFallsThrough(5) as string);
 // An if/else where both arms already return: the join block after the
 // if-statement has no predecessor and is unreachable code (exercises
 // _seal_open_blocks' Unreachable-terminator + dead-block-pruning path).
-int32 bothArmsReturn(int32 n) {
+fn bothArmsReturn(n: int32) -> int32 {
     if (n > 0) {
         return 1;
     } else {

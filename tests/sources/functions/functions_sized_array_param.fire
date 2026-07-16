@@ -2,12 +2,12 @@
 // from the unsized int32[] form covered by functions_array_params.fire).
 import @firescript/std.io.println;
 
-int32 sumFirstTwo(int32[2] xs) {
+fn sumFirstTwo(xs: int32[2]) -> int32 {
     return xs[0] + xs[1];
 }
 
-void main() {
-    int32[2] nums = [10, 20];
+fn main() -> void {
+    nums: int32[2] = [10, 20];
     println(sumFirstTwo(nums));
 }
 

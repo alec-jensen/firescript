@@ -18,15 +18,15 @@ enum Direction {
     West
 }
 
-Color a = Color.Red;
-Color b = Color.Green;
-Color c = Color.Blue;
+a: Color = Color.Red;
+b: Color = Color.Green;
+c: Color = Color.Blue;
 
 // Reassignment: the previously-held owned enum value must be dropped
 // without corrupting subsequent allocations.
 a = Color.Blue;
 
-Direction d = Direction.North;
+d: Direction = Direction.North;
 d = Direction.West;
 
 println("constructed all variants");

@@ -1,23 +1,23 @@
 import @firescript/std.io.println;
 
 // Variables declared before use
-int32 before = 1;
-int32 after = before + 1;
+before: int32 = 1;
+after: int32 = before + 1;
 println(before);
 println(after);
 
 // Same variable name across different sibling scopes are separate variables
-int32 value = 1;
+value: int32 = 1;
 {
-    int32 value2 = 2;
+    value2: int32 = 2;
     println(value2);
 }
 if (true) {
-    int32 value3 = 3;
+    value3: int32 = 3;
     println(value3);
 }
-for (int32 j = 0; j < 1; j++) {
-    int32 value4 = 4;
+for (j: int32 = 0; j < 1; j++) {
+    value4: int32 = 4;
     println(value4);
 }
 println(value);  // Still 1

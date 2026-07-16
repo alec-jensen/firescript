@@ -2,34 +2,34 @@ import @firescript/std.fs.File;
 import @firescript/std.fs.FileResult;
 import @firescript/std.io.println;
 
-string a = "build/temp/std_fs_path_ops_a.txt";
-File fileA = File(a);
-File fileB = File("build/temp/std_fs_path_ops_b.txt");
-File fileC = File("build/temp/std_fs_path_ops_c.txt");
+a: string = "build/temp/std_fs_path_ops_a.txt";
+fileA: File = File(a);
+fileB: File = File("build/temp/std_fs_path_ops_b.txt");
+fileC: File = File("build/temp/std_fs_path_ops_c.txt");
 
 fileB.remove();
 fileC.remove();
 
-FileResult write_result = fileA.writeAll("path ops");
+write_result: FileResult = fileA.writeAll("path ops");
 println(write_result.result_status());
 println(fileA.exists());
 println(fileB.exists());
-FileResult rename_result = fileA.renameTo("build/temp/std_fs_path_ops_b.txt");
+rename_result: FileResult = fileA.renameTo("build/temp/std_fs_path_ops_b.txt");
 println(rename_result.result_status());
 println(fileA.exists());
 println(fileB.exists());
-FileResult read_b = fileB.read();
+read_b: FileResult = fileB.read();
 println(read_b.result_data());
-FileResult move_result = fileA.moveTo("build/temp/std_fs_path_ops_c.txt");
+move_result: FileResult = fileA.moveTo("build/temp/std_fs_path_ops_c.txt");
 println(move_result.result_status());
 println(fileB.exists());
 println(fileC.exists());
-FileResult read_c = fileC.read();
+read_c: FileResult = fileC.read();
 println(read_c.result_data());
-FileResult remove_result = fileC.remove();
+remove_result: FileResult = fileC.remove();
 println(remove_result.result_status());
 println(fileC.exists());
-FileResult remove_again_result = fileC.remove();
+remove_again_result: FileResult = fileC.remove();
 println(remove_again_result.result_status());
 
 /* EXPECT

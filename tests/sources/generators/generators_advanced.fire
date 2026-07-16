@@ -12,8 +12,8 @@ import @firescript/std.io.println;
 // outer generator's frame struct; it was left out of this test and
 // reported separately rather than worked around here.
 
-generator<int32> earlyStop(int32 limit) {
-    int32 i = 0;
+fn earlyStop(limit: int32) -> generator<int32> {
+    i: int32 = 0;
     while (true) {
         if (i >= limit) {
             return;
@@ -23,24 +23,24 @@ generator<int32> earlyStop(int32 limit) {
     }
 }
 
-for (int32 v in earlyStop(4)) {
+for (v: int32 in earlyStop(4)) {
     println(v);
 }
 
 // Second call site for the same generator function: exercises the
 // "already lowered" guard in lower_generator (the frame struct / init /
 // next functions are only generated once).
-for (int32 v in earlyStop(2)) {
+for (v: int32 in earlyStop(2)) {
     println(v);
 }
 
-generator<int32> multiYield() {
+fn multiYield() -> generator<int32> {
     yield 10;
     yield 20;
     yield 30;
 }
 
-for (int32 v in multiYield()) {
+for (v: int32 in multiYield()) {
     println(v);
 }
 

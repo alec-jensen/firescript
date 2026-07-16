@@ -3,25 +3,25 @@ import @firescript/std.fs.{File, FileResult};
 
 // Solution for a coding challenge, being used as a test
 
-File file = File("tests/sources/integration/hackathon8_mission1.txt");
+file: File = File("tests/sources/integration/hackathon8_mission1.txt");
 
-FileResult r = file.read();
+r: FileResult = file.read();
 
 if (r.ok()) {
-    bool sign = false; // true: +, false: -
+    sign: bool = false; // true: +, false: -
 
-    bool not_first = false;
+    not_first: bool = false;
 
-    string number = "";
-    string input_data = r.result_data();
+    number: string = "";
+    input_data: string = r.result_data();
 
-    int32 total = 0i32;
+    total: int32 = 0i32;
 
-    for (string ch in input_data) {
+    for (ch: string in input_data) {
         if (ch == "+" || ch == "-") {
             if (not_first) {
                 // convert number to int, add/subtract based on sign
-                int32 n = (number as int32);
+                n: int32 = (number as int32);
 
                 if (sign) {
                     total = total + n;
@@ -51,7 +51,7 @@ if (r.ok()) {
         }
     }
 
-    int32 n = (number as int32);
+    n: int32 = (number as int32);
 
     if (sign) {
         total = total + n;

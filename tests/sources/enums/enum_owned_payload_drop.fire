@@ -6,31 +6,31 @@ import @firescript/std.io.println;
 // different variant's, since payload storage is shared/overlapping).
 
 class Box {
-    string label;
+    label: string;
 
-    Box(string label) {
+    fn Box(label: string) {
         this.label = label;
     }
 }
 
 enum Message {
-    Text(string body),
+    Text(body: string),
     Empty
 }
 
 enum Wrapper {
-    Holds(Box inner),
+    Holds(inner: Box),
     Empty
 }
 
-void describeMessage(Message m) {
+fn describeMessage(m: Message) -> void {
     match m {
         Message.Text(body) -> { println("text: " + body); }
         Message.Empty -> { println("empty message"); }
     }
 }
 
-void describeWrapper(Wrapper w) {
+fn describeWrapper(w: Wrapper) -> void {
     match w {
         Wrapper.Holds(inner) -> { println("holds: " + inner.label); }
         Wrapper.Empty -> { println("empty wrapper"); }
@@ -41,15 +41,15 @@ void describeWrapper(Wrapper w) {
 // kept small (accumulate a counter instead of printing per iteration) so
 // the golden file stays reasonably sized while still exercising 5000
 // construct-match-drop cycles.
-int32 total = 0;
-for (int32 i = 0; i < 5000; i++) {
-    Message m = Message.Text("hello");
+total: int32 = 0;
+for (i: int32 = 0; i < 5000; i++) {
+    m: Message = Message.Text("hello");
     match m {
         Message.Text(body) -> { total = total + 1; }
         Message.Empty -> { }
     }
 
-    Wrapper w = Wrapper.Holds(Box("box-label"));
+    w: Wrapper = Wrapper.Holds(Box("box-label"));
     match w {
         Wrapper.Holds(inner) -> { total = total + 1; }
         Wrapper.Empty -> { }

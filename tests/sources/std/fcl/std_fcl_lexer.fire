@@ -8,11 +8,11 @@ import @firescript/std.fcl.end;
 import @firescript/std.fcl.next_index;
 import @firescript/std.io.println;
 
-string src = "appName = \"firescript\", port: 8080 enabled = true";
-int32 index = 0;
+src: string = "appName = \"firescript\", port: 8080 enabled = true";
+index: int32 = 0;
 
 while (true) {
-    FclLexTokenResult token = next_token(src, index);
+    token: FclLexTokenResult = next_token(src, index);
 
     println(status(token));
     println(kind(token));

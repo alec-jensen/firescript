@@ -10,13 +10,13 @@ import @firescript/std.io.println;
 // code via any valid FIR the compiler produces today, not just untested.
 
 copyable class Point {
-    int32 x;
-    int32 y;
+    x: int32;
+    y: int32;
 }
 
-int32 sumCoordinates() {
-    Point p = Point(3, 4);
-    int32 total = p.x + p.y;
+fn sumCoordinates() -> int32 {
+    p: Point = Point(3, 4);
+    total: int32 = p.x + p.y;
     // `p` is never used again; ownership lowering inserts a Drop for it
     // at the end of the function's scope.
     return total;

@@ -1,9 +1,9 @@
 import @firescript/std.io.println;
 
-float32 f32_pi = 3.14159f;
-float32 f32_e = 2.71828f;
-float32 f32_zero = 0.0f;
-float32 f32_negative = -42.5f;
+f32_pi: float32 = 3.14159f;
+f32_e: float32 = 2.71828f;
+f32_zero: float32 = 0.0f;
+f32_negative: float32 = -42.5f;
 println(f32_pi);
 println(f32_e);
 println(f32_zero);

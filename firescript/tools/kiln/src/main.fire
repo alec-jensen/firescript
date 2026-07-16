@@ -1,7 +1,7 @@
 import @firescript/std.io.println;
 import @firescript/std.cli.args.{argc, argv_at, has_flag, has_flag_alias, option_value, option_value_alias, positional, positional_value};
 
-void print_help() {
+fn print_help() -> void {
     println("kiln package manager (bootstrap version)");
     println("");
     println("Usage:");
@@ -30,7 +30,7 @@ if (argc() < 2) {
     return 1;
 }
 
-string command = positional_value(0, "none");
+command: string = positional_value(0, "none");
 
 if (command == "none") {
     print_help();
@@ -42,7 +42,7 @@ if (command == "") {
 }
 
 if (command == "new") {
-    string name = positional_value(1, "none");
+    name: string = positional_value(1, "none");
     if (name == "none") {
         println("Usage: kiln new <name> [--lib]");
         return 1;
@@ -51,19 +51,19 @@ if (command == "new") {
         println("Usage: kiln new <name> [--lib]");
         return 1;
     }
-    bool is_lib = has_flag("lib");
+    is_lib: bool = has_flag("lib");
     println("kiln: Creating new project " + name);
     if (is_lib) {
         println("kiln: (Library project)");
     }
 } else if (command == "build") {
-    bool is_release = has_flag("release");
+    is_release: bool = has_flag("release");
     println("kiln: Building project...");
     if (is_release) {
         println("kiln: (Release mode)");
     }
 } else if (command == "run") {
-    bool is_release = has_flag("release");
+    is_release: bool = has_flag("release");
     println("kiln: Running project...");
 } else if (command == "check") {
     println("kiln: Checking project...");

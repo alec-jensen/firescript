@@ -4,20 +4,20 @@
 import @firescript/std.io.println;
 
 class Point {
-    int32 x;
-    int32 y;
+    x: int32;
+    y: int32;
 
     // Constructor named same as class
-    Point(&mut this, int32 x, int32 y) {
+    fn Point(&mut this, x: int32, y: int32) {
         this.x = x;
         this.y = y;
     }
-    int32 sum(&this) {
+    fn sum(&this) -> int32 {
         return this.x + this.y;
     }
 }
 
-Point p = new Point(2, 3);
+p: Point = new Point(2, 3);
 println(p.sum());
 
 /* EXPECT

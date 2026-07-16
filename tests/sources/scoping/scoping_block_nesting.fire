@@ -1,25 +1,25 @@
 import @firescript/std.io.println;
 
 // Global scope
-int32 global = 100;
+global: int32 = 100;
 println(global);
 
 // Block scope
-int32 outer = 10;
+outer: int32 = 10;
 {
-    int32 inner = 20;
+    inner: int32 = 20;
     println(outer);  // Can access outer
     println(inner);
 }
 
 // Deeply nested blocks
-int32 level0 = 0;
+level0: int32 = 0;
 {
-    int32 level1 = 1;
+    level1: int32 = 1;
     {
-        int32 level2 = 2;
+        level2: int32 = 2;
         {
-            int32 level3 = 3;
+            level3: int32 = 3;
             println(level0);
             println(level1);
             println(level2);
@@ -29,13 +29,13 @@ int32 level0 = 0;
 }
 
 // A variable's value is unaffected by nested blocks that go out of scope
-int32 x = 100;
+x: int32 = 100;
 println(x);  // 100
 {
-    int32 x_inner = 200;
+    x_inner: int32 = 200;
     println(x_inner);  // 200
     {
-        int32 x_deep = 300;
+        x_deep: int32 = 300;
         println(x_deep);  // 300
     }
     println(x_inner);  // 200
@@ -43,13 +43,13 @@ println(x);  // 100
 println(x);  // 100
 
 // Complex nesting across block/if/while
-int32 a = 1;
+a: int32 = 1;
 {
-    int32 b = 2;
+    b: int32 = 2;
     if (a > 0) {
-        int32 c = 3;
+        c: int32 = 3;
         while (c > 0) {
-            int32 d = 4;
+            d: int32 = 4;
             println(a);
             println(b);
             println(c);

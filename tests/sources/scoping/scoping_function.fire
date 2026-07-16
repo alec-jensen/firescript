@@ -1,8 +1,8 @@
 import @firescript/std.io.println;
 
 // Functions can't access outer scope variables in the current implementation
-int32 testFunction(int32 param) {
-    int32 local = 10;
+fn testFunction(param: int32) -> int32 {
+    local: int32 = 10;
     println(param);
     println(local);
     return local + param;

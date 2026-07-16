@@ -9,26 +9,26 @@ import @firescript/std.io.println;
 // firescript/flir/lowering.py).
 
 class Counter {
-    int32 value;
+    value: int32;
 
-    Counter(int32 value) {
+    fn Counter(value: int32) {
         this.value = value;
     }
 }
 
 enum Container {
-    Has(Counter c),
+    Has(c: Counter),
     None
 }
 
-void describe(Container c) {
+fn describe(c: Container) -> void {
     match c {
         Container.Has(c) -> { println("has: " + (c.value as string)); }
         Container.None -> { println("none"); }
     }
 }
 
-Container full = Container.Has(Counter(42));
+full: Container = Container.Has(Counter(42));
 describe(full);
 describe(Container.None);
 

@@ -1,16 +1,16 @@
 import @firescript/std.io.println;
 
 // Arithmetic overflow (behavior may vary)
-int8 overflow_test = 127i8;
+overflow_test: int8 = 127i8;
 println(overflow_test);
 println(overflow_test + 1i8);
 
-uint8 uoverflow = 255u8;
+uoverflow: uint8 = 255u8;
 println(uoverflow);
 println(uoverflow + 1u8);
 
 // Underflow
-int8 underflow = -128i8;
+underflow: int8 = -128i8;
 println(underflow);
 println(underflow - 1i8);
 

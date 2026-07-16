@@ -2,34 +2,34 @@
 import @firescript/std.io.println;
 
 class Person {
-    string name;
-    int32 age;
+    name: string;
+    age: int32;
 
-    Person(&mut this, string name, int32 age) {
+    fn Person(&mut this, name: string, age: int32) {
         this.name = name;
         this.age = age;
     }
 
-    string describe(&this) {
+    fn describe(&this) -> string {
         return this.name + " is " + toString(this.age);
     }
 }
 
 class Student from Person {
-    string school;
+    school: string;
 
-    Student(&mut this, string name, int32 age, string school) {
+    fn Student(&mut this, name: string, age: int32, school: string) {
         // Constructor chaining to parent
         this.super(name, age);
         this.school = school;
     }
 
-    string describe(&this) {
+    fn describe(&this) -> string {
         return this.name + " is " + toString(this.age) + " at " + this.school;
     }
 }
 
-Student s = new Student("Jane", 18, "School");
+s: Student = new Student("Jane", 18, "School");
 println(s.describe());
 println(s.name);
 println(s.age);
@@ -37,69 +37,69 @@ println(s.age);
 // Multi-level inheritance (double/triple/quad)
 
 class A {
-    string id;
+    id: string;
 
-    A(&mut this, string id) {
+    fn A(&mut this, id: string) {
         this.id = id;
     }
 
-    string root(&this) {
+    fn root(&this) -> string {
         return this.id;
     }
 
-    string chain(&this) {
+    fn chain(&this) -> string {
         return "A(" + this.id + ")";
     }
 }
 
 class B from A {
-    string bid;
+    bid: string;
 
-    B(&mut this, string id, string bid) {
+    fn B(&mut this, id: string, bid: string) {
         this.super(id);
         this.bid = bid;
     }
 
-    string onlyB(&this) {
+    fn onlyB(&this) -> string {
         return this.bid;
     }
 
-    string chain(&this) {
+    fn chain(&this) -> string {
         return "A(" + this.id + ")->B(" + this.bid + ")";
     }
 }
 
 class C from B {
-    string cid;
+    cid: string;
 
-    C(&mut this, string id, string bid, string cid) {
+    fn C(&mut this, id: string, bid: string, cid: string) {
         this.super(id, bid);
         this.cid = cid;
     }
 
-    string onlyC(&this) {
+    fn onlyC(&this) -> string {
         return this.cid;
     }
 
-    string chain(&this) {
+    fn chain(&this) -> string {
         return "A(" + this.id + ")->B(" + this.bid + ")->C(" + this.cid + ")";
     }
 }
 
 class D from C {
-    string did;
+    did: string;
 
-    D(&mut this, string id, string bid, string cid, string did) {
+    fn D(&mut this, id: string, bid: string, cid: string, did: string) {
         this.super(id, bid, cid);
         this.did = did;
     }
 
-    string chain(&this) {
+    fn chain(&this) -> string {
         return "A(" + this.id + ")->B(" + this.bid + ")->C(" + this.cid + ")->D(" + this.did + ")";
     }
 }
 
-D d = new D("a", "b", "c", "d");
+d: D = new D("a", "b", "c", "d");
 println(d.chain());
 println(d.id);
 println(d.bid);

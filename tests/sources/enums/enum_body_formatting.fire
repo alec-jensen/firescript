@@ -5,11 +5,11 @@ enum Status {
     // a tag-only variant
     Ok,
     /* payload variant */
-    Code(int32 value),
+    Code(value: int32),
     Fail,
 }
 
-Status s = Status.Code(42);
+s: Status = Status.Code(42);
 
 match s {
     Status.Ok -> println("ok"),

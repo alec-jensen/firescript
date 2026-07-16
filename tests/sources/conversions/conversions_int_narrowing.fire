@@ -1,10 +1,10 @@
 import @firescript/std.io.println;
 
 // Downcast integers (potential data loss)
-int64 large = 1000i64;
-int32 medium = (large as int32);
-int16 small = (medium as int16);
-int8 tiny = (small as int8);
+large: int64 = 1000i64;
+medium: int32 = (large as int32);
+small: int16 = (medium as int16);
+tiny: int8 = (small as int8);
 println(large);
 println(medium);
 println(small);

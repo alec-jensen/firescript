@@ -1,17 +1,17 @@
 import @firescript/std.io.println;
 
 class Box {
-    int32 v;
-    Box(int32 v) { this.v = v; }
+    v: int32;
+    fn Box(v: int32) { this.v = v; }
 }
 
-generator<int32> peekTwice(&Box b) {
+fn peekTwice(b: &Box) -> generator<int32> {
     yield b.v;
     yield b.v;
 }
 
-Box box = Box(7);
-for (int32 x in peekTwice(box)) {
+box: Box = Box(7);
+for (x: int32 in peekTwice(box)) {
     println(x);
 }
 

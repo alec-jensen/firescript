@@ -1,53 +1,53 @@
 // firescript std.types library
 
 export class Tuple<T, U> {
-	T first;
-	U second;
+	first: T;
+	second: U;
 
-	Tuple(T first, U second) {
+	fn Tuple(first: T, second: U) {
 		this.first = first;
 		this.second = second;
 	}
 }
 
 export copyable class CopyableTuple<T, U> {
-	T first;
-	U second;
+	first: T;
+	second: U;
 
-	CopyableTuple(T first, U second) {
+	fn CopyableTuple(first: T, second: U) {
 		this.first = first;
 		this.second = second;
 	}
 }
 
 export class Option<T?> {
-	T value?;
+	value: T?;
 
-	Option(T value?) {
+	fn Option(value: T?) {
 		this.value = value;
 	}
 
-	bool isSome() {
+	fn isSome() -> bool {
 		return this.value != null;
 	}
 
-	bool isNone() {
+	fn isNone() -> bool {
 		return this.value == null;
 	}
 }
 
 export copyable class CopyableOption<T?> {
-	T value?;
+	value: T?;
 
-	CopyableOption(T value?) {
+	fn CopyableOption(value: T?) {
 		this.value = value;
 	}
 
-	bool isSome() {
+	fn isSome() -> bool {
 		return this.value != null;
 	}
 
-	bool isNone() {
+	fn isNone() -> bool {
 		return this.value == null;
 	}
 }

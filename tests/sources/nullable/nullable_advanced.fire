@@ -3,15 +3,15 @@ import @firescript/std.io.println;
 
 // Nullable class fields
 class Config {
-    string host;
-    string port?;
+    host: string;
+    port: string?;
 
-    Config(&mut this, string host, string port?) {
+    fn Config(&mut this, host: string, port: string?) {
         this.host = host;
         this.port = port;
     }
 
-    string address(&this) {
+    fn address(&this) -> string {
         if (this.port != null) {
             return this.host + ":" + this.port;
         }
@@ -19,24 +19,24 @@ class Config {
     }
 }
 
-Config c1 = new Config("localhost", "8080");
-Config c2 = new Config("example.com", "1111");
+c1: Config = new Config("localhost", "8080");
+c2: Config = new Config("example.com", "1111");
 println(c1.address());
 println(c2.address());
 
 // Nullable in conditional chains
-string a? = "first";
-string b? = null;
-string c? = "third";
+a: string? = "first";
+b: string? = null;
+c: string? = "third";
 
-int32 count = 0;
+count: int32 = 0;
 if (a != null) { count = count + 1; }
 if (b != null) { count = count + 1; }
 if (c != null) { count = count + 1; }
 println(count);
 
 // Reassigning nullable
-string val? = null;
+val: string? = null;
 println(val == null);
 val = "assigned";
 println(val != null);

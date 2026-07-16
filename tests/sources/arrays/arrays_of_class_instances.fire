@@ -7,14 +7,14 @@ import @firescript/std.io.println;
 // lowering always renders the element type to a string first.
 
 class Box {
-    int32 value;
+    value: int32;
 
-    Box(int32 value) {
+    fn Box(value: int32) {
         this.value = value;
     }
 }
 
-Box[2] boxes = [Box(1), Box(2)];
+boxes: Box[2] = [Box(1), Box(2)];
 println(boxes[0].value);
 println(boxes[1].value);
 
@@ -24,11 +24,11 @@ println(boxes[0].value);
 // Same lower_type_str path, but for a *copyable* class element type --
 // hits the struct_type(...) (by-value) branch instead of ptr_to(...).
 copyable class Vec2 {
-    float32 x;
-    float32 y;
+    x: float32;
+    y: float32;
 }
 
-Vec2[2] points = [Vec2(1.0f32, 2.0f32), Vec2(3.0f32, 4.0f32)];
+points: Vec2[2] = [Vec2(1.0f32, 2.0f32), Vec2(3.0f32, 4.0f32)];
 println(points[0].x);
 println(points[1].y);
 

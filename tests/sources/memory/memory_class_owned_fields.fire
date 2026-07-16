@@ -5,18 +5,18 @@
 import @firescript/std.io.println;
 
 class Person {
-    string name;
-    int32 age;
-    Person(&mut this, string name, int32 age) {
+    name: string;
+    age: int32;
+    fn Person(&mut this, name: string, age: int32) {
         this.name = name;
         this.age = age;
     }
-    string greet(&this) {
+    fn greet(&this) -> string {
         return "Hello, " + this.name;
     }
 }
 
-Person p = new Person("Alice", 30);
+p: Person = new Person("Alice", 30);
 println(p.name);
 println(p.age);
 println(p.greet());

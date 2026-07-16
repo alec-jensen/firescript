@@ -6,19 +6,19 @@ constraint SmallInt = int8 | int16;
 constraint MediumInt = int32 | int64;
 constraint AllInt = SmallInt | MediumInt;  // Nested alias
 
-T triple<T: AllInt>(T value) {
+fn triple<T: AllInt>(value: T) -> T {
     return value + value + value;
 }
 
-int8 a = 10i8;
-int16 b = 100i16;
-int32 c = 1000i32;
-int64 d = 10000i64;
+a: int8 = 10i8;
+b: int16 = 100i16;
+c: int32 = 1000i32;
+d: int64 = 10000i64;
 
-int8 r1 = triple(a);
-int16 r2 = triple(b);
-int32 r3 = triple(c);
-int64 r4 = triple(d);
+r1: int8 = triple(a);
+r2: int16 = triple(b);
+r3: int32 = triple(c);
+r4: int64 = triple(d);
 
 println(r1);  // 30
 println(r2);  // 300

@@ -1,15 +1,15 @@
 import @firescript/std.io.println;
 
-int32 sumArray(int32[] arr) {
-    int32 sum = 0;
-    for (int32 val in arr) {
+fn sumArray(arr: int32[]) -> int32 {
+    sum: int32 = 0;
+    for (val: int32 in arr) {
         sum = sum + val;
     }
     return sum;
 }
 
-int32[] to_sum = [1, 2, 3, 4, 5];
-int32 total = sumArray(to_sum);
+to_sum: int32[] = [1, 2, 3, 4, 5];
+total: int32 = sumArray(to_sum);
 println(total);  // 15
 
 /* EXPECT

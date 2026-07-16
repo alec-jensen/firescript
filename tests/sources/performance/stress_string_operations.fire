@@ -6,25 +6,25 @@ import @firescript/std.io.println;
 println("=== String Operation Tests ===");
 
 // Test 1: Empty string
-string empty = "";
+empty: string = "";
 println(empty);
 println("after empty");
 
 // Test 2: String concatenation
-string hello = "Hello";
-string world = "World";
-string combined = hello + world;
+hello: string = "Hello";
+world: string = "World";
+combined: string = hello + world;
 println(combined);
 
 // Test 3: Multiple concatenations
-string a = "A";
-string b = "B";
-string c = "C";
-string abc = a + b + c;
+a: string = "A";
+b: string = "B";
+c: string = "C";
+abc: string = a + b + c;
 println(abc);
 
 // Test 4: String reassignment
-string var = "first";
+var: string = "first";
 println(var);
 var = "second";
 println(var);
@@ -32,41 +32,41 @@ var = "third";
 println(var);
 
 // Test 5: String in loop
-int32 i = 0;
+i: int32 = 0;
 while (i < 3) {
-    string loop_str = "iteration";
+    loop_str: string = "iteration";
     println(loop_str);
     i = i + 1;
 }
 
 // Test 6: String from int conversion
-int32 num = 123;
-string num_str = i32_to_str(num);
+num: int32 = 123;
+num_str: string = i32_to_str(num);
 println(num_str);
 
-int32 negative = -456;
-string neg_str = i32_to_str(negative);
+negative: int32 = -456;
+neg_str: string = i32_to_str(negative);
 println(neg_str);
 
 // Test 7: Special characters
-string newline_test = "line1
+newline_test: string = "line1
 line2";
 println(newline_test);
 
-string tab_test = "col1	col2";
+tab_test: string = "col1	col2";
 println(tab_test);
 
 // Test 8: Long string
-string long_str = "This is a much longer string to test memory allocation and handling of larger text content";
+long_str: string = "This is a much longer string to test memory allocation and handling of larger text content";
 println(long_str);
 
 // Test 9: String comparison/equality (if supported)
-string s1 = "test";
-string s2 = "test";
+s1: string = "test";
+s2: string = "test";
 // Note: equality might not be supported yet
 
 // Test 10: String in arrays
-string[] str_arr = ["first", "second", "third"];
+str_arr: string[] = ["first", "second", "third"];
 println(str_arr[0]);
 println(str_arr[1]);
 println(str_arr[2]);

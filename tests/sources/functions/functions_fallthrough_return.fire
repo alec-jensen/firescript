@@ -6,13 +6,13 @@
 
 import @firescript/std.io.println;
 
-float64 maybeHalf(bool flag, float64 x) {
+fn maybeHalf(flag: bool, x: float64) -> float64 {
     if (flag) {
         return x / 2.0;
     }
 }
 
-bool maybeTrue(bool flag) {
+fn maybeTrue(flag: bool) -> bool {
     if (flag) {
         return true;
     }

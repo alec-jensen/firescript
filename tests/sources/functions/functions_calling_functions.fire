@@ -1,23 +1,23 @@
 //@ snapshot: fir, flir
 import @firescript/std.io.println;
 
-int32 add(int32 a, int32 b) {
+fn add(a: int32, b: int32) -> int32 {
     return a + b;
 }
 
-int32 double(int32 x) {
+fn double(x: int32) -> int32 {
     return x * 2;
 }
 
-int32 addThenDouble(int32 a, int32 b) {
-    int32 sum = add(a, b);
+fn addThenDouble(a: int32, b: int32) -> int32 {
+    sum: int32 = add(a, b);
     return double(sum);
 }
 println(addThenDouble(2, 3));  // (2 + 3) * 2 = 10
 
 // Function with more complex internal logic
-int32 complexCalc(int32 a, int32 b, int32 c) {
-    int32 temp = a + b;
+fn complexCalc(a: int32, b: int32, c: int32) -> int32 {
+    temp: int32 = a + b;
     temp = temp * c;
     if (temp > 100) {
         return temp / 2;

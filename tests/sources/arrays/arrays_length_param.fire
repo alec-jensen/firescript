@@ -4,15 +4,15 @@
 
 import @firescript/std.io.println;
 
-int32 arrayLen(&int32[] arr) {
+fn arrayLen(arr: &int32[]) -> int32 {
     return arr.length();
 }
 
-int32 arraySize(&int32[] arr) {
+fn arraySize(arr: &int32[]) -> int32 {
     return arr.size();
 }
 
-int32[] nums = [10, 20, 30, 40];
+nums: int32[] = [10, 20, 30, 40];
 println(arrayLen(nums));
 println(arraySize(nums));
 

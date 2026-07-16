@@ -4,14 +4,14 @@
 directive enable_process_args;
 
 class _FclLexTokenResult {
-    int32 status;
-    string kind;
-    string lexeme;
-    int32 start;
-    int32 end;
-    int32 next_index;
+    status: int32;
+    kind: string;
+    lexeme: string;
+    start: int32;
+    end: int32;
+    next_index: int32;
 
-    _FclLexTokenResult(int32 status, string kind, string lexeme, int32 start, int32 end, int32 next_index) {
+    fn _FclLexTokenResult(status: int32, kind: string, lexeme: string, start: int32, end: int32, next_index: int32) {
         this.status = status;
         this.kind = kind;
         this.lexeme = lexeme;
@@ -21,19 +21,19 @@ class _FclLexTokenResult {
     }
 }
 
-int32 _len(&string value) {
+fn _len(value: &string) -> int32 {
     return str_length(value);
 }
 
-string _char_at(&string value, int32 index) {
+fn _char_at(value: &string, index: int32) -> string {
     return str_char_at(value, index);
 }
 
-string _slice(&string value, int32 start, int32 end) {
+fn _slice(value: &string, start: int32, end: int32) -> string {
     return str_slice(value, start, end);
 }
 
-bool _is_ws(&string ch) {
+fn _is_ws(ch: &string) -> bool {
     if (ch == " ") {
         return true;
     }
@@ -49,11 +49,11 @@ bool _is_ws(&string ch) {
     return false;
 }
 
-bool _is_digit(&string ch) {
+fn _is_digit(ch: &string) -> bool {
     return str_index_of("0123456789", ch) >= 0;
 }
 
-bool _is_alpha(&string ch) {
+fn _is_alpha(ch: &string) -> bool {
     if (str_index_of("abcdefghijklmnopqrstuvwxyz", ch) >= 0) {
         return true;
     }
@@ -66,24 +66,24 @@ bool _is_alpha(&string ch) {
     return false;
 }
 
-bool _is_ident_continue(&string ch) {
+fn _is_ident_continue(ch: &string) -> bool {
     return _is_alpha(ch) || _is_digit(ch);
 }
 
-_FclLexTokenResult _single(&string kind, &string text, int32 start, int32 next) {
+fn _single(kind: &string, text: &string, start: int32, next: int32) -> _FclLexTokenResult {
     return _FclLexTokenResult(0, "" + kind, "" + text, start, next, next);
 }
 
-export _FclLexTokenResult lex_next(string source, int32 index) {
-    int32 n = _len(source);
-    int32 i = index;
+export fn lex_next(source: string, index: int32) -> _FclLexTokenResult {
+    n: int32 = _len(source);
+    i: int32 = index;
 
     if (i < 0) {
         i = 0;
     }
 
     while (i < n) {
-        string ch = _char_at(source, i);
+        ch: string = _char_at(source, i);
         if (_is_ws(ch) == false) {
             break;
         }
@@ -94,7 +94,7 @@ export _FclLexTokenResult lex_next(string source, int32 index) {
         return _FclLexTokenResult(0, "eof", "", i, i, i);
     }
 
-    string ch = _char_at(source, i);
+    ch: string = _char_at(source, i);
 
     if (ch == "{") {
         return _single("lbrace", ch, i, i + 1);
@@ -119,9 +119,9 @@ export _FclLexTokenResult lex_next(string source, int32 index) {
     }
 
     if (ch == "\"") {
-        int32 j = i + 1;
+        j: int32 = i + 1;
         while (j < n) {
-            string c = _char_at(source, j);
+            c: string = _char_at(source, j);
             if (c == "\"") {
                 return _FclLexTokenResult(0, "string", _slice(source, i + 1, j), i, j + 1, j + 1);
             }
@@ -131,19 +131,19 @@ export _FclLexTokenResult lex_next(string source, int32 index) {
     }
 
     if (ch == "-" || _is_digit(ch)) {
-        int32 j = i;
+        j: int32 = i;
         if (ch == "-") {
             j = j + 1;
             if (j >= n) {
                 return _FclLexTokenResult(-84, "invalid", "-", i, i + 1, i + 1);
             }
-            string next_ch = _char_at(source, j);
+            next_ch: string = _char_at(source, j);
             if (_is_digit(next_ch) == false) {
                 return _FclLexTokenResult(-84, "invalid", "-", i, i + 1, i + 1);
             }
         }
         while (j < n) {
-            string c = _char_at(source, j);
+            c: string = _char_at(source, j);
             if (_is_digit(c) == false) {
                 break;
             }
@@ -153,15 +153,15 @@ export _FclLexTokenResult lex_next(string source, int32 index) {
     }
 
     if (_is_alpha(ch)) {
-        int32 j = i + 1;
+        j: int32 = i + 1;
         while (j < n) {
-            string c = _char_at(source, j);
+            c: string = _char_at(source, j);
             if (_is_ident_continue(c) == false) {
                 break;
             }
             j = j + 1;
         }
-        string word = _slice(source, i, j);
+        word: string = _slice(source, i, j);
         if (word == "true" || word == "false") {
             return _FclLexTokenResult(0, "bool", word, i, j, j);
         }
@@ -171,26 +171,26 @@ export _FclLexTokenResult lex_next(string source, int32 index) {
     return _FclLexTokenResult(-84, "invalid", ch, i, i + 1, i + 1);
 }
 
-export int32 token_status(&_FclLexTokenResult token) {
+export fn token_status(token: &_FclLexTokenResult) -> int32 {
     return token.status;
 }
 
-export string token_kind(&_FclLexTokenResult token) {
+export fn token_kind(token: &_FclLexTokenResult) -> string {
     return "" + token.kind;
 }
 
-export string token_lexeme(&_FclLexTokenResult token) {
+export fn token_lexeme(token: &_FclLexTokenResult) -> string {
     return "" + token.lexeme;
 }
 
-export int32 token_start(&_FclLexTokenResult token) {
+export fn token_start(token: &_FclLexTokenResult) -> int32 {
     return token.start;
 }
 
-export int32 token_end(&_FclLexTokenResult token) {
+export fn token_end(token: &_FclLexTokenResult) -> int32 {
     return token.end;
 }
 
-export int32 token_next_index(&_FclLexTokenResult token) {
+export fn token_next_index(token: &_FclLexTokenResult) -> int32 {
     return token.next_index;
 }

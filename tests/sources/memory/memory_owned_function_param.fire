@@ -2,19 +2,19 @@
 import @firescript/std.io.println;
 
 class Box {
-    int32 v;
+    v: int32;
 
-    Box(int32 v) {
+    fn Box(v: int32) {
         this.v = v;
     }
 }
 
-void consume(owned Box b) {
+fn consume(b: owned Box) -> void {
     println(b.v);
 }
 
-void main() {
-    Box b = Box(42i32);
+fn main() -> void {
+    b: Box = Box(42i32);
     consume(b);
 }
 

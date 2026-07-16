@@ -2,7 +2,7 @@
 // exercises the SEMICOLON skip branch in parse_scope()'s statement loop.
 import @firescript/std.io.println;
 
-int32 addOne(int32 x) {
+fn addOne(x: int32) -> int32 {
     ;
     ;
     return x + 1;

@@ -4,7 +4,7 @@
 import @firescript/std.io.println;
 
 // Test 1: Simple recursion
-int32 factorial(int32 n) {
+fn factorial(n: int32) -> int32 {
     if (n < 2) {
         return 1;
     }
@@ -12,19 +12,19 @@ int32 factorial(int32 n) {
 }
 
 // Test 2: Tail recursion (if optimized)
-int32 sum_to_n_helper(int32 n, int32 acc) {
+fn sum_to_n_helper(n: int32, acc: int32) -> int32 {
     if (n == 0) {
         return acc;
     }
     return sum_to_n_helper(n - 1, acc + n);
 }
 
-int32 sum_to_n(int32 n) {
+fn sum_to_n(n: int32) -> int32 {
     return sum_to_n_helper(n, 0);
 }
 
 // Test 3: Mutual recursion - simplified without forward declarations
-bool is_even_simple(int32 n) {
+fn is_even_simple(n: int32) -> bool {
     if (n == 0) {
         return true;
     }

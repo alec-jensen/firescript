@@ -59,17 +59,11 @@ class ASTNode:
     def tree(self, prefix: str = "", is_last: bool = True) -> str:
         # Build the display line differently for variable declarations.
         if self.node_type == NodeTypes.VARIABLE_DECLARATION:
-            pre = []
-            if self.is_const:
-                pre.append("const")
+            const_prefix = "const " if self.is_const else ""
+            line_content = f"{self.node_type} {const_prefix}{self.name}"
             if self.var_type:
-                pre.append(self.var_type)
-
-            display_name = f"{self.name}?" if self.is_nullable else self.name
-
-            line_content = f"{self.node_type}"
-            if pre:
-                line_content += f" {' '.join(pre)} {display_name}"
+                type_str = f"{self.var_type}?" if self.is_nullable else self.var_type
+                line_content += f": {type_str}"
         else:
             line_content = f"{self.node_type} {self.name}"
 

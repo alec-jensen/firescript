@@ -15,19 +15,19 @@
 // not worked around here since it would mean blessing wrong output.
 import @firescript/std.io.println;
 
-const float32 PI32 = 3.5f32;
+const PI32: float32 = 3.5f32;
 
 // Declared (but never loaded) so the compiler still has to emit its
 // rodata bytes -- see the note above about why this global is never
 // read back via println here.
-const float128 PI128_UNUSED = 1.5f128;
+const PI128_UNUSED: float128 = 1.5f128;
 
 println(PI32);
 
-string quoted = "it\'s here";
+quoted: string = "it\'s here";
 println(quoted);
 
-string trailing = "end\\";
+trailing: string = "end\\";
 println(trailing);
 
 /* EXPECT

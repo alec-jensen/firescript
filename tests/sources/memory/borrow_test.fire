@@ -4,25 +4,25 @@
 import @firescript/std.io.println;
 
 class Point {
-    int32 x;
-    int32 y;
+    x: int32;
+    y: int32;
 }
 
 // Function with borrowed parameter - doesn't take ownership
-int32 getX(&Point p) {
+fn getX(p: &Point) -> int32 {
     return p.x;
 }
 
 // Function with owned parameter - takes ownership
-void consumePoint(Point p) {
+fn consumePoint(p: Point) -> void {
     println(p.x);
 }
 
 // Create a Point
-Point p1 = Point(10i32, 20i32);
+p1: Point = Point(10i32, 20i32);
 
 // Borrow it - p1 is still valid after this call
-int32 x = getX(p1);
+x: int32 = getX(p1);
 println(x);
 
 // Use p1 again - this should work because getX only borrowed it

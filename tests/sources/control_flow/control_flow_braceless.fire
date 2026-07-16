@@ -1,7 +1,7 @@
 // Braceless single-statement bodies for if, else, while, and C-style for.
 import @firescript/std.io.println;
 
-int32 a = 5;
+a: int32 = 5;
 
 if (a > 3) println("if-braceless");
 
@@ -9,12 +9,12 @@ if (a > 10) {
     println("then-braced-skipped");
 } else println("else-braceless");
 
-int32 i = 0;
+i: int32 = 0;
 while (i < 3) i++;
 println("after while: " + (i as string));
 
-int32 total = 0;
-for (int32 k = 0; k < 4; k++) total += k;
+total: int32 = 0;
+for (k: int32 = 0; k < 4; k++) total += k;
 println("for total: " + (total as string));
 
 /* EXPECT

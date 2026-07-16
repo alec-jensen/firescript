@@ -9,10 +9,10 @@ import @firescript/std.io.println;
 // through as a literal `'` (redundant escape, not meaningful in a
 // double-quoted string), and falls back to keeping the backslash
 // literal for anything else (e.g. `\q`).
-string s1 = "it\'s here";
+s1: string = "it\'s here";
 println(s1);
 
-string s2 = "a\qb";
+s2: string = "a\qb";
 println(s2);
 
 /* EXPECT

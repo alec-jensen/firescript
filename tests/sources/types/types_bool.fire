@@ -1,7 +1,7 @@
 import @firescript/std.io.println;
 
-bool b_true = true;
-bool b_false = false;
+b_true: bool = true;
+b_false: bool = false;
 println(b_true);
 println(b_false);
 

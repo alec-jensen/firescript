@@ -1,13 +1,13 @@
 import @firescript/std.io.println;
 
 // Simple if
-int32 x = 10;
+x: int32 = 10;
 if (x > 5) {
     println("x is greater than 5");
 }
 
 // if-else
-int32 score = 75;
+score: int32 = 75;
 if (score >= 70) {
     println("Pass");
 } else {
@@ -15,7 +15,7 @@ if (score >= 70) {
 }
 
 // if-else if-else chain
-int32 grade = 85;
+grade: int32 = 85;
 if (grade >= 90) {
     println("A");
 } else if (grade >= 80) {
@@ -29,8 +29,8 @@ if (grade >= 90) {
 }
 
 // Nested if statements
-int32 age = 25;
-bool hasLicense = true;
+age: int32 = 25;
+hasLicense: bool = true;
 if (age >= 18) {
     if (hasLicense) {
         println("Can drive");  // This should print

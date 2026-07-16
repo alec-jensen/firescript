@@ -3,7 +3,7 @@
 import @firescript/std.io.println;
 import utils.{helper, CONSTANT}
 
-int32 helper(int32 x) {
+fn helper(x: int32) -> int32 {
     return x + 1;
 }
 

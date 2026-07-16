@@ -4,15 +4,15 @@
 directive enable_process_args;
 
 export class RegexPattern {
-    string pattern;           // The core pattern without anchors
-    bool anchor_start;        // True if pattern began with ^
-    bool anchor_end;          // True if pattern ended with $
+    pattern: string;           // The core pattern without anchors
+    anchor_start: bool;        // True if pattern began with ^
+    anchor_end: bool;          // True if pattern ended with $
 
-    RegexPattern(&mut this, string original_pattern) {
+    fn RegexPattern(&mut this, original_pattern: string) {
         // Parse and strip anchors from pattern
-        int32 plen = str_length(original_pattern);
-        int32 start = 0;
-        int32 end = plen;
+        plen: int32 = str_length(original_pattern);
+        start: int32 = 0;
+        end: int32 = plen;
         
         this.anchor_start = false;
         this.anchor_end = false;
@@ -38,7 +38,7 @@ export class RegexPattern {
     }
 
     // ----- Helper methods (instance) -----
-    string _decode_escape_char(&this, string &esc) {
+    fn _decode_escape_char(&this, esc: &string) -> string {
         if (esc == "n") {
             return "\n";
         }
@@ -51,7 +51,7 @@ export class RegexPattern {
         return "" + esc;
     }
 
-    bool _is_quantifier(&this, string &ch) {
+    fn _is_quantifier(&this, ch: &string) -> bool {
         if (ch == "*") {
             return true;
         }
@@ -64,12 +64,12 @@ export class RegexPattern {
         return false;
     }
 
-    int32 _find_matching_paren(&this, int32 open_index, int32 end_index) {
-        int32 depth = 0;
-        int32 i = open_index;
+    fn _find_matching_paren(&this, open_index: int32, end_index: int32) -> int32 {
+        depth: int32 = 0;
+        i: int32 = open_index;
 
         while (i < end_index) {
-            string ch = str_char_at(this.pattern, i);
+            ch: string = str_char_at(this.pattern, i);
 
             if (ch == "\\") {
                 i = i + 2;
@@ -91,11 +91,11 @@ export class RegexPattern {
         return -1;
     }
 
-    int32 _find_matching_class_end(&this, int32 open_index, int32 end_index) {
-        int32 i = open_index + 1;
+    fn _find_matching_class_end(&this, open_index: int32, end_index: int32) -> int32 {
+        i: int32 = open_index + 1;
 
         while (i < end_index) {
-            string ch = str_char_at(this.pattern, i);
+            ch: string = str_char_at(this.pattern, i);
             if (ch == "\\") {
                 i = i + 2;
                 continue;
@@ -109,11 +109,11 @@ export class RegexPattern {
         return -1;
     }
 
-    bool _char_between(&this, string &c, string lo, string hi) {
-        string range_order = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        int32 c_idx = str_index_of(range_order, c);
-        int32 lo_idx = str_index_of(range_order, lo);
-        int32 hi_idx = str_index_of(range_order, hi);
+    fn _char_between(&this, c: &string, lo: string, hi: string) -> bool {
+        range_order: string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        c_idx: int32 = str_index_of(range_order, c);
+        lo_idx: int32 = str_index_of(range_order, lo);
+        hi_idx: int32 = str_index_of(range_order, hi);
 
         if (c_idx < 0 || lo_idx < 0 || hi_idx < 0) {
             return false;
@@ -121,10 +121,10 @@ export class RegexPattern {
         return c_idx >= lo_idx && c_idx <= hi_idx;
     }
 
-    bool _class_contains(&this, int32 class_start, int32 class_end, string &c) {
-        int32 i = class_start + 1;
-        bool negated = false;
-        bool matched = false;
+    fn _class_contains(&this, class_start: int32, class_end: int32, c: &string) -> bool {
+        i: int32 = class_start + 1;
+        negated: bool = false;
+        matched: bool = false;
 
         if (i < class_end && str_char_at(this.pattern, i) == "^") {
             negated = true;
@@ -132,15 +132,15 @@ export class RegexPattern {
         }
 
         while (i < class_end) {
-            string first = str_char_at(this.pattern, i);
-            string first_val = "";
+            first: string = str_char_at(this.pattern, i);
+            first_val: string = "";
 
             if (first == "\\") {
                 if (i + 1 >= class_end) {
                     drop(first);
                     return false;
                 }
-                string esc = str_char_at(this.pattern, i + 1);
+                esc: string = str_char_at(this.pattern, i + 1);
                 first_val = this._decode_escape_char(esc);
                 drop(esc);
                 drop(first);
@@ -151,9 +151,9 @@ export class RegexPattern {
             }
 
             if (i + 1 < class_end && str_char_at(this.pattern, i) == "-") {
-                int32 rhs_i = i + 1;
-                string rhs_raw = str_char_at(this.pattern, rhs_i);
-                string last_val = "";
+                rhs_i: int32 = i + 1;
+                rhs_raw: string = str_char_at(this.pattern, rhs_i);
+                last_val: string = "";
 
                 if (rhs_raw == "\\") {
                     if (rhs_i + 1 >= class_end) {
@@ -161,7 +161,7 @@ export class RegexPattern {
                         drop(first_val);
                         return false;
                     }
-                    string esc2 = str_char_at(this.pattern, rhs_i + 1);
+                    esc2: string = str_char_at(this.pattern, rhs_i + 1);
                     last_val = this._decode_escape_char(esc2);
                     drop(esc2);
                     drop(rhs_raw);
@@ -189,13 +189,13 @@ export class RegexPattern {
         return matched;
     }
 
-    int32 _match_one_atom(&this, int32 atom_start, int32 atom_end, string &text, int32 cur, int32 t_len) {
+    fn _match_one_atom(&this, atom_start: int32, atom_end: int32, text: &string, cur: int32, t_len: int32) -> int32 {
         if (cur >= t_len) {
             return -1;
         }
 
-        string atom_ch = str_char_at(this.pattern, atom_start);
-        string text_ch = str_char_at(text, cur);
+        atom_ch: string = str_char_at(this.pattern, atom_start);
+        text_ch: string = str_char_at(text, cur);
 
         if (atom_ch == "(") {
             return this._match_range(atom_start + 1, atom_end - 1, text, cur, t_len);
@@ -213,8 +213,8 @@ export class RegexPattern {
         }
 
         if (atom_ch == "\\") {
-            string esc_ch = str_char_at(this.pattern, atom_start + 1);
-            string want_ch = this._decode_escape_char(esc_ch);
+            esc_ch: string = str_char_at(this.pattern, atom_start + 1);
+            want_ch: string = this._decode_escape_char(esc_ch);
             if (want_ch == text_ch) {
                 return cur + 1;
             }
@@ -227,12 +227,12 @@ export class RegexPattern {
         return -1;
     }
 
-    int32 _match_range(&this, int32 p_start, int32 p_end, string &text, int32 t_index, int32 t_len) {
+    fn _match_range(&this, p_start: int32, p_end: int32, text: &string, t_index: int32, t_len: int32) -> int32 {
         // Expression level: split by top-level alternation first.
-        int32 depth = 0;
-        int32 i = p_start;
+        depth: int32 = 0;
+        i: int32 = p_start;
         while (i < p_end) {
-            string ch = str_char_at(this.pattern, i);
+            ch: string = str_char_at(this.pattern, i);
 
             if (ch == "\\") {
                 i = i + 2;
@@ -244,7 +244,7 @@ export class RegexPattern {
             } else if (ch == ")") {
                 depth = depth - 1;
             } else if (ch == "|" && depth == 0) {
-                int32 left = this._match_range(p_start, i, text, t_index, t_len);
+                left: int32 = this._match_range(p_start, i, text, t_index, t_len);
                 if (left >= 0) {
                     return left;
                 }
@@ -255,11 +255,11 @@ export class RegexPattern {
         }
 
         // Sequence level.
-        int32 p = p_start;
-        int32 cur = t_index;
+        p: int32 = p_start;
+        cur: int32 = t_index;
 
         while (p < p_end) {
-            string ch0 = str_char_at(this.pattern, p);
+            ch0: string = str_char_at(this.pattern, p);
 
             if (ch0 == "|") {
                 return -1;
@@ -268,8 +268,8 @@ export class RegexPattern {
                 return -1;
             }
 
-            int32 atom_start = p;
-            int32 atom_end = p + 1;
+            atom_start: int32 = p;
+            atom_end: int32 = p + 1;
 
             if (ch0 == "\\") {
                 atom_end = p + 2;
@@ -277,13 +277,13 @@ export class RegexPattern {
                     return -1;
                 }
             } else if (ch0 == "[") {
-                int32 class_close = this._find_matching_class_end(p, p_end);
+                class_close: int32 = this._find_matching_class_end(p, p_end);
                 if (class_close < 0) {
                     return -1;
                 }
                 atom_end = class_close + 1;
             } else if (ch0 == "(") {
-                int32 close = this._find_matching_paren(p, p_end);
+                close: int32 = this._find_matching_paren(p, p_end);
                 if (close < 0) {
                     return -1;
                 }
@@ -292,10 +292,10 @@ export class RegexPattern {
                 return -1;
             }
 
-            string quant = "";
-            int32 next_pattern = atom_end;
+            quant: string = "";
+            next_pattern: int32 = atom_end;
             if (atom_end < p_end) {
-                string maybe_q = str_char_at(this.pattern, atom_end);
+                maybe_q: string = str_char_at(this.pattern, atom_end);
                 if (this._is_quantifier(maybe_q)) {
                     quant = maybe_q;
                     next_pattern = atom_end + 1;
@@ -304,7 +304,7 @@ export class RegexPattern {
                 }
             }
 
-            int32 one = this._match_one_atom(atom_start, atom_end, text, cur, t_len);
+            one: int32 = this._match_one_atom(atom_start, atom_end, text, cur, t_len);
 
             if (quant == "") {
                 if (one < 0) {
@@ -317,7 +317,7 @@ export class RegexPattern {
 
             if (quant == "?") {
                 if (one >= 0) {
-                    int32 with_one = this._match_range(next_pattern, p_end, text, one, t_len);
+                    with_one: int32 = this._match_range(next_pattern, p_end, text, one, t_len);
                     if (with_one >= 0) {
                         return with_one;
                     }
@@ -331,7 +331,7 @@ export class RegexPattern {
                 }
 
                 // Greedy first, then backtrack to zero-consumption path.
-                int32 greedy = this._match_range(p, p_end, text, one, t_len);
+                greedy: int32 = this._match_range(p, p_end, text, one, t_len);
                 if (greedy >= 0) {
                     return greedy;
                 }
@@ -343,7 +343,7 @@ export class RegexPattern {
                 return -1;
             }
 
-            int32 greedy_plus = this._match_range(p, p_end, text, one, t_len);
+            greedy_plus: int32 = this._match_range(p, p_end, text, one, t_len);
             if (greedy_plus >= 0) {
                 return greedy_plus;
             }
@@ -353,20 +353,20 @@ export class RegexPattern {
         return cur;
     }
 
-    string _validate_pattern(&this) {
-        int32 n = str_length(this.pattern);
+    fn _validate_pattern(&this) -> string {
+        n: int32 = str_length(this.pattern);
         
         // Pattern should not be empty (anchors are stripped)
         if (n == 0) {
             return "pattern is empty";
         }
         
-        int32 i = 0;
-        int32 depth = 0;
-        bool can_quantify = false;
+        i: int32 = 0;
+        depth: int32 = 0;
+        can_quantify: bool = false;
 
         while (i < n) {
-            string ch = str_char_at(this.pattern, i);
+            ch: string = str_char_at(this.pattern, i);
 
             if (ch == "\\") {
                 if (i + 1 >= n) {
@@ -381,7 +381,7 @@ export class RegexPattern {
                 depth = depth + 1;
                 can_quantify = false;
             } else if (ch == "[") {
-                int32 class_end = this._find_matching_class_end(i, n);
+                class_end: int32 = this._find_matching_class_end(i, n);
                 if (class_end < 0) {
                     return "unmatched '[' in pattern";
                 }
@@ -417,10 +417,10 @@ export class RegexPattern {
         return "";
     }
 
-    bool _match_full(&this, string &text) {
-        int32 p_len = str_length(this.pattern);
-        int32 t_len = str_length(text);
-        int32 end = this._match_range(0, p_len, text, 0, t_len);
+    fn _match_full(&this, text: &string) -> bool {
+        p_len: int32 = str_length(this.pattern);
+        t_len: int32 = str_length(text);
+        end: int32 = this._match_range(0, p_len, text, 0, t_len);
         
         // If anchor_end is set, must match exactly to end of text
         if (this.anchor_end) {
@@ -431,8 +431,8 @@ export class RegexPattern {
         return end == t_len;
     }
 
-    int32 _match_at_position(&this, string &text, int32 start_pos) {
-        int32 t_len = str_length(text);
+    fn _match_at_position(&this, text: &string, start_pos: int32) -> int32 {
+        t_len: int32 = str_length(text);
         
         // Check if start position is valid
         if (start_pos < 0 || start_pos > t_len) {
@@ -445,8 +445,8 @@ export class RegexPattern {
         }
         
         // Try to match pattern starting at start_pos
-        int32 p_len = str_length(this.pattern);
-        int32 matched_end = this._match_range(0, p_len, text, start_pos, t_len);
+        p_len: int32 = str_length(this.pattern);
+        matched_end: int32 = this._match_range(0, p_len, text, start_pos, t_len);
         
         if (matched_end < 0) {
             return -1;
@@ -461,8 +461,8 @@ export class RegexPattern {
     }
 
     // ----- Public methods -----
-    bool is_match(&this, string &text) {
-        string err = this._validate_pattern();
+    fn is_match(&this, text: &string) -> bool {
+        err: string = this._validate_pattern();
         if (err != "") {
             return false;
         }
@@ -470,12 +470,12 @@ export class RegexPattern {
         return this._match_full(text);
     }
 
-    bool matches(&this, string &text) {
+    fn matches(&this, text: &string) -> bool {
         return this.is_match(text);
     }
 
-    int32 find_at(&this, string &text, int32 start_pos) {
-        string err = this._validate_pattern();
+    fn find_at(&this, text: &string, start_pos: int32) -> int32 {
+        err: string = this._validate_pattern();
         if (err != "") {
             return -1;
         }
@@ -483,7 +483,7 @@ export class RegexPattern {
         return this._match_at_position(text, start_pos);
     }
 
-    string last_error(&this) {
+    fn last_error(&this) -> string {
         return this._validate_pattern();
     }
 }

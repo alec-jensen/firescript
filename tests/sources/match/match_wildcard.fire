@@ -1,13 +1,13 @@
 import @firescript/std.io.println;
 
 enum Shape {
-    Circle(float64 radius),
-    Rectangle(float64 width, float64 height),
-    Triangle(float64 base, float64 height),
+    Circle(radius: float64),
+    Rectangle(width: float64, height: float64),
+    Triangle(base: float64, height: float64),
     Point
 }
 
-void describe(Shape s) {
+fn describe(s: Shape) -> void {
     match s {
         Shape.Circle(radius) -> { println("circle r=" + (radius as string)); }
         _ -> { println("something else"); }

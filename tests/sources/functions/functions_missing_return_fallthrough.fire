@@ -18,14 +18,14 @@ import @firescript/std.io.println;
 // firescript/flir/lowering.py (~line 867-868) is unreachable dead code:
 // the verifier rejects the malformed FIR before lowering ever sees it.
 
-int32 maybeReturnInt(bool flag) {
+fn maybeReturnInt(flag: bool) -> int32 {
     if (flag) {
         return 42;
     }
     // falls off the end when flag is false -> synthesized `return 0`
 }
 
-bool maybeReturnBool(bool flag) {
+fn maybeReturnBool(flag: bool) -> bool {
     if (flag) {
         return true;
     }

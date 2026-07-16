@@ -1,19 +1,19 @@
 import @firescript/std.io.println;
 
 class Vec2 {
-    int32 x;
-    int32 y;
+    x: int32;
+    y: int32;
 
-    Vec2(&mut this, int32 x, int32 y) {
+    fn Vec2(&mut this, x: int32, y: int32) {
         this.x = x;
         this.y = y;
     }
 
-    Vec2 add(&this, Vec2 &other) {
+    fn add(&this, other: &Vec2) -> Vec2 {
         return Vec2(this.x + other.x, this.y + other.y);
     }
 
-    int32 dot(&this, Vec2 &other) {
+    fn dot(&this, other: &Vec2) -> int32 {
         return (this.x * other.x) + (this.y * other.y);
     }
 }

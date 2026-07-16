@@ -1,16 +1,16 @@
 //@ snapshot: fir, flir
 import @firescript/std.io.println;
 
-int32 last(int32[] values) {
+fn last(values: int32[]) -> int32 {
     return values[-1i32];
 }
 
-int32[] nums = [10i32, 20i32, 30i32, 40i32];
+nums: int32[] = [10i32, 20i32, 30i32, 40i32];
 
 println(nums[-1i32]);
 println(nums[-2i32]);
 
-int32 idx = -3i32;
+idx: int32 = -3i32;
 println(nums[idx]);
 
 nums[-1i32] = 99i32;

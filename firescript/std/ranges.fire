@@ -1,21 +1,21 @@
-export generator<int32> range(int32 end) {
-    int32 i = 0;
+export fn range(end: int32) -> generator<int32> {
+    i: int32 = 0;
     while (i < end) {
         yield i;
         i += 1;
     }
 }
 
-export generator<int32> rangeFrom(int32 start, int32 end) {
-    int32 i = start;
+export fn rangeFrom(start: int32, end: int32) -> generator<int32> {
+    i: int32 = start;
     while (i < end) {
         yield i;
         i += 1;
     }
 }
 
-export generator<int32> rangeStep(int32 start, int32 end, int32 step) {
-    int32 i = start;
+export fn rangeStep(start: int32, end: int32, step: int32) -> generator<int32> {
+    i: int32 = start;
     while (i < end) {
         yield i;
         i += step;

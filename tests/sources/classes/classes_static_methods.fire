@@ -2,18 +2,18 @@
 import @firescript/std.io.println;
 
 class Math {
-    static int32 max(int32 a, int32 b) {
+    static fn max(a: int32, b: int32) -> int32 {
         if (a > b) {
             return a;
         }
         return b;
     }
 
-    static int32 add(int32 a, int32 b) {
+    static fn add(a: int32, b: int32) -> int32 {
         return a + b;
     }
 
-    int32 twice(int32 x) {
+    fn twice(x: int32) -> int32 {
         return x * 2i32;
     }
 }
@@ -21,7 +21,7 @@ class Math {
 println(Math.max(3i32, 7i32));
 println(Math.add(8i32, 5i32));
 
-Math m = Math();
+m: Math = Math();
 println(m.twice(6i32));
 
 /* EXPECT

@@ -4,7 +4,7 @@
 // scope rather than an error. Exercises that EOF fallthrough directly.
 import @firescript/std.io.println;
 
-bool b = true;
+b: bool = true;
 println(1);
 if (b)
 

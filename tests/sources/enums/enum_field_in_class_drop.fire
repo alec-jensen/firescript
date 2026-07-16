@@ -3,52 +3,52 @@
 import @firescript/std.io.println;
 
 class Box {
-    string label;
+    label: string;
 
-    Box(string label) {
+    fn Box(label: string) {
         this.label = label;
     }
 }
 
 enum Note {
-    Text(string body),
+    Text(body: string),
     Silent
 }
 
 enum Slot {
-    Holds(Box inner),
+    Holds(inner: Box),
     Vacant
 }
 
 class Holder {
-    Note note;
+    note: Note;
 
-    Holder(Note note) {
+    fn Holder(note: Note) {
         this.note = note;
     }
 }
 
 class Shelf {
-    Slot slot;
+    slot: Slot;
 
-    Shelf(Slot slot) {
+    fn Shelf(slot: Slot) {
         this.slot = slot;
     }
 }
 
-void useHolder() {
-    Note n = Note.Text("inside");
-    Holder h = Holder(n);
+fn useHolder() -> void {
+    n: Note = Note.Text("inside");
+    h: Holder = Holder(n);
     match h.note {
         Note.Text(body) -> println("holder: " + body),
         Note.Silent -> println("holder: silent"),
     }
 }
 
-void useShelf() {
-    Box b = Box("boxed");
-    Slot s = Slot.Holds(b);
-    Shelf shelf = Shelf(s);
+fn useShelf() -> void {
+    b: Box = Box("boxed");
+    s: Slot = Slot.Holds(b);
+    shelf: Shelf = Shelf(s);
     match shelf.slot {
         Slot.Holds(inner) -> println("shelf: " + inner.label),
         Slot.Vacant -> println("shelf: vacant"),
