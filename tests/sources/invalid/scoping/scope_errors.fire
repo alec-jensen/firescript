@@ -3,30 +3,30 @@
 import @firescript/std.io.println;
 
 // Variable shadowing (not allowed in firescript)
-int32 x = 10;
+x: int32 = 10;
 {
-    int32 x = 20;  // Error: shadowing not allowed  //~ ERROR FS-SEM-0010 @11
+    x: int32 = 20;  // Error: shadowing not allowed  //~ ERROR FS-SEM-0010 @5
     println(x);
 }
 
 // Use of variable before declaration
 println(future_var);
-int32 future_var = 100;
+future_var: int32 = 100;
 
 // Use of variable outside its scope
 {
-    int32 scoped = 42;
+    scoped: int32 = 42;
 }
 println(scoped);  // Error: scoped not in scope here  //~ ERROR FS-PARSE-0003 @9
 
 // Access to loop variable outside loop
-for (int32 i = 0; i < 10; i++) {
+for (i: int32 = 0; i < 10; i++) {
     println(i);
 }
 println(i);  // Error: i not in scope  //~ ERROR FS-PARSE-0003 @9
 
 // Duplicate parameter names (if not caught)
-void duplicateParams(int32 x, int32 x) {  //~ ERROR FS-SEM-0010 @28
-//~^ ERROR FS-SEM-0010 @37
+fn duplicateParams(x: int32, x: int32) -> void {  //~ ERROR FS-SEM-0010 @20
+//~^ ERROR FS-SEM-0010 @30
     println(x);
 }

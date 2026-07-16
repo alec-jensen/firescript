@@ -5,7 +5,7 @@
 import @firescript/std.io.println;
 import @firescript/std.types.Tuple;
 
-int32 x = 1;
+x: int32 = 1;
 
 // Non-type token in the type-argument list: the deferred-mode arg loop
 // just stops (no error of its own), so the missing '>' is what's reported.

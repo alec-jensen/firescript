@@ -2,16 +2,16 @@
 // the second declaration shadows the first within the method's own
 // parameter scope, which is rejected the same way outer-scope shadowing is.
 class Foo {
-    int32 v;
+    v: int32;
 
-    Foo(int32 v) {
+    fn Foo(v: int32) {
         this.v = v;
     }
 
-    void method(int32 x, int32 x) {  //~ ERROR FS-SEM-0010 @32
+    fn method(x: int32, x: int32) -> void {  //~ ERROR FS-SEM-0010 @25
     }
 }
 
-int32 main() {
+fn main() -> int32 {
     return 0;
 }

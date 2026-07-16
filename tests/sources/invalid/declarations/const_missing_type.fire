@@ -1,2 +1,2 @@
 // `const` modifier not followed by a recognized type token.
-const foo;  //~ ERROR FS-PARSE-0010 @7
+const foo;  //~ ERROR FS-PARSE-0010 @10

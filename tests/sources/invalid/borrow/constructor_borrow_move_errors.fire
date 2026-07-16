@@ -3,19 +3,19 @@
 import @firescript/std.io.println;
 
 class Wrapper {
-    string text;
+    text: string;
 
-    Wrapper(&mut this, string text) {
+    fn Wrapper(&mut this, text: string) {
         this.text = text;
     }
 }
 
-void badMoves(&string s) {
-    Wrapper a = Wrapper(s);      // Error: cannot move borrowed value into constructor param  //~ ERROR FS-SEM-0001 @25
-    Wrapper b = new Wrapper(s);  // Error: cannot move borrowed value into constructor param  //~ ERROR FS-SEM-0001 @29
+fn badMoves(s: &string) -> void {
+    a: Wrapper = Wrapper(s);      // Error: cannot move borrowed value into constructor param  //~ ERROR FS-SEM-0001 @26
+    b: Wrapper = new Wrapper(s);  // Error: cannot move borrowed value into constructor param  //~ ERROR FS-SEM-0001 @30
     println(a.text);
     println(b.text);
 }
 
-string src = "borrowed";
+src: string = "borrowed";
 badMoves(src);

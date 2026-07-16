@@ -2,9 +2,9 @@
 // constructor.
 
 class NoCtor {
-    int32 x;
+    x: int32;
 }
 
-void constructor_call_no_ctor() {
-    NoCtor obj = new NoCtor(5);  //~ ERROR FS-SEM-0010 @22
+fn constructor_call_no_ctor() -> void {
+    obj: NoCtor = new NoCtor(5);  //~ ERROR FS-SEM-0010 @23
 }

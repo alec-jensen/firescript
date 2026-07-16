@@ -35,7 +35,7 @@ def test_import_not_found_compile():
     with t.tmpdir() as tmp:
         src = os.path.join(tmp, "missing_import.fire")
         with open(src, "w", encoding="utf-8") as f:
-            f.write("import definitely_missing_module.helper;\nint32 x = helper(1);\n")
+            f.write("import definitely_missing_module.helper;\nx: int32 = helper(1);\n")
         proc = t.run_compiler([src])
         t.require_eq(proc.returncode, 1)
         combined = proc.stdout + proc.stderr
@@ -46,6 +46,6 @@ def test_import_with_syntax_error():
     with t.tmpdir() as tmp:
         src = os.path.join(tmp, "bad_after_merge.fire")
         with open(src, "w", encoding="utf-8") as f:
-            f.write("import @firescript/std.io.println;\nint32 x = ;\nprintln(x);\n")
+            f.write("import @firescript/std.io.println;\nx: int32 = ;\nprintln(x);\n")
         proc = t.run_compiler([src])
         t.require_eq(proc.returncode, 1)

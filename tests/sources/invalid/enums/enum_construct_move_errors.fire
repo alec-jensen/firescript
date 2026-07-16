@@ -4,18 +4,18 @@
 import @firescript/std.io.println;
 
 class Box {
-    string label;
+    label: string;
 
-    Box(string label) {
+    fn Box(label: string) {
         this.label = label;
     }
 }
 
 enum Slot {
-    Holds(Box inner),
+    Holds(inner: Box),
     Vacant
 }
 
-Box b = Box("boxed");
-Slot s = Slot.Holds(b);
+b: Box = Box("boxed");
+s: Slot = Slot.Holds(b);
 println(b.label);  //~ ERROR FS-SEM-0001 @9

@@ -4,16 +4,16 @@
 import @firescript/std.io.println;
 
 // Use after move (if ownership is enforced)
-string owned = "hello";
-string moved = owned;  // Move
+owned: string = "hello";
+moved: string = owned;  // Move
 println(owned);  // Error: used after move  //~ ERROR FS-SEM-0001 @9
 
-string badBorrowReturn(&string s) {
+fn badBorrowReturn(s: &string) -> string {
 	return s;  // Error: borrowed value escapes callable scope  //~ ERROR FS-SEM-0001 @9
 }
 
-string source = "borrow";
-string escaped = badBorrowReturn(source);
+source: string = "borrow";
+escaped: string = badBorrowReturn(source);
 println(escaped);
 
 // Multiple mutable borrows (if borrow checking is enforced)
@@ -30,7 +30,7 @@ println(escaped);
 // }
 
 // Array out of bounds (compile-time if possible)
-int32[] small = [1, 2, 3];
-int32 bad = small[10];  // Runtime error, but could be compile-time in some cases
+small: int32[] = [1, 2, 3];
+bad: int32 = small[10];  // Runtime error, but could be compile-time in some cases
 
 println("memory error tests");

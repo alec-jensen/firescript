@@ -27,56 +27,56 @@ def _parser_for(src: str) -> Parser:
 
 
 def test_field_not_found_error_records_error():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     p.field_not_found_error("Point", "z", p.tokens[0])
     t.require_eq(len(p.errors), 1)
     t.require("z" in str(p.errors[0]) or "Point" in str(p.errors[0]))
 
 
 def test_method_not_found_error_records_error():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     p.method_not_found_error("Point", "distanceTo", p.tokens[0])
     t.require_eq(len(p.errors), 1)
 
 
 def test_constructor_not_found_error_records_error():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     p.constructor_not_found_error("Point", p.tokens[0])
     t.require_eq(len(p.errors), 1)
 
 
 def test_invalid_operator_error_records_error():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     p.invalid_operator_error("+", "Point", p.tokens[0])
     t.require_eq(len(p.errors), 1)
 
 
 def test_control_flow_error_records_error():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     p.control_flow_error("break", p.tokens[0])
     t.require_eq(len(p.errors), 1)
 
 
 def test_invalid_super_error_records_error():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     p.invalid_super_error("super used outside a subclass", p.tokens[0])
     t.require_eq(len(p.errors), 1)
 
 
 def test_undefined_identifier_error_records_error():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     p.undefined_identifier_error("y", p.tokens[0])
     t.require_eq(len(p.errors), 1)
 
 
 def test_missing_identifier_error_records_error():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     p.missing_identifier_error(p.tokens[0])
     t.require_eq(len(p.errors), 1)
 
 
 def test_invalid_array_access_error_records_error():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     p.invalid_array_access_error("index must be an integer", p.tokens[0])
     t.require_eq(len(p.errors), 1)
 
@@ -84,14 +84,14 @@ def test_invalid_array_access_error_records_error():
 def test_report_error_with_no_token_anchors_after_last_real_token():
     # No `token` kwarg -> report_error falls back to the last non-comment
     # token in the stream via _last_non_comment_token(None).
-    p = _parser_for("int32 x = 1; // trailing comment\n")
+    p = _parser_for("x: int32 = 1; // trailing comment\n")
     p.report_error(__import__("errors").ParserError(message="synthetic", source_file="test.fire"))
     t.require_eq(len(p.errors), 1)
     t.require(p.errors[0].line > 0)
 
 
 def test_report_error_skips_trailing_multiline_comment_block():
-    src = "int32 x = 1;\n/* trailing\nblock\ncomment */"
+    src = "x: int32 = 1;\n/* trailing\nblock\ncomment */"
     p = _parser_for(src)
     p.report_error(__import__("errors").ParserError(message="synthetic", source_file="test.fire"))
     # The anchored line must be the statement's line, not inside the comment block.
@@ -110,7 +110,7 @@ def test_consume_name_accepts_as_and_owned_keywords():
 
 
 def test_infer_literal_type_integer_suffixes():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     for suf, expected in (
         ("i8", "int8"), ("i16", "int16"), ("i32", "int32"), ("i64", "int64"),
         ("u8", "uint8"), ("u16", "uint16"), ("u32", "uint32"), ("u64", "uint64"),
@@ -120,13 +120,13 @@ def test_infer_literal_type_integer_suffixes():
 
 
 def test_infer_literal_type_integer_no_suffix_defaults_int32():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     tok = Token("INTEGER_LITERAL", "42", 0)
     t.require_eq(p._infer_literal_type(tok), "int32")
 
 
 def test_infer_literal_type_float_suffixes():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     t.require_eq(p._infer_literal_type(Token("FLOAT_LITERAL", "1.0f128", 0)), "float128")
     t.require_eq(p._infer_literal_type(Token("FLOAT_LITERAL", "1.0f64", 0)), "float64")
     t.require_eq(p._infer_literal_type(Token("FLOAT_LITERAL", "1.0f32", 0)), "float32")
@@ -134,31 +134,32 @@ def test_infer_literal_type_float_suffixes():
 
 
 def test_infer_literal_type_float_no_suffix_defaults_float32():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     tok = Token("FLOAT_LITERAL", "1.0", 0)
     t.require_eq(p._infer_literal_type(tok), "float32")
 
 
 def test_infer_literal_type_double_literal_is_float64():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     tok = Token("DOUBLE_LITERAL", "1.0", 0)
     t.require_eq(p._infer_literal_type(tok), "float64")
 
 
 def test_infer_literal_type_unknown_token_type_returns_empty():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     tok = Token("STRING_LITERAL", "hi", 0)
     t.require_eq(p._infer_literal_type(tok), "")
 
 
 def test_is_type_token_recognizes_registered_user_type():
-    p = _parser_for("Foo x = y;")
+    p = _parser_for("x: Foo = y;")
     p.user_types.add("Foo")
-    t.require(p._is_type_token(p.tokens[0]))
+    foo_tok = next(tok for tok in p.tokens if tok.value == "Foo")
+    t.require(p._is_type_token(foo_tok))
 
 
 def test_is_type_token_none_returns_false():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     t.require(not p._is_type_token(None))
 
 
@@ -189,34 +190,26 @@ def test_consume_name_returns_none_at_eof():
 
 
 def test_expect_records_unexpected_token_error():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     result = p.expect("SEMICOLON")  # current token is INT32, not SEMICOLON
     t.require(result is None)
     t.require_eq(len(p.errors), 1)
 
 
 def test_expect_succeeds_and_advances():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
+    p.advance()  # 'x' -> ':'
+    p.advance()  # ':' -> 'int32'
     result = p.expect("INT32")
     t.require(result is not None and result.type == "INT32")
     t.require_eq(len(p.errors), 0)
-    t.require_eq(p.current_token.type, "IDENTIFIER")
+    t.require_eq(p.current_token.type, "ASSIGN")
 
 
 def test_expect_returns_none_at_eof():
     p = _parser_for("")
     t.require(p.expect("SEMICOLON") is None)
     t.require_eq(len(p.errors), 0)
-
-
-def test_looks_like_generic_var_decl_false_when_no_less_than():
-    p = _parser_for("int32 x = 1;")
-    t.require(not p._looks_like_generic_var_decl())
-
-
-def test_looks_like_generic_var_decl_false_when_angle_brackets_unmatched():
-    p = _parser_for("Foo<int32 x = 1;")
-    t.require(not p._looks_like_generic_var_decl())
 
 
 def test_scan_matching_gt_returns_minus_one_at_eof_without_boundary():
@@ -234,11 +227,6 @@ def test_skip_comment_at_eof_is_noop():
     t.require(p.current_token is None)
 
 
-def test_looks_like_generic_var_decl_false_when_no_assign_after_name():
-    p = _parser_for("Foo<int32> x;")
-    t.require(not p._looks_like_generic_var_decl())
-
-
 def test_looks_like_generic_constructor_call_false_when_not_less_than():
     p = _parser_for("(x)")
     t.require(not p._looks_like_generic_constructor_call())
@@ -249,25 +237,9 @@ def test_looks_like_generic_constructor_call_false_when_no_open_paren():
     t.require(not p._looks_like_generic_constructor_call())
 
 
-def test_looks_like_generic_var_decl_false_at_eof():
-    p = _parser_for("")
-    t.require(not p._looks_like_generic_var_decl())
-
-
 def test_looks_like_generic_constructor_call_false_at_eof():
     p = _parser_for("")
     t.require(not p._looks_like_generic_constructor_call())
-
-
-def test_looks_like_generic_var_decl_false_when_var_name_is_blank_placeholder():
-    p = _parser_for("Foo<int32> = 1;")
-    real_tokens = list(p.tokens)
-    # Splice a blank-value IDENTIFIER placeholder in for the variable name
-    # (the lexer never emits one; see the whitespace-placeholder tests
-    # above for why this is only reachable via direct construction).
-    gt_pos = next(i for i, tok in enumerate(real_tokens) if tok.type == "GREATER_THAN")
-    p.tokens = [*real_tokens[:gt_pos + 1], _blank_token(99), *real_tokens[gt_pos + 1:]]
-    t.require(not p._looks_like_generic_var_decl())
 
 
 def test_parser_base_parse_expression_is_not_implemented():
@@ -285,19 +257,19 @@ def test_parser_base_parse_expression_is_not_implemented():
 
 
 def test_invalid_field_access_error_records_error():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     p.invalid_field_access_error("field access on non-class type", p.tokens[0])
     t.require_eq(len(p.errors), 1)
 
 
 def test_bare_error_method_records_error():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     p.error("a generic parser error", p.tokens[0])
     t.require_eq(len(p.errors), 1)
 
 
 def test_type_error_and_invalid_type_error_record_errors():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     p.type_error("bad type", p.tokens[0])
     p.invalid_type_error("invalid type usage", p.tokens[0])
     t.require_eq(len(p.errors), 2)
@@ -314,8 +286,8 @@ def test_constructor_with_borrowed_and_owned_regular_params_parses():
     # level only: the parse must succeed and produce all 3 parameters.
     src = (
         "class Outer {\n"
-        "    int32 total;\n"
-        "    Outer(&this, &Inner a, owned Inner b) {\n"
+        "    total: int32;\n"
+        "    fn Outer(&this, a: &Inner, b: owned Inner) {\n"
         "        this.total = 0;\n"
         "    }\n"
         "}\n"
@@ -343,27 +315,26 @@ def _blank_token(index: int) -> Token:
 
 
 def test_advance_skips_whitespace_placeholder_tokens():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     real_tokens = list(p.tokens)
     p.tokens = [real_tokens[0], _blank_token(5), real_tokens[1], *real_tokens[2:]]
     p._token_idx = 0
     p.current_token = p.tokens[0]
     p.advance()
-    t.require_eq(p.current_token.type, "IDENTIFIER")
-    t.require_eq(p.current_token.value, "x")
+    t.require_eq(p.current_token.type, "COLON")
 
 
 def test_peek_skips_whitespace_placeholder_tokens():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     real_tokens = list(p.tokens)
     p.tokens = [real_tokens[0], _blank_token(5), *real_tokens[1:]]
     p._token_idx = 0
     p.current_token = p.tokens[0]
-    t.require_eq(p.peek(1).value, "x")
+    t.require_eq(p.peek(1).value, ":")
 
 
 def test_skip_ws_from_skips_placeholder_tokens():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     real_tokens = list(p.tokens)
     p.tokens = [real_tokens[0], _blank_token(5), _blank_token(6), *real_tokens[1:]]
     t.require_eq(p._skip_ws_from(1), 3)
@@ -413,24 +384,12 @@ def test_parse_statement_directive_without_declarations_mixin_errors():
     t.require("not available" in str(p.errors[0]))
 
 
-def test_parse_statement_generator_without_declarations_mixin_returns_none():
-    from parser.statements import StatementsMixin
-
-    class _BareStatementsParser(StatementsMixin):
-        pass
-
-    tokens = Lexer("generator<int32> g() { }").tokenize()
-    p = _BareStatementsParser(tokens, "generator<int32> g() { }", "test.fire")
-    result = p._parse_statement()
-    t.require(result is None)
-
-
 def test_parse_scope_without_open_brace_records_error():
     # Every one of parse_scope()'s ~12 call sites across declarations.py /
     # statements.py / expressions.py already checks `current_token.type ==
     # "OPEN_BRACE"` before calling it, so this defensive branch is
     # unreachable through real parsing -- covered directly instead.
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     result = p.parse_scope()
     t.require(result is None)
     t.require_eq(len(p.errors), 1)
@@ -468,7 +427,7 @@ def test_last_non_comment_token_returns_none_when_all_comments():
 
 
 def test_report_error_comment_token_at_eof_falls_back_to_last_token_index():
-    p = _parser_for("int32 x = 1; // trailing\n")
+    p = _parser_for("x: int32 = 1; // trailing\n")
     while p.current_token is not None:
         p.advance()
     comment_tok = next(tok for tok in p.tokens if tok.type == "SINGLE_LINE_COMMENT")
@@ -478,14 +437,14 @@ def test_report_error_comment_token_at_eof_falls_back_to_last_token_index():
 
 
 def test_report_error_sets_source_file_when_missing():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     err = CompileTimeError(source_file=None)
     p.report_error(err, token=p.tokens[0])
     t.require_eq(err.source_file, p.filename)
 
 
 def test_report_error_swallows_position_lookup_exception():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     p.file = ""  # get_line("", 1) raises IndexError inside report_error's try
     err = ParserError(message="synthetic", source_file="test.fire")
     p.report_error(err, token=p.tokens[0])

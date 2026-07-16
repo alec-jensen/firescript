@@ -1,5 +1,5 @@
 // Malformed statement forms.
-int32 x = 1;
+x: int32 = 1;
 
 // break outside a loop still parses; missing semicolon after break
 while (x < 2) {
@@ -12,13 +12,13 @@ x;  //~ ERROR FS-PARSE-0010 @1
 
 // Field access alone is not a statement
 class Holder {
-    int32 v;
+    v: int32;
 
-    Holder() {
+    fn Holder() {
         this.v = 3;
     }
 }
-Holder h = Holder();  //~ ERROR FS-SEM-0010 @12
+h: Holder = Holder();  //~ ERROR FS-SEM-0010 @13
 h.v;  //~ ERROR FS-PARSE-0010 @4
 
 // Missing expression after field assignment
@@ -26,7 +26,7 @@ h.v = ;  //~ ERROR FS-PARSE-0012 @7
 //~^ ERROR FS-PARSE-0010 @8
 
 // Missing expression after array element assignment
-int32[] arr = [1, 2];
+arr: int32[] = [1, 2];
 arr[0] = ;
 
 // Missing expression after a plain variable assignment

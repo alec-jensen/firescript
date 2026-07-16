@@ -1,19 +1,19 @@
 // Array-access on a non-array type, and an array method called with the
 // wrong argument count.
-int32 indexNonArray() {
-    int32 x = 5;
-    int32 y = x[0];  //~ ERROR FS-SEM-0010 @15
+fn indexNonArray() -> int32 {
+    x: int32 = 5;
+    y: int32 = x[0];  //~ ERROR FS-SEM-0010 @16
     return y;
 }
 
-int32 undefinedIndex() {
-    int32[] arr = [1, 2];
-    int32 y = arr[undef];  //~ ERROR FS-PARSE-0003 @19
+fn undefinedIndex() -> int32 {
+    arr: int32[] = [1, 2];
+    y: int32 = arr[undef];  //~ ERROR FS-PARSE-0003 @20
     return y;
 }
 
-int32 main() {
-    int32[] arr = [1, 2];
-    int32 x = arr.length(1);  //~ ERROR FS-SEM-0010 @19
+fn main() -> int32 {
+    arr: int32[] = [1, 2];
+    x: int32 = arr.length(1);  //~ ERROR FS-SEM-0010 @20
     return x;
 }

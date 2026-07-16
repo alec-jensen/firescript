@@ -2,15 +2,15 @@
 // for the declared constructor.
 
 class Point {
-    int32 x;
-    int32 y;
+    x: int32;
+    y: int32;
 
-    Point(int32 x, int32 y) {
+    fn Point(x: int32, y: int32) {
         this.x = x;
         this.y = y;
     }
 }
 
-void constructor_call_arg_type() {
-    Point p = new Point("bad", 5);  //~ ERROR FS-SEM-0010 @25
+fn constructor_call_arg_type() -> void {
+    p: Point = new Point("bad", 5);  //~ ERROR FS-SEM-0010 @26
 }

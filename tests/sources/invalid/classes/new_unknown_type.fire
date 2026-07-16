@@ -1,7 +1,7 @@
 // Parser error: 'new' constructor call with a type name that was never
 // declared as a class.
 
-void new_unknown_type() {
+fn new_unknown_type() -> void {
     b = new Bogus(5);  //~ ERROR FS-PARSE-0012 @13
 //~^ ERROR FS-SEM-0010 @13
 //~^^ ERROR FS-PARSE-0003 @5

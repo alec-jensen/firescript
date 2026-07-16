@@ -1,21 +1,21 @@
 // Field-access type errors: unknown field on a real class, and field
 // access attempted on a non-class (primitive) type.
 class Foo {
-    int32 v;
+    v: int32;
 
-    Foo(int32 v) {
+    fn Foo(v: int32) {
         this.v = v;
     }
 }
 
-int32 unknownField() {
-    Foo f = Foo(1);
-    int32 y = f.notthere;  //~ ERROR FS-SEM-0010 @17
+fn unknownField() -> int32 {
+    f: Foo = Foo(1);
+    y: int32 = f.notthere;  //~ ERROR FS-SEM-0010 @18
     return y;
 }
 
-int32 main() {
-    int32 x = 5;
-    int32 y = x.foo;  //~ ERROR FS-SEM-0010 @17
+fn main() -> int32 {
+    x: int32 = 5;
+    y: int32 = x.foo;  //~ ERROR FS-SEM-0010 @18
     return 0;
 }

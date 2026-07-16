@@ -1,47 +1,39 @@
 // Literal and constant errors
 
 // Integer overflow
-fn void overflow() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32 too_big = 99999999999999999999;  // Exceeds int32 range
+fn overflow() -> void {
+    too_big: int32 = 99999999999999999999;  // Exceeds int32 range
 }
 
 // Invalid hex literals
-fn void invalid_hex() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32 bad_hex = 0xGHIJ;  // Invalid hex digits  //~ ERROR FS-PARSE-0010 @22
+fn invalid_hex() -> void {
+    bad_hex: int32 = 0xGHIJ;  // Invalid hex digits  //~ ERROR FS-PARSE-0010 @23
 }
 
 // Invalid escape sequences
-fn void invalid_escape() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    string bad = "hello\q";  // \q is not a valid escape
+fn invalid_escape() -> void {
+    bad: string = "hello\q";  // \q is not a valid escape
 }
 
 // Unclosed string literal
-fn void unclosed_string() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    string bad = "unclosed;  //~ ERROR FS-PARSE-0012 @18
-//~^ ERROR FS-PARSE-0010 @19
+fn unclosed_string() -> void {
+    bad: string = "unclosed;  //~ ERROR FS-PARSE-0012 @19
+//~^ ERROR FS-PARSE-0010 @20
+//~^^ ERROR FS-PARSE-0010 @20
 }
 
 // Invalid number format
-fn void invalid_number() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32 bad = 123abc;  // Invalid number  //~ ERROR FS-PARSE-0010 @20
-//~^ ERROR FS-SEM-0010 @11
+fn invalid_number() -> void {
+    bad: int32 = 123abc;  // Invalid number  //~ ERROR FS-PARSE-0010 @21
 }
 
 // Float assigned to int without cast
-fn void float_to_int_no_cast() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32 x = 3.14;  // Should require explicit cast  //~ ERROR FS-SEM-0002 @11
+fn float_to_int_no_cast() -> void {
+    x: int32 = 3.14;  // Should require explicit cast  //~ ERROR FS-SEM-0002 @5
 }
 
 // Boolean literal typo
-fn void boolean_typo() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    bool x = True;  // Should be 'true' (lowercase)  //~ ERROR FS-SEM-0010 @10
-//~^ ERROR FS-PARSE-0003 @14
-    bool y = False;  // Should be 'false' (lowercase)  //~ ERROR FS-PARSE-0003 @14
+fn boolean_typo() -> void {
+    x: bool = True;  // Should be 'true' (lowercase)  //~ ERROR FS-PARSE-0003 @15
+    y: bool = False;  // Should be 'false' (lowercase)  //~ ERROR FS-PARSE-0003 @15
 }

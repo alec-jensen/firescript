@@ -11,7 +11,7 @@ from harness.directives import (
 
 
 def test_header_directive_parses_key_value():
-    text = "//@ exit-code: 2\nint32 x = 1;\n"
+    text = "//@ exit-code: 2\nx: int32 = 1;\n"
     d = parse_fire_directives(text)
     t.require_eq(d.value("exit-code"), "2")
 
@@ -24,7 +24,7 @@ def test_bare_directive_has_no_value():
 
 
 def test_unknown_key_is_error():
-    text = "//@ bogus: 1\nint32 x = 1;\n"
+    text = "//@ bogus: 1\nx: int32 = 1;\n"
     try:
         parse_fire_directives(text)
         t.require(False, "expected DirectiveError")
@@ -33,7 +33,7 @@ def test_unknown_key_is_error():
 
 
 def test_directive_after_code_is_error():
-    text = "int32 x = 1;\n//@ exit-code: 2\n"
+    text = "x: int32 = 1;\n//@ exit-code: 2\n"
     try:
         parse_fire_directives(text)
         t.require(False, "expected DirectiveError for misplaced //@")
@@ -42,7 +42,7 @@ def test_directive_after_code_is_error():
 
 
 def test_repeating_non_repeatable_key_is_error():
-    text = "//@ exit-code: 1\n//@ exit-code: 2\nint32 x = 1;\n"
+    text = "//@ exit-code: 1\n//@ exit-code: 2\nx: int32 = 1;\n"
     try:
         parse_fire_directives(text)
         t.require(False, "expected DirectiveError for repeated key")
@@ -63,7 +63,7 @@ def test_python_directives_use_hash_at():
 
 
 def test_two_spaces_after_marker_is_error():
-    text = "//@  exit-code: 1\nint32 x = 1;\n"
+    text = "//@  exit-code: 1\nx: int32 = 1;\n"
     try:
         parse_fire_directives(text)
         t.require(False, "expected DirectiveError for double space")

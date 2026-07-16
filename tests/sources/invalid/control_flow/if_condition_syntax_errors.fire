@@ -3,5 +3,5 @@
 // error-recovery path consumes it directly instead of falling through to
 // a second "expected ')'" diagnostic.
 if (,) {  //~ ERROR FS-PARSE-0012 @5
-    int32 x = 1;
+    x: int32 = 1;
 }

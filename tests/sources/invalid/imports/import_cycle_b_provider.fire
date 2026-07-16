@@ -2,6 +2,6 @@
 // Second half of the import cycle (provider module, not a standalone case).
 import import_cycle_a.ping;
 
-export int32 pong(int32 x) {
+export fn pong(x: int32) -> int32 {
     return ping(x) + 1;
 }

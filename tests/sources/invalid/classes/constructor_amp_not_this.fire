@@ -2,9 +2,9 @@
 // followed by the identifier 'this'.
 
 class Foo {
-    int32 x;
+    x: int32;
 
-    Foo(&notThis) {  //~ ERROR FS-PARSE-0010 @10
+    fn Foo(&notThis) {  //~ ERROR FS-PARSE-0010 @13
         this.x = 0;  //~ ERROR FS-PARSE-0003 @9
     }
 }

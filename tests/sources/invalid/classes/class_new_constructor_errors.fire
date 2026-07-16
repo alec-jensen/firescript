@@ -2,19 +2,19 @@
 import @firescript/std.io.println;
 
 class Box {
-    int32 v;
+    v: int32;
 
-    Box(int32 v) {
+    fn Box(v: int32) {
         this.v = v;
     }
 }
 
 // Wrong argument count
-Box b = new Box(5i32, 6i32);  //~ ERROR FS-SEM-0010 @13
+b: Box = new Box(5i32, 6i32);  //~ ERROR FS-SEM-0010 @14
 
 // Wrong argument type
-Box c = new Box("x");  //~ ERROR FS-SEM-0010 @17
+c: Box = new Box("x");  //~ ERROR FS-SEM-0010 @18
 
 // Unknown type
-Nope d = new Nope(1i32);  //~ ERROR FS-PARSE-0012 @14
-//~^ ERROR FS-SEM-0010 @14
+d: Nope = new Nope(1i32);  //~ ERROR FS-PARSE-0012 @15
+//~^ ERROR FS-SEM-0010 @15

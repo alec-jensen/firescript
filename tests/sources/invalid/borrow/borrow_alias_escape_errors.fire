@@ -3,22 +3,22 @@
 import @firescript/std.io.println;
 
 class Box {
-    string name;
+    name: string;
 }
 
-void takeOwned(string s) {
+fn takeOwned(s: string) -> void {
     println(s);
 }
 
-string badAliasReturn(&Box b) {
-    string alias = b.name; // Error: cannot move borrowed projection into owned local  //~ ERROR FS-SEM-0001 @22
+fn badAliasReturn(b: &Box) -> string {
+    alias: string = b.name; // Error: cannot move borrowed projection into owned local  //~ ERROR FS-SEM-0001 @23
     return alias;
 }
 
-void badAliasPass(&Box b) {
+fn badAliasPass(b: &Box) -> void {
     takeOwned(b.name); // Error: cannot move borrowed projection into owned parameter  //~ ERROR FS-SEM-0001 @17
 }
 
-Box bx = Box("fire");
+bx: Box = Box("fire");
 println(badAliasReturn(bx));
 badAliasPass(bx);

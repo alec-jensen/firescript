@@ -3,7 +3,7 @@
 
 import @firescript/std.io.println;
 
-int32[3] nums = [1, 2, 3];
+nums: int32[3] = [1, 2, 3];
 
 // Arrays are fixed-size: these mutation methods are not supported
 nums.append(4);  //~ ERROR FS-SEM-0010 @6
@@ -12,17 +12,17 @@ nums.pop();  //~ ERROR FS-SEM-0010 @6
 nums.clear();  //~ ERROR FS-SEM-0010 @6
 
 // length/size take no arguments
-int32 badLen = nums.length(1);  //~ ERROR FS-SEM-0010 @21
+badLen: int32 = nums.length(1);  //~ ERROR FS-SEM-0010 @22
 
 // index/count expect exactly one argument of the element type
-int32 badIndexArgs = nums.index();  //~ ERROR FS-SEM-0010 @27
-int32 badIndexType = nums.index("two");  //~ ERROR FS-SEM-0010 @33
-int32 badCountArgs = nums.count(1, 2);  //~ ERROR FS-SEM-0010 @27
+badIndexArgs: int32 = nums.index();  //~ ERROR FS-SEM-0010 @28
+badIndexType: int32 = nums.index("two");  //~ ERROR FS-SEM-0010 @34
+badCountArgs: int32 = nums.count(1, 2);  //~ ERROR FS-SEM-0010 @28
 
 // Unknown array method
 nums.frobnicate();  //~ ERROR FS-SEM-0010 @6
 
 // String methods: length takes no arguments; unknown methods are rejected
-string s = "hello";
-int32 badStrLen = s.length(1);  //~ ERROR FS-SEM-0010 @21
+s: string = "hello";
+badStrLen: int32 = s.length(1);  //~ ERROR FS-SEM-0010 @22
 s.frobnicate();  //~ ERROR FS-SEM-0010 @3

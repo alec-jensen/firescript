@@ -2,11 +2,11 @@
 // is not a valid field-name identifier.
 
 enum Shape {
-    Circle(float64 radius),
+    Circle(radius: float64),
     Point
 }
 
-void match_pattern_bad_binding(Shape s) {
+fn match_pattern_bad_binding(s: Shape) -> void {
     match s {
         Shape.Circle(5) -> 1  //~ ERROR FS-PARSE-0010 @22
 //~^ ERROR FS-PARSE-0010 @22

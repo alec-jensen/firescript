@@ -3,17 +3,17 @@
 // list, before any monomorphized instantiation).
 
 class Box<T> {
-    T value;
+    value: T;
 
-    Box(T value) {
+    fn Box(value: T) {
         this.value = value;
     }
 
-    T bogus() {
+    fn bogus() -> T {
         return this.notAField;  //~ ERROR FS-SEM-0010 @21
     }
 }
 
-void generic_class_field_access_unknown() {
-    Box<int32> b = new Box<int32>(5);  //~ ERROR FS-SEM-0010 @24
+fn generic_class_field_access_unknown() -> void {
+    b: Box<int32> = new Box<int32>(5);  //~ ERROR FS-SEM-0010 @25
 }

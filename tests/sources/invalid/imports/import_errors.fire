@@ -15,5 +15,5 @@ import * from "std";  //~ ERROR FS-PARSE-0010 @8
 import * from "io";  // May cause naming conflicts  //~ ERROR FS-PARSE-0010 @8
 
 // Importing after code
-int32 x = 5;
+x: int32 = 5;
 import "io";  // Imports must be at the top  //~ ERROR FS-PARSE-0010 @8

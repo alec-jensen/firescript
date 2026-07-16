@@ -1,11 +1,11 @@
 // Semantic error: explicit type argument for a generic function call that
 // violates the function's declared type constraint.
 
-T identity<T: int32 | int64>(T value) {
+fn identity<T: int32 | int64>(value: T) -> T {
     return value;
 }
 
-void generic_call_constraint_violation() {
-    int32 x = identity<string>(5);  //~ ERROR FS-SEM-0010 @15
-//~^ ERROR FS-SEM-0002 @11
+fn generic_call_constraint_violation() -> void {
+    x: int32 = identity<string>(5);  //~ ERROR FS-SEM-0010 @16
+//~^ ERROR FS-SEM-0002 @5
 }

@@ -2,11 +2,11 @@
 // EXPECT: compiler errors about invalid null usage
 
 // Non-nullable variable initialized with null
-int32 a = null; // error  //~ ERROR FS-SEM-0010 @7
+a: int32 = null; // error  //~ ERROR FS-SEM-0010 @1
 
 // Non-nullable string initialized with null
-string b = null; // error  //~ ERROR FS-SEM-0010 @8
+b: string = null; // error  //~ ERROR FS-SEM-0010 @1
 
 // Non-nullable variable reassigned to null
-int32 c = 5;
+c: int32 = 5;
 c = null; // error  //~ ERROR FS-SEM-0010 @1

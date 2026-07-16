@@ -65,7 +65,7 @@ def test_const_initializer_must_be_a_literal():
     non-literal const initializer reaches this rejection at FIR-conversion
     time instead of being caught earlier."""
     _expect_conversion_error(
-        "const int32 X = 1 + 2;",
+        "const X: int32 = 1 + 2;",
         "Unsupported const initializer node",
     )
 
@@ -78,7 +78,7 @@ def test_match_expression_form_rejects_block_bodied_arm():
     _expect_conversion_error(
         """
         enum Shape { Circle, Square }
-        float64 area(Shape s) {
+        fn area(s: Shape) -> float64 {
             return match s {
                 Shape.Circle -> { 1.0 },
                 Shape.Square -> 2.0
@@ -102,8 +102,8 @@ def test_increment_as_subexpression_produces_no_value():
     unrelated crash from the one exercised here."""
     _expect_conversion_error(
         """
-        int32 x = 1;
-        int32[] arr = [x++];
+        x: int32 = 1;
+        arr: int32[] = [x++];
         """,
         "produces no value but one is required",
     )
@@ -145,9 +145,9 @@ def test_const_non_numeric_literal_initializers_reach_fir():
     mod = _convert(
         """
         import @firescript/std.io.println;
-        const string S = "hi";
-        const bool B = true;
-        const char C = 'Z';
+        const S: string = "hi";
+        const B: bool = true;
+        const C: char = 'Z';
         """
     )
     names = {c.name for c in mod.constants}
@@ -191,7 +191,7 @@ def test_bare_array_access_statement_is_unsupported():
     it falls through to the "Unsupported statement node" catch-all."""
     _expect_conversion_error(
         """
-        int32[3] a = [1, 2, 3];
+        a: int32[3] = [1, 2, 3];
         a[0];
         """,
         "Unsupported statement node",
@@ -232,10 +232,10 @@ def test_for_in_over_array_returning_function_call_hits_known_verifier_bug():
     try:
         _convert(
             """
-            int32[] makeArr() {
+            fn makeArr() -> int32[] {
                 return [1, 2, 3];
             }
-            for (int32 v in makeArr()) {
+            for (v: int32 in makeArr()) {
             }
             """
         )
@@ -251,7 +251,7 @@ def test_runtime_module_rejects_top_level_statements():
     function/class/enum/const definitions -- exercised here directly since
     no normal .fire test file is ever compiled with this flag."""
     _expect_conversion_error(
-        "int32 x = 1;",
+        "x: int32 = 1;",
         "Runtime modules must not contain top-level statements",
         is_runtime_module=True,
     )

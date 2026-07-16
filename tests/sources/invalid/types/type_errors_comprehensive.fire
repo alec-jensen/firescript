@@ -4,42 +4,42 @@
 import @firescript/std.io.println;
 
 // Type mismatch in variable declaration
-int32 num = "string value";  //~ ERROR FS-SEM-0002 @7
+num: int32 = "string value";  //~ ERROR FS-SEM-0002 @1
 
 // Type mismatch in assignment
-int32 value = 10;
+value: int32 = 10;
 value = "cannot assign string";  //~ ERROR FS-SEM-0002 @1
 
 // Incompatible types in arithmetic
-string text = "hello";
-int32 number = 42;
-int32 bad_add = text + number;  //~ ERROR FS-SEM-0010 @22
+text: string = "hello";
+number: int32 = 42;
+bad_add: int32 = text + number;  //~ ERROR FS-SEM-0010 @23
 
 // Incompatible types in array literal
-int32[] mixed = [1, 2, "three", 4];
+mixed: int32[] = [1, 2, "three", 4];
 
 // Array element type mismatch
-int32[] numbers = [1, 2, 3];
+numbers: int32[] = [1, 2, 3];
 numbers[0] = "string";
 
 // Function argument type mismatch
-void takesInt(int32 x) {
+fn takesInt(x: int32) -> void {
     println(x);
 }
 takesInt("wrong type");
 
 // Function return type mismatch
-int32 shouldReturnInt() {
+fn shouldReturnInt() -> int32 {
     return "string";
 }
 
 // Cannot index non-array
-int32 not_array = 5;
-int32 bad_index = not_array[0];  //~ ERROR FS-SEM-0010 @19
+not_array: int32 = 5;
+bad_index: int32 = not_array[0];  //~ ERROR FS-SEM-0010 @20
 
 // Cannot index with non-integer
-int32[] nums = [1, 2, 3];
-int32 elem = nums["string index"];  //~ ERROR FS-SEM-0010 @19
+nums: int32[] = [1, 2, 3];
+elem: int32 = nums["string index"];  //~ ERROR FS-SEM-0010 @20
 
 // Undefined variable
 println(undefined_var);  //~ ERROR FS-PARSE-0003 @9
@@ -48,7 +48,7 @@ println(undefined_var);  //~ ERROR FS-PARSE-0003 @9
 undefinedFunction(1, 2, 3);
 
 // Wrong number of function arguments
-void needsTwo(int32 a, int32 b) {
+fn needsTwo(a: int32, b: int32) -> void {
     println(a);
 }
 needsTwo(1);  // Too few
@@ -65,12 +65,12 @@ while (42) {  //~ ERROR FS-SEM-0010 @8
 }
 
 // Cannot call non-function
-int32 not_func = 10;
+not_func: int32 = 10;
 not_func(5);
 
 // Duplicate variable declaration
-int32 duplicate = 1;
-int32 duplicate = 2;  //~ ERROR FS-SEM-0010 @7
+duplicate: int32 = 1;
+duplicate: int32 = 2;  //~ ERROR FS-SEM-0010 @1
 
 // Assigning to const (if consts are implemented)
 // const int32 constant = 100;

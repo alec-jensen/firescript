@@ -1,8 +1,8 @@
 // Invalid array-access expression used as an assignment target: the index
 // expression itself fails to parse, so there's no valid l-value to assign
 // to.
-int32 main() {
-    int32[] arr = [1, 2];
+fn main() -> int32 {
+    arr: int32[] = [1, 2];
     arr[] = 5;  //~ ERROR FS-PARSE-0012 @9
 //~^ ERROR FS-PARSE-0010 @11
 //~^^ ERROR FS-PARSE-0012 @11

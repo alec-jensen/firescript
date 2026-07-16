@@ -2,5 +2,5 @@
 // "undefined variable" diagnostic should fire once (the array-access type
 // check bails out silently on a None operand type instead of piling on a
 // second, misleading "cannot index" error).
-int32[3] arr = [1, 2, 3];
-int32 v = arr[undefined_var];  //~ ERROR FS-PARSE-0003 @15
+arr: int32[3] = [1, 2, 3];
+v: int32 = arr[undefined_var];  //~ ERROR FS-PARSE-0003 @16

@@ -37,7 +37,7 @@ def test_dir_partial_failure():
     with t.tmpdir() as tmp:
         shutil.copy(os.path.join(SOURCES_DIR, "functions", "functions.fire"), os.path.join(tmp, "good.fire"))
         with open(os.path.join(tmp, "bad.fire"), "w", encoding="utf-8") as f:
-            f.write("int32 x = ;\n")
+            f.write("x: int32 = ;\n")
         proc = t.run_compiler(["--dir", tmp], cwd=tmp)
         t.require_eq(proc.returncode, 0, proc.stderr)
         combined = proc.stdout + proc.stderr

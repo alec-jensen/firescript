@@ -1,11 +1,11 @@
 // Parser error: explicit generic function call with an empty type
 // argument list.
 
-T identity<T>(T value) {
+fn identity<T>(value: T) -> T {
     return value;
 }
 
-void generic_func_empty_type_args() {
-    int32 x = identity<>(5);  //~ ERROR FS-PARSE-0010 @24
-//~^ ERROR FS-PARSE-0003 @15
+fn generic_func_empty_type_args() -> void {
+    x: int32 = identity<>(5);  //~ ERROR FS-PARSE-0010 @25
+//~^ ERROR FS-PARSE-0003 @16
 }

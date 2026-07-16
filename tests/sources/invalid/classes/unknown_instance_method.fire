@@ -2,15 +2,15 @@
 // has no imports, so defer_undefined_identifiers is off and the error is
 // reported immediately).
 class Foo {
-    int32 v;
+    v: int32;
 
-    Foo(int32 v) {
+    fn Foo(v: int32) {
         this.v = v;
     }
 }
 
-int32 main() {
-    Foo f = Foo(1);
-    int32 x = f.bogus();  //~ ERROR FS-SEM-0010 @15
+fn main() -> int32 {
+    f: Foo = Foo(1);
+    x: int32 = f.bogus();  //~ ERROR FS-SEM-0010 @16
     return 0;
 }

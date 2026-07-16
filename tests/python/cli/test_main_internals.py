@@ -209,7 +209,7 @@ def test_compile_runtime_file_parse_error_raises():
     with t.tmpdir() as tmp:
         bad = os.path.join(tmp, "bad_runtime.fire")
         with open(bad, "w", encoding="utf-8") as f:
-            f.write("int32 x = ;\n")
+            f.write("x: int32 = ;\n")
         try:
             _compile_runtime_file(bad)
             t.require(False, "expected RuntimeError")
@@ -224,9 +224,9 @@ def test_compile_runtime_file_semantic_error_raises():
         # (mirrors tests/sources/invalid/borrow/memory_errors.fire).
         with open(bad, "w", encoding="utf-8") as f:
             f.write(
-                "string owned_str = \"hello\";\n"
-                "string moved_str = owned_str;\n"
-                "int32 len = owned_str.length();\n"
+                "owned_str: string = \"hello\";\n"
+                "moved_str: string = owned_str;\n"
+                "len: int32 = owned_str.length();\n"
             )
         try:
             _compile_runtime_file(bad)
@@ -421,17 +421,17 @@ def test_compile_file_fir_to_flir_exception_returns_false():
 # --- lint_text ----------------------------------------------------------------
 
 def test_lint_text_parser_errors_no_imports_returns_early():
-    errors = lint_text("int32 x = ;\n")
+    errors = lint_text("x: int32 = ;\n")
     t.require(len(errors) > 0)
 
 
 def test_lint_text_clean_source_returns_no_errors():
-    errors = lint_text("int32 x = 1;\n")
+    errors = lint_text("x: int32 = 1;\n")
     t.require_eq(errors, [])
 
 
 def test_lint_text_import_resolution_exception_returns_parser_errors():
-    errors = lint_text("import definitely_missing_module_xyz.helper;\nint32 x = helper(1);\n")
+    errors = lint_text("import definitely_missing_module_xyz.helper;\nx: int32 = helper(1);\n")
     t.require(isinstance(errors, list))
 
 
@@ -443,7 +443,7 @@ def test_lint_text_preprocess_exception_returns_errors_so_far():
 
     CompilerPipeline.preprocess = _raise
     try:
-        errors = lint_text("int32 x = 1;\n")
+        errors = lint_text("x: int32 = 1;\n")
         t.require(isinstance(errors, list))
     finally:
         CompilerPipeline.preprocess = orig
@@ -458,7 +458,7 @@ def test_lint_text_semantic_analysis_exception_is_swallowed():
     CompilerPipeline.analyze_semantics = _raise
     try:
         # Must not raise -- the except branch is a bare `pass`.
-        errors = lint_text("int32 x = 1;\n")
+        errors = lint_text("x: int32 = 1;\n")
         t.require(isinstance(errors, list))
     finally:
         CompilerPipeline.analyze_semantics = orig
@@ -469,7 +469,7 @@ def test_lint_text_restores_log_level_in_finally():
     saved_level = root.level
     try:
         root.setLevel(logging.INFO)
-        lint_text("int32 x = 1;\n")
+        lint_text("x: int32 = 1;\n")
         t.require_eq(root.level, logging.INFO)
     finally:
         root.setLevel(saved_level)

@@ -1,14 +1,14 @@
 // Parser error: 'new GenericClass<>(...)' with an empty type argument list.
 
 class Box<T> {
-    T value;
+    value: T;
 
-    Box(T value) {
+    fn Box(value: T) {
         this.value = value;
     }
 }
 
-void new_constructor_empty_type_args() {
-    Box<int32> b = new Box<>(5);  //~ ERROR FS-PARSE-0010 @28
-//~^ ERROR FS-PARSE-0010 @28
+fn new_constructor_empty_type_args() -> void {
+    b: Box<int32> = new Box<>(5);  //~ ERROR FS-PARSE-0010 @29
+//~^ ERROR FS-PARSE-0010 @29
 }

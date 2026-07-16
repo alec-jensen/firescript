@@ -35,48 +35,48 @@ from _dead_guard_helpers import make_parser, error_codes  # noqa: E402
 # --- on a token stream that doesn't match that lookahead. ---
 
 def test_function_definition_rejects_non_type_return():
-    p = make_parser("+ foo() {}")
+    p = make_parser("fn foo() -> + {}")
     result = p._parse_function_definition()
     t.require(result is None)
     t.require("FS-PARSE-0010" in error_codes(p))
 
 
 def test_function_definition_rejects_malformed_array_return_bracket():
-    p = make_parser("int32[5 foo() {}")
+    p = make_parser("fn foo() -> int32[5 {}")
     result = p._parse_function_definition()
     t.require(result is None)
     t.require("FS-PARSE-0010" in error_codes(p))
 
 
 def test_function_definition_rejects_missing_name():
-    p = make_parser("int32 + () {}")
+    p = make_parser("fn + () -> int32 {}")
     result = p._parse_function_definition()
     t.require(result is None)
     t.require("FS-PARSE-0010" in error_codes(p))
 
 
 def test_function_definition_generic_type_param_missing_name():
-    p = make_parser("T foo<5>(T x) { return x; }")
+    p = make_parser("fn foo<5>(x: T) -> T { return x; }")
     result = p._parse_function_definition()
     t.require(result is None)
     t.require("FS-PARSE-0010" in error_codes(p))
 
 
 def test_function_definition_generic_constraint_missing_type():
-    p = make_parser("T foo<T: 5>(T x) { return x; }")
+    p = make_parser("fn foo<T: 5>(x: T) -> T { return x; }")
     result = p._parse_function_definition()
     t.require(result is None)
     t.require("FS-PARSE-0010" in error_codes(p))
 
 
 def test_function_definition_generic_missing_close_angle():
-    p = make_parser("T foo<T (T x) { return x; }")
+    p = make_parser("fn foo<T (x: T) -> T { return x; }")
     result = p._parse_function_definition()
     t.require(result is None)
 
 
 def test_function_definition_missing_open_paren():
-    p = make_parser("int32 foo {}")
+    p = make_parser("fn foo {}")
     result = p._parse_function_definition()
     t.require(result is None)
     t.require("FS-PARSE-0010" in error_codes(p))
@@ -87,7 +87,7 @@ def test_function_definition_owned_array_param():
     function -- not exercised by any real .fire test, since free functions
     taking owned array params aren't otherwise needed by the test suite's
     example programs."""
-    p = make_parser("void foo(owned int32[] xs) {}")
+    p = make_parser("fn foo(xs: owned int32[]) -> void {}")
     result = p._parse_function_definition()
     t.require(result is not None)
     param = result.children[0]
@@ -97,7 +97,7 @@ def test_function_definition_owned_array_param():
 
 
 def test_function_definition_array_param_bad_size_token():
-    p = make_parser("void foo(int32[3] xs) {}")
+    p = make_parser("fn foo(xs: int32[3]) -> void {}")
     result = p._parse_function_definition()
     t.require(result is not None)
     param = result.children[0]
@@ -105,32 +105,36 @@ def test_function_definition_array_param_bad_size_token():
 
 
 def test_function_definition_close_paren_missing():
-    p = make_parser("void foo(int32 x {}")
+    p = make_parser("fn foo(x: int32 {}")
     result = p._parse_function_definition()
     t.require(result is None)
     t.require("FS-PARSE-0010" in error_codes(p))
 
 
-# --- _parse_generator_definition ---
+# --- _parse_function_definition with a generator<T> return type ------------
+# Generators are no longer a distinct declaration form: `fn gen(...) ->
+# generator<T> { ... }` goes through the exact same _parse_function_definition
+# as any other function, so these guards -- previously exercised via the
+# now-deleted _parse_generator_definition -- are checked here instead.
 
 def test_generator_definition_borrowed_param():
-    p = make_parser("generator<int32> gen(&int32 x) { yield x; }")
-    result = p._parse_generator_definition()
+    p = make_parser("fn gen(x: &int32) -> generator<int32> { yield x; }")
+    result = p._parse_function_definition()
     t.require(result is not None)
     param = result.children[0]
     t.require(getattr(param, "is_borrowed", False))
 
 
 def test_generator_definition_missing_close_paren():
-    p = make_parser("generator<int32> gen(int32 x { yield x; }")
-    result = p._parse_generator_definition()
+    p = make_parser("fn gen(x: int32 { yield x; }")
+    result = p._parse_function_definition()
     t.require(result is None)
     t.require("FS-PARSE-0010" in error_codes(p))
 
 
 def test_generator_definition_missing_body_brace():
-    p = make_parser("generator<int32> gen(int32 x) yield x;")
-    result = p._parse_generator_definition()
+    p = make_parser("fn gen(x: int32) -> generator<int32> yield x;")
+    result = p._parse_function_definition()
     t.require(result is None)
     t.require("FS-PARSE-0010" in error_codes(p))
 

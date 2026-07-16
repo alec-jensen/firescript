@@ -1,19 +1,18 @@
 // Malformed type-argument lists in a generic class instantiation used as a
 // variable-declaration type, e.g. `Pair<TYPE_ARGS> name = ...;`.
 class Pair<T, U> {
-    T a;
-    U b;
+    a: T;
+    b: U;
 
-    Pair(T a, U b) {
+    fn Pair(a: T, b: U) {
         this.a = a;
         this.b = b;
     }
 }
 
 // Missing first type argument.
-int32 main() {
-    Pair<,int32> p = Pair(1, 2);  //~ ERROR FS-PARSE-0010 @10
-//~^ ERROR FS-PARSE-0010 @16
-//~^^ ERROR FS-PARSE-0003 @18
+fn main() -> int32 {
+    p: Pair<,int32> = Pair(1, 2);  //~ ERROR FS-PARSE-0010 @13
+//~^ ERROR FS-PARSE-0012 @23
     return 0;
 }

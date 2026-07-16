@@ -2,7 +2,7 @@
 
 // Missing '{' to start enum body.
 enum NoBrace
-int32 topLevel = 1;  //~ ERROR FS-PARSE-0010 @1
+topLevel: int32 = 1;  //~ ERROR FS-PARSE-0010 @1
 
 // Missing '}' to close the enum body (runs off the end of the file); also
 // missing a ',' or '}' right after the last variant.

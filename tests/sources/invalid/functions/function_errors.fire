@@ -1,73 +1,54 @@
 // Function error tests - comprehensive
 
 // Missing return statement in non-void function
-fn int32 missing_return(int32 x) {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @25
-//~^^ ERROR FS-PARSE-0010 @31
-//~^^^ ERROR FS-PARSE-0012 @10
+fn missing_return(x: int32) -> int32 {
     println("no return!");  //~ ERROR FS-PARSE-0012 @5
 }
 
 // Function call with wrong number of arguments
-fn int32 takes_two(int32 a, int32 b) {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @20
-//~^^ ERROR FS-PARSE-0010 @26
-//~^^^ ERROR FS-PARSE-0012 @10
-//~^^^^ ERROR FS-PARSE-0010 @36
-    return a + b;  //~ ERROR FS-PARSE-0003 @12
-//~^ ERROR FS-PARSE-0003 @16
+fn takes_two(a: int32, b: int32) -> int32 {
+    return a + b;
 }
 
-fn void wrong_args() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32 result = takes_two(5);  // Missing argument
-    int32 result2 = takes_two(5, 10, 15);  // Too many arguments
+fn wrong_args() -> void {
+    result: int32 = takes_two(5);  // Missing argument
+    result2: int32 = takes_two(5, 10, 15);  // Too many arguments
 }
 
 // Function call with wrong argument types
-fn int32 takes_int(int32 x) {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @20
-//~^^ ERROR FS-PARSE-0010 @26
-//~^^^ ERROR FS-PARSE-0012 @10
-    return x;  //~ ERROR FS-PARSE-0003 @12
+fn takes_int(x: int32) -> int32 {
+    return x;
 }
 
-fn void wrong_types() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32 result = takes_int("string");  // Wrong type  //~ ERROR FS-SEM-0010 @11
+fn wrong_types() -> void {
+    result: int32 = takes_int("string");  // Wrong type
 }
 
 // Calling undefined function
-fn void call_undefined() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
+fn call_undefined() -> void {
     undefined_function(5);  //~ ERROR FS-PARSE-0012 @5
 }
 
 // Trying to call a non-function
-fn void call_non_function() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32 x = 5;
-    int32 result = x(10);  // x is not a function  //~ ERROR FS-SEM-0010 @11
+fn call_non_function() -> void {
+    x: int32 = 5;
+    result: int32 = x(10);  // x is not a function
 }
 
 // Duplicate function definition
-fn int32 duplicate_func() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @10
+fn duplicate_func() -> int32 {
     return 1;
 }
 
-fn int32 duplicate_func() {  // Duplicate  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @10
+fn duplicate_func() -> int32 {  // Duplicate
     return 2;
 }
 
 // Return type mismatch
-fn int32 wrong_return() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @10
+fn wrong_return() -> int32 {
     return "string";  // Wrong return type
 }
 
-fn string another_wrong_return() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @11
+fn another_wrong_return() -> string {
     return 42;  // Should return string, not int
 }

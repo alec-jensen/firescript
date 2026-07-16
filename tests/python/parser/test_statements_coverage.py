@@ -9,10 +9,9 @@ Discovered gaps worth flagging (not fixed here, per project policy):
   - ast_to_fir.py's `_convert_statement` has no case for a bare
     NodeTypes.ARRAY_ACCESS statement (e.g. `arr[0];`), even though the
     parser accepts it as a valid statement.
-  - ast_to_fir.py's `_convert_statement` has no case for
-    NodeTypes.DIRECTIVE or NodeTypes.GENERATOR_DEFINITION nested inside a
-    function body, even though the parser accepts directives/generators
-    declared inside a nested scope (not just at file top level).
+  - ast_to_fir.py's `_convert_statement` has no case for NodeTypes.DIRECTIVE
+    nested inside a function body, even though the parser accepts a
+    directive declared inside a nested scope (not just at file top level).
 """
 from __future__ import annotations
 
@@ -35,7 +34,7 @@ def test_array_access_as_bare_statement_parses():
     # lookahead branch when no '=' follows (statements.py: the bracket path
     # falls through to `return expr`). See module docstring: ast_to_fir
     # cannot yet lower this to FIR, so it's tested at the parser level.
-    src = "int32[] arr = [1, 2, 3]; arr[0];"
+    src = "arr: int32[] = [1, 2, 3]; arr[0];"
     p = make_parser(src)
     ast = p.parse()
     t.require(len(p.errors) == 0, [str(e) for e in p.errors])
@@ -48,25 +47,13 @@ def test_nested_directive_inside_function_parses():
     # _parse_statement()'s DIRECTIVE branch (statements.py), which is only
     # reached for *nested* directives -- file top-level directives go
     # through declarations.py's own top-level loop instead.
-    src = "int32 main() { directive enable_drops; return 0; }"
+    src = "fn main() -> int32 { directive enable_drops; return 0; }"
     p = make_parser(src)
     p.parse()
     t.require(len(p.errors) == 0, [str(e) for e in p.errors])
     func = next(c for c in p.ast.children if c.node_type == NodeTypes.FUNCTION_DEFINITION)
     body = func.children[-1]
     t.require(any(s.node_type == NodeTypes.DIRECTIVE for s in body.children))
-
-
-def test_nested_generator_definition_inside_function_parses():
-    # A `generator<T> name() { ... }` definition inside a function body is
-    # accepted by _parse_statement()'s GENERATOR branch (statements.py).
-    src = "int32 main() { generator<int32> gen() { yield 1; } return 0; }"
-    p = make_parser(src)
-    p.parse()
-    t.require(len(p.errors) == 0, [str(e) for e in p.errors])
-    func = next(c for c in p.ast.children if c.node_type == NodeTypes.FUNCTION_DEFINITION)
-    body = func.children[-1]
-    t.require(any(s.node_type == NodeTypes.GENERATOR_DEFINITION for s in body.children))
 
 
 def test_generic_class_nested_type_argument_parses():
@@ -79,8 +66,8 @@ def test_generic_class_nested_type_argument_parses():
     # to a mismatched 'ptr' vs struct-value type, failing FLIRV-T4/T5
     # verification) -- a separate, pre-existing codegen issue.
     src = (
-        "class Pair<T, U> { T a; U b; Pair(T a, U b) { this.a = a; this.b = b; } } "
-        "Pair<Pair<int32, int32>, int32> nested = Pair(Pair(1, 2), 3);"
+        "class Pair<T, U> { a: T; b: U; fn Pair(a: T, b: U) { this.a = a; this.b = b; } } "
+        "nested: Pair<Pair<int32, int32>, int32> = Pair(Pair(1, 2), 3);"
     )
     p = make_parser(src)
     p.parse()

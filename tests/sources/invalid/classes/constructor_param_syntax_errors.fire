@@ -5,73 +5,74 @@
 
 // Receiver must be 'this' after '&' in a constructor.
 class R1 {
-    int32 v;
+    v: int32;
 
-    R1(&other) {  //~ ERROR FS-PARSE-0010 @9
+    fn R1(&other) {  //~ ERROR FS-PARSE-0010 @12
         this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
-// 'owned' receiver must be 'this' in a constructor.
+// 'owned' not followed by 'this' falls through to being parsed as a regular
+// parameter named 'owned', which then requires ':' -- 'other' isn't one.
 class R2 {
-    int32 v;
+    v: int32;
 
-    R2(owned other) {  //~ ERROR FS-PARSE-0010 @14
+    fn R2(owned other) {  //~ ERROR FS-PARSE-0010 @17
+//~^ ERROR FS-PARSE-0010 @17
         this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
 // A static constructor also can't declare a '&this' receiver.
 class R3 {
-    int32 v;
+    v: int32;
 
-    static R3(&this) {  //~ ERROR FS-PARSE-0012 @12
-//~^ ERROR FS-PARSE-0012 @16
+    static fn R3(&this) {  //~ ERROR FS-PARSE-0012 @15
+//~^ ERROR FS-PARSE-0012 @19
         this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
 // Constructor parameter type invalid.
 class P1 {
-    int32 v;
+    v: int32;
 
-    P1(&this, ! x) {  //~ ERROR FS-PARSE-0010 @15
-//~^ ERROR FS-PARSE-0010 @17
+    fn P1(&this, x: !) {  //~ ERROR FS-PARSE-0010 @21
         this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
 // Array parameters are not supported for constructors either.
 class P2 {
-    int32 v;
+    v: int32;
 
-    P2(&this, int32[] xs) {  //~ ERROR FS-PARSE-0012 @20
-        this.v = 1;
+    fn P2(&this, xs: int32[]) {  //~ ERROR FS-PARSE-0012 @22
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
 // Missing constructor parameter name.
 class P3 {
-    int32 v;
+    v: int32;
 
-    P3(&this, int32) {  //~ ERROR FS-PARSE-0010 @20
+    fn P3(&this, : int32) {  //~ ERROR FS-PARSE-0010 @18
         this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
 // Missing ')' after constructor parameters.
 class P4 {
-    int32 v;
+    v: int32;
 
-    P4(&this {  //~ ERROR FS-PARSE-0010 @14
+    fn P4(&this {  //~ ERROR FS-PARSE-0010 @17
         this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
 // Missing '{' to start constructor body.
 class P5 {
-    int32 v;
+    v: int32;
 
-    P5(&this)  //~ ERROR FS-PARSE-0010 @14
-    int32 topLevel5 = 1;
+    fn P5(&this)
+    topLevel5: int32 = 1;  //~ ERROR FS-PARSE-0010 @5
 }

@@ -1,7 +1,7 @@
 // Casting an undefined identifier: the operand's type can't be resolved,
 // so the cast's own type check bails out early rather than trying to
 // validate a cast with an unknown source type.
-int32 main() {
-    int32 x = undef as int32;  //~ ERROR FS-PARSE-0003 @15
+fn main() -> int32 {
+    x: int32 = undef as int32;  //~ ERROR FS-PARSE-0003 @16
     return x;
 }

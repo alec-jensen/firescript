@@ -47,7 +47,7 @@ def test_annotate_value_category_swallows_exceptions():
     # for a malformed/unexpected var_type. Real var_type values are always
     # plain strings or None, so this can't fire from real source -- force it
     # with a var_type value engineered to blow up inside is_owned/is_copyable.
-    p = make_parser("int32 x = 1;")
+    p = make_parser("x: int32 = 1;")
 
     class Explodes:
         def __eq__(self, other):

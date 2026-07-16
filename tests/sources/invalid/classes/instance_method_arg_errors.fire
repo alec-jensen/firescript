@@ -1,24 +1,24 @@
 // Instance-method call argument-count and argument-type mismatches.
 class Foo {
-    int32 v;
+    v: int32;
 
-    Foo(int32 v) {
+    fn Foo(v: int32) {
         this.v = v;
     }
 
-    int32 add(int32 a) {
+    fn add(a: int32) -> int32 {
         return this.v + a;
     }
 }
 
-int32 wrongCount() {
-    Foo f = Foo(1);
-    int32 x = f.add();  //~ ERROR FS-SEM-0010 @17
+fn wrongCount() -> int32 {
+    f: Foo = Foo(1);
+    x: int32 = f.add();  //~ ERROR FS-SEM-0010 @18
     return x;
 }
 
-int32 main() {
-    Foo f = Foo(1);
-    int32 y = f.add(true);  //~ ERROR FS-SEM-0010 @21
+fn main() -> int32 {
+    f: Foo = Foo(1);
+    y: int32 = f.add(true);  //~ ERROR FS-SEM-0010 @22
     return y;
 }

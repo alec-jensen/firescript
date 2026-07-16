@@ -1,7 +1,7 @@
 // Semantic type error: logical operators require bool operands.
 
-void logical_non_bool() {
-    int32 a = 5;
-    int32 b = 6;
-    bool c = a && b;  //~ ERROR FS-SEM-0010 @16
+fn logical_non_bool() -> void {
+    a: int32 = 5;
+    b: int32 = 6;
+    c: bool = a && b;  //~ ERROR FS-SEM-0010 @17
 }

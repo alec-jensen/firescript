@@ -81,7 +81,7 @@ def test_parse_file_with_syntax_error_raises_runtime_error():
     with t.tmpdir() as tmp:
         bad = os.path.join(tmp, "bad.fire")
         with open(bad, "w", encoding="utf-8") as f:
-            f.write("int32 x = ;\n")
+            f.write("x: int32 = ;\n")
         try:
             resolver.parse_file(bad)
             t.require(False, "expected RuntimeError for parse error")
@@ -232,7 +232,7 @@ def test_resolve_for_entry_skips_external_in_topo_visit():
     with t.tmpdir() as tmp:
         entry_path = os.path.join(tmp, "entry.fire")
         with open(entry_path, "w", encoding="utf-8") as f:
-            f.write("int32 x = 1;\n")
+            f.write("x: int32 = 1;\n")
         resolver = ModuleResolver(import_root=tmp)
         entry_mod, topo = resolver.resolve_for_entry(entry_path)
         t.require_eq(entry_mod.dotted, "entry")

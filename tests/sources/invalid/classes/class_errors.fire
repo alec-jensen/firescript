@@ -1,70 +1,65 @@
 // Class error tests - comprehensive
 
 // Undefined class
-fn void use_undefined_class() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
+fn use_undefined_class() -> void {
     UndefinedClass obj;  //~ ERROR FS-PARSE-0010 @5
+//~^ ERROR FS-PARSE-0010 @20
 }
 
 // Accessing undefined field
 class Point {
-    int32 x;
-    int32 y;
+    x: int32;
+    y: int32;
 }
 
-fn void undefined_field() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    Point p;  //~ ERROR FS-PARSE-0010 @12
-    int32 z = p.z;  // Field 'z' doesn't exist  //~ ERROR FS-PARSE-0003 @15
+fn undefined_field() -> void {
+    p: Point;  //~ ERROR FS-PARSE-0010 @13
+    z: int32 = p.z;  // Field 'z' doesn't exist  //~ ERROR FS-PARSE-0003 @16
 }
 
 // Field type mismatch
-fn void field_type_mismatch() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    Point p;  //~ ERROR FS-PARSE-0010 @12
+fn field_type_mismatch() -> void {
+    p: Point;  //~ ERROR FS-PARSE-0010 @13
     p.x = "string";  // x is int32, not string  //~ ERROR FS-PARSE-0003 @5
 }
 
 // Calling undefined method
-fn void undefined_method() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    Point p;  //~ ERROR FS-PARSE-0010 @12
+fn undefined_method() -> void {
+    p: Point;  //~ ERROR FS-PARSE-0010 @13
     p.move(5, 10);  // Point has no 'move' method  //~ ERROR FS-PARSE-0003 @5
 }
 
 // Accessing private field (if privacy is implemented)
 class Private {
-    int32 secret;
+    secret: int32;
 }
 
 // Duplicate class definition
 class DuplicateClass {
-    int32 x;
+    x: int32;
 }
 
 class DuplicateClass {  // Duplicate
-    int32 y;
+    y: int32;
 }
 
 // Duplicate field in class
 class DuplicateField {
-    int32 x;
-    int32 x;  // Duplicate field name
+    x: int32;
+    x: int32;  // Duplicate field name
 }
 
 // Using class name as variable
-fn void class_as_var() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32 Point = 5;  // Point is already a class name
+fn class_as_var() -> void {
+    Point: int32 = 5;  // Point is already a class name
 }
 
 // Missing required initialization
 class MustInit {
-    int32 required;
+    required: int32;
 }
 
-fn void missing_init() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    MustInit obj;  // May need initialization  //~ ERROR FS-PARSE-0010 @17
+fn missing_init() -> void {
+    obj: MustInit;  // May need initialization  //~ ERROR FS-PARSE-0010 @18
     println(obj.required);  //~ ERROR FS-PARSE-0012 @5
 }

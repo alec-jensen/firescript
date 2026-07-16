@@ -68,8 +68,8 @@ def test_update_uses_line_form_when_content_has_close_marker():
 
 def test_diagnostic_annotation_caret_anchoring():
     src = (
-        'int32 x = "hello";        //~ ERROR FS-TYPE-0001\n'
-        'string s = y;             //~ ERROR FS-NAME-0002 @7\n'
+        'x: int32 = "hello";        //~ ERROR FS-TYPE-0001\n'
+        's: string = y;             //~ ERROR FS-NAME-0002 @7\n'
         '                          //~^ ERROR FS-TYPE-0004\n'
     )
     annos = parse_diagnostic_annotations(src)
@@ -95,7 +95,7 @@ def test_match_diagnostics_reports_missing_and_extra():
 
 
 def test_update_diagnostic_annotations_round_trips():
-    src = 'int32 x = "hello";\nstring s = y;\n'
+    src = 'x: int32 = "hello";\ns: string = y;\n'
     actuals = [
         ActualDiagnostic("ERROR", "FS-TYPE-0001", 1, 11),
         ActualDiagnostic("ERROR", "FS-NAME-0002", 2, 12),

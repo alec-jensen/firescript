@@ -1,8 +1,8 @@
 // Parser error: 'match' with no scrutinee expression before the body.
 
-void match_missing_scrutinee() {
-    int32 x = match { _ -> 1 };  //~ ERROR FS-PARSE-0012 @21
-//~^ ERROR FS-PARSE-0010 @23
-//~^^ ERROR FS-PARSE-0010 @23
-//~^^^ ERROR FS-PARSE-0010 @23
+fn match_missing_scrutinee() -> void {
+    x: int32 = match { _ -> 1 };  //~ ERROR FS-PARSE-0012 @22
+//~^ ERROR FS-PARSE-0010 @24
+//~^^ ERROR FS-PARSE-0010 @24
+//~^^^ ERROR FS-PARSE-0010 @24
 }

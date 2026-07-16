@@ -1,8 +1,8 @@
 // Cyclic import: this module imports a provider that imports it back.
 import import_cycle_b_provider.pong;  //~ ERROR FS-PARSE-0003 @40
 
-export int32 ping(int32 x) {
+export fn ping(x: int32) -> int32 {
     return x + 1;
 }
 
-int32 r = pong(1);
+r: int32 = pong(1);

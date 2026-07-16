@@ -1,63 +1,45 @@
 // Generic type errors
 
 // Using undefined type parameter
-fn void use_undefined_type() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
+fn use_undefined_type() -> void {
     T x;  // T is not defined  //~ ERROR FS-PARSE-0010 @5
+//~^ ERROR FS-PARSE-0010 @7
 }
 
 // Generic function with wrong type argument
-fn T identity<T>(T value) {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0010 @6
-//~^^ ERROR FS-PARSE-0010 @15
-//~^^^ ERROR FS-PARSE-0010 @18
-    return value;  //~ ERROR FS-PARSE-0003 @12
+fn identity<T>(value: T) -> T {
+    return value;
 }
 
-fn void wrong_type_inference() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32 x = identity<string>(42);  // Type mismatch: expects string but got int  //~ ERROR FS-PARSE-0012 @24
-//~^ ERROR FS-PARSE-0010 @30
+fn wrong_type_inference() -> void {
+    x: int32 = identity<string>(42);  // Type mismatch: expects string but got int  //~ ERROR FS-SEM-0002 @5
 }
 
 // Constraint violation
-fn T add<T: Numeric>(T a, T b) {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0010 @6
-//~^^ ERROR FS-PARSE-0010 @10
-//~^^^ ERROR FS-PARSE-0010 @13
-//~^^^^ ERROR FS-PARSE-0010 @22
-//~^^^^^ ERROR FS-PARSE-0010 @27
-    return a + b;  //~ ERROR FS-PARSE-0003 @12
-//~^ ERROR FS-PARSE-0003 @16
+fn add<T: Numeric>(a: T, b: T) -> T {
+    return a + b;
 }
 
-fn void violate_constraint() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    string result = add<string>("hello", "world");  // string doesn't satisfy Numeric  //~ ERROR FS-PARSE-0012 @25
-//~^ ERROR FS-PARSE-0010 @31
+fn violate_constraint() -> void {
+    result: string = add<string>("hello", "world");  // string doesn't satisfy Numeric
 }
 
 // Missing type parameter
-fn void missing_type_param() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    identity(5);  // May require explicit type parameter  //~ ERROR FS-PARSE-0012 @5
+fn missing_type_param() -> void {
+    identity(5);  // May require explicit type parameter
 }
 
 // Too many type parameters
-fn void too_many_type_params() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32 x = identity<int32, string>(5);  // identity only takes one type parameter  //~ ERROR FS-PARSE-0012 @24
-//~^ ERROR FS-PARSE-0010 @29
-//~^^ ERROR FS-PARSE-0010 @37
+fn too_many_type_params() -> void {
+    x: int32 = identity<int32, string>(5);  // identity only takes one type parameter  //~ ERROR FS-SEM-0010 @16
 }
 
 // Generic class field type error
 class Box<T> {
-    T value;
+    value: T;
 }
 
-fn void generic_class_error() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    Box<int32> box;  //~ ERROR FS-PARSE-0010 @19
+fn generic_class_error() -> void {
+    box: Box<int32>;  //~ ERROR FS-PARSE-0010 @20
     box.value = "string";  // Type mismatch: value is int32, not string  //~ ERROR FS-PARSE-0003 @5
 }

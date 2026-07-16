@@ -2,11 +2,11 @@
 // EXPECT: semantic error
 
 enum Shape {
-    Rectangle(float64 width, float64 height),
+    Rectangle(width: float64, height: float64),
     Point
 }
 
-Shape s = Shape.Point;
+s: Shape = Shape.Point;
 match s {
     Shape.Rectangle(width, width: w2) -> { }  //~ ERROR FS-SEM-0001 @5
     Shape.Point -> { }

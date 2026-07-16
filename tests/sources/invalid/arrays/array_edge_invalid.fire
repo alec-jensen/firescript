@@ -4,15 +4,15 @@
 print("-- invalid: array access out of bounds is runtime (may not be caught at compile) so skip actual index > length --");  //~ ERROR FS-PARSE-0012 @1
 
 print("-- invalid: array literal empty then inferred wrongly use as int --");  //~ ERROR FS-PARSE-0012 @1
-int32[] e = []; // fine
-int32 bad = e; // error: assigning array to int32  //~ ERROR FS-SEM-0002 @7
+e: int32[] = []; // fine
+bad: int32 = e; // error: assigning array to int32  //~ ERROR FS-SEM-0002 @1
 
 print("-- invalid: array method unknown --");  //~ ERROR FS-PARSE-0012 @1
-int32[] nums = [1];
+nums: int32[] = [1];
 nums.remove(1); // remove not currently implemented in parser type check -> should error unknown method (or method unsupported)  //~ ERROR FS-SEM-0010 @6
 nums.sort(); // sort not implemented  //~ ERROR FS-SEM-0010 @6
 
 print("-- invalid: array literal with array element --");  //~ ERROR FS-PARSE-0012 @1
-int32[] bad2 = [[1,2]]; // nested array not allowed  //~ ERROR FS-SEM-0010 @16
+bad2: int32[] = [[1,2]]; // nested array not allowed  //~ ERROR FS-SEM-0010 @17
 
 print("-- invalid array edge tests end --");  //~ ERROR FS-PARSE-0012 @1

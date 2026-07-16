@@ -1,18 +1,17 @@
 // Missing closing '>' for a generic class instantiation's type-argument
 // list (top-level and nested).
 class Pair<T, U> {
-    T a;
-    U b;
+    a: T;
+    b: U;
 
-    Pair(T a, U b) {
+    fn Pair(a: T, b: U) {
         this.a = a;
         this.b = b;
     }
 }
 
-int32 main() {
-    Pair<int32 int32> p = Pair(1, 2);  //~ ERROR FS-PARSE-0010 @16
-//~^ ERROR FS-PARSE-0010 @21
-//~^^ ERROR FS-PARSE-0003 @23
+fn main() -> int32 {
+    p: Pair<int32 int32> = Pair(1, 2);  //~ ERROR FS-PARSE-0010 @19
+//~^ ERROR FS-PARSE-0012 @28
     return 0;
 }

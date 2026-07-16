@@ -1,5 +1,5 @@
 // Semantic type error: increment/decrement on an undefined variable.
 
-void unary_incdec_undefined() {
+fn unary_incdec_undefined() -> void {
     undefinedCounter++;  //~ ERROR FS-PARSE-0003 @5
 }

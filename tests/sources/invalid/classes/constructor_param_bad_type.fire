@@ -2,10 +2,9 @@
 // parameter type.
 
 class Foo {
-    int32 x;
+    x: int32;
 
-    Foo(+ x) {  //~ ERROR FS-PARSE-0010 @9
-//~^ ERROR FS-PARSE-0010 @11
+    fn Foo(x: +) {  //~ ERROR FS-PARSE-0010 @15
         this.x = x;  //~ ERROR FS-PARSE-0003 @9
 //~^ ERROR FS-PARSE-0003 @18
     }

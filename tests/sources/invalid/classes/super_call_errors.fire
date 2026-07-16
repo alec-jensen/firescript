@@ -10,9 +10,9 @@
 
 // No base class: cannot use super at all.
 class Standalone {
-    int32 v;
+    v: int32;
 
-    Standalone(&mut this, int32 v) {
+    fn Standalone(&mut this, v: int32) {
         this.super(v);  //~ ERROR FS-SEM-0010 @14
         this.v = v;
     }
@@ -20,39 +20,39 @@ class Standalone {
 
 // Base class exists but declares no constructor of its own.
 class NoCtorBase {
-    int32 v;
+    v: int32;
 }
 
 class NoCtorDerived from NoCtorBase {
-    int32 w;
+    w: int32;
 
-    NoCtorDerived(&mut this, int32 w) {
+    fn NoCtorDerived(&mut this, w: int32) {
         this.super();  //~ ERROR FS-SEM-0010 @14
         this.w = w;
     }
 }
 
 class Base {
-    int32 v;
+    v: int32;
 
-    Base(&mut this, int32 v) {
+    fn Base(&mut this, v: int32) {
         this.v = v;
     }
 }
 
 class WrongArgs from Base {
-    int32 w;
+    w: int32;
 
-    WrongArgs(&mut this, int32 v, int32 w) {
+    fn WrongArgs(&mut this, v: int32, w: int32) {
         this.super(v, w);  //~ ERROR FS-SEM-0010 @14
         this.w = w;
     }
 }
 
 class WrongType from Base {
-    int32 w;
+    w: int32;
 
-    WrongType(&mut this, string v, int32 w) {
+    fn WrongType(&mut this, v: string, w: int32) {
         this.super(v);  //~ ERROR FS-SEM-0010 @20
         this.w = w;
     }

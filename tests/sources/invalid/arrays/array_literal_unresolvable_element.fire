@@ -1,7 +1,7 @@
 // An array literal whose first element is an undefined identifier: its
 // type can't be determined, so the whole array literal's type check
 // bails out rather than trying to infer from a bad element.
-int32 main() {
-    int32[] arr = [undef, 2];  //~ ERROR FS-PARSE-0003 @20
+fn main() -> int32 {
+    arr: int32[] = [undef, 2];  //~ ERROR FS-PARSE-0003 @21
     return 0;
 }

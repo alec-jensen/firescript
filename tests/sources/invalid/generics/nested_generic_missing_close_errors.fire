@@ -2,13 +2,15 @@
 // declaration: Pair<Pair<int32, int32, string p; -- the inner Pair<...>
 // never gets a closing '>' before the declared variable name.
 copyable class Pair<T, U> {
-    T first;
-    U second;
+    first: T;
+    second: U;
 
-    Pair(T first, U second) {
+    fn Pair(first: T, second: U) {
         this.first = first;
         this.second = second;
     }
 }
 
-Pair<Pair<int32, int32, string p;  //~ ERROR FS-PARSE-0010 @32
+Pair<Pair<int32, int32, p: string;  //~ ERROR FS-PARSE-0010 @1
+//~^ ERROR FS-PARSE-0010 @6
+//~^^ ERROR FS-PARSE-0010 @34

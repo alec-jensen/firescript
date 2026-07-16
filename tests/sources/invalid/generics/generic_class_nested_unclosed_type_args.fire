@@ -1,18 +1,18 @@
 // Missing closing '>' for a *nested* generic type argument inside a
 // generic class instantiation.
 class Pair<T, U> {
-    T a;
-    U b;
+    a: T;
+    b: U;
 
-    Pair(T a, U b) {
+    fn Pair(a: T, b: U) {
         this.a = a;
         this.b = b;
     }
 }
 
-int32 main() {
-    Pair<Pair<int32,int32 int32> p = Pair(Pair(1, 2), 3);  //~ ERROR FS-PARSE-0010 @27
-//~^ ERROR FS-PARSE-0010 @32
-//~^^ ERROR FS-PARSE-0003 @34
+fn main() -> int32 {
+    Pair<p: Pair<int32,int32 int32> = Pair(Pair(1, 2), 3);  //~ ERROR FS-PARSE-0010 @5
+//~^ ERROR FS-PARSE-0010 @30
+//~^^ ERROR FS-PARSE-0012 @39
     return 0;
 }

@@ -65,7 +65,7 @@ def test_deferred_identifier_resolved_against_merged_class_definition():
         with open(helper_path, "w", encoding="utf-8") as f:
             f.write(
                 "export class Helper {\n"
-                "    static int32 make() {\n"
+                "    static fn make() -> int32 {\n"
                 "        return 5i32;\n"
                 "    }\n"
                 "}\n"
@@ -74,7 +74,7 @@ def test_deferred_identifier_resolved_against_merged_class_definition():
         with open(main_path, "w", encoding="utf-8") as f:
             f.write(
                 "import helper.Helper;\n\n"
-                "int32 x = Helper.make();\n"
+                "x: int32 = Helper.make();\n"
             )
 
         src = open(main_path, encoding="utf-8").read()

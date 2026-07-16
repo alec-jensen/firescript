@@ -2,11 +2,11 @@
 // arguments.
 
 class Utils {
-    static int32 identity(int32 x) {
+    static fn identity(x: int32) -> int32 {
         return x;
     }
 }
 
-void type_method_call_arg_count() {
-    int32 y = Utils.identity(1, 2);  //~ ERROR FS-SEM-0010 @21
+fn type_method_call_arg_count() -> void {
+    y: int32 = Utils.identity(1, 2);  //~ ERROR FS-SEM-0010 @22
 }

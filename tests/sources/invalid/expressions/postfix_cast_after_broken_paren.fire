@@ -1,9 +1,8 @@
 // Parser error: a postfix 'as' cast applied where the preceding
 // parenthesized expression failed to parse (unbalanced '(1 +)').
 
-void postfix_cast_after_broken_paren() {
-    int32 x = (1 +) as int32;  //~ ERROR FS-PARSE-0012 @19
-//~^ ERROR FS-PARSE-0010 @21
-//~^^ ERROR FS-PARSE-0010 @21
-//~^^^ ERROR FS-PARSE-0010 @29
+fn postfix_cast_after_broken_paren() -> void {
+    x: int32 = (1 +) as int32;  //~ ERROR FS-PARSE-0012 @20
+//~^ ERROR FS-PARSE-0010 @22
+//~^^ ERROR FS-PARSE-0010 @22
 }

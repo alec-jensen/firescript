@@ -1,6 +1,6 @@
 // Parser error: 'as' followed by a token that is not a type name.
 
-void cast_to_non_type_token() {
-    int32 x = 5;
-    int32 y = x as 5;  //~ ERROR FS-PARSE-0010 @20
+fn cast_to_non_type_token() -> void {
+    x: int32 = 5;
+    y: int32 = x as 5;  //~ ERROR FS-PARSE-0010 @21
 }

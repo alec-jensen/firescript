@@ -3,23 +3,23 @@
 import @firescript/std.io.println;
 
 class Sink {
-    string label;
+    label: string;
 
-    void take(string value) {
+    fn take(value: string) -> void {
         this.label = value;
     }
 
-    void keep(string &value) {
+    fn keep(value: &string) -> void {
         println(value);
     }
 }
 
-Sink s = Sink("init");
+s: Sink = Sink("init");
 
-string owned = "moved";
+owned: string = "moved";
 s.take(owned);    // Move into method parameter
 println(owned);   // Error: used after move  //~ ERROR FS-SEM-0001 @9
 
-string borrowed = "still-here";
+borrowed: string = "still-here";
 s.keep(borrowed); // Borrow only
 println(borrowed); // Should remain valid

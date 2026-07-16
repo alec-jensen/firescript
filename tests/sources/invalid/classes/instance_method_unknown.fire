@@ -1,14 +1,14 @@
 // Semantic error: calling an unknown method on a class instance.
 
 class Counter {
-    int32 value;
+    value: int32;
 
-    Counter(int32 value) {
+    fn Counter(value: int32) {
         this.value = value;
     }
 }
 
-void instance_method_unknown() {
-    Counter c = new Counter(0);
+fn instance_method_unknown() -> void {
+    c: Counter = new Counter(0);
     c.frobnicate();  //~ ERROR FS-SEM-0010 @5
 }

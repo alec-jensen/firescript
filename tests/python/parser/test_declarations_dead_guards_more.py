@@ -6,6 +6,18 @@ again (defense in depth). Each test below builds parser state directly and
 calls the relevant private method, per CLAUDE.md's testing philosophy
 ("genuinely unreachable from real source" -> hand-built parser state /
 monkeypatched `consume`, documented rather than left silently uncovered).
+
+Note: with the postfix/`fn`-keyword grammar, top-level dispatch for function
+definitions is now a trivial `if current_token.type == "FN"` with no
+lookahead validation at all, so most of what used to require calling
+_parse_function_definition() directly to bypass a dispatch guarantee is now
+reachable through an ordinary `fn ...` top-level statement -- those cases
+moved to tests/python/parser/test_declarations_coverage.py (still useful as
+fast, precise unit tests) and/or tests/sources/invalid/functions/
+function_def_syntax_errors.fire (full-program coverage of the same shapes).
+_parse_generator_definition() no longer exists at all -- generators are
+ordinary `fn` declarations whose return type is `generator<T>` -- so its
+dead-guard tests were removed rather than ported.
 """
 from __future__ import annotations
 
@@ -18,45 +30,6 @@ from harness import pyunit as t  # noqa: E402
 from _dead_guard_helpers2 import make_parser, error_codes, _force_next_consume_none  # noqa: E402
 
 
-def test_function_definition_invalid_return_type_direct():
-    # Top-level dispatch only calls _parse_function_definition() when the
-    # lookahead already proves the return type is valid (a type token, or
-    # IDENTIFIER followed by IDENTIFIER '<' for a generic function). Feeding
-    # the method a bare "Foo(" bypasses that guarantee.
-    p = make_parser("Foo(")
-    result = p._parse_function_definition()
-    t.require(result is None)
-    t.require_eq(error_codes(p), ["FS-PARSE-0010"])
-
-
-def test_function_definition_unclosed_array_return_bracket_direct():
-    # The top-level lookahead pattern for an array return type
-    # (OPEN_BRACKET CLOSE_BRACKET IDENTIFIER OPEN_PAREN) only matches when
-    # the bracket is already balanced, so the "unclosed '['" branch inside
-    # _parse_function_definition can't be reached via real dispatch.
-    p = make_parser("int32[ badRet")
-    result = p._parse_function_definition()
-    t.require(result is None)
-    t.require_eq(error_codes(p), ["FS-PARSE-0010"])
-
-
-def test_function_definition_missing_name_direct():
-    # Top-level dispatch requires an IDENTIFIER right after the return type
-    # before treating a statement as a function definition, so the "missing
-    # function name" branch is unreachable from real source.
-    p = make_parser("int32 (")
-    result = p._parse_function_definition()
-    t.require(result is None)
-    t.require_eq(error_codes(p), ["FS-PARSE-0010"])
-
-
-def test_function_definition_missing_type_param_name_direct():
-    p = make_parser("int32 foo<")
-    result = p._parse_function_definition()
-    t.require(result is None)
-    t.require_eq(error_codes(p), ["FS-PARSE-0010"])
-
-
 def test_function_definition_type_param_consume_failure_is_dead_but_guarded():
     # declarations.py checks `current_token.type == "IDENTIFIER"` and then
     # immediately calls `consume("IDENTIFIER")`, which cannot fail given the
@@ -66,7 +39,7 @@ def test_function_definition_type_param_consume_failure_is_dead_but_guarded():
     # function name ("foo") is also consumed via consume("IDENTIFIER") one
     # step earlier, so the forced failure must target specifically the type
     # parameter token ("T"), not the first IDENTIFIER consume overall.
-    p = make_parser("int32 foo<T>(T x) { return x; }")
+    p = make_parser("fn foo<T>(x: T) -> T { return x; }")
     orig_consume = p.consume
     state = {"done": False}
 
@@ -81,55 +54,6 @@ def test_function_definition_type_param_consume_failure_is_dead_but_guarded():
     t.require(result is None)
 
 
-def test_function_definition_missing_close_angle_direct():
-    p = make_parser("int32 foo<T(T x) { return x; }")
-    result = p._parse_function_definition()
-    t.require(result is None)
-    t.require_eq(error_codes(p), ["FS-PARSE-0010"])
-
-
-def test_function_definition_missing_open_paren_direct():
-    # Top-level dispatch requires an OPEN_PAREN to even consider this a
-    # function definition, so the "'(' after function name" branch can only
-    # be reached by calling the method directly.
-    p = make_parser("int32 foo;")
-    result = p._parse_function_definition()
-    t.require(result is None)
-    t.require_eq(error_codes(p), ["FS-PARSE-0010"])
-
-
-def test_function_definition_missing_body_brace_direct():
-    p = make_parser("int32 foo()")
-    result = p._parse_function_definition()
-    t.require(result is None)
-    t.require_eq(error_codes(p), ["FS-PARSE-0010"])
-
-
-def test_generator_definition_missing_generator_token_is_dead():
-    # _parse_generator_definition() is only ever invoked when current_token
-    # is already GENERATOR (top-level dispatch and _parse_statement() both
-    # check this first), so consume("GENERATOR") can never fail in
-    # practice. Force it to hit the defensive early-return anyway.
-    p = make_parser("generator<int32> g() { yield 1; }")
-    _force_next_consume_none(p, "GENERATOR")
-    result = p._parse_generator_definition()
-    t.require(result is None)
-
-
-def test_generator_definition_bad_param_type_direct():
-    p = make_parser("generator<int32> g(&x) { yield 1; }")
-    result = p._parse_generator_definition()
-    t.require(result is None)
-    t.require_eq(error_codes(p), ["FS-PARSE-0010"])
-
-
-def test_generator_definition_missing_body_brace_direct():
-    p = make_parser("generator<int32> g()")
-    result = p._parse_generator_definition()
-    t.require(result is None)
-    t.require_eq(error_codes(p), ["FS-PARSE-0010"])
-
-
 def test_top_level_skips_blank_placeholder_identifier_token():
     # parse()'s top-level loop has a defensive branch for a blank-valued
     # IDENTIFIER token ("Handle potential whitespace/newline tokens if the
@@ -137,7 +61,7 @@ def test_top_level_skips_blank_placeholder_identifier_token():
     # only real content tokens. Build one by hand to exercise the skip.
     from lexer import Token
 
-    p = make_parser("int32 x = 1;")
+    p = make_parser("x: int32 = 1;")
     p.tokens = [Token("IDENTIFIER", "", 0), *p.tokens]
     p.current_token = p.tokens[0]
     p._token_idx = 0
@@ -209,7 +133,7 @@ def test_import_at_branch_slash_identifier_consume_failure_is_dead():
 def test_class_definition_missing_class_token_is_dead():
     # _parse_class_definition() is only invoked when current_token is
     # CLASS or COPYABLE, so consume("CLASS") cannot fail in practice.
-    p = make_parser("class Foo { int32 v; }")
+    p = make_parser("class Foo { v: int32; }")
     _force_next_consume_none(p, "CLASS")
     result = p._parse_class_definition()
     t.require(result is None)
@@ -220,7 +144,7 @@ def test_class_definition_type_param_consume_failure_is_dead():
     # consume("IDENTIFIER") one step earlier than the type parameter
     # ("T"), so the forced failure must target the type parameter token
     # specifically.
-    p = make_parser("class Foo<T> { int32 v; }")
+    p = make_parser("class Foo<T> { v: int32; }")
     orig_consume = p.consume
     state = {"done": False}
 

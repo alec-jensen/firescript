@@ -2,15 +2,15 @@
 // primary-expression parser (unexpected token) and at the statement
 // dispatch level (no assignment follows the incomplete field access).
 class Holder {
-    int32 v;
+    v: int32;
 
-    Holder(int32 v) {
+    fn Holder(v: int32) {
         this.v = v;
     }
 }
 
-int32 main() {
-    Holder h = Holder(1);
+fn main() -> int32 {
+    h: Holder = Holder(1);
     h.;  //~ ERROR FS-PARSE-0010 @7
 //~^ ERROR FS-PARSE-0010 @7
     return 0;

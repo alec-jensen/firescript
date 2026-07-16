@@ -1,9 +1,9 @@
 // Semantic error: 'this.super(...)' in a class that has no base class.
 
 class Standalone {
-    int32 x;
+    x: int32;
 
-    Standalone(int32 x) {
+    fn Standalone(x: int32) {
         this.super();  //~ ERROR FS-SEM-0010 @14
         this.x = x;
     }

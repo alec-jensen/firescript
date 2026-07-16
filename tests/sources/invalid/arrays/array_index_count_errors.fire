@@ -2,7 +2,7 @@
 
 import @firescript/std.io.println;
 
-int32[] nums = [1i32, 2i32, 3i32];
+nums: int32[] = [1i32, 2i32, 3i32];
 
 println(nums.index());        // Error: expected 1 argument  //~ ERROR FS-SEM-0010 @14
 println(nums.count());        // Error: expected 1 argument  //~ ERROR FS-SEM-0010 @14

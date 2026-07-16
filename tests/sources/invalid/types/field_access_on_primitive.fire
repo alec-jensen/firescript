@@ -1,6 +1,6 @@
 // Semantic error: field access on a non-class (primitive) type.
 
-void field_access_on_primitive() {
-    int32 x = 5;
-    int32 y = x.bits;  //~ ERROR FS-SEM-0010 @17
+fn field_access_on_primitive() -> void {
+    x: int32 = 5;
+    y: int32 = x.bits;  //~ ERROR FS-SEM-0010 @18
 }

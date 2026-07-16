@@ -2,11 +2,11 @@
 // EXPECT: semantic error
 
 enum Shape {
-    Circle(float64 radius),
+    Circle(radius: float64),
     Point
 }
 
-Shape s = Shape.Point;
+s: Shape = Shape.Point;
 match s {
     Shape.Circle(radius) -> { }
     Shape.Circle(radius: r2) -> { }  //~ ERROR FS-SEM-0001 @5

@@ -2,14 +2,14 @@
 // list parentheses.
 
 class Widget {
-    int32 id;
+    id: int32;
 
-    Widget(int32 id) {
+    fn Widget(id: int32) {
         this.id = id;
     }
 }
 
-void new_missing_paren() {
-    Widget w = new Widget;  //~ ERROR FS-PARSE-0010 @26
-//~^ ERROR FS-PARSE-0010 @26
+fn new_missing_paren() -> void {
+    w: Widget = new Widget;  //~ ERROR FS-PARSE-0010 @27
+//~^ ERROR FS-PARSE-0010 @27
 }

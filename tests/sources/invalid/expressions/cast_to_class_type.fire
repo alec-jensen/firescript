@@ -3,13 +3,13 @@
 // cast target semantically).
 
 class Widget {
-    int32 id;
+    id: int32;
 
-    Widget(int32 id) {
+    fn Widget(id: int32) {
         this.id = id;
     }
 }
 
-void cast_to_class_type() {
-    Widget w = 5 as Widget;  //~ ERROR FS-SEM-0010 @21
+fn cast_to_class_type() -> void {
+    w: Widget = 5 as Widget;  //~ ERROR FS-SEM-0010 @22
 }

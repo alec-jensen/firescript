@@ -1,6 +1,6 @@
 // Semantic error: string 'length' method takes no arguments.
 
-void string_length_arg_count() {
-    string s = "hello";
-    int32 n = s.length(1);  //~ ERROR FS-SEM-0010 @17
+fn string_length_arg_count() -> void {
+    s: string = "hello";
+    n: int32 = s.length(1);  //~ ERROR FS-SEM-0010 @18
 }

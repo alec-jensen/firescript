@@ -23,7 +23,7 @@ def _parser_for(src: str) -> Parser:
 
 
 def test_annotate_value_category_swallows_exception():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     node = ASTNode(NodeTypes.IDENTIFIER, None, "x", [], 0)
 
     original = type_system_mod.is_owned
@@ -41,14 +41,14 @@ def test_annotate_value_category_swallows_exception():
 
 
 def test_annotate_value_category_owned():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     node = ASTNode(NodeTypes.IDENTIFIER, None, "arr", [], 0)
     p._annotate_value_category(node, "int32", True)  # arrays are Owned
     t.require_eq(node.value_category, "Owned")
 
 
 def test_annotate_value_category_copyable():
-    p = _parser_for("int32 x = 1;")
+    p = _parser_for("x: int32 = 1;")
     node = ASTNode(NodeTypes.IDENTIFIER, None, "x", [], 0)
     p._annotate_value_category(node, "int32", False)
     t.require_eq(node.value_category, "Copyable")

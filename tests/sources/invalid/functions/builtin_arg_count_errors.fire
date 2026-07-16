@@ -1,6 +1,6 @@
 // Calling a builtin with an argument count check (`typeof`) with the wrong
 // number of arguments.
-int32 main() {
-    int32 x = typeof();  //~ ERROR FS-SEM-0010 @15
+fn main() -> int32 {
+    x: int32 = typeof();  //~ ERROR FS-SEM-0010 @16
     return x;
 }

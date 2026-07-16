@@ -1,70 +1,71 @@
-// Malformed constructor parameter lists: ClassName(...) { ... } is parsed by
-// a separate code path from a normal method (declarations.py's
-// _parse_class_definition has a dedicated "constructor without explicit
-// return type" branch), so these same error conditions as
+// Malformed constructor parameter lists: fn ClassName(...) { ... } is parsed
+// by a separate code path from a normal method (declarations.py's
+// _parse_class_definition has a dedicated "constructor" branch in the
+// class-body FN dispatch), so these same error conditions as
 // class_def_syntax_errors.fire need their own constructor-shaped cases to
 // exercise that branch.
 
 // Receiver must be 'this' after '&' (constructor form)
 class CR1 {
-    int32 v;
+    v: int32;
 
-    CR1(&other) {  //~ ERROR FS-PARSE-0010 @10
+    fn CR1(&other) {  //~ ERROR FS-PARSE-0010 @13
         this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
-// 'owned' receiver must be 'this' (constructor form)
+// 'owned' not followed by 'this' falls through to being parsed as a regular
+// parameter named 'owned' (OWNED is accepted as a name token), which then
+// requires ':' -- 'this2' isn't one.
 class CR2 {
-    int32 v;
+    v: int32;
 
-    CR2(owned other) {  //~ ERROR FS-PARSE-0010 @15
+    fn CR2(owned this2) {  //~ ERROR FS-PARSE-0010 @18
+//~^ ERROR FS-PARSE-0010 @18
         this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
 // Constructor parameter type invalid
 class CP1 {
-    int32 v;
+    v: int32;
 
-    CP1(! x) {  //~ ERROR FS-PARSE-0010 @9
-//~^ ERROR FS-PARSE-0010 @11
+    fn CP1(x: !) {  //~ ERROR FS-PARSE-0010 @15
         this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
 // Array parameters are not supported for constructors
 class CP2 {
-    int32 v;
+    v: int32;
 
-    CP2(int32[] xs) {  //~ ERROR FS-PARSE-0012 @14
-        this.v = 1;
+    fn CP2(xs: int32[]) {  //~ ERROR FS-PARSE-0012 @16
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
 // Missing constructor parameter name
 class CP3 {
-    int32 v;
+    v: int32;
 
-    CP3(int32) {  //~ ERROR FS-PARSE-0010 @14
+    fn CP3(: int32) {  //~ ERROR FS-PARSE-0010 @12
         this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
 // Missing ')' after constructor parameters
 class CP4 {
-    int32 v;
+    v: int32;
 
-    CP4(int32 x {  //~ ERROR FS-PARSE-0010 @17
+    fn CP4(x: int32 {  //~ ERROR FS-PARSE-0010 @21
         this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
 // Missing '{' to start constructor body
 class CP5 {
-    int32 v;
+    v: int32;
 
-    CP5(int32 x)
-    int32 y = 1;  //~ ERROR FS-PARSE-0010 @5
+    fn CP5(x: int32)
+    y: int32 = 1;  //~ ERROR FS-PARSE-0010 @5
 }
-

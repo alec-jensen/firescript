@@ -7,27 +7,27 @@
 
 // Imports are only valid at top level; one inside a function body must
 // error and recover.
-void f() {
+fn f() -> void {
     import @firescript/std.io.println;  //~ ERROR FS-PARSE-0012 @5
 }
 
 // Empty if condition: parse_expression fails, but the ')' is still present
 // and must be consumed during recovery.
 if () {  //~ ERROR FS-PARSE-0012 @5
-    int32 a = 1;
+    a: int32 = 1;
 }
 
 // Empty while condition: same recovery path as above.
 while () {  //~ ERROR FS-PARSE-0012 @8
-    int32 b = 1;
+    b: int32 = 1;
 }
 
 // Missing ';' after the for-loop condition (init and increment both present).
-for (int32 i = 0; i < 5 i++) {  //~ ERROR FS-PARSE-0010 @25
-    int32 c = 1;
+for (i: int32 = 0; i < 5 i++) {  //~ ERROR FS-PARSE-0010 @26
+    c: int32 = 1;
 }
 
-generator<int32> gen() {
+fn gen() -> generator<int32> {
     // yield with no expression must error rather than silently accepting it.
     yield ;  //~ ERROR FS-PARSE-0012 @11
 //~^ ERROR FS-PARSE-0010 @12

@@ -15,7 +15,7 @@ from compiler_pipeline import CompilerPipeline  # noqa: E402
 
 
 def _fresh_pipeline() -> CompilerPipeline:
-    return CompilerPipeline(source_text="int32 x = 1;", source_name="t.fire", source_path="t.fire")
+    return CompilerPipeline(source_text="x: int32 = 1;", source_name="t.fire", source_path="t.fire")
 
 
 def test_resolve_imports_before_parse_raises():

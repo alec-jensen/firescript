@@ -1,30 +1,30 @@
 // Generic type-argument lists without a following constructor/call.
 copyable class Box<T> {
-    T v;
+    v: T;
 
-    Box(T v) {
+    fn Box(v: T) {
         this.v = v;
     }
 }
 
-T identity<T>(T x) {
+fn identity<T>(x: T) -> T {
     return x;
 }
 
 // Missing '(' after generic class type arguments
-Box<int32> a = Box<int32>;  //~ ERROR FS-PARSE-0010 @26
-//~^ ERROR FS-PARSE-0003 @16
+a: Box<int32> = Box<int32>;  //~ ERROR FS-PARSE-0010 @27
+//~^ ERROR FS-PARSE-0003 @17
 
 // Missing '(' after generic function type arguments
-int32 b = identity<int32>;  //~ ERROR FS-PARSE-0010 @26
-//~^ ERROR FS-PARSE-0003 @11
+b: int32 = identity<int32>;  //~ ERROR FS-PARSE-0010 @27
+//~^ ERROR FS-PARSE-0003 @12
 
 // Non-type token inside a type argument list
-Box<int32> c = Box<5>(1);  //~ ERROR FS-PARSE-0010 @20
-//~^ ERROR FS-PARSE-0010 @20
-//~^^ ERROR FS-PARSE-0003 @16
+c: Box<int32> = Box<5>(1);  //~ ERROR FS-PARSE-0010 @21
+//~^ ERROR FS-PARSE-0010 @21
+//~^^ ERROR FS-PARSE-0003 @17
 
 // Missing '>' to close a generic function call's type-argument list
-int32 d = identity<int32(5);  //~ ERROR FS-PARSE-0010 @25
-//~^ ERROR FS-PARSE-0010 @25
-//~^^ ERROR FS-PARSE-0003 @11
+d: int32 = identity<int32(5);  //~ ERROR FS-PARSE-0010 @26
+//~^ ERROR FS-PARSE-0010 @26
+//~^^ ERROR FS-PARSE-0003 @12

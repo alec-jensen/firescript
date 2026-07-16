@@ -2,119 +2,119 @@
 
 // Missing class name
 class {  //~ ERROR FS-PARSE-0010 @7
-    int32 v;  //~ ERROR FS-PARSE-0010 @12
+    v: int32;  //~ ERROR FS-PARSE-0010 @13
 }
 
 // Missing generic type parameter name
 class G1<> {  //~ ERROR FS-PARSE-0010 @10
-    int32 v;  //~ ERROR FS-PARSE-0010 @12
+    v: int32;  //~ ERROR FS-PARSE-0010 @13
 }
 
 // Missing '>' to close class type parameters
 class G2<T {  //~ ERROR FS-PARSE-0010 @12
-    int32 v;  //~ ERROR FS-PARSE-0010 @12
+    v: int32;  //~ ERROR FS-PARSE-0010 @13
 }
 
 // Missing base class name after 'from'
 class D1 from {  //~ ERROR FS-PARSE-0010 @15
-    int32 v;  //~ ERROR FS-PARSE-0010 @12
+    v: int32;  //~ ERROR FS-PARSE-0010 @13
 }
 
 // Class inheriting from itself
 class S1 from S1 {  //~ ERROR FS-PARSE-0012 @15
-    int32 v;
+    v: int32;
 
-    S1() {
+    fn S1() {
         this.v = 1;
     }
 }
 
 // Missing '{' to start class body
 class N1
-int32 topLevel = 1;  //~ ERROR FS-PARSE-0010 @1
+topLevel: int32 = 1;  //~ ERROR FS-PARSE-0010 @1
 
 // Member that is not a type
 class M1 {
     ! bogus;  //~ ERROR FS-PARSE-0010 @5
-    int32 v;
+    v: int32;
 
-    M1() {
+    fn M1() {
         this.v = 1;
     }
 }
 
 // Static constructor is rejected
 class C1 {
-    int32 v;
+    v: int32;
 
-    static C1() {  //~ ERROR FS-PARSE-0012 @12
-        this.v = 1;
+    static fn C1() {  //~ ERROR FS-PARSE-0012 @15
+        this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
 // Receiver must be 'this' after '&'
 class R1 {
-    int32 v;
+    v: int32;
 
-    R1() {
+    fn R1() {
         this.v = 1;
     }
 
-    int32 get(&other) {  //~ ERROR FS-PARSE-0010 @16
+    fn get(&other) -> int32 {  //~ ERROR FS-PARSE-0010 @13
         return 1;
     }
 }
 
-// 'owned' receiver must be 'this'
+// 'owned' not followed by 'this' falls through to being parsed as a regular
+// parameter named 'owned', which then requires ':' -- 'other' isn't one.
 class R2 {
-    int32 v;
+    v: int32;
 
-    R2() {
+    fn R2() {
         this.v = 1;
     }
 
-    int32 take(owned other) {  //~ ERROR FS-PARSE-0010 @16
-//~^ ERROR FS-PARSE-0010 @22
+    fn take(owned other) -> int32 {  //~ ERROR FS-PARSE-0010 @19
+//~^ ERROR FS-PARSE-0010 @19
         return 1;
     }
 }
 
 // Method parameter type invalid
 class P1 {
-    int32 v;
+    v: int32;
 
-    P1() {
+    fn P1() {
         this.v = 1;
     }
 
-    int32 m(&this, ! x) {  //~ ERROR FS-PARSE-0010 @20
-//~^ ERROR FS-PARSE-0010 @22
+    fn m(&this, x: !) -> int32 {  //~ ERROR FS-PARSE-0010 @20
         return 1;
     }
 }
 
 // Array parameters are not supported for methods
 class P2 {
-    int32 v;
+    v: int32;
 
-    P2() {
+    fn P2() {
         this.v = 1;
     }
 
-    int32 m(&this, int32[] xs) {  //~ ERROR FS-PARSE-0012 @25
+    fn m(&this, xs: int32[]) -> int32 {  //~ ERROR FS-PARSE-0012 @21
         return 1;
     }
 }
 
 // Missing method parameter name
 class P3 {
-    int32 v;
+    v: int32;
 
-    P3() {
+    fn P3() {
         this.v = 1;
     }
 
-    int32 m(&this, int32) {  //~ ERROR FS-PARSE-0010 @25
+    fn m(&this, : int32) -> int32 {  //~ ERROR FS-PARSE-0010 @17
         return 1;
     }
 }

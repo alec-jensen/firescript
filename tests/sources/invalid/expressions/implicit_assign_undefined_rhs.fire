@@ -1,7 +1,7 @@
 // Semantic error: implicit-declaration assignment whose right-hand side is
 // itself an undefined identifier, so no type can be inferred at all.
 
-void implicit_assign_undefined_rhs() {
+fn implicit_assign_undefined_rhs() -> void {
     y = undefinedSource;  //~ ERROR FS-PARSE-0003 @9
 //~^ ERROR FS-PARSE-0003 @5
 }

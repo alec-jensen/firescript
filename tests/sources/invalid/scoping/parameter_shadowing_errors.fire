@@ -3,16 +3,16 @@
 
 import @firescript/std.io.println;
 
-int32 outerValue = 10;
+outerValue: int32 = 10;
 
-void useOuter(int32 outerValue) {  //~ ERROR FS-SEM-0010 @21
+fn useOuter(outerValue: int32) -> void {  //~ ERROR FS-SEM-0010 @13
     println(outerValue);
 }
 
 class Holder {
-    int32 v;
+    v: int32;
 
-    Holder(int32 outerValue) {  //~ ERROR FS-SEM-0010 @18
+    fn Holder(outerValue: int32) {  //~ ERROR FS-SEM-0010 @15
         this.v = outerValue;
     }
 }

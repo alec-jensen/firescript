@@ -3,19 +3,19 @@
 import @firescript/std.io.println;
 
 class Pt {
-    int32 x;
-    int32 y;
+    x: int32;
+    y: int32;
 
-    Pt(&mut this, int32 x, int32 y) {
+    fn Pt(&mut this, x: int32, y: int32) {
         this.x = x;
         this.y = y;
     }
 
-    void setX(&this, int32 v) {
+    fn setX(&this, v: int32) -> void {
         this.x = v;  //~ ERROR FS-SEM-0001 @16
     }
 
-    void setY(&this, int32 v) {
+    fn setY(&this, v: int32) -> void {
         this.y = v;  //~ ERROR FS-SEM-0001 @16
     }
 }

@@ -7,18 +7,18 @@
 import @firescript/std.io.println;
 
 class Foo {
-    int32 v;
+    v: int32;
 
-    Foo(int32 v) {
+    fn Foo(v: int32) {
         this.v = v;
     }
 
-    int32 get() {
+    fn get() -> int32 {
         return this.v;
     }
 }
 
-int32 main() {
+fn main() -> int32 {
     a = println(1);  //~ ERROR FS-PARSE-0003 @5
     b = a.get();  //~ ERROR FS-PARSE-0003 @5
     return 0;

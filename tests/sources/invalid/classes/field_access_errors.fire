@@ -4,12 +4,12 @@
 import @firescript/std.io.println;
 
 class Point {
-    int32 x;
-    int32 y;
+    x: int32;
+    y: int32;
 }
 
-Point p = Point(1, 2);
-int32 z = p.z;  //~ ERROR FS-SEM-0010 @13
+p: Point = Point(1, 2);
+z: int32 = p.z;  //~ ERROR FS-SEM-0010 @14
 
-int32 n = 5;
-int32 bad = n.x;  //~ ERROR FS-SEM-0010 @15
+n: int32 = 5;
+bad: int32 = n.x;  //~ ERROR FS-SEM-0010 @16

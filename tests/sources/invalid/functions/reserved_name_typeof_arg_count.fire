@@ -3,10 +3,10 @@
 // still applies to any user-defined function reusing that name, since
 // 'typeof' is not a reserved keyword in firescript).
 
-int32 typeof(int32 a, int32 b) {
+fn typeof(a: int32, b: int32) -> int32 {
     return a;
 }
 
-void reserved_name_typeof_arg_count() {
-    int32 x = typeof(1, 2);  //~ ERROR FS-SEM-0010 @15
+fn reserved_name_typeof_arg_count() -> void {
+    x: int32 = typeof(1, 2);  //~ ERROR FS-SEM-0010 @16
 }

@@ -2,15 +2,15 @@
 // These should all produce parser/lexer errors
 
 // Missing semicolons
-int32 a = 5
-int32 b = 10;  //~ ERROR FS-PARSE-0010 @1
+a: int32 = 5
+b: int32 = 10;  //~ ERROR FS-PARSE-0010 @1
 
 // Unclosed parenthesis
-int32 x = (5 + 3;  //~ ERROR FS-PARSE-0010 @17
+x: int32 = (5 + 3;  //~ ERROR FS-PARSE-0010 @18
 
 // Unclosed array literal
-int32[] arr = [1, 2, 3;  //~ ERROR FS-PARSE-0010 @23
-//~^ ERROR FS-PARSE-0010 @23
+arr: int32[] = [1, 2, 3;  //~ ERROR FS-PARSE-0010 @24
+//~^ ERROR FS-PARSE-0010 @24
 
 // Missing condition parentheses in if
 if x > 5 {  //~ ERROR FS-PARSE-0010 @4
@@ -27,13 +27,13 @@ while {  //~ ERROR FS-PARSE-0010 @7
 
 // Missing block braces
 if (true)
-    int32 y = 5;
+    y: int32 = 5;
 
 // Unclosed string literal
-string s = "hello;
+s: string = "hello;
 
 // Invalid array type syntax
-int32[ bad_arr = 5;
+bad_arr: int32[ = 5;
 
 // Dangling else
 else {
@@ -41,13 +41,13 @@ else {
 }
 
 // Missing function body
-void test();
+fn test() -> void;
 
 // Invalid function syntax - missing parens
-void badFunc {
+fn badFunc {
     println("test");
 }
 
 // Missing closing brace
-void unclosed() {  //~ ERROR FS-PARSE-0010 @17
-    int32 z = 10;
+fn unclosed() -> void {  //~ ERROR FS-PARSE-0010 @23
+    z: int32 = 10;

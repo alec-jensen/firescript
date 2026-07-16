@@ -1,8 +1,8 @@
 // C-style for loop missing the semicolon between the condition and the
 // increment clause.
-int32 main() {
-    for (int32 i = 0; i < 10 i++) {  //~ ERROR FS-PARSE-0010 @30
-//~^ ERROR FS-PARSE-0003 @30
+fn main() -> int32 {
+    for (i: int32 = 0; i < 10 i++) {  //~ ERROR FS-PARSE-0010 @31
+//~^ ERROR FS-PARSE-0003 @31
     }
     return 0;
 }

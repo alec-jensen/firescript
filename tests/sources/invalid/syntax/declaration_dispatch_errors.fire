@@ -1,70 +1,46 @@
-// Malformed declaration-level syntax: functions, generics, imports.
+// Malformed declaration-level syntax: generics, imports.
 // Targets recovery paths in firescript/parser/declarations.py not covered
 // by generic_declaration_errors.fire / generic_call_errors.fire /
 // import_syntax_errors.fire.
+//
+// The old top-level dispatcher's 30-token can_be_func lookahead (and its
+// generator-declaration equivalent) is gone now that every callable is
+// unambiguously introduced by 'fn' -- dispatch is trivial, so the
+// dispatcher-specific bugs this file used to target for generic functions
+// and generators no longer exist as distinct recovery paths. The remaining
+// cases below still exercise real limitations in
+// _parse_generic_type_param_list itself; the generator-shaped cases were
+// dropped as redundant with generator_def_errors.fire /
+// function_def_syntax_errors.fire.
 
-// A '<' with no matching '>' anywhere isn't even recognized as a generic
-// function header by the top-level dispatcher's lookahead (it requires a
-// balanced '<' ... '>' followed by '(' before committing to
-// _parse_function_definition), so this parses as a statement/expression
-// instead of a malformed function declaration.
-T identity<T(T x) {  //~ ERROR FS-PARSE-0010 @11
-//~^ ERROR FS-PARSE-0010 @16
-//~^^ ERROR FS-PARSE-0010 @16
-//~^^^ ERROR FS-PARSE-0003 @14
-}
-
-// Missing '>' to close type parameters: this one *is* recognized as a
-// generic function header (the dispatcher's naive '<'/'>' depth counter
-// finds a balanced pair across the nested `Box<int32>` constraint type),
-// but the type-parameter loop's constraint parsing doesn't understand
-// nested generic constraint types and bails out at the inner '<' instead
-// of consuming through to the real closing '>'.
+// Missing '>' to close type parameters: _parse_generic_type_param_list's
+// constraint parsing doesn't understand nested generic constraint types
+// and bails out at the inner '<' instead of consuming through to the real
+// closing '>'.
 copyable class Box<T> {
-    T v;
-    Box(T v) {
+    v: T;
+    fn Box(v: T) {
         this.v = v;
     }
 }
-T identity2<T: Box<int32>>(T x) {  //~ ERROR FS-PARSE-0010 @19
-//~^ ERROR FS-PARSE-0010 @25
-//~^^ ERROR FS-PARSE-0010 @31
+fn identity2<T: Box<int32>>(x: T) -> T {  //~ ERROR FS-PARSE-0010 @20
+//~^ ERROR FS-PARSE-0010 @33
+//~^^ ERROR FS-PARSE-0010 @38
     return x;  //~ ERROR FS-PARSE-0003 @12
 }
 
 // Empty generic type-parameter list on a function.
-T identity_empty<>(T x) {  //~ ERROR FS-PARSE-0010 @18
-//~^ ERROR FS-PARSE-0010 @23
+fn identity_empty<>(x: T) -> T {  //~ ERROR FS-PARSE-0010 @19
+//~^ ERROR FS-PARSE-0010 @25
+//~^^ ERROR FS-PARSE-0010 @30
     return x;  //~ ERROR FS-PARSE-0003 @12
 }
 
 // Missing constraint type/interface after ':'.
-T bad_constraint<T: >(T x) {  //~ ERROR FS-PARSE-0010 @21
-//~^ ERROR FS-PARSE-0010 @26
+fn bad_constraint<T: >(x: T) -> T {  //~ ERROR FS-PARSE-0010 @22
+//~^ ERROR FS-PARSE-0010 @28
+//~^^ ERROR FS-PARSE-0010 @33
     return x;  //~ ERROR FS-PARSE-0003 @12
-}
-
-// Missing '(' after generator name.
-generator<int32> gen1 int32 n) {  //~ ERROR FS-PARSE-0010 @23
-//~^ ERROR FS-PARSE-0010 @30
-    yield n;  //~ ERROR FS-PARSE-0003 @11
-}
-
-// Missing '<' after 'generator'.
-generator int32> gen2(int32 n) {  //~ ERROR FS-PARSE-0010 @11
-//~^ ERROR FS-PARSE-0010 @16
-//~^^ ERROR FS-PARSE-0012 @23
-//~^^^ ERROR FS-PARSE-0010 @29
-//~^^^^ ERROR FS-PARSE-0010 @29
-    yield n;  //~ ERROR FS-PARSE-0003 @11
-}
-
-// Missing '>' to close generator yield type.
-generator<int32 gen3(int32 n) {  //~ ERROR FS-PARSE-0010 @17
-//~^ ERROR FS-PARSE-0012 @22
-//~^^ ERROR FS-PARSE-0010 @28
-//~^^^ ERROR FS-PARSE-0010 @28
-    yield n;  //~ ERROR FS-PARSE-0003 @11
 }
 
 // Missing identifier after '@' in external import form.

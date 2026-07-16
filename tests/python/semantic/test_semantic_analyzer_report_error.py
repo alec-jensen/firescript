@@ -30,15 +30,15 @@ def test_report_error_without_source_code_uses_no_line_info():
 
 
 def test_report_error_without_node_uses_no_line_info():
-    analyzer = SemanticAnalyzer(ASTNode(NodeTypes.ROOT, None, "program", [], 0), source_file="x.fire", source_code="int32 x = 1;\n")
+    analyzer = SemanticAnalyzer(ASTNode(NodeTypes.ROOT, None, "program", [], 0), source_file="x.fire", source_code="x: int32 = 1;\n")
     analyzer.error("synthetic error")
     t.require_eq(len(analyzer.errors), 1)
     t.require_eq(analyzer.errors[0].line, 0)
 
 
 def test_report_error_index_out_of_range_falls_back_gracefully():
-    analyzer = SemanticAnalyzer(ASTNode(NodeTypes.ROOT, None, "program", [], 0), source_file="x.fire", source_code="int32 x = 1;\n")
-    # Index far past the end of the 13-char source string.
+    analyzer = SemanticAnalyzer(ASTNode(NodeTypes.ROOT, None, "program", [], 0), source_file="x.fire", source_code="x: int32 = 1;\n")
+    # Index far past the end of the 14-char source string.
     node = _bare_node(10_000)
     analyzer.error("synthetic out-of-range error", node)
     t.require_eq(len(analyzer.errors), 1)
@@ -46,7 +46,7 @@ def test_report_error_index_out_of_range_falls_back_gracefully():
 
 
 def test_report_error_negative_index_falls_back_gracefully():
-    analyzer = SemanticAnalyzer(ASTNode(NodeTypes.ROOT, None, "program", [], 0), source_file="x.fire", source_code="int32 x = 1;\n")
+    analyzer = SemanticAnalyzer(ASTNode(NodeTypes.ROOT, None, "program", [], 0), source_file="x.fire", source_code="x: int32 = 1;\n")
     node = _bare_node(-5)
     analyzer.error("synthetic negative-index error", node)
     t.require_eq(len(analyzer.errors), 1)

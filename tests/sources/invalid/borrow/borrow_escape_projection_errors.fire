@@ -3,18 +3,18 @@
 import @firescript/std.io.println;
 
 class Box {
-    string name;
+    name: string;
 }
 
-string badFieldReturn(&Box b) {
+fn badFieldReturn(b: &Box) -> string {
     return b.name; // Error: direct borrowed projection escapes  //~ ERROR FS-SEM-0001 @14
 }
 
-string[] badArrayReturn(&string[] arr) {
+fn badArrayReturn(arr: &string[]) -> string[] {
     return arr; // Error: returning borrowed array escapes  //~ ERROR FS-SEM-0001 @12
 }
 
-string[] values = ["a", "b"];
-Box bx = Box("fire");
+values: string[] = ["a", "b"];
+bx: Box = Box("fire");
 println(badFieldReturn(bx));
 println(badArrayReturn(values).length());

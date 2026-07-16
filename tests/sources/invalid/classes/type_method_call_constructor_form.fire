@@ -4,13 +4,13 @@
 // mismatches the surrounding declared type).
 
 class Widget {
-    int32 id;
+    id: int32;
 
-    Widget(int32 id) {
+    fn Widget(id: int32) {
         this.id = id;
     }
 }
 
-void type_method_call_constructor_form() {
-    string bad = Widget.Widget(5);  //~ ERROR FS-SEM-0002 @12
+fn type_method_call_constructor_form() -> void {
+    bad: string = Widget.Widget(5);  //~ ERROR FS-SEM-0002 @5
 }

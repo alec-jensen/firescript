@@ -3,17 +3,17 @@
 // generic_class_templates lookup path for field resolution, distinct from
 // the ordinary user_classes lookup used once a concrete instance exists.
 copyable class Pair<T, U> {
-    T first;
-    U second;
+    first: T;
+    second: U;
 
-    Pair(T first, U second) {
+    fn Pair(first: T, second: U) {
         this.first = first;
         this.second = second;
     }
 
-    T getBogus(&this) {
+    fn getBogus(&this) -> T {
         return this.bogus;  //~ ERROR FS-SEM-0010 @21
     }
 }
 
-Pair<int32, int32> p1 = Pair<int32, int32>(10, 20);
+p1: Pair<int32, int32> = Pair<int32, int32>(10, 20);

@@ -1,31 +1,31 @@
 // Type errors for individual binary operators, one mismatch per function so
 // each error is independent of the others.
-int32 plusMismatch() {
-    bool b = true;
-    int32 x = 5;
-    int32 y = x + b;  //~ ERROR FS-SEM-0010 @17
+fn plusMismatch() -> int32 {
+    b: bool = true;
+    x: int32 = 5;
+    y: int32 = x + b;  //~ ERROR FS-SEM-0010 @18
     return y;
 }
 
-bool andMismatch() {
-    int32 x = 5;
-    bool y = x && true;  //~ ERROR FS-SEM-0010 @16
+fn andMismatch() -> bool {
+    x: int32 = 5;
+    y: bool = x && true;  //~ ERROR FS-SEM-0010 @17
     return y;
 }
 
-int32 moduloMismatch() {
-    float32 x = 1.0f32;
-    int32 y = x % 2;  //~ ERROR FS-SEM-0010 @17
+fn moduloMismatch() -> int32 {
+    x: float32 = 1.0f32;
+    y: int32 = x % 2;  //~ ERROR FS-SEM-0010 @18
     return y;
 }
 
-bool equalityMismatch() {
-    int32 x = 5;
-    string s = "a";
-    bool y = x == s;  //~ ERROR FS-SEM-0010 @16
+fn equalityMismatch() -> bool {
+    x: int32 = 5;
+    s: string = "a";
+    y: bool = x == s;  //~ ERROR FS-SEM-0010 @17
     return y;
 }
 
-int32 main() {
+fn main() -> int32 {
     return 0;
 }

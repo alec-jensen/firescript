@@ -2,24 +2,24 @@
 // EXPECT: compiler errors about type mismatch
 
 print("-- invalid: assign string to int32 --");  //~ ERROR FS-PARSE-0012 @1
-int32 a = "hello"; // error  //~ ERROR FS-SEM-0002 @7
+a: int32 = "hello"; // error  //~ ERROR FS-SEM-0002 @1
 
 print("-- invalid: incompatible addition --");  //~ ERROR FS-PARSE-0012 @1
-string s = "hi";
-int32 i = 5;
-int32 bad = s + i; // error (string + int32 not supported)  //~ ERROR FS-SEM-0010 @15
+s: string = "hi";
+i: int32 = 5;
+bad: int32 = s + i; // error (string + int32 not supported)  //~ ERROR FS-SEM-0010 @16
 
 print("-- invalid: array element wrong type --");  //~ ERROR FS-PARSE-0012 @1
-int32[] nums = [1, 2, "three"]; // error mixed types
+nums: int32[] = [1, 2, "three"]; // error mixed types
 
 print("-- invalid: initializer null to non-nullable --");  //~ ERROR FS-PARSE-0012 @1
-int32 notNull = null; // error  //~ ERROR FS-SEM-0010 @7
+notNull: int32 = null; // error  //~ ERROR FS-SEM-0010 @1
 
 print("-- invalid: function call undefined --");  //~ ERROR FS-PARSE-0012 @1
 foo(1,2,3); // undefined function  //~ ERROR FS-PARSE-0012 @1
 
 print("-- invalid: array method wrong arg type --");  //~ ERROR FS-PARSE-0012 @1
-int32[] arr = [1,2];
+arr: int32[] = [1,2];
 arr.append("x"); // error wrong type  //~ ERROR FS-SEM-0010 @5
 arr.insert(0, "y"); // error wrong type  //~ ERROR FS-SEM-0010 @5
 arr.insert("z", 3); // error index must be int32  //~ ERROR FS-SEM-0010 @5
@@ -29,12 +29,12 @@ arr.pop(1,2); // too many args  //~ ERROR FS-SEM-0010 @5
 arr.pop("x"); // wrong type  //~ ERROR FS-SEM-0010 @5
 
 print("-- invalid: index non-array --");  //~ ERROR FS-PARSE-0012 @1
-int32 b = 5;
-int32 c = b[0]; // cannot index non-array  //~ ERROR FS-SEM-0010 @11
+b: int32 = 5;
+c: int32 = b[0]; // cannot index non-array  //~ ERROR FS-SEM-0010 @12
 
 print("-- invalid: index not int --");  //~ ERROR FS-PARSE-0012 @1
-int32[] z = [1];
-int32 d = z["zero"]; // index must be int32  //~ ERROR FS-SEM-0010 @13
+z: int32[] = [1];
+d: int32 = z["zero"]; // index must be int32  //~ ERROR FS-SEM-0010 @14
 
 print("-- invalid: condition not boolean --");  //~ ERROR FS-PARSE-0012 @1
 if (5) { // condition must be bool  //~ ERROR FS-SEM-0010 @5
@@ -42,9 +42,9 @@ if (5) { // condition must be bool  //~ ERROR FS-SEM-0010 @5
 }
 
 print("-- invalid: variable shadowing --");  //~ ERROR FS-PARSE-0012 @1
-int32 outer = 1;
+outer: int32 = 1;
 {
-    int32 outer = 2; // shadowing not allowed  //~ ERROR FS-SEM-0010 @11
+    outer: int32 = 2; // shadowing not allowed  //~ ERROR FS-SEM-0010 @5
 }
 
 print("-- invalid: use before declaration --");  //~ ERROR FS-PARSE-0012 @1
@@ -52,10 +52,10 @@ print(beforeDecl); // variable not defined  //~ ERROR FS-PARSE-0012 @1
 int beforeDecl = 10;  //~ ERROR FS-PARSE-0010 @1
 
 print("-- invalid: mixed array literal nested --");  //~ ERROR FS-PARSE-0012 @1
-int32[] nested = [[1],[2]]; // array of arrays not allowed currently  //~ ERROR FS-SEM-0010 @18
+nested: int32[] = [[1],[2]]; // array of arrays not allowed currently  //~ ERROR FS-SEM-0010 @19
 
 print("-- invalid: assignment type mismatch --");  //~ ERROR FS-PARSE-0012 @1
-int32 m = 1;
+m: int32 = 1;
 m = "oops"; // mismatch  //~ ERROR FS-SEM-0002 @1
 
 print("-- invalid tests end --");  //~ ERROR FS-PARSE-0012 @1

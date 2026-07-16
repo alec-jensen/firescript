@@ -2,9 +2,9 @@
 // EXPECT: parser error
 
 enum Shape {
-    Circle(float64 radius),
+    Circle(radius: float64),
     Point
 }
 
-Shape a = Shape.Circle(3.0, 4.0);  //~ ERROR FS-PARSE-0012 @17
-Shape b = Shape.Point(1);  //~ ERROR FS-PARSE-0012 @17
+a: Shape = Shape.Circle(3.0, 4.0);  //~ ERROR FS-PARSE-0012 @18
+b: Shape = Shape.Point(1);  //~ ERROR FS-PARSE-0012 @18

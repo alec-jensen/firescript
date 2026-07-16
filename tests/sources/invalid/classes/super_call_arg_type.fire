@@ -2,17 +2,17 @@
 // the base class's constructor.
 
 class Base {
-    int32 x;
+    x: int32;
 
-    Base(int32 x) {
+    fn Base(x: int32) {
         this.x = x;
     }
 }
 
 class Derived from Base {
-    int32 y;
+    y: int32;
 
-    Derived(int32 y) {
+    fn Derived(y: int32) {
         this.super("bad");  //~ ERROR FS-SEM-0010 @20
         this.y = y;
     }

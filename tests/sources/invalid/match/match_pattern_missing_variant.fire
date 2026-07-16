@@ -2,11 +2,11 @@
 // after the '.'.
 
 enum Shape {
-    Circle(float64 radius),
+    Circle(radius: float64),
     Point
 }
 
-void match_pattern_missing_variant(Shape s) {
+fn match_pattern_missing_variant(s: Shape) -> void {
     match s {
         Shape. -> 1  //~ ERROR FS-PARSE-0010 @16
         _ -> 0

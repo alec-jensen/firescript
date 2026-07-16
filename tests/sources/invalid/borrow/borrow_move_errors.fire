@@ -2,19 +2,19 @@
 
 import @firescript/std.io.println;
 
-void takeOwned(string s) {
+fn takeOwned(s: string) -> void {
     println(s);
 }
 
-string illegalAssign(&string s) {
-    string copy = s; // Error: cannot move borrowed value into owned binding  //~ ERROR FS-SEM-0001 @19
+fn illegalAssign(s: &string) -> string {
+    copy: string = s; // Error: cannot move borrowed value into owned binding  //~ ERROR FS-SEM-0001 @20
     return copy;
 }
 
-void illegalPass(&string s) {
+fn illegalPass(s: &string) -> void {
     takeOwned(s); // Error: cannot move borrowed value into owned parameter  //~ ERROR FS-SEM-0001 @15
 }
 
-string source = "borrowed";
+source: string = "borrowed";
 println(illegalAssign(source));
 illegalPass(source);

@@ -1,16 +1,16 @@
 // Semantic error: accessing a field that does not exist on the class.
 
 class Point {
-    int32 x;
-    int32 y;
+    x: int32;
+    y: int32;
 
-    Point(int32 x, int32 y) {
+    fn Point(x: int32, y: int32) {
         this.x = x;
         this.y = y;
     }
 }
 
-void field_access_unknown_field() {
-    Point p = new Point(1, 2);
-    int32 z = p.z;  //~ ERROR FS-SEM-0010 @17
+fn field_access_unknown_field() -> void {
+    p: Point = new Point(1, 2);
+    z: int32 = p.z;  //~ ERROR FS-SEM-0010 @18
 }

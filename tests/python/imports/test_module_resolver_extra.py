@@ -83,7 +83,7 @@ def test_parse_file_with_syntax_error_raises_runtime_error():
         resolver = ModuleResolver(import_root=root)
         bad_path = os.path.join(root, "bad.fire")
         # Unterminated block / clearly malformed source -> at least one parser error.
-        _write(bad_path, "int32 x = ;")
+        _write(bad_path, "x: int32 = ;")
         try:
             resolver.parse_file(bad_path)
             t.require(False, "expected RuntimeError from parser errors")
@@ -187,7 +187,7 @@ def test_stdlib_sibling_relative_import_resolves_within_package():
         resolver = ModuleResolver(import_root=root)
         resolver.firescript_root = root
         std_dir = os.path.join(root, "std", "pkg")
-        _write(os.path.join(std_dir, "leaf.fire"), "export int32 leaf_value() { return 1; }\n")
+        _write(os.path.join(std_dir, "leaf.fire"), "export fn leaf_value() -> int32 { return 1; }\n")
         _write(os.path.join(std_dir, "user.fire"), "import leaf.leaf_value;\n")
         entry_path = os.path.join(root, "entry.fire")
         # Trailing ".leaf_value" is parsed as a symbol import, so the

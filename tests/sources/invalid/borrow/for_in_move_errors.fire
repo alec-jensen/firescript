@@ -2,14 +2,14 @@
 
 import @firescript/std.io.println;
 
-void consume(string s) {
+fn consume(s: string) -> void {
     println(s);
 }
 
-string msg = "loop-move";
-int32[] nums = [1, 2, 3];
+msg: string = "loop-move";
+nums: int32[] = [1, 2, 3];
 
-for (int32 n in nums) {
+for (n: int32 in nums) {
     consume(msg); // msg may move during loop iterations
     println(n);
 }

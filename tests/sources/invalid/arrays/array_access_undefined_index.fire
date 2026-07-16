@@ -1,7 +1,7 @@
 // Semantic error: array index expression references an undefined
 // identifier, so its type cannot be determined.
 
-void array_access_undefined_index() {
-    int32[] arr = [1, 2, 3];
-    int32 v = arr[undefinedIndex];  //~ ERROR FS-PARSE-0003 @19
+fn array_access_undefined_index() -> void {
+    arr: int32[] = [1, 2, 3];
+    v: int32 = arr[undefinedIndex];  //~ ERROR FS-PARSE-0003 @20
 }

@@ -22,7 +22,7 @@ if _THIS_DIR not in sys.path:
 from harness import pyunit as t
 from parser.statements import StatementsMixin
 
-from _helpers import make_parser, blank_token
+from _helpers import make_parser
 
 
 def test_parse_if_statement_returns_none_when_not_at_if_token():
@@ -100,7 +100,7 @@ def test_while_statement_body_none_is_defensive():
 
 def test_for_in_statement_body_none_is_defensive():
     # Same reasoning, for statements.py:419-421 (for-in body).
-    p = make_parser("for (int32 i in arr) {}")
+    p = make_parser("for (i: int32 in arr) {}")
     p.parse_scope = lambda: None  # type: ignore[method-assign]
     result = p.parse_for_statement()
     t.require(result is None)
@@ -108,80 +108,17 @@ def test_for_in_statement_body_none_is_defensive():
 
 def test_for_c_style_statement_body_none_is_defensive():
     # Same reasoning, for statements.py:500 (C-style for body).
-    p = make_parser("for (int32 i = 0; i < 10; i++) {}")
+    p = make_parser("for (i: int32 = 0; i < 10; i++) {}")
     p.parse_scope = lambda: None  # type: ignore[method-assign]
     result = p.parse_for_statement()
     t.require(result is None)
 
-
-class _ToggleContainer:
-    """A `TYPE_TOKEN_NAMES`-like container whose membership test is True on
-    the first call and False afterwards, used to force the guaranteed-true
-    recheck at statements.py:388 to observe a (real-code-impossible) False
-    on its second read of the same, unmoved current_token."""
-
-    def __init__(self, real):
-        self._real = real
-        self._n = 0
-
-    def __contains__(self, item):
-        self._n += 1
-        if self._n == 1:
-            return item in self._real
-        return False
-
-
-def test_for_in_type_recheck_is_defensive():
-    # The `is_for_in` lookahead at statements.py:377-383 already confirms
-    # current_token.type is in TYPE_TOKEN_NAMES before is_for_in is set
-    # True, and nothing advances the cursor before the recheck at
-    # statements.py:388-390, so that recheck can never actually fail in real
-    # source. Toggle TYPE_TOKEN_NAMES's membership test to observe False on
-    # its second (redundant) read.
-    p = make_parser("for (int32 i in arr) {}")
-    p.TYPE_TOKEN_NAMES = _ToggleContainer(type(p).TYPE_TOKEN_NAMES)  # type: ignore[attr-defined]
-    result = p.parse_for_statement()
-    t.require(result is None)
-
-
-def test_for_in_loop_var_name_recheck_is_defensive():
-    # statements.py:395-397: after the type-token check passes, the parser
-    # advances past it; the loop-var-name recheck can only fail if the real
-    # next token isn't actually an IDENTIFIER, which the `is_for_in`
-    # lookahead already ruled out via peek(1). Lie about peek(1)/peek(2) to
-    # get is_for_in set True despite the real second token not being an
-    # identifier, so the post-advance recheck sees the real (non-identifier)
-    # token and fails.
-    p = make_parser("for (int32 + in arr) {}")
-    real_peek = p.peek
-
-    def fake_peek(offset: int = 1):
-        if offset == 1:
-            return blank_token("IDENTIFIER", "fake")
-        if offset == 2:
-            return blank_token("IN", "in")
-        return real_peek(offset)
-
-    p.peek = fake_peek  # type: ignore[method-assign]
-    result = p.parse_for_statement()
-    t.require(result is None)
-
-
-def test_for_in_missing_in_keyword_recheck_is_defensive():
-    # statements.py:402-404: mirror of the above, but for the 'in' keyword
-    # recheck -- lie only about peek(2) so is_for_in is set True even though
-    # the real third token isn't IN.
-    p = make_parser("for (int32 arr2 + collection) {}")
-    real_peek = p.peek
-
-    def fake_peek(offset: int = 1):
-        if offset == 2:
-            return blank_token("IN", "in")
-        return real_peek(offset)
-
-    p.peek = fake_peek  # type: ignore[method-assign]
-    result = p.parse_for_statement()
-    t.require(result is None)
+# Note: the old TYPE_TOKEN_NAMES-membership and peek(1)/peek(2) lookahead
+# "recheck is defensive" guards that used to live here (for-in vs. C-style
+# for disambiguation) no longer apply -- parse_for_statement() now parses the
+# shared `name ':' TypeExpr` prefix once and branches on whatever follows
+# ('in' or not), rather than doing a type-token/peek-based lookahead before
+# committing and then redundantly reconfirming it after advancing.
 
 
 def test_parse_variable_assignment_identifier_none_is_defensive():
@@ -261,15 +198,3 @@ def test_parse_statement_directive_without_declarations_mixin():
     result = p._parse_statement()
     t.require(result is None)
     t.require(len(p.errors) == 1)
-
-
-def test_parse_statement_generator_without_declarations_mixin():
-    # Mirror of the above for GENERATOR handling (statements.py:553-557).
-    class MiniParser(StatementsMixin):
-        pass
-
-    src = "generator<int32> gen() { yield 1; }"
-    ref = make_parser(src)
-    p = MiniParser(ref.tokens, src, "<test>")
-    result = p._parse_statement()
-    t.require(result is None)

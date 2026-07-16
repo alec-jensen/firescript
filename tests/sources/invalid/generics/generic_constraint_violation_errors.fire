@@ -2,8 +2,8 @@
 
 import @firescript/std.io.println;
 
-T pick<T: int32 | int64>(T x, T y) {
+fn pick<T: int32 | int64>(x: T, y: T) -> T {
     return x;
 }
 
-string result = pick<string>("a", "b");  //~ ERROR FS-SEM-0010 @17
+result: string = pick<string>("a", "b");  //~ ERROR FS-SEM-0010 @18

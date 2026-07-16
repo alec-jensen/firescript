@@ -2,15 +2,15 @@
 // EXPECT: parser errors
 
 print("-- invalid syntax: missing semicolons --")  //~ ERROR FS-PARSE-0012 @1
-int32 a = 5 // missing semicolon  //~ ERROR FS-PARSE-0010 @12
-int32 b = 6; int32 c = 7 // missing semicolon after chained declaration style (unsupported)  //~ ERROR FS-PARSE-0010 @25
+a: int32 = 5 // missing semicolon  //~ ERROR FS-PARSE-0010 @13
+b: int32 = 6; c: int32 = 7 // missing semicolon after chained declaration style (unsupported)  //~ ERROR FS-PARSE-0010 @27
 
 print("-- invalid syntax: unclosed paren --");
-int32 x = (1 + 2; // unclosed paren  //~ ERROR FS-PARSE-0010 @17
+x: int32 = (1 + 2; // unclosed paren  //~ ERROR FS-PARSE-0010 @18
 
 print("-- invalid syntax: unclosed array literal --");  //~ ERROR FS-PARSE-0012 @1
-int32[] arr = [1,2,3; // missing closing bracket  //~ ERROR FS-PARSE-0010 @21
-//~^ ERROR FS-PARSE-0010 @21
+arr: int32[] = [1,2,3; // missing closing bracket  //~ ERROR FS-PARSE-0010 @22
+//~^ ERROR FS-PARSE-0010 @22
 
 print("-- invalid syntax: stray tokens --");  //~ ERROR FS-PARSE-0012 @1
 @ # $ // unexpected symbols (if lexer produces tokens)  //~ ERROR FS-PARSE-0012 @3
@@ -28,6 +28,6 @@ else { print(1); }  //~ ERROR FS-PARSE-0012 @1
 //~^ ERROR FS-PARSE-0012 @8
 
 print("-- invalid syntax: array type missing closing --");  //~ ERROR FS-PARSE-0012 @1
-int32[ x = 4;  //~ ERROR FS-PARSE-0010 @8
+x: int32[ = 4;  //~ ERROR FS-PARSE-0010 @11
 
 print("-- invalid syntax tests end --");  //~ ERROR FS-PARSE-0012 @1

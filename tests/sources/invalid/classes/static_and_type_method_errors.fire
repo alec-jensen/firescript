@@ -2,39 +2,39 @@
 // an instance, calling an unknown type-level method, and an argument-count
 // mismatch on a real static method.
 class Foo {
-    int32 v;
+    v: int32;
 
-    Foo(int32 v) {
+    fn Foo(v: int32) {
         this.v = v;
     }
 
-    static int32 make() {
+    static fn make() -> int32 {
         return 1;
     }
 
-    static int32 makeWith(int32 x) {
+    static fn makeWith(x: int32) -> int32 {
         return x;
     }
 }
 
-int32 callStaticOnInstance() {
-    Foo f = Foo(1);
-    int32 x = f.make();  //~ ERROR FS-SEM-0010 @17
+fn callStaticOnInstance() -> int32 {
+    f: Foo = Foo(1);
+    x: int32 = f.make();  //~ ERROR FS-SEM-0010 @18
     return x;
 }
 
-int32 unknownTypeMethod() {
-    int32 y = Foo.nope();  //~ ERROR FS-SEM-0010 @19
+fn unknownTypeMethod() -> int32 {
+    y: int32 = Foo.nope();  //~ ERROR FS-SEM-0010 @20
     return y;
 }
 
-int32 typeMethodArgCountMismatch() {
-    int32 y = Foo.makeWith();  //~ ERROR FS-SEM-0010 @19
+fn typeMethodArgCountMismatch() -> int32 {
+    y: int32 = Foo.makeWith();  //~ ERROR FS-SEM-0010 @20
     return y;
 }
 
-int32 main() {
-    bool wrongTypeArg = true;
-    int32 y = Foo.makeWith(wrongTypeArg);  //~ ERROR FS-SEM-0010 @28
+fn main() -> int32 {
+    wrongTypeArg: bool = true;
+    y: int32 = Foo.makeWith(wrongTypeArg);  //~ ERROR FS-SEM-0010 @29
     return 0;
 }

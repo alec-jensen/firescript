@@ -1,24 +1,24 @@
 // Generic function type-argument inference failures: a type parameter that
 // doesn't appear in any parameter position can't be inferred from the call
 // site, and a constraint violation once a type is otherwise inferred.
-T make<T>() {
-    int32 x = 5;
+fn make<T>() -> T {
+    x: int32 = 5;
     return x;
 }
 
 constraint Numeric = int32 | float32;
 
-T addNumeric<T: Numeric>(T a, T b) {
+fn addNumeric<T: Numeric>(a: T, b: T) -> T {
     return a + b;
 }
 
-int32 cannotInfer() {
-    int32 y = make();  //~ ERROR FS-SEM-0010 @15
-//~^ ERROR FS-SEM-0002 @11
+fn cannotInfer() -> int32 {
+    y: int32 = make();  //~ ERROR FS-SEM-0010 @16
+//~^ ERROR FS-SEM-0002 @5
     return y;
 }
 
-int32 main() {
-    bool x = addNumeric(true, true);  //~ ERROR FS-SEM-0010 @14
+fn main() -> int32 {
+    x: bool = addNumeric(true, true);  //~ ERROR FS-SEM-0010 @15
     return 0;
 }

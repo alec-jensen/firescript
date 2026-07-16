@@ -1,69 +1,57 @@
 // Array error tests - comprehensive
 
 // Array size must be constant
-fn void non_constant_size() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32 size = 5;
-    int32[size] arr;  // Size must be a constant  //~ ERROR FS-PARSE-0010 @11
-//~^ ERROR FS-PARSE-0010 @17
+fn non_constant_size() -> void {
+    size: int32 = 5;
+    arr: int32[size];  // Size must be a constant  //~ ERROR FS-PARSE-0010 @16
+//~^ ERROR FS-PARSE-0010 @16
 }
 
 // Array index out of bounds (static checking)
-fn void static_bounds() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32[5] arr = [1, 2, 3, 4, 5];
-    int32 val = arr[10];  // Out of bounds
+fn static_bounds() -> void {
+    arr: int32[5] = [1, 2, 3, 4, 5];
+    val: int32 = arr[10];  // Out of bounds
 }
 
 // Wrong initializer size
-fn void wrong_init_size() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32[5] arr = [1, 2, 3];  // Too few initializers  //~ ERROR FS-SEM-0010 @14
-    int32[3] arr2 = [1, 2, 3, 4, 5];  // Too many initializers
+fn wrong_init_size() -> void {
+    arr: int32[5] = [1, 2, 3];  // Too few initializers
+    arr2: int32[3] = [1, 2, 3, 4, 5];  // Too many initializers
 }
 
 // Array initializer type mismatch
-fn void init_type_mismatch() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32[3] arr = [1, "two", 3];  // Mixed types  //~ ERROR FS-SEM-0010 @14
-    int32[3] arr2 = ["one", "two", "three"];  // All wrong type  //~ ERROR FS-SEM-0010 @14
-//~^ ERROR FS-SEM-0002 @14
+fn init_type_mismatch() -> void {
+    arr: int32[3] = [1, "two", 3];  // Mixed types
+    arr2: int32[3] = ["one", "two", "three"];  // All wrong type  //~ ERROR FS-SEM-0002 @5
 }
 
 // Can't assign array to non-array
-fn void assign_to_non_array() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32 x = [1, 2, 3];  // Can't assign array literal to scalar  //~ ERROR FS-SEM-0002 @11
+fn assign_to_non_array() -> void {
+    x: int32 = [1, 2, 3];  // Can't assign array literal to scalar  //~ ERROR FS-SEM-0002 @5
 }
 
 // Can't assign arrays of different sizes
-fn void different_sizes() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32[3] arr1 = [1, 2, 3];
-    int32[5] arr2 = [1, 2, 3, 4, 5];  //~ ERROR FS-SEM-0010 @14
+fn different_sizes() -> void {
+    arr1: int32[3] = [1, 2, 3];
+    arr2: int32[5] = [1, 2, 3, 4, 5];
     arr1 = arr2;  // Size mismatch
 }
 
 // Can't assign arrays of different types
-fn void different_types() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32[3] arr1 = [1, 2, 3];  //~ ERROR FS-SEM-0010 @14
-    string[3] arr2 = ["a", "b", "c"];  //~ ERROR FS-SEM-0010 @15
+fn different_types() -> void {
+    arr1: int32[3] = [1, 2, 3];
+    arr2: string[3] = ["a", "b", "c"];
     arr1 = arr2;  // Type mismatch  //~ ERROR FS-SEM-0002 @5
 }
 
 // Index must be integer
-fn void index_type() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32[5] arr = [1, 2, 3, 4, 5];  //~ ERROR FS-SEM-0010 @14
-    int32 val = arr["two"];  // Index must be int  //~ ERROR FS-SEM-0010 @11
-//~^ ERROR FS-SEM-0010 @21
+fn index_type() -> void {
+    arr: int32[5] = [1, 2, 3, 4, 5];
+    val: int32 = arr["two"];  // Index must be int  //~ ERROR FS-SEM-0010 @22
 }
 
 // Can't index non-array
-fn void index_non_array() {  //~ ERROR FS-PARSE-0010 @1
-//~^ ERROR FS-PARSE-0012 @9
-    int32 x = 5;  //~ ERROR FS-SEM-0010 @11
-    int32 val = x[0];  // x is not an array  //~ ERROR FS-SEM-0010 @11
-//~^ ERROR FS-SEM-0010 @17
+fn index_non_array() -> void {
+    x: int32 = 5;
+    val: int32 = x[0];  // x is not an array  //~ ERROR FS-SEM-0010 @18
 }

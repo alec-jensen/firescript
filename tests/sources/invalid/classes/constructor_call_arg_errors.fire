@@ -2,30 +2,30 @@
 // the bare `ClassName(...)` call form and the `new ClassName(...)` form,
 // plus `new` on a class with no user-defined constructor.
 class Foo {
-    int32 v;
+    v: int32;
 
-    Foo(int32 v) {
+    fn Foo(v: int32) {
         this.v = v;
     }
 }
 
 class Plain {
-    int32 v;
+    v: int32;
 }
 
-int32 bareCallWrongCount() {
-    Foo f = Foo(1, 2);  //~ ERROR FS-SEM-0010 @13
+fn bareCallWrongCount() -> int32 {
+    f: Foo = Foo(1, 2);  //~ ERROR FS-SEM-0010 @14
     return 0;
 }
 
-int32 bareCallWrongType() {
-    Foo f = Foo(true);  //~ ERROR FS-SEM-0010 @17
+fn bareCallWrongType() -> int32 {
+    f: Foo = Foo(true);  //~ ERROR FS-SEM-0010 @18
     return 0;
 }
 
-int32 main() {
-    Foo f2 = new Foo(1, 2);  //~ ERROR FS-SEM-0010 @18
-    Foo f3 = new Foo(true);  //~ ERROR FS-SEM-0010 @22
-    Plain p = new Plain(1);  //~ ERROR FS-SEM-0010 @19
+fn main() -> int32 {
+    f2: Foo = new Foo(1, 2);  //~ ERROR FS-SEM-0010 @19
+    f3: Foo = new Foo(true);  //~ ERROR FS-SEM-0010 @23
+    p: Plain = new Plain(1);  //~ ERROR FS-SEM-0010 @20
     return 0;
 }

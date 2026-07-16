@@ -4,10 +4,9 @@
 // fire while parsing the same declaration.
 
 class Foo {
-    int32 x;
+    x: int32;
 
-    static Foo(&this) {  //~ ERROR FS-PARSE-0012 @12
-//~^ ERROR FS-PARSE-0012 @17
-        this.x = 0;  //~ ERROR FS-PARSE-0003 @9
+    fn Foo(&this) {
+        this.x = 0;  //~ ERROR FS-SEM-0001 @16
     }
 }

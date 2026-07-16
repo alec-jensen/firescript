@@ -2,7 +2,7 @@
 // parameter in the same method's own scope.
 
 class Adder {
-    int32 sum(int32 x, int32 x) {  //~ ERROR FS-SEM-0010 @30
+    fn sum(x: int32, x: int32) -> int32 {  //~ ERROR FS-SEM-0010 @22
         return x;
     }
 }

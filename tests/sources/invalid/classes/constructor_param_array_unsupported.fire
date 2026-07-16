@@ -2,9 +2,10 @@
 // supported for class methods/constructors.
 
 class Foo {
-    int32 x;
+    x: int32;
 
-    Foo(int32[] xs) {  //~ ERROR FS-PARSE-0012 @14
-        this.x = xs[0];  //~ ERROR FS-PARSE-0003 @18
+    fn Foo(xs: int32[]) {  //~ ERROR FS-PARSE-0012 @16
+        this.x = xs[0];  //~ ERROR FS-PARSE-0003 @9
+//~^ ERROR FS-PARSE-0003 @18
     }
 }

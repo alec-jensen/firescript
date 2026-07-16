@@ -1,42 +1,42 @@
 // Cast, generic-inference, builtin-arity, and constructor type errors.
 
 class Widget {
-    int32 v;
+    v: int32;
 
-    Widget() {
+    fn Widget() {
         this.v = 1;
     }
 }
 
 // Array literals cannot directly contain arrays
-int32[] nested = [[1], [2]];  //~ ERROR FS-SEM-0010 @18
+nested: int32[] = [[1], [2]];  //~ ERROR FS-SEM-0010 @19
 
 // Cannot cast an array to a non-string type
-int32[] arr = [1, 2];
-float64 a = arr as float64;  //~ ERROR FS-SEM-0010 @20
+arr: int32[] = [1, 2];
+a: float64 = arr as float64;  //~ ERROR FS-SEM-0010 @21
 
 // Cannot cast to a non-numeric user type
-int32 b = 5 as Widget;  //~ ERROR FS-SEM-0010 @16
+b: int32 = 5 as Widget;  //~ ERROR FS-SEM-0010 @17
 
 // Cannot cast a non-numeric source type
-Widget w = Widget();  //~ ERROR FS-SEM-0010 @12
-int32 c = w as int32;  //~ ERROR FS-SEM-0010 @16
+w: Widget = Widget();  //~ ERROR FS-SEM-0010 @13
+c: int32 = w as int32;  //~ ERROR FS-SEM-0010 @17
 
 // Wrong number of explicit generic type arguments
-T first<T, U>(T x, U y) {
+fn first<T, U>(x: T, y: U) -> T {
     return x;
 }
-int32 d = first<int32>(1, 2);  //~ ERROR FS-SEM-0010 @11
+d: int32 = first<int32>(1, 2);  //~ ERROR FS-SEM-0010 @12
 
 // Conflicting generic inference
-T pick<T>(T x, T y) {
+fn pick<T>(x: T, y: T) -> T {
     return x;
 }
-int32 e = pick(1, "two");  //~ ERROR FS-SEM-0010 @11
-//~^ ERROR FS-SEM-0002 @7
+e: int32 = pick(1, "two");  //~ ERROR FS-SEM-0010 @12
+//~^ ERROR FS-SEM-0002 @1
 
 // Builtin arity error
 print(1, 2);  //~ ERROR FS-PARSE-0012 @1
 
 // Constructor argument count mismatch
-Widget w2 = Widget(1, 2);  //~ ERROR FS-SEM-0010 @13
+w2: Widget = Widget(1, 2);  //~ ERROR FS-SEM-0010 @14
