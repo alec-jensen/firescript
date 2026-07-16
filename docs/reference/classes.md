@@ -36,7 +36,7 @@ class HandleBundle {
     log: File;
     conn: Socket;
 
-    fn HandleBundle(&mut this, log: &File, conn: &Socket) {
+    fn HandleBundle(&mut this, &log: File, &conn: Socket) {
         this.log = log;     // constructed first
         this.conn = conn;   // constructed second
     }
@@ -410,7 +410,7 @@ class Square implements Drawable, Movable {
 abstract class Animal {
     species: string;
 
-    fn Animal(&this, species: &string) {
+    fn Animal(&this, &species: string) {
         this.species = species;
     }
 

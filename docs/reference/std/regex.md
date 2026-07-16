@@ -52,9 +52,9 @@ println(p.find_at("firescript", 4));
 
 Methods:
 
-- `fn is_match(&this, text: &string) -> bool` — match against the text
-- `fn matches(&this, text: &string) -> bool` — alias of `is_match`
-- `fn find_at(&this, text: &string, start_pos: int32) -> int32` — position-aware matching
+- `fn is_match(&this, &text: string) -> bool` — match against the text
+- `fn matches(&this, &text: string) -> bool` — alias of `is_match`
+- `fn find_at(&this, &text: string, start_pos: int32) -> int32` — position-aware matching
 - `fn last_error(&this) -> string` — pattern validation error, or empty string
 
 ## Supported Syntax

@@ -1,10 +1,11 @@
-// Parser error: '&' receiver marker in a constructor's parameter list not
-// followed by the identifier 'this'.
+// '&' not immediately followed by 'this' is parsed as a plain borrowed
+// parameter (not a receiver), so 'notThis' is consumed as the parameter
+// name and parsing then fails at the missing ':'.
 
 class Foo {
     x: int32;
 
-    fn Foo(&notThis) {  //~ ERROR FS-PARSE-0010 @13
+    fn Foo(&notThis) {  //~ ERROR FS-PARSE-0010 @20
         this.x = 0;  //~ ERROR FS-PARSE-0003 @9
     }
 }

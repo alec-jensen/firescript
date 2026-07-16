@@ -161,7 +161,7 @@ The table below reflects the **current implementation status** of major language
 | `@firescript/std.fcl` (FCL lexer) | [IMPLEMENTED] |
 | LSP server (`firescript/lsp_server.py`) | [IMPLEMENTED] |
 | VS Code extension (syntax highlighting, LSP diagnostics) | [IMPLEMENTED] |
-| Generator functions (`generator<T>`, `yield`) | [IMPLEMENTED] |
+| Generator functions (`fn` returning `generator<T>`, `yield`) | [IMPLEMENTED] |
 | `for-in` over generators | [IMPLEMENTED] |
 | `@firescript/std.ranges` (`range`, `rangeFrom`, `rangeStep`) | [IMPLEMENTED] |
 | FIR + FLIR pipeline (AST → FIR → FLIR → native code) | [IMPLEMENTED] |

@@ -135,11 +135,11 @@ Plain `assert` also works. Covers:
   `parse_variable_assignment`/`parse_function_call` precondition rechecks,
   for-in's redundant type/identifier/`in`-keyword rechecks, `_get_node_type`'s
   dead node-kind fallbacks, and `_infer_generic_type_args`/unary/binary/cast
-  defensive branches; plus real-syntax coverage for nested `directive`/
-  `generator<T>` definitions inside a function body (which `ast_to_fir.py`
-  cannot lower -- a newly-found, not-fixed crash, see the test module
-  docstrings) and a generic function reusing the same type parameter for
-  multiple arguments.
+  defensive branches; plus real-syntax coverage for a nested `directive`/a
+  function returning `generator<T>` defined inside a function body (which
+  `ast_to_fir.py` cannot lower -- a newly-found, not-fixed crash, see the
+  test module docstrings) and a generic function reusing the same type
+  parameter for multiple arguments.
 - `tests/python/cli/` -- `firescript/main.py` invocation behavior never
   exercised by the golden/error/snapshot kinds (`-v`, `--check`, `--emit
   ast`/`asm`/`--emit-fir`, `--emit-deps`, `-o` renaming, `--dir` batch
@@ -403,7 +403,7 @@ Each heading below is a directory under `tests/sources/`.
 - **for_in_braceless_body.fire** - `for-in` loop with a braceless (single-statement) body
 
 ### `generators/`
-- **generators_basic.fire** - Generator functions with `generator<T>` syntax, `yield`, stdlib `range`/`rangeFrom`/`rangeStep`, user-defined generators, for-in over generators
+- **generators_basic.fire** - Generator functions (`fn` returning `generator<T>`), `yield`, stdlib `range`/`rangeFrom`/`rangeStep`, user-defined generators, for-in over generators
 - **generators_break_continue.fire** - `break`/`continue` inside a for-in loop over a generator, and nested for-in-over-generator loops
 - **generators_multi_yield_sites.fire** - A generator with two distinct (syntactic) `yield` statements, forcing the multi-way resume-state dispatch chain in `lower_generator` (`generators_basic.fire`'s single-yield-site `countdown()` only ever needs a single resume block).
 - **generators_frame_zero_init_types.fire** - A generator with `bool`/`float128`/copyable-class local variables, exercising `_zero_value`'s per-`FLIRType`-kind branches used to zero-initialize the generator's frame struct up front. Documents a newly-found bug: a *pointer*-kind generator local (`string`, a non-copyable class, or an array) currently crashes the compiler with an internal `FLIRV-T1` type-mismatch error, so this file intentionally avoids that combination.
@@ -411,7 +411,7 @@ Each heading below is a directory under `tests/sources/`.
 
 ### `enums/`
 - **enum_tag_only.fire** - Tag-only (no data payload) enum declarations, variant construction (`EnumName.Variant`), and reassignment (verifies the previously-held owned enum value is dropped without corrupting later allocations).
-- **enum_payload_construct.fire** - Enum variants with named data payloads (e.g. `Circle(float64 radius)`), positional construction with arguments, and reassignment across variants with different payload shapes sharing the same tagged-union storage.
+- **enum_payload_construct.fire** - Enum variants with named data payloads (e.g. `Circle(radius: float64)`), positional construction with arguments, and reassignment across variants with different payload shapes sharing the same tagged-union storage.
 - **enum_owned_payload_drop.fire** - Owned payload data (a `string` field, and a class field elsewhere) is dropped correctly when the active variant goes out of scope; the destructor is tag-dispatched so only the active variant's owned fields are ever freed (never a different variant's, since payload storage is shared/overlapping). Also covers a class with an owned-enum-typed field, and 5000 construct/match/drop cycles as a leak/double-free sanity check.
 - **enum_field_in_class_drop.fire** - Regression: an owned identifier (a class instance) passed as an enum variant's payload argument (`Slot.Holds(b)`) must be moved into the payload, not also auto-dropped at its own scope exit. Covers both a plain owned field (`Holder.note: Note`) and a nested owned-class-inside-enum-inside-class field (`Shelf.slot: Slot` where `Slot.Holds` carries a `Box`), verifying the payload's data survives to the point it's read via `match`.
 - **enum_owned_payload_no_destructor_needed.fire** - Companion to `enum_owned_payload_drop.fire`: an owned-class payload field whose class has *no* owned fields of its own (`class_needs_destructor` is False for it), so the enum's generated destructor must free it directly via `fs_rt_free` instead of calling a nested per-class destructor.
@@ -501,7 +501,6 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **scoping_variable_declaration_order.fire** - Declared-before-use, same names in separate sibling scopes
 - **scope_stray_token_recovery.fire** - Parser error-recovery around a stray/unexpected token in statement position, verifying the recovered scope's remaining valid statements still resolve correctly
 - **scope_tests.fire** - Basic scoping tests
-- **implicit_assignment_type_inference.fire** - Bare `name = expr;` implicit declaration whose type is inferred from a constructor call or an instance method call
 
 ### `expressions/`
 - **expressions_function_calls.fire** - Function call expressions, nested function calls
@@ -552,7 +551,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **inheritance.fire** - Class inheritance, `super()`, multi-level (double/triple/quad) inheritance chains
 - **return_class_test.fire** - Returning a class instance from a function
 - **classes_nested_copyable_field.fire** - A class holding a copyable (by-value) struct field: whole-struct assignment/read (not just scalar sub-field access), including a method returning the nested struct by value and field-to-field struct assignment (`l.start = l.end;`). Exercises the struct-sized Load/Store codegen paths.
-- **classes_method_nullable_param.fire** - A regular (non-constructor) instance method with a nullable parameter (`string name?`)
+- **classes_method_nullable_param.fire** - A regular (non-constructor) instance method with a nullable parameter (`name: string?`)
 - **classes_explicit_constructor_call.fire** - Explicit type-qualified constructor call `ClassName.ClassName(args)`, parsed as `TYPE_METHOD_CALL` where the resolved method is the constructor itself
 - **classes_constructor_owned_borrowed_param.fire** - Constructor with `owned`/borrowed markers on regular (non-receiver) parameters, following an explicit receiver
 - **classes_new_constructor_syntax.fire** - Java-like `new ClassName(args)` constructor syntax, an alternate to the direct `ClassName(args)` form
@@ -570,7 +569,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **generics_class_basic.fire** - Generic classes (`class Pair<T, U>`) with explicit type arguments at both declaration and construction sites
 - **generics_class_inferred_construct.fire** - Generic class construction with type arguments omitted at the call site (`Pair<int32, string> p = Pair(1, "x");`), inferred from the declared variable type
 - **constraint_intersection.fire** / **generic_intersection_constraint.fire** - Constraint/generic-function declarations using the intersection (`&`) operator to combine a primitive type with an interface/alias name (`T: int32 & Comparable`)
-- **generic_function_same_type_param_modulo.fire** - Generic function reusing the same type parameter for multiple arguments (`fn<T>(T a, T b)` both typed `T`), exercising type-parameter unification during call inference
+- **generic_function_same_type_param_modulo.fire** - Generic function reusing the same type parameter for multiple arguments (`fn<T>(a: T, b: T)` both typed `T`), exercising type-parameter unification during call inference
 
 ### `imports/`
 - **imports_single.fire** - Single symbol import
@@ -660,7 +659,7 @@ Tests in `tests/sources/invalid/<category>/` are expected to fail compilation an
 - **match/** - `match_non_exhaustive.fire` (missing variant arms and no `_` wildcard), `match_duplicate_variant.fire` (same variant matched twice), `match_wildcard_not_last.fire` (arms after a wildcard `_` are unreachable), `match_unknown_variant.fire` (pattern references a variant that doesn't exist on the enum), `match_unknown_payload_field.fire` (pattern binds a field name the variant doesn't declare), `match_duplicate_field_binding.fire` (the same payload field is bound twice in one pattern), `match_syntax_errors.fire` (malformed match expression syntax), `match_missing_scrutinee.fire`, `match_pattern_bad_binding.fire`, `match_pattern_missing_variant.fire`
 - **nullable/** - `nullable_errors.fire`
 - **operators/** - `operator_errors.fire`, `logical_and_increment_errors.fire`
-- **scoping/** - `scope_errors.fire` (variable shadowing not allowed, use before declaration, out-of-scope access), `parameter_shadowing_errors.fire` (function and class-constructor parameters that shadow an outer-scope variable)
+- **scoping/** - `scope_errors.fire` (variable shadowing not allowed, use before declaration, out-of-scope access), `parameter_shadowing_errors.fire` (function and class-constructor parameters that shadow an outer-scope variable), `bare_assignment_without_declaration_errors.fire` (bare `name = expr;` to a never-declared name is always rejected, even when the RHS is a constructor call or an instance method call whose type could plausibly be inferred)
 - **strings/** - `string_implicit_conv_error.fire`, `string_length_arg_count.fire`, `string_unknown_method.fire`, `string_method_errors.fire`
 - **syntax/** - `syntax_errors.fire`, `syntax_comprehensive.fire` (missing semicolons, unclosed parens/braces, invalid tokens, malformed control flow), `export_errors.fire` (invalid uses of `export`), `expression_operand_errors.fire` (missing right-hand operands and malformed primary expressions), `declaration_dispatch_errors.fire`, `statement_dispatch_errors.fire`
 - **types/** - `type_mismatches.fire`, `type_errors_comprehensive.fire` (type mismatches in assignments, function calls, operators, conditions, indexing), `field_access_on_primitive.fire`, `semantic_equality_mismatch.fire`, `semantic_logical_non_bool.fire`, `semantic_modulo_mismatch.fire`, `semantic_operator_errors.fire`, `semantic_unary_incdec_undefined.fire`, `semantic_unary_minus_undefined.fire`, `semantic_unary_not_non_bool.fire`, `binary_operator_type_errors.fire`, `cast_array_to_non_string.fire`, `cast_undefined_operand.fire`, `unary_operator_type_errors.fire`

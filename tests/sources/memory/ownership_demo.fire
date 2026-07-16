@@ -21,7 +21,7 @@ class Point {
 // =============================================================================
 // 3. BORROWED PARAMETER (&T) - read-only access, doesn't take ownership
 // =============================================================================
-fn distanceSquared(p: &Point) -> int32 {
+fn distanceSquared(&p: Point) -> int32 {
     return p.x * p.x + p.y * p.y;
 }
 

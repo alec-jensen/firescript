@@ -9,7 +9,7 @@ class Sink {
         this.label = value;
     }
 
-    fn keep(value: &string) -> void {
+    fn keep(&value: string) -> void {
         println(value);
     }
 }

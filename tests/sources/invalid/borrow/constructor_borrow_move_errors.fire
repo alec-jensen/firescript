@@ -10,7 +10,7 @@ class Wrapper {
     }
 }
 
-fn badMoves(s: &string) -> void {
+fn badMoves(&s: string) -> void {
     a: Wrapper = Wrapper(s);      // Error: cannot move borrowed value into constructor param  //~ ERROR FS-SEM-0001 @26
     b: Wrapper = new Wrapper(s);  // Error: cannot move borrowed value into constructor param  //~ ERROR FS-SEM-0001 @30
     println(a.text);

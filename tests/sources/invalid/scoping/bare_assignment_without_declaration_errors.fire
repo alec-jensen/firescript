@@ -1,0 +1,25 @@
+// Bare assignment to a name that was never declared with `name: Type = ...`
+// is not a declaration and must always be rejected, even when the RHS is a
+// constructor call or an instance method call whose type could plausibly be
+// inferred.
+
+import @firescript/std.io.println;
+
+class Widget {
+    v: int32;
+
+    fn Widget(v: int32) {
+        this.v = v;
+    }
+
+    fn getV(&this) -> int32 {
+        return this.v;
+    }
+}
+
+w = Widget(7);  //~ ERROR FS-PARSE-0003 @1
+println(w.getV());  //~ ERROR FS-PARSE-0003 @9
+
+n = w.getV();  //~ ERROR FS-PARSE-0003 @5
+//~^ ERROR FS-PARSE-0003 @1
+println(n);  //~ ERROR FS-PARSE-0003 @9

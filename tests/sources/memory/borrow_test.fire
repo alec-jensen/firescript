@@ -9,7 +9,7 @@ class Point {
 }
 
 // Function with borrowed parameter - doesn't take ownership
-fn getX(p: &Point) -> int32 {
+fn getX(&p: Point) -> int32 {
     return p.x;
 }
 

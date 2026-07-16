@@ -106,28 +106,36 @@ class DeclarationsMixin(TypeSystemMixin):
         allow_array: bool = True,
         local_is_static: bool = False,
     ) -> Optional[list[ASTNode]]:
-        """Parse a comma-separated parameter list: name ':' TypeExpr, ...
+        """Parse a comma-separated parameter list: [owned | & ['mut']] name ':' TypeExpr, ...
 
         Assumes current_token is the first token after '(' (or ')'). Consumes up
         to but not including the closing ')'. If allow_receiver, the first
         parameter may instead be a receiver: '&this', '&mut this', or (if
-        allow_owned_receiver) 'owned this'.
+        allow_owned_receiver) 'owned this'. A leading 'owned' is treated as the
+        ownership modifier unless immediately followed by ':' (in which case
+        the parameter is literally named 'owned').
         """
         params: list[ASTNode] = []
         seen_receiver = False
         if self.current_token and self.current_token.type != "CLOSE_PAREN":
             while True:
-                if allow_receiver and not seen_receiver and self.current_token and self.current_token.type == "AMPERSAND":
-                    amp_tok = self.current_token
-                    self.advance()
+                if (
+                    allow_receiver and not seen_receiver
+                    and self.current_token and self.current_token.type == "AMPERSAND"
+                    and (
+                        (self.peek(1) and self.peek(1).type == "IDENTIFIER" and self.peek(1).value == "this")
+                        or (
+                            self.peek(1) and self.peek(1).type == "MUT"
+                            and self.peek(2) and self.peek(2).type == "IDENTIFIER" and self.peek(2).value == "this"
+                        )
+                    )
+                ):
+                    self.advance()  # consume '&'
                     is_mutable_borrow = False
                     if self.current_token and self.current_token.type == "MUT":
                         is_mutable_borrow = True
                         self.advance()
                     th_tok = self.consume("IDENTIFIER")
-                    if th_tok is None or th_tok.value != "this":
-                        self.expected_token_error("'this' after '&' (or '&mut') for receiver", th_tok or amp_tok)
-                        return None
                     if local_is_static:
                         self.invalid_expression_error("Static methods cannot declare receiver parameter 'this'", th_tok)
                         return None
@@ -156,6 +164,22 @@ class DeclarationsMixin(TypeSystemMixin):
                     params.append(recv)
                     seen_receiver = True
                 else:
+                    is_owned = False
+                    is_borrowed = False
+                    is_mutable_borrow = False
+                    if self.current_token and self.current_token.type == "AMPERSAND":
+                        is_borrowed = True
+                        self.advance()
+                        if self.current_token and self.current_token.type == "MUT":
+                            is_mutable_borrow = True
+                            self.advance()
+                    elif (
+                        self.current_token and self.current_token.type == "OWNED"
+                        and not (self.peek(1) and self.peek(1).type == "COLON")
+                    ):
+                        is_owned = True
+                        self.advance()
+
                     pname_tok = self.consume_name()
                     if pname_tok is None:
                         self.expected_token_error("parameter name", self.current_token)
@@ -183,9 +207,9 @@ class DeclarationsMixin(TypeSystemMixin):
                         parsed.is_array,
                         array_size=parsed.array_size,
                     )
-                    setattr(param_node, "is_borrowed", parsed.is_borrowed)
-                    setattr(param_node, "is_mutable_borrow", parsed.is_mutable_borrow)
-                    if parsed.is_owned:
+                    setattr(param_node, "is_borrowed", is_borrowed)
+                    setattr(param_node, "is_mutable_borrow", is_mutable_borrow)
+                    if is_owned:
                         setattr(param_node, "is_owned", True)
                     params.append(param_node)
                 if self.current_token and self.current_token.type == "COMMA":
@@ -968,12 +992,6 @@ class DeclarationsMixin(TypeSystemMixin):
                 if self.current_token and self.current_token.type == "SEMICOLON":
                     self.advance()
                 continue
-            if self._reject_ownership_modifiers(field_parsed, "a class field"):
-                while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
-                    self.advance()
-                if self.current_token and self.current_token.type == "SEMICOLON":
-                    self.advance()
-                continue
             if field_parsed.is_array:
                 self.invalid_expression_error("Array fields are not supported for classes", field_parsed.token)
                 while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
@@ -1104,9 +1122,9 @@ class DeclarationsMixin(TypeSystemMixin):
         return cls_node
 
     def _parse_enum_definition(self):
-        """Parse an enum definition: enum Name { Variant1, Variant2(Type name, ...), ... }
+        """Parse an enum definition: enum Name { Variant1, Variant2(name: Type, ...), ... }
 
-        Variant payload fields are named (`Type name`, same declaration order
+        Variant payload fields are named (`name: Type`, same declaration order
         as class fields / function parameters) so match patterns can bind by
         field name. Construction (`EnumName.Variant(args...)`) remains
         positional, in declaration order.
@@ -1166,8 +1184,6 @@ class DeclarationsMixin(TypeSystemMixin):
                             break
                         field_parsed = self._parse_type_expression()
                         if field_parsed is None:
-                            break
-                        if self._reject_ownership_modifiers(field_parsed, "an enum payload field"):
                             break
                         if field_parsed.is_array:
                             self.invalid_expression_error("Array payload fields are not supported for enum variants", field_parsed.token)

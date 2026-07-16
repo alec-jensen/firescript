@@ -102,8 +102,6 @@ class StatementsMixin(ExpressionsMixin):
         parsed_type = self._parse_type_expression()
         if parsed_type is None:
             return None
-        if self._reject_ownership_modifiers(parsed_type, "a variable declaration"):
-            return None
 
         return self._finish_variable_declaration(identifier, is_const, parsed_type)
 
@@ -291,9 +289,6 @@ class StatementsMixin(ExpressionsMixin):
 
         if is_for_in:
             # Parse for-in loop: for (item: TypeExpr in collection)
-            if self._reject_ownership_modifiers(parsed_type, "a for-in loop variable"):
-                return None
-
             self.consume("IN")
 
             collection = self.parse_expression()
@@ -361,8 +356,6 @@ class StatementsMixin(ExpressionsMixin):
             if loop_var is not None:
                 # Already consumed `name ':' TypeExpr` in the shared prefix above;
                 # finish it as a declaration (`i: int32 = 0`).
-                if self._reject_ownership_modifiers(parsed_type, "a variable declaration"):
-                    return None
                 init = self._finish_variable_declaration(loop_var, False, parsed_type)
                 if init is None:
                     return None

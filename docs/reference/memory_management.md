@@ -201,7 +201,7 @@ print(s2);
 ### Example: Borrowed Parameter (Owned only)
 
 ```firescript
-fn length(s: &string) -> int32 {
+fn length(&s: string) -> int32 {
     return s.length();
 }
 
@@ -236,7 +236,7 @@ addUser(u);   // move; u invalid afterward
 Or equivalently with explicit `owned`:
 
 ```firescript
-fn addUser(username: owned string) -> void;  // Explicit owned
+fn addUser(owned username: string) -> void;  // Explicit owned
 
 u: string = "alice";
 addUser(u);   // move; u invalid afterward
@@ -246,7 +246,7 @@ addUser(u);   // move; u invalid afterward
 
 ```firescript
 // Future syntax — borrow return types are not yet supported
-fn head(xs: &string[]) -> &string {
+fn head(&xs: string[]) -> &string {
     return xs[0];   // OK: element owned by caller's array
 }
 ```

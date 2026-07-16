@@ -52,7 +52,9 @@ class C1 {
     }
 }
 
-// Receiver must be 'this' after '&'
+// '&' not immediately followed by 'this' is parsed as a plain borrowed
+// parameter (not a receiver), so 'other' is consumed as the parameter name
+// and parsing then fails at the missing ':'.
 class R1 {
     v: int32;
 
@@ -60,13 +62,14 @@ class R1 {
         this.v = 1;
     }
 
-    fn get(&other) -> int32 {  //~ ERROR FS-PARSE-0010 @13
+    fn get(&other) -> int32 {  //~ ERROR FS-PARSE-0010 @18
         return 1;
     }
 }
 
-// 'owned' not followed by 'this' falls through to being parsed as a regular
-// parameter named 'owned', which then requires ':' -- 'other' isn't one.
+// 'owned' not followed by 'this' is parsed as the owned-parameter modifier
+// (not the literal parameter name), so 'other' is consumed as the parameter
+// name and parsing then fails at the missing ':'.
 class R2 {
     v: int32;
 
@@ -74,8 +77,7 @@ class R2 {
         this.v = 1;
     }
 
-    fn take(owned other) -> int32 {  //~ ERROR FS-PARSE-0010 @19
-//~^ ERROR FS-PARSE-0010 @19
+    fn take(owned other) -> int32 {  //~ ERROR FS-PARSE-0010 @24
         return 1;
     }
 }

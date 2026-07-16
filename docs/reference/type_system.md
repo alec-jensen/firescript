@@ -986,12 +986,12 @@ Interfaces can inherit from other interfaces, creating a hierarchy of capabiliti
 ```firescript
 // Base interface
 interface Equatable {
-    fn equals(&this, other: &this) -> bool;
+    fn equals(&this, &other: this) -> bool;
 }
 
 // Child interface inherits parent's requirements
 interface Comparable from Equatable {
-    fn compare(&this, other: &this) -> int32;  // Returns -1, 0, or 1
+    fn compare(&this, &other: this) -> int32;  // Returns -1, 0, or 1
 }
 
 // Types implementing Comparable must also implement Equatable
@@ -1231,14 +1231,14 @@ In the future, interfaces may support default method implementations:
 ```firescript
 // Planned syntax
 interface Comparable from Equatable {
-    fn compare(&this, other: &this) -> int32;
+    fn compare(&this, &other: this) -> int32;
 
     // Default implementations based on compare()
-    fn lessThan(&this, other: &this) -> bool {
+    fn lessThan(&this, &other: this) -> bool {
         return this.compare(other) < 0;
     }
 
-    fn greaterThan(&this, other: &this) -> bool {
+    fn greaterThan(&this, &other: this) -> bool {
         return this.compare(other) > 0;
     }
 }
@@ -1358,7 +1358,7 @@ class Point {
         this.y = y;
     }
 
-    fn dot(&this, other: &Point) -> float32 {
+    fn dot(&this, &other: Point) -> float32 {
         return this.x * other.x + this.y * other.y;
     }
 }

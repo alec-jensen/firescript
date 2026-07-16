@@ -12,7 +12,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - firescript now uses **postfix type declarations** everywhere, Rust/TypeScript-style, instead of the previous C-style prefix syntax. This is a whole-language syntax change:
   - Variables and constants: `int32 a = 5;` → `a: int32 = 5;`; `const float64 PI = 3.14;` → `const PI: float64 = 3.14;`.
   - Nullable markers move to the type: `int32 a? = null;` → `a: int32? = null;`.
-  - Ownership/borrow modifiers move to the type, right after the colon: `owned Type name` → `name: owned Type`; `&Type name` → `name: &Type`; `&mut Type name` → `name: &mut Type`.
+  - Ownership/borrow modifiers move to the *name*, matching how method receivers already write `&this`/`&mut this`/`owned this`: `owned Type name` → `owned name: Type`; `&Type name` → `&name: Type`; `&mut Type name` → `&mut name: Type`. This only affects parameters — modifiers were never valid on variables, fields, or return types.
   - Arrays stay attached to the type as a unit: `int32[N] name;` → `name: int32[N];`.
   - Class fields: `int32 age;` → `age: int32;`. Enum variant payloads: `Circle(float64 radius)` → `Circle(radius: float64)`.
   - `for`-loops: `for (int32 i = 0; ...)` → `for (i: int32 = 0; ...)`; `for (int32 x in xs)` → `for (x: int32 in xs)`.
@@ -21,6 +21,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
   - Casts (`expr as Type`), match-arm bindings (`field: local`), and generic constraints (`T: int32 | float64`) were already postfix and are unchanged.
 - `match` is now a reserved keyword. `@firescript/std.regex`'s `match(pattern, text)` function (added in 0.5.0) has been renamed to `find_match(pattern, text)` to avoid the collision; `is_match` is unaffected.
 - The `-t`/`--target` flag (`native`/`web`) has been removed. It is replaced by two separate flags, `--platform` (`windows`, `linux`, `macos`, `bare-metal`) and `--arch` (`x86_64`, `i686`, `aarch64`, `armv7`, `riscv64`, `riscv32`), which can be combined for cross-compilation; either or both may be omitted to default to the host platform/architecture. Only `--platform windows --arch x86_64` is currently implemented — any other combination fails with a clear "unsupported target" error rather than compiling.
+- Bare assignment to a name that was never declared (e.g. `w = Widget(7);` with no preceding `w: Widget = ...`) is no longer accepted as an implicit declaration. Every variable must now be explicitly declared with `name: Type = ...` before its first assignment or use; assigning to an undeclared name is a compile error (`FS-PARSE-0003`, undefined identifier).
 
 ### Bug Fixes
 - Parser diagnostics that occur at end-of-file (no current token to anchor to, e.g. an incomplete trailing declaration) now report a real line/column — the last real token's position — instead of always reporting line 0, column 0. This anchor position is now also stable regardless of trailing comments in the source, and no longer depends on a stray comment token the parser hadn't yet skipped.

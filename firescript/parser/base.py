@@ -34,9 +34,6 @@ class ParsedType:
         "is_array",
         "array_size",
         "is_nullable",
-        "is_owned",
-        "is_borrowed",
-        "is_mutable_borrow",
         "token",
     )
 
@@ -46,18 +43,12 @@ class ParsedType:
         is_array: bool = False,
         array_size: Optional[int] = None,
         is_nullable: bool = False,
-        is_owned: bool = False,
-        is_borrowed: bool = False,
-        is_mutable_borrow: bool = False,
         token: Optional[Token] = None,
     ):
         self.base = base
         self.is_array = is_array
         self.array_size = array_size
         self.is_nullable = is_nullable
-        self.is_owned = is_owned
-        self.is_borrowed = is_borrowed
-        self.is_mutable_borrow = is_mutable_borrow
         self.token = token
 
 
@@ -259,26 +250,16 @@ class ParserBase:
         return self._register_generic_class_instance(base_tok.value, type_args)
 
     def _parse_type_expression(self) -> Optional["ParsedType"]:
-        """Parse a postfix type expression: [owned | & ['mut']] BaseType [ArraySuffix] ['?']
+        """Parse a postfix type expression: BaseType [ArraySuffix] ['?']
 
         BaseType is a primitive type, a user type (incl. generic instantiations like
         Name<T1, T2>), or 'generator<T>'. This is the single place a type is parsed
         everywhere one appears after a colon or '->': variable/const declarations,
         parameters, fields, for-loop variables, enum payload fields, and return types.
+        Ownership/borrow modifiers ('owned', '&', '&mut') are not part of a type
+        expression -- they're parsed separately, before the name, wherever they're
+        legal (parameters and receivers; see ParserDeclarationsMixin._parse_param_list).
         """
-        is_owned = False
-        is_borrowed = False
-        is_mutable_borrow = False
-        if self.current_token and self.current_token.type == "OWNED":
-            is_owned = True
-            self.advance()
-        elif self.current_token and self.current_token.type == "AMPERSAND":
-            is_borrowed = True
-            self.advance()
-            if self.current_token and self.current_token.type == "MUT":
-                is_mutable_borrow = True
-                self.advance()
-
         if self.current_token and self.current_token.type == "GENERATOR":
             type_tok = self.current_token
             self.advance()
@@ -345,26 +326,13 @@ class ParserBase:
             is_array=is_array,
             array_size=array_size,
             is_nullable=is_nullable,
-            is_owned=is_owned,
-            is_borrowed=is_borrowed,
-            is_mutable_borrow=is_mutable_borrow,
             token=type_tok,
         )
 
-    def _reject_ownership_modifiers(self, parsed: "ParsedType", context: str) -> bool:
-        """Report an error if `parsed` carries 'owned'/'&'/'&mut', which are only
-        meaningful on parameters (and receivers). Returns True if an error was reported.
-        """
-        if parsed.is_owned or parsed.is_borrowed:
-            self.expected_token_error(f"type without 'owned'/'&' modifier in {context}", parsed.token)
-            return True
-        return False
-
     def _validate_return_type(self, parsed: "ParsedType") -> bool:
-        """Return types don't support 'owned'/'&'/'&mut' or nullable '?' (only array
-        suffix is supported). Returns True if an error was reported."""
-        if self._reject_ownership_modifiers(parsed, "a return type"):
-            return True
+        """Return types don't support nullable '?' (not yet supported; only the
+        array suffix is supported). Ownership/borrow modifiers can't appear here
+        at all -- they're not part of TypeExpr's grammar."""
         if parsed.is_nullable:
             self.expected_token_error("return type without nullable '?' (not yet supported)", parsed.token)
             return True

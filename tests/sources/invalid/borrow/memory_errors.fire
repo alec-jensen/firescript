@@ -8,7 +8,7 @@ owned: string = "hello";
 moved: string = owned;  // Move
 println(owned);  // Error: used after move  //~ ERROR FS-SEM-0001 @9
 
-fn badBorrowReturn(s: &string) -> string {
+fn badBorrowReturn(&s: string) -> string {
 	return s;  // Error: borrowed value escapes callable scope  //~ ERROR FS-SEM-0001 @9
 }
 

@@ -9,18 +9,18 @@ class Vec2 {
         this.y = y;
     }
 
-    fn add(&this, other: &Vec2) -> Vec2 {
+    fn add(&this, &other: Vec2) -> Vec2 {
         return Vec2(this.x + other.x, this.y + other.y);
     }
 
-    fn dot(&this, other: &Vec2) -> int32 {
+    fn dot(&this, &other: Vec2) -> int32 {
         return (this.x * other.x) + (this.y * other.y);
     }
 }
 
-v1 = Vec2(3, 4);
-v2 = Vec2(1, 2);
-v3 = v1.add(v2);
+v1: Vec2 = Vec2(3, 4);
+v2: Vec2 = Vec2(1, 2);
+v3: Vec2 = v1.add(v2);
 println(v3.x);
 println(v3.y);
 println(v1.dot(v2));

@@ -6,11 +6,11 @@ class Box {
     name: string;
 }
 
-fn badFieldReturn(b: &Box) -> string {
+fn badFieldReturn(&b: Box) -> string {
     return b.name; // Error: direct borrowed projection escapes  //~ ERROR FS-SEM-0001 @14
 }
 
-fn badArrayReturn(arr: &string[]) -> string[] {
+fn badArrayReturn(&arr: string[]) -> string[] {
     return arr; // Error: returning borrowed array escapes  //~ ERROR FS-SEM-0001 @12
 }
 

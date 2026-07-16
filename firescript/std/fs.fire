@@ -94,7 +94,7 @@ export class File {
     }
 }
 
-fn _read_internal(path: &string, max_bytes: int32) -> FileResult {
+fn _read_internal(&path: string, max_bytes: int32) -> FileResult {
     if (max_bytes < -1) {
         return FileResult(-22, "");
     }
@@ -156,7 +156,7 @@ fn _read_internal(path: &string, max_bytes: int32) -> FileResult {
     return FileResult(total, content);
 }
 
-fn _write_mode(path: &string, data: &string, mode: &string) -> FileResult {
+fn _write_mode(&path: string, &data: string, &mode: string) -> FileResult {
     open_result: SyscallResult = syscall_open(path, mode);
     if (open_result.status < 0) {
         return FileResult(open_result.status, "");

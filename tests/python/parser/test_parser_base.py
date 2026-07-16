@@ -276,18 +276,16 @@ def test_type_error_and_invalid_type_error_record_errors():
 
 
 def test_constructor_with_borrowed_and_owned_regular_params_parses():
-    # Regular (non-receiver) constructor params can carry explicit '&'/'owned'
-    # markers, but only once an explicit receiver has already been consumed
-    # (a bare '&'/'owned' as the very first param is always parsed as a
-    # receiver marker expecting 'this' next) -- this combination isn't
-    # exercised by any full-program test since the semantic analyzer's
-    # constructor-arity bookkeeping doesn't yet handle it end-to-end (see
-    # spawned follow-up task), so it's checked here at the parser-output
-    # level only: the parse must succeed and produce all 3 parameters.
+    # Regular (non-receiver) constructor params can carry a leading '&'/'owned'
+    # marker -- this combination isn't exercised by any full-program test
+    # since the semantic analyzer's constructor-arity bookkeeping doesn't yet
+    # handle it end-to-end (see spawned follow-up task), so it's checked here
+    # at the parser-output level only: the parse must succeed and produce all
+    # 3 parameters.
     src = (
         "class Outer {\n"
         "    total: int32;\n"
-        "    fn Outer(&this, a: &Inner, b: owned Inner) {\n"
+        "    fn Outer(&this, &a: Inner, owned b: Inner) {\n"
         "        this.total = 0;\n"
         "    }\n"
         "}\n"

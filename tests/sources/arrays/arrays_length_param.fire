@@ -4,11 +4,11 @@
 
 import @firescript/std.io.println;
 
-fn arrayLen(arr: &int32[]) -> int32 {
+fn arrayLen(&arr: int32[]) -> int32 {
     return arr.length();
 }
 
-fn arraySize(arr: &int32[]) -> int32 {
+fn arraySize(&arr: int32[]) -> int32 {
     return arr.size();
 }
 

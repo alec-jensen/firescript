@@ -22,7 +22,7 @@ fn greet(name: string) -> void {
     print("Hello, " + name);
 }
 
-fn calculateAverage(numbers: &int32[]) -> float32 {
+fn calculateAverage(&numbers: int32[]) -> float32 {
     sum: int32 = 0;
     i: int32 = 0;
     while (i < numbers.length()) {

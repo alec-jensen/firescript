@@ -38,7 +38,7 @@ export class RegexPattern {
     }
 
     // ----- Helper methods (instance) -----
-    fn _decode_escape_char(&this, esc: &string) -> string {
+    fn _decode_escape_char(&this, &esc: string) -> string {
         if (esc == "n") {
             return "\n";
         }
@@ -51,7 +51,7 @@ export class RegexPattern {
         return "" + esc;
     }
 
-    fn _is_quantifier(&this, ch: &string) -> bool {
+    fn _is_quantifier(&this, &ch: string) -> bool {
         if (ch == "*") {
             return true;
         }
@@ -109,7 +109,7 @@ export class RegexPattern {
         return -1;
     }
 
-    fn _char_between(&this, c: &string, lo: string, hi: string) -> bool {
+    fn _char_between(&this, &c: string, lo: string, hi: string) -> bool {
         range_order: string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         c_idx: int32 = str_index_of(range_order, c);
         lo_idx: int32 = str_index_of(range_order, lo);
@@ -121,7 +121,7 @@ export class RegexPattern {
         return c_idx >= lo_idx && c_idx <= hi_idx;
     }
 
-    fn _class_contains(&this, class_start: int32, class_end: int32, c: &string) -> bool {
+    fn _class_contains(&this, class_start: int32, class_end: int32, &c: string) -> bool {
         i: int32 = class_start + 1;
         negated: bool = false;
         matched: bool = false;
@@ -189,7 +189,7 @@ export class RegexPattern {
         return matched;
     }
 
-    fn _match_one_atom(&this, atom_start: int32, atom_end: int32, text: &string, cur: int32, t_len: int32) -> int32 {
+    fn _match_one_atom(&this, atom_start: int32, atom_end: int32, &text: string, cur: int32, t_len: int32) -> int32 {
         if (cur >= t_len) {
             return -1;
         }
@@ -227,7 +227,7 @@ export class RegexPattern {
         return -1;
     }
 
-    fn _match_range(&this, p_start: int32, p_end: int32, text: &string, t_index: int32, t_len: int32) -> int32 {
+    fn _match_range(&this, p_start: int32, p_end: int32, &text: string, t_index: int32, t_len: int32) -> int32 {
         // Expression level: split by top-level alternation first.
         depth: int32 = 0;
         i: int32 = p_start;
@@ -417,7 +417,7 @@ export class RegexPattern {
         return "";
     }
 
-    fn _match_full(&this, text: &string) -> bool {
+    fn _match_full(&this, &text: string) -> bool {
         p_len: int32 = str_length(this.pattern);
         t_len: int32 = str_length(text);
         end: int32 = this._match_range(0, p_len, text, 0, t_len);
@@ -431,7 +431,7 @@ export class RegexPattern {
         return end == t_len;
     }
 
-    fn _match_at_position(&this, text: &string, start_pos: int32) -> int32 {
+    fn _match_at_position(&this, &text: string, start_pos: int32) -> int32 {
         t_len: int32 = str_length(text);
         
         // Check if start position is valid
@@ -461,7 +461,7 @@ export class RegexPattern {
     }
 
     // ----- Public methods -----
-    fn is_match(&this, text: &string) -> bool {
+    fn is_match(&this, &text: string) -> bool {
         err: string = this._validate_pattern();
         if (err != "") {
             return false;
@@ -470,11 +470,11 @@ export class RegexPattern {
         return this._match_full(text);
     }
 
-    fn matches(&this, text: &string) -> bool {
+    fn matches(&this, &text: string) -> bool {
         return this.is_match(text);
     }
 
-    fn find_at(&this, text: &string, start_pos: int32) -> int32 {
+    fn find_at(&this, &text: string, start_pos: int32) -> int32 {
         err: string = this._validate_pattern();
         if (err != "") {
             return -1;

@@ -151,7 +151,7 @@ def format_hover(node: ASTNode) -> str:
             t = p.var_type or "?"
             arr = "[]" if getattr(p, "is_array", False) else ""
             ref = "&" if getattr(p, "is_borrowed", False) else ""
-            param_strs.append(f"{p.name}: {ref}{t}{arr}")
+            param_strs.append(f"{ref}{p.name}: {t}{arr}")
         ret = node.var_type or node.return_type or "void"
         arr = "[]" if getattr(node, "is_array", False) else ""
         return f"```firescript\nfn {node.name}({', '.join(param_strs)}) -> {ret}{arr}\n```"

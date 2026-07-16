@@ -154,7 +154,7 @@ fn fs_rt_alloc_zeroed(n: int64) -> string {
     return addr_to_str(p);
 }
 
-fn fs_rt_free(p: &string) -> void {
+fn fs_rt_free(&p: string) -> void {
     addr: uint64 = str_to_addr(p);
     if (addr == 0u64) {
         return;
@@ -166,7 +166,7 @@ fn fs_rt_free(p: &string) -> void {
     // ignored, matching the legacy runtime's registry semantics.
 }
 
-fn fs_rt_zero_memory(p: &string, n: int64) -> void {
+fn fs_rt_zero_memory(&p: string, n: int64) -> void {
     addr: uint64 = str_to_addr(p);
     i: uint64 = 0u64;
     while (i < (n as uint64)) {
@@ -218,11 +218,11 @@ fn rt_str_len_addr(addr: uint64) -> uint64 {
     return len;
 }
 
-fn fs_rt_str_length(s: &string) -> int32 {
+fn fs_rt_str_length(&s: string) -> int32 {
     return rt_str_len_addr(str_to_addr(s)) as int32;
 }
 
-fn fs_rt_str_dup(s: &string) -> string {
+fn fs_rt_str_dup(&s: string) -> string {
     src: uint64 = str_to_addr(s);
     len: uint64 = rt_str_len_addr(src);
     dst: uint64 = rt_raw_alloc(len + 1u64);
@@ -234,7 +234,7 @@ fn fs_rt_str_dup(s: &string) -> string {
     return addr_to_str(dst);
 }
 
-fn fs_rt_str_concat(a: &string, b: &string) -> string {
+fn fs_rt_str_concat(&a: string, &b: string) -> string {
     pa: uint64 = str_to_addr(a);
     pb: uint64 = str_to_addr(b);
     la: uint64 = rt_str_len_addr(pa);
@@ -251,7 +251,7 @@ fn fs_rt_str_concat(a: &string, b: &string) -> string {
     return addr_to_str(dst);
 }
 
-fn fs_rt_str_eq(a: &string, b: &string) -> bool {
+fn fs_rt_str_eq(&a: string, &b: string) -> bool {
     pa: uint64 = str_to_addr(a);
     pb: uint64 = str_to_addr(b);
     if (pa == 0u64 || pb == 0u64) {
@@ -272,7 +272,7 @@ fn fs_rt_str_eq(a: &string, b: &string) -> bool {
     return true;
 }
 
-fn fs_rt_str_char_at(s: &string, index: int32) -> string {
+fn fs_rt_str_char_at(&s: string, index: int32) -> string {
     src: uint64 = str_to_addr(s);
     len: uint64 = rt_str_len_addr(src);
     dst: uint64 = rt_raw_alloc(2u64);
@@ -286,7 +286,7 @@ fn fs_rt_str_char_at(s: &string, index: int32) -> string {
     return addr_to_str(dst);
 }
 
-fn fs_rt_str_char_code_at(s: &string, index: int32) -> uint8 {
+fn fs_rt_str_char_code_at(&s: string, index: int32) -> uint8 {
     src: uint64 = str_to_addr(s);
     len: uint64 = rt_str_len_addr(src);
     if (index < 0 || (index as uint64) >= len) {
@@ -295,7 +295,7 @@ fn fs_rt_str_char_code_at(s: &string, index: int32) -> uint8 {
     return mem_load_u8(src + (index as uint64));
 }
 
-fn fs_rt_str_char_code(s: &string) -> uint8 {
+fn fs_rt_str_char_code(&s: string) -> uint8 {
     src: uint64 = str_to_addr(s);
     if (src == 0u64) {
         return 0u8;
@@ -303,7 +303,7 @@ fn fs_rt_str_char_code(s: &string) -> uint8 {
     return mem_load_u8(src);
 }
 
-fn fs_rt_str_index_of(haystack: &string, needle: &string) -> int32 {
+fn fs_rt_str_index_of(&haystack: string, &needle: string) -> int32 {
     ph: uint64 = str_to_addr(haystack);
     pn: uint64 = str_to_addr(needle);
     if (ph == 0u64 || pn == 0u64) {
@@ -337,7 +337,7 @@ fn fs_rt_str_index_of(haystack: &string, needle: &string) -> int32 {
     return -1;
 }
 
-fn fs_rt_str_slice(s: &string, start: int32, end: int32) -> string {
+fn fs_rt_str_slice(&s: string, start: int32, end: int32) -> string {
     src: uint64 = str_to_addr(s);
     len: uint64 = rt_str_len_addr(src);
     length: int32 = len as int32;
@@ -464,22 +464,22 @@ fn rt_parse_int(addr: uint64) -> int64 {
     return value;
 }
 
-fn fs_rt_str_to_i32(s: &string) -> int32 {
+fn fs_rt_str_to_i32(&s: string) -> int32 {
     return rt_parse_int(str_to_addr(s)) as int32;
 }
 
-fn fs_rt_str_to_i64(s: &string) -> int64 {
+fn fs_rt_str_to_i64(&s: string) -> int64 {
     return rt_parse_int(str_to_addr(s));
 }
 
-fn fs_rt_str_to_bool(s: &string) -> bool {
+fn fs_rt_str_to_bool(&s: string) -> bool {
     if (fs_rt_str_eq(s, "true")) {
         return true;
     }
     return fs_rt_str_eq(s, "1");
 }
 
-fn fs_rt_str_to_f64(s: &string) -> float64 {
+fn fs_rt_str_to_f64(&s: string) -> float64 {
     addr: uint64 = str_to_addr(s);
     if (addr == 0u64) {
         return 0.0;
@@ -561,7 +561,7 @@ fn fs_rt_str_to_f64(s: &string) -> float64 {
 
 // ---- stdout ----
 
-fn fs_rt_stdout(s: &string) -> void {
+fn fs_rt_stdout(&s: string) -> void {
     addr: uint64 = str_to_addr(s);
     if (addr == 0u64) {
         return;
@@ -1215,7 +1215,7 @@ fn rt_win_err() -> int32 {
     return -(err as int32);
 }
 
-fn fs_rt_syscall_open(path: &string, mode: &string) -> SyscallResult {
+fn fs_rt_syscall_open(&path: string, &mode: string) -> SyscallResult {
     access: uint32 = 0u32;
     disposition: uint32 = 0u32;
     append: bool = false;
@@ -1291,7 +1291,7 @@ fn fs_rt_syscall_read(fd: int32, n: int32) -> SyscallResult {
     return SyscallResult(dst_i as int32, addr_to_str(dst));
 }
 
-fn fs_rt_syscall_write(fd: int32, buf: &string) -> SyscallResult {
+fn fs_rt_syscall_write(fd: int32, &buf: string) -> SyscallResult {
     src: uint64 = str_to_addr(buf);
     if (src == 0u64) {
         return SyscallResult(-22, "");
@@ -1338,7 +1338,7 @@ fn fs_rt_syscall_close(fd: int32) -> SyscallResult {
     return SyscallResult(0, "");
 }
 
-fn fs_rt_syscall_remove(path: &string) -> SyscallResult {
+fn fs_rt_syscall_remove(&path: string) -> SyscallResult {
     ok: int32 = win_delete_file_a(str_to_addr(path));
     if (ok == 0) {
         return SyscallResult(rt_win_err(), "");
@@ -1346,7 +1346,7 @@ fn fs_rt_syscall_remove(path: &string) -> SyscallResult {
     return SyscallResult(0, "");
 }
 
-fn fs_rt_syscall_rename(old_path: &string, new_path: &string) -> SyscallResult {
+fn fs_rt_syscall_rename(&old_path: string, &new_path: string) -> SyscallResult {
     // C rename() on Windows fails when the destination exists.
     ok: int32 = win_move_file_ex_a(str_to_addr(old_path), str_to_addr(new_path), 0u32);
     if (ok == 0) {
@@ -1355,7 +1355,7 @@ fn fs_rt_syscall_rename(old_path: &string, new_path: &string) -> SyscallResult {
     return SyscallResult(0, "");
 }
 
-fn fs_rt_syscall_move(src_path: &string, dst_path: &string) -> SyscallResult {
+fn fs_rt_syscall_move(&src_path: string, &dst_path: string) -> SyscallResult {
     // Rename first; fall back to copy + remove for cross-device moves
     // (legacy contract).
     ok: int32 = win_move_file_ex_a(str_to_addr(src_path), str_to_addr(dst_path), 0u32);

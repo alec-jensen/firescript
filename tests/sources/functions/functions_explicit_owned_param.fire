@@ -5,7 +5,7 @@ class Box {
     fn Box(v: int32) { this.v = v; }
 }
 
-fn consume(b: owned Box) -> void {
+fn consume(owned b: Box) -> void {
     println(b.v);
 }
 

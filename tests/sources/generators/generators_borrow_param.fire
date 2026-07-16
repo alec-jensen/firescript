@@ -5,7 +5,7 @@ class Box {
     fn Box(v: int32) { this.v = v; }
 }
 
-fn peekTwice(b: &Box) -> generator<int32> {
+fn peekTwice(&b: Box) -> generator<int32> {
     yield b.v;
     yield b.v;
 }

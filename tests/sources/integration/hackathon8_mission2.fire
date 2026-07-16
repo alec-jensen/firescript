@@ -7,7 +7,7 @@ file: File = File("tests/sources/integration/hackathon8_mission2.txt");
 
 r: FileResult = file.read();
 
-fn contains(n: int16, a: &int16[]) -> bool {
+fn contains(n: int16, &a: int16[]) -> bool {
     for (e: int16 in a) {
         if (e == n) {
             return true;

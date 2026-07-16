@@ -3,7 +3,7 @@ import @firescript/std.io.println;
 class Box {
     v: int32;
 
-    fn Box(&this, a: owned int32) {
+    fn Box(&this, owned a: int32) {
         println(a);
     }
 }

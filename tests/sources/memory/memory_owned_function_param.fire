@@ -9,7 +9,7 @@ class Box {
     }
 }
 
-fn consume(b: owned Box) -> void {
+fn consume(owned b: Box) -> void {
     println(b.v);
 }
 

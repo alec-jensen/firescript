@@ -2,12 +2,12 @@
 
 directive enable_lowlevel_stdout;
 
-export fn print<T>(value: &T) -> void {
+export fn print<T>(&value: T) -> void {
     text: string = value as string;
     stdout(text);
 }
 
-export fn println<T>(value: &T) -> void {
+export fn println<T>(&value: T) -> void {
     cast_text: string = value as string;
     text: string = cast_text + "\n";
     drop(cast_text);

@@ -107,27 +107,18 @@ class TypeSystemMixin(StatementsMixin):
                 self.resolve_variable_types(child, current_scope)
             return
 
-        # Variable assignment: allow implicit declaration for class-typed RHS
+        # Variable assignment: the target must already be declared (via a
+        # `name: Type = ...` declaration) in an enclosing scope. Bare
+        # assignment to an undeclared name is not a declaration.
         if node.node_type == NodeTypes.VARIABLE_ASSIGNMENT:
             # Resolve RHS first to allow identifiers inside it to be typed
             for child in node.children:
                 self.resolve_variable_types(child, current_scope)
             if node.name not in current_scope:
-                inferred_type = None
-                rhs = node.children[0] if node.children else None
-                if rhs is not None:
-                    # Constructor-style call: ClassName(...)
-                    if rhs.node_type == NodeTypes.FUNCTION_CALL and rhs.name in self.user_types:
-                        inferred_type = rhs.name
-                    # Instance method call: obj.method(...)
-                    elif rhs.node_type == NodeTypes.METHOD_CALL and rhs.children:
-                        obj = rhs.children[0]
-                        obj_type = getattr(obj, "var_type", None)
-                        if obj_type is None and isinstance(obj, ASTNode) and obj.node_type == NodeTypes.IDENTIFIER:
-                            obj_type = current_scope.get(obj.name, (None, False))[0]
-                        if obj_type and (obj_type in self.user_methods) and (rhs.name in self.user_methods[obj_type]):
-                            inferred_type = self.user_methods[obj_type][rhs.name].get("return")
-                current_scope[node.name] = (inferred_type, False)
+                if self.defer_undefined_identifiers:
+                    self.deferred_undefined_identifiers.append((node.name, node.token))
+                else:
+                    self.undefined_identifier_error(node.name, node.token)
             return
 
         # Match expression: scrutinee resolves in the outer scope; each arm
@@ -397,15 +388,8 @@ class TypeSystemMixin(StatementsMixin):
             var_info = symbol_table.get(node.name)
             assigned_type = child_types[0] if child_types else None
             if not var_info:
-                # Implicit declaration on first assignment: register with inferred type
-                if assigned_type is not None:
-                    # assigned_type may be 'Type[]'; identify array-ness
-                    is_arr = assigned_type.endswith("[]")
-                    base_t = assigned_type[:-2] if is_arr else assigned_type
-                    symbol_table[node.name] = (base_t, is_arr, False)
-                else:
-                    self.undefined_identifier_error(node.name, node.token)
-                    return None
+                # Already reported by resolve_variable_types; don't duplicate.
+                return None
             else:
                 var_type, is_array = var_info[0], var_info[1]
                 is_nullable = var_info[2] if len(var_info) > 2 else False

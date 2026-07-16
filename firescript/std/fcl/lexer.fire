@@ -21,19 +21,19 @@ class _FclLexTokenResult {
     }
 }
 
-fn _len(value: &string) -> int32 {
+fn _len(&value: string) -> int32 {
     return str_length(value);
 }
 
-fn _char_at(value: &string, index: int32) -> string {
+fn _char_at(&value: string, index: int32) -> string {
     return str_char_at(value, index);
 }
 
-fn _slice(value: &string, start: int32, end: int32) -> string {
+fn _slice(&value: string, start: int32, end: int32) -> string {
     return str_slice(value, start, end);
 }
 
-fn _is_ws(ch: &string) -> bool {
+fn _is_ws(&ch: string) -> bool {
     if (ch == " ") {
         return true;
     }
@@ -49,11 +49,11 @@ fn _is_ws(ch: &string) -> bool {
     return false;
 }
 
-fn _is_digit(ch: &string) -> bool {
+fn _is_digit(&ch: string) -> bool {
     return str_index_of("0123456789", ch) >= 0;
 }
 
-fn _is_alpha(ch: &string) -> bool {
+fn _is_alpha(&ch: string) -> bool {
     if (str_index_of("abcdefghijklmnopqrstuvwxyz", ch) >= 0) {
         return true;
     }
@@ -66,11 +66,11 @@ fn _is_alpha(ch: &string) -> bool {
     return false;
 }
 
-fn _is_ident_continue(ch: &string) -> bool {
+fn _is_ident_continue(&ch: string) -> bool {
     return _is_alpha(ch) || _is_digit(ch);
 }
 
-fn _single(kind: &string, text: &string, start: int32, next: int32) -> _FclLexTokenResult {
+fn _single(&kind: string, &text: string, start: int32, next: int32) -> _FclLexTokenResult {
     return _FclLexTokenResult(0, "" + kind, "" + text, start, next, next);
 }
 
@@ -171,26 +171,26 @@ export fn lex_next(source: string, index: int32) -> _FclLexTokenResult {
     return _FclLexTokenResult(-84, "invalid", ch, i, i + 1, i + 1);
 }
 
-export fn token_status(token: &_FclLexTokenResult) -> int32 {
+export fn token_status(&token: _FclLexTokenResult) -> int32 {
     return token.status;
 }
 
-export fn token_kind(token: &_FclLexTokenResult) -> string {
+export fn token_kind(&token: _FclLexTokenResult) -> string {
     return "" + token.kind;
 }
 
-export fn token_lexeme(token: &_FclLexTokenResult) -> string {
+export fn token_lexeme(&token: _FclLexTokenResult) -> string {
     return "" + token.lexeme;
 }
 
-export fn token_start(token: &_FclLexTokenResult) -> int32 {
+export fn token_start(&token: _FclLexTokenResult) -> int32 {
     return token.start;
 }
 
-export fn token_end(token: &_FclLexTokenResult) -> int32 {
+export fn token_end(&token: _FclLexTokenResult) -> int32 {
     return token.end;
 }
 
-export fn token_next_index(token: &_FclLexTokenResult) -> int32 {
+export fn token_next_index(&token: _FclLexTokenResult) -> int32 {
     return token.next_index;
 }

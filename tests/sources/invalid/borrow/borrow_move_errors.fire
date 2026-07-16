@@ -6,12 +6,12 @@ fn takeOwned(s: string) -> void {
     println(s);
 }
 
-fn illegalAssign(s: &string) -> string {
+fn illegalAssign(&s: string) -> string {
     copy: string = s; // Error: cannot move borrowed value into owned binding  //~ ERROR FS-SEM-0001 @20
     return copy;
 }
 
-fn illegalPass(s: &string) -> void {
+fn illegalPass(&s: string) -> void {
     takeOwned(s); // Error: cannot move borrowed value into owned parameter  //~ ERROR FS-SEM-0001 @15
 }
 

@@ -87,7 +87,7 @@ def test_function_definition_owned_array_param():
     function -- not exercised by any real .fire test, since free functions
     taking owned array params aren't otherwise needed by the test suite's
     example programs."""
-    p = make_parser("fn foo(xs: owned int32[]) -> void {}")
+    p = make_parser("fn foo(owned xs: int32[]) -> void {}")
     result = p._parse_function_definition()
     t.require(result is not None)
     param = result.children[0]
@@ -118,7 +118,7 @@ def test_function_definition_close_paren_missing():
 # now-deleted _parse_generator_definition -- are checked here instead.
 
 def test_generator_definition_borrowed_param():
-    p = make_parser("fn gen(x: &int32) -> generator<int32> { yield x; }")
+    p = make_parser("fn gen(&x: int32) -> generator<int32> { yield x; }")
     result = p._parse_function_definition()
     t.require(result is not None)
     param = result.children[0]

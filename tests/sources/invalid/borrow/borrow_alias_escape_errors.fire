@@ -10,12 +10,12 @@ fn takeOwned(s: string) -> void {
     println(s);
 }
 
-fn badAliasReturn(b: &Box) -> string {
+fn badAliasReturn(&b: Box) -> string {
     alias: string = b.name; // Error: cannot move borrowed projection into owned local  //~ ERROR FS-SEM-0001 @23
     return alias;
 }
 
-fn badAliasPass(b: &Box) -> void {
+fn badAliasPass(&b: Box) -> void {
     takeOwned(b.name); // Error: cannot move borrowed projection into owned parameter  //~ ERROR FS-SEM-0001 @17
 }
 

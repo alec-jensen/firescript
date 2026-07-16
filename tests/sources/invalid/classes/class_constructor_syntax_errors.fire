@@ -5,23 +5,24 @@
 // class_def_syntax_errors.fire need their own constructor-shaped cases to
 // exercise that branch.
 
-// Receiver must be 'this' after '&' (constructor form)
+// '&' not immediately followed by 'this' (constructor form) is parsed as a
+// plain borrowed parameter (not a receiver), so 'other' is consumed as the
+// parameter name and parsing then fails at the missing ':'.
 class CR1 {
     v: int32;
 
-    fn CR1(&other) {  //~ ERROR FS-PARSE-0010 @13
+    fn CR1(&other) {  //~ ERROR FS-PARSE-0010 @18
         this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
 
-// 'owned' not followed by 'this' falls through to being parsed as a regular
-// parameter named 'owned' (OWNED is accepted as a name token), which then
-// requires ':' -- 'this2' isn't one.
+// 'owned' not immediately followed by 'this' (constructor form) is parsed as
+// the owned-parameter modifier, so 'this2' is consumed as the parameter name
+// and parsing then fails at the missing ':'.
 class CR2 {
     v: int32;
 
-    fn CR2(owned this2) {  //~ ERROR FS-PARSE-0010 @18
-//~^ ERROR FS-PARSE-0010 @18
+    fn CR2(owned this2) {  //~ ERROR FS-PARSE-0010 @23
         this.v = 1;  //~ ERROR FS-PARSE-0003 @9
     }
 }
