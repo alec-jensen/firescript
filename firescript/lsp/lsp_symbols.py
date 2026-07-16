@@ -150,21 +150,19 @@ def format_hover(node: ASTNode) -> str:
         for p in params:
             t = p.var_type or "?"
             arr = "[]" if getattr(p, "is_array", False) else ""
-            ref = "&" if getattr(p, "is_ref", False) else ""
-            param_strs.append(f"{ref}{t}{arr} {p.name}")
+            ref = "&" if getattr(p, "is_borrowed", False) else ""
+            param_strs.append(f"{p.name}: {ref}{t}{arr}")
         ret = node.var_type or node.return_type or "void"
         arr = "[]" if getattr(node, "is_array", False) else ""
-        return f"```firescript\n{ret}{arr} {node.name}({', '.join(param_strs)})\n```"
+        return f"```firescript\nfn {node.name}({', '.join(param_strs)}) -> {ret}{arr}\n```"
     if node.node_type == NodeTypes.CLASS_DEFINITION:
         return f"```firescript\nclass {node.name}\n```"
     if node.node_type in (NodeTypes.VARIABLE_DECLARATION, NodeTypes.PARAMETER):
-        mods = ""
-        if getattr(node, "is_const", False):
-            mods += "const "
+        mods = "const " if getattr(node, "is_const", False) else ""
         t = node.var_type or "?"
         arr = "[]" if getattr(node, "is_array", False) else ""
-        name = f"{node.name}?" if getattr(node, "is_nullable", False) else node.name
-        decl = f"{mods}{t}{arr} {name}"
+        nullable = "?" if getattr(node, "is_nullable", False) else ""
+        decl = f"{mods}{node.name}: {t}{arr}{nullable}"
         if getattr(node, "is_const", False):
             value_node = next(
                 (c for c in (node.children or [])
@@ -405,7 +403,7 @@ def hover_field_access(
         if ch.node_type == NodeTypes.CLASS_FIELD and ch.name == field_name:
             raw_type: str = ch.var_type or "?"
             concrete_type = type_map.get(raw_type, raw_type)
-            return f"```firescript\n{concrete_type} {field_name}\n```"
+            return f"```firescript\n{field_name}: {concrete_type}\n```"
 
     return None
 
@@ -463,9 +461,9 @@ def hover_method_call(
             for p in params:
                 t = type_map.get(p.var_type or "?", p.var_type or "?")
                 arr = "[]" if getattr(p, "is_array", False) else ""
-                param_strs.append(f"{t}{arr} {p.name}")
+                param_strs.append(f"{p.name}: {t}{arr}")
             ret = ch.return_type or "void"
             ret = type_map.get(ret, ret)
-            return f"```firescript\n{ret} {method_name}({', '.join(param_strs)})\n```"
+            return f"```firescript\nfn {method_name}({', '.join(param_strs)}) -> {ret}\n```"
 
     return None

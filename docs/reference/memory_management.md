@@ -102,7 +102,7 @@ TL;DR: Borrowing passes a read-only pointer.
 Example (illustrative — user-defined `drop` is planned):
 
 ```firescript
-File f = File("log.txt");
+f: File = File("log.txt");
 f.writeAll("hello");
 // f dropped here even on early return; a future File.drop could close a held descriptor.
 ```
@@ -122,7 +122,7 @@ Consuming example ([PLANNED] — consuming receivers are not yet supported):
 
 ```firescript
 // Future syntax
-Account upgrade(this) {
+fn upgrade(this) -> Account {
   // ... mutate internal state
   return this;
 }
@@ -165,8 +165,8 @@ Example:
 
 ```firescript
 copyable class Vec2 {
-    float32 x; // float32 is Copyable
-    float32 y;
+    x: float32; // float32 is Copyable
+    y: float32;
 }
 ```
 
@@ -179,12 +179,12 @@ The following examples illustrate planned semantics. Some features (e.g., full l
 ### Example: Move vs Copy (Takeaway: Owned moves; Copyable copies)
 
 ```firescript
-Object o1 = Object(); // owned
-Object o2 = o1;      // move; o1 invalid afterward
+o1: Object = Object(); // owned
+o2: Object = o1;      // move; o1 invalid afterward
 // print(o1);        // error: moved value
 
-int8 x = 42;
-int8 y = x;          // copy (Copyable); x still valid
+x: int8 = 42;
+y: int8 = x;          // copy (Copyable); x still valid
 print(x);           // OK
 ```
 
@@ -192,8 +192,8 @@ print(x);           // OK
 
 ```firescript
 // Future syntax — .clone() is not yet implemented
-string s1 = "fire";
-string s2 = s1.clone(); // independent
+s1: string = "fire";
+s2: string = s1.clone(); // independent
 print(s1);
 print(s2);
 ```
@@ -201,22 +201,22 @@ print(s2);
 ### Example: Borrowed Parameter (Owned only)
 
 ```firescript
-int32 length(&string s) {
+fn length(s: &string) -> int32 {
     return s.length();
 }
 
-string name = "firescript";
-int32 n = length(name); // borrow; name still valid
+name: string = "firescript";
+n: int32 = length(name); // borrow; name still valid
 ```
 
 ### Example: Invalid Borrow of Copyable (Compile Error)
 
 ```firescript
-int8 id = 10;
+id: int8 = 10;
 printId(&id);   // ERROR: cannot borrow Copyable type 'int8'; remove '&'
 
 // Correct version:
-void printId(int8 v) {
+fn printId(v: int8) -> void {
     print(v);
 }
 printId(id);    // copies 'id'
@@ -226,9 +226,9 @@ print(id);      // still valid
 ### Example: Owned Parameter Consumed (Move)
 
 ```firescript
-void addUser(string username);  // Plain 'string' means owned/move
+fn addUser(username: string) -> void;  // Plain 'string' means owned/move
 
-string u = "alice";
+u: string = "alice";
 addUser(u);   // move; u invalid afterward
 // print(u);  // ERROR: use after move
 ```
@@ -236,9 +236,9 @@ addUser(u);   // move; u invalid afterward
 Or equivalently with explicit `owned`:
 
 ```firescript
-void addUser(owned string username);  // Explicit owned
+fn addUser(username: owned string) -> void;  // Explicit owned
 
-string u = "alice";
+u: string = "alice";
 addUser(u);   // move; u invalid afterward
 ```
 
@@ -246,7 +246,7 @@ addUser(u);   // move; u invalid afterward
 
 ```firescript
 // Future syntax — borrow return types are not yet supported
-&string head(&string[] xs) {
+fn head(xs: &string[]) -> &string {
     return xs[0];   // OK: element owned by caller's array
 }
 ```
@@ -255,7 +255,7 @@ addUser(u);   // move; u invalid afterward
 
 ```firescript
 // Future syntax — consuming receivers are not yet supported
-Account activate(owned this) {
+fn activate(owned this) -> Account {
     // mutate state
     return this;
 }

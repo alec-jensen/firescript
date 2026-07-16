@@ -49,16 +49,16 @@ For more detailed information, each section of this reference covers specific as
 import @firescript/std.io.println;
 
 // Calculate fibonacci numbers
-int32 i = 0;
-int32 j = 1;
-int32 count = 10;
+i: int32 = 0;
+j: int32 = 1;
+count: int32 = 10;
 
 println("Fibonacci Sequence:");
 println(i);
 println(j);
 
 while (count > 0) {
-    int32 next = i + j;
+    next: int32 = i + j;
     println(next);
     i = j;
     j = next;

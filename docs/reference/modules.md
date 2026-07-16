@@ -21,15 +21,15 @@ That means module scope is the API boundary:
 
 ```firescript
 // Export a function
-export int32 add(int32 a, int32 b) {
+export fn add(a: int32, b: int32) -> int32 {
   return a + b;
 }
 
 // Export a constant
-export const int32 MAX_SIZE = 100;
+export const MAX_SIZE: int32 = 100;
 
 // This helper function is not exported and cannot be imported by other modules
-int32 helper(int32 x) {
+fn helper(x: int32) -> int32 {
   return x * 2;
 }
 ```

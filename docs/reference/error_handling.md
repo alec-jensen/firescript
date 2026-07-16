@@ -31,8 +31,8 @@ Most errors are caught before the program ever runs. The compiler reports struct
 Runtime errors terminate the program with an error. For example, arithmetic on fixed-size integers that exceeds the representable range traps at runtime rather than silently wrapping:
 
 ```firescript
-int8 max = 127i8;
-int8 overflow = max + 1i8;  // Runtime error: integer overflow
+max: int8 = 127i8;
+overflow: int8 = max + 1i8;  // Runtime error: integer overflow
 ```
 
 Overflows that can be detected at compile time (constant expressions) are reported as compile-time errors instead.
@@ -45,8 +45,8 @@ For recoverable errors — currently file-system operations — the standard lib
 import @firescript/std.fs.File;
 import @firescript/std.io.println;
 
-File f = File("data.txt");
-FileResult r = f.read();
+f: File = File("data.txt");
+r: FileResult = f.read();
 if (r.ok()) {
     println(r.result_data());
 } else {
@@ -65,7 +65,7 @@ The following mechanisms are designed but **not yet implemented** — this code 
 ```firescript
 // Future syntax
 try {
-    int8 result = 10 / 0;
+    result: int8 = 10 / 0;
 } catch (DivisionByZeroError e) {
     print("Error: " + e.message);
 }

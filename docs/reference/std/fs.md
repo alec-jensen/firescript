@@ -10,25 +10,25 @@ Represents a file path and provides methods for common file operations.
 
 ```firescript
 class File {
-    string path;
+    path: string;
 
-    File(&mut this, string path);
+    fn File(&mut this, path: string);
 
-    FileResult read(&this);
-    FileResult readBytes(&this, int32 bytes);
-    FileResult writeAll(&this, string data);
-    FileResult appendAll(&this, string data);
-    bool exists(&this);
-    FileResult remove(&this);
-    FileResult renameTo(&mut this, string new_path);
-    FileResult moveTo(&mut this, string dst_path);
+    fn read(&this) -> FileResult;
+    fn readBytes(&this, bytes: int32) -> FileResult;
+    fn writeAll(&this, data: string) -> FileResult;
+    fn appendAll(&this, data: string) -> FileResult;
+    fn exists(&this) -> bool;
+    fn remove(&this) -> FileResult;
+    fn renameTo(&mut this, new_path: string) -> FileResult;
+    fn moveTo(&mut this, dst_path: string) -> FileResult;
 }
 ```
 
 **Constructor:**
 
 ```firescript
-File(&mut this, string path)
+fn File(&mut this, path: string)
 ```
 
 Create a `File` instance for the given path. The path is stored but the file is not opened until an operation is called.
@@ -41,7 +41,7 @@ Create a `File` instance for the given path. The path is stored but the file is 
 ```firescript
 import @firescript/std.fs.File;
 
-File myFile = File("hello.txt");
+myFile: File = File("hello.txt");
 ```
 
 ### `FileResult`
@@ -50,15 +50,15 @@ Encapsulates the result of a file operation.
 
 ```firescript
 class FileResult {
-    int32 status;
-    string data;
+    status: int32;
+    data: string;
 
-    FileResult(int32 status, string data);
+    fn FileResult(status: int32, data: string);
 
-    bool ok(&this);
-    int32 err_code(&this);
-    int32 result_status(&this);
-    string result_data(&this);
+    fn ok(&this) -> bool;
+    fn err_code(&this) -> int32;
+    fn result_status(&this) -> int32;
+    fn result_data(&this) -> string;
 }
 ```
 
@@ -73,7 +73,7 @@ class FileResult {
 ### `read()`
 
 ```firescript
-FileResult read(&this)
+fn read(&this) -> FileResult
 ```
 
 Read the entire file contents into a string.
@@ -86,17 +86,17 @@ Read the entire file contents into a string.
 import @firescript/std.fs.File;
 import @firescript/std.io.println;
 
-File f = File("data.txt");
-FileResult r = f.read();
+f: File = File("data.txt");
+r: FileResult = f.read();
 if (r.ok()) {
     println(r.result_data());
 }
 ```
 
-### `readBytes(int32 bytes)`
+### `readBytes(bytes: int32)`
 
 ```firescript
-FileResult readBytes(&this, int32 bytes)
+fn readBytes(&this, bytes: int32) -> FileResult
 ```
 
 Read up to the specified number of bytes.
@@ -109,13 +109,13 @@ Read up to the specified number of bytes.
 **Example:**
 
 ```firescript
-FileResult chunk = f.readBytes(1024);
+chunk: FileResult = f.readBytes(1024);
 ```
 
-### `writeAll(string data)`
+### `writeAll(data: string)`
 
 ```firescript
-FileResult writeAll(&this, string data)
+fn writeAll(&this, data: string) -> FileResult
 ```
 
 Write data to the file, overwriting if it exists.
@@ -128,13 +128,13 @@ Write data to the file, overwriting if it exists.
 **Example:**
 
 ```firescript
-FileResult w = f.writeAll("Hello!");
+w: FileResult = f.writeAll("Hello!");
 ```
 
-### `appendAll(string data)`
+### `appendAll(data: string)`
 
 ```firescript
-FileResult appendAll(&this, string data)
+fn appendAll(&this, data: string) -> FileResult
 ```
 
 Append data to the end of the file.
@@ -147,13 +147,13 @@ Append data to the end of the file.
 **Example:**
 
 ```firescript
-FileResult a = f.appendAll("\nMore text");
+a: FileResult = f.appendAll("\nMore text");
 ```
 
 ### `exists()`
 
 ```firescript
-bool exists(&this)
+fn exists(&this) -> bool
 ```
 
 Check if the file exists and is readable.
@@ -171,7 +171,7 @@ if (f.exists()) {
 ### `remove()`
 
 ```firescript
-FileResult remove(&this)
+fn remove(&this) -> FileResult
 ```
 
 Delete the file.
@@ -184,10 +184,10 @@ Delete the file.
 f.remove();
 ```
 
-### `renameTo(string new_path)`
+### `renameTo(new_path: string)`
 
 ```firescript
-FileResult renameTo(&mut this, string new_path)
+fn renameTo(&mut this, new_path: string) -> FileResult
 ```
 
 Rename (or move within same filesystem) to a new path. Updates the `File` path on success.
@@ -203,10 +203,10 @@ Rename (or move within same filesystem) to a new path. Updates the `File` path o
 f.renameTo("newname.txt");
 ```
 
-### `moveTo(string dst_path)`
+### `moveTo(dst_path: string)`
 
 ```firescript
-FileResult moveTo(&mut this, string dst_path)
+fn moveTo(&mut this, dst_path: string) -> FileResult
 ```
 
 Move file to a new location with cross-filesystem fallback. On cross-device moves, automatically falls back to copy + delete.
@@ -228,7 +228,7 @@ f.moveTo("/other/location/file.txt");
 ### `ok()`
 
 ```firescript
-bool ok(&this)
+fn ok(&this) -> bool
 ```
 
 Check if operation succeeded (status >= 0).
@@ -244,7 +244,7 @@ if (result.ok()) {
 ### `err_code()`
 
 ```firescript
-int32 err_code(&this)
+fn err_code(&this) -> int32
 ```
 
 Extract the error code (positive errno value). Returns 0 if operation succeeded.
@@ -252,7 +252,7 @@ Extract the error code (positive errno value). Returns 0 if operation succeeded.
 **Example:**
 
 ```firescript
-int32 err = result.err_code();
+err: int32 = result.err_code();
 if (err > 0) {
     println("Error: " + (err as string));
 }
@@ -261,7 +261,7 @@ if (err > 0) {
 ### `result_status()`
 
 ```firescript
-int32 result_status(&this)
+fn result_status(&this) -> int32
 ```
 
 Get the raw status field (positive on success, negative errno on failure).
@@ -269,7 +269,7 @@ Get the raw status field (positive on success, negative errno on failure).
 ### `result_data()`
 
 ```firescript
-string result_data(&this)
+fn result_data(&this) -> string
 ```
 
 Get the data field (file contents for reads, empty for writes).
@@ -292,16 +292,16 @@ Consult your system's `errno.h` for a complete list.
 import @firescript/std.fs.File;
 import @firescript/std.io.println;
 
-File config = File("config.txt");
+config: File = File("config.txt");
 
 // Write
-FileResult write_result = config.writeAll("setting=value");
+write_result: FileResult = config.writeAll("setting=value");
 if (write_result.ok()) {
     println("Configuration saved");
 }
 
 // Read
-FileResult read_result = config.read();
+read_result: FileResult = config.read();
 if (read_result.ok()) {
     println("Configuration: " + read_result.result_data());
 }

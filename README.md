@@ -26,7 +26,7 @@ firescript is a statically and strongly typed programming language designed to b
 import @firescript/std.io.println;
 
 // Define a function that returns the nth Fibonacci number
-int8 fibonacci(int8 n) {
+fn fibonacci(n: int8) -> int8 {
     if (n <= 1i8) {
         return n;
     }
@@ -34,7 +34,7 @@ int8 fibonacci(int8 n) {
 }
 
 // Print the first 10 Fibonacci numbers
-for (int8 i = 0i8; i < 10i8; i++) {
+for (i: int8 = 0i8; i < 10i8; i++) {
     println(fibonacci(i));
 }
 ```

@@ -7,25 +7,25 @@ The `std.cli.args` module provides utilities for parsing and accessing command-l
 ### `argc()`
 
 ```firescript
-int32 argc()
+fn argc() -> int32
 ```
 
 Return the count of command-line arguments (including the program name).
 
-### `argv_at(int32 index)`
+### `argv_at(index: int32)`
 
 ```firescript
-string argv_at(int32 index)
+fn argv_at(index: int32) -> string
 ```
 
 Get the argument at the specified index. Index 0 is the program name.
 
 ## Flag and Option Parsing
 
-### `has_flag(string name)`
+### `has_flag(name: string)`
 
 ```firescript
-bool has_flag(string name)
+fn has_flag(name: string) -> bool
 ```
 
 Check if a boolean flag was provided. Supports short form (`-x`) and long form (`--flag`), as well as grouped short flags (`-abc`).
@@ -45,10 +45,10 @@ if (has_flag("verbose")) {
 // Recognizes: -v, --verbose, or -xvyz (grouped flags)
 ```
 
-### `has_flag_alias(string long_name, string short_name)`
+### `has_flag_alias(long_name: string, short_name: string)`
 
 ```firescript
-bool has_flag_alias(string long_name, string short_name)
+fn has_flag_alias(long_name: string, short_name: string) -> bool
 ```
 
 Check if a flag was provided using a long or short alias.
@@ -63,10 +63,10 @@ if (has_flag_alias("output", "o")) {
 // Recognizes: -o, --output, or grouped forms
 ```
 
-### `option_value(string name, string fallback)`
+### `option_value(name: string, fallback: string)`
 
 ```firescript
-string option_value(string name, string fallback)
+fn option_value(name: string, fallback: string) -> string
 ```
 
 Get the value for an option. Supports multiple syntaxes:
@@ -84,7 +84,7 @@ Get the value for an option. Supports multiple syntaxes:
 ```firescript
 import @firescript/std.cli.args.option_value;
 
-string output = option_value("output", "stdout");
+output: string = option_value("output", "stdout");
 
 // Recognizes:
 //   -o file.txt
@@ -93,10 +93,10 @@ string output = option_value("output", "stdout");
 //   --output=file.txt
 ```
 
-### `option_value_alias(string long_name, string short_name, string fallback)`
+### `option_value_alias(long_name: string, short_name: string, fallback: string)`
 
 ```firescript
-string option_value_alias(string long_name, string short_name, string fallback)
+fn option_value_alias(long_name: string, short_name: string, fallback: string) -> string
 ```
 
 Get the value for an option providing long and short name aliases.
@@ -104,15 +104,15 @@ Get the value for an option providing long and short name aliases.
 **Example:**
 
 ```firescript
-string port = option_value_alias("port", "p", "8080");
+port: string = option_value_alias("port", "p", "8080");
 ```
 
 ## Positional Arguments
 
-### `positional(int32 index, string fallback)`
+### `positional(index: int32, fallback: string)`
 
 ```firescript
-string positional(int32 index, string fallback)
+fn positional(index: int32, fallback: string) -> string
 ```
 
 Get a positional argument by index (0-based, after the program name).
@@ -122,13 +122,13 @@ Get a positional argument by index (0-based, after the program name).
 ```firescript
 import @firescript/std.cli.args.positional;
 
-string cmd = positional(0, "help");  // First positional arg
+cmd: string = positional(0, "help");  // First positional arg
 ```
 
-### `positional_value(int32 index, string fallback)`
+### `positional_value(index: int32, fallback: string)`
 
 ```firescript
-string positional_value(int32 index, string fallback)
+fn positional_value(index: int32, fallback: string) -> string
 ```
 
 Get the nth positional value, skipping options and flags. Respects `--` as the end of options.
@@ -172,9 +172,9 @@ if (has_flag("verbose") || has_flag("v")) {
     println("Verbose mode");
 }
 
-string output = option_value("output", "a.out");
+output: string = option_value("output", "a.out");
 println("Output: " + output);
 
-string input = positional_value(0, "stdin");
+input: string = positional_value(0, "stdin");
 println("Input: " + input);
 ```

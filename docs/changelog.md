@@ -9,6 +9,16 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - Added `match` as a reserved keyword and `match <expr> { <pattern> -> <body>, ... }` expressions, for destructuring `enum` values. Patterns match a bare `EnumName.Variant`, a payload-carrying `EnumName.Variant(bindings...)`, or a wildcard `_`. Payload bindings resolve by the variant's declared field name (`Circle(radius) -> ...`), not position, and can be renamed with `field: local` (`Circle(radius: r) -> ...`); a field can be left out of the pattern entirely if the arm doesn't need it. Match is exhaustiveness-checked at compile time: every variant must be covered by an arm, or a trailing `_` wildcard arm must be present; duplicate arms for the same variant, a wildcard arm followed by more arms, and patterns naming a field the variant doesn't declare (or binding the same field twice) are all compile errors. Payload bindings are read-only borrows scoped to their arm. `match` works both as a statement (arm bodies are `{ }` blocks) and, when every arm body is a plain expression, as a value-producing expression usable in a `return` or a variable initializer.
 
 ### Breaking Changes
+- firescript now uses **postfix type declarations** everywhere, Rust/TypeScript-style, instead of the previous C-style prefix syntax. This is a whole-language syntax change:
+  - Variables and constants: `int32 a = 5;` → `a: int32 = 5;`; `const float64 PI = 3.14;` → `const PI: float64 = 3.14;`.
+  - Nullable markers move to the type: `int32 a? = null;` → `a: int32? = null;`.
+  - Ownership/borrow modifiers move to the type, right after the colon: `owned Type name` → `name: owned Type`; `&Type name` → `name: &Type`; `&mut Type name` → `name: &mut Type`.
+  - Arrays stay attached to the type as a unit: `int32[N] name;` → `name: int32[N];`.
+  - Class fields: `int32 age;` → `age: int32;`. Enum variant payloads: `Circle(float64 radius)` → `Circle(radius: float64)`.
+  - `for`-loops: `for (int32 i = 0; ...)` → `for (i: int32 = 0; ...)`; `for (int32 x in xs)` → `for (x: int32 in xs)`.
+  - A new `fn` keyword now introduces every callable — top-level functions, instance methods, static methods, and constructors — with a Rust-style `-> ReturnType` arrow: `int32 add(int32 a, int32 b) { }` → `fn add(a: int32, b: int32) -> int32 { }`. Constructors take `fn` too but never a return type: `ClassName(int32 x) { }` → `fn ClassName(x: int32) { }`.
+  - Generators are no longer a distinct declaration form — `generator<int32> countdown(int32 n) { }` is now an ordinary function whose return type happens to be `generator<T>`: `fn countdown(n: int32) -> generator<int32> { }`.
+  - Casts (`expr as Type`), match-arm bindings (`field: local`), and generic constraints (`T: int32 | float64`) were already postfix and are unchanged.
 - `match` is now a reserved keyword. `@firescript/std.regex`'s `match(pattern, text)` function (added in 0.5.0) has been renamed to `find_match(pattern, text)` to avoid the collision; `is_match` is unaffected.
 - The `-t`/`--target` flag (`native`/`web`) has been removed. It is replaced by two separate flags, `--platform` (`windows`, `linux`, `macos`, `bare-metal`) and `--arch` (`x86_64`, `i686`, `aarch64`, `armv7`, `riscv64`, `riscv32`), which can be combined for cross-compilation; either or both may be omitted to default to the host platform/architecture. Only `--platform windows --arch x86_64` is currently implemented — any other combination fails with a clear "unsupported target" error rather than compiling.
 
@@ -26,8 +36,8 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 
 ### New Language Features
 - Added generator functions with `generator<T>` syntax: lazy iterables that produce values on demand via `yield`. Generators compile to state-machine structs with resumable next-functions. User-defined generators and `for-in` loops over generators are both supported.
-- Added `@firescript/std.ranges` standard library module with `range(end)`, `rangeFrom(start, end)`, and `rangeStep(start, end, step)` generators, enabling `for (int32 i in range(5))` style loops.
-- Added `char` type — a copyable, stack-allocated scalar representing a single character. Initialized with single-character string literals (`char c = "A"`).
+- Added `@firescript/std.ranges` standard library module with `range(end)`, `rangeFrom(start, end)`, and `rangeStep(start, end, step)` generators, enabling `for (i: int32 in range(5))` style loops.
+- Added `char` type — a copyable, stack-allocated scalar representing a single character. Initialized with single-character string literals (`c: char = "A"`).
 - Added character literal syntax with single quotes (`'A'`, `'\n'`).
 - Added `&mut this` receiver syntax for mutable borrowing in methods. Methods can now declare `&this` for read-only access or `&mut this` for mutable access, with compiler enforcement preventing field mutation through read-only receivers.
 - Added `string.length()` method, returning an `int32` count of characters.
@@ -42,7 +52,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - Added support for logical operators `&&`, `||`, and unary `!` in expressions and conditions.
 - Added support for exponentiation operator `**`.
 - Added sized array declarations with optional initializers (e.g., `int32[10]` or `int32[10] = [1, 2, 3]`). Arrays without explicit initializers are zero-initialized.
-- Added string iteration in `for-in` loops (e.g., `for (string ch in "hello")`), iterating over individual characters.
+- Added string iteration in `for-in` loops (e.g., `for (ch: string in "hello")`), iterating over individual characters.
 - Added string-to-numeric type casting via `as` operator (e.g., `("42" as int32)`, `("3.14" as float64)`).
 - Added `@firescript/std.fcl` standard library module with FCL (FireScript Configuration Language) lexer for parsing configuration data.
 

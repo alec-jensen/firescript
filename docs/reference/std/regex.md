@@ -21,19 +21,19 @@ println(last_error("[ab"));
 
 ## API
 
-### `bool is_match(string pattern, string text)`
+### `fn is_match(pattern: string, text: string) -> bool`
 
 Returns `true` when the pattern matches the input text. Without anchors, the pattern must match the entire input; `^` and `$` control anchoring explicitly.
 
-### `bool find_match(string pattern, string text)`
+### `fn find_match(pattern: string, text: string) -> bool`
 
 Alias of `is_match`. Named `match` prior to 0.6.0; renamed because `match` is now a reserved keyword.
 
-### `int32 find_at(string pattern, string text, int32 start_pos)`
+### `fn find_at(pattern: string, text: string, start_pos: int32) -> int32`
 
 Position-aware matching: returns the length of the match starting at `start_pos`, or `-1` if there is no match at that position.
 
-### `string last_error(string pattern)`
+### `fn last_error(pattern: string) -> string`
 
 Validates a pattern and returns an empty string when the pattern is usable. If validation fails, it returns a short error message.
 
@@ -45,17 +45,17 @@ The `RegexPattern` class (`@firescript/std.regex.pattern.RegexPattern`) lets you
 import @firescript/std.regex.pattern.RegexPattern;
 import @firescript/std.io.println;
 
-RegexPattern p = RegexPattern("[a-z]+");
+p: RegexPattern = RegexPattern("[a-z]+");
 println(p.is_match("firescript"));
 println(p.find_at("firescript", 4));
 ```
 
 Methods:
 
-- `bool is_match(&this, string &text)` — match against the text
-- `bool matches(&this, string &text)` — alias of `is_match`
-- `int32 find_at(&this, string &text, int32 start_pos)` — position-aware matching
-- `string last_error(&this)` — pattern validation error, or empty string
+- `fn is_match(&this, text: &string) -> bool` — match against the text
+- `fn matches(&this, text: &string) -> bool` — alias of `is_match`
+- `fn find_at(&this, text: &string, start_pos: int32) -> int32` — position-aware matching
+- `fn last_error(&this) -> string` — pattern validation error, or empty string
 
 ## Supported Syntax
 

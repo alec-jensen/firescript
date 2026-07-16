@@ -12,8 +12,8 @@ All syscalls return a `SyscallResult` copyable class defined in the standard lib
 
 ```firescript
 copyable class SyscallResult {
-    int32 status;
-    string data;
+    status: int32;
+    data: string;
 }
 ```
 
@@ -52,8 +52,8 @@ Enabling syscalls gives you access to the following functions. Only the basic I/
 ```firescript
 directive enable_syscalls;
 
-SyscallResult open1 = syscall_open("output1.txt", "w");
-SyscallResult open2 = syscall_open("output2.txt", "w");
+open1: SyscallResult = syscall_open("output1.txt", "w");
+open2: SyscallResult = syscall_open("output2.txt", "w");
 
 if open1.status >= 0 and open2.status >= 0 {
     syscall_write(open1.status, "foo");
@@ -63,7 +63,7 @@ if open1.status >= 0 and open2.status >= 0 {
     syscall_close(open2.status);
 }
 
-SyscallResult r = syscall_read(open1.status, 64);
+r: SyscallResult = syscall_read(open1.status, 64);
 if r.status >= 0 {
     // r.data contains the bytes read
 }

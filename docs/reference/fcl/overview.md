@@ -91,12 +91,12 @@ When loading fcl at runtime, define the expected structure as a class in firescr
 
 ```firescript
 class RuntimeConfig {
-	string environment;
-	string logLevel;
-	int32 port;
+	environment: string;
+	logLevel: string;
+	port: int32;
 }
 
-RuntimeConfig cfg = load_config<RuntimeConfig>("config.fcl");
+cfg: RuntimeConfig = load_config<RuntimeConfig>("config.fcl");
 ```
 
 ### Allowed

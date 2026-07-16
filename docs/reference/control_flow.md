@@ -25,7 +25,7 @@ Example:
 ```firescript
 import @firescript/std.io.print;
 
-int8 age = 18;
+age: int8 = 18;
 if (age >= 18) {
     print("You are eligible to vote");
 }
@@ -48,7 +48,7 @@ Example:
 ```firescript
 import @firescript/std.io.print;
 
-int8 score = 65;
+score: int8 = 65;
 if (score >= 70) {
     print("Pass");
 } else {
@@ -77,7 +77,7 @@ Example:
 ```firescript
 import @firescript/std.io.print;
 
-int8 grade = 85;
+grade: int8 = 85;
 
 if (grade >= 90) {
     print("A");
@@ -99,8 +99,8 @@ Conditional statements can be nested within other conditional statements:
 ```firescript
 import @firescript/std.io.print;
 
-bool hasDiscount = true;
-int8 totalAmount = 120;
+hasDiscount: bool = true;
+totalAmount: int8 = 120;
 
 if (totalAmount > 100) {
     if (hasDiscount) {
@@ -131,8 +131,8 @@ Example:
 ```firescript
 import @firescript/std.io.print;
 
-int8 age = 25;
-bool hasLicense = true;
+age: int8 = 25;
+hasLicense: bool = true;
 
 if (age >= 18 && hasLicense) {
     print("You can drive");
@@ -162,7 +162,7 @@ Example:
 ```firescript
 import @firescript/std.io.print;
 
-uint8 count = 0;
+count: uint8 = 0;
 while (count < 5) {
     print(count);
     count = count + 1;
@@ -195,7 +195,7 @@ Example:
 ```firescript
 import @firescript/std.io.print;
 
-uint8 i = 0;
+i: uint8 = 0;
 while (i < 10) {
     i = i + 1;
     
@@ -219,9 +219,9 @@ Loops and conditional statements can be combined to create powerful control flow
 ```firescript
 import @firescript/std.io.print;
 
-int8[10] numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-int8 sum = 0;
-uint8 i = 0;
+numbers: int8[10] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+sum: int8 = 0;
+i: uint8 = 0;
 
 while (i < numbers.length()) {
     if (numbers[i] % 2 == 0) {
@@ -244,7 +244,7 @@ C-style for loops consist of three parts: initialization, condition, and increme
 ```firescript
 import @firescript/std.io.println;
 
-for (int32 i = 0; i < 5; i++) {
+for (i: int32 = 0; i < 5; i++) {
     println(i);
 }
 ```
@@ -254,12 +254,12 @@ Any or all parts can be omitted:
 ```firescript
 import @firescript/std.io.println;
 
-int32 i = 0;
+i: int32 = 0;
 for (; i < 5; i++) {  // Init omitted
     println(i);
 }
 
-for (int32 j = 0; j < 10;) {  // Increment omitted
+for (j: int32 = 0; j < 10;) {  // Increment omitted
     println(j);
     j++;
 }
@@ -270,13 +270,13 @@ Variables declared in the initialization section are scoped to the for loop:
 ```firescript
 import @firescript/std.io.println;
 
-for (int32 i = 0; i < 3; i++) {
+for (i: int32 = 0; i < 3; i++) {
     println(i);
 }
 // i is not accessible here
 
 // This is valid - i is redeclared in a new scope
-for (int32 i = 0; i < 5; i++) {
+for (i: int32 = 0; i < 5; i++) {
     println(i);
 }
 ```
@@ -286,8 +286,8 @@ Nested for loops:
 ```firescript
 import @firescript/std.io.println;
 
-for (int32 i = 0; i < 3; i++) {
-    for (int32 j = 0; j < 3; j++) {
+for (i: int32 = 0; i < 3; i++) {
+    for (j: int32 = 0; j < 3; j++) {
         println(i * 3 + j);
     }
 }
@@ -300,8 +300,8 @@ For-in loops iterate over elements in a collection (arrays, strings, or generato
 ```firescript
 import @firescript/std.io.println;
 
-int32[5] numbers = [1, 2, 3, 4, 5];
-for (int32 num in numbers) {
+numbers: int32[5] = [1, 2, 3, 4, 5];
+for (num: int32 in numbers) {
     println(num);
 }
 ```
@@ -311,7 +311,7 @@ For-in with array literals:
 ```firescript
 import @firescript/std.io.println;
 
-for (int32 value in [10, 20, 30, 40, 50]) {
+for (value: int32 in [10, 20, 30, 40, 50]) {
     println(value);
 }
 ```
@@ -321,8 +321,8 @@ String iteration with for-in:
 ```firescript
 import @firescript/std.io.println;
 
-string text = "hello";
-for (string ch in text) {
+text: string = "hello";
+for (ch: string in text) {
     println(ch);  // Prints each character: h, e, l, l, o
 }
 ```
@@ -337,15 +337,15 @@ import @firescript/std.ranges.range;
 import @firescript/std.ranges.rangeFrom;
 import @firescript/std.ranges.rangeStep;
 
-for (int32 i in range(5)) {
+for (i: int32 in range(5)) {
     println(i);  // 0, 1, 2, 3, 4
 }
 
-for (int32 i in rangeFrom(2, 6)) {
+for (i: int32 in rangeFrom(2, 6)) {
     println(i);  // 2, 3, 4, 5
 }
 
-for (int32 i in rangeStep(0, 10, 3)) {
+for (i: int32 in rangeStep(0, 10, 3)) {
     println(i);  // 0, 3, 6, 9
 }
 ```
@@ -357,15 +357,15 @@ for (int32 i in rangeStep(0, 10, 3)) {
 ```firescript
 import @firescript/std.io.println;
 
-generator<int32> countdown(int32 n) {
-    int32 i = n;
+fn countdown(n: int32) -> generator<int32> {
+    i: int32 = n;
     while (i > 0) {
         yield i;
         i -= 1;
     }
 }
 
-for (int32 v in countdown(3)) {
+for (v: int32 in countdown(3)) {
     println(v);  // 3, 2, 1
 }
 ```
@@ -378,7 +378,7 @@ Both `break` and `continue` work in for loops:
 import @firescript/std.io.println;
 
 // Break: exit the loop early
-for (int32 i = 0; i < 10; i++) {
+for (i: int32 = 0; i < 10; i++) {
     if (i == 5) {
         break;  // Exit when i reaches 5
     }
@@ -386,7 +386,7 @@ for (int32 i = 0; i < 10; i++) {
 }
 
 // Continue: skip to next iteration
-for (int32 i = 0; i < 5; i++) {
+for (i: int32 = 0; i < 5; i++) {
     if (i == 2) {
         continue;  // Skip when i is 2
     }
@@ -402,7 +402,7 @@ The following control flow features are planned but not yet implemented in the c
 
 ```firescript
 // Future syntax
-int8 max = ternary a > b then a else b;
+max: int8 = ternary a > b then a else b;
 ```
 
 ### Switch Statements

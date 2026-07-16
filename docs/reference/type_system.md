@@ -22,14 +22,14 @@ These are fixed-size scalars stored on the stack and copied by value:
   * **`float32`**: 32-bit floating point number
   * **`float64`**: 64-bit floating point number
   * **`float128`**: 128-bit floating point number. [IMPLEMENTED] — true 16-byte IEEE 754 binary128 (quad-precision), implemented as a self-hosted soft-float runtime. Arithmetic, comparisons, and conversions are correctly rounded (round-to-nearest-even), with full support for subnormals, signed zero, infinity, and NaN.
-* **`bool`**: Represents boolean values, either `true` or `false`. Example: `bool isActive = true;`
-* **`char`**: Represents a single character, stored on the stack. Initialized with a character literal or a single-character string literal. Examples: `char initial = 'A';`, `char digit = "7";`
+* **`bool`**: Represents boolean values, either `true` or `false`. Example: `isActive: bool = true;`
+* **`char`**: Represents a single character, stored on the stack. Initialized with a character literal or a single-character string literal. Examples: `initial: char = 'A';`, `digit: char = "7";`
 
 ### Owned Types (Heap-Allocated)
 
 These values are stored on the heap with pointers on the stack and use move semantics:
 
-* **`string`**: Represents sequences of characters. Example: `string message = "Hello, World!";`
+* **`string`**: Represents sequences of characters. Example: `message: string = "Hello, World!";`
 * **Arrays**: Collections of elements (see [Arrays](arrays.md))
 * **User-defined classes**: Custom objects (see [Classes & Inheritance](classes.md))
 
@@ -46,14 +46,14 @@ firescript requires **explicit** conversions. There are no implicit casts betwee
 Use Rust-style casts:
 
 ```firescript
-int8 myInt = (59i16 as int8);
-uint8 u = (255i16 as uint8);
-float64 f = (42i32 as float64);
+myInt: int8 = (59i16 as int8);
+u: uint8 = (255i16 as uint8);
+f: float64 = (42i32 as float64);
 
 // String to numeric conversions
-int32 num = ("42" as int32);
-float64 pi = ("3.14159" as float64);
-int64 bigNum = ("9223372036854775807" as int64);
+num: int32 = ("42" as int32);
+pi: float64 = ("3.14159" as float64);
+bigNum: int64 = ("9223372036854775807" as int64);
 ```
 
 Notes:
@@ -70,9 +70,9 @@ Notes:
 The `intN` types in firescript represent N-bit signed integers, while the `uintN` types represent N-bit unsigned integers.
 
 ```firescript
-int8 small = 42;
-int64 large = 9223372036854775807;  // Large integers are supported
-int64 calculation = ((small as int64) + large) * 2i64;  // Arithmetic operations
+small: int8 = 42;
+large: int64 = 9223372036854775807;  // Large integers are supported
+calculation: int64 = ((small as int64) + large) * 2i64;  // Arithmetic operations
 ```
 
 Integers support the following operations:
@@ -86,17 +86,17 @@ Integers support the following operations:
 Integer literals can be made more readable using underscores:
 
 ```firescript
-int32 million = 1_000_000;  // One million
-int64 bigNumber = 9_223_372_036_854_775_807;  // Large integer
+million: int32 = 1_000_000;  // One million
+bigNumber: int64 = 9_223_372_036_854_775_807;  // Large integer
 ```
 
 Integer literals can be specified in decimal, hexadecimal, binary, or octal formats:
 
 ```firescript
-int8 decimal = 42;        // Decimal
-int8 hex = 0x2A;          // Hexadecimal
-int8 binary = 0b00101010; // Binary
-int8 octal = 0o52;        // Octal
+decimal: int8 = 42;        // Decimal
+hex: int8 = 0x2A;          // Hexadecimal
+binary: int8 = 0b00101010; // Binary
+octal: int8 = 0o52;        // Octal
 ```
 
 **Type Inference for Literals:**
@@ -104,11 +104,11 @@ int8 octal = 0o52;        // Octal
 When you assign a literal to a variable with an explicit type, the literal automatically takes on that type:
 
 ```firescript
-int8 small = 42;          // Literal 42 inferred as int8
-uint16 medium = 30000;    // Literal 30000 inferred as uint16
-int64 large = 9223372036854775807;  // Literal inferred as int64
-float32 pi = 3.14;        // Literal 3.14 inferred as float32
-float64 e = 2.71828;      // Literal 2.71828 inferred as float64
+small: int8 = 42;          // Literal 42 inferred as int8
+medium: uint16 = 30000;    // Literal 30000 inferred as uint16
+large: int64 = 9223372036854775807;  // Literal inferred as int64
+pi: float32 = 3.14;        // Literal 3.14 inferred as float32
+e: float64 = 2.71828;      // Literal 2.71828 inferred as float64
 ```
 
 If the literal is too large or too small for the target type, you'll get a compile-time error:
@@ -123,19 +123,19 @@ If the literal is too large or too small for the target type, you'll get a compi
 You can also explicitly specify the type using a suffix, which is useful in contexts where the type cannot be inferred (like in expressions):
 
 ```firescript
-int8 small = 42i8;
-int16 medium = 30000i16;
-int64 large = 9223372036854775807i64;
-uint8 usmall = 255u8;
-uint16 umedium = 60000u16;
-uint64 ularge = 18446744073709551615u64;
+small: int8 = 42i8;
+medium: int16 = 30000i16;
+large: int64 = 9223372036854775807i64;
+usmall: uint8 = 255u8;
+umedium: uint16 = 60000u16;
+ularge: uint64 = 18446744073709551615u64;
 ```
 
 You can define a base and a suffix together:
 
 ```firescript
-int8 hexSmall = 0x2Ai8;
-uint16 binMedium = 0b111010100110u16;
+hexSmall: int8 = 0x2Ai8;
+binMedium: uint16 = 0b111010100110u16;
 ```
 
 #### Integer Overflow and Underflow Behavior
@@ -143,14 +143,14 @@ uint16 binMedium = 0b111010100110u16;
 For all fixed-size integer types (`intN` and `uintN`), arithmetic operations that exceed the representable range will throw an error at runtime. This is to prevent silent overflow/underflow issues.
 
 ```firescript
-int8 max = 127i8;
-int8 overflow = max + 1i8;  // Runtime error: Integer overflow
+max: int8 = 127i8;
+overflow: int8 = max + 1i8;  // Runtime error: Integer overflow
 ```
 
 Overflows that can be detected at compile-time (e.g., constant expressions) will result in a compile-time error.
 
 ```firescript
-int8 compileTimeOverflow = 128i8;  // Compile-time error: Integer overflow
+compileTimeOverflow: int8 = 128i8;  // Compile-time error: Integer overflow
 ```
 
 ### Floating Point Types (`floatN`)
@@ -158,8 +158,8 @@ int8 compileTimeOverflow = 128i8;  // Compile-time error: Integer overflow
 The `floatN` types represent N-bit floating point numbers.
 
 ```firescript
-float32 simpleDecimal = 3.14;
-float64 highPrecision = 3.141592653589793;
+simpleDecimal: float32 = 3.14;
+highPrecision: float64 = 3.141592653589793;
 ```
 
 Floating point numbers support:
@@ -176,10 +176,10 @@ Floating point literals can be specified in decimal or scientific notation.
 When you assign a floating-point literal to a variable with an explicit type, the literal automatically takes on that type:
 
 ```firescript
-float32 pi = 3.14159;              // Literal inferred as float32
-float64 e = 2.71828;               // Literal inferred as float64
-float128 phi = 1.618033988749;     // Literal inferred as float128
-float64 scientific = 6.022e23;     // Scientific notation, inferred as float64
+pi: float32 = 3.14159;              // Literal inferred as float32
+e: float64 = 2.71828;               // Literal inferred as float64
+phi: float128 = 1.618033988749;     // Literal inferred as float128
+scientific: float64 = 6.022e23;     // Scientific notation, inferred as float64
 ```
 
 **Explicit Type Suffixes:**
@@ -187,9 +187,9 @@ float64 scientific = 6.022e23;     // Scientific notation, inferred as float64
 You can also explicitly specify the type using a suffix:
 
 ```firescript
-float32 f32Value = 3.14f32;
-float64 f64Value = 3.14f64;
-float128 f128Value = 3.14f128;
+f32Value: float32 = 3.14f32;
+f64Value: float64 = 3.14f64;
+f128Value: float128 = 3.14f128;
 ```
 
 #### Special Floating Point Values
@@ -199,9 +199,9 @@ float128 f128Value = 3.14f128;
 Floating point types support special values such as `NaN` (Not a Number), `Infinity`, and `-Infinity`:
 
 ```firescript
-float32 notANumber = 0.0f32 / 0.0f32;  // NaN
-float64 positiveInfinity = 1.0f64 / 0.0f64;  // Infinity
-float64 negativeInfinity = -1.0f64 / 0.0f64; // -Infinity
+notANumber: float32 = 0.0f32 / 0.0f32;  // NaN
+positiveInfinity: float64 = 1.0f64 / 0.0f64;  // Infinity
+negativeInfinity: float64 = -1.0f64 / 0.0f64; // -Infinity
 ```
 
 #### Floating Point Overflow and Underflow Behavior
@@ -209,9 +209,9 @@ float64 negativeInfinity = -1.0f64 / 0.0f64; // -Infinity
 Floating point operations that exceed the representable range will result in `Infinity` or `-Infinity`, while operations resulting in values too close to zero will result in `0.0`. Operations resulting in undefined values will yield `NaN`.
 
 ```firescript
-float32 large = 3.4e38f32 * 10.0f32;  // Results in Infinity
-float32 small = 1.0e-38f32 / 10.0f32; // Results in 0.0
-float32 undefined = 0.0f32 / 0.0f32;      // Results in NaN
+large: float32 = 3.4e38f32 * 10.0f32;  // Results in Infinity
+small: float32 = 1.0e-38f32 / 10.0f32; // Results in 0.0
+undefined: float32 = 0.0f32 / 0.0f32;      // Results in NaN
 ```
 
 ### Boolean Type (`bool`)
@@ -219,12 +219,12 @@ float32 undefined = 0.0f32 / 0.0f32;      // Results in NaN
 The `bool` type has only two possible values: `true` and `false`. It's commonly used in conditional expressions.
 
 ```firescript
-bool userLoggedIn = true;
-bool hasPermission = false;
+userLoggedIn: bool = true;
+hasPermission: bool = false;
 
 // Boolean operations
-bool canAccess = userLoggedIn && hasPermission;  // Logical AND
-bool needsAttention = !userLoggedIn || !hasPermission;  // Logical OR and NOT
+canAccess: bool = userLoggedIn && hasPermission;  // Logical AND
+needsAttention: bool = !userLoggedIn || !hasPermission;  // Logical OR and NOT
 ```
 
 Boolean values support:
@@ -237,12 +237,12 @@ Boolean values support:
 The `string` type represents sequences of characters. Strings in firescript are immutable.
 
 ```firescript
-string greeting = "Hello";
-string name = "World";
-string message = greeting + ", " + name + "!";  // String concatenation with +
+greeting: string = "Hello";
+name: string = "World";
+message: string = greeting + ", " + name + "!";  // String concatenation with +
 
 // Multi-line strings
-string paragraph = "This is a
+paragraph: string = "This is a
 multi-line
 string";
 ```
@@ -257,9 +257,9 @@ Strings support:
 The `char` type represents a single character. Unlike strings, `char` is a copyable type and is stored on the stack. It can be initialized with a single character string literal.
 
 ```firescript
-char letter = "A";
-char digit = "7";
-char newline = "\n";  // Special character
+letter: char = "A";
+digit: char = "7";
+newline: char = "\n";  // Special character
 ```
 
 ### Arrays
@@ -270,23 +270,23 @@ Arrays are fixed-size ordered collections of elements of the same type.
 
 ```firescript
 // With initial values
-int8[5] numbers = [1, 2, 3, 4, 5];
-string[3] fruits = ["apple", "banana", "cherry"];
+numbers: int8[5] = [1, 2, 3, 4, 5];
+fruits: string[3] = ["apple", "banana", "cherry"];
 ```
 
 #### Array Operations
 
 ```firescript
-int8[3] scores = [85, 92, 78];
+scores: int8[3] = [85, 92, 78];
 
 // Accessing elements (zero-based indexing)
-int8 firstScore = scores[0];  // 85
+firstScore: int8 = scores[0];  // 85
 
 // Modifying elements
 scores[1] = 95;  // Array becomes [85, 95, 78]
 
 // Array properties
-int32 count = scores.length();  // 3
+count: int32 = scores.length();  // 3
 ```
 
 ## Nullability [IMPLEMENTED]
@@ -296,8 +296,8 @@ By default, variables cannot hold the value `null`. To allow a variable to be as
 ### Declaring Nullable Variables
 
 ```firescript
-string username? = null;  // Allowed
-string title = "Default";
+username: string? = null;  // Allowed
+title: string = "Default";
 
 // title = null;  // Error: Cannot assign null to non-nullable type 'string'
 
@@ -311,7 +311,7 @@ When working with nullable variables, it's important to check for null before us
 ```firescript
 import @firescript/std.io.print;
 
-string data? = null;
+data: string? = null;
 
 // Safe pattern
 if (data != null) {
@@ -334,30 +334,30 @@ firescript uses Rust-style postfix casting; Java/C-style casts are not supported
 
 ```firescript
 // Numeric conversions
-int32 intVal = 42;
-float64 floatVal = intVal as float64;     // 42.0
+intVal: int32 = 42;
+floatVal: float64 = intVal as float64;     // 42.0
 
-float32 pi = 3.14f32;
-int32 truncated = pi as int32;            // 3 (truncates decimal)
+pi: float32 = 3.14f32;
+truncated: int32 = pi as int32;            // 3 (truncates decimal)
 
 // Between numeric types
-int8 small = 100i8;
-int64 large = small as int64;             // 100i64
+small: int8 = 100i8;
+large: int64 = small as int64;             // 100i64
 
-uint32 unsigned = 42u32;
-int32 signed = unsigned as int32;         // 42i32
+unsigned: uint32 = 42u32;
+signed: int32 = unsigned as int32;         // 42i32
 
 // String conversions
-string numStr = "42";
-int32 parsed = numStr as int32;           // 42
-float64 parsedFloat = "3.14" as float64;  // 3.14
+numStr: string = "42";
+parsed: int32 = numStr as int32;           // 42
+parsedFloat: float64 = "3.14" as float64;  // 3.14
 
 // To string
-string str1 = 42 as string;               // "42"
-string str2 = 3.14f32 as string;          // "3.14"
-string str3 = true as string;             // "true"
-char letter = 'A';
-string str4 = letter as string;           // "A"
+str1: string = 42 as string;               // "42"
+str2: string = 3.14f32 as string;          // "3.14"
+str3: string = true as string;             // "true"
+letter: char = 'A';
+str4: string = letter as string;           // "A"
 ```
 
 **Casting Rules:**
@@ -383,32 +383,32 @@ Casts to non-numeric targets other than `string` are not allowed and will result
 firescript does **not** perform implicit type conversions in arithmetic operations. When performing operations between different types or precisions, you must explicitly cast to the desired result type.
 
 ```firescript
-int32 a = 10;
-int64 b = 20i64;
+a: int32 = 10;
+b: int64 = 20i64;
 
 // int32 result = a + b;  // ❌ Error: Cannot mix int32 and int64
 
 // Must explicitly cast to desired type
-int32 result1 = a + (b as int32);  // Cast b to int32 first
-int64 result2 = (a as int64) + b;  // Cast a to int64 first
+result1: int32 = a + (b as int32);  // Cast b to int32 first
+result2: int64 = (a as int64) + b;  // Cast a to int64 first
 
 // Mixed integer and float
-int32 intVal = 5;
-float32 floatVal = 2.5f32;
+intVal: int32 = 5;
+floatVal: float32 = 2.5f32;
 
 // float32 mixed = intVal + floatVal;  // ❌ Error: Cannot mix int32 and float32
 
-float32 result3 = (intVal as float32) + floatVal;  // Cast int to float
-int32 result4 = (floatVal as int32) + intVal;      // Cast float to int (truncates)
+result3: float32 = (intVal as float32) + floatVal;  // Cast int to float
+result4: int32 = (floatVal as int32) + intVal;      // Cast float to int (truncates)
 
 // Different float precisions
-float32 f32 = 3.14f32;
-float64 f64 = 2.71f64;
+f32: float32 = 3.14f32;
+f64: float64 = 2.71f64;
 
 // float64 sum = f32 + f64;  // ❌ Error: Cannot mix float32 and float64
 
-float64 result5 = (f32 as float64) + f64;  // Cast to float64
-float32 result6 = f32 + (f64 as float32);  // Cast to float32
+result5: float64 = (f32 as float64) + f64;  // Cast to float64
+result6: float32 = f32 + (f64 as float32);  // Cast to float32
 ```
 
 **Design Rationale:**
@@ -420,9 +420,9 @@ This explicit approach prevents silent precision loss and makes data type conver
 String concatenation with `+` requires both operands to be strings. There is no implicit conversion — cast non-string values explicitly:
 
 ```firescript
-string message = "Count: " + (42 as string);              // "Count: 42"
-string status = "Active: " + (true as string);            // "Active: true"
-string pi = "Pi is approximately " + (3.14f32 as string); // "Pi is approximately 3.14"
+message: string = "Count: " + (42 as string);              // "Count: 42"
+status: string = "Active: " + (true as string);            // "Active: true"
+pi: string = "Pi is approximately " + (3.14f32 as string); // "Pi is approximately 3.14"
 
 // string bad = "Count: " + 42;  // ❌ Error: cannot concatenate string and int32
 ```
@@ -433,7 +433,7 @@ The firescript parser includes a type-checking phase that runs after the initial
 
 ### Static Type Checking
 
-1. **Variable Declarations**: When you declare a variable (`int8 x = 5i8;`), the type checker verifies that the type of the initializer (`5i8`, which is `int8`) matches the declared type (`int8`).
+1. **Variable Declarations**: When you declare a variable (`x: int8 = 5i8;`), the type checker verifies that the type of the initializer (`5i8`, which is `int8`) matches the declared type (`int8`).
 
 2. **Assignments**: When assigning a value to an existing variable (`x = 10i8;`), the checker ensures the assigned value's type is compatible with the variable's declared type.
 
@@ -450,12 +450,12 @@ The firescript parser includes a type-checking phase that runs after the initial
 Type errors found during the checking phase will prevent the code from compiling further, providing early feedback on potential issues:
 
 ```firescript
-string name = "John";
-int8 age = 30;
+name: string = "John";
+age: int8 = 30;
 
 age = "thirty";  // Type error: Cannot assign string to int
 name = 25;       // Type error: Cannot assign int to string
-bool result = age + name;  // Type error: Cannot add int and string
+result: bool = age + name;  // Type error: Cannot add int and string
                            // Also cannot assign result to bool
 ```
 
@@ -465,11 +465,11 @@ A `typeof` built-in returning a string representation of a value's type is plann
 
 ```firescript
 // Future syntax
-string type1 = typeof(42);        // "int8"
-string type2 = typeof(3.14);      // "float32"
-string type3 = typeof("hello");   // "string"
-string type4 = typeof(true);      // "bool"
-string type5 = typeof([1, 2, 3]); // "int8[]"
+type1: string = typeof(42);        // "int8"
+type2: string = typeof(3.14);      // "float32"
+type3: string = typeof("hello");   // "string"
+type4: string = typeof(true);      // "bool"
+type5: string = typeof([1, 2, 3]); // "int8[]"
 ```
 
 ## Standard Library Types (Planned)
@@ -490,7 +490,7 @@ Generics allow you to write flexible, reusable code that works with multiple typ
 A generic function is declared with type parameters in angle brackets after the function name:
 
 ```firescript
-T max<T>(T a, T b) {
+fn max<T>(a: T, b: T) -> T {
     if (a > b) {
         return a;
     } else {
@@ -499,11 +499,11 @@ T max<T>(T a, T b) {
 }
 
 // Type parameter is inferred from arguments
-int8 largerInt = max(5i8, 10i8);        // T inferred as int8
-float64 largerF64 = max(2.5, 1.5);      // T inferred as float64
+largerInt: int8 = max(5i8, 10i8);        // T inferred as int8
+largerF64: float64 = max(2.5, 1.5);      // T inferred as float64
 
 // Or explicitly specified
-float32 largerFloat = max<float32>(3.14f32, 2.71f32);
+largerFloat: float32 = max<float32>(3.14f32, 2.71f32);
 ```
 
 #### Type Constraints
@@ -517,7 +517,7 @@ Interface-based constraints are planned alongside the interface system itself:
 ```firescript
 // Future syntax
 // T must satisfy the Comparable interface
-T max<T: Comparable>(T a, T b) {
+fn max<T: Comparable>(a: T, b: T) -> T {
     if (a > b) { return a; }
     return b;
 }
@@ -529,20 +529,20 @@ For simpler cases, you can use type unions to explicitly list which types are al
 
 ```firescript
 // T can be int32, int64, or float64
-T add<T: int32 | int64 | float64>(T a, T b) {
+fn add<T: int32 | int64 | float64>(a: T, b: T) -> T {
     return a + b;
 }
 
 // Works with any of the specified types
-int32 result1 = add(5i32, 10i32);        // ✅ Works
-float64 result2 = add(3.14f64, 2.71f64); // ✅ Works
+result1: int32 = add(5i32, 10i32);        // ✅ Works
+result2: float64 = add(3.14f64, 2.71f64); // ✅ Works
 // int8 result3 = add(1i8, 2i8);         // ❌ Error: int8 not in union
 
 // Type unions work with any types, including custom classes
 class Point { /* ... */ }
 class Circle { /* ... */ }
 
-T process<T: Point | Circle>(T shape) {
+fn process<T: Point | Circle>(shape: T) -> T {
     // Can work with Point or Circle
     return shape;
 }
@@ -555,7 +555,7 @@ Combining interface constraints with type unions is planned for when interfaces 
 ```firescript
 // Future syntax
 // T must satisfy Comparable AND be in the union
-T clamp<T: Comparable & (int32 | float64)>(T value, T min, T max) {
+fn clamp<T: Comparable & (int32 | float64)>(value: T, min: T, max: T) -> T {
     if (value < min) { return min; }
     if (value > max) { return max; }
     return value;
@@ -576,12 +576,12 @@ Type unions provide a simple, explicit way to define generic constraints by list
 
 ```firescript
 // Simple union - T can be int32 or float64
-T convert<T: int32 | float64>(T value) {
+fn convert<T: int32 | float64>(value: T) -> T {
     return value;
 }
 
 // Multiple types in union
-T process<T: int8 | int16 | int32 | int64>(T value) {
+fn process<T: int8 | int16 | int32 | int64>(value: T) -> T {
     return value * 2;
 }
 
@@ -589,7 +589,7 @@ T process<T: int8 | int16 | int32 | int64>(T value) {
 class Dog { /* ... */ }
 class Cat { /* ... */ }
 
-T feed<T: Dog | Cat>(T animal) {
+fn feed<T: Dog | Cat>(animal: T) -> T {
     // Feed the animal
     return animal;
 }
@@ -602,7 +602,7 @@ Once interfaces are implemented, you will be able to require that types satisfy 
 ```firescript
 // Future syntax
 // T must be Comparable AND one of these specific types
-T max<T: Comparable & (int32 | int64 | float64)>(T a, T b) {
+fn max<T: Comparable & (int32 | int64 | float64)>(a: T, b: T) -> T {
     if (a > b) { return a; }
     return b;
 }
@@ -612,15 +612,15 @@ T max<T: Comparable & (int32 | int64 | float64)>(T a, T b) {
 
 ```firescript
 // Define a function that only works with specific numeric types
-T safeDivide<T: float32 | float64>(T a, T b) {
+fn safeDivide<T: float32 | float64>(a: T, b: T) -> T {
     if (b == 0.0) {
         return a - a;  // Safe zero default for floats
     }
     return a / b;
 }
 
-float32 result1 = safeDivide(10.0f32, 2.0f32);  // ✅ Works
-float64 result2 = safeDivide(10.0f64, 2.0f64);  // ✅ Works
+result1: float32 = safeDivide(10.0f32, 2.0f32);  // ✅ Works
+result2: float64 = safeDivide(10.0f64, 2.0f64);  // ✅ Works
 // int32 result3 = safeDivide(10i32, 2i32);     // ❌ Error: int32 not in union
 ```
 
@@ -656,27 +656,27 @@ For constants that need to adapt to the type precision, type-associated constant
 
 ```firescript
 // Type-associated constants (planned syntax)
-T pi<T: float<N>>() {
+fn pi<T: float<N>>() -> T {
     // Compiler provides appropriate precision for each float type
     return cast<T>(3.141592653589793238462643383279502884197);
 }
 
-T e<T: float<N>>() {
+fn e<T: float<N>>() -> T {
     return cast<T>(2.718281828459045235360287471352662497757);
 }
 
 // Usage - type is inferred from context
-float32 circumference32(float32 radius) {
+fn circumference32(radius: float32) -> float32 {
     return 2.0f32 * pi<float32>() * radius;
 }
 
-float64 circumference64(float64 radius) {
+fn circumference64(radius: float64) -> float64 {
     return 2.0f64 * pi<float64>() * radius;
 }
 
 // Or with type inference
-float32 area(float32 radius) {
-    float32 piValue = pi();  // Type inferred as float32 from variable type
+fn area(radius: float32) -> float32 {
+    piValue: float32 = pi();  // Type inferred as float32 from variable type
     return piValue * radius * radius;
 }
 ```
@@ -686,16 +686,16 @@ float32 area(float32 radius) {
 The firescript compiler can infer generic type parameters from function arguments in most cases:
 
 ```firescript
-T identity<T>(T value) {
+fn identity<T>(value: T) -> T {
     return value;
 }
 
 // Type parameter inferred from argument
-int32 x = identity(42i32);        // T inferred as int32
-string s = identity("hello");      // T inferred as string
+x: int32 = identity(42i32);        // T inferred as int32
+s: string = identity("hello");      // T inferred as string
 
 // Explicit type parameter when needed
-float64 y = identity<float64>(42.0); // T is float64
+y: float64 = identity<float64>(42.0); // T is float64
 ```
 
 Type inference follows these rules:
@@ -708,12 +708,12 @@ Type inference follows these rules:
 ```firescript
 constraint NumericPrimitive = int32 | int64 | float32 | float64;
 
-T add<T: NumericPrimitive>(T a, T b) {
+fn add<T: NumericPrimitive>(a: T, b: T) -> T {
     return a + b;
 }
 
-int32 result1 = add(10i32, 20i32);  // ✅ T inferred as int32
-float32 result2 = add(1.5f32, 2.5f32);  // ✅ T inferred as float32
+result1: int32 = add(10i32, 20i32);  // ✅ T inferred as int32
+result2: float32 = add(1.5f32, 2.5f32);  // ✅ T inferred as float32
 
 // int32 result3 = add(10i32, 20i64);  // ❌ Error: T cannot be both int32 and int64
 ```
@@ -724,19 +724,19 @@ Generic classes create data structures that work with any type. Both owned and `
 
 ```firescript
 class Box<T> {
-    T value;
+    value: T;
 
-    Box(T value) {
+    fn Box(value: T) {
         this.value = value;
     }
 
-    T getValue(&this) {
+    fn getValue(&this) -> T {
         return this.value;
     }
 }
 
 // Usage
-Box<int32> intBox = Box<int32>(42i32);
+intBox: Box<int32> = Box<int32>(42i32);
 ```
 
 The standard library's `Tuple<T, U>` and `Option<T>` (`@firescript/std.types`) are generic classes. See [Classes & Inheritance — Generic Classes](classes.md#generic-classes).
@@ -756,7 +756,7 @@ map<string, int32> scores = map<string, int32>();
 scores.set("Alice", 100);
 scores.set("Bob", 95);
 
-int32 aliceScore? = scores.get("Alice");  // 100
+aliceScore: int32? = scores.get("Alice");  // 100
 ```
 
 #### Implementation Notes
@@ -770,14 +770,14 @@ Generics in firescript use **monomorphization** at compile time:
 
 ```firescript
 // You write this once:
-T max<T: int32 | float32>(T a, T b) {
+fn max<T: int32 | float32>(a: T, b: T) -> T {
     if (a > b) { return a; }
     return b;
 }
 
 // If you call it with int32 and float32:
-int32 x = max(5i32, 10i32);
-float32 y = max(3.14f32, 2.71f32);
+x: int32 = max(5i32, 10i32);
+y: float32 = max(3.14f32, 2.71f32);
 
 // The compiler generates (conceptually):
 // int32 max_int32(int32 a, int32 b) { ... }
@@ -811,26 +811,26 @@ constraint FloatingPoint = float32 | float64 | float128;
 
 ```firescript
 // Use the constraint alias just like a built-in constraint
-T add<T: NumericPrimitive>(T a, T b) {
+fn add<T: NumericPrimitive>(a: T, b: T) -> T {
     return a + b;
 }
 
-T abs<T: SignedInteger>(T x, T zero) {
+fn abs<T: SignedInteger>(x: T, zero: T) -> T {
     if (x < zero) {
         return -x;
     }
     return x;
 }
 
-T clamp<T: FloatingPoint>(T value, T min, T max) {
+fn clamp<T: FloatingPoint>(value: T, min: T, max: T) -> T {
     if (value < min) return min;
     if (value > max) return max;
     return value;
 }
 
 // Usage is natural
-int32 sum = add(10i32, 20i32);          // ✅ Works with NumericPrimitive
-float64 clamped = clamp(5.5, 0.0, 10.0); // ✅ Works with FloatingPoint
+sum: int32 = add(10i32, 20i32);          // ✅ Works with NumericPrimitive
+clamped: float64 = clamp(5.5, 0.0, 10.0); // ✅ Works with FloatingPoint
 ```
 
 **Combining Constraint Aliases:**
@@ -841,7 +841,7 @@ You can combine constraint aliases with other constraints:
 constraint IntegerType = SignedInteger | UnsignedInteger;
 
 // Combine with interface constraints
-T process<T: Comparable & IntegerType>(T value) {
+fn process<T: Comparable & IntegerType>(value: T) -> T {
     // T must be comparable AND one of the integer types
     return value;
 }
@@ -849,7 +849,7 @@ T process<T: Comparable & IntegerType>(T value) {
 // Combine multiple constraint aliases with unions
 constraint AllNumeric = SignedInteger | UnsignedInteger | FloatingPoint;
 
-T compute<T: AllNumeric>(T value) {
+fn compute<T: AllNumeric>(value: T) -> T {
     return value * value;
 }
 ```
@@ -867,17 +867,17 @@ class Triangle { /* ... */ }
 constraint Shape2D = Circle | Square | Triangle;
 
 // Use in generic functions
-T area<T: Shape2D>(T shape) {
+fn area<T: Shape2D>(shape: T) -> T {
     // Calculate area for any 2D shape
     return shape.calculateArea();
 }
 
 // Can be combined with interfaces
 interface Drawable {
-    void draw(&this);
+    fn draw(&this) -> void;
 }
 
-T render<T: Drawable & Shape2D>(T shape) {
+fn render<T: Drawable & Shape2D>(shape: T) -> T {
     shape.draw();
     return shape;
 }
@@ -895,14 +895,14 @@ T render<T: Drawable & Shape2D>(T shape) {
 ```firescript
 // Constraint alias - just a shorthand for a type union (implemented)
 constraint FastInt = int32 | int64;
-T add<T: FastInt>(T a, T b) { return a + b; }
+fn add<T: FastInt>(a: T, b: T) -> T { return a + b; }
 // Expands to: T add<T: int32 | int64>(T a, T b)
 
 // Interface - defines required capabilities (PLANNED, future syntax)
 interface Printable {
-    string toString(&this);
+    fn toString(&this) -> string;
 }
-T print<T: Printable>(T value) { /* ... */ }
+fn print<T: Printable>(value: T) -> T { /* ... */ }
 // Requires T to have a toString() method
 ```
 
@@ -923,7 +923,7 @@ constraint ModuleNumeric = int32 | float32;
 
 // Exported module API
 export constraint PublicNumeric = int32 | float64;
-export T compute<T: PublicNumeric>(T value) {
+export fn compute<T: PublicNumeric>(value: T) -> T {
     return value;
 }
 
@@ -946,17 +946,17 @@ Interfaces define a set of capabilities that types can implement. They are used 
 
 ```firescript
 // Built-in interfaces work with primitives (compiler support)
-T max<T: Comparable>(T a, T b) { return a > b ? a : b; }
-int32 result = max(5i32, 10i32);  // ✅ Works
+fn max<T: Comparable>(a: T, b: T) -> T { return a > b ? a : b; }
+result: int32 = max(5i32, 10i32);  // ✅ Works
 
 // Custom interfaces need wrapper classes
 interface Printable {
-    string toString(&this);
+    fn toString(&this) -> string;
 }
 
 class PrintableInt implements Printable {
-    int32 value;
-    string toString(&this) { return this.value as string; }
+    value: int32;
+    fn toString(&this) -> string { return this.value as string; }
 }
 ```
 
@@ -968,14 +968,14 @@ An interface is defined using the `interface` keyword followed by the interface 
 // Basic interface definition
 interface Printable {
     // Method signature that implementing types must provide
-    string toString(&this);
+    fn toString(&this) -> string;
 }
 
 // Interface with multiple methods
 interface Drawable {
-    void draw(&this);
-    void move(&this, int32 x, int32 y);
-    bool isVisible(&this);
+    fn draw(&this) -> void;
+    fn move(&this, x: int32, y: int32) -> void;
+    fn isVisible(&this) -> bool;
 }
 ```
 
@@ -986,12 +986,12 @@ Interfaces can inherit from other interfaces, creating a hierarchy of capabiliti
 ```firescript
 // Base interface
 interface Equatable {
-    bool equals(&this, &this other);
+    fn equals(&this, other: &this) -> bool;
 }
 
 // Child interface inherits parent's requirements
 interface Comparable from Equatable {
-    int32 compare(&this, &this other);  // Returns -1, 0, or 1
+    fn compare(&this, other: &this) -> int32;  // Returns -1, 0, or 1
 }
 
 // Types implementing Comparable must also implement Equatable
@@ -1006,43 +1006,43 @@ import @firescript/std.io.print;
 
 // Define a class that implements an interface
 class Point implements Printable {
-    float32 x;
-    float32 y;
-    
-    Point(&this, float32 x, float32 y) {
+    x: float32;
+    y: float32;
+
+    fn Point(&this, x: float32, y: float32) {
         this.x = x;
         this.y = y;
     }
-    
+
     // Implement the required method from Printable
-    string toString(&this) {
+    fn toString(&this) -> string {
         return "Point(" + (this.x as string) + ", " + (this.y as string) + ")";
     }
 }
 
 // Implement multiple interfaces
 class Circle implements Drawable, Printable {
-    float32 radius;
-    
-    Circle(&this, float32 radius) {
+    radius: float32;
+
+    fn Circle(&this, radius: float32) {
         this.radius = radius;
     }
-    
+
     // Implement Drawable methods
-    void draw(&this) {
+    fn draw(&this) -> void {
         print("Drawing circle with radius " + (this.radius as string));
     }
-    
-    void move(&this, int32 dx, int32 dy) {
+
+    fn move(&this, dx: int32, dy: int32) -> void {
         // Movement logic
     }
-    
-    bool isVisible(&this) {
+
+    fn isVisible(&this) -> bool {
         return true;
     }
-    
+
     // Implement Printable method
-    string toString(&this) {
+    fn toString(&this) -> string {
         return "Circle(radius=" + (this.radius as string) + ")";
     }
 }
@@ -1054,12 +1054,12 @@ Built-in interfaces like `Numeric`, `Comparable`, etc. work directly with primit
 
 ```firescript
 // Built-in interfaces work with primitives directly
-T max<T: Comparable>(T a, T b) {
+fn max<T: Comparable>(a: T, b: T) -> T {
     return a > b ? a : b;
 }
 
-int32 result = max(5i32, 10i32);  // ✅ Works! No wrapper needed
-float64 fResult = max(3.14f64, 2.71f64);  // ✅ Works!
+result: int32 = max(5i32, 10i32);  // ✅ Works! No wrapper needed
+fResult: float64 = max(3.14f64, 2.71f64);  // ✅ Works!
 
 // This is compiler magic - the compiler knows int32 satisfies Comparable
 ```
@@ -1071,11 +1071,11 @@ import @firescript/std.io.print;
 
 // Custom interface
 interface Printable {
-    string toString(&this);
+    fn toString(&this) -> string;
 }
 
 // This won't work with primitives directly
-void printValue<T: Printable>(T value) {
+fn printValue<T: Printable>(value: T) -> void {
     print(value.toString());
 }
 
@@ -1083,13 +1083,13 @@ void printValue<T: Printable>(T value) {
 
 // Create a wrapper class
 class PrintableInt implements Printable {
-    int32 value;
-    
-    PrintableInt(&this, int32 value) {
+    value: int32;
+
+    fn PrintableInt(&this, value: int32) {
         this.value = value;
     }
-    
-    string toString(&this) {
+
+    fn toString(&this) -> string {
         return "Value: " + (this.value as string);
     }
 }
@@ -1111,19 +1111,19 @@ Interfaces are most commonly used to constrain generic type parameters:
 import @firescript/std.io.print;
 
 // Function that works with any Printable type
-void printValue<T: Printable>(T value) {
+fn printValue<T: Printable>(value: T) -> void {
     print(value.toString());
 }
 
 // Function that works with any Drawable type
-void renderAll<T: Drawable>(T[] items) {
-    for (int32 i = 0; i < items.length; i = i + 1) {
+fn renderAll<T: Drawable>(items: T[]) -> void {
+    for (i: int32 = 0; i < items.length; i = i + 1) {
         items[i].draw();
     }
 }
 
 // Multiple interface constraints
-void processItem<T: Printable & Drawable>(T item) {
+fn processItem<T: Printable & Drawable>(item: T) -> void {
     print("Processing: " + item.toString());
     item.draw();
 }
@@ -1145,11 +1145,11 @@ interface Serializable {
 
 // Implementing marker interfaces in class definition
 class Point implements Copyable, Serializable {
-    float32 x;
-    float32 y;
-    
+    x: float32;
+    y: float32;
+
     // No methods to implement - just marks Point as copyable and serializable
-    Point(&this, float32 x, float32 y) {
+    fn Point(&this, x: float32, y: float32) {
         this.x = x;
         this.y = y;
     }
@@ -1183,20 +1183,20 @@ These interfaces are automatically imported and available without explicit `impo
 
 ```firescript
 // Built-in interfaces work with primitives
-T add<T: Numeric>(T a, T b) {
+fn add<T: Numeric>(a: T, b: T) -> T {
     return a + b;
 }
 
-int32 sum = add(5i32, 10i32);  // ✅ Compiler knows int32 satisfies Numeric
+sum: int32 = add(5i32, 10i32);  // ✅ Compiler knows int32 satisfies Numeric
 
 // Custom classes must explicitly implement
 class MyNumber implements Numeric {
-    int32 value;
-    
-    MyNumber(&this, int32 value) {
+    value: int32;
+
+    fn MyNumber(&this, value: int32) {
         this.value = value;
     }
-    
+
     // Must implement Numeric operations...
 }
 ```
@@ -1207,17 +1207,17 @@ You can combine multiple interface constraints to require specific capabilities:
 
 ```firescript
 // Works with any signed integer precision
-T negate<T: SignedInt>(T value) {
+fn negate<T: SignedInt>(value: T) -> T {
     return -value;
 }
 
 // Works with any float precision
-T normalize<T: Float>(T value, T min, T max) {
+fn normalize<T: Float>(value: T, min: T, max: T) -> T {
     return (value - min) / (max - min);
 }
 
 // Combine interface constraints
-T clamp<T: Comparable & Numeric>(T value, T min, T max) {
+fn clamp<T: Comparable & Numeric>(value: T, min: T, max: T) -> T {
     if (value < min) return min;
     if (value > max) return max;
     return value;
@@ -1231,14 +1231,14 @@ In the future, interfaces may support default method implementations:
 ```firescript
 // Planned syntax
 interface Comparable from Equatable {
-    int32 compare(&this, &this other);
-    
+    fn compare(&this, other: &this) -> int32;
+
     // Default implementations based on compare()
-    bool lessThan(&this, &this other) {
+    fn lessThan(&this, other: &this) -> bool {
         return this.compare(other) < 0;
     }
-    
-    bool greaterThan(&this, &this other) {
+
+    fn greaterThan(&this, other: &this) -> bool {
         return this.compare(other) > 0;
     }
 }
@@ -1255,24 +1255,24 @@ Interfaces may support associated types for more flexible generic programming:
 // Planned syntax
 interface Container {
     type Item;  // Associated type
-    
-    Item get(&this, int32 index);
-    void set(&this, int32 index, Item value);
-    int32 size(&this);
+
+    fn get(&this, index: int32) -> Item;
+    fn set(&this, index: int32, value: Item) -> void;
+    fn size(&this) -> int32;
 }
 
 impl Container for IntArray {
     type Item = int32;  // Specify the associated type
-    
-    int32 get(&this, int32 index) {
+
+    fn get(&this, index: int32) -> int32 {
         return this.data[index];
     }
-    
-    void set(&this, int32 index, int32 value) {
+
+    fn set(&this, index: int32, value: int32) -> void {
         this.data[index] = value;
     }
-    
-    int32 size(&this) {
+
+    fn size(&this) -> int32 {
         return this.length;
     }
 }
@@ -1286,16 +1286,16 @@ In the future, interfaces may be used as types themselves, allowing for dynamic 
 import @firescript/std.io.print;
 
 // Planned syntax
-void printAll(Printable[] items) {  // Array of interface objects
-    for (int32 i = 0; i < items.length; i = i + 1) {
+fn printAll(items: Printable[]) -> void {  // Array of interface objects
+    for (i: int32 = 0; i < items.length; i = i + 1) {
         print(items[i].toString());
     }
 }
 
 // Can pass any type implementing Printable
-Point p = Point(1.0f32, 2.0f32);
-Circle c = Circle(3.0f32);
-Printable[] mixed = [p, c];  // Different types, same interface
+p: Point = Point(1.0f32, 2.0f32);
+c: Circle = Circle(3.0f32);
+mixed: Printable[] = [p, c];  // Different types, same interface
 printAll(mixed);
 ```
 
@@ -1312,34 +1312,34 @@ When designing interfaces, follow these guidelines:
 ```firescript
 // Good: Small, focused interfaces
 interface Readable {
-    string read(&this);
+    fn read(&this) -> string;
 }
 
 interface Writable {
-    void write(&this, string data);
+    fn write(&this, data: string) -> void;
 }
 
 interface Seekable {
-    void seek(&this, int64 position);
+    fn seek(&this, position: int64) -> void;
 }
 
 // Can combine them as needed
 class File implements Readable, Writable, Seekable {
     // ... fields ...
-    
+
     // Implement all required methods
-    string read(&this) { /* ... */ }
-    void write(&this, string data) { /* ... */ }
-    void seek(&this, int64 position) { /* ... */ }
+    fn read(&this) -> string { /* ... */ }
+    fn write(&this, data: string) -> void { /* ... */ }
+    fn seek(&this, position: int64) -> void { /* ... */ }
 }
 
 // Bad: One monolithic interface
 interface FileOperations {
-    string read(&this);
-    void write(&this, string data);
-    void seek(&this, int64 position);
-    bool exists(&this);
-    void delete(&this);
+    fn read(&this) -> string;
+    fn write(&this, data: string) -> void;
+    fn seek(&this, position: int64) -> void;
+    fn exists(&this) -> bool;
+    fn delete(&this) -> void;
     // Too many unrelated operations!
 }
 ```
@@ -1350,15 +1350,15 @@ Classes enable user-defined types with fields and methods, including constructor
 
 ```firescript
 class Point {
-    float32 x;
-    float32 y;
+    x: float32;
+    y: float32;
 
-    Point(&mut this, float32 x, float32 y) {
+    fn Point(&mut this, x: float32, y: float32) {
         this.x = x;
         this.y = y;
     }
 
-    float32 dot(&this, Point &other) {
+    fn dot(&this, other: &Point) -> float32 {
         return this.x * other.x + this.y * other.y;
     }
 }

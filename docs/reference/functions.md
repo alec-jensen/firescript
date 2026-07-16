@@ -8,23 +8,23 @@ For the purposes of most code, firescript does not provide any built-in function
 
 ```firescript
 // Basic function definition
-returnType functionName(paramType1 param1, paramType2 param2) {
+fn functionName(param1: paramType1, param2: paramType2) -> returnType {
     // function body
     return returnValue;
 }
 
 // Examples:
-int32 add(int32 a, int32 b) {
+fn add(a: int32, b: int32) -> int32 {
     return a + b;
 }
 
-void greet(string name) {
+fn greet(name: string) -> void {
     print("Hello, " + name);
 }
 
-float32 calculateAverage(&int32[] numbers) {
-    int32 sum = 0;
-    int32 i = 0;
+fn calculateAverage(numbers: &int32[]) -> float32 {
+    sum: int32 = 0;
+    i: int32 = 0;
     while (i < numbers.length()) {
         sum = sum + numbers[i];
         i = i + 1;
@@ -50,14 +50,14 @@ See [Memory Management](memory_management.md) for the full rules.
 Functions can declare type parameters in angle brackets after the function name. The compiler monomorphizes each unique instantiation at compile time. Type parameters can be constrained with type unions or named constraint aliases (see [Type System — Generics](type_system.md#generics)):
 
 ```firescript
-T max<T: int32 | int64>(T a, T b) {
+fn max<T: int32 | int64>(a: T, b: T) -> T {
     if (a > b) {
         return a;
     }
     return b;
 }
 
-int32 larger = max(10, 20);  // T inferred as int32
+larger: int32 = max(10, 20);  // T inferred as int32
 ```
 
 ## Generator Functions
@@ -67,15 +67,15 @@ A generator function produces a lazy sequence of values with `yield`. Generators
 ```firescript
 import @firescript/std.io.println;
 
-generator<int32> countdown(int32 n) {
-    int32 i = n;
+fn countdown(n: int32) -> generator<int32> {
+    i: int32 = n;
     while (i > 0) {
         yield i;
         i -= 1;
     }
 }
 
-for (int32 v in countdown(3)) {
+for (v: int32 in countdown(3)) {
     println(v);  // 3, 2, 1
 }
 ```
@@ -88,22 +88,22 @@ Methods are functions that belong to class instances. Methods declare a receiver
 
 ```firescript
 class Person {
-    string name;
-    int32 age;
+    name: string;
+    age: int32;
 
     // Constructor
-    Person(&mut this, string name, int32 age) {
+    fn Person(&mut this, name: string, age: int32) {
         this.name = name;
         this.age = age;
     }
 
     // Instance method (read-only receiver)
-    string introduce(&this) {
+    fn introduce(&this) -> string {
         return "My name is " + this.name + " and I'm " + (this.age as string) + " years old";
     }
 
     // Static method
-    static string getSpecies() {
+    static fn getSpecies() -> string {
         return "Human";
     }
 }
@@ -131,7 +131,7 @@ The following function-related features are planned but not yet implemented:
 
 ```firescript
 // Future syntax
-void greet(string name, string greeting = "Hello") {
+fn greet(name: string, greeting: string = "Hello") -> void {
     print(greeting + ", " + name);
 }
 ```
@@ -147,9 +147,9 @@ calculateRectangle(width: 10, height: 20);
 
 ```firescript
 // Future syntax
-int32 sum(int32... numbers) {
-    int32 total = 0;
-    for (int32 num in numbers) {
+fn sum(numbers: int32...) -> int32 {
+    total: int32 = 0;
+    for (num: int32 in numbers) {
         total = total + num;
     }
     return total;
@@ -160,11 +160,11 @@ int32 sum(int32... numbers) {
 
 ```firescript
 // Future syntax
-int32 add(int32 a, int32 b) {
+fn add(a: int32, b: int32) -> int32 {
     return a + b;
 }
 
-float32 add(float32 a, float32 b) {
+fn add(a: float32, b: float32) -> float32 {
     return a + b;
 }
 ```

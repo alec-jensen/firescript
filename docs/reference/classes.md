@@ -33,21 +33,21 @@ Borrowing applies only to Owned (Non-Trivially Copyable) types. Copyable types (
 
 ```firescript
 class HandleBundle {
-    File log;
-    Socket conn;
+    log: File;
+    conn: Socket;
 
-    HandleBundle(&mut this, File &log, Socket &conn) {
+    fn HandleBundle(&mut this, log: &File, conn: &Socket) {
         this.log = log;     // constructed first
         this.conn = conn;   // constructed second
     }
 
-    drop(this) {            // planned destructor
+    fn drop(this) {          // planned destructor
         // Custom cleanup (optional). Fields are then dropped automatically
         // in reverse: conn then log.
     }
 }
 
-HandleBundle hb = makeHandles(); // this would be invalid since you need to provide owned File and Socket
+hb: HandleBundle = makeHandles(); // this would be invalid since you need to provide owned File and Socket
 process(&hb);  // borrow
 // last use of hb here -> compiler may drop immediately after
 ```
@@ -76,13 +76,13 @@ import @firescript/std.io.println;
 
 class Person {
     // Fields (instance variables)
-    string name;
-    int32 age;
-    bool isEmployed;
+    name: string;
+    age: int32;
+    isEmployed: bool;
 
     // Constructor: 'this' refers to the instance being created.
     // Constructors mutate fields, so they take '&mut this'.
-    Person(&mut this, string name, int32 age, bool isEmployed) {
+    fn Person(&mut this, name: string, age: int32, isEmployed: bool) {
         this.name = name;
         this.age = age;
         this.isEmployed = isEmployed;
@@ -90,18 +90,18 @@ class Person {
 
     // Instance method
     // Non-mutating: read-only borrow receiver
-    string describe(&this) {
+    fn describe(&this) -> string {
         return this.name + " is " + (this.age as string);
     }
 
     // Mutating via mutable borrow (does not consume the instance)
-    void celebrate(&mut this) {
+    fn celebrate(&mut this) -> void {
         this.age = this.age + 1;
         println(this.name + " is now " + (this.age as string) + " years old!");
     }
 
     // Static method (belongs to the class, not instances)
-    static string species() {
+    static fn species() -> string {
         return "Homo sapiens";
     }
 }
@@ -113,9 +113,9 @@ Fields declare the data that each instance of a class will contain. Each field m
 
 ```firescript
 class Rectangle {
-    float32 width;
-    float32 height;
-    string color;
+    width: float32;
+    height: float32;
+    color: string;
 }
 ```
 
@@ -123,8 +123,8 @@ Fields can be nullable or const:
 
 ```firescript
 class Configuration {
-    const string APP_NAME;   // Constant field
-    string lastUser?;        // Can be null
+    const APP_NAME: string;   // Constant field
+    lastUser: string?;        // Can be null
 }
 ```
 
@@ -134,18 +134,18 @@ Constructors are special methods that initialize a new instance of a class. They
 
 ```firescript
 class Point {
-    float32 x;
-    float32 y;
+    x: float32;
+    y: float32;
 
     // Basic constructor
-    Point(&mut this, float32 x, float32 y) {
+    fn Point(&mut this, x: float32, y: float32) {
         this.x = x;
         this.y = y;
     }
 }
 ```
 
-Default parameter values (e.g., `float32 x = 0.0`) are [PLANNED] and not yet supported.
+Default parameter values (e.g., `x: float32 = 0.0`) are [PLANNED] and not yet supported.
 
 ### Instance Methods
 
@@ -153,24 +153,24 @@ Instance methods are functions that belong to an instance of a class. They alway
 
 ```firescript
 class Circle {
-    float32 radius;
+    radius: float32;
 
-    Circle(&mut this, float32 radius) {
+    fn Circle(&mut this, radius: float32) {
         this.radius = radius;
     }
 
     // Instance methods
     // Non-mutating
-    float32 getArea(&this) {
+    fn getArea(&this) -> float32 {
         return 3.14159f32 * this.radius * this.radius;
     }
 
-    float32 getCircumference(&this) {
+    fn getCircumference(&this) -> float32 {
         return 2.0f32 * 3.14159f32 * this.radius;
     }
 
     // Mutating via mutable borrow
-    void scale(&mut this, float32 factor) {
+    fn scale(&mut this, factor: float32) -> void {
         this.radius = this.radius * factor;
     }
 }
@@ -183,7 +183,7 @@ Static methods belong to the class itself rather than any instance. They don't t
 ```firescript
 class MathUtils {
     // Static methods
-    static int8 max(int8 a, int8 b) {
+    static fn max(a: int8, b: int8) -> int8 {
         if (a > b) {
             return a;
         } else {
@@ -191,7 +191,7 @@ class MathUtils {
         }
     }
 
-    static float32 average(float32 a, float32 b) {
+    static fn average(a: float32, b: float32) -> float32 {
         return (a + b) / 2.0;
     }
 }
@@ -203,15 +203,15 @@ Once a class is defined, you can create instances (objects) of that class:
 
 ```firescript
 // Creating objects ('new' is optional)
-Person alice = Person("Alice", 30, true);
-Person bob = new Person("Bob", 25, false);
+alice: Person = Person("Alice", 30, true);
+bob: Person = new Person("Bob", 25, false);
 
 // Using instance methods
 println(alice.describe());
 alice.celebrate();
 
 // Using static methods
-string speciesName = Person.species();
+speciesName: string = Person.species();
 ```
 
 ## Inheritance
@@ -225,20 +225,20 @@ The main difference of `super` in firescript is that it is an attribute of the i
 
 ```firescript
 class Student from Person {
-    string school;
+    school: string;
 
-    Student(&mut this, string name, int32 age, string school) {
+    fn Student(&mut this, name: string, age: int32, school: string) {
         this.super(name, age, false);  // Call parent constructor
         this.school = school;
     }
 
     // Override parent method
-    string describe(&this) {
+    fn describe(&this) -> string {
         return this.name + " is " + (this.age as string) + " at " + this.school;
     }
 }
 
-Student s = new Student("Jane", 18, "State University");
+s: Student = new Student("Jane", 18, "State University");
 println(s.describe());  // Uses Student's describe
 println(s.name);        // Inherited field
 ```
@@ -249,27 +249,27 @@ Child classes can override methods from the parent class by redefining them:
 
 ```firescript
 class Shape {
-    string color;
+    color: string;
 
-    Shape(&mut this, string color) {
+    fn Shape(&mut this, color: string) {
         this.color = color;
     }
 
-    string describe(&this) {
+    fn describe(&this) -> string {
         return "A " + this.color + " shape";
     }
 }
 
 class Square from Shape {
-    float32 side;
+    side: float32;
 
-    Square(&mut this, float32 side, string color) {
+    fn Square(&mut this, side: float32, color: string) {
         this.super(color);
         this.side = side;
     }
 
     // Override the parent's describe method
-    string describe(&this) {
+    fn describe(&this) -> string {
         return "A " + this.color + " square with side " + (this.side as string);
     }
 }
@@ -283,12 +283,12 @@ Polymorphism will allow objects of different classes in the same inheritance hie
 
 ```firescript
 // Future syntax
-Person[] people = [
+people: Person[] = [
     Person("Alice", 25, false),
     Student("Bob", 20, "State University")
 ];
 
-uint8 i = 0;
+i: uint8 = 0;
 while (i < people.length()) {
     println(people[i].describe());
     i = i + 1;
@@ -301,17 +301,17 @@ Classes support one or more type parameters declared with angle-bracket syntax. 
 
 ```firescript
 copyable class Pair<T, U> {
-    T first;
-    U second;
+    first: T;
+    second: U;
 
-    Pair(T first, U second) {
+    fn Pair(first: T, second: U) {
         this.first = first;
         this.second = second;
     }
 }
 
 // Usage
-Pair<int32, string> p = Pair<int32, string>(42, "hello");
+p: Pair<int32, string> = Pair<int32, string>(42, "hello");
 println(p.first);   // 42
 println(p.second);  // hello
 ```
@@ -328,10 +328,10 @@ A class may be annotated `copyable` to become Copyable if it satisfies:
 
 ```firescript
 copyable class Point {
-    float32 x;
-    float32 y;
+    x: float32;
+    y: float32;
 
-    Point(&mut this, float32 x, float32 y) {
+    fn Point(&mut this, x: float32, y: float32) {
         this.x = x;
         this.y = y;
     }
@@ -349,54 +349,54 @@ The following features are planned for future versions of firescript:
 ```firescript
 // Future syntax
 interface Drawable {
-    void draw(&this);
-    bool isVisible(&this);
+    fn draw(&this) -> void;
+    fn isVisible(&this) -> bool;
 }
 
 class Circle implements Drawable {
-    float32 radius;
-    
-    Circle(&this, float32 radius) {
+    radius: float32;
+
+    fn Circle(&this, radius: float32) {
         this.radius = radius;
     }
-    
+
     // Must implement all interface methods
-    void draw(&this) {
+    fn draw(&this) -> void {
         print("Drawing circle with radius " + (this.radius as string));
     }
-    
-    bool isVisible(&this) {
+
+    fn isVisible(&this) -> bool {
         return true;
     }
 }
 
 // Multiple interfaces
 interface Movable {
-    void move(&this, int32 dx, int32 dy);
+    fn move(&this, dx: int32, dy: int32) -> void;
 }
 
 class Square implements Drawable, Movable {
-    float32 x;
-    float32 y;
-    float32 size;
-    
-    Square(&this, float32 x, float32 y, float32 size) {
+    x: float32;
+    y: float32;
+    size: float32;
+
+    fn Square(&this, x: float32, y: float32, size: float32) {
         this.x = x;
         this.y = y;
         this.size = size;
     }
-    
+
     // Implement Drawable
-    void draw(&this) {
+    fn draw(&this) -> void {
         print("Drawing square at (" + (this.x as string) + ", " + (this.y as string) + ")");
     }
-    
-    bool isVisible(&this) {
+
+    fn isVisible(&this) -> bool {
         return true;
     }
-    
+
     // Implement Movable
-    void move(&this, int32 dx, int32 dy) {
+    fn move(&this, dx: int32, dy: int32) -> void {
         this.x = this.x + cast<float32>(dx);
         this.y = this.y + cast<float32>(dy);
     }
@@ -408,24 +408,24 @@ class Square implements Drawable, Movable {
 ```firescript
 // Future syntax
 abstract class Animal {
-    string species;
-    
-    Animal(&this, string &species) {
+    species: string;
+
+    fn Animal(&this, species: &string) {
         this.species = species;
     }
-    
+
     // Abstract method - no implementation
-    abstract string makeSound(&this);
-    
+    abstract fn makeSound(&this) -> string;
+
     // Regular method with implementation
-    string getSpecies(&this) { // non-mutating borrow
+    fn getSpecies(&this) -> string { // non-mutating borrow
         return this.species;
     }
 }
 
 class Cat from Animal {
     // Must implement abstract methods
-    string makeSound(&this) { // non-mutating
+    fn makeSound(&this) -> string { // non-mutating
         return "Meow";
     }
 }

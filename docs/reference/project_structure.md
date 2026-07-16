@@ -41,7 +41,7 @@ The `init.fire` file could look like this (the function must be exported to be i
 
 ```firescript
 // math/init.fire
-export int32 add(int32 a, int32 b) {
+export fn add(a: int32, b: int32) -> int32 {
     return a + b;
 }
 ```
@@ -52,5 +52,5 @@ Now, in your `main.fire`, you can import the `math` module and use the `add` fun
 // main.fire
 import math.add;
 
-int32 result = add(5, 10);
+result: int32 = add(5, 10);
 ```

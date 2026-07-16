@@ -12,19 +12,19 @@ Arrays are declared by appending `[N]` to any valid type, where `N` is the fixed
 
 ```firescript
 // Array initialization with explicit values
-int8[5] numbers = [10, 20, 30, 40, 50];
-string[3] names = ["Alice", "Bob", "Charlie"];
-bool[3] flags = [true, false, true];
+numbers: int8[5] = [10, 20, 30, 40, 50];
+names: string[3] = ["Alice", "Bob", "Charlie"];
+flags: bool[3] = [true, false, true];
 
 // Size inferred from the initializer
-int32[] inferred = [1, 2, 3, 4, 5];   // int32[5]
+inferred: int32[] = [1, 2, 3, 4, 5];   // int32[5]
 
 // Array with declared size, zero-initialized
-int32[10] zeros = [];           // All elements are 0
-float32[100] empty = [];        // All elements are 0.0
+zeros: int32[10] = [];           // All elements are 0
+empty: float32[100] = [];        // All elements are 0.0
 
 // Array with declared size and partial initializer
-int32[5] partial = [1, 2, 3];   // Error: initializer size must match declared size
+partial: int32[5] = [1, 2, 3];   // Error: initializer size must match declared size
 ```
 
 All elements in an array must be of the same type as specified in the declaration. The declared size must match the number of initializer elements if an initializer is provided.
@@ -34,18 +34,18 @@ All elements in an array must be of the same type as specified in the declaratio
 Individual array elements can be accessed using zero-based indexing:
 
 ```firescript
-int8[5] scores = [85, 92, 78, 90, 88];
+scores: int8[5] = [85, 92, 78, 90, 88];
 
 // Access individual elements
-int8 firstScore = scores[0];    // 85
-int8 thirdScore = scores[2];    // 78
+firstScore: int8 = scores[0];    // 85
+thirdScore: int8 = scores[2];    // 78
 
 // Modifying elements
 scores[1] = 95;                // Array becomes [85, 95, 78, 90, 88]
 
 // Negative indexing (from end)
-int8 lastScore = scores[-1];    // 88 (last element)
-int8 secondLast = scores[-2];   // 90 (second to last)
+lastScore: int8 = scores[-1];    // 88 (last element)
+secondLast: int8 = scores[-2];   // 90 (second to last)
 ```
 
 ⚠️ **Warning:** Accessing an index outside the array bounds will cause a runtime error. Always ensure your index is valid before access.
@@ -57,8 +57,8 @@ firescript provides several built-in methods for manipulating arrays:
 - **`length()`** – Method that returns the current size of the array
 
 ```firescript
-int8[5] data = [5, 10, 15, 20, 25];
-int8 size = data.length();      // size = 5
+data: int8[5] = [5, 10, 15, 20, 25];
+size: int8 = data.length();      // size = 5
 ```
 
 ## Working with Arrays
@@ -68,17 +68,17 @@ int8 size = data.length();      // size = 5
 Use a `while` loop with an index variable, or a `for-in` loop to iterate over array elements:
 
 ```firescript
-string[5] cities = ["New York", "London", "Tokyo", "Paris", "Sydney"];
+cities: string[5] = ["New York", "London", "Tokyo", "Paris", "Sydney"];
 
 // Using while loop with index
-uint8 i = 0;
+i: uint8 = 0;
 while (i < cities.length()) {
     print(cities[i]);
     i = i + 1;
 }
 
 // Using for-in loop (preferred)
-for (string city in cities) {
+for (city: string in cities) {
     print(city);
 }
 ```
@@ -86,8 +86,8 @@ for (string city in cities) {
 String iteration is also supported with `for-in`, iterating over individual characters:
 
 ```firescript
-string text = "hello";
-for (string ch in text) {
+text: string = "hello";
+for (ch: string in text) {
     print(ch);  // Prints: h, e, l, l, o
 }
 ```
@@ -98,9 +98,9 @@ Arrays can be passed to functions. Array parameters may be unsized (`T[]`), acce
 
 ```firescript
 // Function with array parameter
-int32 sum(int32[] numbers) {
-    int32 total = 0;
-    int32 i = 0;
+fn sum(numbers: int32[]) -> int32 {
+    total: int32 = 0;
+    i: int32 = 0;
     while (i < numbers.length()) {
         total = total + numbers[i];
         i = i + 1;
@@ -109,8 +109,8 @@ int32 sum(int32[] numbers) {
 }
 
 // Usage
-int32[] values = [1, 2, 3, 4, 5];
-int32 result = sum(values);  // 15
+values: int32[] = [1, 2, 3, 4, 5];
+result: int32 = sum(values);  // 15
 ```
 
 Arrays are Owned values, so passing one to an owned parameter moves it. Use a borrowed parameter (`&int32[] numbers`) to keep using the array at the call site afterwards — see [Memory Management](memory_management.md).
@@ -128,7 +128,7 @@ int8[3][3] matrix = [
 ];
 
 // Accessing elements
-int8 element = matrix[1][2];  // 6
+element: int8 = matrix[1][2];  // 6
 ```
 
 ## Common Array Patterns
@@ -136,10 +136,10 @@ int8 element = matrix[1][2];  // 6
 ### Finding an Element
 
 ```firescript
-int8[5] numbers = [10, 20, 30, 40, 50];
-int8 target = 30;
-int8 index = -1;
-uint8 i = 0;
+numbers: int8[5] = [10, 20, 30, 40, 50];
+target: int8 = 30;
+index: int8 = -1;
+i: uint8 = 0;
 
 while (i < numbers.length()) {
     if (numbers[i] == target) {
@@ -155,9 +155,9 @@ while (i < numbers.length()) {
 ### Counting Occurrences
 
 ```firescript
-int8[10] data = [1, 2, 1, 3, 1, 2, 1, 4, 5, 1];
-int8 count = 0;
-for (int8 val in data) {
+data: int8[10] = [1, 2, 1, 3, 1, 2, 1, 4, 5, 1];
+count: int8 = 0;
+for (val: int8 in data) {
     if (val == 1) {
         count = count + 1;
     }
@@ -173,8 +173,8 @@ The following array features are planned but not yet implemented in the current 
 
 ```firescript
 // Future syntax
-int8[5] numbers = [10, 20, 30, 40, 50];
-int8[3] subset = numbers[1:4];  // Would be [20, 30, 40]
+numbers: int8[5] = [10, 20, 30, 40, 50];
+subset: int8[3] = numbers[1:4];  // Would be [20, 30, 40]
 ```
 
 - **Additional utility methods**:
@@ -186,35 +186,35 @@ Will use SIMD where possible for performance.
 
 ```firescript
 // Future syntax
-int8[3] a = [1, 2, 3];
-int8[3] b = [4, 5, 6];
+a: int8[3] = [1, 2, 3];
+b: int8[3] = [4, 5, 6];
 
 // add arrays element-wise
-int8[3] c = a + b;  // Would be [5, 7, 9]
+c: int8[3] = a + b;  // Would be [5, 7, 9]
 
 // subtract arrays element-wise
-int8[3] e = b - a;  // Would be [3, 3, 3]
+e: int8[3] = b - a;  // Would be [3, 3, 3]
 
 // add scalar to array
-int8[3] g = a + 2;  // Would be [3, 4, 5]
+g: int8[3] = a + 2;  // Would be [3, 4, 5]
 
 // subtract scalar from array
-int8[3] h = b - 1;  // Would be [3, 4, 5]
+h: int8[3] = b - 1;  // Would be [3, 4, 5]
 
 // multiply arrays element-wise
-int8[3] j = a * b;  // Would be [4, 10, 18]
+j: int8[3] = a * b;  // Would be [4, 10, 18]
 
 // divide arrays element-wise
-int8[3] k = b / a;  // Would be [4, 2, 2]
+k: int8[3] = b / a;  // Would be [4, 2, 2]
 
 // multiply arrays by scalar
-int8[3] d = a * 2;  // Would be [2, 4, 6]
+d: int8[3] = a * 2;  // Would be [2, 4, 6]
 
 // divide arrays by scalar
-int8[3] f = b / 2;  // Would be [2, 2, 3]
+f: int8[3] = b / 2;  // Would be [2, 2, 3]
 
 // dot product of two arrays
-int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
+dotProduct: int8 = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
 ```
 
 ## Implementation Status

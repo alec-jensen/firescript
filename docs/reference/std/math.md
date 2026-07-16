@@ -16,45 +16,45 @@ Because the functions are generic, all arguments in a call must share the same t
 
 ## Functions
 
-### `abs(T x, T zero)`
+### `abs(x: T, zero: T)`
 
 Return the absolute value of `x`. The second argument supplies the zero value for the type (e.g., `0` for `int32`, `0.0` for `float64`).
 
 ```firescript
 import @firescript/std.math.abs;
 
-int32 v = abs(-42, 0);           // 42
-float64 f = abs(-3.14, 0.0);     // 3.14
+v: int32 = abs(-42, 0);           // 42
+f: float64 = abs(-3.14, 0.0);     // 3.14
 ```
 
-### `min(T a, T b)`
+### `min(a: T, b: T)`
 
 Return the smaller of two values.
 
 ```firescript
 import @firescript/std.math.min;
 
-int32 result = min(5, 3);        // 3
+result: int32 = min(5, 3);        // 3
 ```
 
-### `max(T a, T b)`
+### `max(a: T, b: T)`
 
 Return the larger of two values.
 
 ```firescript
 import @firescript/std.math.max;
 
-int32 result = max(5, 3);        // 5
+result: int32 = max(5, 3);        // 5
 ```
 
-### `clamp(T x, T lo, T hi)`
+### `clamp(x: T, lo: T, hi: T)`
 
 Constrain `x` to the range [lo, hi].
 
 ```firescript
 import @firescript/std.math.clamp;
 
-int32 result = clamp(10, 0, 5);  // 5
+result: int32 = clamp(10, 0, 5);  // 5
 ```
 
 You can also import several symbols at once:
@@ -69,9 +69,9 @@ import @firescript/std.math.{max, min, abs, clamp}
 import @firescript/std.math.{max, min, clamp};
 import @firescript/std.io.println;
 
-int32 biggest = max(3, 7);
-float64 smallest = min(2.5, 1.5);
-int32 bounded = clamp(15, 0, 10);
+biggest: int32 = max(3, 7);
+smallest: float64 = min(2.5, 1.5);
+bounded: int32 = clamp(15, 0, 10);
 
 println(biggest);   // 7
 println(smallest);  // 1.5

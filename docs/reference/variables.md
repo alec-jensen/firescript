@@ -21,22 +21,22 @@ In regex form: `[a-zA-Z_][a-zA-Z0-9_]*`
 ### Valid examples
 
 ```firescript
-int32 x = 0;
-int32 _private = 1;
-int32 camelCase = 2;
-int32 SCREAMING_SNAKE = 3;
-int32 value42 = 4;
-int32 __double_under = 5;
+x: int32 = 0;
+_private: int32 = 1;
+camelCase: int32 = 2;
+SCREAMING_SNAKE: int32 = 3;
+value42: int32 = 4;
+__double_under: int32 = 5;
 ```
 
 ### Invalid examples
 
 ```firescript
-int32 42value = 0;   // cannot start with a digit
-int32 my-var = 0;    // hyphens are not allowed
-int32 my var = 0;    // spaces are not allowed
-int32 return = 0;    // reserved keyword
-int32 int32 = 0;     // reserved type name
+42value: int32 = 0;   // cannot start with a digit
+my-var: int32 = 0;    // hyphens are not allowed
+my var: int32 = 0;    // spaces are not allowed
+return: int32 = 0;    // reserved keyword
+int32: int32 = 0;     // reserved type name
 ```
 
 ### Reserved keywords and type names
@@ -59,9 +59,9 @@ The `char` type name is also reserved in type positions.
 Variables in firescript must be declared with an explicit type and initialized in the same statement:
 
 ```firescript
-int8 age = 30;
-string name = "Alice";
-bool isRegistered = false;
+age: int8 = 30;
+name: string = "Alice";
+isRegistered: bool = false;
 ```
 
 ### Type Inference
@@ -70,7 +70,7 @@ firescript does not support automatic type inference:
 
 ```firescript
 var score = 95;  // Not supported - must specify the type explicitly
-int8 score = 95;  // Supported
+score: int8 = 95;  // Supported
 ```
 
 ### Constants
@@ -78,14 +78,14 @@ int8 score = 95;  // Supported
 Use the `const` keyword to declare immutable variables:
 
 ```firescript
-const int8 MAX_USERS = 100;
-const string APP_VERSION = "1.0.0";
+const MAX_USERS: int8 = 100;
+const APP_VERSION: string = "1.0.0";
 ```
 
 Constants must be initialized when declared and cannot be reassigned later:
 
 ```firescript
-const float32 PI = 3.14;
+const PI: float32 = 3.14;
 PI = 3.14159;  // Error: cannot reassign a constant
 ```
 
@@ -94,8 +94,8 @@ PI = 3.14159;  // Error: cannot reassign a constant
 By default, variables cannot be assigned `null`. A trailing `?` after the variable name explicitly allows it to hold `null`:
 
 ```firescript
-string username? = null;  // Valid
-string password = null;   // Invalid - non-nullable type cannot hold null
+username: string? = null;  // Valid
+password: string = null;   // Invalid - non-nullable type cannot hold null
 ```
 
 Attempting to use a nullable variable without checking for null may result in runtime errors:
@@ -103,7 +103,7 @@ Attempting to use a nullable variable without checking for null may result in ru
 ```firescript
 import @firescript/std.io.print;
 
-string message? = null;
+message: string? = null;
 
 // Safe access pattern
 if (message != null) {

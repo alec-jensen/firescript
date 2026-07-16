@@ -16,15 +16,15 @@ Arithmetic operators work on numeric types (`intN`, `uintN`, `floatN`). There ar
 | `**` | Power (exponentiation) | `a ** b` |
 
 ```firescript
-int32 a = 10;
-int32 b = 3;
+a: int32 = 10;
+b: int32 = 3;
 
-int32 sum  = a + b;   // 13
-int32 diff = a - b;   // 7
-int32 prod = a * b;   // 30
-int32 quot = a / b;   // 3  (integer division truncates toward zero)
-int32 rem  = a % b;   // 1
-int32 pow  = a ** b;  // 1000
+sum: int32  = a + b;   // 13
+diff: int32 = a - b;   // 7
+prod: int32 = a * b;   // 30
+quot: int32 = a / b;   // 3  (integer division truncates toward zero)
+rem: int32  = a % b;   // 1
+pow: int32  = a ** b;  // 1000
 ```
 
 Integer division truncates toward zero. Modulo returns the remainder with the same sign as the dividend (C-style, not Python-style).
@@ -32,7 +32,7 @@ Integer division truncates toward zero. Modulo returns the remainder with the sa
 The `+` operator is also used for string concatenation. Both operands must be strings — there is no implicit conversion. Cast non-string values explicitly with `as`:
 
 ```firescript
-string msg = "Value: " + (42 as string);  // "Value: 42"
+msg: string = "Value: " + (42 as string);  // "Value: 42"
 // string bad = "Value: " + 42;           // ❌ Error: cannot concatenate string and int32
 ```
 
@@ -41,11 +41,11 @@ string msg = "Value: " + (42 as string);  // "Value: 42"
 The basic assignment operator `=` stores a value in a variable. For Owned types (strings, arrays, user-defined classes), assignment performs a **move** — the source is invalidated. For Copyable types (`intN`, `floatN`, `bool`), assignment performs a bitwise copy.
 
 ```firescript
-int32 x = 10;
+x: int32 = 10;
 x = 20;         // x is now 20
 
-string a = "hello";
-string b = a;   // a is moved into b; a is no longer valid
+a: string = "hello";
+b: string = a;   // a is moved into b; a is no longer valid
 ```
 
 See [Memory Management](memory_management.md) for full move/copy semantics.
@@ -64,7 +64,7 @@ Compound assignment operators combine an arithmetic operation with assignment. T
 | `**=` | `x = x ** expr` |
 
 ```firescript
-int32 n = 10;
+n: int32 = 10;
 n += 5;   // n = 15
 n -= 3;   // n = 12
 n *= 2;   // n = 24
@@ -83,7 +83,7 @@ The postfix `++` and `--` operators increment or decrement a numeric variable by
 | `x--` | Post-decrement | `x = x - 1` |
 
 ```firescript
-int32 i = 0;
+i: int32 = 0;
 i++;   // i = 1
 i++;   // i = 2
 i--;   // i = 1
@@ -92,12 +92,12 @@ i--;   // i = 1
 These are most commonly used in `for` loop increments:
 
 ```firescript
-for (int32 i = 0; i < 5; i++) {
+for (i: int32 = 0; i < 5; i++) {
     // i = 0, 1, 2, 3, 4
 }
 ```
 
-⚠️ **Note:** `++` and `--` are statements, not expressions. Using them as values (e.g., `int32 j = i++`) is not supported.
+⚠️ **Note:** `++` and `--` are statements, not expressions. Using them as values (e.g., `j: int32 = i++`) is not supported.
 
 ## Comparison Operators
 
@@ -113,15 +113,15 @@ Comparison operators evaluate to `bool`. Both operands must be the same type.
 | `>=` | Greater than or equal |
 
 ```firescript
-int32 a = 5;
-int32 b = 10;
+a: int32 = 5;
+b: int32 = 10;
 
-bool eq  = a == b;  // false
-bool neq = a != b;  // true
-bool lt  = a < b;   // true
-bool gt  = a > b;   // false
-bool lte = a <= b;  // true
-bool gte = a >= b;  // false
+eq: bool  = a == b;  // false
+neq: bool = a != b;  // true
+lt: bool  = a < b;   // true
+gt: bool  = a > b;   // false
+lte: bool = a <= b;  // true
+gte: bool = a >= b;  // false
 ```
 
 Strings support `==` and `!=` for equality by value. Ordering comparisons (`<`, `>`, etc.) on strings are not supported.
@@ -137,22 +137,22 @@ Logical operators work on `bool` values and produce a `bool` result. `&&` and `|
 | `!` | Logical NOT | Inverts a `bool` value |
 
 ```firescript
-bool a = true;
-bool b = false;
+a: bool = true;
+b: bool = false;
 
-bool and = a && b;  // false
-bool or  = a || b;  // true
-bool not = !a;      // false
+and: bool = a && b;  // false
+or: bool  = a || b;  // true
+not: bool = !a;      // false
 ```
 
 Short-circuit examples:
 
 ```firescript
 // right side is never evaluated if left is false
-bool result = isReady() && doWork();
+result: bool = isReady() && doWork();
 
 // right side is never evaluated if left is true
-bool fallback = hasCache() || loadFromDisk();
+fallback: bool = hasCache() || loadFromDisk();
 ```
 
 ## Cast Operator
@@ -172,17 +172,17 @@ Supported conversions:
 Casts *to* `bool` or `char` are not supported.
 
 ```firescript
-int16 small  = 300i16;
-int32 wide   = small as int32;   // widening: 300
-int8  narrow = small as int8;    // narrowing: truncates to fit
+small: int16  = 300i16;
+wide: int32   = small as int32;   // widening: 300
+narrow: int8 = small as int8;    // narrowing: truncates to fit
 
-float64 pi  = 3.14159f64;
-int32   ipi = pi as int32;       // 3 (truncates toward zero)
+pi: float64  = 3.14159f64;
+ipi: int32 = pi as int32;       // 3 (truncates toward zero)
 
-string s = 42 as string;         // "42"
-int32  n = "100" as int32;       // 100
+s: string = 42 as string;         // "42"
+n: int32 = "100" as int32;       // 100
 
-string t = true as string;       // "true"
+t: string = true as string;       // "true"
 ```
 
 ⚠️ **Note:** Java/C-style casts (`(int32)value`) are not supported. Always use the postfix `as` form.
@@ -195,14 +195,14 @@ A ternary expression is planned using the reserved `ternary` keyword:
 
 ```firescript
 // Future syntax
-int8 max = ternary a > b then a else b;
+max: int8 = ternary a > b then a else b;
 ```
 
 Use an `if/else` block in the meantime:
 
 ```firescript
 // Instead of a ternary expression:
-int32 abs = 0;
+abs: int32 = 0;
 if (x < 0) {
     abs = -x;
 } else {
@@ -245,10 +245,10 @@ Operators are evaluated in the following order (highest precedence first). Opera
 Use parentheses to make evaluation order explicit when combining operators from different levels:
 
 ```firescript
-int32 result = 2 + 3 * 4;          // 14 (not 20)
-int32 result = (2 + 3) * 4;        // 20
+result: int32 = 2 + 3 * 4;          // 14 (not 20)
+result: int32 = (2 + 3) * 4;        // 20
 
-bool check = a + 1 > b && c != 0;  // ((a + 1) > b) && (c != 0)
+check: bool = a + 1 > b && c != 0;  // ((a + 1) > b) && (c != 0)
 ```
 
 ## Array Operators
@@ -259,35 +259,35 @@ The following operators are planned for arrays:
 
 ```firescript
 // Future syntax
-int8[3] a = [1, 2, 3];
-int8[3] b = [4, 5, 6];
+a: int8[3] = [1, 2, 3];
+b: int8[3] = [4, 5, 6];
 
 // add arrays element-wise
-int8[3] c = a + b;  // Would be [5, 7, 9]
+c: int8[3] = a + b;  // Would be [5, 7, 9]
 
 // subtract arrays element-wise
-int8[3] e = b - a;  // Would be [3, 3, 3]
+e: int8[3] = b - a;  // Would be [3, 3, 3]
 
 // add scalar to array
-int8[3] g = a + 2;  // Would be [3, 4, 5]
+g: int8[3] = a + 2;  // Would be [3, 4, 5]
 
 // subtract scalar from array
-int8[3] h = b - 1;  // Would be [3, 4, 5]
+h: int8[3] = b - 1;  // Would be [3, 4, 5]
 
 // multiply arrays element-wise
-int8[3] j = a * b;  // Would be [4, 10, 18]
+j: int8[3] = a * b;  // Would be [4, 10, 18]
 
 // divide arrays element-wise
-int8[3] k = b / a;  // Would be [4, 2, 2]
+k: int8[3] = b / a;  // Would be [4, 2, 2]
 
 // multiply arrays by scalar
-int8[3] d = a * 2;  // Would be [2, 4, 6]
+d: int8[3] = a * 2;  // Would be [2, 4, 6]
 
 // divide arrays by scalar
-int8[3] f = b / 2;  // Would be [2, 2, 3]
+f: int8[3] = b / 2;  // Would be [2, 2, 3]
 
 // dot product of two arrays
-int8 dotProduct = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
+dotProduct: int8 = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
 ```
 
 ## Implementation Status
