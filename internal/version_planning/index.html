@@ -17,7 +17,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -25,7 +25,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2047,7 +2047,7 @@ this end state.</p>
 <li><strong>FIR + FLIR pipeline</strong> — AST → FIR → FLIR → x86-64 assembly is the only pipeline</li>
 <li><strong>Self-hosted native toolchain</strong> — pure-Python x86-64 assembler and PE32+ writer;
   no external tools, no MinGW binutils, zero subprocess calls</li>
-<li><strong>firescript runtime</strong> — <code>std/internal/runtime.fire</code> implements strings, arrays, numeric
+<li><strong>firescript runtime</strong> — <code>std/internal/*.fire</code> implements strings, arrays, numeric
   formatting and parsing, process arguments, file syscalls in firescript</li>
 <li>Generators (<code>generator&lt;T&gt;</code>, <code>yield</code>), <code>for-in</code> over generators, <code>std.ranges</code></li>
 <li><code>char</code> type and character literal syntax (<code>'A'</code>, <code>'\n'</code>)</li>
@@ -2104,7 +2104,7 @@ self-hosting work is not blocked by missing data structures.</p>
 <td>Code generation and error message formatting need efficient string accumulation.</td>
 </tr>
 <tr>
-<td>Extended string methods: <code>split</code>, <code>substring</code>, <code>indexOf</code>, <code>startsWith</code>, <code>endsWith</code>, <code>trim</code>, <code>toLower</code>, <code>toUpper</code>, <code>replace</code></td>
+<td>Extended string methods: <code>split</code>, <code>substring</code>, <code>indexOf</code>, <code>startsWith</code>, <code>endsWith</code>, <code>trim</code>, <code>lower</code>, <code>upper</code>, <code>replace</code></td>
 <td>Lexing and string processing require these — cannot write a parser without substring search and splitting.</td>
 </tr>
 <tr>
@@ -2117,6 +2117,7 @@ self-hosting work is not blocked by missing data structures.</p>
 <ul>
 <li>New module <code>@firescript/std.collections</code> — <code>Vec&lt;T&gt;</code>, <code>HashMap&lt;K,V&gt;</code> (and later <code>Stack&lt;T&gt;</code>,
   <code>Queue&lt;T&gt;</code>, <code>Deque&lt;T&gt;</code>)</li>
+<li><code>enumerate</code> generator for iterating over <code>Vec&lt;T&gt;</code> with index/value pairs <code>Tuple&lt;int32,T&gt;</code></li>
 <li>New module <code>@firescript/std.text</code> — <code>StringBuilder</code></li>
 <li>Enhanced <code>@firescript/std.types</code> — <code>Result&lt;T,E&gt;</code> with <code>Ok</code>, <code>Err</code> variants and combinators</li>
 <li><strong><code>@firescript/std.regex</code></strong> — full regex matching engine (lexer, parser, NFA/DFA
@@ -2565,7 +2566,7 @@ making firescript production-ready and retiring the Python compiler.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

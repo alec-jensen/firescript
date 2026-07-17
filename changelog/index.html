@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2022,6 +2022,7 @@
 <h2 id="060-griffin-currently-in-development">0.6.0 - Griffin (Currently in Development)<a class="headerlink" href="#060-griffin-currently-in-development" title="Permanent link">&para;</a></h2>
 <h3 id="new-language-features">New Language Features<a class="headerlink" href="#new-language-features" title="Permanent link">&para;</a></h3>
 <ul>
+<li>Added <code>.upper()</code> and <code>.lower()</code> methods on <code>string</code>, alongside the existing <code>.length()</code> — ASCII case folding (<code>'a'..'z'</code> / <code>'A'..'Z'</code>); non-letter bytes pass through unchanged. No import needed.</li>
 <li>Added <code>enum</code> declarations, e.g. <code>enum Shape { Circle(float64 radius), Rectangle(float64 width, float64 height), Point }</code>. Enums are owned types (heap-allocated, like classes without an explicit <code>copyable</code> annotation), lowered to a tagged-union layout where variants share the same payload storage. Variants are constructed with <code>EnumName.Variant</code> / <code>EnumName.Variant(args...)</code> syntax (e.g. <code>Color.Red</code>, <code>Shape.Circle(3.0)</code>); construction is positional, in declaration order. Payload fields may be any type, including owned types (<code>string</code>, classes, other enums) — owned payload data is correctly dropped when the active variant goes out of scope, and only the active variant's fields are ever freed. Generic enums (<code>enum Foo&lt;T&gt;</code>) are not yet supported and produce a clear compile error rather than miscompiling.</li>
 <li>Added <code>match</code> as a reserved keyword and <code>match &lt;expr&gt; { &lt;pattern&gt; -&gt; &lt;body&gt;, ... }</code> expressions, for destructuring <code>enum</code> values. Patterns match a bare <code>EnumName.Variant</code>, a payload-carrying <code>EnumName.Variant(bindings...)</code>, or a wildcard <code>_</code>. Payload bindings resolve by the variant's declared field name (<code>Circle(radius) -&gt; ...</code>), not position, and can be renamed with <code>field: local</code> (<code>Circle(radius: r) -&gt; ...</code>); a field can be left out of the pattern entirely if the arm doesn't need it. Match is exhaustiveness-checked at compile time: every variant must be covered by an arm, or a trailing <code>_</code> wildcard arm must be present; duplicate arms for the same variant, a wildcard arm followed by more arms, and patterns naming a field the variant doesn't declare (or binding the same field twice) are all compile errors. Payload bindings are read-only borrows scoped to their arm. <code>match</code> works both as a statement (arm bodies are <code>{ }</code> blocks) and, when every arm body is a plain expression, as a value-producing expression usable in a <code>return</code> or a variable initializer.</li>
 </ul>
@@ -2052,6 +2053,7 @@
 <li>Passing an owned identifier as an enum variant's payload argument (e.g. <code>Slot.Holds(b)</code>) now correctly moves it, matching function/constructor/method calls. Previously the identifier was left live, so it was both dropped at its own scope exit <em>and</em> still reachable through the enum payload — a double-free/use-after-free that could silently read freed memory (observed as the payload's data going missing) depending on heap allocator behavior. Reusing the identifier after such a move is now also caught at compile time as a use-after-move error.</li>
 <li>A constructor declared with an <code>owned this</code> receiver (e.g. <code>fn Box(owned this, v: int32) { ... }</code>) no longer crashes with an internal "FIR verification failed (FIRV-O1): use of 'this', which is moved" error. The receiver's <code>this</code> was being auto-dropped at the end of the constructor body like an ordinary owned parameter, but a constructor always implicitly returns its own freshly-allocated <code>this</code> — the drop ran before that read.</li>
 <li>Calling through an aliased symbol import (<code>import module.symbol as alias;</code> ... <code>alias(...)</code>) no longer fails to compile with <code>LoweringError: call to unknown function &lt;alias&gt;</code>. The alias is now resolved back to the imported symbol's real name in every importing module, including the entry file.</li>
+<li>An owned local moved into an outer variable on only one arm of an <code>if</code>/<code>else</code> (e.g. a run-length-encoding accumulator: <code>if (c == last) { count++; } else { last = c; }</code>) no longer crashes the compiler with an internal FIR verifier error (<code>FIRV-O2</code>, "possibly moved on some paths") or silently leaks the variable on the other arm. This affected both ordinary owned locals and a <code>for (x: string in s)</code> loop variable moved out of the loop body this way, including when the conditional move isn't the last statement in the loop body (more code follows it) or isn't the last statement of its own branch. A single drop inserted after the whole <code>if</code>/<code>else</code> can't be correct when only one branch consumes the variable; the compiler now tracks each arm's ownership state independently (duplicating whatever code follows a conditionally-moving <code>if</code> into each of its branches, for the <code>for</code>-in-<code>string</code> loop-variable case, since a runtime flag can't be checked by the compiler's static ownership verifier) and drops (or doesn't) accordingly.</li>
 </ul>
 <h2 id="050-kirin">0.5.0 - Kirin<a class="headerlink" href="#050-kirin" title="Permanent link">&para;</a></h2>
 <p><em>July 2, 2026</em></p>
@@ -2439,7 +2441,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
