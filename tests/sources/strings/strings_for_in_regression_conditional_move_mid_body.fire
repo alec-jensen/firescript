@@ -1,0 +1,37 @@
+// Regression test: a harder variant of
+// strings_for_in_regression_conditional_move.fire -- here the if/else that
+// conditionally moves the for-in-string loop variable is *not* the last
+// statement in the loop body (more code follows it before the iteration
+// ends), and the move itself isn't the last statement of its own branch
+// either. A purely static, tail-position-based fix handles the simpler
+// sibling test but not this one: the compiler now converts each branch
+// with its own copy of the statements that follow the if (see
+// _convert_for_in_string_body/_convert_for_in_string_if in ast_to_fir.py),
+// since the two branches can leave the loop variable in different
+// ownership states and a single trailing drop can't be spliced onto both.
+import @firescript/std.io.{println};
+
+inp: string = "aaabccc";
+result: string = "";
+last_chr: string = "";
+first: bool = true;
+
+for (chr: string in inp) {
+    if (chr == last_chr) {
+        // untouched arm
+    } else {
+        if (first != true) {
+            result = result + last_chr;
+        }
+        last_chr = chr;
+        first = false;
+    }
+    // more code after the if/else, still inside the loop body
+    first = first;
+}
+
+println(result + last_chr);
+
+/* EXPECT
+abc
+*/

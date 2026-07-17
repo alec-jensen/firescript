@@ -111,24 +111,55 @@ def _is_drop_call(node: ASTNode, var_name: Optional[str] = None) -> bool:
     return bool(node.children and node.children[0].name == var_name)
 
 
-def _reorganize_drops(children: List[ASTNode]) -> List[ASTNode]:
-    """Move drop() calls inserted at scope exit to just after the last use of each variable.
+def _definitely_terminates(node: Optional[ASTNode]) -> bool:
+    """Return True if this node definitely exits current control flow
+    (return/break/continue on every path). Mirrors
+    semantic_analyzer.py::SemanticAnalyzer._definitely_terminates -- kept as
+    a separate, structural-only copy here since this module has no access
+    to that analyzer's per-binding state, just the raw AST."""
+    if node is None:
+        return False
+    if node.node_type in (NodeTypes.RETURN_STATEMENT, NodeTypes.BREAK_STATEMENT, NodeTypes.CONTINUE_STATEMENT):
+        return True
+    if node.node_type == NodeTypes.SCOPE:
+        return any(_definitely_terminates(c) for c in node.children)
+    if node.node_type == NodeTypes.IF_STATEMENT:
+        if len(node.children) < 2:
+            return False
+        then_branch = node.children[1]
+        else_branch = node.children[2] if len(node.children) > 2 else None
+        if else_branch is None:
+            return False
+        return _definitely_terminates(then_branch) and _definitely_terminates(else_branch)
+    return False
 
-    Drops that have no use in the scope (e.g. variable declared but never referenced) are
-    kept at the end of the scope — conservative placement is always correct.
+
+def _reorganize_drops(statements: List[ASTNode], trailing_drops: List[ASTNode]) -> List[ASTNode]:
+    """Move each auto-inserted, scope-exit `trailing_drops` entry to just
+    after the last use of its variable within `statements`.
+
+    Only ever repositions drops the preprocessor itself appended for
+    scope-exit -- never a drop() call already present in `statements`
+    (including a user-written one), which stays exactly where it is.
+    `statements` may itself already contain drop() calls (explicit
+    user-written ones, or ones nested inside processed sub-statements);
+    treating those as further reorganization candidates based on a "last
+    mention" heuristic could relocate a live, user-placed drop past a
+    later return/break/continue in the same statement list, turning it
+    into dead code that never runs (an under-drop, FIRV-O3) -- exactly
+    what happened here before this function stopped conflating the two.
+
+    Drops with no use in the scope (e.g. variable declared but never
+    referenced) are kept at the end of the scope — conservative placement
+    is always correct there.
     """
-    # Separate drops from regular statements (preserve order of drops)
-    drop_map: Dict[str, ASTNode] = {}   # var_name -> drop node (last wins if duplicated)
-    stmts: List[ASTNode] = []
-    for child in children:
-        if _is_drop_call(child):
-            var_name = child.children[0].name
-            drop_map[var_name] = child
-        else:
-            stmts.append(child)
+    if not trailing_drops:
+        return statements
 
-    if not drop_map:
-        return children  # nothing to reorganize
+    drop_map: Dict[str, ASTNode] = {}   # var_name -> drop node (last wins if duplicated)
+    for drop_node in trailing_drops:
+        drop_map[drop_node.children[0].name] = drop_node
+    stmts = statements
 
     # For each drop variable find the last stmt index that transitively mentions it
     placement: Dict[str, int] = {}  # var_name -> stmt index, or -1 if never mentioned
@@ -515,11 +546,10 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
             new_children = []
             for c in node.children:
                 new_children.append(process_node(c))
-            # Append drops at scope exit for all owned locals in this frame
-            for nm, vt, ia in scope_stack[-1]:
-                new_children.append(_make_drop_call(nm, vt, ia))
-            # Move drops to last use of each variable
-            node.children = _reorganize_drops(new_children)
+            # Auto-append drops at scope exit for all owned locals in this frame
+            trailing_drops = [_make_drop_call(nm, vt, ia) for nm, vt, ia in scope_stack[-1]]
+            # Move those trailing drops to just after the last use of each variable
+            node.children = _reorganize_drops(new_children, trailing_drops)
             scope_stack.pop()
             var_maps.pop()
             return node
@@ -537,7 +567,7 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
         # `_return_transferred_identifiers` was built to fix (a var
         # referenced only as a borrowed sub-argument, e.g. `return
         # fs_rt_str_dup(view);`), which is fixed at specific call sites
-        # (see std/internal/runtime.fire's fs_rt_argv_at) instead.
+        # (see std/internal/io.fire's fs_rt_argv_at) instead.
         if node.node_type == NodeTypes.RETURN_STATEMENT:
             wrap = ASTNode(NodeTypes.SCOPE, node.token, "scope", [], node.index)
             expr = node.children[0] if node.children else None
@@ -582,6 +612,88 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
             # ast_to_fir.py's _seal_open_blocks prunes as unreachable.
             return wrap
 
+        # If/elif/else: process the condition against the real (shared) scope
+        # -- it always evaluates -- then fork scope_stack per arm so a move
+        # inside only one branch doesn't corrupt tracking for its sibling or
+        # for code after the whole statement. `_move_source_identifier`/
+        # `_apply_move_semantics` record a move by removing the moved name
+        # from whichever frame it's declared in; since frames are the same
+        # shared, mutable list objects visible to every arm, processing arms
+        # sequentially against one shared scope_stack made a move real on
+        # only one path look like it happened on every path -- either
+        # leaking an outer variable neither arm actually consumed on the
+        # untaken path (FIRV-O3) or, once the reconciliation below started
+        # correctly noticing the variable is still needed on the other arm,
+        # double-dropping it there instead (FIRV-O2), because a single
+        # trailing drop placed after the whole if/else runs on *every* path
+        # reaching the join, including the one that already moved it.
+        # A terminating arm (return/break/continue on every path) is a dead
+        # end for anything past the if -- it already drained its own
+        # scope_stack contents via the Return/Break/Continue handling above,
+        # so it's excluded from reconciliation entirely, matching
+        # semantic_analyzer.py's analogous if/else ownership merge.
+        if node.node_type == NodeTypes.IF_STATEMENT:
+            if not node.children:
+                return node
+            condition = process_node(node.children[0])
+            then_branch = node.children[1] if len(node.children) > 1 else None
+            else_branch = node.children[2] if len(node.children) > 2 else None
+
+            baseline = [list(frame) for frame in scope_stack]
+
+            def _run_arm(branch: Optional[ASTNode]):
+                if branch is None:
+                    return None, baseline, False
+                scope_stack.clear()
+                scope_stack.extend([list(frame) for frame in baseline])
+                processed = process_node(branch)
+                frames = [list(frame) for frame in scope_stack]
+                return processed, frames, _definitely_terminates(branch)
+
+            processed_then, then_frames, then_terminates = _run_arm(then_branch)
+            processed_else, else_frames, else_terminates = _run_arm(else_branch)
+            then_live = not then_terminates
+            else_live = not else_terminates
+
+            merged = [list(frame) for frame in baseline]
+            for i in range(len(baseline)):
+                for nm, vt, ia in baseline[i]:
+                    then_has = any(n2 == nm for n2, _, _ in then_frames[i])
+                    else_has = any(n2 == nm for n2, _, _ in else_frames[i])
+                    then_moved_live = then_live and not then_has
+                    else_moved_live = else_live and not else_has
+                    if not (then_moved_live or else_moved_live):
+                        continue  # untouched on every live path -- keep tracking as-is
+                    if then_moved_live and else_moved_live:
+                        # Consumed on every live path -- fully handled already.
+                        merged[i] = [t for t in merged[i] if t[0] != nm]
+                        continue
+                    # Mixed: consumed on one live path, not the other. Insert
+                    # an explicit drop directly at the tail of whichever live
+                    # arm(s) still hold it -- a shared trailing drop after
+                    # the whole if-statement can't be correct for only one
+                    # of two diverging paths.
+                    if then_live and then_has:
+                        processed_then.children.append(_make_drop_call(nm, vt, ia))
+                    if else_live and else_has:
+                        if processed_else is None:
+                            # No else branch: synthesize an empty one so the
+                            # drop still runs on the (implicit) false path.
+                            processed_else = ASTNode(NodeTypes.SCOPE, node.token, "scope", [], node.index)
+                        processed_else.children.append(_make_drop_call(nm, vt, ia))
+                    merged[i] = [t for t in merged[i] if t[0] != nm]
+
+            scope_stack.clear()
+            scope_stack.extend(merged)
+
+            new_children = [condition]
+            if processed_then is not None:
+                new_children.append(processed_then)
+            if processed_else is not None:
+                new_children.append(processed_else)
+            node.children = new_children
+            return node
+
         # Break/Continue: drop all owned vars in scopes between here and the loop boundary
         if node.node_type in (NodeTypes.BREAK_STATEMENT, NodeTypes.CONTINUE_STATEMENT):
             wrap = ASTNode(NodeTypes.SCOPE, node.token, "scope", [], node.index)
@@ -617,6 +729,30 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
                     new_children.append(process_node(c))
             node.children = new_children
             loop_boundaries.pop()
+            return node
+
+        # Explicit user-written drop(x): consumes x here, same as any other
+        # move, so it must stop being tracked for automatic scope-exit
+        # dropping. Previously masked by scope_stack being one shared,
+        # unforked list across if/else arms -- a sibling branch's unrelated
+        # move of the same name coincidentally cleared tracking before this
+        # ever mattered. Forking scope_stack per arm (see the IF_STATEMENT
+        # handler above) exposed this as a real gap: an explicit drop(x) in
+        # one arm was invisible to tracking, so the other arm still
+        # "having" x looked like a genuine mixed-consumption case, and the
+        # reconciliation logic inserted a second, redundant drop right next
+        # to the user's own explicit one (FIRV-O2, double-drop).
+        if node.node_type == NodeTypes.FUNCTION_CALL and node.name == "drop":
+            new_children = [process_node(c) if c is not None else None for c in node.children]
+            node.children = new_children
+            target = new_children[0] if new_children else None
+            if target is not None and target.node_type == NodeTypes.IDENTIFIER:
+                for frame in reversed(var_maps):
+                    if target.name in frame:
+                        vt, ia, origin = frame[target.name]
+                        if is_owned(vt, ia):
+                            _remove_from_scope_stack(target.name)
+                        break
             return node
 
         # Call sites: apply move semantics to arguments of owned types
@@ -704,9 +840,8 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
     for child in ast.children:
         new_root_children.append(process_node(child))
     # Drop top-level owned vars at end of program
-    for nm, vt, ia in scope_stack[-1]:
-        new_root_children.append(_make_drop_call(nm, vt, ia))
+    trailing_drops = [_make_drop_call(nm, vt, ia) for nm, vt, ia in scope_stack[-1]]
     # Apply last-use optimization to top-level scope as well
-    ast.children = _reorganize_drops(new_root_children)
+    ast.children = _reorganize_drops(new_root_children, trailing_drops)
 
     return ast

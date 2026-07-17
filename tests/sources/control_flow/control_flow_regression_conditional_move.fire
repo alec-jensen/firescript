@@ -1,0 +1,28 @@
+// Regression test: an owned local moved into an outer variable on only one
+// arm of an if/else (with the other arm merely borrowing it) used to make
+// the preprocessor's drop-insertion either leak the variable on the
+// borrowing arm (FIRV-O3) or, if it correctly noticed the variable was
+// still needed there, double-drop it on the moving arm instead (FIRV-O2) --
+// a single trailing drop placed after the whole if/else can't be correct
+// for only one of two diverging paths. See the IF_STATEMENT handler in
+// preprocessor.py.
+import @firescript/std.io.{println};
+
+fn build(prefix: string, take: bool) -> string {
+    tmp: string = prefix + "!";
+    kept: string = "";
+    if (take) {
+        kept = tmp;
+    } else {
+        println(tmp);
+    }
+    return kept;
+}
+
+println(build("a", true));
+println(build("b", false));
+
+/* EXPECT
+a!
+b!
+*/

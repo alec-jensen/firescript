@@ -1,0 +1,30 @@
+// Regression test: `break` reached right after a for-in-string loop
+// variable was moved into an outer variable, inside an if/else that also
+// has an untouched arm. break/continue jump directly out of the loop body
+// via a separate code path (_drop_loop_cleanup) from the normal fall-through
+// cleanup, so the moved-tracking has to be visible there too -- otherwise
+// this either double-drops the moved value (FIRV-O2) or, if disabled
+// entirely to avoid that, leaks the untouched arm's element (FIRV-O3).
+import @firescript/std.io.{println};
+
+inp: string = "xaybzc";
+saved: string = "";
+
+for (chr: string in inp) {
+    if (chr == "z") {
+        saved = chr;
+        break;
+    } else {
+        println(chr);
+    }
+}
+
+println("saved: " + saved);
+
+/* EXPECT
+x
+a
+y
+b
+saved: z
+*/

@@ -1,0 +1,28 @@
+// Regression test: a for-in-over-string loop variable that is moved into
+// an outer variable on only one arm of an if/else inside the loop body
+// (the classic run-length-encoding accumulator pattern) used to crash the
+// compiler with an internal FIR verifier error (FIRV-O2, "possibly moved
+// on some paths"). The automatic per-iteration drop of the loop variable
+// was inserted unconditionally after the whole if/else instead of only on
+// the arm that didn't already move it -- see _convert_for_in_string_body
+// in ast_to_fir.py.
+import @firescript/std.io.{println};
+
+inp: string = "aaabccc";
+result: string = "";
+last_chr: string = "";
+
+for (chr: string in inp) {
+    if (chr == last_chr) {
+        // untouched arm: chr must still be dropped at the end of this iteration
+    } else {
+        result = result + last_chr;
+        last_chr = chr;
+    }
+}
+
+println(result + last_chr);
+
+/* EXPECT
+abc
+*/
