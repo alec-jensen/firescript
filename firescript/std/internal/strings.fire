@@ -1,0 +1,199 @@
+// String primitives (strings are NUL-terminated byte buffers) and the
+// built-in string dot-methods (.length()/.upper()/.lower()) that dispatch
+// to them via @builtin_method -- see firescript/builtin_methods.py.
+//
+// This module is compiled through the normal pipeline and merged into
+// every program built with the FIR backends; see std/internal/alloc.fire
+// for the shared std/internal/ authoring rules (this file additionally
+// relies on rt_raw_alloc/rt_reg_add from alloc.fire).
+
+directive enable_lowlevel_runtime;
+directive enable_builtin_methods;
+
+fn rt_str_len_addr(addr: uint64) -> uint64 {
+    if (addr == 0u64) {
+        return 0u64;
+    }
+    len: uint64 = 0u64;
+    while (mem_load_u8(addr + len) != 0u8) {
+        len = len + 1u64;
+    }
+    return len;
+}
+
+@builtin_method("string", "length")
+fn fs_rt_str_length(&s: string) -> int32 {
+    return rt_str_len_addr(str_to_addr(s)) as int32;
+}
+
+fn fs_rt_str_dup(&s: string) -> string {
+    src: uint64 = str_to_addr(s);
+    len: uint64 = rt_str_len_addr(src);
+    dst: uint64 = rt_raw_alloc(len + 1u64);
+    rt_reg_add(dst);
+    if (len > 0u64) {
+        mem_copy(dst, src, len);
+    }
+    mem_store_u8(dst + len, 0u8);
+    return addr_to_str(dst);
+}
+
+fn fs_rt_str_concat(&a: string, &b: string) -> string {
+    pa: uint64 = str_to_addr(a);
+    pb: uint64 = str_to_addr(b);
+    la: uint64 = rt_str_len_addr(pa);
+    lb: uint64 = rt_str_len_addr(pb);
+    dst: uint64 = rt_raw_alloc(la + lb + 1u64);
+    rt_reg_add(dst);
+    if (la > 0u64) {
+        mem_copy(dst, pa, la);
+    }
+    if (lb > 0u64) {
+        mem_copy(dst + la, pb, lb);
+    }
+    mem_store_u8(dst + la + lb, 0u8);
+    return addr_to_str(dst);
+}
+
+fn fs_rt_str_eq(&a: string, &b: string) -> bool {
+    pa: uint64 = str_to_addr(a);
+    pb: uint64 = str_to_addr(b);
+    if (pa == 0u64 || pb == 0u64) {
+        return pa == pb;
+    }
+    i: uint64 = 0u64;
+    while (true) {
+        ca: uint8 = mem_load_u8(pa + i);
+        cb: uint8 = mem_load_u8(pb + i);
+        if (ca != cb) {
+            return false;
+        }
+        if (ca == 0u8) {
+            return true;
+        }
+        i = i + 1u64;
+    }
+    return true;
+}
+
+fn fs_rt_str_char_at(&s: string, index: int32) -> string {
+    src: uint64 = str_to_addr(s);
+    len: uint64 = rt_str_len_addr(src);
+    dst: uint64 = rt_raw_alloc(2u64);
+    rt_reg_add(dst);
+    if (index >= 0 && (index as uint64) < len) {
+        mem_store_u8(dst, mem_load_u8(src + (index as uint64)));
+        mem_store_u8(dst + 1u64, 0u8);
+    } else {
+        mem_store_u8(dst, 0u8);
+    }
+    return addr_to_str(dst);
+}
+
+fn fs_rt_str_char_code_at(&s: string, index: int32) -> uint8 {
+    src: uint64 = str_to_addr(s);
+    len: uint64 = rt_str_len_addr(src);
+    if (index < 0 || (index as uint64) >= len) {
+        return 0u8;
+    }
+    return mem_load_u8(src + (index as uint64));
+}
+
+fn fs_rt_str_char_code(&s: string) -> uint8 {
+    src: uint64 = str_to_addr(s);
+    if (src == 0u64) {
+        return 0u8;
+    }
+    return mem_load_u8(src);
+}
+
+fn fs_rt_str_index_of(&haystack: string, &needle: string) -> int32 {
+    ph: uint64 = str_to_addr(haystack);
+    pn: uint64 = str_to_addr(needle);
+    if (ph == 0u64 || pn == 0u64) {
+        return -1;
+    }
+    lh: uint64 = rt_str_len_addr(ph);
+    ln: uint64 = rt_str_len_addr(pn);
+    if (ln == 0u64) {
+        return 0;
+    }
+    if (ln > lh) {
+        return -1;
+    }
+    last: uint64 = lh - ln;
+    i: uint64 = 0u64;
+    while (i <= last) {
+        j: uint64 = 0u64;
+        matched: bool = true;
+        while (j < ln) {
+            if (mem_load_u8(ph + i + j) != mem_load_u8(pn + j)) {
+                matched = false;
+                break;
+            }
+            j = j + 1u64;
+        }
+        if (matched) {
+            return i as int32;
+        }
+        i = i + 1u64;
+    }
+    return -1;
+}
+
+fn fs_rt_str_slice(&s: string, start: int32, end: int32) -> string {
+    src: uint64 = str_to_addr(s);
+    len: uint64 = rt_str_len_addr(src);
+    length: int32 = len as int32;
+    if (start < 0) { start = 0; }
+    if (end < 0) { end = 0; }
+    if (start > length) { start = length; }
+    if (end > length) { end = length; }
+    if (end < start) { end = start; }
+    out_len: int32 = end - start;
+    dst: uint64 = rt_raw_alloc((out_len as uint64) + 1u64);
+    rt_reg_add(dst);
+    if (out_len > 0) {
+        mem_copy(dst, src + (start as uint64), out_len as uint64);
+    }
+    mem_store_u8(dst + (out_len as uint64), 0u8);
+    return addr_to_str(dst);
+}
+
+@builtin_method("string", "upper")
+fn fs_rt_str_upper(&s: string) -> string {
+    src: uint64 = str_to_addr(s);
+    len: uint64 = rt_str_len_addr(src);
+    dst: uint64 = rt_raw_alloc(len + 1u64);
+    rt_reg_add(dst);
+    i: uint64 = 0u64;
+    while (i < len) {
+        c: uint8 = mem_load_u8(src + i);
+        if (c >= 97u8 && c <= 122u8) { // 'a'..'z'
+            c = c - 32u8;
+        }
+        mem_store_u8(dst + i, c);
+        i = i + 1u64;
+    }
+    mem_store_u8(dst + len, 0u8);
+    return addr_to_str(dst);
+}
+
+@builtin_method("string", "lower")
+fn fs_rt_str_lower(&s: string) -> string {
+    src: uint64 = str_to_addr(s);
+    len: uint64 = rt_str_len_addr(src);
+    dst: uint64 = rt_raw_alloc(len + 1u64);
+    rt_reg_add(dst);
+    i: uint64 = 0u64;
+    while (i < len) {
+        c: uint8 = mem_load_u8(src + i);
+        if (c >= 65u8 && c <= 90u8) { // 'A'..'Z'
+            c = c + 32u8;
+        }
+        mem_store_u8(dst + i, c);
+        i = i + 1u64;
+    }
+    mem_store_u8(dst + len, 0u8);
+    return addr_to_str(dst);
+}

@@ -1,0 +1,125 @@
+// Direct OS I/O that isn't a file-descriptor syscall: writing to stdout,
+// and reading process arguments (GetCommandLineA + Windows quoting
+// rules). File-descriptor syscalls (open/read/write/close/...) live
+// separately in syscalls.fire.
+//
+// This module is compiled through the normal pipeline and merged into
+// every program built with the FIR backends; see std/internal/alloc.fire
+// for the shared std/internal/ authoring rules (this file relies on
+// rt_raw_alloc from alloc.fire and fs_rt_str_dup from strings.fire).
+
+directive enable_lowlevel_runtime;
+
+// ---- stdout ----
+
+fn fs_rt_stdout(&s: string) -> void {
+    addr: uint64 = str_to_addr(s);
+    if (addr == 0u64) {
+        return;
+    }
+    len: uint64 = rt_str_len_addr(addr);
+    if (len == 0u64) {
+        return;
+    }
+    handle: uint64 = win_get_std_handle(-11); // STD_OUTPUT_HANDLE
+    state: uint64 = rt_state();
+    win_write_file(handle, addr, len as uint32, state + 32u64, 0u64);
+}
+
+// ---- process arguments (GetCommandLineA + Windows quoting rules) ----
+
+fn rt_args_parse() -> void {
+    state: uint64 = rt_state();
+    if (mem_load_u64(state + 48u64) != 0u64) {
+        return;
+    }
+    cmd: uint64 = win_get_command_line_a();
+    cmd_len: uint64 = rt_str_len_addr(cmd);
+    // Worst case every other char is an arg: cap argv at len/2 + 2.
+    argv: uint64 = rt_raw_alloc((cmd_len / 2u64 + 2u64) * 8u64);
+    argc: uint64 = 0u64;
+    i: uint64 = 0u64;
+    scratch: uint64 = rt_raw_alloc(cmd_len + 1u64);
+    while (i < cmd_len) {
+        // Skip whitespace between arguments.
+        while (i < cmd_len) {
+            c: uint8 = mem_load_u8(cmd + i);
+            if (c == 32u8 || c == 9u8) {
+                i = i + 1u64;
+            } else {
+                break;
+            }
+        }
+        if (i >= cmd_len) {
+            break;
+        }
+        out_len: uint64 = 0u64;
+        in_quotes: bool = false;
+        while (i < cmd_len) {
+            c: uint8 = mem_load_u8(cmd + i);
+            if (!in_quotes && (c == 32u8 || c == 9u8)) {
+                break;
+            }
+            if (c == 92u8) { // backslash run
+                n_bs: uint64 = 0u64;
+                while (i < cmd_len && mem_load_u8(cmd + i) == 92u8) {
+                    n_bs = n_bs + 1u64;
+                    i = i + 1u64;
+                }
+                followed_by_quote: bool = i < cmd_len && mem_load_u8(cmd + i) == 34u8;
+                emit: uint64 = n_bs;
+                if (followed_by_quote) {
+                    emit = n_bs / 2u64;
+                }
+                b: uint64 = 0u64;
+                while (b < emit) {
+                    mem_store_u8(scratch + out_len, 92u8);
+                    out_len = out_len + 1u64;
+                    b = b + 1u64;
+                }
+                if (followed_by_quote && n_bs % 2u64 == 1u64) {
+                    mem_store_u8(scratch + out_len, 34u8);
+                    out_len = out_len + 1u64;
+                    i = i + 1u64;
+                }
+            } else if (c == 34u8) {
+                in_quotes = !in_quotes;
+                i = i + 1u64;
+            } else {
+                mem_store_u8(scratch + out_len, c);
+                out_len = out_len + 1u64;
+                i = i + 1u64;
+            }
+        }
+        arg: uint64 = rt_raw_alloc(out_len + 1u64);
+        if (out_len > 0u64) {
+            mem_copy(arg, scratch, out_len);
+        }
+        mem_store_u8(arg + out_len, 0u8);
+        mem_store_u64(argv + argc * 8u64, arg);
+        argc = argc + 1u64;
+    }
+    win_heap_free(rt_heap(), 0u32, scratch);
+    mem_store_u64(state + 40u64, argc);
+    mem_store_u64(state + 48u64, argv);
+}
+
+fn fs_rt_argc() -> int32 {
+    rt_args_parse();
+    state: uint64 = rt_state();
+    return mem_load_u64(state + 40u64) as int32;
+}
+
+fn fs_rt_argv_at(index: int32) -> string {
+    rt_args_parse();
+    state: uint64 = rt_state();
+    argc: uint64 = mem_load_u64(state + 40u64);
+    if (index < 0 || (index as uint64) >= argc) {
+        return fs_rt_str_dup("");
+    }
+    argv: uint64 = mem_load_u64(state + 48u64);
+    arg: uint64 = mem_load_u64(argv + (index as uint64) * 8u64);
+    view: string = addr_to_str(arg);
+    result: string = fs_rt_str_dup(view);
+    return result;
+}

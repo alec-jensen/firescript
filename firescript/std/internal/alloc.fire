@@ -1,0 +1,179 @@
+// Heap allocation core: process heap handle, a manual allocation registry
+// (double-free / literal-free guard), and the raw alloc/free/zero ABI
+// every other std/internal/ file builds on.
+//
+// This module is compiled through the normal pipeline and merged into
+// every program built with the FIR backends. Functions named fs_rt_*
+// implement the FLIR runtime ABI (see FIR_flir_spec.md); the lowering
+// routes runtime calls here instead of to backend-provided shims.
+//
+// Rules for code in this file (shared by every std/internal/*.fire file):
+// - Only lowlevel primitives (mem_*, win_*, str_to_addr/addr_to_str) and
+//   other fs_rt_*/rt_* functions -- from this file or any sibling
+//   std/internal/ file -- may be used; no std imports.
+// - Inside a function fs_rt_X, do not use language constructs that lower
+//   to fs_rt_X itself (e.g. no string + inside fs_rt_str_concat).
+// - Work with uint64 addresses internally; only touch string-typed
+//   values at function boundaries (avoids ownership churn).
+
+directive enable_lowlevel_runtime;
+
+// ---------------------------------------------------------------------
+// Runtime state block (lazily allocated; address in the state cell)
+//
+// Layout (byte offsets):
+//   0:  process heap handle
+//   8:  allocation registry table ptr (slots of u64; 0=empty, 1=tombstone)
+//   16: registry capacity (power of two)
+//   24: registry live count
+//   32: scratch u64 (WriteFile/ReadFile out-params)
+//   40: argc
+//   48: argv block ptr (argc * u64 string addresses)
+//   56: fd table ptr (64 slots of u64 HANDLE; fd = index + 3)
+// ---------------------------------------------------------------------
+
+fn rt_state() -> uint64 {
+    state: uint64 = runtime_state_get();
+    if (state != 0u64) {
+        return state;
+    }
+    heap: uint64 = win_get_process_heap();
+    // 0x8 = HEAP_ZERO_MEMORY
+    block: uint64 = win_heap_alloc(heap, 8u32, 64u64);
+    mem_store_u64(block, heap);
+    runtime_state_set(block);
+    return block;
+}
+
+fn rt_heap() -> uint64 {
+    state: uint64 = rt_state();
+    return mem_load_u64(state);
+}
+
+fn rt_raw_alloc(n: uint64) -> uint64 {
+    if (n == 0u64) {
+        n = 1u64;
+    }
+    return win_heap_alloc(rt_heap(), 8u32, n);
+}
+
+// ---- allocation registry (legacy double-free / literal-free guard) ----
+
+fn rt_reg_hash(p: uint64, cap: uint64) -> uint64 {
+    h: uint64 = (p / 16u64) * 2654435761u64;
+    return h % cap;
+}
+
+fn rt_reg_grow() -> void {
+    state: uint64 = rt_state();
+    old_table: uint64 = mem_load_u64(state + 8u64);
+    old_cap: uint64 = mem_load_u64(state + 16u64);
+    new_cap: uint64 = old_cap * 2u64;
+    if (new_cap == 0u64) {
+        new_cap = 256u64;
+    }
+    new_table: uint64 = rt_raw_alloc(new_cap * 8u64);
+    if (old_table != 0u64) {
+        i: uint64 = 0u64;
+        while (i < old_cap) {
+            entry: uint64 = mem_load_u64(old_table + i * 8u64);
+            if (entry > 1u64) {
+                slot: uint64 = rt_reg_hash(entry, new_cap);
+                while (mem_load_u64(new_table + slot * 8u64) > 1u64) {
+                    slot = (slot + 1u64) % new_cap;
+                }
+                mem_store_u64(new_table + slot * 8u64, entry);
+            }
+            i = i + 1u64;
+        }
+        win_heap_free(rt_heap(), 0u32, old_table);
+    }
+    mem_store_u64(state + 8u64, new_table);
+    mem_store_u64(state + 16u64, new_cap);
+}
+
+fn rt_reg_add(p: uint64) -> void {
+    if (p <= 1u64) {
+        return;
+    }
+    state: uint64 = rt_state();
+    cap: uint64 = mem_load_u64(state + 16u64);
+    count: uint64 = mem_load_u64(state + 24u64);
+    if (cap == 0u64 || count * 10u64 >= cap * 7u64) {
+        rt_reg_grow();
+        cap = mem_load_u64(state + 16u64);
+    }
+    table: uint64 = mem_load_u64(state + 8u64);
+    slot: uint64 = rt_reg_hash(p, cap);
+    while (true) {
+        entry: uint64 = mem_load_u64(table + slot * 8u64);
+        if (entry <= 1u64) {
+            mem_store_u64(table + slot * 8u64, p);
+            mem_store_u64(state + 24u64, count + 1u64);
+            return;
+        }
+        if (entry == p) {
+            return;
+        }
+        slot = (slot + 1u64) % cap;
+    }
+}
+
+fn rt_reg_remove(p: uint64) -> bool {
+    if (p <= 1u64) {
+        return false;
+    }
+    state: uint64 = rt_state();
+    cap: uint64 = mem_load_u64(state + 16u64);
+    if (cap == 0u64) {
+        return false;
+    }
+    table: uint64 = mem_load_u64(state + 8u64);
+    slot: uint64 = rt_reg_hash(p, cap);
+    probes: uint64 = 0u64;
+    while (probes < cap) {
+        entry: uint64 = mem_load_u64(table + slot * 8u64);
+        if (entry == 0u64) {
+            return false;
+        }
+        if (entry == p) {
+            // 1 = tombstone
+            mem_store_u64(table + slot * 8u64, 1u64);
+            count: uint64 = mem_load_u64(state + 24u64);
+            mem_store_u64(state + 24u64, count - 1u64);
+            return true;
+        }
+        slot = (slot + 1u64) % cap;
+        probes = probes + 1u64;
+    }
+    return false;
+}
+
+// ---- core allocation ABI ----
+
+fn fs_rt_alloc_zeroed(n: int64) -> string {
+    p: uint64 = rt_raw_alloc(n as uint64);
+    rt_reg_add(p);
+    return addr_to_str(p);
+}
+
+fn fs_rt_free(&p: string) -> void {
+    addr: uint64 = str_to_addr(p);
+    if (addr == 0u64) {
+        return;
+    }
+    if (rt_reg_remove(addr)) {
+        win_heap_free(rt_heap(), 0u32, addr);
+    }
+    // Untracked pointers (string literals, already-freed blocks) are
+    // ignored, matching the legacy runtime's registry semantics.
+}
+
+fn fs_rt_zero_memory(&p: string, n: int64) -> void {
+    addr: uint64 = str_to_addr(p);
+    i: uint64 = 0u64;
+    while (i < (n as uint64)) {
+        mem_store_u8(addr + i, 0u8);
+        i = i + 1u64;
+    }
+}

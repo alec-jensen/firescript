@@ -310,17 +310,24 @@ class TypeSystemMixin(StatementsMixin):
         if not func_def:
             return None
         
-        # Extract parameter types from function definition
+        # Extract parameter types from function definition (paired with
+        # is_array, since a `&arr: T[]` parameter's own var_type is just
+        # "T" -- array-ness is tracked separately).
         param_types = []
         for child in func_def.children:
             if child.node_type == NodeTypes.PARAMETER:
-                param_types.append(child.var_type or "")
-        
+                param_types.append((child.var_type or "", bool(getattr(child, "is_array", False))))
+
         # Build a mapping from type parameters to inferred concrete types
         type_map: dict[str, str] = {}
-        
-        for param_type, arg_type in zip(param_types, arg_types):
+
+        for (param_type, param_is_array), arg_type in zip(param_types, arg_types):
             if param_type in type_params:
+                # A `T[]` parameter binds T to the argument's element type,
+                # not the whole array type -- an `int32[]` argument must
+                # infer T=int32, not T="int32[]".
+                if param_is_array and arg_type.endswith("[]"):
+                    arg_type = arg_type[:-2]
                 # Direct type parameter match
                 if param_type in type_map:
                     if type_map[param_type] != arg_type:
@@ -338,6 +345,50 @@ class TypeSystemMixin(StatementsMixin):
             inferred_types.append(type_map[tp])
         
         return inferred_types
+
+    def _dispatch_builtin_method(
+        self,
+        node: ASTNode,
+        family: str,
+        elem_type: Optional[str],
+        object_type: str,
+        method_name: str,
+        arg_types: list,
+    ) -> None:
+        """Type-check a dot-method call on a primitive receiver (string/array)
+        against the @builtin_method registry (firescript/builtin_methods.py),
+        the single source of truth for these methods' signatures -- populated
+        by scanning std/internal/*.fire, rather than a hand-written table
+        per receiver type. `elem_type` is the array's element type (None for
+        string receivers); it's substituted for any type-parameterized
+        argument/return type in the registered signature.
+        """
+        from builtin_methods import get_builtin_method_registry
+
+        spec = get_builtin_method_registry().lookup(family, method_name)
+        if spec is None:
+            self.invalid_type_error(f"Unknown method '{method_name}' for type '{object_type}'", node.token)
+            return
+
+        if len(arg_types) != len(spec.public_param_types):
+            self.invalid_type_error(
+                f"Method '{method_name}' expected {len(spec.public_param_types)} argument(s), got {len(arg_types)}",
+                node.token,
+            )
+            return
+
+        for i, (arg_t, expected) in enumerate(zip(arg_types, spec.public_param_types)):
+            concrete_expected = expected if elem_type is None or expected not in spec.type_params else elem_type
+            if arg_t != concrete_expected:
+                self.invalid_type_error(
+                    f"Method '{method_name}' for {object_type} argument {i + 1} expected type "
+                    f"{concrete_expected}, got {arg_t}",
+                    node.children[i + 1].token,
+                )
+                return
+
+        ret = spec.return_type
+        node.return_type = ret if elem_type is None or ret not in spec.type_params else elem_type
 
     def _type_check_node(self, node: ASTNode, symbol_table: dict) -> Optional[str]:
         """Recursively checks types in the AST node and returns the node's expression type."""
@@ -554,13 +605,18 @@ class TypeSystemMixin(StatementsMixin):
             if left_type is None or right_type is None:
                 return None
 
-            # Allow comparison between same-type numerics, string==string, bool==bool, or with null
+            # Allow comparison between same-type numerics, string==string, bool==bool,
+            # with null, or between two values of the same type parameter (assumed
+            # comparable via constraints; deferred to monomorphization, same as the
+            # BINARY_EXPRESSION/RELATIONAL_EXPRESSION type-parameter allowances above).
             integer_types = self.INTEGER_TYPES
             float_types = {"float32", "float64", "float128"}
+            is_type_param = left_type in self._current_type_params
             if (
                 (left_type == right_type and (left_type in integer_types or left_type in float_types))
                 or (left_type == right_type and left_type in {"string", "bool"})
                 or (left_type == "null" or right_type == "null")
+                or (left_type == right_type and is_type_param)
             ):
                 node_type_str = "bool"
             else:
@@ -775,47 +831,10 @@ class TypeSystemMixin(StatementsMixin):
                         f"Arrays are fixed-size; method '{method_name}' is not supported",
                         node.token,
                     )
-                elif method_name in ("length", "size"):
-                    if len(arg_types) == 0:
-                        node.return_type = "int32"
-                    else:
-                        self.invalid_type_error(
-                            f"Method '{method_name}' expected 0 arguments, got {len(arg_types)}",
-                            node.token,
-                        )
-                elif method_name in ("index", "count"):
-                    if len(arg_types) == 1:
-                        if arg_types[0] == elem_type:
-                            node.return_type = "int32"
-                        else:
-                            self.invalid_type_error(
-                                f"Method '{method_name}' for {object_type} expected element type {elem_type}, got {arg_types[0]}",
-                                node.children[1].token,
-                            )
-                    else:
-                        self.invalid_type_error(
-                            f"Method '{method_name}' expected 1 argument, got {len(arg_types)}",
-                            node.token,
-                        )
                 else:
-                    self.invalid_type_error(
-                        f"Unknown method '{method_name}' for array type {object_type}",
-                        node.token,
-                    )
+                    self._dispatch_builtin_method(node, "array", elem_type, object_type, method_name, arg_types)
             elif object_type == "string":
-                if method_name == "length":
-                    if len(arg_types) == 0:
-                        node.return_type = "int32"
-                    else:
-                        self.invalid_type_error(
-                            f"Method 'length' expected 0 arguments, got {len(arg_types)}",
-                            node.token,
-                        )
-                else:
-                    self.invalid_type_error(
-                        f"Unknown method '{method_name}' for type 'string'",
-                        node.token,
-                    )
+                self._dispatch_builtin_method(node, "string", None, object_type, method_name, arg_types)
             else:
                 # Class instance methods
                 if object_type in self.user_methods and method_name in self.user_methods[object_type]:

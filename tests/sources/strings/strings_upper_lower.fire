@@ -1,0 +1,24 @@
+// .upper()/.lower(): ASCII case folding, non-letter bytes pass through
+// unchanged. Implemented via @builtin_method (see
+// firescript/std/internal/strings.fire, firescript/builtin_methods.py).
+
+import @firescript/std.io.println;
+
+mixed: string = "Hello, World! 123";
+println(mixed.upper());
+println(mixed.lower());
+
+already_upper: string = "ALL CAPS";
+println(already_upper.upper());
+println(already_upper.lower());
+
+empty: string = "";
+println(empty.upper());
+println(empty.lower());
+
+/* EXPECT
+HELLO, WORLD! 123
+hello, world! 123
+ALL CAPS
+all caps
+*/

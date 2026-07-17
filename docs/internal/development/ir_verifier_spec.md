@@ -510,9 +510,10 @@ back the emitter support it stands in for will reintroduce false positives.
   path — semantic analysis does not yet reject this source-level shape, so
   FIRV-T4 is the backstop for it; no case has surfaced in the test corpus.
 - **`char` (I8) crossing a `uint8`-declared runtime boundary.**
-  `std/internal/runtime.fire` declares `fs_rt_char_to_str`,
-  `fs_rt_str_char_code`, and `fs_rt_str_char_code_at` with `uint8`
-  parameters/returns, but firescript's `char` always lowers to `I8`
+  `std/internal/number_conversions.fire` declares `fs_rt_char_to_str`, and
+  `std/internal/strings.fire` declares `fs_rt_str_char_code` and
+  `fs_rt_str_char_code_at`, all with `uint8` parameters/returns, but
+  firescript's `char` always lowers to `I8`
   (`_SCALARS["char"]`). Fixed at the three call sites in `flir/lowering.py`
   with an explicit `Cvt` bridging `I8`/`U8` (same width, bit-pattern-
   preserving) rather than weakening FLIRV-T1/T2/T4.
@@ -577,7 +578,7 @@ back the emitter support it stands in for will reintroduce false positives.
     conservative superset (any identifier referenced anywhere in the
     return expression is exempted from pre-return dropping); the narrower
     borrowed-in-return case is fixed at specific call sites instead (see
-    `std/internal/runtime.fire::fs_rt_argv_at`).
+    `std/internal/io.fire::fs_rt_argv_at`).
 - **Two-phase dataflow reporting (architectural fix).**
   `ir_analysis.forward_dataflow`'s worklist driver calls `transfer()`
   repeatedly per block across fixpoint rounds, on intermediate,
@@ -637,6 +638,6 @@ back the emitter support it stands in for will reintroduce false positives.
   pattern must grow with it (the *rule* — no unguarded payload reads —
   stays).
 - **Verification cost:** Tier-2 dataflow is linear per function in practice
-  but has not been measured on the largest std modules (`std/internal/
-  runtime.fire`); if it ever dominates compile time the answer is
-  algorithmic (better sparse analysis), not sampling or skipping.
+  but has not been measured on the largest std modules (the combined
+  `std/internal/*.fire` runtime); if it ever dominates compile time the
+  answer is algorithmic (better sparse analysis), not sampling or skipping.

@@ -670,19 +670,19 @@ func @option_value(name: ptr<i8>, fallback: ptr<i8>) -> ptr<i8> {
     %97 = call.ptr<i8> @_value_after_equals(%96)
     slot result: ptr<i8>
     slotstore result, %97
-    %98 = slotload.ptr<i8> name
+    %98 = slotload.ptr<i8> arg
     call.void @impl_fs_rt_free(%98)
-    %99 = slotload.ptr<i8> fallback
+    %99 = slotload.ptr<i8> name
     call.void @impl_fs_rt_free(%99)
-    %100 = slotload.ptr<i8> short_flag
+    %100 = slotload.ptr<i8> fallback
     call.void @impl_fs_rt_free(%100)
-    %101 = slotload.ptr<i8> long_flag
+    %101 = slotload.ptr<i8> short_flag
     call.void @impl_fs_rt_free(%101)
-    %102 = slotload.ptr<i8> short_eq
+    %102 = slotload.ptr<i8> long_flag
     call.void @impl_fs_rt_free(%102)
-    %103 = slotload.ptr<i8> long_eq
+    %103 = slotload.ptr<i8> short_eq
     call.void @impl_fs_rt_free(%103)
-    %104 = slotload.ptr<i8> arg
+    %104 = slotload.ptr<i8> long_eq
     call.void @impl_fs_rt_free(%104)
     %105 = slotload.ptr<i8> result
     ret %105
@@ -701,19 +701,19 @@ func @option_value(name: ptr<i8>, fallback: ptr<i8>) -> ptr<i8> {
     %111 = call.ptr<i8> @_value_after_equals(%110)
     slot result__2: ptr<i8>
     slotstore result__2, %111
-    %112 = slotload.ptr<i8> name
+    %112 = slotload.ptr<i8> arg
     call.void @impl_fs_rt_free(%112)
-    %113 = slotload.ptr<i8> fallback
+    %113 = slotload.ptr<i8> name
     call.void @impl_fs_rt_free(%113)
-    %114 = slotload.ptr<i8> short_flag
+    %114 = slotload.ptr<i8> fallback
     call.void @impl_fs_rt_free(%114)
-    %115 = slotload.ptr<i8> long_flag
+    %115 = slotload.ptr<i8> short_flag
     call.void @impl_fs_rt_free(%115)
-    %116 = slotload.ptr<i8> short_eq
+    %116 = slotload.ptr<i8> long_flag
     call.void @impl_fs_rt_free(%116)
-    %117 = slotload.ptr<i8> long_eq
+    %117 = slotload.ptr<i8> short_eq
     call.void @impl_fs_rt_free(%117)
-    %118 = slotload.ptr<i8> arg
+    %118 = slotload.ptr<i8> long_eq
     call.void @impl_fs_rt_free(%118)
     %119 = slotload.ptr<i8> result__2
     ret %119
@@ -937,21 +937,21 @@ func @option_value_alias(long_name: ptr<i8>, short_name: ptr<i8>, fallback: ptr<
     %101 = call.ptr<i8> @_value_after_equals(%100)
     slot result: ptr<i8>
     slotstore result, %101
-    %102 = slotload.ptr<i8> long_name
+    %102 = slotload.ptr<i8> arg
     call.void @impl_fs_rt_free(%102)
-    %103 = slotload.ptr<i8> short_name
+    %103 = slotload.ptr<i8> long_name
     call.void @impl_fs_rt_free(%103)
-    %104 = slotload.ptr<i8> fallback
+    %104 = slotload.ptr<i8> short_name
     call.void @impl_fs_rt_free(%104)
-    %105 = slotload.ptr<i8> short_flag
+    %105 = slotload.ptr<i8> fallback
     call.void @impl_fs_rt_free(%105)
-    %106 = slotload.ptr<i8> long_flag
+    %106 = slotload.ptr<i8> short_flag
     call.void @impl_fs_rt_free(%106)
-    %107 = slotload.ptr<i8> short_eq
+    %107 = slotload.ptr<i8> long_flag
     call.void @impl_fs_rt_free(%107)
-    %108 = slotload.ptr<i8> long_eq
+    %108 = slotload.ptr<i8> short_eq
     call.void @impl_fs_rt_free(%108)
-    %109 = slotload.ptr<i8> arg
+    %109 = slotload.ptr<i8> long_eq
     call.void @impl_fs_rt_free(%109)
     %110 = slotload.ptr<i8> result
     ret %110
@@ -968,21 +968,21 @@ func @option_value_alias(long_name: ptr<i8>, short_name: ptr<i8>, fallback: ptr<
     %116 = call.ptr<i8> @_value_after_equals(%115)
     slot result__2: ptr<i8>
     slotstore result__2, %116
-    %117 = slotload.ptr<i8> long_name
+    %117 = slotload.ptr<i8> arg
     call.void @impl_fs_rt_free(%117)
-    %118 = slotload.ptr<i8> short_name
+    %118 = slotload.ptr<i8> long_name
     call.void @impl_fs_rt_free(%118)
-    %119 = slotload.ptr<i8> fallback
+    %119 = slotload.ptr<i8> short_name
     call.void @impl_fs_rt_free(%119)
-    %120 = slotload.ptr<i8> short_flag
+    %120 = slotload.ptr<i8> fallback
     call.void @impl_fs_rt_free(%120)
-    %121 = slotload.ptr<i8> long_flag
+    %121 = slotload.ptr<i8> short_flag
     call.void @impl_fs_rt_free(%121)
-    %122 = slotload.ptr<i8> short_eq
+    %122 = slotload.ptr<i8> long_flag
     call.void @impl_fs_rt_free(%122)
-    %123 = slotload.ptr<i8> long_eq
+    %123 = slotload.ptr<i8> short_eq
     call.void @impl_fs_rt_free(%123)
-    %124 = slotload.ptr<i8> arg
+    %124 = slotload.ptr<i8> long_eq
     call.void @impl_fs_rt_free(%124)
     %125 = slotload.ptr<i8> result__2
     ret %125
@@ -1023,21 +1023,21 @@ func @option_value_alias(long_name: ptr<i8>, short_name: ptr<i8>, fallback: ptr<
     %141 = call.ptr<i8> @impl_fs_rt_str_slice(%137, %138, %140)
     slot result__3: ptr<i8>
     slotstore result__3, %141
-    %142 = slotload.ptr<i8> long_name
+    %142 = slotload.ptr<i8> arg
     call.void @impl_fs_rt_free(%142)
-    %143 = slotload.ptr<i8> short_name
+    %143 = slotload.ptr<i8> long_name
     call.void @impl_fs_rt_free(%143)
-    %144 = slotload.ptr<i8> fallback
+    %144 = slotload.ptr<i8> short_name
     call.void @impl_fs_rt_free(%144)
-    %145 = slotload.ptr<i8> short_flag
+    %145 = slotload.ptr<i8> fallback
     call.void @impl_fs_rt_free(%145)
-    %146 = slotload.ptr<i8> long_flag
+    %146 = slotload.ptr<i8> short_flag
     call.void @impl_fs_rt_free(%146)
-    %147 = slotload.ptr<i8> short_eq
+    %147 = slotload.ptr<i8> long_flag
     call.void @impl_fs_rt_free(%147)
-    %148 = slotload.ptr<i8> long_eq
+    %148 = slotload.ptr<i8> short_eq
     call.void @impl_fs_rt_free(%148)
-    %149 = slotload.ptr<i8> arg
+    %149 = slotload.ptr<i8> long_eq
     call.void @impl_fs_rt_free(%149)
     %150 = slotload.ptr<i8> result__3
     ret %150
@@ -1414,9 +1414,9 @@ func @impl_fs_rt_argv_at(index: i32) -> ptr<i8> {
     %6 = slotload.i32 index
     %7 = const.i32 0
     %8 = lt.i32 %6, %7
-    slot __sc_30: bool
-    slotstore __sc_30, %8
-    %9 = slotload.bool __sc_30
+    slot __sc_77: bool
+    slotstore __sc_77, %8
+    %9 = slotload.bool __sc_77
     br %9, L3, L2
 
   L1:
@@ -1455,11 +1455,11 @@ func @impl_fs_rt_argv_at(index: i32) -> ptr<i8> {
     %30 = cvt.i32_to_u64 %29
     %31 = slotload.u64 argc
     %32 = ge.u64 %30, %31
-    slotstore __sc_30, %32
+    slotstore __sc_77, %32
     jmp L3
 
   L3:
-    %33 = slotload.bool __sc_30
+    %33 = slotload.bool __sc_77
     br %33, L4, L1
 
   L4:
@@ -1481,9 +1481,9 @@ func @impl_fs_rt_str_index_of(haystack: ptr<i8>, needle: ptr<i8>) -> i32 {
     %4 = slotload.u64 ph
     %5 = const.u64 0
     %6 = eq.u64 %4, %5
-    slot __sc_5: bool
-    slotstore __sc_5, %6
-    %7 = slotload.bool __sc_5
+    slot __sc_90: bool
+    slotstore __sc_90, %6
+    %7 = slotload.bool __sc_90
     br %7, L3, L2
 
   L1:
@@ -1504,11 +1504,11 @@ func @impl_fs_rt_str_index_of(haystack: ptr<i8>, needle: ptr<i8>) -> i32 {
     %15 = slotload.u64 pn
     %16 = const.u64 0
     %17 = eq.u64 %15, %16
-    slotstore __sc_5, %17
+    slotstore __sc_90, %17
     jmp L3
 
   L3:
-    %18 = slotload.bool __sc_5
+    %18 = slotload.bool __sc_90
     br %18, L4, L1
 
   L4:
@@ -1641,9 +1641,9 @@ func @impl_fs_rt_str_char_at(s: ptr<i8>, index: i32) -> ptr<i8> {
     %7 = slotload.i32 index
     %8 = const.i32 0
     %9 = ge.i32 %7, %8
-    slot __sc_3: bool
-    slotstore __sc_3, %9
-    %10 = slotload.bool __sc_3
+    slot __sc_88: bool
+    slotstore __sc_88, %9
+    %10 = slotload.bool __sc_88
     br %10, L2, L3
 
   L1:
@@ -1656,11 +1656,11 @@ func @impl_fs_rt_str_char_at(s: ptr<i8>, index: i32) -> ptr<i8> {
     %14 = cvt.i32_to_u64 %13
     %15 = slotload.u64 len
     %16 = lt.u64 %14, %15
-    slotstore __sc_3, %16
+    slotstore __sc_88, %16
     jmp L3
 
   L3:
-    %17 = slotload.bool __sc_3
+    %17 = slotload.bool __sc_88
     br %17, L4, L5
 
   L4:
@@ -1702,9 +1702,9 @@ func @impl_fs_rt_str_eq(a: ptr<i8>, b: ptr<i8>) -> bool {
     %4 = slotload.u64 pa
     %5 = const.u64 0
     %6 = eq.u64 %4, %5
-    slot __sc_2: bool
-    slotstore __sc_2, %6
-    %7 = slotload.bool __sc_2
+    slot __sc_87: bool
+    slotstore __sc_87, %6
+    %7 = slotload.bool __sc_87
     br %7, L3, L2
 
   L1:
@@ -1717,11 +1717,11 @@ func @impl_fs_rt_str_eq(a: ptr<i8>, b: ptr<i8>) -> bool {
     %9 = slotload.u64 pb
     %10 = const.u64 0
     %11 = eq.u64 %9, %10
-    slotstore __sc_2, %11
+    slotstore __sc_87, %11
     jmp L3
 
   L3:
-    %12 = slotload.bool __sc_2
+    %12 = slotload.bool __sc_87
     br %12, L4, L1
 
   L4:
@@ -2111,9 +2111,9 @@ func @rt_args_parse() -> void {
     %50 = slotload.u8 c
     %51 = const.u8 32
     %52 = eq.u8 %50, %51
-    slot __sc_24: bool
-    slotstore __sc_24, %52
-    %53 = slotload.bool __sc_24
+    slot __sc_71: bool
+    slotstore __sc_71, %52
+    %53 = slotload.bool __sc_71
     br %53, L11, L10
 
   L8:
@@ -2129,11 +2129,11 @@ func @rt_args_parse() -> void {
     %57 = slotload.u8 c
     %58 = const.u8 9
     %59 = eq.u8 %57, %58
-    slotstore __sc_24, %59
+    slotstore __sc_71, %59
     jmp L11
 
   L11:
-    %60 = slotload.bool __sc_24
+    %60 = slotload.bool __sc_71
     br %60, L12, L13
 
   L12:
@@ -2174,9 +2174,9 @@ func @rt_args_parse() -> void {
     slotstore c__2, %73
     %74 = slotload.bool in_quotes
     %75 = not %74
-    slot __sc_25: bool
-    slotstore __sc_25, %75
-    %76 = slotload.bool __sc_25
+    slot __sc_72: bool
+    slotstore __sc_72, %75
+    %76 = slotload.bool __sc_72
     br %76, L20, L21
 
   L18:
@@ -2201,25 +2201,25 @@ func @rt_args_parse() -> void {
     %87 = slotload.u8 c__2
     %88 = const.u8 32
     %89 = eq.u8 %87, %88
-    slot __sc_26: bool
-    slotstore __sc_26, %89
-    %90 = slotload.bool __sc_26
+    slot __sc_73: bool
+    slotstore __sc_73, %89
+    %90 = slotload.bool __sc_73
     br %90, L23, L22
 
   L21:
-    %91 = slotload.bool __sc_25
+    %91 = slotload.bool __sc_72
     br %91, L24, L19
 
   L22:
     %92 = slotload.u8 c__2
     %93 = const.u8 9
     %94 = eq.u8 %92, %93
-    slotstore __sc_26, %94
+    slotstore __sc_73, %94
     jmp L23
 
   L23:
-    %95 = slotload.bool __sc_26
-    slotstore __sc_25, %95
+    %95 = slotload.bool __sc_73
+    slotstore __sc_72, %95
     jmp L21
 
   L24:
@@ -2244,9 +2244,9 @@ func @rt_args_parse() -> void {
     %100 = slotload.u64 i
     %101 = slotload.u64 cmd_len
     %102 = lt.u64 %100, %101
-    slot __sc_27: bool
-    slotstore __sc_27, %102
-    %103 = slotload.bool __sc_27
+    slot __sc_74: bool
+    slotstore __sc_74, %102
+    %103 = slotload.bool __sc_74
     br %103, L31, L32
 
   L29:
@@ -2264,9 +2264,9 @@ func @rt_args_parse() -> void {
     %110 = slotload.u64 i
     %111 = slotload.u64 cmd_len
     %112 = lt.u64 %110, %111
-    slot __sc_28: bool
-    slotstore __sc_28, %112
-    %113 = slotload.bool __sc_28
+    slot __sc_75: bool
+    slotstore __sc_75, %112
+    %113 = slotload.bool __sc_75
     br %113, L33, L34
 
   L31:
@@ -2277,11 +2277,11 @@ func @rt_args_parse() -> void {
     %118 = load.u8 %117, 0
     %119 = const.u8 92
     %120 = eq.u8 %118, %119
-    slotstore __sc_27, %120
+    slotstore __sc_74, %120
     jmp L32
 
   L32:
-    %121 = slotload.bool __sc_27
+    %121 = slotload.bool __sc_74
     br %121, L29, L30
 
   L33:
@@ -2292,11 +2292,11 @@ func @rt_args_parse() -> void {
     %126 = load.u8 %125, 0
     %127 = const.u8 34
     %128 = eq.u8 %126, %127
-    slotstore __sc_28, %128
+    slotstore __sc_75, %128
     jmp L34
 
   L34:
-    %129 = slotload.bool __sc_28
+    %129 = slotload.bool __sc_75
     slot followed_by_quote: bool
     slotstore followed_by_quote, %129
     %130 = slotload.u64 n_bs
@@ -2343,9 +2343,9 @@ func @rt_args_parse() -> void {
 
   L39:
     %150 = slotload.bool followed_by_quote
-    slot __sc_29: bool
-    slotstore __sc_29, %150
-    %151 = slotload.bool __sc_29
+    slot __sc_76: bool
+    slotstore __sc_76, %150
+    %151 = slotload.bool __sc_76
     br %151, L41, L42
 
   L40:
@@ -2357,11 +2357,11 @@ func @rt_args_parse() -> void {
     %154 = mod.u64 %152, %153
     %155 = const.u64 1
     %156 = eq.u64 %154, %155
-    slotstore __sc_29, %156
+    slotstore __sc_76, %156
     jmp L42
 
   L42:
-    %157 = slotload.bool __sc_29
+    %157 = slotload.bool __sc_76
     br %157, L43, L40
 
   L43:

@@ -28,7 +28,7 @@ The bootstrap path has three phases:
 - **FIR + FLIR pipeline** — AST → FIR → FLIR → x86-64 assembly is the only pipeline
 - **Self-hosted native toolchain** — pure-Python x86-64 assembler and PE32+ writer;
   no external tools, no MinGW binutils, zero subprocess calls
-- **firescript runtime** — `std/internal/runtime.fire` implements strings, arrays, numeric
+- **firescript runtime** — `std/internal/*.fire` implements strings, arrays, numeric
   formatting and parsing, process arguments, file syscalls in firescript
 - Generators (`generator<T>`, `yield`), `for-in` over generators, `std.ranges`
 - `char` type and character literal syntax (`'A'`, `'\n'`)
@@ -70,13 +70,14 @@ self-hosting work is not blocked by missing data structures.
 | `Vec<T>` in `@firescript/std.collections` | Dynamic arrays are the single most critical missing collection — needed for token lists, AST child lists, symbol tables, etc. |
 | `HashMap<K,V>` in `@firescript/std.collections` | Symbol tables, type environments, and identifier lookups require associative maps. |
 | `StringBuilder` in `@firescript/std.text` | Code generation and error message formatting need efficient string accumulation. |
-| Extended string methods: `split`, `substring`, `indexOf`, `startsWith`, `endsWith`, `trim`, `toLower`, `toUpper`, `replace` | Lexing and string processing require these — cannot write a parser without substring search and splitting. |
+| Extended string methods: `split`, `substring`, `indexOf`, `startsWith`, `endsWith`, `trim`, `lower`, `upper`, `replace` | Lexing and string processing require these — cannot write a parser without substring search and splitting. |
 | `Result<T,E>` proper error type | Compiler phases propagate errors; a well-typed Result is essential for ergonomic error handling in firescript code. |
 
 ### Standard library
 
 - New module `@firescript/std.collections` — `Vec<T>`, `HashMap<K,V>` (and later `Stack<T>`,
   `Queue<T>`, `Deque<T>`)
+  - `enumerate` generator for iterating over `Vec<T>` with index/value pairs `Tuple<int32,T>`
 - New module `@firescript/std.text` — `StringBuilder`
 - Enhanced `@firescript/std.types` — `Result<T,E>` with `Ok`, `Err` variants and combinators
 - **`@firescript/std.regex`** — full regex matching engine (lexer, parser, NFA/DFA

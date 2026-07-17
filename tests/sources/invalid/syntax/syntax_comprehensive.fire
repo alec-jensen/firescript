@@ -23,7 +23,8 @@ while {  //~ ERROR FS-PARSE-0010 @7
 }
 
 // Invalid tokens
-@#$%  //~ ERROR FS-PARSE-0012 @2
+@#$%  //~ ERROR FS-PARSE-0010 @2
+//~^ ERROR FS-PARSE-0012 @2
 
 // Missing block braces
 if (true)

@@ -1001,7 +1001,7 @@ fn rt_pow2(k: uint64) -> uint64 {
     return r;
 }
 
-// ---- local heap allocation (float128.fire cannot call runtime.fire) ----
+// ---- local heap allocation (kept independent of alloc.fire's allocator) ----
 // These mirror the runtime allocator but use only win_* intrinsics. Returned
 // string blocks are NOT registered in the runtime allocation registry; the
 // runtime free path ignores untracked pointers, so this is leak-safe but the

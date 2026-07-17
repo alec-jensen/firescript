@@ -6,9 +6,9 @@ Two families of branch live here:
 
 1. The "SyscallResult" special cases in lower_type/lower_type_str/
    ensure_struct/is_copyable_class_str. In the real pipeline,
-   firescript/std/internal/runtime.fire declares `copyable class
-   SyscallResult`, and main.py always passes that module in as
-   `runtime_module`, so `self.typedefs` always already contains
+   firescript/std/internal/syscalls.fire declares `copyable class
+   SyscallResult`, and main.py always passes the merged std/internal/
+   module in as `runtime_module`, so `self.typedefs` always already contains
    "SyscallResult" by the time any user code lowers -- these branches only
    matter when FIRToFLIRLowering is driven without a runtime module (which
    is exactly what a from-scratch unit test does).

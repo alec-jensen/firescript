@@ -13,7 +13,8 @@ arr: int32[] = [1,2,3; // missing closing bracket  //~ ERROR FS-PARSE-0010 @22
 //~^ ERROR FS-PARSE-0010 @22
 
 print("-- invalid syntax: stray tokens --");  //~ ERROR FS-PARSE-0012 @1
-@ # $ // unexpected symbols (if lexer produces tokens)  //~ ERROR FS-PARSE-0012 @3
+@ # $ // unexpected symbols (if lexer produces tokens)  //~ ERROR FS-PARSE-0010 @3
+//~^ ERROR FS-PARSE-0012 @3
 
 print("-- invalid syntax: malformed if --");  //~ ERROR FS-PARSE-0012 @1
 if 1) { print(1); }  //~ ERROR FS-PARSE-0010 @4

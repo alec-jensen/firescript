@@ -1053,7 +1053,7 @@ class FIRToFLIRLowering:
                 self.set_val(inst, self.rt_call("fs_rt_str_to_bool", [value], BOOL, ctx), ctx)
                 return
             if target_str == "char":
-                # fs_rt_str_char_code is declared `uint8` in runtime.fire;
+                # fs_rt_str_char_code is declared `uint8` in strings.fire;
                 # firescript's `char` always lowers to I8 (_SCALARS), so
                 # bridge the representational gap explicitly rather than
                 # returning a uint8-typed value where char (I8) is
@@ -1112,7 +1112,7 @@ class FIRToFLIRLowering:
             case "bool":
                 return self.rt_call("fs_rt_bool_to_str", [value], ptr_to("i8"), ctx)
             case "char":
-                # fs_rt_char_to_str is declared `uint8` in runtime.fire;
+                # fs_rt_char_to_str is declared `uint8` in number_conversions.fire;
                 # `value` is char, which always lowers to I8 (_SCALARS).
                 u8_value = self._cvt_to(value, I8, U8, ctx)
                 return self.rt_call("fs_rt_char_to_str", [u8_value], ptr_to("i8"), ctx)
@@ -1328,16 +1328,6 @@ class FIRToFLIRLowering:
                     return ctx.emit(ConstInt(str(meta[1]), I32))
                 return self.var_load(meta[1], I32, ctx)
         return None
-
-    def _elem_type_of_array(self, array_fir: Value, ctx: _FuncCtx) -> str:
-        t = array_fir.result_type
-        if isinstance(t, ArrayType):
-            return self.render_concrete(t.element_type, ctx.type_map)
-        if isinstance(array_fir, FIRValue) and isinstance(array_fir.instruction, LoadVarInst):
-            slot = array_fir.instruction.name
-            if slot in ctx.array_elems:
-                return ctx.array_elems[slot]
-        return "int32"
 
     def lower_index_array(self, inst: IndexArrayInst, ctx: _FuncCtx) -> None:
         array = self.val(inst.operands[0], ctx)
@@ -1778,7 +1768,8 @@ class FIRToFLIRLowering:
 
     def rt_call(self, name: str, args: list[FValue], ret_type: FLIRType, ctx: _FuncCtx) -> Optional[FValue]:
         """Call a runtime entry point, preferring the firescript-implemented
-        version (std/internal/runtime.fire) when present in the module.
+        version (one of the std/internal/*.fire files) when present in the
+        module.
 
         The registry (flir/runtime_abi.py) is the source of truth for
         non-pointer return types -- callers must not disagree with it, so
@@ -1859,10 +1850,6 @@ class FIRToFLIRLowering:
             self.set_val(inst, length, ctx)
             return
 
-        if name in ("array_index", "array_count"):
-            self.lower_array_search(inst, name, args, ctx)
-            return
-
         # User function (possibly generic).
         type_args = [self.subst(t, ctx.type_map) for t in inst.metadata.get("type_args", [])]
         lowered_name = self.request_function(name, type_args)
@@ -1884,9 +1871,9 @@ class FIRToFLIRLowering:
         is_generic_call: bool,
         ctx: _FuncCtx,
     ) -> list[FValue]:
-        """Insert implicit array-length arguments (legacy ABI). Generic
-        instantiations do not take length params (legacy parity)."""
-        if is_generic_call or callee.is_generator:
+        """Insert implicit array-length arguments (legacy ABI). Generator
+        frames use a separate calling convention and never take these."""
+        if callee.is_generator:
             return args
         final: list[FValue] = []
         for (pname, ptype), arg_fir, arg in zip(callee.params, inst.operands, args):
@@ -1942,70 +1929,6 @@ class FIRToFLIRLowering:
                 self.set_val(inst, self._cvt_to(value, source_type, I8, ctx), ctx)
             return
         raise LoweringError(f"unsupported conversion {name}")
-
-    def lower_array_search(self, inst: CallInst, name: str, args: list[FValue], ctx: _FuncCtx) -> None:
-        """Inline loops for array.index(v) / array.count(v)."""
-        array_fir = inst.operands[0]
-        array = args[0]
-        needle = args[1]
-        elem_str = inst.metadata.get("element_type", self._elem_type_of_array(array_fir, ctx))
-        elem_str = self.subst(elem_str, ctx.type_map)
-        elem_type = self.lower_type_str(elem_str, ctx.type_map)
-        elem_size = elem_type.size(self.flir)
-        length = self._array_length_value(array_fir, ctx)
-        if length is None:
-            raise LoweringError(f"{name} on array of unknown size")
-
-        result_slot = ctx.temp("srch")
-        idx_slot = ctx.temp("srchi")
-        self.ensure_slot(result_slot, I32, ctx)
-        self.ensure_slot(idx_slot, I32, ctx)
-        init = "-1" if name == "array_index" else "0"
-        ctx.emit(SlotStore(result_slot, ctx.emit(ConstInt(init, I32))))
-        ctx.emit(SlotStore(idx_slot, ctx.emit(ConstInt("0", I32))))
-
-        header = ctx.func.new_block()
-        body = ctx.func.new_block()
-        hit = ctx.func.new_block()
-        cont = ctx.func.new_block()
-        done = ctx.func.new_block()
-
-        ctx.emit(Jmp(header.id))
-
-        ctx.block = header
-        idx = ctx.emit(SlotLoad(idx_slot, I32))
-        cond = ctx.emit(BinOp("lt", I32, idx, length, BOOL))
-        ctx.emit(Br(cond, body.id, done.id))
-
-        ctx.block = body
-        idx_b = ctx.emit(SlotLoad(idx_slot, I32))
-        addr = ctx.emit(PtrAdd(array, idx_b, elem_size))
-        elem = ctx.emit(Load(elem_type, addr, 0))
-        if elem_str == "string":
-            matches = self.rt_call("fs_rt_str_eq", [elem, needle], BOOL, ctx)
-        else:
-            matches = ctx.emit(BinOp("eq", elem_type, elem, needle, BOOL))
-        ctx.emit(Br(matches, hit.id, cont.id))
-
-        ctx.block = hit
-        if name == "array_index":
-            idx_h = ctx.emit(SlotLoad(idx_slot, I32))
-            ctx.emit(SlotStore(result_slot, idx_h))
-            ctx.emit(Jmp(done.id))
-        else:
-            cur = ctx.emit(SlotLoad(result_slot, I32))
-            one = ctx.emit(ConstInt("1", I32))
-            ctx.emit(SlotStore(result_slot, ctx.emit(BinOp("add", I32, cur, one, I32))))
-            ctx.emit(Jmp(cont.id))
-
-        ctx.block = cont
-        idx_c = ctx.emit(SlotLoad(idx_slot, I32))
-        one_c = ctx.emit(ConstInt("1", I32))
-        ctx.emit(SlotStore(idx_slot, ctx.emit(BinOp("add", I32, idx_c, one_c, I32))))
-        ctx.emit(Jmp(header.id))
-
-        ctx.block = done
-        self.set_val(inst, ctx.emit(SlotLoad(result_slot, I32)), ctx)
 
     def lower_method_call(self, inst: MethodCallInst, ctx: _FuncCtx) -> None:
         receiver_fir = inst.operands[0]

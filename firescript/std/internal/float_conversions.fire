@@ -1,0 +1,473 @@
+// float64/float32 <-> string conversions (exact binary-to-decimal).
+//
+// A double is mant * 2^bexp exactly. Binary fractions have finite decimal
+// expansions, so we compute the exact decimal digits with a fixed-point
+// digit array: start from the mantissa digits and double (bexp > 0) or
+// halve (bexp < 0) the whole array. This matches printf output without
+// approximation drift.
+//
+// Work buffer layout: [0]=int_len u64, [8]=frac_len u64, digits as bytes;
+// integer digits end just before ANCHOR (most significant first),
+// fraction digits start at ANCHOR. ANCHOR offset = 16 + 340.
+//
+// This module is compiled through the normal pipeline and merged into
+// every program built with the FIR backends; see std/internal/alloc.fire
+// for the shared std/internal/ authoring rules (this file relies on
+// rt_raw_alloc/rt_reg_add from alloc.fire and fs_rt_str_dup from
+// strings.fire).
+
+directive enable_lowlevel_runtime;
+
+fn rt_f64_decimal(mant: uint64, bexp: int32) -> uint64 {
+    buf: uint64 = rt_raw_alloc(16u64 + 340u64 + 1090u64);
+    anchor: uint64 = buf + 356u64;
+    int_len: uint64 = 0u64;
+    m: uint64 = mant;
+    while (m > 0u64) {
+        int_len = int_len + 1u64;
+        mem_store_u8(anchor - int_len, (m % 10u64) as uint8);
+        m = m / 10u64;
+    }
+    frac_len: uint64 = 0u64;
+    while (bexp > 0) {
+        carry: uint64 = 0u64;
+        i: uint64 = frac_len;
+        while (i > 0u64) {
+            idx: uint64 = anchor + i - 1u64;
+            d: uint64 = (mem_load_u8(idx) as uint64) * 2u64 + carry;
+            mem_store_u8(idx, (d % 10u64) as uint8);
+            carry = d / 10u64;
+            i = i - 1u64;
+        }
+        while (frac_len > 0u64 && mem_load_u8(anchor + frac_len - 1u64) == 0u8) {
+            frac_len = frac_len - 1u64;
+        }
+        j: uint64 = 0u64;
+        while (j < int_len) {
+            idx2: uint64 = anchor - 1u64 - j;
+            d2: uint64 = (mem_load_u8(idx2) as uint64) * 2u64 + carry;
+            mem_store_u8(idx2, (d2 % 10u64) as uint8);
+            carry = d2 / 10u64;
+            j = j + 1u64;
+        }
+        while (carry > 0u64) {
+            int_len = int_len + 1u64;
+            mem_store_u8(anchor - int_len, (carry % 10u64) as uint8);
+            carry = carry / 10u64;
+        }
+        bexp = bexp - 1;
+    }
+    while (bexp < 0) {
+        rem: uint64 = 0u64;
+        i2: uint64 = 0u64;
+        while (i2 < int_len) {
+            idx3: uint64 = anchor - int_len + i2;
+            cur: uint64 = rem * 10u64 + (mem_load_u8(idx3) as uint64);
+            mem_store_u8(idx3, (cur / 2u64) as uint8);
+            rem = cur % 2u64;
+            i2 = i2 + 1u64;
+        }
+        while (int_len > 0u64 && mem_load_u8(anchor - int_len) == 0u8) {
+            int_len = int_len - 1u64;
+        }
+        k: uint64 = 0u64;
+        while (k < frac_len) {
+            idx4: uint64 = anchor + k;
+            cur2: uint64 = rem * 10u64 + (mem_load_u8(idx4) as uint64);
+            mem_store_u8(idx4, (cur2 / 2u64) as uint8);
+            rem = cur2 % 2u64;
+            k = k + 1u64;
+        }
+        if (rem > 0u64) {
+            mem_store_u8(anchor + frac_len, 5u8);
+            frac_len = frac_len + 1u64;
+        }
+        bexp = bexp + 1;
+    }
+    mem_store_u64(buf, int_len);
+    mem_store_u64(buf + 8u64, frac_len);
+    return buf;
+}
+
+// Round the digit array at `keep` fraction digits (round half to even).
+// Returns the new int_len (rounding can carry into a new leading digit).
+fn rt_dec_round_frac(buf: uint64, keep: uint64) -> uint64 {
+    anchor: uint64 = buf + 356u64;
+    int_len: uint64 = mem_load_u64(buf);
+    frac_len: uint64 = mem_load_u64(buf + 8u64);
+    if (frac_len <= keep) {
+        return int_len;
+    }
+    next: uint8 = mem_load_u8(anchor + keep);
+    round_up: bool = false;
+    if (next > 5u8) {
+        round_up = true;
+    } else if (next == 5u8) {
+        more: bool = false;
+        i: uint64 = keep + 1u64;
+        while (i < frac_len) {
+            if (mem_load_u8(anchor + i) != 0u8) {
+                more = true;
+                break;
+            }
+            i = i + 1u64;
+        }
+        if (more) {
+            round_up = true;
+        } else {
+            // Exact tie: round half to even.
+            prev: uint8 = 0u8;
+            if (keep > 0u64) {
+                prev = mem_load_u8(anchor + keep - 1u64);
+            } else if (int_len > 0u64) {
+                prev = mem_load_u8(anchor - 1u64);
+            }
+            if (prev % 2u8 == 1u8) {
+                round_up = true;
+            }
+        }
+    }
+    if (round_up) {
+        j: uint64 = keep;
+        carry: bool = true;
+        while (j > 0u64 && carry) {
+            idx: uint64 = anchor + j - 1u64;
+            d: uint8 = mem_load_u8(idx) + 1u8;
+            if (d == 10u8) {
+                mem_store_u8(idx, 0u8);
+            } else {
+                mem_store_u8(idx, d);
+                carry = false;
+            }
+            j = j - 1u64;
+        }
+        k: uint64 = 0u64;
+        while (k < int_len && carry) {
+            idx2: uint64 = anchor - 1u64 - k;
+            d2: uint8 = mem_load_u8(idx2) + 1u8;
+            if (d2 == 10u8) {
+                mem_store_u8(idx2, 0u8);
+            } else {
+                mem_store_u8(idx2, d2);
+                carry = false;
+            }
+            k = k + 1u64;
+        }
+        if (carry) {
+            int_len = int_len + 1u64;
+            mem_store_u8(anchor - int_len, 1u8);
+            mem_store_u64(buf, int_len);
+        }
+    }
+    mem_store_u64(buf + 8u64, keep);
+    return int_len;
+}
+
+// printf "%f" semantics: fixed notation, 6 fractional digits.
+fn fs_rt_f64_to_str(value: float64) -> string {
+    bits: uint64 = f64_bits(value);
+    negative: bool = bits >= 9223372036854775808u64;
+    exp_field: uint64 = (bits / 4503599627370496u64) % 2048u64;
+    mant_field: uint64 = bits % 4503599627370496u64;
+    if (exp_field == 2047u64) {
+        if (mant_field != 0u64) {
+            return fs_rt_str_dup("nan");
+        }
+        if (negative) {
+            return fs_rt_str_dup("-inf");
+        }
+        return fs_rt_str_dup("inf");
+    }
+    mant: uint64 = mant_field;
+    bexp: int32 = -1074;
+    if (exp_field != 0u64) {
+        mant = mant_field + 4503599627370496u64;
+        bexp = (exp_field as int32) - 1075;
+    }
+    dec: uint64 = rt_f64_decimal(mant, bexp);
+    anchor: uint64 = dec + 356u64;
+    int_len: uint64 = rt_dec_round_frac(dec, 6u64);
+    frac_len: uint64 = mem_load_u64(dec + 8u64);
+
+    out_len: uint64 = int_len + 8u64;
+    if (int_len == 0u64) {
+        out_len = out_len + 1u64;
+    }
+    if (negative) {
+        out_len = out_len + 1u64;
+    }
+    out: uint64 = rt_raw_alloc(out_len + 1u64);
+    rt_reg_add(out);
+    pos: uint64 = 0u64;
+    if (negative) {
+        mem_store_u8(out + pos, 45u8);
+        pos = pos + 1u64;
+    }
+    if (int_len == 0u64) {
+        mem_store_u8(out + pos, 48u8);
+        pos = pos + 1u64;
+    } else {
+        i: uint64 = 0u64;
+        while (i < int_len) {
+            mem_store_u8(out + pos, mem_load_u8(anchor - int_len + i) + 48u8);
+            pos = pos + 1u64;
+            i = i + 1u64;
+        }
+    }
+    mem_store_u8(out + pos, 46u8);
+    pos = pos + 1u64;
+    f: uint64 = 0u64;
+    while (f < 6u64) {
+        d: uint8 = 0u8;
+        if (f < frac_len) {
+            d = mem_load_u8(anchor + f);
+        }
+        mem_store_u8(out + pos, d + 48u8);
+        pos = pos + 1u64;
+        f = f + 1u64;
+    }
+    mem_store_u8(out + pos, 0u8);
+    win_heap_free(rt_heap(), 0u32, dec);
+    return addr_to_str(out);
+}
+
+fn fs_rt_f32_to_str(fvalue: float32) -> string {
+    return fs_rt_f64_to_str(fvalue as float64);
+}
+
+// printf "%g" semantics: 6 significant digits, fixed or scientific,
+// trailing zeros stripped.
+fn fs_rt_f64_to_repr(value: float64) -> string {
+    bits: uint64 = f64_bits(value);
+    negative: bool = bits >= 9223372036854775808u64;
+    exp_field: uint64 = (bits / 4503599627370496u64) % 2048u64;
+    mant_field: uint64 = bits % 4503599627370496u64;
+    if (exp_field == 2047u64) {
+        if (mant_field != 0u64) {
+            return fs_rt_str_dup("nan");
+        }
+        if (negative) {
+            return fs_rt_str_dup("-inf");
+        }
+        return fs_rt_str_dup("inf");
+    }
+    if (exp_field == 0u64 && mant_field == 0u64) {
+        if (negative) {
+            return fs_rt_str_dup("-0");
+        }
+        return fs_rt_str_dup("0");
+    }
+    mant: uint64 = mant_field;
+    bexp: int32 = -1074;
+    if (exp_field != 0u64) {
+        mant = mant_field + 4503599627370496u64;
+        bexp = (exp_field as int32) - 1075;
+    }
+    dec: uint64 = rt_f64_decimal(mant, bexp);
+    anchor: uint64 = dec + 356u64;
+    int_len: uint64 = mem_load_u64(dec);
+    frac_len: uint64 = mem_load_u64(dec + 8u64);
+
+    // Decimal exponent of the leading significant digit.
+    exp10: int32 = 0;
+    sig_start_frac: uint64 = 0u64;
+    if (int_len > 0u64) {
+        exp10 = (int_len as int32) - 1;
+    } else {
+        while (sig_start_frac < frac_len && mem_load_u8(anchor + sig_start_frac) == 0u8) {
+            sig_start_frac = sig_start_frac + 1u64;
+        }
+        exp10 = -((sig_start_frac as int32) + 1);
+    }
+
+    // Collect 6 significant digits (plus lookahead for rounding).
+    digits: uint64 = rt_raw_alloc(16u64);
+    ndig: uint64 = 0u64;
+    ii: uint64 = 0u64;
+    more_nonzero: bool = false;
+    next_digit: uint8 = 0u8;
+    have_next: bool = false;
+    if (int_len > 0u64) {
+        while (ii < int_len) {
+            d: uint8 = mem_load_u8(anchor - int_len + ii);
+            if (ndig < 6u64) {
+                mem_store_u8(digits + ndig, d);
+                ndig = ndig + 1u64;
+            } else if (!have_next) {
+                next_digit = d;
+                have_next = true;
+            } else if (d != 0u8) {
+                more_nonzero = true;
+            }
+            ii = ii + 1u64;
+        }
+        jj: uint64 = 0u64;
+        while (jj < frac_len) {
+            d2: uint8 = mem_load_u8(anchor + jj);
+            if (ndig < 6u64) {
+                mem_store_u8(digits + ndig, d2);
+                ndig = ndig + 1u64;
+            } else if (!have_next) {
+                next_digit = d2;
+                have_next = true;
+            } else if (d2 != 0u8) {
+                more_nonzero = true;
+            }
+            jj = jj + 1u64;
+        }
+    } else {
+        kk: uint64 = sig_start_frac;
+        while (kk < frac_len) {
+            d3: uint8 = mem_load_u8(anchor + kk);
+            if (ndig < 6u64) {
+                mem_store_u8(digits + ndig, d3);
+                ndig = ndig + 1u64;
+            } else if (!have_next) {
+                next_digit = d3;
+                have_next = true;
+            } else if (d3 != 0u8) {
+                more_nonzero = true;
+            }
+            kk = kk + 1u64;
+        }
+    }
+    win_heap_free(rt_heap(), 0u32, dec);
+    while (ndig < 6u64) {
+        mem_store_u8(digits + ndig, 0u8);
+        ndig = ndig + 1u64;
+    }
+
+    // Round half to even at 6 significant digits.
+    round_up: bool = false;
+    if (have_next) {
+        if (next_digit > 5u8) {
+            round_up = true;
+        } else if (next_digit == 5u8) {
+            if (more_nonzero) {
+                round_up = true;
+            } else if (mem_load_u8(digits + 5u64) % 2u8 == 1u8) {
+                round_up = true;
+            }
+        }
+    }
+    if (round_up) {
+        rr: uint64 = 6u64;
+        carry: bool = true;
+        while (rr > 0u64 && carry) {
+            d4: uint8 = mem_load_u8(digits + rr - 1u64) + 1u8;
+            if (d4 == 10u8) {
+                mem_store_u8(digits + rr - 1u64, 0u8);
+            } else {
+                mem_store_u8(digits + rr - 1u64, d4);
+                carry = false;
+            }
+            rr = rr - 1u64;
+        }
+        if (carry) {
+            // 999999 -> 100000 with exponent bump.
+            mem_store_u8(digits, 1u8);
+            zz: uint64 = 1u64;
+            while (zz < 6u64) {
+                mem_store_u8(digits + zz, 0u8);
+                zz = zz + 1u64;
+            }
+            exp10 = exp10 + 1;
+        }
+    }
+
+    // Strip trailing zeros.
+    sig: uint64 = 6u64;
+    while (sig > 1u64 && mem_load_u8(digits + sig - 1u64) == 0u8) {
+        sig = sig - 1u64;
+    }
+
+    out: uint64 = rt_raw_alloc(48u64);
+    rt_reg_add(out);
+    pos: uint64 = 0u64;
+    if (negative) {
+        mem_store_u8(out + pos, 45u8);
+        pos = pos + 1u64;
+    }
+
+    if (exp10 < -4 || exp10 >= 6) {
+        // Scientific: d[.ddddd]e[+-]XX
+        mem_store_u8(out + pos, mem_load_u8(digits) + 48u8);
+        pos = pos + 1u64;
+        if (sig > 1u64) {
+            mem_store_u8(out + pos, 46u8);
+            pos = pos + 1u64;
+            s: uint64 = 1u64;
+            while (s < sig) {
+                mem_store_u8(out + pos, mem_load_u8(digits + s) + 48u8);
+                pos = pos + 1u64;
+                s = s + 1u64;
+            }
+        }
+        mem_store_u8(out + pos, 101u8);
+        pos = pos + 1u64;
+        e: int32 = exp10;
+        if (e < 0) {
+            mem_store_u8(out + pos, 45u8);
+            e = -e;
+        } else {
+            mem_store_u8(out + pos, 43u8);
+        }
+        pos = pos + 1u64;
+        if (e >= 100) {
+            mem_store_u8(out + pos, (((e / 100) % 10) as uint8) + 48u8);
+            pos = pos + 1u64;
+        }
+        mem_store_u8(out + pos, (((e / 10) % 10) as uint8) + 48u8);
+        pos = pos + 1u64;
+        mem_store_u8(out + pos, ((e % 10) as uint8) + 48u8);
+        pos = pos + 1u64;
+    } else if (exp10 >= 0) {
+        // Fixed, point inside or right of the digits.
+        int_digits: uint64 = (exp10 as uint64) + 1u64;
+        p2: uint64 = 0u64;
+        while (p2 < int_digits) {
+            d5: uint8 = 0u8;
+            if (p2 < sig) {
+                d5 = mem_load_u8(digits + p2);
+            }
+            mem_store_u8(out + pos, d5 + 48u8);
+            pos = pos + 1u64;
+            p2 = p2 + 1u64;
+        }
+        if (sig > int_digits) {
+            mem_store_u8(out + pos, 46u8);
+            pos = pos + 1u64;
+            p3: uint64 = int_digits;
+            while (p3 < sig) {
+                mem_store_u8(out + pos, mem_load_u8(digits + p3) + 48u8);
+                pos = pos + 1u64;
+                p3 = p3 + 1u64;
+            }
+        }
+    } else {
+        // Fixed, 0.0..ddd
+        mem_store_u8(out + pos, 48u8);
+        pos = pos + 1u64;
+        mem_store_u8(out + pos, 46u8);
+        pos = pos + 1u64;
+        zeros: int32 = -exp10 - 1;
+        while (zeros > 0) {
+            mem_store_u8(out + pos, 48u8);
+            pos = pos + 1u64;
+            zeros = zeros - 1;
+        }
+        p4: uint64 = 0u64;
+        while (p4 < sig) {
+            mem_store_u8(out + pos, mem_load_u8(digits + p4) + 48u8);
+            pos = pos + 1u64;
+            p4 = p4 + 1u64;
+        }
+    }
+    mem_store_u8(out + pos, 0u8);
+    win_heap_free(rt_heap(), 0u32, digits);
+    return addr_to_str(out);
+}
+
+fn fs_rt_f32_to_repr(fvalue: float32) -> string {
+    return fs_rt_f64_to_repr(fvalue as float64);
+}

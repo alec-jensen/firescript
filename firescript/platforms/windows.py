@@ -1,6 +1,6 @@
 """Windows runtime bindings: fir intrinsic -> (kernel32 symbol, return type, param types).
 
-This is the entire OS surface the firescript runtime (std/internal/runtime.fire)
+This is the entire OS surface the firescript runtime (std/internal/*.fire)
 depends on: heap allocation, stdio handles, file I/O, and process exit, all
 via kernel32.dll. `flir/lowering.py` looks names up here when lowering the
 `win_*` low-level intrinsics.

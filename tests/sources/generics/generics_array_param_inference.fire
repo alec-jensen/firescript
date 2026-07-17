@@ -1,0 +1,30 @@
+// Regression test: a generic function taking an array parameter (`&arr:
+// T[]`) must infer T from the argument's element type, not the whole array
+// type -- an int32[] argument infers T=int32, not T="int32[]". Also
+// exercises the implicit array-length ABI parameter across a generic call
+// (previously skipped for generic calls, see flir/lowering.py's
+// _call_args_with_lengths).
+
+import @firescript/std.io.println;
+
+fn firstOf<T>(&arr: T[]) -> T {
+    return arr[0];
+}
+
+fn lastIndexValue<T>(&arr: T[], len: int32) -> T {
+    return arr[len - 1];
+}
+
+nums: int32[3] = [10, 20, 30];
+println(firstOf(nums));
+
+words: string[2] = ["hello", "world"];
+println(firstOf(words));
+
+println(lastIndexValue(nums, 3));
+
+/* EXPECT
+10
+hello
+30
+*/

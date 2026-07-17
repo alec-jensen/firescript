@@ -701,7 +701,7 @@ class _FunctionVerifier:
         # No explicit constructor: the language allows default,
         # positional-field construction (e.g. `SyscallResult(-22, "")`
         # for `copyable class SyscallResult { int32 status; string
-        # data; }` in std/internal/runtime.fire).
+        # data; }` in std/internal/syscalls.fire).
         params = self._all_fields(type_def)
         if len(inst.operands) != len(params):
             self.emit("FIRV-T9", f"Allocate passes {len(inst.operands)} argument(s) to '{class_name}', expected {len(params)}", block, index, inst)

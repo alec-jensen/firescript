@@ -253,16 +253,35 @@ class ASTToFIRConverter:
         self._used_local_names: set[str] = set()
         self._sc_counter = 0
         self._match_counter = 0
-        # (continue_target_block_id, break_target_block_id)
-        # (continue_target, break_target, cleanup) -- cleanup is the
-        # (unique_name, FIRType) of the current iteration's owned
-        # loop-element binding (for-in over a string/array of owned
-        # elements), or None. break/continue jump directly out of the loop
-        # body, bypassing the per-iteration drop inserted at the bottom of
-        # the body for the normal fallthrough path -- without also
-        # dropping it here, taking either exit leaked that iteration's
-        # element on exactly the paths that skip the fallthrough (FIRV-O3).
-        self.loop_stack: list[tuple[str, str, Optional[tuple[str, FIRType]]]] = []
+        # (continue_target, break_target, cleanup) -- cleanup is
+        # (unique_name, FIRType, source_name) for the current iteration's
+        # owned loop-element binding (currently only for-in over a string
+        # produces one; see _convert_for_in_string), or None. break/continue
+        # jump directly out of the loop body, bypassing the per-iteration
+        # drop inserted at the bottom of the body for the normal fallthrough
+        # path -- without also dropping it here, taking either exit leaked
+        # that iteration's element on exactly the paths that skip the
+        # fallthrough (FIRV-O3). `source_name` lets
+        # _mark_owned_identifier_moved recognize a bare-identifier move
+        # (assignment, explicit drop(), or an own-mode call argument) of
+        # this specific loop variable from anywhere else in ast_to_fir.py.
+        #
+        # The ownership verifier (fir/ownership_verifier.py) recomputes
+        # ownership purely from static Drop/Move/StoreVar instructions with
+        # no concept of a runtime flag -- a drop gated behind a boolean
+        # loaded at runtime looks, to it, like an unconditional drop
+        # reachable from every predecessor, so whether to drop the loop
+        # variable at any given exit must be a statically fixed decision on
+        # every path, not something resolved at runtime. See
+        # _convert_for_in_string_body/_convert_for_in_string_if for how the
+        # per-iteration cleanup honors that when the loop variable is moved
+        # out conditionally partway through the body.
+        self.loop_stack: list[tuple[str, str, Optional[tuple[str, FIRType, str]]]] = []
+        # Cleared before converting each statement inside a for-in-string
+        # loop body, populated by _mark_owned_identifier_moved with the
+        # source name of any active loop variable that statement moved --
+        # see _convert_for_in_string_body.
+        self._loop_move_observations: set[str] = set()
 
         # Directive gating: file path -> set of enabled directive names.
         # Nodes carry source_file when merged from imports; single-file
@@ -432,8 +451,8 @@ class ASTToFIRConverter:
             # Compiler-internal copyable struct backing the syscall_*
             # intrinsics (see flir/lowering.py::ensure_struct's matching
             # special case). Its class definition lives in
-            # std/internal/runtime.fire, merged into class_categories only
-            # for that file's own conversion -- every *other* file using
+            # std/internal/syscalls.fire, merged into class_categories only
+            # for the std/internal/ conversion -- every *other* file using
             # SyscallResult must know its category without that merge, or
             # every local of this type looks (wrongly) "owned" (FIRV-O3).
             return SimpleType(type_str, category="copyable", nullable=nullable)
@@ -462,13 +481,25 @@ class ASTToFIRConverter:
     # Scope helpers
     # ------------------------------------------------------------------
 
-    def _drop_loop_cleanup(self) -> None:
+    def _drop_loop_cleanup(self, target_block_id: str) -> None:
+        """Drop the current loop's per-iteration owned element (if it has
+        one -- see self.loop_stack) and jump to `target_block_id`. Used by
+        break/continue and by the normal fallthrough end of a loop body.
+
+        For a for-in-string loop, _convert_for_in_string_body temporarily
+        overwrites self.loop_stack[-1]'s cleanup entry with None whenever
+        the loop variable has already been moved out earlier on the
+        current static path, so a break/continue reached from there (via
+        the ordinary BREAK_STATEMENT/CONTINUE_STATEMENT dispatch, which
+        calls this method without otherwise knowing about that path's
+        ownership state) correctly skips the drop instead of double-
+        dropping."""
         cleanup = self.loop_stack[-1][2] if self.loop_stack else None
-        if cleanup is None:
-            return
-        name, ty = cleanup
-        ref = self.builder.load_var(name, ty)
-        self.builder.drop(ref)
+        if cleanup is not None:
+            loop_local, loop_local_type, _source_name = cleanup
+            ref = self.builder.load_var(loop_local, loop_local_type)
+            self.builder.drop(ref)
+        self.builder.jump(target_block_id)
 
     def _push_scope(self) -> None:
         self.scopes.append({})
@@ -1014,6 +1045,8 @@ class ASTToFIRConverter:
             ):
                 assign = node.children[1]
                 value = self._require_value(assign.children[0])
+                if assign.children[0].node_type == NodeTypes.IDENTIFIER:
+                    self._mark_owned_identifier_moved(assign.children[0].name)
                 old = self._convert_expression(node.children[0].children[0])
                 self.builder.drop(old)
                 if self._lookup(assign.name) is None:
@@ -1069,15 +1102,13 @@ class ASTToFIRConverter:
         if node_type == NodeTypes.BREAK_STATEMENT:
             if not self.loop_stack:
                 raise FIRConversionError("break outside loop", node)
-            self._drop_loop_cleanup()
-            self.builder.jump(self.loop_stack[-1][1])
+            self._drop_loop_cleanup(self.loop_stack[-1][1])
             return
 
         if node_type == NodeTypes.CONTINUE_STATEMENT:
             if not self.loop_stack:
                 raise FIRConversionError("continue outside loop", node)
-            self._drop_loop_cleanup()
-            self.builder.jump(self.loop_stack[-1][0])
+            self._drop_loop_cleanup(self.loop_stack[-1][0])
             return
 
         if node_type == NodeTypes.RETURN_STATEMENT:
@@ -1177,6 +1208,9 @@ class ASTToFIRConverter:
         value = self._convert_expression(node.children[0]) if node.children else None
         if value is None:
             raise FIRConversionError("Assignment without value", node)
+        rhs = node.children[0] if node.children else None
+        if rhs is not None and rhs.node_type == NodeTypes.IDENTIFIER:
+            self._mark_owned_identifier_moved(rhs.name)
         if self._lookup(node.name) is None:
             # Implicit declaration (class-typed RHS assignments allow this).
             rhs_type = self._expr_type(node.children[0])
@@ -1191,6 +1225,8 @@ class ASTToFIRConverter:
         lhs = node.children[0]
         rhs = node.children[1]
         value = self._convert_expression(rhs)
+        if rhs.node_type == NodeTypes.IDENTIFIER:
+            self._mark_owned_identifier_moved(rhs.name)
 
         if lhs.node_type == NodeTypes.IDENTIFIER:
             self.builder.store_var(self._local_name(lhs.name), value)
@@ -1421,6 +1457,135 @@ class ASTToFIRConverter:
         gen_final = self.builder.load_var(gen_local, gen_type)
         self.builder.drop(gen_final)
 
+    def _mark_owned_identifier_moved(self, name: str) -> None:
+        """If `name` (a bare identifier just used as a move source/target --
+        a plain assignment RHS, an explicit drop(), or an own-mode call
+        argument) is the loop variable of a currently-active for-in-string
+        loop, record the move in self._loop_move_observations so
+        _convert_for_in_string_body notices its per-iteration cleanup has
+        already been handled here and doesn't also drop it at the end of
+        the iteration (FIRV-O2) or, on a sibling path that never moved it,
+        skip a drop it still needs (FIRV-O3)."""
+        for _incr_id, _exit_id, cleanup in self.loop_stack:
+            if cleanup is not None and cleanup[2] == name:
+                self._loop_move_observations.add(name)
+                return
+
+    def _convert_for_in_string_body(
+        self,
+        stmts: list[ASTNode],
+        idx: int,
+        var_name: str,
+        loop_local: str,
+        loop_local_type: FIRType,
+        incr_block_id: str,
+        consumed: bool = False,
+    ) -> None:
+        """Convert stmts[idx:] (a for-in-string loop body, or a duplicated
+        continuation spliced into one arm of a nested if -- see
+        _convert_for_in_string_if), inserting the per-iteration
+        `drop(loop_local)` cleanup at every reachable fall-through exit that
+        hasn't already consumed the loop variable on that specific static
+        path, and tracking that consumption so a break/continue reached
+        along the way skips a redundant drop too (see the loop_stack[-1]
+        juggling below).
+
+        A single, unconditional drop after the whole body (the previous
+        behavior) is wrong whenever the body conditionally moves the loop
+        variable elsewhere -- e.g. an accumulator pattern like
+        `if (c == last) { count++; } else { last = c; }`: the branch that
+        moved it would get double-dropped once the other branch's need for
+        a drop was noticed (FIRV-O2), and omitting the drop altogether to
+        avoid that would leak it on the branch that never touched it
+        (FIRV-O3). A *runtime* flag doesn't work either: the ownership
+        verifier recomputes ownership purely from static instructions, so a
+        drop gated behind a runtime bool still looks unconditionally
+        reachable to it. The only representation the verifier accepts is a
+        statically fixed decision on every path -- which means when an
+        if/elif/else appears anywhere in the body (not just at the very
+        end), both arms need their own, independently-decided copy of
+        whatever statements follow it; see _convert_for_in_string_if."""
+        n = len(stmts)
+        while idx < n:
+            if self.builder.current_block.is_terminated():
+                return
+            stmt = stmts[idx]
+            if stmt.node_type == NodeTypes.IF_STATEMENT:
+                self._convert_for_in_string_if(
+                    stmt, stmts, idx + 1, var_name, loop_local, loop_local_type, incr_block_id, consumed
+                )
+                return
+            # Make break/continue reached *by this exact statement* (not
+            # one nested inside further control flow, which manages its own
+            # loop_stack entry) see the current consumption state: whatever
+            # is live at self.loop_stack[-1] here is this for-in-string
+            # loop's own entry (nested loops push/pop their own around
+            # their body, restoring this one before returning control here).
+            incr_id, exit_id, real_cleanup = self.loop_stack[-1]
+            self.loop_stack[-1] = (incr_id, exit_id, None if consumed else real_cleanup)
+            self._loop_move_observations.discard(var_name)
+            self._convert_statement(stmt)
+            if var_name in self._loop_move_observations:
+                consumed = True
+            self.loop_stack[-1] = (incr_id, exit_id, real_cleanup)
+            idx += 1
+        if not self.builder.current_block.is_terminated():
+            if not consumed:
+                ref = self.builder.load_var(loop_local, loop_local_type)
+                self.builder.drop(ref)
+            self.builder.jump(incr_block_id)
+
+    def _convert_for_in_string_if(
+        self,
+        node: ASTNode,
+        rest_stmts: list[ASTNode],
+        rest_idx: int,
+        var_name: str,
+        loop_local: str,
+        loop_local_type: FIRType,
+        incr_block_id: str,
+        consumed: bool,
+    ) -> None:
+        """Handle an if/else (or elif chain, via recursion into the else
+        branch) inside a for-in-string loop body, converting each arm with
+        its own copy of whatever statements follow the if in the enclosing
+        statement list. The two arms can leave the loop variable in
+        different ownership states (moved on one, untouched on the other),
+        and only one static copy of the continuation can be spliced onto a
+        given state -- see _convert_for_in_string_body for why that state
+        has to be a compile-time decision. Bodies here are small (loop
+        iterations), so duplicating the tail is cheap; deeply nested
+        chains of such ifs would duplicate more, but that shape doesn't
+        arise in practice for a single loop's per-element logic."""
+        condition = self._convert_expression(node.children[0])
+        then_branch = node.children[1]
+        else_branch = node.children[2] if len(node.children) > 2 else None
+
+        then_block = self.builder.new_block()
+        else_block = self.builder.new_block()
+        self.builder.branch(condition, then_block.id, else_block.id)
+
+        remainder = rest_stmts[rest_idx:]
+
+        self.builder.position_at(then_block)
+        self._push_scope()
+        then_stmts = list(then_branch.children if then_branch.node_type == NodeTypes.SCOPE else [then_branch])
+        self._convert_for_in_string_body(
+            then_stmts + remainder, 0, var_name, loop_local, loop_local_type, incr_block_id, consumed
+        )
+        self._pop_scope()
+
+        self.builder.position_at(else_block)
+        self._push_scope()
+        if else_branch is not None:
+            else_stmts = list(else_branch.children if else_branch.node_type == NodeTypes.SCOPE else [else_branch])
+        else:
+            else_stmts = []
+        self._convert_for_in_string_body(
+            else_stmts + remainder, 0, var_name, loop_local, loop_local_type, incr_block_id, consumed
+        )
+        self._pop_scope()
+
     def _convert_for_in_string(
         self,
         node: ASTNode,
@@ -1482,24 +1647,31 @@ class ASTToFIRConverter:
 
         # The increment happens in a dedicated block so `continue` advances.
         incr_block = self.builder.new_block()
-        loop_cleanup = (loop_local, loop_local_type) if loop_local_type.is_owned() else None
+        loop_cleanup = (loop_local, loop_local_type, loop_var) if loop_local_type.is_owned() else None
         self.loop_stack.append((incr_block.id, exit_block.id, loop_cleanup))
-        if body.node_type == NodeTypes.SCOPE:
-            self._convert_statements(body.children)
-        else:
-            self._convert_statement(body)
-        self.loop_stack.pop()
-        self._pop_scope()
-        if not self.builder.current_block.is_terminated():
+        if loop_cleanup is not None:
             # loop_local (each iteration's single-character string) is a
             # fresh str_char_at result -- preprocessor.py never sees this
             # FIR-synthesized binding, so nothing else drops it (FIRV-O3).
-            # (break/continue take care of this same drop on their own
-            # exit paths via loop_cleanup -- see _drop_loop_cleanup.)
-            if loop_local_type.is_owned():
-                loop_local_final = self.builder.load_var(loop_local, loop_local_type)
-                self.builder.drop(loop_local_final)
-            self.builder.jump(incr_block.id)
+            # _convert_for_in_string_body inserts that drop at every
+            # reachable fall-through exit that hasn't already consumed
+            # loop_local itself (e.g. by moving it into an outer variable
+            # on just one arm of an if/elif/else in the body, however
+            # deeply nested or followed by more code -- see that method's
+            # docstring for why a single drop after the whole body can't
+            # handle that case). break/continue take care of this same
+            # drop on their own exit paths via _drop_loop_cleanup.
+            body_stmts = list(body.children) if body.node_type == NodeTypes.SCOPE else [body]
+            self._convert_for_in_string_body(body_stmts, 0, loop_var, loop_local, loop_local_type, incr_block.id)
+        else:
+            if body.node_type == NodeTypes.SCOPE:
+                self._convert_statements(body.children)
+            else:
+                self._convert_statement(body)
+            if not self.builder.current_block.is_terminated():
+                self.builder.jump(incr_block.id)
+        self.loop_stack.pop()
+        self._pop_scope()
 
         self.builder.position_at(incr_block)
         index_for_incr = self.builder.load_var(index_local, int32)
@@ -1988,6 +2160,7 @@ class ASTToFIRConverter:
             self.builder.drop(value)
             if target.node_type == NodeTypes.IDENTIFIER:
                 self.current_function.ownership.record_move(target.name)
+                self._mark_owned_identifier_moved(target.name)
             return None
 
         base_name = name.split("<")[0] if "<" in name else name
@@ -2006,6 +2179,9 @@ class ASTToFIRConverter:
         return_type = self._fir_type(return_type_str) if return_type_str != "void" else None
 
         modes = self._call_arg_modes(name, node)
+        for arg_node, mode in zip(node.children, modes):
+            if mode == "own" and arg_node.node_type == NodeTypes.IDENTIFIER:
+                self._mark_owned_identifier_moved(arg_node.name)
         call = self.builder.call(name, args, modes, return_type)
 
         call_inst = call.instruction if call is not None else self.builder.current_block.instructions[-1]
@@ -2022,6 +2198,9 @@ class ASTToFIRConverter:
         """Construct a class instance: explicit constructor call when one
         exists, positional field initialization otherwise. Handles generic
         instances (e.g. `Pair<int32, string>(...)`)."""
+        for arg_node in node.children:
+            if arg_node.node_type == NodeTypes.IDENTIFIER:
+                self._mark_owned_identifier_moved(arg_node.name)
         args = [self._require_value(arg) for arg in node.children]
         type_args: list[str] = []
         if "<" in full_name and full_name.endswith(">"):
@@ -2096,6 +2275,11 @@ class ASTToFIRConverter:
                 # println<string> and println<string?> are the same
                 # monomorphized instance (see _strip_nullable_str).
                 arg_type = self._strip_nullable_str(self._expr_type(arg))
+                if getattr(param, "is_array", False) and arg_type.endswith("[]"):
+                    # `&arr: T[]` binds T to the element type, not the whole
+                    # array type -- an `int32[]` argument must infer T=int32,
+                    # not T="int32[]".
+                    arg_type = arg_type[:-2]
                 mapping[param_type] = arg_type
         return [mapping[tp] for tp in type_params if tp in mapping] if len(mapping) == len(type_params) else []
 
@@ -2105,14 +2289,10 @@ class ASTToFIRConverter:
         method_name = node.name
 
         if object_type_str.endswith("[]"):
-            return self._convert_array_method(node, object_node, object_type_str, method_name)
+            return self._convert_builtin_method(node, object_node, "array", object_type_str[:-2], method_name)
 
         if object_type_str == "string":
-            if method_name == "length":
-                receiver = self._convert_expression(object_node)
-                call = self.builder.call("str_length", [receiver], ["borrow"], make_simple("int32"))
-                call.instruction.metadata["intrinsic"] = True
-                return call
+            return self._convert_builtin_method(node, object_node, "string", None, method_name)
 
         receiver = self._convert_expression(object_node)
         args = [self._require_value(arg) for arg in node.children[1:]]
@@ -2148,33 +2328,70 @@ class ASTToFIRConverter:
             )
         return method_call
 
-    def _convert_array_method(
-        self, node: ASTNode, object_node: ASTNode, object_type_str: str, method_name: str
-    ) -> Value:
-        int32 = make_simple("int32")
+    def _array_length_value(self, object_node: ASTNode, receiver: Optional[Value] = None) -> Value:
+        """Resolve an array's length as a FIR value: a compile-time literal
+        when the array's size is statically known here (`_array_size_of`),
+        else the `array_length` intrinsic call (resolved at FLIR-lowering
+        time via the ctx.array_lens mechanism for arrays whose size isn't
+        known until then). Pass an already-converted `receiver` when the
+        caller also needs the array value for another purpose, so a
+        side-effecting `object_node` (e.g. a function call) isn't evaluated
+        twice."""
         size = self._array_size_of(object_node)
+        if size is not None:
+            return self.builder.int_literal(str(size), make_simple("int32"))
+        array_val = receiver if receiver is not None else self._convert_expression(object_node)
+        call = self.builder.call("array_length", [array_val], ["borrow"], make_simple("int32"))
+        call.instruction.metadata["intrinsic"] = True
+        return call
 
-        if method_name in ("length", "size"):
-            if size is not None:
-                return self.builder.int_literal(str(size), int32)
-            array = self._convert_expression(object_node)
-            call = self.builder.call("array_length", [array], ["borrow"], int32)
-            call.instruction.metadata["intrinsic"] = True
-            return call
+    def _convert_builtin_method(
+        self, node: ASTNode, object_node: ASTNode, family: str, elem_type: Optional[str], method_name: str
+    ) -> Optional[Value]:
+        """Convert a dot-method call on a primitive receiver (string/array)
+        to a direct FIR call to its @builtin_method-registered backing
+        function (firescript/builtin_methods.py) -- a real, non-intrinsic
+        function call resolved through the same path as any ordinary
+        (possibly generic) function call, since the backing function is
+        real firescript source merged into every program from
+        std/internal/. Type-checking already validated `method_name`
+        against the registry, so a lookup miss here would indicate a
+        parser/converter mismatch, not user error.
+        """
+        from builtin_methods import get_builtin_method_registry
 
-        if method_name in ("index", "count"):
-            array = self._convert_expression(object_node)
-            needle = self._convert_expression(node.children[1])
-            call = self.builder.call(
-                f"array_{method_name}", [array, needle], ["borrow", "own"], int32
-            )
-            call.instruction.metadata["intrinsic"] = True
-            if size is not None:
-                call.instruction.metadata["array_size"] = size
-            call.instruction.metadata["element_type"] = object_type_str[:-2]
-            return call
+        spec = get_builtin_method_registry().lookup(family, method_name)
+        if spec is None:
+            raise FIRConversionError(f"Unsupported {family} method '{method_name}'", node)
 
-        raise FIRConversionError(f"Unsupported array method '{method_name}'", node)
+        if spec.const_fold:
+            # .length()/.size(): resolve directly, no call emitted at all --
+            # a strict superset of the historical fast path (literal when
+            # statically known, the `array_length` intrinsic otherwise),
+            # zero call overhead either way.
+            return self._array_length_value(object_node)
+
+        receiver = self._convert_expression(object_node)
+        user_args = [self._require_value(arg) for arg in node.children[1:]]
+
+        call_args = [receiver]
+        modes = [spec.receiver_mode]
+        if spec.needs_length:
+            call_args.append(self._array_length_value(object_node, receiver))
+            modes.append("own")
+        call_args.extend(user_args)
+        modes.extend(spec.public_param_modes)
+
+        type_args = [elem_type] if (elem_type is not None and spec.type_params) else []
+        return_type_str = (
+            elem_type if (elem_type is not None and spec.return_type in spec.type_params) else spec.return_type
+        )
+        return_type = self._fir_type(return_type_str) if return_type_str != "void" else None
+
+        call = self.builder.call(spec.fir_name, call_args, modes, return_type)
+        if call is not None and type_args:
+            call.instruction.metadata["type_args"] = type_args
+        return call
 
     def _convert_super_call(self, node: ASTNode) -> Optional[Value]:
         super_class = getattr(node, "super_class", None)

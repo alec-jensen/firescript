@@ -126,6 +126,7 @@ The table below reflects the **current implementation status** of major language
 | Character literals (`'A'`, `'\n'`) | [IMPLEMENTED] |
 | String concatenation (explicit, `string + string`) | [IMPLEMENTED] |
 | `string.length()` | [IMPLEMENTED] |
+| `string.upper()` / `string.lower()` | [IMPLEMENTED] |
 | String-to-numeric casting (`"42" as int32`) | [IMPLEMENTED] |
 | String iteration in `for-in` | [IMPLEMENTED] |
 | Explicit `as` casting (numeric ↔ numeric, built-ins → string) | [IMPLEMENTED] |
@@ -167,7 +168,7 @@ The table below reflects the **current implementation status** of major language
 | FIR + FLIR pipeline (AST → FIR → FLIR → native code) | [IMPLEMENTED] |
 | Native x86-64 backend (Windows x86_64; freestanding, kernel32-only) | [IMPLEMENTED] |
 | Self-hosted toolchain (Python x86-64 assembler + PE writer; no external tools) | [IMPLEMENTED] |
-| firescript-implemented runtime (`std/internal/runtime.fire`) | [IMPLEMENTED] |
+| firescript-implemented runtime (`std/internal/*.fire`) | [IMPLEMENTED] |
 | Linux / macOS native targets | [PLANNED] |
 | Dynamic arrays (stdlib) | [PLANNED] |
 | Built-in `input()` function | Removed in current dev cycle |

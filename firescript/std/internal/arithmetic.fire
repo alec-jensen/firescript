@@ -1,0 +1,34 @@
+// Integer/float exponentiation (the `**` operator). No lowlevel
+// primitives needed -- ordinary arithmetic only.
+//
+// This module is compiled through the normal pipeline and merged into
+// every program built with the FIR backends; see std/internal/alloc.fire
+// for the shared std/internal/ authoring rules.
+
+fn fs_rt_pow_i64(base: int64, exp: int64) -> int64 {
+    result: int64 = 1i64;
+    while (exp > 0i64) {
+        result = result * base;
+        exp = exp - 1i64;
+    }
+    return result;
+}
+
+fn fs_rt_pow_f64(base: float64, exp: float64) -> float64 {
+    result: float64 = 1.0;
+    if (exp < 0.0) {
+        acc: float64 = 1.0;
+        e: int64 = (-exp) as int64;
+        while (e > 0i64) {
+            acc = acc * base;
+            e = e - 1i64;
+        }
+        return 1.0 / acc;
+    }
+    e2: int64 = exp as int64;
+    while (e2 > 0i64) {
+        result = result * base;
+        e2 = e2 - 1i64;
+    }
+    return result;
+}

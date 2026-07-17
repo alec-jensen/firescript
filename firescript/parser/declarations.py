@@ -218,6 +218,96 @@ class DeclarationsMixin(TypeSystemMixin):
                 break
         return params
 
+    def _parse_decorator_list(self) -> Optional[list[dict]]:
+        """Parse zero or more '@' IDENTIFIER '(' DecoratorArg,* ')' immediately
+        preceding a top-level declaration.
+
+        DecoratorArg := STRING_LITERAL | IDENTIFIER '=' (BOOLEAN_LITERAL | INTEGER_LITERAL)
+
+        Decorator arguments are compile-time-only metadata (not runtime
+        expressions), so they get a small purpose-built grammar rather than
+        going through the full expression parser. Accepted unconditionally
+        here (mirrors the directive-gated-intrinsic precedent at the top of
+        this file: the parser accepts the syntax, semantic legality --
+        directive present, file under std/internal/ -- is checked separately
+        so a decorator appearing before its file's `directive` statement
+        isn't penalized for source-order).
+        """
+        decorators: list[dict] = []
+        while self.current_token and self.current_token.type == "AT":
+            at_tok = self.current_token
+            self.advance()  # consume '@'
+            name_tok = self.consume("IDENTIFIER")
+            if name_tok is None:
+                self.expected_token_error("decorator name after '@'", self.current_token or at_tok)
+                return None
+            if not self.consume("OPEN_PAREN"):
+                self.expected_token_error("'(' after decorator name", self.current_token or name_tok)
+                return None
+            positional: list[str] = []
+            kwargs: dict[str, object] = {}
+            if self.current_token and self.current_token.type != "CLOSE_PAREN":
+                while True:
+                    if (
+                        self.current_token
+                        and self.current_token.type == "IDENTIFIER"
+                        and self.peek(1) is not None
+                        and self.peek(1).type == "ASSIGN"
+                    ):
+                        kw_tok = self.consume("IDENTIFIER")
+                        self.consume("ASSIGN")
+                        if self.current_token and self.current_token.type == "BOOLEAN_LITERAL":
+                            val_tok = self.consume("BOOLEAN_LITERAL")
+                            kwargs[kw_tok.value] = val_tok.value == "true"
+                        elif self.current_token and self.current_token.type == "INTEGER_LITERAL":
+                            val_tok = self.consume("INTEGER_LITERAL")
+                            kwargs[kw_tok.value] = int(val_tok.value)
+                        else:
+                            self.expected_token_error("boolean or integer literal after '='", self.current_token)
+                            return None
+                    elif self.current_token and self.current_token.type == "STRING_LITERAL":
+                        str_tok = self.consume("STRING_LITERAL")
+                        positional.append(self._decode_decorator_string(str_tok.value))
+                    else:
+                        self.expected_token_error("decorator argument", self.current_token)
+                        return None
+                    if self.current_token and self.current_token.type == "COMMA":
+                        self.advance()
+                        continue
+                    break
+            if not self.consume("CLOSE_PAREN"):
+                self.expected_token_error("')' to close decorator arguments", self.current_token)
+                return None
+            decorators.append({"name": name_tok.value, "positional": positional, "kwargs": kwargs, "token": at_tok})
+        return decorators
+
+    @staticmethod
+    def _decode_decorator_string(raw: str) -> str:
+        """Strip the surrounding quotes from a STRING_LITERAL token's raw text
+        (decorator argument strings are plain identifiers/names -- no escape
+        processing needed)."""
+        if raw.startswith('"') and raw.endswith('"'):
+            return raw[1:-1]
+        return raw
+
+    def _validate_builtin_method_decorators(self, func_node: ASTNode, decorators: list[dict]) -> None:
+        """Enforce that @builtin_method decorators only appear in files under
+        std/internal/ -- the only directory auto-linked into every compiled
+        program without a user import. The directive-presence requirement
+        (`directive enable_builtin_methods;`) is checked later, during the
+        registry pre-scan (see std/builtin_methods.py), since it must be
+        checked once per file after the whole file has been parsed, not
+        token-by-token here."""
+        for dec in decorators:
+            if dec["name"] != "builtin_method":
+                continue
+            normalized = (self.filename or "").replace("\\", "/")
+            if "std/internal/" not in normalized:
+                self.invalid_expression_error(
+                    "@builtin_method may only be used on functions in firescript/std/internal/",
+                    dec["token"],
+                )
+
     def _parse_function_definition(self):
         """Parse: 'fn' name ['<' TypeParamList '>'] '(' ParamList ')' '->' TypeExpr '{' body '}'"""
         fn_tok = self.consume("FN")
@@ -414,10 +504,31 @@ class DeclarationsMixin(TypeSystemMixin):
                 if self.current_token and self.current_token.type == "SEMICOLON":
                     self.consume("SEMICOLON")
                 continue
+            # Decorators: '@' name(...) immediately preceding a function definition.
+            decorators = None
+            if self.current_token.type == "AT":
+                decorators = self._parse_decorator_list()
+                if decorators is None:
+                    continue
+                # A trailing comment (e.g. a //~ diagnostic annotation) right
+                # after the decorator's ')' must not mask the following 'fn'
+                # -- skip it before checking, same as the top-level loop does
+                # before dispatching on token type.
+                while self.current_token and self.current_token.type in (
+                    "SINGLE_LINE_COMMENT",
+                    "MULTI_LINE_COMMENT_START",
+                ):
+                    self._skip_comment()
+                if not (self.current_token and self.current_token.type == "FN"):
+                    self.invalid_expression_error("Decorators may only precede a function definition", self.current_token)
+                    continue
             # Function definition: 'fn' name(...) -> ReturnType { ... }
             stmt = None
             if self.current_token.type == "FN":
                 stmt = self._parse_function_definition()
+                if stmt is not None and decorators:
+                    setattr(stmt, "decorators", decorators)
+                    self._validate_builtin_method_decorators(stmt, decorators)
             if stmt is None:
                 stmt = (
                     self._parse_statement()

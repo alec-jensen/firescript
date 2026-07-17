@@ -1,0 +1,215 @@
+// Integer <-> string conversions (i32/i64/u32/u64/bool/char to string) and
+// string -> number/bool parsing (atoi/atoll/atof semantics). Float <->
+// string conversion lives separately in float_conversions.fire (a much
+// larger, self-contained exact-decimal algorithm).
+//
+// This module is compiled through the normal pipeline and merged into
+// every program built with the FIR backends; see std/internal/alloc.fire
+// for the shared std/internal/ authoring rules (this file relies on
+// rt_raw_alloc/rt_reg_add from alloc.fire and fs_rt_str_eq from
+// strings.fire).
+
+directive enable_lowlevel_runtime;
+
+// ---- integer -> string conversions ----
+
+fn rt_u64_to_str_impl(v: uint64, negative: bool) -> string {
+    // Max u64 is 20 digits + sign + NUL.
+    buf: uint64 = rt_raw_alloc(22u64);
+    rt_reg_add(buf);
+    pos: uint64 = 21u64;
+    mem_store_u8(buf + pos, 0u8);
+    if (v == 0u64) {
+        pos = pos - 1u64;
+        mem_store_u8(buf + pos, 48u8); // '0'
+    }
+    while (v > 0u64) {
+        pos = pos - 1u64;
+        mem_store_u8(buf + pos, ((v % 10u64) as uint8) + 48u8);
+        v = v / 10u64;
+    }
+    if (negative) {
+        pos = pos - 1u64;
+        mem_store_u8(buf + pos, 45u8); // '-'
+    }
+    // Shift to the buffer start so the returned pointer is the block start
+    // (required for the allocation registry to recognize it on free).
+    out_len: uint64 = 21u64 - pos;
+    i: uint64 = 0u64;
+    while (i < out_len) {
+        mem_store_u8(buf + i, mem_load_u8(buf + pos + i));
+        i = i + 1u64;
+    }
+    mem_store_u8(buf + out_len, 0u8);
+    return addr_to_str(buf);
+}
+
+fn fs_rt_i64_to_str(v: int64) -> string {
+    if (v < 0i64) {
+        // Negate via u64 to handle INT64_MIN.
+        magnitude: uint64 = 0u64 - (v as uint64);
+        return rt_u64_to_str_impl(magnitude, true);
+    }
+    return rt_u64_to_str_impl(v as uint64, false);
+}
+
+fn fs_rt_i32_to_str(v: int32) -> string {
+    return fs_rt_i64_to_str(v as int64);
+}
+
+fn fs_rt_u64_to_str(v: uint64) -> string {
+    return rt_u64_to_str_impl(v, false);
+}
+
+fn fs_rt_u32_to_str(v: uint32) -> string {
+    return rt_u64_to_str_impl(v as uint64, false);
+}
+
+fn fs_rt_bool_to_str(v: bool) -> string {
+    if (v) {
+        return fs_rt_str_dup("true");
+    }
+    return fs_rt_str_dup("false");
+}
+
+fn fs_rt_char_to_str(c: uint8) -> string {
+    dst: uint64 = rt_raw_alloc(2u64);
+    rt_reg_add(dst);
+    mem_store_u8(dst, c);
+    mem_store_u8(dst + 1u64, 0u8);
+    return addr_to_str(dst);
+}
+
+// ---- string -> number parsing (atoi/atoll/atof semantics) ----
+
+fn rt_parse_int(addr: uint64) -> int64 {
+    if (addr == 0u64) {
+        return 0i64;
+    }
+    i: uint64 = 0u64;
+    // Skip leading whitespace (space, tab, newline, CR, FF, VT).
+    while (true) {
+        c: uint8 = mem_load_u8(addr + i);
+        if (c == 32u8 || (c >= 9u8 && c <= 13u8)) {
+            i = i + 1u64;
+        } else {
+            break;
+        }
+    }
+    negative: bool = false;
+    sign: uint8 = mem_load_u8(addr + i);
+    if (sign == 45u8) { // '-'
+        negative = true;
+        i = i + 1u64;
+    } else if (sign == 43u8) { // '+'
+        i = i + 1u64;
+    }
+    value: int64 = 0i64;
+    while (true) {
+        c: uint8 = mem_load_u8(addr + i);
+        if (c < 48u8 || c > 57u8) {
+            break;
+        }
+        value = value * 10i64 + ((c - 48u8) as int64);
+        i = i + 1u64;
+    }
+    if (negative) {
+        return -value;
+    }
+    return value;
+}
+
+fn fs_rt_str_to_i32(&s: string) -> int32 {
+    return rt_parse_int(str_to_addr(s)) as int32;
+}
+
+fn fs_rt_str_to_i64(&s: string) -> int64 {
+    return rt_parse_int(str_to_addr(s));
+}
+
+fn fs_rt_str_to_bool(&s: string) -> bool {
+    if (fs_rt_str_eq(s, "true")) {
+        return true;
+    }
+    return fs_rt_str_eq(s, "1");
+}
+
+fn fs_rt_str_to_f64(&s: string) -> float64 {
+    addr: uint64 = str_to_addr(s);
+    if (addr == 0u64) {
+        return 0.0;
+    }
+    i: uint64 = 0u64;
+    while (true) {
+        c: uint8 = mem_load_u8(addr + i);
+        if (c == 32u8 || (c >= 9u8 && c <= 13u8)) {
+            i = i + 1u64;
+        } else {
+            break;
+        }
+    }
+    negative: bool = false;
+    sign: uint8 = mem_load_u8(addr + i);
+    if (sign == 45u8) {
+        negative = true;
+        i = i + 1u64;
+    } else if (sign == 43u8) {
+        i = i + 1u64;
+    }
+    value: float64 = 0.0;
+    while (true) {
+        c: uint8 = mem_load_u8(addr + i);
+        if (c < 48u8 || c > 57u8) {
+            break;
+        }
+        value = value * 10.0 + (((c - 48u8) as int32) as float64);
+        i = i + 1u64;
+    }
+    if (mem_load_u8(addr + i) == 46u8) { // '.'
+        i = i + 1u64;
+        scale: float64 = 0.1;
+        while (true) {
+            c: uint8 = mem_load_u8(addr + i);
+            if (c < 48u8 || c > 57u8) {
+                break;
+            }
+            value = value + (((c - 48u8) as int32) as float64) * scale;
+            scale = scale / 10.0;
+            i = i + 1u64;
+        }
+    }
+    // Exponent part (e/E).
+    e: uint8 = mem_load_u8(addr + i);
+    if (e == 101u8 || e == 69u8) {
+        i = i + 1u64;
+        exp_negative: bool = false;
+        esign: uint8 = mem_load_u8(addr + i);
+        if (esign == 45u8) {
+            exp_negative = true;
+            i = i + 1u64;
+        } else if (esign == 43u8) {
+            i = i + 1u64;
+        }
+        exponent: int32 = 0;
+        while (true) {
+            c: uint8 = mem_load_u8(addr + i);
+            if (c < 48u8 || c > 57u8) {
+                break;
+            }
+            exponent = exponent * 10 + ((c - 48u8) as int32);
+            i = i + 1u64;
+        }
+        while (exponent > 0) {
+            if (exp_negative) {
+                value = value / 10.0;
+            } else {
+                value = value * 10.0;
+            }
+            exponent = exponent - 1;
+        }
+    }
+    if (negative) {
+        return -value;
+    }
+    return value;
+}

@@ -298,9 +298,9 @@ func @impl_fs_rt_str_char_at(s: ptr<i8>, index: i32) -> ptr<i8> {
     %7 = slotload.i32 index
     %8 = const.i32 0
     %9 = ge.i32 %7, %8
-    slot __sc_3: bool
-    slotstore __sc_3, %9
-    %10 = slotload.bool __sc_3
+    slot __sc_88: bool
+    slotstore __sc_88, %9
+    %10 = slotload.bool __sc_88
     br %10, L2, L3
 
   L1:
@@ -313,11 +313,11 @@ func @impl_fs_rt_str_char_at(s: ptr<i8>, index: i32) -> ptr<i8> {
     %14 = cvt.i32_to_u64 %13
     %15 = slotload.u64 len
     %16 = lt.u64 %14, %15
-    slotstore __sc_3, %16
+    slotstore __sc_88, %16
     jmp L3
 
   L3:
-    %17 = slotload.bool __sc_3
+    %17 = slotload.bool __sc_88
     br %17, L4, L5
 
   L4:

@@ -96,7 +96,7 @@ class ParserBase:
         "syscall_rename": "SyscallResult",  # requires directive enable_syscalls
         "syscall_move": "SyscallResult",    # requires directive enable_syscalls
         # Low-level runtime primitives (requires directive enable_lowlevel_runtime).
-        # For the firescript-implemented runtime (std/internal/runtime.fire) only.
+        # For the firescript-implemented runtime (std/internal/*.fire) only.
         "f64_bits": "uint64",
         "mem_load_u8": "uint8",
         "mem_store_u8": "void",

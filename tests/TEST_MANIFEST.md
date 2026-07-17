@@ -149,8 +149,8 @@ Plain `assert` also works. Covers:
   `test_imports.py`, `test_paths.py` (`safe_relpath` cross-drive fallback).
   `test_main_internals.py` covers the rest of `main.py` in-process
   (not via subprocess): `_normalize_cli_path`, `setup_logging` re-entry,
-  `_compile_asm`/`_compile_runtime_file`/`_merge_fir_modules`'s
-  exception/dedup branches, `compile_file()`'s per-stage exception
+  `_compile_asm`/`_compile_runtime_file`'s
+  exception branches, `compile_file()`'s per-stage exception
   handling (monkeypatching `CompilerPipeline`/`ASTToFIRConverter`/
   `FIRToFLIRLowering` methods to raise), `lint_text()`'s early-exit
   branches, and `main()`'s CLI-level error branches (invalid path args,
@@ -401,6 +401,7 @@ Each heading below is a directory under `tests/sources/`.
 - **for_in_and_match_temporaries.fire** - `for-in` over a non-identifier collection (array literal, function-call-returning string) and `match` over a non-identifier scrutinee (function-call result), exercising `ast_to_fir.py`'s temporary-value ownership-drop paths; also a sized-array declaration with no initializer and one initialized from another array identifier (not an array literal). Documents that `char` cannot be used as a `for-in` loop-variable type (the parser's for-in header only recognizes built-in type keywords).
 - **empty_statements.fire** - Empty statement forms (bare `;`, empty scope `{}`) parsing cleanly in various statement positions
 - **for_in_braceless_body.fire** - `for-in` loop with a braceless (single-statement) body
+- **control_flow_regression_conditional_move.fire** - An owned local moved into an outer variable on only one arm of an `if`/`else` (the other arm only borrows it): previously either leaked on the borrowing arm (FIRV-O3) or double-dropped on the moving arm (FIRV-O2) once tracking was fixed to notice it, since a single trailing drop after the whole `if`/`else` can't be correct for only one of two diverging paths.
 
 ### `generators/`
 - **generators_basic.fire** - Generator functions (`fn` returning `generator<T>`), `yield`, stdlib `range`/`rangeFrom`/`rangeStep`, user-defined generators, for-in over generators
@@ -457,8 +458,12 @@ Split from a single `string_operations_comprehensive.fire` into per-behavior fil
 - **strings_escapes.fire** - Escape sequences (`\n`, `\t`, `\"`, `\\`)
 - **strings_comparison.fire** - `==` / `!=`
 - **strings_unicode.fire** - Emoji and accented characters
+- **strings_upper_lower.fire** - `.upper()` / `.lower()` ASCII case folding (mixed case, already-uppercase, empty string); implemented via `@builtin_method` in `firescript/std/internal/strings.fire`
 - **string_escape_edge_cases.fire** - A redundant `\'` escape and an unrecognized escape sequence (`\q`) inside a double-quoted string literal, exercising `codegen/x86_64/flir_to_asm.py`'s `_escape_asciz()` fallback branches (the lexer's `STRING_LITERAL` regex accepts `\.` for any character, not just a fixed escape set)
 - **strings_for_in.fire** - for-in iteration over strings: bare-identifier vs. fresh-expression collection, and `break`/`continue` inside the loop
+- **strings_for_in_regression_conditional_move.fire** - `for (chr: string in s)` where the loop variable is moved into an outer variable on only one arm of an `if`/`else` (the run-length-encoding accumulator pattern): previously crashed with an internal FIR verifier error (FIRV-O2, "possibly moved on some paths") because the automatic per-iteration drop of the loop variable was inserted unconditionally after the whole `if`/`else` instead of only on the arm that didn't already move it.
+- **strings_for_in_regression_conditional_move_mid_body.fire** - Harder variant of the above: the conditionally-moving `if`/`else` is *not* the last statement in the loop body (more code follows before the iteration ends), and the move itself isn't the last statement of its own branch either. Exercises `ast_to_fir.py`'s per-branch continuation-duplication in `_convert_for_in_string_body`/`_convert_for_in_string_if`, needed because a runtime "moved" flag can't satisfy the ownership verifier's purely-static analysis.
+- **strings_for_in_regression_conditional_move_break.fire** - `break` reached immediately after the for-in-string loop variable was moved into an outer variable, inside an `if`/`else` whose other arm leaves it untouched. Exercises the interaction between the per-branch moved-tracking and `break`/`continue`'s own exit path (`_drop_loop_cleanup`).
 
 ### `arrays/`
 Split from a single `array_operations_comprehensive.fire` into per-behavior files, plus pre-existing focused tests:
@@ -571,6 +576,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **generics_class_inferred_construct.fire** - Generic class construction with type arguments omitted at the call site (`Pair<int32, string> p = Pair(1, "x");`), inferred from the declared variable type
 - **constraint_intersection.fire** / **generic_intersection_constraint.fire** - Constraint/generic-function declarations using the intersection (`&`) operator to combine a primitive type with an interface/alias name (`T: int32 & Comparable`)
 - **generic_function_same_type_param_modulo.fire** - Generic function reusing the same type parameter for multiple arguments (`fn<T>(a: T, b: T)` both typed `T`), exercising type-parameter unification during call inference
+- **generics_array_param_inference.fire** - A generic function taking an array parameter (`&arr: T[]`) infers `T` from the argument's *element* type, not the whole array type (regression: `int32[]` used to infer `T="int32[]"` instead of `T=int32`); also exercises the implicit array-length ABI parameter across a generic call, previously skipped for generic calls entirely
 
 ### `imports/`
 - **imports_single.fire** - Single symbol import
@@ -632,6 +638,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 ### `integration/`
 Larger multi-feature programs (coding-challenge solutions used as integration-style tests, not focused unit tests):
 - **hackathon8_mission1.fire** / **hackathon8_mission2.fire** - `std.io` + `std.fs` combined usage
+- **run_length_encoding.fire** - Run-length-encodes a CLI argument (`std.cli.args` + `std.io` + `for`-in-`string`); the for-in-string loop variable is conditionally moved into an outer variable across an if/else-if chain, the real-world pattern behind `strings_for_in_regression_conditional_move*.fire`
 
 ## Splitting large test files
 
@@ -651,7 +658,7 @@ Tests in `tests/sources/invalid/<category>/` are expected to fail compilation an
 - **borrow/** - `borrow_alias_escape_errors.fire`, `borrow_escape_projection_errors.fire`, `borrow_move_errors.fire`, `branch_move_errors.fire`, `constructor_borrow_move_errors.fire`, `constructor_move_errors.fire`, `for_in_move_errors.fire`, `loop_move_errors.fire`, `method_move_errors.fire`, `memory_errors.fire` (use-after-move, invalid borrows, out-of-bounds access)
 - **classes/** - `class_errors.fire`, `class_static_method_errors.fire`, `receiver_readonly_mutation_errors.fire`, `super_call_errors.fire` (`this.super(...)` with no base class, outside a constructor, and wrong arg count/type; also `super_call_no_base.fire`/`super_call_base_no_ctor.fire`/`super_call_arg_count.fire`/`super_call_arg_type.fire` single-case variants), `constructor_and_type_method_call_errors.fire` (`new` constructor arg count/type mismatches, unknown `Type.method(...)`, instance method called in type-call form, static method arg count/type mismatches; also `constructor_call_arg_count.fire`/`constructor_call_arg_type.fire`/`constructor_call_no_ctor.fire`/`type_method_call_arg_count.fire`/`type_method_call_arg_type.fire`/`type_method_call_unknown.fire`/`type_method_call_constructor_form.fire`/`instance_method_arg_count.fire`/`instance_method_arg_type.fire`/`instance_method_unknown.fire` single-case variants), `field_access_errors.fire`/`field_access_unknown_field.fire` (unknown field on a class type, field access on a non-class type), `constructor_param_syntax_errors.fire`/`constructor_amp_not_this.fire`/`constructor_param_array_unsupported.fire`/`constructor_param_bad_type.fire`/`constructor_static_with_receiver.fire` (malformed constructor parameter lists and static-constructor-with-receiver double error), `class_method_syntax_errors.fire`, `new_constructor_syntax_errors.fire`/`new_missing_paren.fire`/`new_unknown_type.fire`, `method_duplicate_param_shadow.fire`, `constructor_arg_type_mismatch_errors.fire`, `class_constructor_syntax_errors.fire`, `class_new_constructor_errors.fire`, `class_method_duplicate_param.fire`, `constructor_call_arg_errors.fire`, `field_access_missing_identifier.fire`, `field_access_type_errors.fire`, `implicit_var_method_call_on_untyped.fire`, `instance_method_arg_errors.fire`, `static_and_type_method_errors.fire`, `unknown_instance_method.fire`
 - **control_flow/** - `control_flow_invalid.fire`, `dangling_else_errors.fire` (dangling-else case split out to avoid error-recovery interaction with an adjacent malformed-statement case), `if_condition_syntax_errors.fire` (malformed if-condition expression where recovery lands directly on the closing `)`), `assignment_target_errors.fire`, `assignment_undefined_chain.fire`, `for_c_style_missing_semicolon.fire`, `for_in_extra_tokens.fire`, `unterminated_if_body.fire`
-- **declarations/** - `const_missing_type.fire` (a `const` declaration missing its type token)
+- **declarations/** - `const_missing_type.fire` (a `const` declaration missing its type token), `builtin_method_decorator_outside_std_internal.fire` (`@builtin_method` is restricted to `firescript/std/internal/`; a user source file declaring one is rejected at parse time)
 - **enums/** - `enum_generic_unsupported.fire` (generic enums `enum Foo<T>` are rejected with a clear, intentional "not yet supported" error rather than a confusing parse failure), `enum_variant_arity_mismatch.fire` (constructing a payload variant with too many/too few arguments is rejected with a clear arity-mismatch error), `enum_construct_move_errors.fire` (regression: passing an owned identifier as an enum variant's payload argument moves it, so using that identifier afterward is a use-after-move error, same as passing it to a function/constructor/method call), `enum_body_syntax_errors.fire` (malformed enum variant declarations)
 - **expressions/** - `cast_to_class_type.fire`, `cast_to_non_type_token.fire`, `compound_assignment_missing_rhs.fire`, `expression_at_eof.fire` (missing initializer expression at true EOF; also produces a parse-level "unexpected token" alongside the higher-level "expected expression" diagnostic), `implicit_assign_undefined_receiver.fire`, `implicit_assign_undefined_rhs.fire`, `postfix_cast_after_broken_paren.fire`
 - **functions/** - `function_errors.fire`, `reserved_name_typeof_arg_count.fire`, `builtin_arg_count_errors.fire`

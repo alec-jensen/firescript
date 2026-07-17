@@ -1,0 +1,8 @@
+// @builtin_method is restricted to firescript/std/internal/ -- the only
+// directory auto-linked into every compiled program without a user import.
+// User source files may not declare one.
+
+@builtin_method("string", "shout")  //~ ERROR FS-PARSE-0012 @1
+fn myShout(&s: string) -> string {
+    return s;
+}

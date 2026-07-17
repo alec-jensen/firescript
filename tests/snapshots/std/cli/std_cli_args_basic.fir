@@ -668,19 +668,19 @@ function @option_value(name: string, fallback: string) -> string {
     %96 = loadvar.string arg
     %97 = call.string @_value_after_equals(%96 borrow)
     local result: string = %97
-    %98 = loadvar.string name
+    %98 = loadvar.string arg
     drop %98
-    %99 = loadvar.string fallback
+    %99 = loadvar.string name
     drop %99
-    %100 = loadvar.string short_flag
+    %100 = loadvar.string fallback
     drop %100
-    %101 = loadvar.string long_flag
+    %101 = loadvar.string short_flag
     drop %101
-    %102 = loadvar.string short_eq
+    %102 = loadvar.string long_flag
     drop %102
-    %103 = loadvar.string long_eq
+    %103 = loadvar.string short_eq
     drop %103
-    %104 = loadvar.string arg
+    %104 = loadvar.string long_eq
     drop %104
     %105 = loadvar.string result
     ret %105
@@ -698,19 +698,19 @@ function @option_value(name: string, fallback: string) -> string {
     %110 = loadvar.string arg
     %111 = call.string @_value_after_equals(%110 borrow)
     local result__2: string = %111
-    %112 = loadvar.string name
+    %112 = loadvar.string arg
     drop %112
-    %113 = loadvar.string fallback
+    %113 = loadvar.string name
     drop %113
-    %114 = loadvar.string short_flag
+    %114 = loadvar.string fallback
     drop %114
-    %115 = loadvar.string long_flag
+    %115 = loadvar.string short_flag
     drop %115
-    %116 = loadvar.string short_eq
+    %116 = loadvar.string long_flag
     drop %116
-    %117 = loadvar.string long_eq
+    %117 = loadvar.string short_eq
     drop %117
-    %118 = loadvar.string arg
+    %118 = loadvar.string long_eq
     drop %118
     %119 = loadvar.string result__2
     ret %119
@@ -923,21 +923,21 @@ function @option_value_alias(long_name: string, short_name: string, fallback: st
     %100 = loadvar.string arg
     %101 = call.string @_value_after_equals(%100 borrow)
     local result: string = %101
-    %102 = loadvar.string long_name
+    %102 = loadvar.string arg
     drop %102
-    %103 = loadvar.string short_name
+    %103 = loadvar.string long_name
     drop %103
-    %104 = loadvar.string fallback
+    %104 = loadvar.string short_name
     drop %104
-    %105 = loadvar.string short_flag
+    %105 = loadvar.string fallback
     drop %105
-    %106 = loadvar.string long_flag
+    %106 = loadvar.string short_flag
     drop %106
-    %107 = loadvar.string short_eq
+    %107 = loadvar.string long_flag
     drop %107
-    %108 = loadvar.string long_eq
+    %108 = loadvar.string short_eq
     drop %108
-    %109 = loadvar.string arg
+    %109 = loadvar.string long_eq
     drop %109
     %110 = loadvar.string result
     ret %110
@@ -953,21 +953,21 @@ function @option_value_alias(long_name: string, short_name: string, fallback: st
     %115 = loadvar.string arg
     %116 = call.string @_value_after_equals(%115 borrow)
     local result__2: string = %116
-    %117 = loadvar.string long_name
+    %117 = loadvar.string arg
     drop %117
-    %118 = loadvar.string short_name
+    %118 = loadvar.string long_name
     drop %118
-    %119 = loadvar.string fallback
+    %119 = loadvar.string short_name
     drop %119
-    %120 = loadvar.string short_flag
+    %120 = loadvar.string fallback
     drop %120
-    %121 = loadvar.string long_flag
+    %121 = loadvar.string short_flag
     drop %121
-    %122 = loadvar.string short_eq
+    %122 = loadvar.string long_flag
     drop %122
-    %123 = loadvar.string long_eq
+    %123 = loadvar.string short_eq
     drop %123
-    %124 = loadvar.string arg
+    %124 = loadvar.string long_eq
     drop %124
     %125 = loadvar.string result__2
     ret %125
@@ -1007,21 +1007,21 @@ function @option_value_alias(long_name: string, short_name: string, fallback: st
     %140 = call.int32 @_str_len(%139 borrow)
     %141 = call.string @str_slice(%137 borrow, %138 borrow, %140 borrow)
     local result__3: string = %141
-    %142 = loadvar.string long_name
+    %142 = loadvar.string arg
     drop %142
-    %143 = loadvar.string short_name
+    %143 = loadvar.string long_name
     drop %143
-    %144 = loadvar.string fallback
+    %144 = loadvar.string short_name
     drop %144
-    %145 = loadvar.string short_flag
+    %145 = loadvar.string fallback
     drop %145
-    %146 = loadvar.string long_flag
+    %146 = loadvar.string short_flag
     drop %146
-    %147 = loadvar.string short_eq
+    %147 = loadvar.string long_flag
     drop %147
-    %148 = loadvar.string long_eq
+    %148 = loadvar.string short_eq
     drop %148
-    %149 = loadvar.string arg
+    %149 = loadvar.string long_eq
     drop %149
     %150 = loadvar.string result__3
     ret %150

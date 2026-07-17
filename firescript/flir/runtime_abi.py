@@ -1,23 +1,21 @@
 """Canonical fs_rt_* runtime ABI registry.
 
 Every fs_rt_* symbol lowering can call -- whether firescript-implemented
-(std/internal/runtime.fire, std/internal/float128.fire) or a backend-only
-primitive with no firescript source -- has exactly one signature and
-memory effect, recorded here. `FIRToFLIRLowering.rt_call` consults this
-table instead of trusting an ad hoc return type supplied at each call
-site; the FLIR verifier's Tier-2 allocation-lifecycle dataflow (FLIRV-A)
-consults it to know which calls free/allocate/merely-borrow their
-heap-pointer arguments.
+(one of the std/internal/*.fire files) or a backend-only primitive with no
+firescript source -- has exactly one signature and memory effect, recorded
+here. `FIRToFLIRLowering.rt_call` consults this table instead of trusting
+an ad hoc return type supplied at each call site; the FLIR verifier's
+Tier-2 allocation-lifecycle dataflow (FLIRV-A) consults it to know which
+calls free/allocate/merely-borrow their heap-pointer arguments.
 
 Extending this table is a deliberate action: an fs_rt_* call the table
 doesn't describe is a verifier error (FLIRV-T4), not something the
 verifier silently tolerates -- see ir_verifier_spec.md section 6.
 
-Signatures are transcribed from the actual firescript declarations in
-std/internal/runtime.fire and std/internal/float128.fire (the two
-backend-only primitives, fs_rt_mem_copy and fs_rt_f64_bits, have no
-firescript source and are transcribed from their call sites in
-flir/lowering.py instead).
+Signatures are transcribed from the actual firescript declarations under
+std/internal/ (the two backend-only primitives, fs_rt_mem_copy and
+fs_rt_f64_bits, have no firescript source and are transcribed from their
+call sites in flir/lowering.py instead).
 """
 
 from __future__ import annotations
@@ -48,7 +46,7 @@ def _sig(*params: FLIRType, ret: FLIRType, effect: MemoryEffect = MemoryEffect.B
 
 
 RUNTIME_ABI: dict[str, RuntimeSignature] = {
-    # -- allocation / freeing (std/internal/runtime.fire:151,157,169) ------
+    # -- allocation / freeing (std/internal/alloc.fire) ----------------------
     # fs_rt_alloc_zeroed is a generic raw allocator: its firescript-level
     # declaration returns `string`, but call sites legitimately reinterpret
     # the returned pointer as ptr<SomeStruct> for object/array allocation.
@@ -57,10 +55,10 @@ RUNTIME_ABI: dict[str, RuntimeSignature] = {
     "fs_rt_alloc_zeroed": _sig(I64, ret=STRING, effect=MemoryEffect.RETURNS_FRESH),
     "fs_rt_free": _sig(STRING, ret=VOID, effect=MemoryEffect.FREES_ARG0),
     "fs_rt_zero_memory": _sig(STRING, I64, ret=VOID),
-    # -- math (runtime.fire:180,189) ----------------------------------------
+    # -- math (std/internal/arithmetic.fire) ---------------------------------
     "fs_rt_pow_i64": _sig(I64, I64, ret=I64),
     "fs_rt_pow_f64": _sig(F64, F64, ret=F64),
-    # -- strings (runtime.fire:221-340) -------------------------------------
+    # -- strings (std/internal/strings.fire) ---------------------------------
     "fs_rt_str_length": _sig(STRING, ret=I32),
     "fs_rt_str_dup": _sig(STRING, ret=STRING, effect=MemoryEffect.RETURNS_FRESH),
     "fs_rt_str_concat": _sig(STRING, STRING, ret=STRING, effect=MemoryEffect.RETURNS_FRESH),
@@ -70,7 +68,7 @@ RUNTIME_ABI: dict[str, RuntimeSignature] = {
     "fs_rt_str_char_code": _sig(STRING, ret=U8),
     "fs_rt_str_index_of": _sig(STRING, STRING, ret=I32),
     "fs_rt_str_slice": _sig(STRING, I32, I32, ret=STRING, effect=MemoryEffect.RETURNS_FRESH),
-    # -- numeric <-> string (runtime.fire:392-490,736-1128) -----------------
+    # -- numeric <-> string (std/internal/number_conversions.fire) -----------
     "fs_rt_i64_to_str": _sig(I64, ret=STRING, effect=MemoryEffect.RETURNS_FRESH),
     "fs_rt_i32_to_str": _sig(I32, ret=STRING, effect=MemoryEffect.RETURNS_FRESH),
     "fs_rt_u64_to_str": _sig(U64, ret=STRING, effect=MemoryEffect.RETURNS_FRESH),
@@ -81,15 +79,16 @@ RUNTIME_ABI: dict[str, RuntimeSignature] = {
     "fs_rt_str_to_i64": _sig(STRING, ret=I64),
     "fs_rt_str_to_bool": _sig(STRING, ret=BOOL),
     "fs_rt_str_to_f64": _sig(STRING, ret=F64),
+    # -- float <-> string (std/internal/float_conversions.fire) --------------
     "fs_rt_f64_to_str": _sig(F64, ret=STRING, effect=MemoryEffect.RETURNS_FRESH),
     "fs_rt_f32_to_str": _sig(F32, ret=STRING, effect=MemoryEffect.RETURNS_FRESH),
     "fs_rt_f64_to_repr": _sig(F64, ret=STRING, effect=MemoryEffect.RETURNS_FRESH),
     "fs_rt_f32_to_repr": _sig(F32, ret=STRING, effect=MemoryEffect.RETURNS_FRESH),
-    # -- process / cli (runtime.fire:564,1122,1128) -------------------------
+    # -- process / cli (std/internal/io.fire) --------------------------------
     "fs_rt_stdout": _sig(STRING, ret=VOID),
     "fs_rt_argc": _sig(ret=I32),
     "fs_rt_argv_at": _sig(I32, ret=STRING, effect=MemoryEffect.RETURNS_FRESH),
-    # -- syscalls (runtime.fire:1217-1357; SyscallResult is a copyable struct) --
+    # -- syscalls (std/internal/syscalls.fire; SyscallResult is a copyable struct) --
     "fs_rt_syscall_open": _sig(STRING, STRING, ret=SYSCALL_RESULT),
     "fs_rt_syscall_read": _sig(I32, I32, ret=SYSCALL_RESULT),
     "fs_rt_syscall_write": _sig(I32, STRING, ret=SYSCALL_RESULT),

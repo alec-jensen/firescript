@@ -4,7 +4,7 @@ The FIR + FLIR pipeline is implemented and is the compiler's only pipeline. The 
 C backend, the C runtime, and the interim FLIR → C differential backend used during migration
 have all been removed. The compiler lowers AST → FIR → FLIR → x86-64 assembly (Windows x86_64,
 self-hosted assembler and PE writer, freestanding binaries importing only kernel32.dll), and
-the language runtime is implemented in firescript (`std/internal/runtime.fire`).
+the language runtime is implemented in firescript (`std/internal/*.fire`).
 
 This is the short index for the FIR + FLIR design docs. The full details are split into
 smaller files so each page stays manageable.

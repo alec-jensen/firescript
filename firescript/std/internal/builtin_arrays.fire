@@ -1,0 +1,55 @@
+// Array built-in methods (.length()/.size()/.index()/.count()), implemented
+// in firescript via @builtin_method (see firescript/builtin_methods.py).
+//
+// This module is compiled through the normal pipeline and merged into
+// every program built with the FIR backends, exactly like every other
+// std/internal/*.fire file -- no user import needed.
+//
+// The `len` parameter immediately following the receiver on every function
+// here is not optional/name-sniffed: the @builtin_method(needs_length=true)
+// flag tells the compiler to auto-inject the array's length as that exact
+// argument position (right after the receiver, before any user-facing
+// arguments), and to exclude it from the method's user-facing arity/type
+// checking. `.length()`/`.size()` additionally set const_fold=true, which
+// tells the compiler to resolve the call directly to a compile-time
+// constant or the existing `array_length` intrinsic instead of ever
+// emitting a real call -- so these two functions' bodies are intentionally
+// unreachable at runtime; they exist only to give the registry a uniform
+// declaration to scan and as executable documentation.
+
+directive enable_builtin_methods;
+
+@builtin_method("array", "length", needs_length=true, const_fold=true)
+fn fs_rt_array_length<T>(&arr: T[], len: int32) -> int32 {
+    return len;
+}
+
+@builtin_method("array", "size", needs_length=true, const_fold=true)
+fn fs_rt_array_size<T>(&arr: T[], len: int32) -> int32 {
+    return len;
+}
+
+@builtin_method("array", "index", needs_length=true)
+fn fs_rt_array_index<T>(&arr: T[], len: int32, needle: T) -> int32 {
+    i: int32 = 0;
+    while (i < len) {
+        if (arr[i] == needle) {
+            return i;
+        }
+        i = i + 1;
+    }
+    return -1;
+}
+
+@builtin_method("array", "count", needs_length=true)
+fn fs_rt_array_count<T>(&arr: T[], len: int32, needle: T) -> int32 {
+    i: int32 = 0;
+    n: int32 = 0;
+    while (i < len) {
+        if (arr[i] == needle) {
+            n = n + 1;
+        }
+        i = i + 1;
+    }
+    return n;
+}

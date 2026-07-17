@@ -1,7 +1,7 @@
 """Direct in-process unit tests for firescript/main.py: _normalize_cli_path,
 setup_logging re-entry, _compile_asm's exception-handling branches,
-_compile_runtime_file's parse/semantic error branches, _merge_fir_modules'
-type/constant dedup branches, compile_file()'s exception-handling branches
+_compile_runtime_file's parse/semantic error branches, compile_file()'s
+exception-handling branches
 (monkeypatching CompilerPipeline / ASTToFIRConverter / FIRToFLIRLowering
 methods to raise), lint_text()'s early-exit branches, and main()'s CLI
 error-handling branches (monkeypatching sys.argv / targets.resolve_target /
@@ -26,7 +26,6 @@ from main import (  # noqa: E402
     _normalize_cli_path,
     _compile_asm,
     _compile_runtime_file,
-    _merge_fir_modules,
     compile_file,
     lint_text,
     setup_logging,
@@ -233,36 +232,6 @@ def test_compile_runtime_file_semantic_error_raises():
             t.require(False, "expected RuntimeError")
         except RuntimeError as e:
             t.require("failed semantic analysis" in str(e), str(e))
-
-
-# --- _merge_fir_modules: type / constant dedup branches ----------------------
-
-def test_merge_fir_modules_adds_new_types_and_constants_skips_dupes():
-    from fir import FIRModule, TypeDef
-    from fir.ir_module import GlobalConstant
-    from fir.ir_types import make_simple
-
-    base = FIRModule("base")
-    base.add_type(TypeDef("Existing", "owned", fields=[("x", make_simple("int32"))]))
-    base.constants.append(GlobalConstant("EXISTING_C", make_simple("int32"), "1"))
-
-    extra = FIRModule("extra")
-    # Duplicate names: must NOT be re-added (exercises the `if not any(...)`
-    # False branch for both types and constants).
-    extra.add_type(TypeDef("Existing", "owned", fields=[("x", make_simple("int32"))]))
-    extra.constants.append(GlobalConstant("EXISTING_C", make_simple("int32"), "1"))
-    # New names: must be appended (exercises the True branch).
-    extra.add_type(TypeDef("NewType", "owned", fields=[("y", make_simple("int32"))]))
-    extra.constants.append(GlobalConstant("NEW_C", make_simple("int32"), "2"))
-
-    merged = _merge_fir_modules(base, extra)
-
-    type_names = [td.name for td in merged.types]
-    const_names = [c.name for c in merged.constants]
-    t.require_eq(type_names.count("Existing"), 1)
-    t.require("NewType" in type_names, type_names)
-    t.require_eq(const_names.count("EXISTING_C"), 1)
-    t.require("NEW_C" in const_names, const_names)
 
 
 # --- compile_file: exception-handling branches -------------------------------

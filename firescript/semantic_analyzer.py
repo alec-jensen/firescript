@@ -309,6 +309,23 @@ class SemanticAnalyzer:
 
         return False
 
+    def _builtin_method_sig(self, family: str, method_name: str) -> Optional[List[Tuple[str, str, bool, bool]]]:
+        """Look up a @builtin_method's public (non-receiver, non-length)
+        parameter signature, shaped to match method_signatures'
+        (param_name, param_type, is_array, is_borrowed) convention -- so a
+        real call like `.count(needle)` gets real ownership/move checking
+        on `needle` instead of the historical silent skip for unregistered
+        callees."""
+        from builtin_methods import get_builtin_method_registry
+
+        spec = get_builtin_method_registry().lookup(family, method_name)
+        if spec is None:
+            return None
+        return [
+            ("", ptype, ptype.endswith("[]"), pmode in ("borrow", "borrow_mut"))
+            for ptype, pmode in zip(spec.public_param_types, spec.public_param_modes)
+        ]
+
     def _analyze_call_args_with_signature(
         self,
         args: List[ASTNode],
@@ -697,7 +714,18 @@ class SemanticAnalyzer:
             if receiver.node_type == NodeTypes.IDENTIFIER:
                 receiver_binding = self._lookup_binding(receiver.name)
                 if receiver_binding:
-                    method_sig = self.method_signatures.get((receiver_binding.var_type or "", node.name))
+                    # Array/string dot-methods are @builtin_method-registered
+                    # (see builtin_methods.py), not user class methods -- and
+                    # must be checked ahead of the class-method lookup below,
+                    # since `method_signatures` keys on var_type alone and
+                    # doesn't distinguish e.g. a plain `string` from a
+                    # `string[]` (both would key on "string").
+                    if receiver_binding.is_array:
+                        method_sig = self._builtin_method_sig("array", node.name)
+                    elif receiver_binding.var_type == "string":
+                        method_sig = self._builtin_method_sig("string", node.name)
+                    else:
+                        method_sig = self.method_signatures.get((receiver_binding.var_type or "", node.name))
 
             args = node.children[1:]
             self._analyze_call_args_with_signature(args, method_sig, node)

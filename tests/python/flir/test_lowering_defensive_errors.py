@@ -341,31 +341,6 @@ def test_array_length_call_rejects_unknown_size():
         t.require("array_length on array of unknown size" in str(e), str(e))
 
 
-def test_array_search_rejects_unknown_size():
-    from fir.ir_node import CallInst
-    from fir.ir_types import ArrayType
-
-    arr_type = ArrayType(INT32, size=None)
-    module = FIRModule("firescript")
-    func = FIRFunction("g", return_type=INT32)
-    module.add_function(func)
-    b = FIRBuilder(func)
-    arr_ref = b.load_var("untracked_array", arr_type)
-    needle = b.int_literal("1", INT32)
-    inst = CallInst("array_index", [arr_ref, needle], None, INT32)
-
-    lowering = _lowering()
-    ctx, _ = _ctx()
-    ctx.slot_types["untracked_array"] = PTR
-    _materialize(lowering, ctx, arr_ref)
-    _materialize(lowering, ctx, needle)
-    try:
-        lowering.lower_call(inst, ctx)
-        t.require(False, "expected LoweringError")
-    except LoweringError as e:
-        t.require("array_index on array of unknown size" in str(e), str(e))
-
-
 # ---------------------------------------------------------------------------
 # Non-error branches that are nonetheless unreachable through the real
 # compiler pipeline (ast_to_fir.py never constructs a MoveInst/BorrowInst/

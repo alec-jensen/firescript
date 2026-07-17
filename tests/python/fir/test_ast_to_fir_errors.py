@@ -364,14 +364,16 @@ def test_infer_type_args_missing_func_def_returns_empty():
     t.require_eq(converter._infer_type_args("generic_fn", node), [])
 
 
-# -- _convert_array_method: length()/size() with an unknown static size,
-# and an unsupported array method name --------------------------------------
+# -- _convert_builtin_method: length()/size() with an unknown static size,
+# and an unsupported array method name (registry-driven, see
+# firescript/builtin_methods.py and firescript/std/internal/builtin_arrays.fire)
+# ----------------------------------------------------------------------------
 
 def test_array_method_length_unknown_size_calls_intrinsic():
     converter = _with_builder(_new_converter())
     call_fn = _node(NodeTypes.FUNCTION_CALL, "make_array", [])
     node = _node(NodeTypes.METHOD_CALL, "length", [call_fn])
-    value = converter._convert_array_method(node, call_fn, "int32[]", "length")
+    value = converter._convert_builtin_method(node, call_fn, "array", "int32", "length")
     t.require(value.instruction.metadata.get("intrinsic") is True)
 
 
@@ -379,7 +381,7 @@ def test_array_method_unsupported_name_raises():
     converter = _with_builder(_new_converter())
     ident = _node(NodeTypes.IDENTIFIER, "arr")
     node = _node(NodeTypes.METHOD_CALL, "sort", [ident])
-    _expect_conversion_error(lambda: converter._convert_array_method(node, ident, "int32[]", "sort"))
+    _expect_conversion_error(lambda: converter._convert_builtin_method(node, ident, "array", "int32", "sort"))
 
 
 # -- super() call without a resolved super class -----------------------------

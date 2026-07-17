@@ -135,15 +135,73 @@ def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
 _RUNTIME_FIR_CACHE = None
 
 
-def _compile_runtime_file(path: str) -> "FIRModule":
-    """Compile a single runtime .fire file to a FIR module (no caching)."""
-    from ast_to_fir import ASTToFIRConverter
+def _collect_internal_signatures(files: list) -> dict:
+    """Lightweight pre-scan of every std/internal/*.fire file's top-level
+    declarations, used to seed cross-file symbol visibility for the real
+    per-file compile below (_compile_runtime_file). std/internal/ files
+    carry no import statements (that pipeline stage is never run for them),
+    so without this, a function in one file calling a function defined in
+    a sibling file would silently resolve to an unknown return type during
+    that file's own (independent) parse -- only the signature is harvested
+    here; whether a file's own body type-checks correctly against those
+    signatures is decided later, by the real (seeded) parse."""
+    from enums import NodeTypes
+    from builtin_methods import parse_internal_file_cached
+
+    seed = {
+        "user_functions": {},
+        "generic_functions": {},
+        "generic_constraints": {},
+        "user_classes": {},
+        "user_types": set(),
+    }
+    for path in files:
+        ast, _ = parse_internal_file_cached(path)
+        for child in ast.children:
+            if child.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.GENERATOR_DEFINITION):
+                seed["user_functions"][child.name] = child.return_type
+                type_params = getattr(child, "type_params", None)
+                if type_params:
+                    seed["generic_functions"][child.name] = type_params
+                    seed["generic_constraints"][child.name] = getattr(child, "type_constraints", None) or {}
+            elif child.node_type == NodeTypes.CLASS_DEFINITION:
+                fields = {
+                    fchild.name: fchild.var_type
+                    for fchild in child.children
+                    if fchild.node_type == NodeTypes.CLASS_FIELD
+                }
+                seed["user_classes"][child.name] = fields
+                seed["user_types"].add(child.name)
+    return seed
+
+
+def _compile_runtime_file(path: str, seed: dict = None) -> "ASTNode":
+    """Parse + preprocess + semantic-analyze a single std/internal/*.fire
+    file, returning its processed AST (not yet converted to FIR -- see
+    _runtime_fir_module for why that step is deferred and combined across
+    files). `seed`, from _collect_internal_signatures, pre-populates this
+    file's own parser state with function/class signatures collected from
+    every std/internal/*.fire file, so an ordinary call to a sibling
+    file's function type-checks correctly during this file's own parse,
+    despite there being no import connecting them."""
+    from lexer import Lexer
+    from parser import Parser
 
     with open(path, "r", encoding="utf-8") as f:
         source = f.read()
     rel = safe_relpath(path)
+    tokens = Lexer(source).tokenize()
+    parser_instance = Parser(tokens, source, rel, defer_undefined_identifiers=False)
+    if seed is not None:
+        parser_instance.user_functions.update(seed["user_functions"])
+        parser_instance.generic_functions.update(seed["generic_functions"])
+        parser_instance.generic_constraints.update(seed["generic_constraints"])
+        parser_instance.user_classes.update(seed["user_classes"])
+        parser_instance.user_types.update(seed["user_types"])
+    ast = parser_instance.parse()
     pipeline = CompilerPipeline(source, rel, path)
-    ast = pipeline.parse()
+    pipeline.parser_instance = parser_instance
+    pipeline.ast = ast
     if pipeline.parser_errors:
         raise RuntimeError(
             f"{rel} failed to parse: {len(pipeline.parser_errors)} errors"
@@ -155,47 +213,45 @@ def _compile_runtime_file(path: str) -> "FIRModule":
         raise RuntimeError(
             f"{rel} failed semantic analysis: {len(analyzer.errors)} errors"
         )
-    converter = ASTToFIRConverter(ast, module_name="fs_runtime", is_runtime_module=True)
-    return converter.convert()
-
-
-def _merge_fir_modules(base, *extras) -> "FIRModule":
-    """Merge functions and types from extra FIR modules into base (in-place)."""
-    for extra in extras:
-        for func in extra.functions:
-            # Only add functions not already in base (base takes precedence).
-            if not any(f.name == func.name for f in base.functions):
-                base.functions.append(func)
-        for td in extra.types:
-            if not any(t.name == td.name for t in base.types):
-                base.types.append(td)
-        for c in extra.constants:
-            if not any(x.name == c.name for x in base.constants):
-                base.constants.append(c)
-    return base
+    return ast
 
 
 def _runtime_fir_module():
-    """Compile std/internal/runtime.fire and std/internal/float128.fire
-    (the firescript-implemented runtime + float128 stubs) to a merged FIR
-    module, cached per process. Lowering routes fs_rt_* calls here."""
+    """Compile every std/internal/*.fire file (the firescript-implemented
+    runtime, float128 stubs, and @builtin_method-backed dispatch modules)
+    to a single FIR module, cached per process. Lowering routes fs_rt_*
+    calls here. New std/internal/ files are picked up automatically -- no
+    changes needed here to add one.
+
+    Each file is parsed/preprocessed/semantic-analyzed on its own (for
+    accurate per-file error line/column attribution), but FIR conversion
+    runs once, over all files' processed ASTs combined into a single root:
+    ASTToFIRConverter's own cross-reference bookkeeping (function/class/
+    generic definitions, used to resolve e.g. a callee's real &-borrow
+    parameter modes) only sees whichever single AST it's given, so
+    converting each file separately would silently default any cross-file
+    call's argument modes to "own" instead of resolving the callee's real
+    signature -- wrongly moving a borrowed argument.
+    """
     global _RUNTIME_FIR_CACHE
     if _RUNTIME_FIR_CACHE is None:
+        from ast_to_fir import ASTToFIRConverter
+
         internal_dir = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "std", "internal"
         )
-        runtime_mod = _compile_runtime_file(
-            os.path.join(internal_dir, "runtime.fire")
-        )
-        float128_mod = _compile_runtime_file(
-            os.path.join(internal_dir, "float128.fire")
-        )
-        _RUNTIME_FIR_CACHE = _merge_fir_modules(runtime_mod, float128_mod)
-        # Each source module was already verified individually inside
-        # ASTToFIRConverter.convert(); re-verify the merged module as a
-        # whole so cross-module references (e.g. SyscallResult defined in
-        # one file, used in another) are checked too.
-        _RUNTIME_FIR_CACHE.validate()
+        # sorted() for deterministic compile/merge order (CLAUDE.md
+        # determinism rule).
+        files = sorted(glob.glob(os.path.join(internal_dir, "*.fire")))
+        seed = _collect_internal_signatures(files)
+        asts = [_compile_runtime_file(path, seed) for path in files]
+        combined_ast = asts[0]
+        for extra_ast in asts[1:]:
+            for child in extra_ast.children:
+                child.parent = combined_ast
+                combined_ast.children.append(child)
+        converter = ASTToFIRConverter(combined_ast, module_name="fs_runtime", is_runtime_module=True)
+        _RUNTIME_FIR_CACHE = converter.convert()
     return _RUNTIME_FIR_CACHE
 
 
