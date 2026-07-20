@@ -1,0 +1,47 @@
+// Low-level fs_rt_array_new<T>/fs_rt_array_copy<T> intrinsics: allocate a
+// T[] buffer of a runtime-determined element count, write/read elements,
+// and copy into a larger buffer. These are the compiler primitives
+// std.collections.Vec<T> is built on (see docs/internal/version_planning.md's
+// 0.6.0 dynamic-arrays work) -- not meant for direct user-code use outside
+// std/collections/*.fire, but exercised standalone here before any Vec code
+// exists.
+
+directive enable_lowlevel_runtime;
+
+import @firescript/std.io.println;
+
+n: int32 = 4;
+arr: int32[] = fs_rt_array_new<int32>(n);
+arr[0] = 10;
+arr[1] = 20;
+arr[2] = 30;
+arr[3] = 40;
+println(arr[0]);
+println(arr[1]);
+println(arr[2]);
+println(arr[3]);
+
+bigger: int32[] = fs_rt_array_new<int32>(8);
+fs_rt_array_copy<int32>(bigger, arr, n);
+println(bigger[0]);
+println(bigger[3]);
+bigger[7] = 99;
+println(bigger[7]);
+
+words: string[] = fs_rt_array_new<string>(2);
+words[0] = "hello";
+words[1] = "world";
+println(words[0]);
+println(words[1]);
+
+/* EXPECT
+10
+20
+30
+40
+10
+40
+99
+hello
+world
+*/

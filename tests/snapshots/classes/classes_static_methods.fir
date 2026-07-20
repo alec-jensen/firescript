@@ -57,14 +57,12 @@ function @Math.add(a: int32, b: int32) -> int32 {
     ret %2
 }
 
-function @Math.twice(this: Math, x: int32) -> int32 {
+function @Math.twice(this: &Math, x: int32) -> int32 {
   L0:
-    %0 = loadvar.Math this
-    drop %0
-    %1 = loadvar.int32 x
-    %2 = const.int32 2
-    %3 = binop "*", %1, %2
-    ret %3
+    %0 = loadvar.int32 x
+    %1 = const.int32 2
+    %2 = binop "*", %0, %1
+    ret %2
 }
 
 function @main() -> void {

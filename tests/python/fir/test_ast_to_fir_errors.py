@@ -119,7 +119,12 @@ def test_expr_type_literal_token_defaults():
         ("BOOLEAN_LITERAL", "bool"),
         ("STRING_LITERAL", "string"),
         ("CHAR_LITERAL", "char"),
-        ("NULL_LITERAL", "null"),
+        # "string", not the parser's own placeholder "null" -- with no
+        # _expected_type_str context (declaration initializer, constructor/
+        # call argument) to say otherwise, a bare `null` falls back to the
+        # most common nullable type, matching every pre-existing nullable
+        # use in the language (string?/a class?/an array?).
+        ("NULL_LITERAL", "string"),
     ]:
         node = _node(NodeTypes.LITERAL, "", token=_tok(ttype, "0"))
         t.require_eq(converter._expr_type(node), expected, ttype)

@@ -1,0 +1,37 @@
+// Regression test: Option<T>/CopyableOption<T> for a *primitive* T must
+// distinguish `null` from a legitimately-stored zero/false value. Before
+// the nullable-scalar-field/parameter compiler support this test exercises
+// (see ast_to_fir.py's "Nullable scalars" section), Option<int32>(0) was
+// indistinguishable from Option<int32>(null): both stored the raw value 0
+// with nothing else to check, so isSome()/isNone() silently returned the
+// wrong answer for a zero (or false) payload specifically.
+import @firescript/std.io.println;
+import @firescript/std.types.Option;
+import @firescript/std.types.CopyableOption;
+
+emptyOpt: Option<int32> = Option<int32>(null);
+println(emptyOpt.isSome());
+
+zeroOpt: Option<int32> = Option<int32>(0);
+println(zeroOpt.isSome());
+
+fullOpt: Option<int32> = Option<int32>(42);
+println(fullOpt.isSome());
+
+emptyCopt: CopyableOption<bool> = CopyableOption<bool>(null);
+println(emptyCopt.isNone());
+
+disabledCopt: CopyableOption<bool> = CopyableOption<bool>(false);
+println(disabledCopt.isNone());
+
+enabledCopt: CopyableOption<bool> = CopyableOption<bool>(true);
+println(enabledCopt.isNone());
+
+/* EXPECT
+false
+true
+true
+true
+false
+false
+*/

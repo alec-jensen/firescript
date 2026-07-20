@@ -20,6 +20,8 @@ from errors import IRVerificationError
 from fir.ir_module import FIRFunction, FIRModule, TypeDef
 from fir.ir_node import (
     AllocateInst,
+    ArrayAllocInst,
+    ArrayCopyInst,
     ArrayLiteralInst,
     BasicBlock,
     BinaryOpInst,
@@ -238,8 +240,14 @@ def _is_void(fir_type: Optional[FIRType]) -> bool:
 def _type_assignable(actual: Optional[FIRType], expected: Optional[FIRType]) -> bool:
     """Looser-than-equality compatibility used for argument passing: a
     fixed-size array (`T[4]`) is assignable to an unsized array parameter
-    (`T[]`), matching the language's array-parameter covariance. Field/
-    local declarations still use strict equality (`==`); this is only for
+    (`T[]`), matching the language's array-parameter covariance. A
+    non-nullable scalar (e.g. `int32` -- a literal, or any other
+    definitely-present value) is assignable to its nullable counterpart
+    (`int32?`): the value obviously "has a value", the has-value companion
+    argument at the call site (see ast_to_fir.py's _call_arg_hasvals) is
+    computed independently of this argument's own FIRType, so nothing here
+    needs the types to match exactly for that to stay correct. Field/local
+    declarations still use strict equality (`==`); this is only for
     call/construct argument checks (FIRV-T5/T6/T9/T10)."""
     if actual is None or expected is None:
         return True
@@ -247,6 +255,15 @@ def _type_assignable(actual: Optional[FIRType], expected: Optional[FIRType]) -> 
         if expected.size is not None and actual.size != expected.size:
             return False
         return _type_assignable(actual.element_type, expected.element_type)
+    if (
+        isinstance(actual, SimpleType)
+        and isinstance(expected, SimpleType)
+        and expected.nullable
+        and not actual.nullable
+        and actual.name == expected.name
+        and actual.category == expected.category
+    ):
+        return True
     return actual == expected
 
 
@@ -443,6 +460,10 @@ class _FunctionVerifier:
             self._check_index_array(inst, operand_types, block, index)
         elif isinstance(inst, StoreArrayInst):
             self._check_store_array(inst, operand_types, block, index)
+        elif isinstance(inst, ArrayAllocInst):
+            self._check_array_alloc(inst, operand_types, block, index)
+        elif isinstance(inst, ArrayCopyInst):
+            self._check_array_copy(inst, operand_types, block, index)
         elif isinstance(inst, AllocateInst):
             self._check_allocate(inst, operand_types, block, index)
         elif isinstance(inst, ConstructVariantInst):
@@ -683,6 +704,30 @@ class _FunctionVerifier:
         if index_t is not None and not _is_integer(index_t):
             self.emit("FIRV-T8", f"StoreArray index has non-integer type '{index_t.render()}'", block, index, inst)
 
+    def _check_array_alloc(self, inst: ArrayAllocInst, operand_types, block, index) -> None:
+        (count_t,) = operand_types
+        if count_t is not None and not _is_integer(count_t):
+            self.emit("FIRV-T8", f"ArrayAlloc count has non-integer type '{count_t.render()}'", block, index, inst)
+        if not isinstance(inst.result_type, ArrayType):
+            self.emit("FIRV-T8", f"ArrayAlloc result type '{inst.result_type.render()}' is not an array type", block, index, inst)
+
+    def _check_array_copy(self, inst: ArrayCopyInst, operand_types, block, index) -> None:
+        dst_t, src_t, count_t = operand_types
+        if dst_t is not None and not isinstance(dst_t, ArrayType):
+            self.emit("FIRV-T8", f"ArrayCopy dst operand has non-array type '{dst_t.render()}'", block, index, inst)
+        if src_t is not None and not isinstance(src_t, ArrayType):
+            self.emit("FIRV-T8", f"ArrayCopy src operand has non-array type '{src_t.render()}'", block, index, inst)
+        if (
+            isinstance(dst_t, ArrayType)
+            and isinstance(src_t, ArrayType)
+            and not _is_generic_param(dst_t.element_type, self.generic_names)
+            and not _is_generic_param(src_t.element_type, self.generic_names)
+            and dst_t.element_type != src_t.element_type
+        ):
+            self.emit("FIRV-T8", f"ArrayCopy dst element type '{dst_t.element_type.render()}' does not match src element type '{src_t.element_type.render()}'", block, index, inst)
+        if count_t is not None and not _is_integer(count_t):
+            self.emit("FIRV-T8", f"ArrayCopy count has non-integer type '{count_t.render()}'", block, index, inst)
+
     def _check_allocate(self, inst: AllocateInst, operand_types, block, index) -> None:
         class_name = _class_name_of(inst.result_type)
         if class_name is None or class_name not in self.type_index:
@@ -707,6 +752,8 @@ class _FunctionVerifier:
             self.emit("FIRV-T9", f"Allocate passes {len(inst.operands)} argument(s) to '{class_name}', expected {len(params)}", block, index, inst)
             return
         for i, ((pname, ptype), arg_t) in enumerate(zip(params, operand_types)):
+            if _is_generic_param(ptype, set(type_def.generic_params)):
+                continue  # field's declared type is the class's own unresolved generic parameter
             if not _type_assignable(arg_t, ptype):
                 self.emit("FIRV-T9", f"Allocate argument {i} ('{pname}') has type '{arg_t.render()}', expected '{ptype.render()}'", block, index, inst)
 

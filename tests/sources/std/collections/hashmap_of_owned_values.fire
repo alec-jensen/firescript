@@ -1,0 +1,40 @@
+// HashMap<int32,string> (an Owned value type): remove() safely transfers
+// ownership out and tombstones the slot in the same operation, matching
+// Vec<T>.pop()'s equivalent safety argument. Many construct/populate/
+// remove/drop cycles with both K and V owned (HashMap<string,string>)
+// double as a leak/double-free sanity check for the @owns_elements
+// destructor hook's states-guarded sweep (same technique as
+// tests/sources/enums/enum_owned_payload_drop.fire and
+// tests/sources/std/collections/vec_of_strings.fire) -- each cycle leaves
+// two entries live (never removed) so the destructor's sweep-and-free path
+// is exercised too, not just remove()'s own drop.
+
+import @firescript/std.collections.HashMap;
+import @firescript/std.io.println;
+
+m: HashMap<int32, string> = HashMap<int32, string>();
+m.set(1, "one");
+m.set(2, "two");
+m.set(3, "three");
+removed: string = m.remove(2);
+println(removed);
+println(m.length());
+println(m.has(2));
+
+cycle: int32 = 0;
+while (cycle < 1000) {
+    sm: HashMap<string, string> = HashMap<string, string>();
+    sm.set("a", "alpha");
+    sm.set("b", "beta");
+    sm.set("c", "gamma");
+    x: string = sm.remove("b");
+    cycle = cycle + 1;
+}
+println("done");
+
+/* EXPECT
+two
+2
+false
+done
+*/

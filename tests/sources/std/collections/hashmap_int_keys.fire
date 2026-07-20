@@ -1,0 +1,34 @@
+// HashMap<int32,int32> basic set/get/has/remove.
+
+import @firescript/std.collections.HashMap;
+import @firescript/std.io.println;
+
+m: HashMap<int32, int32> = HashMap<int32, int32>();
+println(m.length());
+m.set(1, 100);
+m.set(2, 200);
+m.set(3, 300);
+println(m.length());
+println(m.has(2));
+println(m.has(5));
+println(m.get(2));
+
+m.set(2, 999);
+println(m.get(2));
+
+removed: int32 = m.remove(2);
+println(removed);
+println(m.length());
+println(m.has(2));
+
+/* EXPECT
+0
+3
+true
+false
+200
+999
+999
+2
+false
+*/

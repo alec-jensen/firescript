@@ -27,12 +27,20 @@ from fir.ir_module import EnumVariantDef, FIRFunction, FIRModule, GlobalConstant
 from fir.ir_node import Value
 from fir.ir_types import (
     ArrayType,
+    COPYABLE_BUILTINS,
     FIRType,
     GeneratorType,
     GenericInstanceType,
     SimpleType,
     make_simple,
 )
+
+# Scalar built-in types a `T?` can meaningfully wrap where "null" needs a
+# real, separate representation from the type's own zero value (unlike
+# string?/a class?/an array?, where the underlying pointer already has a
+# natural null = 0 encoding). See docs/changelog.md's 0.6.0 entry on
+# nullable-scalar support and _nullable_scalar_base() below.
+NULLABLE_SCALAR_TYPES = COPYABLE_BUILTINS - {"void"}
 
 # Intrinsic call names passed through as FIR Calls with metadata["intrinsic"].
 INTRINSIC_FUNCTIONS = frozenset(
@@ -180,6 +188,7 @@ _LOWLEVEL_RUNTIME_INTRINSICS = frozenset(
         "win_write_file", "win_read_file", "win_create_file_a", "win_close_handle",
         "win_delete_file_a", "win_move_file_ex_a", "win_copy_file_a", "win_get_last_error",
         "win_get_command_line_a", "win_get_file_size", "win_set_file_pointer", "win_exit_process",
+        "fs_rt_array_new", "fs_rt_array_copy", "fs_rt_hash",
     }
 )
 
@@ -227,6 +236,10 @@ class ASTToFIRConverter:
 
         # Program-wide registries (filled by _collect_program_info)
         self.class_fields: dict[str, list[tuple[str, str]]] = {}
+        # class name -> set of field names that are nullable *scalar*
+        # fields (each has a paired "<field>__hasval: bool" companion field
+        # -- see _collect_program_info and the "Nullable scalars" section).
+        self.nullable_scalar_fields: dict[str, set[str]] = {}
         self.class_categories: dict[str, str] = {}
         self.class_bases: dict[str, Optional[str]] = {}
         self.class_generic_params: dict[str, list[str]] = {}
@@ -246,6 +259,21 @@ class ASTToFIRConverter:
         # Declared type of the binding currently being initialized, used to
         # recover generic type args for constructions like `Pair(1, 2)`.
         self._expected_type_str: Optional[str] = None
+        # Generic type parameter names in scope for the class/function/method
+        # currently being converted (e.g. {"T"} while converting Option<T>'s
+        # body) -- a nullable field/param typed with one of these names is
+        # treated as nullable-scalar too, since FIR is built once from the
+        # generic template before any concrete type is known. See
+        # _nullable_scalar_base.
+        self._current_generic_params: set[str] = set()
+        # Whether the internal __NullableReturn<T> struct (see
+        # _resolve_function_return_type) has been registered on
+        # self.module yet.
+        self._nullable_return_typedef_registered = False
+        # id(FUNCTION_CALL node) -> its converted __NullableReturn<T>
+        # struct Value, for a nullable-scalar-returning call -- see the
+        # "Nullable-scalar return values" section below _call_arg_hasvals.
+        self._call_struct_cache: dict[int, Value] = {}
         # scope stack of name -> (type_str, is_array, array_size, unique_name)
         # unique_name disambiguates sibling-scope locals that share a source
         # name, so FIR local names are unique within a function.
@@ -359,15 +387,47 @@ class ASTToFIRConverter:
                 name = child.name
                 fields: list[tuple[str, str]] = []
                 methods: set[str] = set()
+                nullable_scalars: set[str] = set()
+                class_type_params = set(getattr(child, "type_params", []) or [])
                 for member in child.children:
                     if member.node_type == NodeTypes.CLASS_FIELD:
-                        field_type = member.var_type or "int32"
+                        base_field_type = member.var_type or "int32"
+                        is_companion_field = (
+                            not member.is_array
+                            and member.is_nullable
+                            and (base_field_type in NULLABLE_SCALAR_TYPES or base_field_type in class_type_params)
+                        )
+                        field_type = f"{base_field_type}?" if is_companion_field else base_field_type
                         if member.is_array:
                             field_type += "[]"
                         fields.append((member.name, field_type))
+                        if is_companion_field:
+                            # Companion has-value field for a nullable
+                            # *scalar* field (see the "Nullable scalars"
+                            # section above _expr_type) -- an ordinary
+                            # struct field, so LoadField/StoreField and the
+                            # struct-layout builder need no changes at all;
+                            # only construction/assignment/comparison sites
+                            # (below) need to know it exists. Also fires
+                            # when the field's type is the class's own
+                            # generic parameter (e.g. `value: T?` in
+                            # Option<T>): FIR is built once from the generic
+                            # template before any concrete T is known, so a
+                            # nullable generic-parameter field must always
+                            # get a companion -- it becomes load-bearing
+                            # exactly when a caller instantiates T with a
+                            # scalar. The stored field type keeps its "?"
+                            # suffix (unlike a plain nullable string/class
+                            # field, which never carried one) purely so
+                            # _expr_type's FIELD_ACCESS branch can tell this
+                            # field is nullable-scalar without re-deriving
+                            # it from class_type_params at every call site.
+                            fields.append((self._hasval_name(member.name), "bool"))
+                            nullable_scalars.add(member.name)
                     elif member.node_type == NodeTypes.CLASS_METHOD_DEFINITION:
                         methods.add(member.name)
                         self.class_method_defs[(name, member.name)] = member
+                self.nullable_scalar_fields[name] = nullable_scalars
                 self.class_fields[name] = fields
                 self.class_method_names[name] = methods
                 is_copyable = bool(getattr(child, "is_copyable", False))
@@ -528,16 +588,266 @@ class ASTToFIRConverter:
         return symbol[3] if symbol is not None else name
 
     # ------------------------------------------------------------------
+    # Nullable scalars: T? for a scalar T (int8..uint64, bool, char,
+    # float32/64/128) needs a real "has a value" flag alongside the value
+    # itself, unlike string?/a class?/an array? (already pointer-shaped, so
+    # 0 = null is unambiguous). Locals/fields/parameters get a companion
+    # `<name>__hasval: bool` binding, tracked through the same _declare/
+    # _lookup scope machinery as the main binding under a derived name --
+    # see docs/reference/std/collections.md and docs/changelog.md's 0.6.0
+    # entry for the full design and its current coverage.
+    # ------------------------------------------------------------------
+
+    def _nullable_scalar_base(self, type_str: Optional[str]) -> Optional[str]:
+        """If `type_str` is 'T?' for a scalar T needing a real null/zero
+        distinction, return T; else None. A base matching a generic type
+        parameter currently in scope (self._current_generic_params) also
+        counts: FIR is built once from the generic template, before any
+        concrete type is known, so `value: T?` must always get companion
+        treatment -- it becomes load-bearing exactly when a caller
+        instantiates T with a scalar."""
+        if not type_str or not type_str.endswith("?"):
+            return None
+        base = type_str[:-1].strip()
+        if base in NULLABLE_SCALAR_TYPES or base in self._current_generic_params:
+            return base
+        return None
+
+    @staticmethod
+    def _hasval_name(source_name: str) -> str:
+        return f"{source_name}__hasval"
+
+    @staticmethod
+    def _is_null_literal(node: Optional[ASTNode]) -> bool:
+        return (
+            node is not None
+            and node.node_type == NodeTypes.LITERAL
+            and node.token is not None
+            and node.token.type == "NULL_LITERAL"
+        )
+
+    def _expected_type_if_null(self, node: Optional[ASTNode], expected: Optional[str]) -> Optional[str]:
+        """`expected` only matters to _expr_type's NULL_LITERAL branch, so
+        only propagate it when `node` is itself a bare null literal --
+        setting self._expected_type_str before converting a *compound*
+        expression (e.g. a `println(x == null)` call argument, where
+        `node` is the whole equality expression, not a null literal) would
+        leak into that expression's own nested sub-conversions, resolving
+        an unrelated nested null literal to completely the wrong type."""
+        return expected if self._is_null_literal(node) else None
+
+    def _nullable_scalar_has_value(self, node: Optional[ASTNode]) -> Value:
+        """FIR bool Value: does the nullable-scalar-typed expression `node`
+        (or no initializer at all, if None) currently hold a value?
+        `null` -> false; a bare identifier of the same nullable-scalar
+        shape -> copies that identifier's own companion flag (a plain
+        binding-to-binding copy, e.g. `y: int32? = x;`); `obj.field` where
+        `obj` is a bare identifier -> copies the field's own companion
+        field (e.g. `this.value != null` inside Option.isSome()); anything
+        else (a literal, an arithmetic result, a method/constructor call
+        result, a field access through a non-identifier receiver such as
+        `getObj().field`...) -> true, since firescript's grammar has no
+        other way to produce "no value" than writing `null` or copying an
+        already-nullable binding/field. A call to a nullable-scalar-
+        returning *plain function* is the one call-shaped exception (see
+        the "Nullable-scalar return values" section below
+        _call_arg_hasvals): it reads the callee's has-value companion out
+        of its __NullableReturn<T> result, converting the call at most
+        once via self._call_struct_cache so a side-effecting callee isn't
+        invoked twice. The non-identifier-receiver
+        restriction on field access avoids double-evaluating a
+        side-effecting receiver expression (this function and the
+        expression's normal conversion are called independently at some
+        call sites, e.g. constructor arguments) -- see
+        _nullable_scalar_base's docstring for current coverage."""
+        bool_type = make_simple("bool")
+        if node is None or self._is_null_literal(node):
+            return self.builder.bool_literal(False, bool_type)
+        if node.node_type == NodeTypes.IDENTIFIER:
+            symbol = self._lookup(node.name)
+            if symbol is not None and self._nullable_scalar_base(symbol[0]) is not None:
+                hv_symbol = self._lookup(self._hasval_name(node.name))
+                if hv_symbol is not None:
+                    return self.builder.load_var(hv_symbol[3], bool_type)
+        if (
+            node.node_type == NodeTypes.FIELD_ACCESS
+            and node.children[0].node_type == NodeTypes.IDENTIFIER
+        ):
+            obj_type = self._expr_type(node.children[0])
+            base = obj_type.split("<")[0]
+            if node.name in self.nullable_scalar_fields.get(base, set()):
+                obj = self._convert_expression(node.children[0])
+                return self.builder.load_field(obj, self._hasval_name(node.name), bool_type)
+        if node.node_type == NodeTypes.FUNCTION_CALL:
+            scalar_base = self._nullable_return_scalar_base(node)
+            if scalar_base is not None:
+                cache_key = id(node)
+                struct_value = self._call_struct_cache.get(cache_key)
+                if struct_value is None:
+                    struct_value = self._convert_function_call(node, False)
+                    if struct_value is not None:
+                        self._call_struct_cache[cache_key] = struct_value
+                if struct_value is not None:
+                    return self.builder.load_field(struct_value, "hasval", bool_type)
+        return self.builder.bool_literal(True, bool_type)
+
+    def _declare_hasval_companion(self, source_name: str, has_value: Value) -> None:
+        unique = self._declare(self._hasval_name(source_name), "bool", False, None)
+        self.builder.declare_local(unique, make_simple("bool"), has_value)
+
+    def _store_hasval_companion(self, source_name: str, has_value: Value) -> None:
+        hv_symbol = self._lookup(self._hasval_name(source_name))
+        if hv_symbol is not None:
+            self.builder.store_var(hv_symbol[3], has_value)
+
+    def _call_arg_hasvals(
+        self,
+        callee_params: list[ASTNode],
+        arg_nodes: list[ASTNode],
+        callee_generic_params: Optional[set[str]] = None,
+    ) -> list[Value]:
+        """Has-value companion argument Values (in order) for whichever of
+        `callee_params` are nullable-scalar, matching `arg_nodes`
+        positionally -- the caller-side counterpart of the implicit
+        trailing companion parameters _function_params appends to a
+        nullable-scalar-parameter callee's own signature. `callee_params`
+        are the callee's *own* (unsubstituted) parameter AST nodes, so
+        whether a param needs a companion is judged against the callee's
+        *own* generic parameter names (`callee_generic_params`, e.g.
+        Option<T>'s {"T"}), not whatever generic params happen to be in
+        scope at the call site -- those are unrelated."""
+        result: list[Value] = []
+        gp = callee_generic_params or set()
+        for param, arg_node in zip(callee_params, arg_nodes):
+            if getattr(param, "is_array", False) or not getattr(param, "is_nullable", False):
+                continue
+            base = param.var_type or "int32"
+            if base in NULLABLE_SCALAR_TYPES or base in gp:
+                result.append(self._nullable_scalar_has_value(arg_node))
+        return result
+
+    # ------------------------------------------------------------------
+    # Nullable-scalar return values: a plain function declared `-> T?`
+    # for a nullable-scalar T is compiled to *actually* return an internal
+    # `__NullableReturn<T>` copyable struct { value: T, hasval: bool }
+    # instead of a bare T -- reusing the already-tested copyable-struct-
+    # by-value construct/return/field-access machinery (the same one
+    # CopyableTuple/CopyableOption use) rather than inventing new IR.
+    # Callers unwrap it back to (value, hasval) in
+    # _convert_function_call_unwrapped / _nullable_scalar_has_value's
+    # FUNCTION_CALL branch, which -- critically -- convert the call
+    # expression at most once and cache the struct result in
+    # self._call_struct_cache, since a caller needing both pieces (e.g.
+    # `x: int32? = foo();`, which asks for has-value before the value)
+    # must not evaluate a side-effecting call twice.
+    #
+    # Scope: only plain (free) functions are wrapped/unwrapped this way.
+    # A method/constructor/type-method declared `-> T?` parses (the
+    # parser accepts nullable return types generally) but is not yet
+    # rewritten to this struct-return convention, so comparing such a
+    # call's result against `null` does not work correctly yet -- a
+    # documented follow-up, not a silent miscompile (nothing produces a
+    # __NullableReturn struct for them, so their return type is the
+    # ordinary possibly-nullable FIRType exactly as before this feature).
+    # ------------------------------------------------------------------
+
+    _NULLABLE_RETURN_STRUCT = "__NullableReturn"
+
+    def _ensure_nullable_return_typedef(self) -> None:
+        if self._nullable_return_typedef_registered:
+            return
+        self._nullable_return_typedef_registered = True
+        type_def = TypeDef(
+            self._NULLABLE_RETURN_STRUCT,
+            category="copyable",
+            fields=[("value", make_simple("T")), ("hasval", make_simple("bool"))],
+            generic_params=["T"],
+        )
+        self.module.add_type(type_def)
+
+    def _resolve_function_return_type(self, return_type_str: Optional[str]) -> Optional[FIRType]:
+        """FIRType for a plain function's declared return type, wrapping a
+        nullable-scalar return in __NullableReturn<T> (see the section
+        comment above). Methods/constructors intentionally keep using
+        plain self._fir_type(...) -- see the scope note above."""
+        if not return_type_str or return_type_str == "void":
+            return None
+        scalar_base = self._nullable_scalar_base(return_type_str)
+        if scalar_base is not None:
+            self._ensure_nullable_return_typedef()
+            return GenericInstanceType(
+                self._NULLABLE_RETURN_STRUCT, [self._fir_type(scalar_base)], category="copyable"
+            )
+        return self._fir_type(return_type_str)
+
+    def _nullable_return_scalar_base(self, node: ASTNode) -> Optional[str]:
+        """If `node` is a FUNCTION_CALL to a plain user function whose
+        declared return type is nullable-scalar, return that scalar's
+        base type name (unsubstituted, e.g. "T" for a generic function);
+        else None. See the section comment above for scope (free
+        functions only)."""
+        if node.node_type != NodeTypes.FUNCTION_CALL:
+            return None
+        name = node.name
+        base_name = name.split("<")[0] if "<" in name else name
+        if base_name in self.class_categories or base_name in self.generator_defs:
+            return None
+        callee_def = self.function_defs.get(base_name)
+        if callee_def is None:
+            return None
+        gp = set(getattr(callee_def, "type_params", []) or [])
+        rt = getattr(callee_def, "return_type", None)
+        if not rt or not rt.endswith("?"):
+            return None
+        base = rt[:-1].strip()
+        if base in NULLABLE_SCALAR_TYPES or base in gp:
+            return base
+        return None
+
+    def _convert_function_call_unwrapped(self, node: ASTNode, as_statement: bool) -> Optional[Value]:
+        scalar_base = self._nullable_return_scalar_base(node)
+        if scalar_base is None:
+            return self._convert_function_call(node, as_statement)
+        cache_key = id(node)
+        struct_value = self._call_struct_cache.get(cache_key)
+        if struct_value is None:
+            struct_value = self._convert_function_call(node, as_statement)
+            if struct_value is None:
+                return None
+            self._call_struct_cache[cache_key] = struct_value
+        if as_statement:
+            return struct_value
+        return self.builder.load_field(struct_value, "value", self._fir_type(scalar_base))
+
+    # ------------------------------------------------------------------
     # Expression typing (reads AST annotations, mirrors codegen lookups)
     # ------------------------------------------------------------------
 
     def _expr_type(self, node: ASTNode) -> str:
         """Best-effort firescript type string of an expression node."""
         if node.node_type == NodeTypes.LITERAL:
+            token_type = node.token.type if node.token else None
+            if token_type == "NULL_LITERAL":
+                # The parser unconditionally stamps return_type = "null" on
+                # every null literal at parse time (expressions.py), which
+                # is truthy but uninformative -- it must not short-circuit
+                # the generic `annotated` check below. Prefer the
+                # caller-set expected type (declaration initializers,
+                # constructor/call arguments -- see _expected_type_str's
+                # other use sites) so `x: int32? = null;`/`Option<int32>
+                # (null)` resolve `null`'s FIR type to int32, not the
+                # "string" fallback. Without this, the fallback was
+                # silently wrong for any nullable *scalar* context (never
+                # previously exercised: every prior nullable use was
+                # string/a class, where the fallback's guess happened to
+                # still be pointer-shaped like the real answer).
+                expected = getattr(self, "_expected_type_str", None)
+                if expected:
+                    return self._strip_nullable_str(expected)
+                return "string"
             annotated = getattr(node, "return_type", None)
             if annotated:
                 return annotated
-            token_type = node.token.type if node.token else None
             defaults = {
                 "INTEGER_LITERAL": "int32",
                 "FLOAT_LITERAL": "float32",
@@ -636,7 +946,22 @@ class ASTToFIRConverter:
             if method_def is not None:
                 if getattr(method_def, "is_constructor", False):
                     return object_type
-                return method_def.return_type or "void"
+                ret = method_def.return_type or "void"
+                # As with the FUNCTION_CALL case above: node.return_type may
+                # be unset because the call site was type-checked (parser/
+                # type_system.py) before the receiver's defining module was
+                # merged in (a cross-module generic class, e.g.
+                # `vec.get(i)` on an imported `Vec<int32>`), leaving
+                # method_def.return_type an unsubstituted generic
+                # placeholder like "T" -- substitute it using the receiver's
+                # concrete type arguments, the same way FIELD_ACCESS below
+                # already does for generic fields.
+                base = object_type.split("<")[0]
+                if "<" in object_type and object_type.endswith(">"):
+                    args = self._split_type_args(object_type.split("<", 1)[1][:-1])
+                    subst = dict(zip(self.class_generic_params.get(base, []), args))
+                    return subst.get(ret, ret)
+                return ret
             return "void"
 
         if node.node_type == NodeTypes.TYPE_METHOD_CALL:
@@ -656,19 +981,34 @@ class ASTToFIRConverter:
             return node.name
 
         if node.node_type == NodeTypes.FIELD_ACCESS:
-            annotated = getattr(node, "return_type", None)
-            if annotated:
-                return annotated
             obj_type = self._expr_type(node.children[0])
             base = obj_type.split("<")[0]
-            subst: dict[str, str] = {}
-            if "<" in obj_type and obj_type.endswith(">"):
-                args = self._split_type_args(obj_type.split("<", 1)[1][:-1])
-                subst = dict(zip(self.class_generic_params.get(base, []), args))
-            for field_name, field_type in self._all_class_fields(base):
-                if field_name == node.name:
-                    return subst.get(field_type, field_type)
-            return "int32"
+            # The type-checking pass (parser/type_system.py) already stamps
+            # a `return_type` on most FIELD_ACCESS nodes, but its own field
+            # registries don't carry a "?" suffix for a nullable field --
+            # so that annotation alone can't be trusted for nullable-scalar
+            # detection (self.nullable_scalar_fields, populated from the
+            # same source data this function's fallback below reads, is
+            # authoritative and always checked independently).
+            is_nullable_scalar_field = node.name in self.nullable_scalar_fields.get(base, set())
+            annotated = getattr(node, "return_type", None)
+            if annotated:
+                result = annotated
+            else:
+                subst: dict[str, str] = {}
+                if "<" in obj_type and obj_type.endswith(">"):
+                    args = self._split_type_args(obj_type.split("<", 1)[1][:-1])
+                    subst = dict(zip(self.class_generic_params.get(base, []), args))
+                result = "int32"
+                for field_name, field_type in self._all_class_fields(base):
+                    if field_name == node.name:
+                        base_ft = field_type[:-1] if field_type.endswith("?") else field_type
+                        suffix = "?" if field_type.endswith("?") else ""
+                        result = subst.get(base_ft, base_ft) + suffix
+                        break
+            if is_nullable_scalar_field and not result.endswith("?"):
+                result = f"{result}?"
+            return result
 
         if node.node_type == NodeTypes.MATCH_EXPRESSION:
             annotated = getattr(node, "return_type", None)
@@ -823,10 +1163,34 @@ class ASTToFIRConverter:
     def _function_params(self, node: ASTNode) -> tuple[list[tuple[str, FIRType]], list[str]]:
         params: list[tuple[str, FIRType]] = []
         modes: list[str] = []
+        # Nullable-scalar parameters (e.g. `value: T?` in Option<T>'s
+        # constructor) need a real has-value flag, same as locals/fields --
+        # see the "Nullable scalars" section above _expr_type. There is no
+        # spare bit in the value's own representation, so the flag is an
+        # implicit trailing bool parameter, appended after all declared
+        # parameters (in declaration order) so it doesn't disturb existing
+        # positional-argument code at any call site that has none.
+        hasval_params: list[tuple[str, FIRType]] = []
+        hasval_modes: list[str] = []
+        bool_type = make_simple("bool")
         for child in node.children:
             if child.node_type != NodeTypes.PARAMETER:
                 continue
-            param_type = self._fir_type(child.var_type, child.is_array)
+            is_nullable_scalar_param = (
+                not child.is_array
+                and getattr(child, "is_nullable", False)
+                and self._nullable_scalar_base(f"{child.var_type or 'int32'}?") is not None
+            )
+            # Only a nullable-*scalar* param's FIRType is marked nullable
+            # here (matching the companion has-value param added below for
+            # it) -- a nullable string?/class? param keeps its existing
+            # plain (non-nullable) FIRType, since those are already
+            # unambiguously null-able via the pointer value 0 and marking
+            # them nullable here would make FIRV-T6's exact-type-match
+            # check reject an ordinary non-null string/class argument at
+            # every such call site (a real, pre-existing convention this
+            # change must not disturb).
+            param_type = self._fir_type(child.var_type, child.is_array, nullable=is_nullable_scalar_param)
             params.append((child.name, param_type))
             if getattr(child, "is_borrowed", False):
                 if getattr(child, "is_mutable_borrow", False):
@@ -835,6 +1199,11 @@ class ASTToFIRConverter:
                     modes.append("borrow")
             else:
                 modes.append("own")
+            if is_nullable_scalar_param:
+                hasval_params.append((self._hasval_name(child.name), bool_type))
+                hasval_modes.append("own")
+        params.extend(hasval_params)
+        modes.extend(hasval_modes)
         return params, modes
 
     def _register_params_in_scope(self, node: ASTNode, skip_this: bool = False) -> None:
@@ -842,36 +1211,77 @@ class ASTToFIRConverter:
             if child.node_type == NodeTypes.PARAMETER:
                 if skip_this and child.name == "this":
                     continue
-                self._declare(child.name, child.var_type or "int32", child.is_array, None)
+                type_str = child.var_type or "int32"
+                # Only a nullable-*scalar* param's scope-table type carries
+                # the "?" suffix (matching _function_params -- see its
+                # comment). A nullable string?/class? param keeps its plain
+                # type here, same as before this feature existed: those
+                # are already unambiguously null-able via pointer value 0,
+                # and giving them a "?"-suffixed type would make a LoadVar
+                # of the param mismatch the (still plain) field/local type
+                # it's stored into (FIRV-T7).
+                is_nullable_scalar_param = (
+                    not child.is_array
+                    and getattr(child, "is_nullable", False)
+                    and self._nullable_scalar_base(f"{type_str}?") is not None
+                )
+                if is_nullable_scalar_param:
+                    type_str = f"{type_str}?"
+                self._declare(child.name, type_str, child.is_array, None)
+                if is_nullable_scalar_param:
+                    self._declare(self._hasval_name(child.name), "bool", False, None)
 
     def _convert_function(self, node: ASTNode, fir_name: Optional[str] = None) -> None:
-        params, modes = self._function_params(node)
-        function = FIRFunction(
-            fir_name or node.name,
-            params=params,
-            return_type=self._fir_type(node.return_type) if node.return_type and node.return_type != "void" else None,
-            generic_params=list(getattr(node, "type_params", []) or []),
-            param_modes=modes,
-        )
-        self.module.add_function(function)
-        self._convert_body(node, function)
+        prev_generic_params = self._current_generic_params
+        self._current_generic_params = set(getattr(node, "type_params", []) or [])
+        try:
+            params, modes = self._function_params(node)
+            nullable_scalar_return = self._nullable_scalar_base(node.return_type or "")
+            function = FIRFunction(
+                fir_name or node.name,
+                params=params,
+                return_type=self._resolve_function_return_type(node.return_type),
+                generic_params=list(getattr(node, "type_params", []) or []),
+                param_modes=modes,
+            )
+            if nullable_scalar_return is not None:
+                function.metadata["nullable_scalar_return"] = nullable_scalar_return
+            self.module.add_function(function)
+            self._convert_body(node, function)
+        finally:
+            self._current_generic_params = prev_generic_params
 
     def _convert_generator(self, node: ASTNode) -> None:
-        params, modes = self._function_params(node)
-        yield_type = getattr(node, "yield_type", node.return_type or "int32")
-        function = FIRFunction(
-            node.name,
-            params=params,
-            return_type=GeneratorType(self._fir_type(yield_type)),
-            generic_params=list(getattr(node, "type_params", []) or []),
-            param_modes=modes,
-            is_generator=True,
-        )
-        function.metadata["yield_type"] = yield_type
-        self.module.add_function(function)
-        self._convert_body(node, function)
+        prev_generic_params = self._current_generic_params
+        self._current_generic_params = set(getattr(node, "type_params", []) or [])
+        try:
+            params, modes = self._function_params(node)
+            yield_type = getattr(node, "yield_type", node.return_type or "int32")
+            function = FIRFunction(
+                node.name,
+                params=params,
+                return_type=GeneratorType(self._fir_type(yield_type)),
+                generic_params=list(getattr(node, "type_params", []) or []),
+                param_modes=modes,
+                is_generator=True,
+            )
+            function.metadata["yield_type"] = yield_type
+            self.module.add_function(function)
+            self._convert_body(node, function)
+        finally:
+            self._current_generic_params = prev_generic_params
 
     def _convert_method(self, class_name: str, node: ASTNode) -> None:
+        prev_generic_params = self._current_generic_params
+        self._current_generic_params = set(self.class_generic_params.get(class_name, [])) | set(
+            getattr(node, "type_params", []) or []
+        )
+        try:
+            self._convert_method_body(class_name, node)
+        finally:
+            self._current_generic_params = prev_generic_params
+
+    def _convert_method_body(self, class_name: str, node: ASTNode) -> None:
         is_constructor = bool(getattr(node, "is_constructor", False))
         is_static = bool(getattr(node, "is_static", False))
         params, modes = self._function_params(node)
@@ -1113,8 +1523,34 @@ class ASTToFIRConverter:
 
         if node_type == NodeTypes.RETURN_STATEMENT:
             func = self.current_function
+            # A plain function declared `-> T?` for a nullable-scalar T
+            # actually returns __NullableReturn<T> (see
+            # _resolve_function_return_type); `return expr;` must build
+            # that struct from (expr's value, expr's has-value flag)
+            # instead of returning expr's raw value directly.
+            nullable_scalar_return_base = (
+                func.metadata.get("nullable_scalar_return") if func is not None else None
+            )
+            is_nullable_scalar_return = nullable_scalar_return_base is not None
             if node.children:
-                value = self._convert_expression(node.children[0])
+                return_expr = node.children[0]
+                has_value = (
+                    self._nullable_scalar_has_value(return_expr) if is_nullable_scalar_return else None
+                )
+                prev_expected = self._expected_type_str
+                # So a bare `return null;`'s NullLiteralInst resolves to
+                # the function's actual scalar type instead of the
+                # context-less "string" fallback (see _expr_type's
+                # NULL_LITERAL handling); only set for a direct null
+                # literal, not a compound return expression (see
+                # _expected_type_if_null).
+                self._expected_type_str = (
+                    self._expected_type_if_null(return_expr, nullable_scalar_return_base)
+                    if is_nullable_scalar_return
+                    else None
+                )
+                value = self._convert_expression(return_expr)
+                self._expected_type_str = prev_expected
                 # preprocessor.py's RETURN_STATEMENT handler computes the
                 # names read (not transferred) by this return expression --
                 # e.g. a match/for-in scrutinee, an own-mode `this` read via
@@ -1138,10 +1574,25 @@ class ASTToFIRConverter:
                     # lowering behavior, which already discarded the value
                     # here -- see ir_verifier_spec.md section 8.1.
                     self.builder.ret()
+                elif is_nullable_scalar_return and has_value is not None and func is not None:
+                    wrapped = self.builder.allocate(func.return_type, [value, has_value])
+                    self.builder.ret(wrapped)
                 else:
                     self.builder.ret(value)
             elif func is not None and func.return_type is not None and not func.is_generator:
-                self.builder.ret(self._synthesize_zero(func.return_type))
+                if (
+                    is_nullable_scalar_return
+                    and isinstance(func.return_type, GenericInstanceType)
+                    and func.return_type.type_args
+                ):
+                    zero = self._synthesize_zero(func.return_type.type_args[0])
+                    if zero is not None:
+                        false_val = self.builder.bool_literal(False, make_simple("bool"))
+                        self.builder.ret(self.builder.allocate(func.return_type, [zero, false_val]))
+                    else:
+                        self.builder.ret()
+                else:
+                    self.builder.ret(self._synthesize_zero(func.return_type))
             else:
                 self.builder.ret()
             return
@@ -1194,6 +1645,18 @@ class ASTToFIRConverter:
             return
 
         var_type = self._fir_type(type_str, nullable=node.is_nullable)
+        is_nullable_scalar = node.is_nullable and self._nullable_scalar_base(f"{type_str}?") is not None
+        has_value = self._nullable_scalar_has_value(init_node) if is_nullable_scalar else None
+        # Also read by _convert_construction (generic type-arg inference
+        # for a constructor-call initializer, e.g. `Pair<int32, string> p
+        # = Pair(1, "x");`) -- kept unconditional (not restricted to a
+        # direct null-literal init_node like _expected_type_if_null) for
+        # that reason. A *nested* null literal several levels down inside
+        # a compound init_node (e.g. `x: bool = a == null;`, if the
+        # nullable-scalar EQUALITY_EXPRESSION rewrite doesn't apply to
+        # `a`'s type) is protected separately, by clearing this before the
+        # general binary/equality/relational fallback recurses into its
+        # operands -- see that branch in _convert_expression.
         self._expected_type_str = type_str
         init_value = self._convert_expression(init_node) if init_node is not None else None
         self._expected_type_str = None
@@ -1203,15 +1666,20 @@ class ASTToFIRConverter:
         stored_type_str = f"{type_str}?" if node.is_nullable else type_str
         unique = self._declare(node.name, stored_type_str, False, None)
         self.builder.declare_local(unique, var_type, init_value)
+        if is_nullable_scalar and has_value is not None:
+            self._declare_hasval_companion(node.name, has_value)
 
     def _convert_variable_assignment(self, node: ASTNode) -> None:
-        value = self._convert_expression(node.children[0]) if node.children else None
+        rhs = node.children[0] if node.children else None
+        existing = self._lookup(node.name)
+        is_nullable_scalar = existing is not None and self._nullable_scalar_base(existing[0]) is not None
+        has_value = self._nullable_scalar_has_value(rhs) if is_nullable_scalar else None
+        value = self._convert_expression(rhs) if rhs is not None else None
         if value is None:
             raise FIRConversionError("Assignment without value", node)
-        rhs = node.children[0] if node.children else None
         if rhs is not None and rhs.node_type == NodeTypes.IDENTIFIER:
             self._mark_owned_identifier_moved(rhs.name)
-        if self._lookup(node.name) is None:
+        if existing is None:
             # Implicit declaration (class-typed RHS assignments allow this).
             rhs_type = self._expr_type(node.children[0])
             is_array = rhs_type.endswith("[]")
@@ -1220,20 +1688,36 @@ class ASTToFIRConverter:
             self.builder.declare_local(unique, self._fir_type(base_type, is_array), value)
             return
         self.builder.store_var(self._local_name(node.name), value)
+        if is_nullable_scalar and has_value is not None:
+            self._store_hasval_companion(node.name, has_value)
 
     def _convert_assignment(self, node: ASTNode) -> None:
         lhs = node.children[0]
         rhs = node.children[1]
+        lhs_symbol = self._lookup(lhs.name) if lhs.node_type == NodeTypes.IDENTIFIER else None
+        is_nullable_scalar = lhs_symbol is not None and self._nullable_scalar_base(lhs_symbol[0]) is not None
+        is_nullable_scalar_field = False
+        if not is_nullable_scalar and lhs.node_type == NodeTypes.FIELD_ACCESS:
+            field_base = self._expr_type(lhs.children[0]).split("<")[0]
+            if lhs.name in self.nullable_scalar_fields.get(field_base, set()):
+                is_nullable_scalar_field = True
+        has_value = (
+            self._nullable_scalar_has_value(rhs) if is_nullable_scalar or is_nullable_scalar_field else None
+        )
         value = self._convert_expression(rhs)
         if rhs.node_type == NodeTypes.IDENTIFIER:
             self._mark_owned_identifier_moved(rhs.name)
 
         if lhs.node_type == NodeTypes.IDENTIFIER:
             self.builder.store_var(self._local_name(lhs.name), value)
+            if is_nullable_scalar and has_value is not None:
+                self._store_hasval_companion(lhs.name, has_value)
             return
         if lhs.node_type == NodeTypes.FIELD_ACCESS:
             obj = self._convert_expression(lhs.children[0])
             self.builder.store_field(obj, lhs.name, value)
+            if is_nullable_scalar_field and has_value is not None:
+                self.builder.store_field(obj, self._hasval_name(lhs.name), has_value)
             return
         if lhs.node_type == NodeTypes.ARRAY_ACCESS:
             array = self._convert_expression(lhs.children[0])
@@ -1418,6 +1902,11 @@ class ASTToFIRConverter:
 
         args = [self._convert_expression(arg) for arg in (collection.children or [])]
         gen_value = self.builder.gen_new(collection.name, args, gen_type)
+        type_params = list(getattr(gen_def, "type_params", []) or [])
+        if type_params and gen_value is not None:
+            type_args = self._infer_generator_type_args(gen_def, type_params, collection)
+            if type_args:
+                gen_value.instruction.metadata["type_args"] = type_args
         gen_local = self._declare(f"__gen_{loop_var}", f"generator<{yield_type_str}>", False, None)
         self.builder.declare_local(gen_local, gen_type, gen_value)
 
@@ -1446,6 +1935,23 @@ class ASTToFIRConverter:
         self.loop_stack.pop()
         self._pop_scope()
         if not self.builder.current_block.is_terminated():
+            # `loop_local` is declared directly here (line ~1454), bypassing
+            # the preprocessor's usual owned-local auto-drop insertion --
+            # preprocessor.py's FOR_IN_STATEMENT handling explicitly skips
+            # the loop variable itself, trusting codegen to manage it (see
+            # its comment there). Every existing for-in-over-generator test
+            # only yields a Copyable type (int32), so dropping a fresh value
+            # each iteration was never needed until a generator yielding an
+            # Owned type (e.g. Vec<T>'s `enumerate` yielding Tuple<int32,T>)
+            # exposed it as a real gap (FIRV-O3: unconsumed on the loop-back
+            # path). Only the normal fallthrough path is handled -- break/
+            # continue out of a for-in-over-generator loop with an Owned
+            # yield type remains an unhandled case, same as it was before
+            # this fix (no existing test exercises it).
+            loop_local_fir_type = self._fir_type(loop_var_type_str)
+            if loop_local_fir_type.is_owned():
+                loop_final = self.builder.load_var(loop_local, loop_local_fir_type)
+                self.builder.drop(loop_final)
             self.builder.jump(header.id)
 
         self.builder.position_at(exit_block)
@@ -1847,13 +2353,53 @@ class ASTToFIRConverter:
         if node_type == NodeTypes.BINARY_EXPRESSION and node.name in ("&&", "||"):
             return self._convert_short_circuit(node)
 
+        if node_type == NodeTypes.EQUALITY_EXPRESSION:
+            null_side, other_side = None, None
+            if self._is_null_literal(node.children[0]):
+                null_side, other_side = node.children[0], node.children[1]
+            elif self._is_null_literal(node.children[1]):
+                null_side, other_side = node.children[1], node.children[0]
+            if null_side is not None and self._nullable_scalar_base(self._expr_type(other_side)) is not None:
+                # `x == null` / `x != null` where x is a nullable *scalar*
+                # (int32?, bool?, ...): the value itself has no bit pattern
+                # reserved for "no value" (unlike string?/a class?/an
+                # array?, where null is unambiguously the pointer value
+                # zero), so this compares the companion has-value flag
+                # instead of the value -- see _nullable_scalar_has_value.
+                has_value = self._nullable_scalar_has_value(other_side)
+                bool_type = make_simple("bool")
+                if node.name == "==":
+                    return self.builder.unary_op("!", has_value, bool_type)
+                return has_value
+
         if node_type in (
             NodeTypes.BINARY_EXPRESSION,
             NodeTypes.EQUALITY_EXPRESSION,
             NodeTypes.RELATIONAL_EXPRESSION,
         ):
+            # Each operand's own null-literal resolution (if it is one)
+            # must come from its *sibling* operand's type, never from
+            # whatever self._expected_type_str an outer caller left set
+            # (e.g. a println(...) argument slot, or an enclosing
+            # variable's declared type) -- that context describes the
+            # whole comparison/binary expression, not either operand
+            # individually, and leaking it in resolves an unrelated
+            # nested null literal (e.g. `println(x == null)`) to
+            # completely the wrong type.
+            prev_expected = self._expected_type_str
+            self._expected_type_str = (
+                self._strip_nullable_str(self._expr_type(node.children[1]))
+                if self._is_null_literal(node.children[0])
+                else None
+            )
             left = self._convert_expression(node.children[0])
+            self._expected_type_str = (
+                self._strip_nullable_str(self._expr_type(node.children[0]))
+                if self._is_null_literal(node.children[1])
+                else None
+            )
             right = self._convert_expression(node.children[1])
+            self._expected_type_str = prev_expected
             result_type = self._fir_type(self._expr_type(node))
             op_inst = self.builder.binary_op(node.name, left, right, result_type)
             op_inst.instruction.metadata["operand_type"] = self._strip_nullable_str(self._expr_type(node.children[0]))
@@ -1869,7 +2415,7 @@ class ASTToFIRConverter:
             return self.builder.unary_op(node.name, operand, result_type)
 
         if node_type == NodeTypes.FUNCTION_CALL:
-            return self._convert_function_call(node, as_statement)
+            return self._convert_function_call_unwrapped(node, as_statement)
 
         if node_type == NodeTypes.METHOD_CALL:
             return self._convert_method_call(node)
@@ -2163,6 +2709,36 @@ class ASTToFIRConverter:
                 self._mark_owned_identifier_moved(target.name)
             return None
 
+        if name == "fs_rt_array_new":
+            type_args = list(getattr(node, "type_args", []) or [])
+            if len(type_args) != 1:
+                raise FIRConversionError(
+                    "fs_rt_array_new<T>() requires exactly one type argument", node
+                )
+            elem_type = self._fir_type(type_args[0])
+            array_type = ArrayType(elem_type, size=None)
+            count = self._require_value(node.children[0])
+            return self.builder.array_alloc(count, array_type)
+
+        if name == "fs_rt_array_copy":
+            dst = self._require_value(node.children[0])
+            src = self._require_value(node.children[1])
+            count = self._require_value(node.children[2])
+            self.builder.array_copy(dst, src, count)
+            return None
+
+        if name == "fs_rt_hash":
+            type_args = list(getattr(node, "type_args", []) or [])
+            if len(type_args) != 1:
+                raise FIRConversionError(
+                    "fs_rt_hash<K>() requires exactly one type argument", node
+                )
+            key = self._require_value(node.children[0])
+            call = self.builder.call(name, [key], ["borrow"], make_simple("uint64"))
+            if call is not None:
+                call.instruction.metadata["type_args"] = type_args
+            return call
+
         base_name = name.split("<")[0] if "<" in name else name
         if base_name in self.class_categories:
             return self._convert_construction(node, name, base_name)
@@ -2172,24 +2748,77 @@ class ASTToFIRConverter:
             yield_type_str = getattr(gen_def, "yield_type", gen_def.return_type or "int32")
             gen_type = GeneratorType(self._fir_type(yield_type_str))
             args = [self._convert_expression(arg) for arg in node.children]
-            return self.builder.gen_new(name, args, gen_type)
+            gen_value = self.builder.gen_new(name, args, gen_type)
+            type_params = list(getattr(gen_def, "type_params", []) or [])
+            if type_params and gen_value is not None:
+                type_args = self._infer_generator_type_args(gen_def, type_params, node)
+                if type_args:
+                    gen_value.instruction.metadata["type_args"] = type_args
+            return gen_value
 
-        args = [self._convert_expression(arg) for arg in node.children]
-        return_type_str = self._expr_type(node)
-        return_type = self._fir_type(return_type_str) if return_type_str != "void" else None
+        type_args = list(getattr(node, "type_args", []) or [])
+        if not type_args and name in self.generic_functions:
+            type_args = self._infer_type_args(name, node)
+
+        # Determine each positional argument's declared parameter type
+        # (substituted for this call's concrete type_args) up front, same
+        # rationale as _convert_construction: a bare `null` argument needs
+        # it to resolve to the right concrete type, and a nullable-scalar
+        # parameter needs a companion has-value argument appended (see
+        # _function_params / _call_arg_hasvals).
+        callee_def = self.function_defs.get(base_name)
+        callee_params: list[ASTNode] = []
+        subst: dict[str, str] = {}
+        if callee_def is not None:
+            callee_params = [c for c in callee_def.children if c.node_type == NodeTypes.PARAMETER]
+            callee_generic_params = list(getattr(callee_def, "type_params", []) or [])
+            subst = dict(zip(callee_generic_params, type_args)) if type_args else {}
+
+        args: list[Value] = []
+        for i, arg_node in enumerate(node.children):
+            expected: Optional[str] = None
+            if i < len(callee_params):
+                p = callee_params[i]
+                pt = subst.get(p.var_type or "int32", p.var_type or "int32")
+                if getattr(p, "is_nullable", False):
+                    pt = f"{pt}?"
+                expected = pt
+            prev_expected = self._expected_type_str
+            self._expected_type_str = self._expected_type_if_null(arg_node, expected)
+            args.append(self._require_value(arg_node))
+            self._expected_type_str = prev_expected
+
+        hasval_extra = self._call_arg_hasvals(
+            callee_params, node.children, set(getattr(callee_def, "type_params", []) or []) if callee_def else set()
+        )
+
+        nullable_return_base = self._nullable_return_scalar_base(node)
+        if nullable_return_base is not None:
+            # The callee actually returns __NullableReturn<T> (see
+            # _resolve_function_return_type / _convert_function_call_
+            # unwrapped), not the bare nullable-scalar T its source
+            # signature declares -- the Call instruction's result type
+            # must match the callee's *real* FIR return type exactly
+            # (FIRV-T5), substituted for this call's concrete type_args
+            # when the callee is itself generic.
+            concrete_scalar = subst.get(nullable_return_base, nullable_return_base)
+            self._ensure_nullable_return_typedef()
+            return_type: Optional[FIRType] = GenericInstanceType(
+                self._NULLABLE_RETURN_STRUCT, [self._fir_type(concrete_scalar)], category="copyable"
+            )
+        else:
+            return_type_str = self._expr_type(node)
+            return_type = self._fir_type(return_type_str) if return_type_str != "void" else None
 
         modes = self._call_arg_modes(name, node)
         for arg_node, mode in zip(node.children, modes):
             if mode == "own" and arg_node.node_type == NodeTypes.IDENTIFIER:
                 self._mark_owned_identifier_moved(arg_node.name)
-        call = self.builder.call(name, args, modes, return_type)
+        call = self.builder.call(name, args + hasval_extra, modes + ["own"] * len(hasval_extra), return_type)
 
         call_inst = call.instruction if call is not None else self.builder.current_block.instructions[-1]
         if name in INTRINSIC_FUNCTIONS:
             call_inst.metadata["intrinsic"] = True
-        type_args = list(getattr(node, "type_args", []) or [])
-        if not type_args and name in self.generic_functions:
-            type_args = self._infer_type_args(name, node)
         if type_args:
             call_inst.metadata["type_args"] = type_args
         return call
@@ -2201,7 +2830,7 @@ class ASTToFIRConverter:
         for arg_node in node.children:
             if arg_node.node_type == NodeTypes.IDENTIFIER:
                 self._mark_owned_identifier_moved(arg_node.name)
-        args = [self._require_value(arg) for arg in node.children]
+
         type_args: list[str] = []
         if "<" in full_name and full_name.endswith(">"):
             type_args = self._split_type_args(full_name.split("<", 1)[1][:-1])
@@ -2222,11 +2851,48 @@ class ASTToFIRConverter:
         has_constructor = base_name in self.class_method_names and base_name in self.class_method_names.get(
             base_name, set()
         )
+
+        # Determine each positional constructor argument's declared
+        # parameter type (substituted for this instantiation's concrete
+        # type_args, e.g. Option<T>'s `value: T?` becomes "int32?" for
+        # `Option<int32>(...)`) up front: a bare `null` argument needs it
+        # to resolve to the right concrete type (see _expr_type's
+        # NULL_LITERAL handling), and a nullable-scalar parameter needs a
+        # companion has-value argument appended (see _function_params /
+        # _call_arg_hasvals).
+        ctor_params: list[ASTNode] = []
+        own_generic_params = set(self.class_generic_params.get(base_name, []))
+        if has_constructor:
+            ctor_def = self.class_method_defs.get((base_name, base_name))
+            if ctor_def is not None:
+                ctor_params = [
+                    c
+                    for c in ctor_def.children
+                    if c.node_type == NodeTypes.PARAMETER and c.name != "this"
+                ]
+        subst = dict(zip(self.class_generic_params.get(base_name, []), type_args))
+
+        args: list[Value] = []
+        for i, arg_node in enumerate(node.children):
+            expected: Optional[str] = None
+            if i < len(ctor_params):
+                p = ctor_params[i]
+                pt = subst.get(p.var_type or "int32", p.var_type or "int32")
+                if getattr(p, "is_nullable", False):
+                    pt = f"{pt}?"
+                expected = pt
+            prev_expected = self._expected_type_str
+            self._expected_type_str = self._expected_type_if_null(arg_node, expected)
+            args.append(self._require_value(arg_node))
+            self._expected_type_str = prev_expected
+
+        hasval_extra = self._call_arg_hasvals(ctor_params, node.children, own_generic_params)
+
         if has_constructor:
             call = self.builder.call(
                 f"{base_name}.{base_name}",
-                args,
-                ["own"] * len(args),
+                args + hasval_extra,
+                ["own"] * (len(args) + len(hasval_extra)),
                 result_type,
             )
             if type_args:
@@ -2283,6 +2949,42 @@ class ASTToFIRConverter:
                 mapping[param_type] = arg_type
         return [mapping[tp] for tp in type_params if tp in mapping] if len(mapping) == len(type_params) else []
 
+    def _infer_generator_type_args(
+        self, gen_def: ASTNode, type_params: list[str], call_node: ASTNode
+    ) -> list[str]:
+        """Like _infer_type_args, but for a generic generator function call
+        (e.g. `enumerate<T>(v)`), and additionally unifies a composite
+        generic-class parameter type against the argument's concrete
+        instantiation (e.g. param `Vec<T>` vs. argument type `Vec<int32>` ->
+        T=int32) -- `_infer_type_args` only matches a bare `T`/`T[]` param,
+        which a generator taking a generic-class-typed receiver-like
+        parameter (`&v: Vec<T>`) doesn't fit. Generators aren't registered in
+        self.function_defs/self.generic_functions (only self.generator_defs),
+        so this reads gen_def/type_params directly instead of reusing that
+        registry lookup."""
+        params = [c for c in gen_def.children if c.node_type == NodeTypes.PARAMETER]
+        mapping: dict[str, str] = {}
+        for param, arg in zip(params, call_node.children):
+            param_type = param.var_type or ""
+            arg_type = self._strip_nullable_str(self._expr_type(arg))
+            if getattr(param, "is_array", False) and arg_type.endswith("[]"):
+                arg_type = arg_type[:-2]
+            if param_type in type_params and param_type not in mapping:
+                mapping[param_type] = arg_type
+            elif (
+                "<" in param_type and param_type.endswith(">")
+                and "<" in arg_type and arg_type.endswith(">")
+            ):
+                p_base, p_rest = param_type.split("<", 1)
+                a_base, a_rest = arg_type.split("<", 1)
+                if p_base == a_base:
+                    p_args = self._split_type_args(p_rest[:-1])
+                    a_args = self._split_type_args(a_rest[:-1])
+                    for pt, at in zip(p_args, a_args):
+                        if pt in type_params and pt not in mapping:
+                            mapping[pt] = at
+        return [mapping[tp] for tp in type_params if tp in mapping] if len(mapping) == len(type_params) else []
+
     def _convert_method_call(self, node: ASTNode) -> Optional[Value]:
         object_node = node.children[0]
         object_type_str = self._expr_type(object_node)
@@ -2300,6 +3002,7 @@ class ASTToFIRConverter:
 
         modes = ["own"] * len(args)
         method_def = self._find_method_def(object_type_str, method_name)
+        hasval_extra: list[Value] = []
         if method_def is not None:
             params = [
                 c
@@ -2314,12 +3017,16 @@ class ASTToFIRConverter:
                     )
                 else:
                     modes.append("own")
+            receiver_base = object_type_str.split("<")[0] if "<" in object_type_str else object_type_str
+            hasval_extra = self._call_arg_hasvals(
+                params, node.children[1:], set(self.class_generic_params.get(receiver_base, []))
+            )
 
         method_call = self.builder.method_call(
             receiver,
             method_name,
-            args,
-            modes,
+            args + hasval_extra,
+            modes + ["own"] * len(hasval_extra),
             self._fir_type(return_type_str) if return_type_str != "void" else None,
         )
         if method_call is not None:

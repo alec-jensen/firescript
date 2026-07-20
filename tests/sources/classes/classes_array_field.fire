@@ -1,0 +1,41 @@
+//@ snapshot: fir, flir
+// Unsized array-typed class fields (T[]): construction from an array literal,
+// field element read/write, and destructor-frees-the-buffer (no leak/crash on
+// scope exit). Precursor to std.collections.Vec<T>, which stores its backing
+// buffer the same way.
+
+import @firescript/std.io.println;
+
+fn make_data(arr: int32[]) -> int32[] {
+    return arr;
+}
+
+class Buf {
+    data: int32[];
+
+    fn Buf(&mut this) {
+        this.data = make_data([10, 20, 30]);
+    }
+
+    fn get(&this, i: int32) -> int32 {
+        return this.data[i];
+    }
+
+    fn set(&mut this, i: int32, v: int32) -> void {
+        this.data[i] = v;
+    }
+}
+
+b: Buf = new Buf();
+println(b.get(0));
+println(b.get(1));
+println(b.get(2));
+b.set(1, 99);
+println(b.get(1));
+
+/* EXPECT
+10
+20
+30
+99
+*/

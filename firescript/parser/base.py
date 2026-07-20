@@ -177,6 +177,26 @@ class ParserBase:
         self.generic_functions: dict[str, list[str]] = {}
         # Maps function name -> dict of type param -> constraint
         self.generic_constraints: dict[str, dict[str, str]] = {}
+        # Compiler-magic generic intrinsics with no real firescript function
+        # definition to scan (fs_rt_array_new<T>/fs_rt_array_copy<T>: dynamic
+        # array allocation/copy, gated behind `directive
+        # enable_lowlevel_runtime;`; see ast_to_fir.py's
+        # DIRECTIVE_GATED_INTRINSICS and _convert_function_call's special
+        # case). Pre-registered here (like the hardcoded SyscallResult type
+        # in declarations.py) so the ordinary generic-function-call parsing
+        # path (expressions.py's `name<T>(...)` branch, type_system.py's
+        # FUNCTION_CALL generic-arg checks) accepts them without needing a
+        # matching FUNCTION_DEFINITION AST node.
+        self.generic_functions["fs_rt_array_new"] = ["T"]
+        self.user_functions["fs_rt_array_new"] = "T[]"
+        self.generic_functions["fs_rt_array_copy"] = ["T"]
+        self.user_functions["fs_rt_array_copy"] = "void"
+        # fs_rt_hash<K>(key: K) -> uint64: HashMap<K,V>'s key-hashing
+        # intrinsic, resolved by concrete-K dispatch at FLIR-lowering time
+        # (restricted to a fixed hashable set -- integers, bool, char,
+        # string; see flir/lowering.py's _lower_hash).
+        self.generic_functions["fs_rt_hash"] = ["K"]
+        self.user_functions["fs_rt_hash"] = "uint64"
         # Track monomorphized instances: (func_name, tuple of concrete types) -> mangled name
         self.monomorphized_functions: dict[tuple[str, tuple[str, ...]], str] = {}
         # Track type parameters in current scope (for parsing inside generic functions/classes)
@@ -330,12 +350,10 @@ class ParserBase:
         )
 
     def _validate_return_type(self, parsed: "ParsedType") -> bool:
-        """Return types don't support nullable '?' (not yet supported; only the
-        array suffix is supported). Ownership/borrow modifiers can't appear here
-        at all -- they're not part of TypeExpr's grammar."""
-        if parsed.is_nullable:
-            self.expected_token_error("return type without nullable '?' (not yet supported)", parsed.token)
-            return True
+        """Ownership/borrow modifiers can't appear on a return type at all --
+        they're not part of TypeExpr's grammar. Nullable ('?') return types
+        are allowed; ast_to_fir.py threads them through (see the "Nullable
+        scalars" section there)."""
         return False
 
     def advance(self):

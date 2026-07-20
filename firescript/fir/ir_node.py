@@ -316,6 +316,37 @@ class StoreArrayInst(Instruction):
         return f"storearray {ops}"
 
 
+class ArrayAllocInst(Instruction):
+    """Allocate a zero-initialized `T[]` buffer of a runtime-determined
+    element count. Unlike ArrayLiteralInst (a fixed, compile-time-known
+    element list), `count` is any int32 Value; `result_type` is always an
+    unsized ArrayType (size=None)."""
+
+    opcode = "arrayalloc"
+
+    def __init__(self, count: Value, result_type: FIRType):
+        super().__init__(operands=[count], result_type=result_type)
+
+    def format(self, resolve: Resolver) -> str:
+        return f"arrayalloc.{self.result_type.render()} {resolve(self.operands[0])}"
+
+
+class ArrayCopyInst(Instruction):
+    """Copy `count` elements from `src` into `dst` (raw byte copy, element
+    size resolved at FLIR-lowering time from the concrete element type).
+    Used by dynamic-array growth; does not touch ownership of the copied
+    elements (the copy is the move -- see flir/lowering.py::lower_array_copy)."""
+
+    opcode = "arraycopy"
+
+    def __init__(self, dst: Value, src: Value, count: Value):
+        super().__init__(operands=[dst, src, count])
+
+    def format(self, resolve: Resolver) -> str:
+        ops = ", ".join(resolve(op) for op in self.operands)
+        return f"arraycopy {ops}"
+
+
 # ---------------------------------------------------------------------------
 # Mutable locals (FIR is not SSA; locals are explicit named slots)
 # ---------------------------------------------------------------------------

@@ -1,0 +1,56 @@
+// Nullable *scalar* return values (int32? here): a plain function
+// declared `-> int32?` returns an internal __NullableReturn<T> struct
+// under the hood (see ast_to_fir.py's "Nullable-scalar return values"
+// section) so callers can distinguish "no value" from a legitimately
+// returned zero. Also confirms a side-effecting nullable-scalar-returning
+// call is evaluated exactly once even when both its value and its
+// has-value flag are needed at the call site.
+import @firescript/std.io.println;
+
+fn tryDivide(a: int32, b: int32) -> int32? {
+    if (b == 0) {
+        return null;
+    }
+    return a / b;
+}
+
+fn loggedZero() -> int32? {
+    println("loggedZero called");
+    return 0;
+}
+
+x: int32? = tryDivide(10, 2);
+if (x != null) {
+    println(x);
+} else {
+    println("none");
+}
+
+y: int32? = tryDivide(10, 0);
+if (y != null) {
+    println(y);
+} else {
+    println("none");
+}
+
+z: int32? = tryDivide(0, 5);
+if (z != null) {
+    println(z);
+} else {
+    println("none");
+}
+
+w: int32? = loggedZero();
+if (w != null) {
+    println(w);
+} else {
+    println("none");
+}
+
+/* EXPECT
+5
+none
+0
+loggedZero called
+0
+*/

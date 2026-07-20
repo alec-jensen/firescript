@@ -1,0 +1,36 @@
+// Nullable *scalar* local variables (int32? here): unlike string?/a
+// class?/an array? (already pointer-shaped, so 0 = null is unambiguous), a
+// nullable scalar has no bit pattern reserved for "no value" on its own --
+// the compiler tracks a companion has-value flag alongside the value (see
+// ast_to_fir.py's _nullable_scalar_has_value/_declare_hasval_companion).
+// The key case this locks in: a nullable int32 holding the value 0 must
+// still compare not-equal to null.
+
+import @firescript/std.io.println;
+
+x: int32? = null;
+if (x == null) {
+    println("x is null");
+} else {
+    println("x is not null");
+}
+
+x = 5;
+if (x != null) {
+    println(x);
+}
+
+y: int32? = 0;
+if (y == null) {
+    println("y is null");
+} else {
+    println("y is not null");
+    println(y);
+}
+
+/* EXPECT
+x is null
+5
+y is not null
+0
+*/

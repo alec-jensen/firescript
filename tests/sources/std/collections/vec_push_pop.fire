@@ -1,0 +1,28 @@
+// Vec<T> basic push/pop/length, and growth beyond the initial capacity.
+
+import @firescript/std.collections.Vec;
+import @firescript/std.io.println;
+
+v: Vec<int32> = Vec<int32>();
+println(v.length());
+v.push(10);
+v.push(20);
+v.push(30);
+println(v.length());
+println(v.get(0));
+println(v.get(1));
+println(v.get(2));
+
+n: int32 = v.pop();
+println(n);
+println(v.length());
+
+/* EXPECT
+0
+3
+10
+20
+30
+30
+2
+*/

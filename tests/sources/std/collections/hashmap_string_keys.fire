@@ -1,0 +1,31 @@
+// HashMap<string,int32>: string keys (fs_rt_hash_string), including
+// overwrite-by-equal-key and removal.
+
+import @firescript/std.collections.HashMap;
+import @firescript/std.io.println;
+
+sm: HashMap<string, int32> = HashMap<string, int32>();
+sm.set("alpha", 1);
+sm.set("beta", 2);
+sm.set("gamma", 3);
+println(sm.length());
+println(sm.has("beta"));
+println(sm.get("gamma"));
+
+sm.set("beta", 22);
+println(sm.get("beta"));
+
+removed: int32 = sm.remove("alpha");
+println(removed);
+println(sm.length());
+println(sm.has("alpha"));
+
+/* EXPECT
+3
+true
+3
+22
+1
+2
+false
+*/

@@ -1,0 +1,23 @@
+// Vec<T> growth beyond the initial capacity (doubling from 0 -> 4 -> 8 ->
+// 16 -> 32), enough pushes to force several grow-and-copy cycles.
+
+import @firescript/std.collections.Vec;
+import @firescript/std.io.println;
+
+v: Vec<int32> = Vec<int32>();
+i: int32 = 0;
+while (i < 25) {
+    v.push(i * 2);
+    i = i + 1;
+}
+println(v.length());
+println(v.get(0));
+println(v.get(24));
+println(v.get(12));
+
+/* EXPECT
+25
+0
+48
+24
+*/

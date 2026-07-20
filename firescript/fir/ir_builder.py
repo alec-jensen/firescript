@@ -7,6 +7,8 @@ from typing import Optional
 from fir.ir_module import FIRFunction
 from fir.ir_node import (
     AllocateInst,
+    ArrayAllocInst,
+    ArrayCopyInst,
     ArrayLiteralInst,
     BasicBlock,
     BinaryOpInst,
@@ -87,6 +89,12 @@ class FIRBuilder:
 
     def array_literal(self, elements: list[Value], target_type: FIRType) -> FIRValue:
         return self.emit(ArrayLiteralInst(elements, target_type))
+
+    def array_alloc(self, count: Value, target_type: FIRType) -> FIRValue:
+        return self.emit(ArrayAllocInst(count, target_type))
+
+    def array_copy(self, dst: Value, src: Value, count: Value) -> Optional[FIRValue]:
+        return self.emit(ArrayCopyInst(dst, src, count))
 
     # -- arithmetic / casts ------------------------------------------------
 

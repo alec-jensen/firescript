@@ -77,7 +77,51 @@ self-hosting work is not blocked by missing data structures.
 
 - New module `@firescript/std.collections` — `Vec<T>`, `HashMap<K,V>` (and later `Stack<T>`,
   `Queue<T>`, `Deque<T>`)
+  - `Vec<T>` — **done**: `push`/`pop`/`get`/`set`/`length`/`size`, capacity-doubling growth,
+    correct for both Copyable and Owned element types (owned elements are dropped by the
+    generated destructor before the backing buffer is freed — see the new `@owns_elements`
+    class decorator in `flir/lowering.py`). Built on two new compiler intrinsics private to
+    `std/collections/`, `fs_rt_array_new<T>`/`fs_rt_array_copy<T>`, which allocate/copy a
+    `T[]` buffer of a runtime-determined element count (the "Dynamic arrays (stdlib)"
+    `CLAUDE.md` feature-table entry, now flipped to `[IMPLEMENTED]`).
   - `enumerate` generator for iterating over `Vec<T>` with index/value pairs `Tuple<int32,T>`
+    — **done**. Surfaced (and fixed) a compiler bug where a generic-class-shaped type
+    string with an unresolved nested type argument (e.g. `Tuple<int32, T>`) substituted the
+    outer type but never the type parameters inside it, and a second bug where generic
+    generator functions had no type-argument inference/monomorphization at all.
+  - `HashMap<K,V>` — **done**: `set`/`get`/`has`/`remove`/`length`/`size`, open addressing
+    with tombstones, capacity-doubling growth at a 70% load factor. `K` restricted to a
+    fixed hashable set (integer types, `bool`, `char`, `string`) via a new `fs_rt_hash<K>`
+    compiler intrinsic (dispatched by concrete `K` at FLIR-lowering time, same pattern as
+    `fs_rt_array_new<T>`) — no `Hashable` trait to dispatch through generically until 0.7.0.
+    `get`/`remove` return `V` directly rather than `Option<V>` — not because of a compiler
+    gap any more (see below), just to keep this milestone's changes scoped; switching to
+    `Option<V>` is a viable, purely additive follow-up. Surfaced (and
+    fixed) three more previously-unexercised generic-class bugs: a later type-checking pass
+    only pushed a *method's own* (empty) type parameters into scope, clobbering the
+    *enclosing class's* type parameters for the whole method body, so comparing two values
+    of the class's own type parameter with `==` failed; a generic class method calling
+    *another method on the same instance* didn't monomorphize the callee correctly (method
+    receivers are always typed by bare class name, never `ClassName<Args>`, and lowering
+    assumed otherwise); and `drop()` on a bare generic-type-parameter value that turns out
+    concretely Copyable/primitive tried to heap-free its raw bit pattern instead of no-op'ing
+    (needed for `HashMap<K,V>.set()`'s conditional `drop(key)` on overwrite). Also led directly
+    into full nullable-*scalar* support (locals, class fields, function/method/constructor
+    parameters, and plain-function return types all now carry a real "has a value" tag, not
+    just a zero-lowered `null`) — see the changelog and `Option<T>`/`CopyableOption<T>` note
+    below.
+  - Nullable-*scalar* types (`int32?`, `bool?`, `char?`, and the other fixed-width numeric
+    types) — **done**: a real, separate "has a value" tag alongside the value itself (a
+    companion `bool` binding/field/parameter, added transparently by the compiler), so `null`
+    and a legitimate stored `0`/`false` are always distinguishable. Covers local variables,
+    class fields, function/method/constructor parameters, and (for plain functions) return
+    types (`fn foo() -> int32?`, previously a hard parse error — lifted this milestone). A
+    nullable-scalar return is compiled to an internal `__NullableReturn<T>` struct return,
+    unwrapped transparently at the call site (evaluating the callee at most once, even when
+    both its value and has-value flag are needed). `Option<T>`/`CopyableOption<T>` needed zero
+    source changes to become correct for a primitive `T` — `Option<int32>(0).isSome()` now
+    correctly returns `true`. String/class/array nullables were already unambiguous via the
+    pointer value `0` and are untouched by this.
 - New module `@firescript/std.text` — `StringBuilder`
 - Enhanced `@firescript/std.types` — `Result<T,E>` with `Ok`, `Err` variants and combinators
 - **`@firescript/std.regex`** — full regex matching engine (lexer, parser, NFA/DFA
@@ -93,7 +137,19 @@ self-hosting work is not blocked by missing data structures.
   value-producing forms, tag-dispatched destructors for owned payload data) work across the
   full pipeline. Generic enums (`enum Option<T>`) remain a follow-up.
 - Support `Vec<T>`, `HashMap<K,V>`, `StringBuilder`, and `Result<T,E>` as stdlib modules
-  with appropriate compiler intrinsics where needed
+  with appropriate compiler intrinsics where needed — `Vec<T>` (including `enumerate`) and
+  `HashMap<K,V>` **done**; also unblocked unsized array class fields (previously rejected
+  entirely), added a `fs_rt_hash<K>` intrinsic and multi-field `@owns_elements` support, and
+  fixed a series of narrow, previously-unexercised generic-class/generator bugs both
+  surfaced (method-call return-type substitution for a bare type-parameter return, missing
+  receiver on a method with no explicit `&this`/`this` destroying the object on every call,
+  a generic class's own bare-name Owned/Copyable registration, a generator-loop-variable
+  drop gap for Owned yield types, nested-type-argument substitution inside a compound
+  generic type string, generic generator functions having no type-argument
+  inference/monomorphization at all, class-body type-parameter scoping in the standalone
+  type-checking pass, a generic method calling another method on the same instance, `drop()`
+  on a primitive corrupting the heap, and `null` for a nullable scalar type) — see
+  `docs/changelog.md`'s 0.6.0 Bug Fixes.
 - Implement `@firescript/std.regex` with necessary runtime support
 - Regenerate and freeze goldens for all new features
 
@@ -102,7 +158,10 @@ self-hosting work is not blocked by missing data structures.
 - Comprehensive golden tests for enums and match — **done**: `tests/sources/enums/`,
   `tests/sources/match/`, plus error tests in `tests/sources/invalid/enums/` and
   `tests/sources/invalid/match/`
-- Comprehensive golden tests for Vec, HashMap, StringBuilder operations
+- Comprehensive golden tests for Vec, HashMap, StringBuilder operations — Vec and HashMap
+  **done**: `tests/sources/std/collections/` (push/pop, growth, get/set, an Owned element
+  type; integer keys, string keys, growth/rehashing, an Owned value type with a
+  leak/double-free stress cycle)
 - Golden tests for new string methods
 - Comprehensive golden tests for regex (matching, capture groups, anchors, character
   classes, alternation, quantifiers)

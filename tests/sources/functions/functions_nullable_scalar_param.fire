@@ -1,0 +1,22 @@
+// Nullable *scalar* function parameters (int32? here): a legitimate zero
+// argument must be distinguishable from an omitted (`null`) one -- see
+// ast_to_fir.py's "Nullable scalars" section (_function_params' implicit
+// trailing has-value companion parameter).
+import @firescript/std.io.println;
+
+fn describe(count: int32?) -> string {
+    if (count == null) {
+        return "no count given";
+    }
+    return "count is " + (count as string);
+}
+
+println(describe(null));
+println(describe(0));
+println(describe(5));
+
+/* EXPECT
+no count given
+count is 0
+count is 5
+*/

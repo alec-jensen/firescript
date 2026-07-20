@@ -11,11 +11,13 @@ type CopyableTuple<T, U> copyable {
 }
 
 type Option<T> owned {
-  value: T
+  value: T?
+  value__hasval: bool
 }
 
 type CopyableOption<T> copyable {
-  value: T
+  value: T?
+  value__hasval: bool
 }
 
 function<T> @print(value: &T) -> void {
@@ -76,66 +78,60 @@ function<T, U> @CopyableTuple.CopyableTuple(first: T, second: U) -> CopyableTupl
     ret %5
 }
 
-function<T> @Option.Option(value: T) -> Option {
+function<T> @Option.Option(value: T?, value__hasval: bool) -> Option {
   L0:
     %0 = alloc.Option()
     local this: Option = %0
-    %1 = loadvar.T value
-    %2 = loadvar.Option this
-    storefield %2, "value", %1
+    %1 = loadvar.bool value__hasval
+    %2 = loadvar.T? value
     %3 = loadvar.Option this
-    ret %3
+    storefield %3, "value", %2
+    storefield %3, "value__hasval", %1
+    %4 = loadvar.Option this
+    ret %4
 }
 
-function<T> @Option.isSome(this: Option) -> bool {
+function<T> @Option.isSome(this: &Option) -> bool {
   L0:
     %0 = loadvar.Option this
-    %1 = loadfield.T %0, "value"
-    %2 = nullconst string?
-    %3 = binop "!=", %1, %2
-    %4 = loadvar.Option this
-    drop %4
-    ret %3
+    %1 = loadfield.bool %0, "value__hasval"
+    ret %1
 }
 
-function<T> @Option.isNone(this: Option) -> bool {
+function<T> @Option.isNone(this: &Option) -> bool {
   L0:
     %0 = loadvar.Option this
-    %1 = loadfield.T %0, "value"
-    %2 = nullconst string?
-    %3 = binop "==", %1, %2
-    %4 = loadvar.Option this
-    drop %4
-    ret %3
+    %1 = loadfield.bool %0, "value__hasval"
+    %2 = unop "!", %1
+    ret %2
 }
 
-function<T> @CopyableOption.CopyableOption(value: T) -> CopyableOption {
+function<T> @CopyableOption.CopyableOption(value: T?, value__hasval: bool) -> CopyableOption {
   L0:
     %0 = alloc.CopyableOption()
     local this: CopyableOption = %0
-    %1 = loadvar.T value
-    %2 = loadvar.CopyableOption this
-    storefield %2, "value", %1
+    %1 = loadvar.bool value__hasval
+    %2 = loadvar.T? value
     %3 = loadvar.CopyableOption this
-    ret %3
+    storefield %3, "value", %2
+    storefield %3, "value__hasval", %1
+    %4 = loadvar.CopyableOption this
+    ret %4
 }
 
 function<T> @CopyableOption.isSome(this: CopyableOption) -> bool {
   L0:
     %0 = loadvar.CopyableOption this
-    %1 = loadfield.T %0, "value"
-    %2 = nullconst string?
-    %3 = binop "!=", %1, %2
-    ret %3
+    %1 = loadfield.bool %0, "value__hasval"
+    ret %1
 }
 
 function<T> @CopyableOption.isNone(this: CopyableOption) -> bool {
   L0:
     %0 = loadvar.CopyableOption this
-    %1 = loadfield.T %0, "value"
-    %2 = nullconst string?
-    %3 = binop "==", %1, %2
-    ret %3
+    %1 = loadfield.bool %0, "value__hasval"
+    %2 = unop "!", %1
+    ret %2
 }
 
 function @main() -> void {

@@ -1,0 +1,32 @@
+// Regression: a method declared with no receiver parameter at all (neither
+// `&this`, `&mut this`, nor plain `this`) on a class with an owned field
+// used to have its implicit `this` treated as an ordinary owned parameter,
+// auto-dropped (destroying the object) at the end of the method body. Any
+// further use of the object after such a call would then read freed
+// memory. The implicit receiver now defaults to borrowed, so the object
+// survives repeated calls and further field access.
+
+import @firescript/std.io.println;
+
+class Box {
+    label: string;
+
+    fn Box(&mut this, label: string) {
+        this.label = label;
+    }
+
+    fn describe() -> string {
+        return this.label;
+    }
+}
+
+b: Box = new Box("first");
+println(b.describe());
+println(b.describe());
+println(b.label);
+
+/* EXPECT
+first
+first
+first
+*/

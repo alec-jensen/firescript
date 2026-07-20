@@ -402,6 +402,26 @@ class TypeSystemMixin(StatementsMixin):
                 self._type_check_node(child, symbol_table) for child in node.children
             ]
             self._current_type_params = prev_type_params
+        elif node.node_type == NodeTypes.CLASS_DEFINITION and hasattr(node, 'type_params') and node.type_params:
+            # A generic class's own type parameters (e.g. Vec<T>'s `T`,
+            # HashMap<K,V>'s `K`/`V`) must stay visible while type-checking
+            # every method body in the class, not just the class's own
+            # field/method *signatures* -- this recursive walk runs once,
+            # fully separately from (and after) the live parse-time
+            # _current_type_params tracking in declarations.py's
+            # _parse_class_definition (which correctly scopes the class's
+            # type params during parsing but resets them once the whole
+            # class is done being parsed). Without this, an expression like
+            # `this.val == x` inside a non-generic method of a generic class
+            # -- both operands typed as the bare class type parameter --
+            # failed with "Cannot compare types T and T with '=='" because
+            # `T` wasn't recognized as a type parameter here, only as parsed.
+            prev_type_params = self._current_type_params
+            self._current_type_params = node.type_params.copy()
+            child_types = [
+                self._type_check_node(child, symbol_table) for child in node.children
+            ]
+            self._current_type_params = prev_type_params
         else:
             # First, recursively check children to determine their types
             child_types = [
@@ -425,13 +445,25 @@ class TypeSystemMixin(StatementsMixin):
                             f"Cannot initialize non-nullable variable '{node.name}' with null",
                             node.token,
                         )
-                # General case: types must match
-                elif declared_type != initializer_type:
-                    # Strict: no implicit coercions between numeric families
-                    self.type_error(
-                        f"Type mismatch for variable '{node.name}'. Expected {declared_type}, got {initializer_type}",
-                        node.token,
+                else:
+                    # `declared_type` never carries a "?" (this check
+                    # predates nullable-scalar support and compares the
+                    # bare base type either way); strip a nullable
+                    # initializer's own "?" before comparing so a
+                    # nullable-scalar-returning call (e.g. `x: int32? =
+                    # tryDivide(a, b);`) is accepted the same as a bare
+                    # value would be -- see ast_to_fir.py's "Nullable
+                    # scalars" section for how the "?" is actually used
+                    # downstream.
+                    init_base = (
+                        initializer_type[:-1] if initializer_type.endswith("?") else initializer_type
                     )
+                    if declared_type != init_base:
+                        # Strict: no implicit coercions between numeric families
+                        self.type_error(
+                            f"Type mismatch for variable '{node.name}'. Expected {declared_type}, got {initializer_type}",
+                            node.token,
+                        )
             # Add variable to symbol table for current scope (if not already done by resolve)
             symbol_table[node.name] = (node.var_type, node.is_array, node.is_nullable)
 
@@ -750,9 +782,15 @@ class TypeSystemMixin(StatementsMixin):
                     if generic_return_type:
                         # Create type substitution map
                         type_subst = dict(zip(type_params, node.type_args))
-                        # Substitute return type if it's a type parameter
+                        # Substitute return type if it's a type parameter,
+                        # including a bare type parameter used as an array
+                        # element type (e.g. "T[]", for generic intrinsics
+                        # like fs_rt_array_new<T> that return T[]).
                         if generic_return_type in type_subst:
                             node.return_type = type_subst[generic_return_type]
+                            node_type_str = node.return_type
+                        elif generic_return_type.endswith("[]") and generic_return_type[:-2] in type_subst:
+                            node.return_type = type_subst[generic_return_type[:-2]] + "[]"
                             node_type_str = node.return_type
                         else:
                             node.return_type = generic_return_type
@@ -801,7 +839,14 @@ class TypeSystemMixin(StatementsMixin):
                     )
                 else:
                     for i, (arg_t, (_, exp_t)) in enumerate(zip(child_types, field_order)):
-                        if arg_t != exp_t:
+                        # `null` is not tracked in field_order's type
+                        # strings (they never carry a nullable "?" -- see
+                        # ast_to_fir.py's "Nullable scalars" section for
+                        # where that's actually enforced), so it can't be
+                        # strictly compared here; trust the later FIR-level
+                        # check instead of rejecting a legitimately
+                        # nullable field's null argument.
+                        if arg_t != "null" and arg_t != exp_t:
                             self.invalid_type_error(
                                 f"Constructor '{func_name}' arg {i+1} expected {exp_t}, got {arg_t}",
                                 node.children[i].token if i < len(node.children) else node.token,
@@ -853,7 +898,10 @@ class TypeSystemMixin(StatementsMixin):
                         )
                     else:
                         for i, (arg_t, exp_t) in enumerate(zip(arg_types, expected_params)):
-                            if arg_t != exp_t:
+                            # See the matching comment on the constructor
+                            # positional-args check above: `null` isn't
+                            # tracked in expected_params' type strings.
+                            if arg_t != "null" and arg_t != exp_t:
                                 self.invalid_type_error(
                                     f"Argument {i+1} for method '{method_name}' expected type {exp_t}, got {arg_t}",
                                     node.children[i+1].token if len(node.children) > i+1 else node.token,
@@ -907,7 +955,9 @@ class TypeSystemMixin(StatementsMixin):
                 )
             else:
                 for i, (arg_t, exp_t) in enumerate(zip(child_types, expected_params)):
-                    if arg_t != exp_t:
+                    # See the matching comment on the constructor
+                    # positional-args check above.
+                    if arg_t != "null" and arg_t != exp_t:
                         self.invalid_type_error(
                             f"Super constructor '{super_class}' arg {i+1} expected {exp_t}, got {arg_t}",
                             node.children[i].token if i < len(node.children) else node.token,
@@ -936,7 +986,9 @@ class TypeSystemMixin(StatementsMixin):
                 )
             else:
                 for i, (arg_t, exp_t) in enumerate(zip(child_types, expected_params)):
-                    if arg_t != exp_t:
+                    # See the matching comment on the constructor
+                    # positional-args check above.
+                    if arg_t != "null" and arg_t != exp_t:
                         self.invalid_type_error(
                             f"Call '{class_name}.{method_name}' arg {i+1} expected {exp_t}, got {arg_t}",
                             node.children[i].token if i < len(node.children) else node.token,
@@ -964,7 +1016,10 @@ class TypeSystemMixin(StatementsMixin):
                 )
             else:
                 for i, (arg_t, exp_t) in enumerate(zip(child_types, expected_params)):
-                    if arg_t != exp_t:
+                    # See the matching comment on the positional-field-
+                    # construction check above: `null` isn't tracked in
+                    # expected_params' type strings.
+                    if arg_t != "null" and arg_t != exp_t:
                         self.invalid_type_error(
                             f"Constructor '{class_name}' arg {i+1} expected {exp_t}, got {arg_t}",
                             node.children[i].token if i < len(node.children) else node.token,
@@ -992,7 +1047,7 @@ class TypeSystemMixin(StatementsMixin):
                 template_fields: dict[str, str] = {}
                 for ch in (self._class_field_nodes.get(obj_type) or []):
                     if ch.node_type == NodeTypes.CLASS_FIELD:
-                        template_fields[ch.name] = ch.var_type or "int32"
+                        template_fields[ch.name] = (ch.var_type or "int32") + ("[]" if ch.is_array else "")
                 if field_name in template_fields:
                     node.return_type = template_fields[field_name]
                     node_type_str = template_fields[field_name]

@@ -1,0 +1,272 @@
+// firescript std.collections library
+//
+// Vec<T>: a dynamically-growable array. Backed by fs_rt_array_new<T>/
+// fs_rt_array_copy<T> (compiler intrinsics -- see firescript/flir/lowering.py
+// lower_array_alloc/lower_array_copy), which allocate/copy a T[] buffer of a
+// runtime-determined element count; ordinary fixed-size arrays can only be
+// sized by a compile-time literal. The @owns_elements decorator tells the
+// generated destructor to drop each live element (when T is itself an owned
+// type) before freeing the backing buffer -- see
+// flir/lowering.py::ensure_destructor/_owns_elements_field/_emit_free_value.
+//
+// get()/enumerate() read an element out by value without shrinking the
+// Vec's tracked length, which is only safe for Copyable-ish T (numeric
+// types, bool, char): for an Owned T, the read aliases the buffer's copy of
+// the pointer, and both the caller's copy and the Vec's own destructor would
+// eventually free the same allocation. firescript has no Owned/Copyable
+// generic constraint yet (planned for 0.7.0) to enforce this at the type
+// level, so it isn't enforced here either -- see docs/reference/std/collections.md.
+// push()/pop() properly transfer ownership (pop shrinks _len before reading)
+// and are safe for any T.
+
+directive enable_lowlevel_runtime;
+directive enable_drops;
+directive enable_process_args;
+
+import @firescript/std.types.Tuple;
+import @firescript/std.types.CopyableTuple;
+
+export @owns_elements("data", "_len")
+class Vec<T> {
+    data: T[];
+    _len: int32;
+    _cap: int32;
+
+    fn Vec(&mut this) {
+        this._len = 0;
+        this._cap = 0;
+        this.data = fs_rt_array_new<T>(0);
+    }
+
+    fn length(&this) -> int32 {
+        return this._len;
+    }
+
+    fn size(&this) -> int32 {
+        return this._len;
+    }
+
+    fn push(&mut this, value: T) -> void {
+        if (this._len == this._cap) {
+            new_cap: int32 = 4;
+            if (this._cap != 0) {
+                new_cap = this._cap * 2;
+            }
+            new_data: T[] = fs_rt_array_new<T>(new_cap);
+            fs_rt_array_copy<T>(new_data, this.data, this._len);
+            drop(this.data);
+            this.data = new_data;
+            this._cap = new_cap;
+        }
+        this.data[this._len] = value;
+        this._len = this._len + 1;
+    }
+
+    fn pop(&mut this) -> T {
+        this._len = this._len - 1;
+        return this.data[this._len];
+    }
+
+    fn get(&this, i: int32) -> T {
+        return this.data[i];
+    }
+
+    fn set(&mut this, i: int32, value: T) -> void {
+        this.data[i] = value;
+    }
+}
+
+export fn enumerate<T>(&v: Vec<T>) -> generator<Tuple<int32, T>> {
+    i: int32 = 0;
+    while (i < v.length()) {
+        yield Tuple<int32, T>(i, v.get(i));
+        i = i + 1;
+    }
+}
+
+// HashMap<K,V>: open-addressing hash table with tombstones (linear
+// probing), modeled on std/internal/alloc.fire's own allocation-registry
+// table (rt_reg_add/rt_reg_remove/rt_reg_grow). `states[i]` is 0 (empty), 1
+// (occupied), or 2 (tombstone); `keys`/`values`/`states` are always sized
+// exactly `_cap` (unlike Vec, where only `0.._len` is logically populated --
+// a hash table's live slots are scattered across the whole capacity, not a
+// contiguous prefix). Both `@owns_elements` decorators pass `states` as a
+// 3rd argument: the generated destructor only frees `keys[i]`/`values[i]`
+// where `states[i] == 1` (occupied), rather than sweeping the whole
+// capacity unconditionally -- a removed/tombstoned slot's stale pointer is
+// deliberately left in place (not nulled) and is simply never visited again
+// by get/has/remove's own probing (which also checks `states[i]`) or by the
+// destructor.
+//
+// fs_rt_hash<K> (a compiler intrinsic resolved by concrete-K dispatch at
+// FLIR-lowering time -- see flir/lowering.py's _lower_hash) restricts K to
+// a fixed hashable set: integer types, bool, char, string. firescript has
+// no Hashable trait to dispatch through generically yet.
+//
+// get(key)/remove(key) are only well-defined once `has(key)` is true --
+// like core array indexing (and Vec<T>.get()), there's no presence check.
+// remove() moves the stored value out and marks the slot a tombstone in the
+// same operation (safe for any V, matching Vec<T>.pop()'s equivalent
+// safety argument); get() reads the value out *without* removing it, which
+// is only safe for Copyable-ish V, same caveat as Vec<T>.get(). Neither
+// returns an Option<V> to signal "not found": Option<V>(null) for a
+// Copyable/primitive V hits a separate, pre-existing representation gap
+// (a nullable scalar's "no value" and its legitimate zero value are
+// indistinguishable today). See docs/reference/std/collections.md.
+
+// firescript has no bitwise operators (no XOR/AND/OR/shift, at either the
+// language or the FLIR/backend level), so this is a plain multiplicative
+// (Bernstein-style) rolling hash rather than a textbook FNV-1a.
+// Exported (though not meant as public API) so the merged-AST dependency
+// walk in imports.py's build_merged_ast includes it whenever this module is
+// imported: it's only ever invoked from Python (flir/lowering.py's
+// _lower_hash, via rt_call), never from a real FUNCTION_CALL AST node the
+// walker's static call-graph scan would see.
+export fn fs_rt_hash_string(&s: string) -> uint64 {
+    addr: uint64 = str_to_addr(s);
+    len: int32 = str_length(s);
+    h: uint64 = 14695981039346656037u64;
+    i: int32 = 0;
+    while (i < len) {
+        b: uint8 = mem_load_u8(addr + (i as uint64));
+        h = (h * 1099511628211u64) + (b as uint64);
+        i = i + 1;
+    }
+    return h;
+}
+
+export @owns_elements("keys", "_cap", "states")
+@owns_elements("values", "_cap", "states")
+class HashMap<K, V> {
+    keys: K[];
+    values: V[];
+    states: uint8[];
+    _cap: int32;
+    _count: int32;
+
+    fn HashMap(&mut this) {
+        this._cap = 8;
+        this._count = 0;
+        this.keys = fs_rt_array_new<K>(8);
+        this.values = fs_rt_array_new<V>(8);
+        this.states = fs_rt_array_new<uint8>(8);
+    }
+
+    fn length(&this) -> int32 {
+        return this._count;
+    }
+
+    fn size(&this) -> int32 {
+        return this._count;
+    }
+
+    // Probes for `key`, returning (slot index, found). When not found, the
+    // index is the first tombstone seen during the probe, or (if none was
+    // seen) the terminating empty slot -- either way, the correct slot to
+    // insert `key` into.
+    fn _probe(&this, &key: K) -> CopyableTuple<int32, bool> {
+        h: uint64 = fs_rt_hash<K>(key);
+        idx: int32 = (h % (this._cap as uint64)) as int32;
+        first_tombstone: int32 = -1;
+        steps: int32 = 0;
+        while (steps < this._cap) {
+            st: uint8 = this.states[idx];
+            if (st == 0u8) {
+                if (first_tombstone != -1) {
+                    return CopyableTuple<int32, bool>(first_tombstone, false);
+                }
+                return CopyableTuple<int32, bool>(idx, false);
+            }
+            if (st == 1u8 && this.keys[idx] == key) {
+                return CopyableTuple<int32, bool>(idx, true);
+            }
+            if (st == 2u8 && first_tombstone == -1) {
+                first_tombstone = idx;
+            }
+            idx = (idx + 1) % this._cap;
+            steps = steps + 1;
+        }
+        return CopyableTuple<int32, bool>(first_tombstone, false);
+    }
+
+    fn _grow(&mut this) -> void {
+        old_cap: int32 = this._cap;
+        new_cap: int32 = old_cap * 2;
+        new_keys: K[] = fs_rt_array_new<K>(new_cap);
+        new_values: V[] = fs_rt_array_new<V>(new_cap);
+        new_states: uint8[] = fs_rt_array_new<uint8>(new_cap);
+
+        i: int32 = 0;
+        while (i < old_cap) {
+            if (this.states[i] == 1u8) {
+                k: K = this.keys[i];
+                v: V = this.values[i];
+                h: uint64 = fs_rt_hash<K>(k);
+                idx: int32 = (h % (new_cap as uint64)) as int32;
+                while (new_states[idx] == 1u8) {
+                    idx = (idx + 1) % new_cap;
+                }
+                new_keys[idx] = k;
+                new_values[idx] = v;
+                new_states[idx] = 1u8;
+            }
+            i = i + 1;
+        }
+
+        drop(this.keys);
+        drop(this.values);
+        drop(this.states);
+        this.keys = new_keys;
+        this.values = new_values;
+        this.states = new_states;
+        this._cap = new_cap;
+    }
+
+    fn set(&mut this, key: K, value: V) -> void {
+        if (this._count * 10 >= this._cap * 7) {
+            this._grow();
+        }
+        found: CopyableTuple<int32, bool> = this._probe(key);
+        idx: int32 = found.first;
+        if (found.second) {
+            drop(this.values[idx]);
+            this.values[idx] = value;
+            drop(key);
+            return;
+        }
+        this.keys[idx] = key;
+        this.values[idx] = value;
+        this.states[idx] = 1u8;
+        this._count = this._count + 1;
+    }
+
+    fn has(&this, key: K) -> bool {
+        found: CopyableTuple<int32, bool> = this._probe(key);
+        drop(key);
+        return found.second;
+    }
+
+    // Calling get()/remove() for a key that isn't present reads whatever
+    // currently occupies the slot _probe would have chosen for an insert: a
+    // still-zero-initialized never-used slot, or (worse) a removed slot's
+    // stale, already-moved-out pointer for an Owned V. Always check has()
+    // first.
+    fn get(&mut this, key: K) -> V {
+        found: CopyableTuple<int32, bool> = this._probe(key);
+        drop(key);
+        idx: int32 = found.first;
+        return this.values[idx];
+    }
+
+    fn remove(&mut this, key: K) -> V {
+        found: CopyableTuple<int32, bool> = this._probe(key);
+        idx: int32 = found.first;
+        if (found.second) {
+            drop(this.keys[idx]);
+            this.states[idx] = 2u8;
+            this._count = this._count - 1;
+        }
+        drop(key);
+        return this.values[idx];
+    }
+}

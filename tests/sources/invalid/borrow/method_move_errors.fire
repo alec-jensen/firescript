@@ -5,7 +5,7 @@ import @firescript/std.io.println;
 class Sink {
     label: string;
 
-    fn take(value: string) -> void {
+    fn take(&mut this, value: string) -> void {
         this.label = value;
     }
 

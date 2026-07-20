@@ -589,6 +589,23 @@ class StatementsMixin(ExpressionsMixin):
                 self.expected_token_error("assignment after field access", self.current_token)
                 self._sync_to_semicolon()
                 return None
+            elif (
+                next_token
+                and next_token.type == "LESS_THAN"
+                and token_type == "IDENTIFIER"
+                and self.current_token.value in self.generic_functions
+            ):
+                # A standalone generic *function* call statement, e.g.
+                # fs_rt_array_copy<int32>(&dst, &src, n); -- parse via the
+                # general expression path, which already handles `name<T>(...)`
+                # (expressions.py's generic-call branch). Deliberately narrow
+                # (registered generic function names only, not generic class
+                # templates like `Pair`): a bare `Pair<...` at statement start
+                # is a malformed-declaration error case with its own existing
+                # diagnostics (see tests/sources/invalid/generics/), which a
+                # broader `next_token.type == "LESS_THAN"` catch-all here
+                # would have swallowed.
+                return self.parse_expression()
             elif next_token and next_token.type == "OPEN_BRACKET":
                 # Could be an array access followed by assignment (arr[0] = ...)
                 # This case needs careful handling. Let's parse it as an expression first.

@@ -1,0 +1,33 @@
+// Vec<T> with an Owned element type (string): push/pop/set correctly
+// transfer ownership (pop shrinks _len before reading, so it never aliases
+// a slot the destructor would also try to free -- see
+// firescript/std/collections/init.fire's header comment). Many
+// construct/populate/drop cycles double as a leak/double-free sanity check
+// for the @owns_elements destructor hook (same technique as
+// tests/sources/enums/enum_owned_payload_drop.fire), which must drop each
+// live string before freeing Vec's own backing buffer.
+
+import @firescript/std.collections.Vec;
+import @firescript/std.io.println;
+
+cycle: int32 = 0;
+while (cycle < 2000) {
+    v: Vec<string> = Vec<string>();
+    v.push("alpha");
+    v.push("beta");
+    v.push("gamma");
+    v.set(1, "replaced");
+    cycle = cycle + 1;
+}
+
+v2: Vec<string> = Vec<string>();
+v2.push("first");
+v2.push("second");
+last: string = v2.pop();
+println(last);
+println(v2.length());
+
+/* EXPECT
+second
+1
+*/

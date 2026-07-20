@@ -1,0 +1,27 @@
+// HashMap<int32,int32> growth: enough inserts (50, starting capacity 8) to
+// force several capacity-doubling rehash cycles, verifying every key
+// remains correctly reachable afterward (collisions resolved via linear
+// probing survive rehashing into a differently-sized table).
+
+import @firescript/std.collections.HashMap;
+import @firescript/std.io.println;
+
+m: HashMap<int32, int32> = HashMap<int32, int32>();
+i: int32 = 0;
+while (i < 50) {
+    m.set(i, i * 10);
+    i = i + 1;
+}
+println(m.length());
+println(m.get(0));
+println(m.get(25));
+println(m.get(49));
+println(m.has(50));
+
+/* EXPECT
+50
+0
+250
+490
+false
+*/

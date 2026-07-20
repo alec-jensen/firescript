@@ -170,7 +170,7 @@ The table below reflects the **current implementation status** of major language
 | Self-hosted toolchain (Python x86-64 assembler + PE writer; no external tools) | [IMPLEMENTED] |
 | firescript-implemented runtime (`std/internal/*.fire`) | [IMPLEMENTED] |
 | Linux / macOS native targets | [PLANNED] |
-| Dynamic arrays (stdlib) | [PLANNED] |
+| Dynamic arrays (stdlib, `std.collections.Vec<T>`) | [IMPLEMENTED] |
 | Built-in `input()` function | Removed in current dev cycle |
 | `enum` declarations, tag-only and named-data-payload variants (`Circle(float64 radius)`) | [IMPLEMENTED] |
 | Generic enums (`enum Option<T>`) | [PLANNED] |

@@ -482,6 +482,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **array_negative_indexing.fire** - Negative index access
 - **array_length_propagation.fire** - Length propagation when an unsized-array local is initialized from another array: from a runtime-length-tracked function parameter (slot metadata) and from a statically-sized array literal (const metadata).
 - **arrays_of_class_instances.fire** - Arrays whose element type is a user class (owned and copyable), forcing element/index/store lowering to resolve a bare class name string through `lower_type_str`'s typedef-lookup and generic-instance branches rather than `lower_type`'s `FIRType`-object path.
+- **array_dynamic_alloc.fire** - `fs_rt_array_new<T>`/`fs_rt_array_copy<T>` (compiler intrinsics gated behind `directive enable_lowlevel_runtime;`, private to `std/collections/`): allocate a `T[]` buffer of a runtime-determined element count, write/read elements, copy into a larger buffer, for `int32` and `string` element types. The primitive `std.collections.Vec<T>` (`tests/sources/std/collections/`) is built on.
 
 ### `functions/`
 - **functions_basic_params.fire** - No/single/multiple parameters, return values
@@ -498,6 +499,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **functions_many_params.fire** - Functions with more than 4 parameters (int, float, and copyable-struct), exercising the Windows x64 calling convention's stack-spill path for the 5th+ argument (only the first 4 are passed in registers)
 - **functions.fire** - Basic function examples (multi-return-type, array param, string concat, void with multiple args — a different set of scenarios from the `functions_*` files above)
 - **functions_sized_array_param.fire** - Fixed-size array parameter type (`int32[N]`), distinct from the unsized `int32[]` form
+- **functions_nullable_scalar_param.fire** - A nullable *scalar* function parameter (`count: int32?`): a legitimate zero argument is distinguishable from an omitted (`null`) one via the implicit trailing has-value companion parameter `_function_params` appends. See `ast_to_fir.py`'s "Nullable scalars" section.
 
 ### `scoping/`
 - **scoping_block_nesting.fire** - Global/block scope, deeply nested blocks, complex nesting across block/if/while
@@ -545,6 +547,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **copyable_local_drop.fire** - A copyable class local going out of scope inside a function body (`copyable_test.fire` only exercises a copy-then-use case at top level). Documents that no `DropInst` is ever emitted for a copyable local (`is_owned()` never treats a copyable class as owned), making `lower_drop`'s `is_copyable_class_str(...)` early-return in `firescript/flir/lowering.py` unreachable dead code.
 - **receiver_mut.fire** - `&this` / `&mut this` borrow receivers on class methods
 - **memory_owned_function_param.fire** - Explicit `owned` keyword on a plain (non-receiver) function parameter
+- **memory_implicit_receiver_borrow.fire** - Regression: a method declared with no receiver parameter at all (found while building `std.collections.Vec<T>`) now correctly defaults its implicit `this` to borrowed instead of owned; the object survives repeated calls instead of being destroyed on the first one (previously affected any such method on a class with an owned field, including `Option<T>.isSome()`/`isNone()`)
 
 ### `classes/`
 - **classes_smoke.fire** - Basic class smoke tests
@@ -562,6 +565,8 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **classes_new_constructor_syntax.fire** - Java-like `new ClassName(args)` constructor syntax, an alternate to the direct `ClassName(args)` form
 - **type_method_call_constructor_form.fire** - Type-qualified `ClassName.methodName(args)` call form resolving to a static method (as opposed to the constructor-via-`ClassName.ClassName(args)` case covered by `classes_explicit_constructor_call.fire`)
 - **classes_owned_this_constructor.fire** - Regression: `owned this` as a constructor receiver (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
+- **classes_array_field.fire** - An unsized array-typed class field (`data: int32[];`): construction (via a value round-tripped through a free function's owned `int32[]` parameter/return, the only way to produce a genuinely unsized-typed array value before `fs_rt_array_new<T>` existed), field element read/write, and destructor-frees-the-buffer (the null-guarded free path, since the field is always owned) on scope exit. Precursor to `std.collections.Vec<T>`, which stores its backing buffer the same way.
+- **classes_nullable_scalar_field.fire** - A nullable *scalar* class field (`balance: int32?;`, not `string?`/a class-typed field, which are already unambiguously null-able via their pointer's 0 value): constructor parameter, field assignment, and a `!= null`/`== null` field read all correctly distinguish "no value" from a stored zero. See `ast_to_fir.py`'s "Nullable scalars" section.
 
 ### `generics/`
 - **generics_basic.fire** - Basic generic functions
@@ -627,6 +632,19 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 
 ### `std/types/`
 - **std_types_test.fire** - `std.types` `Tuple`/`Option` basic usage
+- **option_issome_isnone.fire** - Regression: `Option`/`CopyableOption`'s `isSome()`/`isNone()` resolve correctly through a same-file vs. cross-module generic-method lookup
+- **option_null_vs_zero.fire** - Regression: `Option<int32>`/`CopyableOption<bool>` (a primitive payload type) correctly distinguish `null` from a legitimately-stored `0`/`false`, now that `Option`'s own `value: T?` field gets real nullable-scalar-field compiler support (see `ast_to_fir.py`'s "Nullable scalars" section) with zero changes to `Option`'s own source
+
+### `std/collections/`
+- **vec_push_pop.fire** - `Vec<int32>` basic `push`/`pop`/`get`/`length`
+- **vec_growth.fire** - Enough pushes (25) to force several capacity-doubling grow-and-copy cycles
+- **vec_get_set.fire** - `set()` overwriting an existing element by index
+- **vec_of_strings.fire** - `Vec<string>` (an Owned element type): `push`/`pop`/`set` correctly transfer ownership (`pop` shrinks the tracked length before reading, so it never aliases a slot the destructor would also try to free); 2000 construct/populate/drop cycles double as a leak/double-free sanity check for the `@owns_elements` destructor hook (same technique as `tests/sources/enums/enum_owned_payload_drop.fire`)
+- **vec_enumerate.fire** - `enumerate<T>` generator yielding `Tuple<int32,T>` (index, value) pairs while iterating a `Vec<int32>` via `for`-in. Regression coverage for a compound-generic-type substitution bug (`Tuple<int32, T>`'s nested `T` was never resolved) and a generic-generator type-argument inference gap, both fixed alongside this test — see `docs/changelog.md`'s 0.6.0 Bug Fixes.
+- **hashmap_int_keys.fire** - `HashMap<int32,int32>` basic `set`/`get`/`has`/`remove`, including overwriting an existing key
+- **hashmap_string_keys.fire** - `HashMap<string,int32>` string keys (`fs_rt_hash_string`), including overwrite-by-equal-key and removal
+- **hashmap_growth.fire** - 50 inserts starting from capacity 8 to force several capacity-doubling rehash cycles, verifying every key remains reachable afterward (linear-probing collisions surviving a rehash into a differently-sized table)
+- **hashmap_of_owned_values.fire** - `HashMap<int32,string>` (an Owned value type): `remove()` safely transfers ownership out and tombstones the slot in the same operation, matching `Vec<T>.pop()`'s equivalent safety argument; 1000 construct/populate/remove/drop cycles with both `K` and `V` owned (`HashMap<string,string>`, leaving 2 of 3 entries live each cycle so the destructor's states-guarded sweep is exercised, not just `remove()`'s own drop) double as a leak/double-free sanity check for the `@owns_elements` destructor hook's occupancy-aware sweep
 
 ### `std/syscalls/`
 - **syscall_basic.fire** - Low-level syscall intrinsics (open/read/write/close/etc.)
@@ -634,6 +652,8 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 ### `nullable/`
 - **nullable_basic.fire** - Nullable variables, `== null` / `!= null` checks
 - **nullable_advanced.fire** - Nullable class fields
+- **nullable_scalar_local.fire** - A nullable *scalar* local variable (`int32?`, not `string?`/a class?/an array?, which are already unambiguously null-able via 0): a nullable int32 holding the value `0` must still compare not-equal to `null`, via the compiler-tracked has-value companion binding. See `ast_to_fir.py`'s "Nullable scalars" section.
+- **nullable_scalar_return.fire** - A plain function declared `-> int32?` (a nullable-scalar return type): the callee is actually compiled to return an internal `__NullableReturn<T>` struct (`ast_to_fir.py`'s "Nullable-scalar return values" section), unwrapped transparently at the call site; also confirms a side-effecting nullable-scalar-returning call is evaluated exactly once even when both its value and has-value flag are needed.
 
 ### `integration/`
 Larger multi-feature programs (coding-challenge solutions used as integration-style tests, not focused unit tests):
@@ -646,7 +666,7 @@ Prefer many small, single-behavior `.fire` files over one large multi-assertion 
 
 ## Known-Failing Regression Tests
 
-`tests/sources/known_issues/*.fire` cases are **expected to fail** under the `run` kind right now — they were added to lock in known compiler bugs before a fix lands, per CLAUDE.md's "always add a test that would have failed before the fix" rule, applied here in advance of the fix rather than alongside it. Do not "fix" them by editing the EXPECT block or deleting the case; they should start passing once the underlying bug referenced in each file's header comment is fixed, at which point re-run with `--update`, review the diff, and move the file into its normal feature category. As of this writing the category is empty -- the three prior entries (`Option`/`CopyableOption` `isSome()`/`isNone()` wrong values, and two generic-call FIR->FLIR lowering crashes) were all traced to one root cause in `ast_to_fir.py`'s `_find_method_def()`/`_expr_type()` (methods/calls on a class or function imported from another module could resolve against a stale or unsubstituted generic type instead of the concrete instantiation) and fixed; the regression tests now live at `std/types/option_issome_isnone.fire`, `generics/generic_nested_call.fire`, and `generics/generic_method_if_condition.fire`. Two more entries (`owned this` constructor receivers dropping `this` before the constructor's synthesized return, and aliased-import call sites never being rewritten to the original symbol name) were fixed since; those regression tests now live at `classes/classes_owned_this_constructor.fire` and `imports/imports_symbol_alias.fire`.
+`tests/sources/known_issues/*.fire` cases are **expected to fail** under the `run` kind right now — they were added to lock in known compiler bugs before a fix lands, per CLAUDE.md's "always add a test that would have failed before the fix" rule, applied here in advance of the fix rather than alongside it. Do not "fix" them by editing the EXPECT block or deleting the case; they should start passing once the underlying bug referenced in each file's header comment is fixed, at which point re-run with `--update`, review the diff, and move the file into its normal feature category. The three prior entries (`Option`/`CopyableOption` `isSome()`/`isNone()` wrong values, and two generic-call FIR->FLIR lowering crashes) were all traced to one root cause in `ast_to_fir.py`'s `_find_method_def()`/`_expr_type()` (methods/calls on a class or function imported from another module could resolve against a stale or unsubstituted generic type instead of the concrete instantiation) and fixed; the regression tests now live at `std/types/option_issome_isnone.fire`, `generics/generic_nested_call.fire`, and `generics/generic_method_if_condition.fire`. Three more entries were fixed since: `owned this` constructor receivers dropping `this` before the constructor's synthesized return, and aliased-import call sites never being rewritten to the original symbol name (regression tests now at `classes/classes_owned_this_constructor.fire` and `imports/imports_symbol_alias.fire`); and a generic generator function's compound yield type (e.g. `enumerate<T>`'s `generator<Tuple<int32, T>>`) mis-lowering its per-yield "out" value slot -- traced to `flir/lowering.py`'s `lower_type_str` substituting a compound generic type string's *outer* type but never the type parameters nested inside it, plus generators having no type-argument inference/monomorphization at all (regression test now at `std/collections/vec_enumerate.fire`). As of this writing the category is empty.
 
 This category is specifically for currently-known, not-yet-fixed bugs (expected to fail). Normal regression tests added alongside a fix (per CLAUDE.md's standard "Bug Fix Tests" workflow — a test that would have failed before the fix and passes after) go in their feature's regular category directory, not here.
 

@@ -168,6 +168,8 @@ def _round_half_even(x: Fraction) -> int:
 from fir.ir_module import FIRFunction, FIRModule, TypeDef
 from fir.ir_node import (
     AllocateInst,
+    ArrayAllocInst,
+    ArrayCopyInst,
     ArrayLiteralInst,
     BasicBlock,
     BinaryOpInst,
@@ -461,7 +463,7 @@ class FIRToFLIRLowering:
             return PTR
         if "<" in type_str and type_str.endswith(">"):
             base, args_text = type_str.split("<", 1)
-            args = [a.strip() for a in args_text[:-1].split(",")]
+            args = [self.subst(a.strip(), type_map) for a in args_text[:-1].split(",")]
             struct_name = self.ensure_struct(base, args)
             if base in self.typedefs and self.typedefs[base].category == "copyable":
                 return struct_type(struct_name)
@@ -772,10 +774,30 @@ class FIRToFLIRLowering:
             self.set_val(inst, ctx.emit(ConstInt(str(self._char_code(inst.text)), I8)), ctx)
             return
         if isinstance(inst, NullLiteralInst):
-            self.set_val(inst, ctx.emit(ConstNull()), ctx)
+            # A `null` literal's FIR-level type reflects its context (see
+            # ast_to_fir.py's NULL_LITERAL handling) -- for a pointer-shaped
+            # nullable type (string?, a class, an array) that's `ptr`, and
+            # ConstNull() is correct. For a nullable *scalar* (e.g.
+            # `int32?`, needed by a generic Option<T>/HashMap<K,V> get()
+            # instantiated with a primitive T/V -- previously unexercised,
+            # since every existing Option/nullable use only ever involved a
+            # pointer-shaped T), the value is stored inline with no separate
+            # "has a value" tag, so the best this can do is the type's zero
+            # value -- `null` and a genuine `0` are indistinguishable for a
+            # nullable primitive today. Documented, pre-existing limitation
+            # (not something this fixes): see docs/reference/std/collections.md.
+            lowered_type = self.lower_type(inst.result_type, ctx.type_map)
+            zero = self._zero_value(lowered_type, ctx)
+            self.set_val(inst, zero if zero is not None else ctx.emit(ConstNull()), ctx)
             return
         if isinstance(inst, ArrayLiteralInst):
             self.lower_array_literal(inst, ctx)
+            return
+        if isinstance(inst, ArrayAllocInst):
+            self.lower_array_alloc(inst, ctx)
+            return
+        if isinstance(inst, ArrayCopyInst):
+            self.lower_array_copy(inst, ctx)
             return
         if isinstance(inst, BinaryOpInst):
             self.lower_binary(inst, ctx)
@@ -906,6 +928,44 @@ class FIRToFLIRLowering:
             value = self.val(operand, ctx)
             ctx.emit(Store(elem_type, ptr, i * elem_size, value))
         self.set_val(inst, ptr, ctx)
+
+    def lower_array_alloc(self, inst: ArrayAllocInst, ctx: _FuncCtx) -> None:
+        """Like lower_array_literal, but the element count is a runtime
+        Value rather than a Python-time-known literal list -- the one
+        primitive std.collections.Vec<T> needs that fixed-size arrays
+        can't express (see docs/internal/version_planning.md's 0.6.0
+        dynamic-arrays work)."""
+        array_type = inst.result_type
+        assert isinstance(array_type, ArrayType)
+        elem_str = self.render_concrete(array_type.element_type, ctx.type_map)
+        elem_type = self.lower_type_str(elem_str, ctx.type_map)
+        elem_size = elem_type.size(self.flir)
+        count = self.val(inst.operands[0], ctx)
+        count64 = self._cvt_to(count, I32, I64, ctx)
+        size_const = ctx.emit(ConstInt(str(elem_size), I64))
+        total = ctx.emit(BinOp("mul", I64, count64, size_const, I64))
+        ptr = self.rt_call("fs_rt_alloc_zeroed", [total], PTR, ctx)
+        self.set_val(inst, ptr, ctx)
+
+    def lower_array_copy(self, inst: ArrayCopyInst, ctx: _FuncCtx) -> None:
+        """Raw byte copy of `count` elements from src into dst, element size
+        resolved the same way lower_array_alloc/lower_array_literal do.
+        Used by Vec<T>'s grow path; ownership of the copied elements
+        transfers with the bytes (see fir/ir_node.py::ArrayCopyInst)."""
+        dst_fir, src_fir, count_fir = inst.operands
+        dst = self.val(dst_fir, ctx)
+        src = self.val(src_fir, ctx)
+        count = self.val(count_fir, ctx)
+        dst_type = dst_fir.result_type
+        assert isinstance(dst_type, ArrayType)
+        elem_str = self.render_concrete(dst_type.element_type, ctx.type_map)
+        elem_type = self.lower_type_str(elem_str, ctx.type_map)
+        elem_size = elem_type.size(self.flir)
+        count64 = self._cvt_to(count, I32, I64, ctx)
+        size_const = ctx.emit(ConstInt(str(elem_size), I64))
+        total64 = ctx.emit(BinOp("mul", I64, count64, size_const, I64))
+        total = self._cvt_to(total64, I64, U64, ctx)
+        self.rt_call("fs_rt_mem_copy", [dst, src, total], VOID, ctx)
 
     # -- arithmetic -------------------------------------------------------
 
@@ -1499,6 +1559,52 @@ class FIRToFLIRLowering:
             return self.ensure_enum_destructor(struct_name)
         return self.ensure_destructor(struct_name)
 
+    def _owns_elements_fields(self, type_def) -> dict[str, tuple[str, Optional[str]]]:
+        """Return {array_field_name: (length_field_name, state_field_name_or_None)}
+        for every `@owns_elements(...)` decorator this class carries
+        (parser-validated -- see
+        parser/declarations.py::_validate_owns_elements_decorator). A class
+        may have more than one (HashMap<K,V> needs `keys` and `values`).
+        The optional 3rd positional argument names a parallel `uint8[]`
+        occupancy field; when present, the destructor only frees
+        `array_field[i]` where `state_field[i] == 1` (open-addressing-style
+        scattered live slots) instead of unconditionally sweeping
+        `0..length_field`."""
+        result: dict[str, tuple[str, Optional[str]]] = {}
+        for dec in getattr(type_def, "decorators", None) or []:
+            if dec["name"] == "owns_elements":
+                positional = dec["positional"]
+                array_field, length_field = positional[0], positional[1]
+                state_field = positional[2] if len(positional) == 3 else None
+                result[array_field] = (length_field, state_field)
+        return result
+
+    def _emit_free_value(self, func: FLIRFunction, ctx: "_FuncCtx", value_val, concrete_type_str: str) -> None:
+        """Null-guard and free/recursively-destruct a single owned value.
+        Shared by ensure_destructor's per-field loop and its per-element loop
+        for `@owns_elements`-decorated array fields. Leaves ctx.block
+        positioned at the join block afterward."""
+        null = ctx.emit(ConstNull())
+        non_null = ctx.emit(BinOp("ne", PTR, value_val, null, BOOL))
+        free_block = func.new_block()
+        next_block = func.new_block()
+        ctx.emit(Br(non_null, free_block.id, next_block.id))
+
+        ctx.block = free_block
+        base = concrete_type_str.split("<")[0]
+        td = self.typedefs.get(base)
+        if td is not None and td.category == "owned":
+            inner_struct = self.struct_for_class_str(concrete_type_str)
+            if self._struct_needs_destructor(inner_struct):
+                inner_destroy = self._ensure_destructor_for(inner_struct)
+                ctx.emit(Call(inner_destroy, [value_val], VOID))
+            else:
+                self.rt_call("fs_rt_free", [value_val], VOID, ctx)
+        else:
+            self.rt_call("fs_rt_free", [value_val], VOID, ctx)
+        ctx.emit(Jmp(next_block.id))
+        ctx.block = next_block
+
     def ensure_destructor(self, struct_name: str) -> str:
         """Generate (once) and return the destructor for a concrete class."""
         if struct_name in self.destructors:
@@ -1515,33 +1621,76 @@ class FIRToFLIRLowering:
         ctx.block = block
         ctx.slot_types["self"] = ptr_to(struct_name)
 
+        owns_elements_map = self._owns_elements_fields(type_def)
+
         for (fname, ftype) in self.class_fields_full(type_def):
             concrete = self.subst(self.render_concrete(ftype, type_map), type_map)
             if not self._type_str_is_owned(concrete):
                 continue
             _, lowered_ftype, offset = struct.field(fname)
+
+            if fname in owns_elements_map:
+                length_field, state_field = owns_elements_map[fname]
+                elem_concrete = concrete[:-2]  # strip the "[]" suffix
+                if self._type_str_is_owned(elem_concrete):
+                    elem_type = self.lower_type_str(elem_concrete, ctx.type_map)
+                    elem_size = elem_type.size(self.flir)
+                    _, len_ftype, len_offset = struct.field(length_field)
+                    self_val = ctx.emit(SlotLoad("self", ptr_to(struct_name)))
+                    length = ctx.emit(Load(len_ftype, self_val, len_offset))
+                    self_val2 = ctx.emit(SlotLoad("self", ptr_to(struct_name)))
+                    buffer = ctx.emit(Load(lowered_ftype, self_val2, offset))
+                    states_buffer = None
+                    if state_field is not None:
+                        _, states_ftype, states_offset = struct.field(state_field)
+                        self_val3 = ctx.emit(SlotLoad("self", ptr_to(struct_name)))
+                        states_buffer = ctx.emit(Load(states_ftype, self_val3, states_offset))
+                    i_slot = f"__owns_elements_i_{fname}"
+                    self.ensure_slot(i_slot, I32, ctx)
+                    ctx.emit(SlotStore(i_slot, ctx.emit(ConstInt("0", I32))))
+                    loop_cond = func.new_block()
+                    loop_body = func.new_block()
+                    loop_end = func.new_block()
+                    ctx.emit(Jmp(loop_cond.id))
+
+                    ctx.block = loop_cond
+                    i_val = ctx.emit(SlotLoad(i_slot, I32))
+                    cont = ctx.emit(BinOp("lt", I32, i_val, length, BOOL))
+                    ctx.emit(Br(cont, loop_body.id, loop_end.id))
+
+                    ctx.block = loop_body
+                    i_val2 = ctx.emit(SlotLoad(i_slot, I32))
+                    increment_block = loop_body
+                    if states_buffer is not None:
+                        state_addr = ctx.emit(PtrAdd(states_buffer, i_val2, 1))
+                        state_val = ctx.emit(Load(U8, state_addr, 0))
+                        occupied_const = ctx.emit(ConstInt("1", U8))
+                        is_occupied = ctx.emit(BinOp("eq", U8, state_val, occupied_const, BOOL))
+                        do_free = func.new_block()
+                        skip_free = func.new_block()
+                        ctx.emit(Br(is_occupied, do_free.id, skip_free.id))
+                        ctx.block = do_free
+                        increment_block = skip_free
+
+                    i_val_for_addr = ctx.emit(SlotLoad(i_slot, I32)) if states_buffer is not None else i_val2
+                    addr = ctx.emit(PtrAdd(buffer, i_val_for_addr, elem_size))
+                    elem_val = ctx.emit(Load(elem_type, addr, 0))
+                    self._emit_free_value(func, ctx, elem_val, elem_concrete)
+                    if states_buffer is not None:
+                        ctx.emit(Jmp(increment_block.id))
+                        ctx.block = increment_block
+
+                    i_val3 = ctx.emit(SlotLoad(i_slot, I32))
+                    one = ctx.emit(ConstInt("1", I32))
+                    i_next = ctx.emit(BinOp("add", I32, i_val3, one, I32))
+                    ctx.emit(SlotStore(i_slot, i_next))
+                    ctx.emit(Jmp(loop_cond.id))
+
+                    ctx.block = loop_end
+
             self_val = ctx.emit(SlotLoad("self", ptr_to(struct_name)))
             field_val = ctx.emit(Load(lowered_ftype, self_val, offset))
-            null = ctx.emit(ConstNull())
-            non_null = ctx.emit(BinOp("ne", PTR, field_val, null, BOOL))
-            free_block = func.new_block()
-            next_block = func.new_block()
-            ctx.emit(Br(non_null, free_block.id, next_block.id))
-
-            ctx.block = free_block
-            base = concrete.split("<")[0]
-            td = self.typedefs.get(base)
-            if td is not None and td.category == "owned":
-                inner_struct = self.struct_for_class_str(concrete)
-                if self._struct_needs_destructor(inner_struct):
-                    inner_destroy = self._ensure_destructor_for(inner_struct)
-                    ctx.emit(Call(inner_destroy, [field_val], VOID))
-                else:
-                    self.rt_call("fs_rt_free", [field_val], VOID, ctx)
-            else:
-                self.rt_call("fs_rt_free", [field_val], VOID, ctx)
-            ctx.emit(Jmp(next_block.id))
-            ctx.block = next_block
+            self._emit_free_value(func, ctx, field_val, concrete)
 
         self_final = ctx.emit(SlotLoad("self", ptr_to(struct_name)))
         self.rt_call("fs_rt_free", [self_final], VOID, ctx)
@@ -1637,6 +1786,23 @@ class FIRToFLIRLowering:
             return  # generator frames live in stack slots
         if self.is_copyable_class_str(type_str):
             return  # copyable classes are stack values; nothing to free
+        if not self._type_str_is_owned(type_str):
+            # A primitive scalar (int8/../uint64/bool/char/float32/../128)
+            # -- a stack value with nothing to free, same reasoning as the
+            # is_copyable_class_str check above but for built-in types
+            # rather than a user `copyable class`. Previously fell through
+            # to the unconditional fs_rt_free() call below, which tried to
+            # HeapFree() the raw bit pattern of a non-pointer value --
+            # harmless by luck for a genuinely-Copyable T substituted into
+            # generic code that always calls drop() on a value regardless
+            # of its concrete category (e.g. HashMap<K,V>.set()'s `drop(key)`
+            # on an overwrite, needed only when K is Owned), but a real
+            # heap-corruption bug for any nonzero primitive value. No
+            # existing caller hit this before HashMap<K,V> -- every prior
+            # drop() call site (explicit user code, or preprocessor-inserted
+            # scope-exit drops) only ever targeted a value already known
+            # Owned.
+            return
         value = self.val(operand, ctx)
         base = type_str.split("<")[0]
         td = self.typedefs.get(base)
@@ -1850,6 +2016,12 @@ class FIRToFLIRLowering:
             self.set_val(inst, length, ctx)
             return
 
+        if name == "fs_rt_hash":
+            type_args = [self.subst(t, ctx.type_map) for t in inst.metadata.get("type_args", [])]
+            concrete_k = type_args[0] if type_args else "int32"
+            self.set_val(inst, self._lower_hash(concrete_k, args[0], ctx), ctx)
+            return
+
         # User function (possibly generic).
         type_args = [self.subst(t, ctx.type_map) for t in inst.metadata.get("type_args", [])]
         lowered_name = self.request_function(name, type_args)
@@ -1862,6 +2034,30 @@ class FIRToFLIRLowering:
         result = ctx.emit(Call(lowered_name, final_args, ret_type))
         if result is not None:
             self.set_val(inst, result, ctx)
+
+    _HASHABLE_TYPES = frozenset(
+        {
+            "int8", "int16", "int32", "int64",
+            "uint8", "uint16", "uint32", "uint64",
+            "bool", "char", "string",
+        }
+    )
+
+    def _lower_hash(self, concrete_k: str, key_val: FValue, ctx: _FuncCtx) -> FValue:
+        """fs_rt_hash<K>'s lowering-time dispatch on the concrete key type --
+        HashMap<K,V> is restricted to this fixed hashable set since
+        firescript has no Hashable trait to dispatch through generically
+        (see docs/reference/std/collections.md)."""
+        if concrete_k not in self._HASHABLE_TYPES:
+            raise LoweringError(
+                f"HashMap key type '{concrete_k}' is not hashable "
+                "(supported: integer types, bool, char, string)"
+            )
+        if concrete_k == "string":
+            return self.rt_call("fs_rt_hash_string", [key_val], U64, ctx)
+        widened = self._cvt_to(key_val, key_val.value_type, U64, ctx)
+        const = ctx.emit(ConstInt("2654435761", U64))
+        return ctx.emit(BinOp("mul", U64, widened, const, U64))
 
     def _call_args_with_lengths(
         self,
@@ -1937,6 +2133,19 @@ class FIRToFLIRLowering:
         type_args: list[str] = []
         if "<" in receiver_type and receiver_type.endswith(">"):
             type_args = [a.strip() for a in receiver_type.split("<", 1)[1][:-1].split(",")]
+        elif base in self.typedefs and self.typedefs[base].generic_params:
+            # Bare class name, no explicit type args in the receiver's own
+            # static type string -- this is `this` inside another method of
+            # the SAME generic class (e.g. HashMap<K,V>.set() calling its
+            # own _probe()): a receiver parameter's declared type is just
+            # the bare class name (see declarations.py's synthetic-receiver
+            # injection), never "ClassName<Args>", so the receiver's
+            # implicit type args have to come from the CURRENTLY-lowering
+            # instantiation's own type_map instead of the receiver's type
+            # string. Every existing generic class's methods only ever
+            # called *other* objects' methods (never their own), so this
+            # case was previously unreached.
+            type_args = [ctx.type_map.get(p, p) for p in self.typedefs[base].generic_params]
 
         fir_name = f"{base}.{inst.method}"
         if fir_name not in self.fir_funcs:
@@ -2084,9 +2293,19 @@ class FIRToFLIRLowering:
     def lower_gen_new_local(self, decl: DeclareLocalInst, gen_new: GenNewInst, ctx: _FuncCtx) -> None:
         fir_name = gen_new.generator_ref
         gen_func = self.fir_funcs[fir_name]
-        type_args: list[str] = []  # generators are concrete today
+        # A generic generator function (e.g. `enumerate<T>`) carries its
+        # inferred type arguments as metadata on the GenNewInst itself (see
+        # ast_to_fir.py's generator-call construction) -- substitute the
+        # yield type with *those*, not the calling function's own
+        # ctx.type_map (generally unrelated: the caller usually isn't
+        # generic at all). Using the wrong (or no) substitution here doesn't
+        # error -- it silently mis-sizes/mis-offsets the out-value slot for
+        # any yield type containing an unresolved type parameter, which
+        # reads back as zero/garbage rather than crashing.
+        type_args = list(gen_new.metadata.get("type_args", []))
         lowered_name = self.request_function(fir_name, type_args)
         frame_name = self.gen_frame_name(lowered_name)
+        gen_type_map = dict(zip(gen_func.generic_params, type_args))
 
         slot = decl.name
         ctx.slot_types[slot] = struct_type(frame_name)
@@ -2095,7 +2314,7 @@ class FIRToFLIRLowering:
 
         out_slot = f"{slot}__out"
         yield_type = gen_func.metadata.get("yield_type", "int32")
-        out_type = self.lower_type_str(self.subst(yield_type, ctx.type_map), ctx.type_map)
+        out_type = self.lower_type_str(self.subst(yield_type, gen_type_map), gen_type_map)
         ctx.slot_types[out_slot] = out_type
         ctx.emit(SlotDecl(out_slot, out_type))
 

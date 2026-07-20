@@ -308,6 +308,66 @@ class DeclarationsMixin(TypeSystemMixin):
                     dec["token"],
                 )
 
+    def _validate_owns_elements_decorator(self, class_node: ASTNode, decorators: list[dict]) -> None:
+        """Enforce @owns_elements(array_field, length_field[, state_field])'s
+        contract: a compiler-internal hint (stdlib use only, e.g.
+        std.collections.Vec<T>/HashMap<K,V>) telling the generated
+        destructor that `array_field` is an unsized array field holding up
+        to `length_field` live elements, so owned elements must be dropped
+        before the buffer itself is freed (see
+        flir/lowering.py::ensure_destructor). A class may carry more than
+        one @owns_elements decorator (HashMap<K,V> needs one for `keys` and
+        one for `values`). The optional 3rd argument names a parallel
+        `uint8[]` occupancy field (HashMap-style open addressing, where the
+        live slots are scattered across the whole capacity rather than a
+        contiguous `0..length` prefix like Vec<T>'s): the destructor only
+        frees `array_field[i]` when `state_field[i] == 1` (the hardcoded
+        "occupied" sentinel these classes use). All fields must already be
+        declared on this exact class (not inherited -- generic containers
+        like Vec<T>/HashMap<K,V> don't use inheritance) with the expected
+        shapes."""
+        for dec in decorators:
+            if dec["name"] != "owns_elements":
+                continue
+            normalized = (self.filename or "").replace("\\", "/")
+            if "std/" not in normalized:
+                self.invalid_expression_error(
+                    "@owns_elements may only be used on classes in firescript/std/",
+                    dec["token"],
+                )
+                continue
+            positional = dec["positional"]
+            if len(positional) not in (2, 3):
+                self.invalid_expression_error(
+                    "@owns_elements requires 2 or 3 positional arguments (array field name, length field name[, state field name])",
+                    dec["token"],
+                )
+                continue
+            array_field_name, length_field_name = positional[0], positional[1]
+            fields_by_name = {
+                c.name: c for c in class_node.children if c.node_type == NodeTypes.CLASS_FIELD
+            }
+            array_field = fields_by_name.get(array_field_name)
+            if array_field is None or not array_field.is_array or array_field.array_size is not None:
+                self.invalid_expression_error(
+                    f"@owns_elements: '{array_field_name}' must be an unsized array field ('{array_field_name}: T[]') declared on '{class_node.name}'",
+                    dec["token"],
+                )
+            length_field = fields_by_name.get(length_field_name)
+            if length_field is None or length_field.is_array or length_field.var_type != "int32":
+                self.invalid_expression_error(
+                    f"@owns_elements: '{length_field_name}' must be an int32 field declared on '{class_node.name}'",
+                    dec["token"],
+                )
+            if len(positional) == 3:
+                state_field_name = positional[2]
+                state_field = fields_by_name.get(state_field_name)
+                if state_field is None or not state_field.is_array or state_field.array_size is not None or state_field.var_type != "uint8":
+                    self.invalid_expression_error(
+                        f"@owns_elements: '{state_field_name}' must be an unsized 'uint8[]' field declared on '{class_node.name}'",
+                        dec["token"],
+                    )
+
     def _parse_function_definition(self):
         """Parse: 'fn' name ['<' TypeParamList '>'] '(' ParamList ')' '->' TypeExpr '{' body '}'"""
         fn_tok = self.consume("FN")
@@ -368,6 +428,8 @@ class DeclarationsMixin(TypeSystemMixin):
             self._current_type_params = prev_type_params
             return None
         return_type_value = ret_parsed.base + ("[]" if ret_parsed.is_array else "")
+        if ret_parsed.is_nullable and not ret_parsed.is_array:
+            return_type_value += "?"
         ret_is_array = ret_parsed.is_array
 
         if not (self.current_token and self.current_token.type == "OPEN_BRACE"):
@@ -504,23 +566,30 @@ class DeclarationsMixin(TypeSystemMixin):
                 if self.current_token and self.current_token.type == "SEMICOLON":
                     self.consume("SEMICOLON")
                 continue
-            # Decorators: '@' name(...) immediately preceding a function definition.
+            # Decorators: '@' name(...) immediately preceding a function
+            # definition, or (for compiler-internal stdlib use only --
+            # @owns_elements) a class definition.
             decorators = None
             if self.current_token.type == "AT":
                 decorators = self._parse_decorator_list()
                 if decorators is None:
                     continue
                 # A trailing comment (e.g. a //~ diagnostic annotation) right
-                # after the decorator's ')' must not mask the following 'fn'
-                # -- skip it before checking, same as the top-level loop does
-                # before dispatching on token type.
+                # after the decorator's ')' must not mask the following
+                # 'fn'/'class' -- skip it before checking, same as the
+                # top-level loop does before dispatching on token type.
                 while self.current_token and self.current_token.type in (
                     "SINGLE_LINE_COMMENT",
                     "MULTI_LINE_COMMENT_START",
                 ):
                     self._skip_comment()
-                if not (self.current_token and self.current_token.type == "FN"):
-                    self.invalid_expression_error("Decorators may only precede a function definition", self.current_token)
+                if not (
+                    self.current_token
+                    and self.current_token.type in ("FN", "CLASS", "COPYABLE")
+                ):
+                    self.invalid_expression_error(
+                        "Decorators may only precede a function or class definition", self.current_token
+                    )
                     continue
             # Function definition: 'fn' name(...) -> ReturnType { ... }
             stmt = None
@@ -529,6 +598,17 @@ class DeclarationsMixin(TypeSystemMixin):
                 if stmt is not None and decorators:
                     setattr(stmt, "decorators", decorators)
                     self._validate_builtin_method_decorators(stmt, decorators)
+            elif decorators and self.current_token.type in ("CLASS", "COPYABLE"):
+                stmt = self._parse_class_definition()
+                if stmt is not None:
+                    setattr(stmt, "decorators", decorators)
+                    self._validate_owns_elements_decorator(stmt, decorators)
+                    if getattr(self, "_pending_export", False):
+                        setattr(stmt, "is_exported", True)
+                        self._pending_export = False
+                    stmt.parent = self.ast
+                    self.ast.children.append(stmt)
+                continue
             if stmt is None:
                 stmt = (
                     self._parse_statement()
@@ -1017,6 +1097,8 @@ class DeclarationsMixin(TypeSystemMixin):
                         return None
                     else:
                         return_type_value = ret_parsed.base + ("[]" if ret_parsed.is_array else "")
+                        if ret_parsed.is_nullable and not ret_parsed.is_array:
+                            return_type_value += "?"
                 elif not is_constructor:
                     self.expected_token_error("'->' return type after ')'", self.current_token)
                     return None
@@ -1050,6 +1132,23 @@ class DeclarationsMixin(TypeSystemMixin):
                         False,
                     )
                     setattr(self_param, "is_receiver", True)
+                    # Default an omitted receiver on an Owned class to
+                    # borrowed (read-only), matching every explicit-receiver
+                    # form except plain `owned this` -- without this,
+                    # downstream ownership/drop logic saw an unmarked
+                    # (implicitly owned) parameter and auto-dropped it at the
+                    # end of the method body, silently destroying the
+                    # receiver on every call to any method that omits
+                    # `&this`/`&mut this` on a class whose destructor does
+                    # real work (e.g. Option<T>.isSome(), Vec<T>.length()).
+                    # Copyable classes are exempted: they're stack values
+                    # with no destructor to worry about (dropping one is
+                    # already a no-op, see flir/lowering.py::lower_drop's
+                    # is_copyable_class_str early return), and marking them
+                    # borrowed would wrongly trip `_validate_borrow`'s
+                    # "borrowing is only allowed for Owned types" check.
+                    if not is_copyable:
+                        setattr(self_param, "is_borrowed", True)
                     param_nodes = [self_param, *params]
 
                 method_node = ASTNode(
@@ -1103,8 +1202,8 @@ class DeclarationsMixin(TypeSystemMixin):
                 if self.current_token and self.current_token.type == "SEMICOLON":
                     self.advance()
                 continue
-            if field_parsed.is_array:
-                self.invalid_expression_error("Array fields are not supported for classes", field_parsed.token)
+            if field_parsed.is_array and field_parsed.array_size is not None:
+                self.invalid_expression_error("Fixed-size array fields are not supported for classes", field_parsed.token)
                 while self.current_token and self.current_token.type not in ("SEMICOLON", "CLOSE_BRACE"):
                     self.advance()
                 if self.current_token and self.current_token.type == "SEMICOLON":
@@ -1119,9 +1218,10 @@ class DeclarationsMixin(TypeSystemMixin):
             field_node = ASTNode(
                 NodeTypes.CLASS_FIELD, field_name_tok, field_name_tok.value, [], field_name_tok.index,
                 var_type=field_parsed.base, is_nullable=field_parsed.is_nullable,
+                is_array=field_parsed.is_array, array_size=field_parsed.array_size,
             )
             fields.append(field_node)
-            field_types[field_name_tok.value] = field_parsed.base
+            field_types[field_name_tok.value] = field_parsed.base + ("[]" if field_parsed.is_array else "")
         # consume closing brace if present
         if self.current_token and self.current_token.type == "CLOSE_BRACE":
             self.consume("CLOSE_BRACE")
@@ -1224,6 +1324,18 @@ class DeclarationsMixin(TypeSystemMixin):
             self.user_classes.pop(name_tok.value, None)
             self.user_class_bases.pop(name_tok.value, None)
             self.user_methods.pop(name_tok.value, None)
+            # The template's own Owned/Copyable category is fixed at
+            # declaration (independent of the eventual type arguments), and
+            # is needed immediately for borrow validation on `&this`/`&mut
+            # this` receivers inside the class's own body -- those are typed
+            # with the bare template name, not a concrete "Name<T>" instance
+            # (which only gets registered on demand at first external use,
+            # via _register_generic_class_instance in base.py). Does not
+            # reintroduce the bare name as a usable standalone *type*
+            # (user_types/user_classes above stay cleared); this only feeds
+            # is_owned()/is_copyable() in utils/type_utils.py.
+            from utils.type_utils import register_class
+            register_class(name_tok.value, is_copyable)
         else:
             # Regular (non-generic) class
             # Register class with type_utils

@@ -1,0 +1,19 @@
+// Vec<T>.set() overwriting an existing element by index.
+
+import @firescript/std.collections.Vec;
+import @firescript/std.io.println;
+
+v: Vec<int32> = Vec<int32>();
+v.push(1);
+v.push(2);
+v.push(3);
+v.set(1, 99);
+println(v.get(0));
+println(v.get(1));
+println(v.get(2));
+
+/* EXPECT
+1
+99
+3
+*/

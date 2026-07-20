@@ -1,0 +1,43 @@
+// Nullable *scalar* class fields (int32? here, not string?/a class?, which
+// are already unambiguously null-able via their pointer's 0 value): the
+// constructor parameter, the field assignment, and a null-comparison read
+// of the field must all correctly distinguish "no value" from a stored
+// zero -- see ast_to_fir.py's "Nullable scalars" section.
+import @firescript/std.io.println;
+
+class Account {
+    name: string;
+    balance: int32?;
+
+    fn Account(&mut this, name: string, balance: int32?) {
+        this.name = name;
+        this.balance = balance;
+    }
+
+    fn hasBalance(&this) -> bool {
+        return this.balance != null;
+    }
+}
+
+withNull: Account = new Account("empty", null);
+println(withNull.hasBalance());
+
+withZero: Account = new Account("zeroed", 0);
+println(withZero.hasBalance());
+if (withZero.balance != null) {
+    println(withZero.balance);
+}
+
+withValue: Account = new Account("funded", 100);
+println(withValue.hasBalance());
+if (withValue.balance != null) {
+    println(withValue.balance);
+}
+
+/* EXPECT
+false
+true
+0
+true
+100
+*/

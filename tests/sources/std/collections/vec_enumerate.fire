@@ -1,0 +1,29 @@
+// Vec<T>'s enumerate<T> generator: yields Tuple<int32,T> (index, value)
+// pairs while iterating. get()/enumerate() read elements by value without
+// shrinking the Vec's tracked length -- only safe for Copyable-ish T (see
+// firescript/std/collections/init.fire's header comment), so this test
+// sticks to int32.
+
+import @firescript/std.collections.Vec;
+import @firescript/std.collections.enumerate;
+import @firescript/std.types.Tuple;
+import @firescript/std.io.println;
+
+v: Vec<int32> = Vec<int32>();
+v.push(10);
+v.push(20);
+v.push(30);
+
+for (pair: Tuple<int32, int32> in enumerate(v)) {
+    println(pair.first);
+    println(pair.second);
+}
+
+/* EXPECT
+0
+10
+1
+20
+2
+30
+*/
