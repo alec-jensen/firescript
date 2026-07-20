@@ -1,0 +1,11 @@
+//@ helper
+// Helper module for zero_arg_constructor_field_access_after_bare_call.fire
+// -- exists solely to exercise a cross-module (as opposed to same-file)
+// class import.
+export class Widget {
+    val: int32;
+
+    fn Widget(v: int32) {
+        this.val = v;
+    }
+}

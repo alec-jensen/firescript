@@ -1,0 +1,39 @@
+// Regression test for a known compiler bug: a same-file class's bare
+// `Foo(args)` constructor call is only resolved against its real
+// declared constructor's parameter list when that list happens to match
+// the class's *field* list (count and types) -- parser/type_system.py's
+// "func_name in self.user_types" branch unconditionally re-validates the
+// call against field order instead, as if the class had no explicit
+// constructor at all (the branch meant for that case). Whenever an
+// explicit constructor's params diverge from the fields even slightly,
+// the wrong check fires:
+//   - Zero declared constructor params (this file): "expected 1 args,
+//     got 0" (Foo has exactly one field, so the implicit path expects
+//     one positional field-initializer argument)
+//   - A constructor taking fewer/more params than there are fields:
+//     "expected <field count> args, got <param count>"
+//   - A constructor param whose type differs from the field at the same
+//     position: "arg 1 expected <field type>, got <param type>"
+// `new Foo(args)` avoids this (uses the correct declared-constructor
+// lookup) for a same-file class. Neither form avoids it for a class
+// *imported from another module* with zero declared params, which fails
+// differently -- see zero_arg_constructor_field_access_after_bare_call.fire
+// for a separate, related symptom on such a class. Discovered while
+// designing @firescript/std.text.StringBuilder, which sidesteps all of
+// this by giving its constructor a real parameter that happens to match
+// no field, and always being called cross-module (which routes through
+// the correct constructor lookup regardless of this bug).
+//
+// Expected (correct) behavior once fixed: prints 42.
+import @firescript/std.io.println;
+
+class Foo {
+    val: int32;
+
+    fn Foo() {
+        this.val = 42;
+    }
+}
+
+f: Foo = Foo();
+println(f.val);

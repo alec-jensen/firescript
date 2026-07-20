@@ -1,0 +1,46 @@
+// split(s, delim): splits on every occurrence of delim, including
+// leading/trailing/adjacent empty fields. Returns Vec<string> -- drained
+// with pop() below (LIFO order) rather than get()/enumerate(), which are
+// only safe for a Copyable element type; string is Owned (see
+// firescript/std/collections/init.fire's Vec<T> doc comment).
+
+import @firescript/std.io.println;
+import @firescript/std.text.split;
+import @firescript/std.collections.Vec;
+
+csv: string = "a,bb,ccc";
+parts: Vec<string> = split(csv, ",");
+println(parts.length());
+println(parts.pop());
+println(parts.pop());
+println(parts.pop());
+
+withEmpties: string = ",a,,b,";
+parts2: Vec<string> = split(withEmpties, ",");
+println(parts2.length());
+
+noDelim: string = "hello world";
+parts3: Vec<string> = split(noDelim, "::");
+println(parts3.length());
+println(parts3.pop());
+
+multiChar: string = "a::b::c";
+parts4: Vec<string> = split(multiChar, "::");
+println(parts4.length());
+println(parts4.pop());
+println(parts4.pop());
+println(parts4.pop());
+
+/* EXPECT
+3
+ccc
+bb
+a
+5
+1
+hello world
+3
+c
+b
+a
+*/

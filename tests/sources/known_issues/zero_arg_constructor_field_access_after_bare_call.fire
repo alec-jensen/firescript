@@ -1,0 +1,25 @@
+// Regression test for a known compiler bug, related to (but distinct
+// from) zero_arg_constructor_bare_call_error.fire: constructing an
+// instance of a class *imported from another module* via the bare
+// `ClassName(args)` form (any arg count -- this reproduces with a real
+// constructor argument, ruling out the zero-arg-specific bug in the
+// sibling file) type-checks fine at the construction site, but the
+// resulting variable's type isn't correctly registered for a later raw
+// field access on it:
+//   Field access on non-class type 'Widget'
+// Calling a *method* on the same instance works fine -- this is
+// specific to raw external field access after a cross-module bare
+// construction. Discovered while designing
+// @firescript/std.text.StringBuilder; worked around by never exposing
+// raw field access from outside the class (all state goes through
+// methods, which was already the right API shape regardless).
+//
+// (widget_helper.fire, the sibling module this test imports, exists
+// solely to exercise this cross-module path.)
+//
+// Expected (correct) behavior once fixed: prints 7.
+import @firescript/std.io.println;
+import widget_helper.Widget;
+
+w: Widget = Widget(7);
+println(w.val);

@@ -122,7 +122,21 @@ self-hosting work is not blocked by missing data structures.
     source changes to become correct for a primitive `T` — `Option<int32>(0).isSome()` now
     correctly returns `true`. String/class/array nullables were already unambiguous via the
     pointer value `0` and are untouched by this.
-- New module `@firescript/std.text` — `StringBuilder`
+- New module `@firescript/std.text` — `StringBuilder` — **done**: backed by a `Vec<string>`
+  of fragments rather than a raw growable byte buffer (`std/internal/strings.fire` can't
+  construct a `Vec<T>` itself — internal runtime files carry no import statements), with
+  `append`/`length`/`build`. `build()` drains fragments with `Vec<T>.pop()`, not
+  `get()`/`enumerate()` (unsafe for the Owned `string` element type — see
+  `docs/reference/std/collections.md`). No zero-arg constructor (`StringBuilder("")` starts
+  empty instead) — see the compiler-improvements note below.
+- Extended string methods — **done**: `.indexOf()`, `.substring()`, `.startsWith()`,
+  `.endsWith()`, `.trim()`, `.replace()`, alongside the existing `.length()`/`.upper()`/
+  `.lower()`, all via `@builtin_method` in `std/internal/strings.fire` (`.indexOf()`/
+  `.substring()` decorate the pre-existing `fs_rt_str_index_of`/`fs_rt_str_slice`
+  primitives directly). `split` is the one method from this list that's a plain function
+  (`split(s, delim)`), not a `.split()` dot-method — it needs to return `Vec<string>`, and
+  `@builtin_method` backing functions live in `std/internal/`, which (as above) can't
+  reference `Vec<T>`. Lives in `@firescript/std.text` alongside `StringBuilder`.
 - Enhanced `@firescript/std.types` — `Result<T,E>`/`CopyableResult<T,E>` — **done**: `value: T?`/`error: E?`
   fields (mirrors `Option<T>`'s pattern exactly, including automatic nullable-scalar correctness for a
   primitive `T`/`E`), `isOk()`/`isErr()`. No `Ok`/`Err` static factory constructors and no combinators
@@ -165,6 +179,22 @@ self-hosting work is not blocked by missing data structures.
   `true`/`false`/`null` as a literal prefix (e.g. `false_ok`) failed to parse, since those
   three literal token patterns (unlike every keyword) had no trailing word-boundary — see
   `docs/changelog.md`'s 0.6.0 Bug Fixes and `tests/sources/identifiers/`.
+- Extended string methods and `StringBuilder`/`split` **done** — see the Standard library
+  section above. Fixed another real bug hit while building `StringBuilder`: an owned
+  value moved via a method call through a *field-access* receiver (`this.parts.push(s)`)
+  was never recognized as moved, so it was also auto-dropped at scope exit (FIRV-O2) —
+  `semantic_analyzer.py` and `preprocessor.py` each only resolved a receiver's type for a
+  bare-identifier receiver, and the generic-field case additionally needed the "strip
+  generic type arguments" normalization `ast_to_fir.py` already had — see
+  `docs/changelog.md`'s 0.6.0 Bug Fixes and
+  `tests/sources/memory/memory_field_receiver_method_move.fire`. Two more, still-open ones
+  surfaced in the same investigation but were narrow enough to route around rather than
+  fix here: a same-file class's bare `Foo(args)` constructor call only resolves correctly
+  when the declared constructor's params happen to match the field list, and a class
+  imported from another module loses its type for raw field access (not method calls)
+  after a bare-call construction — see
+  `tests/sources/known_issues/zero_arg_constructor_bare_call_error.fire` and
+  `zero_arg_constructor_field_access_after_bare_call.fire`.
 - Implement `@firescript/std.regex` with necessary runtime support
 - Regenerate and freeze goldens for all new features
 
@@ -176,10 +206,13 @@ self-hosting work is not blocked by missing data structures.
 - Comprehensive golden tests for Vec, HashMap, StringBuilder operations — Vec and HashMap
   **done**: `tests/sources/std/collections/` (push/pop, growth, get/set, an Owned element
   type; integer keys, string keys, growth/rehashing, an Owned value type with a
-  leak/double-free stress cycle)
+  leak/double-free stress cycle). StringBuilder **done**:
+  `tests/sources/std/text/stringbuilder_basic.fire`
 - Golden tests for Result/CopyableResult — **done**: `tests/sources/std/types/`
   (`result_isok_iserr.fire`, `result_null_vs_zero.fire`, `result_copyable.fire`)
-- Golden tests for new string methods
+- Golden tests for new string methods — **done**: `tests/sources/strings/`
+  (`strings_index_of_substring.fire`, `strings_starts_ends_with.fire`, `strings_trim.fire`,
+  `strings_replace.fire`) and `tests/sources/std/text/split_basic.fire`
 - Comprehensive golden tests for regex (matching, capture groups, anchors, character
   classes, alternation, quantifiers)
 - Error tests for invalid enum/match usage — **done**

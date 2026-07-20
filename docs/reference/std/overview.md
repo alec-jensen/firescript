@@ -9,8 +9,9 @@ firescript includes a standard library under the `@firescript/std` namespace, pr
 - [Math](math.md): Mathematical functions
 - [Regex](regex.md): Regular-expression matching, anchors, and pattern validation
 - [Command-Line Arguments](cli_args.md): Argument parsing for CLI programs
-- [Types](types.md): Generic container types (`Tuple`, `Option`)
-- [Collections](collections.md): Dynamically-growable arrays (`Vec<T>`)
+- [Types](types.md): Generic container types (`Tuple`, `Option`, `Result`)
+- [Collections](collections.md): Dynamically-growable arrays and hash tables (`Vec<T>`, `HashMap<K,V>`)
+- [Text](text.md): String accumulation and splitting (`StringBuilder`, `split`)
 - Ranges: `range`, `rangeFrom`, and `rangeStep` generators for counting loops (`@firescript/std.ranges`)
 - FCL Lexer: Lexer for parsing firescript config language (FCL) data (`@firescript/std.fcl`)
 

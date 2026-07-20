@@ -1,0 +1,78 @@
+// firescript std.text library
+//
+// StringBuilder: efficient accumulation of many string fragments. Backed
+// by a Vec<string> of fragments rather than a raw growable byte buffer --
+// see docs/reference/std/text.md for why. build() drains the fragment
+// list via Vec<T>.pop() (documented safe for any T, including Owned
+// string) rather than get()/enumerate() (only safe for Copyable T --
+// reading an Owned element out by value aliases the Vec's own copy of the
+// pointer, a double-free once both are eventually dropped).
+//
+// split(): can't be a @builtin_method dot-method like the other string
+// methods (std/internal/strings.fire) since it needs to return
+// Vec<string>, and std/internal/ files carry no import statements -- Vec
+// lives in std/collections, a normal importable module. Implemented here
+// instead, in terms of the already-public string methods.
+
+import @firescript/std.collections.Vec;
+
+export class StringBuilder {
+    parts: Vec<string>;
+    _len: int32;
+
+    // Takes an initial fragment (pass "" to start empty) rather than a
+    // zero-arg constructor -- see tests/sources/known_issues/ for why a
+    // bare zero-arg constructor isn't reliable yet for a non-generic
+    // class imported from another module. Pushed unconditionally rather
+    // than only when non-empty -- an empty fragment is harmless for
+    // build()'s later drain, and it keeps the constructor to a single
+    // straight-line path.
+    fn StringBuilder(initial: string) {
+        this.parts = Vec<string>();
+        this._len = initial.length();
+        this.parts.push(initial);
+    }
+
+    fn append(&mut this, s: string) -> void {
+        this._len = this._len + s.length();
+        this.parts.push(s);
+    }
+
+    fn length(&this) -> int32 {
+        return this._len;
+    }
+
+    // Consumes the accumulated fragments, returning the joined string.
+    // Leaves the builder empty (length() reads 0 afterward).
+    fn build(&mut this) -> string {
+        result: string = "";
+        while (this.parts.length() > 0) {
+            piece: string = this.parts.pop();
+            result = piece + result;
+        }
+        this._len = 0;
+        return result;
+    }
+}
+
+export fn split(&s: string, &delim: string) -> Vec<string> {
+    result: Vec<string> = Vec<string>();
+    dlen: int32 = delim.length();
+    slen: int32 = s.length();
+    if (dlen == 0) {
+        result.push(s.substring(0, slen));
+        return result;
+    }
+    start: int32 = 0;
+    while (true) {
+        remaining: string = s.substring(start, slen);
+        rel: int32 = remaining.indexOf(delim);
+        if (rel == -1) {
+            result.push(remaining);
+            return result;
+        }
+        result.push(remaining.substring(0, rel));
+        start = start + rel + dlen;
+    }
+    return result;
+}

@@ -1,0 +1,29 @@
+// StringBuilder: append() accumulates fragments, length() tracks total
+// character count, build() joins and drains them. No zero-arg
+// constructor -- see tests/sources/known_issues/ for why; construct with
+// StringBuilder("") to start empty.
+
+import @firescript/std.io.println;
+import @firescript/std.text.StringBuilder;
+
+sb: StringBuilder = StringBuilder("");
+println(sb.length());
+sb.append("Hello");
+sb.append(", ");
+sb.append("World");
+sb.append("!");
+println(sb.length());
+println(sb.build());
+println(sb.length());
+
+seeded: StringBuilder = StringBuilder("Count: ");
+seeded.append("42");
+println(seeded.build());
+
+/* EXPECT
+0
+13
+Hello, World!
+0
+Count: 42
+*/
