@@ -21,12 +21,12 @@ export class StringBuilder {
     _len: int32;
 
     // Takes an initial fragment (pass "" to start empty) rather than a
-    // zero-arg constructor -- see tests/sources/known_issues/ for why a
-    // bare zero-arg constructor isn't reliable yet for a non-generic
-    // class imported from another module. Pushed unconditionally rather
-    // than only when non-empty -- an empty fragment is harmless for
-    // build()'s later drain, and it keeps the constructor to a single
-    // straight-line path.
+    // zero-arg constructor -- kept as-is even after
+    // tests/sources/classes/classes_zero_arg_constructor_bare_call.fire's
+    // underlying bug was fixed, no functional need to change it. Pushed
+    // unconditionally rather than only when non-empty -- an empty
+    // fragment is harmless for build()'s later drain, and it keeps the
+    // constructor to a single straight-line path.
     fn StringBuilder(initial: string) {
         this.parts = Vec<string>();
         this._len = initial.length();

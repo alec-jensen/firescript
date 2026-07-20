@@ -965,11 +965,42 @@ class ASTToFIRConverter:
             return "void"
 
         if node.node_type == NodeTypes.TYPE_METHOD_CALL:
+            class_name = getattr(node, "class_name", "")
+            # class_name is "Box" (Box.make(5)) or "Box<int32>"
+            # (Box<int32>.make(5), explicit type arguments already
+            # resolved by the parser) -- base_name is what class_generic_
+            # params/_find_method_def key on either way.
+            base_name = class_name.split("<", 1)[0] if "<" in class_name else class_name
+            method_def = self._find_method_def(base_name, node.name)
+            if method_def is not None and self.class_generic_params.get(base_name):
+                # A static method on a generic class template (e.g.
+                # `Box.make(5)` for `class Box<T>`): node.return_type (set
+                # by parser/type_system.py's TYPE_METHOD_CALL validation)
+                # is the *unsubstituted* template return type ("T" or
+                # "Box<T>"), same gap the METHOD_CALL branch above already
+                # handles for an instance method's return type -- resolve
+                # this call's concrete type arguments (explicit from
+                # class_name if present, else inferred from argument
+                # types) and substitute.
+                if "<" in class_name:
+                    type_args = self._split_type_args(class_name.split("<", 1)[1][:-1])
+                else:
+                    type_args = self._infer_class_method_type_args(base_name, method_def, node)
+                ret = method_def.return_type or "void"
+                if type_args:
+                    subst = dict(zip(self.class_generic_params.get(base_name, []), type_args))
+                    if ret in subst:
+                        return subst[ret]
+                    if ret.endswith("[]") and ret[:-2] in subst:
+                        return subst[ret[:-2]] + "[]"
+                    if "<" in ret and ret.endswith(">"):
+                        base, args_text = ret.split("<", 1)
+                        inner = [subst.get(a, a) for a in self._split_type_args(args_text[:-1])]
+                        return f"{base}<{', '.join(inner)}>"
+                return ret
             annotated = getattr(node, "return_type", None)
             if annotated:
                 return annotated
-            class_name = getattr(node, "class_name", "")
-            method_def = self._find_method_def(class_name, node.name)
             if method_def is not None:
                 return method_def.return_type or "void"
             return "void"
@@ -1036,6 +1067,40 @@ class ASTToFIRConverter:
                 return method
             current = self.class_bases.get(current)
         return None
+
+    def _infer_class_method_type_args(
+        self, class_name: str, method_def: ASTNode, call_node: ASTNode
+    ) -> list[str]:
+        """Infer a generic class's type arguments from a static method
+        call's argument types (e.g. `Box.make(5)` for `class Box<T>` with
+        `static fn make(v: T) -> Box<T>` infers T=int32), mirroring
+        parser/type_system.py's _infer_generic_type_args for a generic
+        *function* call -- there's no receiver instance to read concrete
+        type arguments from, unlike an ordinary instance method call.
+        Returns [] if any type parameter can't be inferred. Only called
+        for the inferred-type-arguments call form (`Box.make(...)`) --
+        the explicit form (`Box<int32>.make(...)`) carries its type
+        arguments directly on class_name instead (see the TYPE_METHOD_CALL
+        branches in _expr_type and _convert_expression, which check for
+        "<" in class_name before calling this)."""
+        type_params = self.class_generic_params.get(class_name, [])
+        if not type_params:
+            return []
+        params = [c for c in method_def.children if c.node_type == NodeTypes.PARAMETER and not getattr(c, "is_receiver", False)]
+        type_map: dict[str, str] = {}
+        for param, arg_node in zip(params, call_node.children):
+            param_type = param.var_type or ""
+            if param_type not in type_params:
+                continue
+            arg_type = self._expr_type(arg_node) or ""
+            if getattr(param, "is_array", False) and arg_type.endswith("[]"):
+                arg_type = arg_type[:-2]
+            if param_type in type_map and type_map[param_type] != arg_type:
+                return []
+            type_map[param_type] = arg_type
+        if any(tp not in type_map for tp in type_params):
+            return []
+        return [type_map[tp] for tp in type_params]
 
     def _all_class_fields(self, class_name: str) -> list[tuple[str, str]]:
         """Fields of a class including inherited base-class fields."""
@@ -2422,14 +2487,34 @@ class ASTToFIRConverter:
 
         if node_type == NodeTypes.TYPE_METHOD_CALL:
             class_name = getattr(node, "class_name", "")
+            # class_name is "Box" (Box.make(5)) or "Box<int32>"
+            # (Box<int32>.make(5)) -- the FIR function is always compiled
+            # once under the bare template name (_convert_method_body
+            # names it f"{class_name}.{method}" using the class's own
+            # declared name, never a composite instantiation), so the call
+            # target must use base_name; type_args (explicit from
+            # class_name if present, else inferred from argument types)
+            # separately tell FLIR lowering's monomorphization dispatch
+            # which concrete instantiation to compile/call.
+            base_name = class_name.split("<", 1)[0] if "<" in class_name else class_name
+            method_def = self._find_method_def(base_name, node.name)
+            type_args: list[str] = []
+            if method_def is not None and self.class_generic_params.get(base_name):
+                if "<" in class_name:
+                    type_args = self._split_type_args(class_name.split("<", 1)[1][:-1])
+                else:
+                    type_args = self._infer_class_method_type_args(base_name, method_def, node)
             args = [self._convert_expression(arg) for arg in node.children]
             return_type_str = self._expr_type(node)
-            return self.builder.call(
-                f"{class_name}.{node.name}",
+            call = self.builder.call(
+                f"{base_name}.{node.name}",
                 args,
                 ["own"] * len(args),
                 self._fir_type(return_type_str) if return_type_str != "void" else None,
             )
+            if call is not None and type_args:
+                call.instruction.metadata["type_args"] = type_args
+            return call
 
         if node_type == NodeTypes.CONSTRUCTOR_CALL:
             full_name = node.name

@@ -318,8 +318,22 @@ class ExpressionsMixin(ParserBase):
                 setattr(node, "class_name", token.value)
                 node.return_type = token.value
                 return self._parse_postfix_cast(node)
-            # Special-case: type-level method call like Type.method(...)
-            if token.value in self.user_types and self.current_token and self.current_token.type == "DOT":
+            # Special-case: type-level method call like Type.method(...).
+            # A generic class's bare template name (e.g. "Box" for
+            # `class Box<T>`) is deliberately absent from self.user_types
+            # (declarations.py registers it as a generic_class_templates
+            # entry instead, discarding any user_types registration) --
+            # without also checking generic_class_templates here, `Box.
+            # make(5)` (no explicit type arguments) fell through to being
+            # parsed as an ordinary postfix method call on an IDENTIFIER
+            # named "Box", crashing FIR conversion downstream ("'Box' has
+            # no dominating parameter, DeclareLocal, or global constant" --
+            # the bare class name lowered as a variable load).
+            if (
+                (token.value in self.user_types or token.value in self.generic_class_templates)
+                and self.current_token
+                and self.current_token.type == "DOT"
+            ):
                 self.consume("DOT")
                 method_name = self.consume("IDENTIFIER")
                 if not method_name:
@@ -415,9 +429,34 @@ class ExpressionsMixin(ParserBase):
                         type_args = self._parse_type_arg_list()
                         if type_args is None:
                             break
-                        
+
                         composite_name = self._register_generic_class_instance(token.value, type_args)
-                        
+
+                        # Explicit-type-argument static method call:
+                        # Box<int32>.make(5) -- as opposed to the
+                        # constructor-call form immediately below
+                        # (Box<int32>(5)). class_name carries the already-
+                        # resolved composite instantiation, so
+                        # type_system.py/ast_to_fir.py use these type_args
+                        # directly instead of inferring them from arguments
+                        # (as they must for the no-type-args form,
+                        # Box.make(5), parsed via parse_primary's
+                        # user_types/generic_class_templates special case).
+                        if self.current_token and self.current_token.type == "DOT":
+                            self.consume("DOT")
+                            method_name = self.consume("IDENTIFIER")
+                            if not method_name:
+                                self.expected_token_error("method name after type '.'", self.current_token)
+                                return None
+                            if not self.consume("OPEN_PAREN"):
+                                self.expected_token_error("'(' after type method name", self.current_token)
+                                return None
+                            arguments = self._parse_argument_list()
+                            node = ASTNode(NodeTypes.TYPE_METHOD_CALL, method_name, method_name.value, arguments, method_name.index)
+                            setattr(node, "class_name", composite_name)
+                            node.type_args = type_args
+                            continue
+
                         # Now parse constructor argument list
                         if not (self.current_token and self.current_token.type == "OPEN_PAREN"):
                             self.expected_token_error("'(' after generic class type arguments", self.current_token)

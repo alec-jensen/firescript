@@ -346,6 +346,33 @@ class TypeSystemMixin(StatementsMixin):
         
         return inferred_types
 
+    def _generic_template_method_sig(self, class_name: str, method_name: str) -> Optional[dict]:
+        """Look up a method's signature directly on a generic class
+        template's own AST node (self.generic_class_templates), computing
+        the same {"return", "params", "is_static"} shape declarations.py
+        registers into self.user_methods for a concrete (non-generic)
+        class -- generic templates deliberately have no user_methods entry
+        (see declarations.py's generic-class-registration comment), so
+        NodeTypes.TYPE_METHOD_CALL validation needs this fallback for a
+        static method called on the bare template name (e.g. `Box.make(5)`
+        for `class Box<T>`)."""
+        template = self.generic_class_templates.get(class_name)
+        if template is None:
+            return None
+        for member in template.children or []:
+            if member.node_type != NodeTypes.CLASS_METHOD_DEFINITION or member.name != method_name:
+                continue
+            param_nodes = [p for p in member.children[:-1] if p.node_type == NodeTypes.PARAMETER]
+            effective_params = (
+                param_nodes[1:] if (param_nodes and param_nodes[0].name == "this") else param_nodes
+            )
+            return {
+                "return": member.return_type,
+                "params": [p.var_type for p in effective_params],
+                "is_static": bool(getattr(member, "is_static", False)),
+            }
+        return None
+
     def _dispatch_builtin_method(
         self,
         node: ASTNode,
@@ -995,23 +1022,48 @@ class TypeSystemMixin(StatementsMixin):
         elif node.node_type == NodeTypes.TYPE_METHOD_CALL:
             class_name = getattr(node, "class_name", None)
             method_name = node.name
-            if not class_name or class_name not in self.user_methods or method_name not in self.user_methods[class_name]:
+            # class_name is either a plain class ("Widget"), a generic
+            # template's bare name ("Box", from the no-type-args call form
+            # Box.make(5)), or an explicit composite instantiation
+            # ("Box<int32>", from Box<int32>.make(5) -- base_class_name
+            # strips it to "Box" for the template/method lookup, same as
+            # ast_to_fir.py's _find_method_def already does for receivers).
+            base_class_name = class_name.split("<", 1)[0] if class_name and "<" in class_name else class_name
+            explicit_type_args = list(getattr(node, "type_args", []) or [])
+            sig = None
+            if base_class_name and base_class_name in self.user_methods:
+                sig = self.user_methods[base_class_name].get(method_name)
+            is_generic_template = False
+            if sig is None and base_class_name and base_class_name in self.generic_class_templates:
+                # A generic class's bare template name is deliberately
+                # absent from self.user_methods (declarations.py registers
+                # it under generic_class_templates instead, popping any
+                # user_methods entry) -- look the method up directly on the
+                # template's own AST node, computing the same signature
+                # shape declarations.py would have registered.
+                sig = self._generic_template_method_sig(base_class_name, method_name)
+                is_generic_template = sig is not None
+            if sig is None:
                 self.invalid_type_error(f"Unknown constructor or static method '{method_name}' for type '{class_name}'", node.token)
                 return None
-            sig = self.user_methods[class_name][method_name]
             is_static = bool(sig.get("is_static", False))
-            is_constructor = sig.get("return") == class_name
+            is_constructor = sig.get("return") == base_class_name
             if not is_static and not is_constructor:
                 self.invalid_type_error(f"'{method_name}' is neither a static method nor a constructor for type '{class_name}'", node.token)
                 return None
-            # Validate args
+            # Validate args. For a generic template, a param/return type may
+            # itself be a bare type parameter (e.g. "T") -- type inference
+            # and substitution happen later, in ast_to_fir.py (mirroring how
+            # a generic class's constructor is already handled), so skip
+            # the exact-type-match check here rather than rejecting a
+            # legitimately-substitutable argument.
             expected_params = sig.get("params", [])
             if len(child_types) != len(expected_params):
                 self.invalid_type_error(
                     f"Call '{class_name}.{method_name}' expected {len(expected_params)} args, got {len(child_types)}",
                     node.token,
                 )
-            else:
+            elif not is_generic_template:
                 for i, (arg_t, exp_t) in enumerate(zip(child_types, expected_params)):
                     # See the matching comment on the constructor
                     # positional-args check above.
@@ -1021,11 +1073,39 @@ class TypeSystemMixin(StatementsMixin):
                             node.children[i].token if i < len(node.children) else node.token,
                         )
             if is_static:
-                node.return_type = sig.get("return")
-                node_type_str = sig.get("return")
+                ret = sig.get("return")
+                if is_generic_template and ret:
+                    # Substitute the class's type arguments into the
+                    # declared (unsubstituted) return type, e.g.
+                    # "Box<T>" -> "Box<int32>". Prefer the explicit
+                    # arguments from Box<int32>.make(5) when present;
+                    # otherwise infer them from this call's argument types
+                    # (there's no receiver instance to read concrete type
+                    # arguments from, unlike an ordinary instance method
+                    # call -- mirrors _infer_generic_type_args' matching
+                    # for a generic *function* call). ast_to_fir.py's FIR
+                    # conversion performs the equivalent substitution
+                    # again (it can't see this parser-level result), plus
+                    # the monomorphization dispatch this can't do.
+                    type_params = self.generic_class_params.get(base_class_name, [])
+                    if explicit_type_args:
+                        type_map = dict(zip(type_params, explicit_type_args))
+                    else:
+                        type_map = {}
+                        for param_t, arg_t in zip(expected_params, child_types):
+                            if param_t in type_params and arg_t and arg_t != "null":
+                                type_map.setdefault(param_t, arg_t)
+                    if ret in type_map:
+                        ret = type_map[ret]
+                    elif "<" in ret and ret.endswith(">"):
+                        base, args_text = ret.split("<", 1)
+                        inner = [type_map.get(a.strip(), a.strip()) for a in args_text[:-1].split(",")]
+                        ret = f"{base}<{', '.join(inner)}>"
+                node.return_type = ret
+                node_type_str = ret
             else:
-                node.return_type = class_name
-                node_type_str = class_name
+                node.return_type = base_class_name
+                node_type_str = base_class_name
 
             node_type_str = node.return_type
         elif node.node_type == NodeTypes.CONSTRUCTOR_CALL:

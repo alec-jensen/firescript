@@ -1,0 +1,33 @@
+// Regression: a `static fn` on a generic class can now be called with
+// inferred type arguments -- `Box.make(5)` for `class Box<T>` -- rather
+// than crashing AST->FIR conversion with an internal FIR verifier error
+// (FIRV-L1, the bare class name lowering as a variable load instead of a
+// static-call target). A generic class's bare template name is
+// deliberately absent from self.user_types/self.user_methods (it's
+// registered as a generic_class_templates entry instead); the parser's
+// Type.method(...) special case, and type_system.py's TYPE_METHOD_CALL
+// validation, both needed a fallback path for a template rather than a
+// concrete class. ast_to_fir.py infers the class's type arguments from
+// this call's argument types (there's no receiver instance to read
+// concrete type arguments from, unlike an ordinary instance method call)
+// and monomorphizes accordingly.
+import @firescript/std.io.println;
+
+class Box<T> {
+    value: T;
+
+    fn Box(value: T) {
+        this.value = value;
+    }
+
+    static fn make(v: T) -> Box<T> {
+        return Box<T>(v);
+    }
+}
+
+b: Box<int32> = Box.make(5);
+println(b.value);
+
+/* EXPECT
+5
+*/

@@ -1,0 +1,31 @@
+// Regression: a `static fn` on a generic class can now be called with
+// explicit type arguments -- `Box<int32>.make(5)` for `class Box<T>` --
+// rather than a parse error ("Expected '(' after generic class type
+// arguments"): the parser's `Identifier<TypeArgs>` handling only ever
+// expected a constructor call (`Box<int32>(args)`) immediately after the
+// type-argument list, never a `.method(...)` call. The parser now checks
+// for a following `.` and, if found, parses a TYPE_METHOD_CALL carrying
+// the already-resolved composite instantiation ("Box<int32>") as its
+// class_name, which type_system.py/ast_to_fir.py use directly instead of
+// inferring type arguments from the call's arguments (see the sibling
+// inferred-type-arguments regression test).
+import @firescript/std.io.println;
+
+class Box<T> {
+    value: T;
+
+    fn Box(value: T) {
+        this.value = value;
+    }
+
+    static fn make(v: T) -> Box<T> {
+        return Box<T>(v);
+    }
+}
+
+b: Box<int32> = Box<int32>.make(5);
+println(b.value);
+
+/* EXPECT
+5
+*/

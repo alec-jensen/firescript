@@ -141,12 +141,13 @@ self-hosting work is not blocked by missing data structures.
   fields (mirrors `Option<T>`'s pattern exactly, including automatic nullable-scalar correctness for a
   primitive `T`/`E`), `isOk()`/`isErr()`. No `Ok`/`Err` static factory constructors and no combinators
   (`map`, `unwrapOr`, etc.) — while probing the natural `Result.Ok(value)`/`Result.Err(error)` design,
-  discovered static methods on generic classes don't work at all yet: explicit type arguments
-  (`Box<int32>.make(5)`) are a parser error, and inferred type arguments (`Box.make(5)`) crash AST->FIR
-  conversion (FIRV-L1, the bare class name lowers as a variable load instead of a static-call target) —
-  see `tests/sources/known_issues/generic_class_static_method_crash.fire`. `Result`/`CopyableResult` are
-  constructed directly instead (`Result<T,E>(value, error)`, `null` on the unused side), a purely
-  additive follow-up once that compiler gap is fixed.
+  discovered static methods on generic classes didn't work in any form at the time (explicit type
+  arguments, `Box<int32>.make(5)`, were a parser error; inferred type arguments, `Box.make(5)`, crashed
+  AST->FIR conversion). `Result`/`CopyableResult` are constructed directly instead (`Result<T,E>(value,
+  error)`, `null` on the unused side); the underlying compiler gap is now fixed (see
+  `generics/generic_class_static_method_inferred.fire` and `generic_class_static_method_explicit.fire`
+  under Compiler improvements below) but `Result` was kept as direct construction rather than revisited,
+  as adding `Ok`/`Err` factories now would be a purely additive follow-up with no functional need.
 - **`@firescript/std.regex`** — full regex matching engine (lexer, parser, NFA/DFA
   compilation, matching over strings). Required by FCL and by compiler string-processing
   needs. (Existing stub needs real implementation.)
@@ -172,13 +173,22 @@ self-hosting work is not blocked by missing data structures.
   type-argument inference/monomorphization at all, class-body type-parameter scoping in the
   standalone type-checking pass, a generic method calling another method on the same instance,
   `drop()` on a primitive corrupting the heap, and `null` for a nullable scalar type) — see
-  `docs/changelog.md`'s 0.6.0 Bug Fixes. A new, still-open one surfaced while designing
-  `Result<T,E>`: static methods on generic classes don't work in any call form (see
-  `tests/sources/known_issues/generic_class_static_method_crash.fire`). Separately, fixed an
-  unrelated lexer bug hit while writing `Result<T,E>`'s regression tests: identifiers with
-  `true`/`false`/`null` as a literal prefix (e.g. `false_ok`) failed to parse, since those
-  three literal token patterns (unlike every keyword) had no trailing word-boundary — see
-  `docs/changelog.md`'s 0.6.0 Bug Fixes and `tests/sources/identifiers/`.
+  `docs/changelog.md`'s 0.6.0 Bug Fixes. Another one surfaced while designing `Result<T,E>`
+  and later fixed: static methods on generic classes didn't work in any call form. The
+  parser's `Type.method(...)` special case (and its `Identifier<TypeArgs>.method(...)`
+  counterpart) only ever recognized a *concrete* class name, since a generic class's bare
+  template name is deliberately absent from `self.user_types`/`self.user_methods`
+  (registered as a `generic_class_templates` entry instead); `type_system.py`'s
+  `TYPE_METHOD_CALL` validation and `ast_to_fir.py`'s monomorphization needed the
+  equivalent generic-template fallback a constructor call already had, plus type-argument
+  inference from the call's own arguments (there's no receiver instance to read concrete
+  type arguments from) for the no-explicit-type-args form — see
+  `generics/generic_class_static_method_inferred.fire` and
+  `generic_class_static_method_explicit.fire`. Separately, fixed an unrelated lexer bug hit
+  while writing `Result<T,E>`'s regression tests: identifiers with `true`/`false`/`null` as
+  a literal prefix (e.g. `false_ok`) failed to parse, since those three literal token
+  patterns (unlike every keyword) had no trailing word-boundary — see `docs/changelog.md`'s
+  0.6.0 Bug Fixes and `tests/sources/identifiers/`.
 - Extended string methods and `StringBuilder`/`split` **done** — see the Standard library
   section above. Fixed another real bug hit while building `StringBuilder`: an owned
   value moved via a method call through a *field-access* receiver (`this.parts.push(s)`)
@@ -187,14 +197,17 @@ self-hosting work is not blocked by missing data structures.
   bare-identifier receiver, and the generic-field case additionally needed the "strip
   generic type arguments" normalization `ast_to_fir.py` already had — see
   `docs/changelog.md`'s 0.6.0 Bug Fixes and
-  `tests/sources/memory/memory_field_receiver_method_move.fire`. Two more, still-open ones
-  surfaced in the same investigation but were narrow enough to route around rather than
-  fix here: a same-file class's bare `Foo(args)` constructor call only resolves correctly
-  when the declared constructor's params happen to match the field list, and a class
-  imported from another module loses its type for raw field access (not method calls)
-  after a bare-call construction — see
-  `tests/sources/known_issues/zero_arg_constructor_bare_call_error.fire` and
-  `zero_arg_constructor_field_access_after_bare_call.fire`.
+  `tests/sources/memory/memory_field_receiver_method_move.fire`. Two more surfaced in the
+  same investigation, and were also fixed (all `tests/sources/known_issues/` entries from
+  this release are now resolved, with regression tests moved to their normal categories):
+  a same-file class's bare `Foo(args)` constructor call resolved against field order
+  instead of the real declared constructor whenever they diverged (`func_name in
+  self.user_types` in `parser/type_system.py` now checks `self.user_methods` for a real
+  constructor first — see `classes/classes_zero_arg_constructor_bare_call.fire`), and a
+  class imported from another module lost its type for raw field access (not method calls)
+  after a bare-call construction (the deferred-import suppression in `FIELD_ACCESS`
+  handling widened from composite-generic-only to any not-yet-resolved non-primitive type
+  — see `classes/classes_cross_module_bare_construct_field_access.fire`).
 - Implement `@firescript/std.regex` with necessary runtime support
 - Regenerate and freeze goldens for all new features
 

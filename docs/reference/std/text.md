@@ -45,10 +45,9 @@ println(sb.length());  // 0 -- build() drains the builder
   once expecting cumulative content; append more first if you need to keep building.
 
 **Note:** `StringBuilder` has no zero-argument constructor -- pass `""` to start empty
-(`StringBuilder("")`). A bare `ClassName()` constructor call for a class imported from
-another module isn't reliably resolved by the compiler yet; see
-`tests/sources/known_issues/zero_arg_constructor_bare_call_error.fire`. `StringBuilder`'s
-constructor takes a real argument instead, which sidesteps this.
+(`StringBuilder("")`). This predates a fix to bare `ClassName()` constructor-call
+resolution (see `tests/sources/classes/classes_zero_arg_constructor_bare_call.fire`) and
+was kept as-is since there's no functional need to change it.
 
 ### Implementation notes
 
