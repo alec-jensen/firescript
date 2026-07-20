@@ -1651,23 +1651,32 @@ copy: CopyableTuple&lt;float64, float64&gt; = coord;  // copies
 
     fn isSome() -&gt; bool;
     fn isNone() -&gt; bool;
+
+    static fn Some(value: T) -&gt; Option&lt;T&gt;;
+    static fn None() -&gt; Option&lt;T&gt;;
+
+    fn unwrapOr(&amp;mut this, default: T) -&gt; T;
 }
 </code></pre>
 <p><strong>Methods:</strong></p>
 <ul>
 <li><code>isSome()</code>: Returns <code>true</code> if a value is present</li>
 <li><code>isNone()</code>: Returns <code>true</code> if no value is present</li>
+<li><code>Some(value)</code>: Static factory for a present value. Infers <code>T</code> from <code>value</code>, so it works bare (<code>Option.Some(5)</code>).</li>
+<li><code>None()</code>: Static factory for an absent value. Takes no argument to infer <code>T</code> from — use the explicit form, <code>Option&lt;int32&gt;.None()</code>.</li>
+<li><code>unwrapOr(default)</code>: Returns the value if present, else <code>default</code>. <strong>Drains the Option</strong> — extracts the value by nulling out the field, so <code>isSome()</code> reads <code>false</code> immediately afterward. Safe for any <code>T</code>, including Owned types (the same aliasing hazard <code>Vec&lt;T&gt;.get()</code> has for an Owned element is avoided here the way <code>Vec&lt;T&gt;.pop()</code> avoids it — see <a href="../collections/">Collections</a>).</li>
 </ul>
 <p><strong>Example:</strong></p>
-<p>Intended usage (see the known issue above):</p>
 <pre><code class="language-firescript">import @firescript/std.types.Option;
 import @firescript/std.io.println;
 
-maybe_name: Option&lt;string&gt; = Option&lt;string&gt;(&quot;Alice&quot;);
-present: bool = maybe_name.isSome();
-if (present) {
-    println(maybe_name.value);
+maybe_name: Option&lt;string&gt; = Option.Some(&quot;Alice&quot;);
+if (maybe_name.isSome()) {
+    println(maybe_name.unwrapOr(&quot;unknown&quot;));
 }
+
+nothing: Option&lt;string&gt; = Option&lt;string&gt;.None();
+println(nothing.unwrapOr(&quot;fallback&quot;));  // fallback
 </code></pre>
 <p><strong>Note:</strong> <code>Option</code> is an Owned type; construct carefully with move semantics in mind.</p>
 <h2 id="copyableoptiont-implemented"><code>CopyableOption&lt;T&gt;</code> [IMPLEMENTED]<a class="headerlink" href="#copyableoptiont-implemented" title="Permanent link">&para;</a></h2>
@@ -1679,18 +1688,20 @@ if (present) {
 
     fn isSome() -&gt; bool;
     fn isNone() -&gt; bool;
+
+    static fn Some(value: T) -&gt; CopyableOption&lt;T&gt;;
+    static fn None() -&gt; CopyableOption&lt;T&gt;;
+
+    fn unwrapOr(default: T) -&gt; T;
 }
 </code></pre>
+<p><code>unwrapOr</code> here doesn't drain anything — Copyable values are just read, not extracted, so the option is left intact and can be read again.</p>
 <p><strong>Example:</strong></p>
-<p>Intended usage (see the known issue above):</p>
 <pre><code class="language-firescript">import @firescript/std.types.CopyableOption;
 import @firescript/std.io.println;
 
-maybe_count: CopyableOption&lt;int32&gt; = CopyableOption&lt;int32&gt;(5);
-present: bool = maybe_count.isSome();
-if (present) {
-    println(maybe_count.value);
-}
+maybe_count: CopyableOption&lt;int32&gt; = CopyableOption.Some(5);
+println(maybe_count.unwrapOr(0));
 </code></pre>
 <h2 id="resultte-implemented"><code>Result&lt;T,E&gt;</code> [IMPLEMENTED]<a class="headerlink" href="#resultte-implemented" title="Permanent link">&para;</a></h2>
 <p>A value that is either a success (<code>T</code>) or a failure (<code>E</code>). Use this to represent operations that can fail without relying on exceptions or sentinel values.</p>
@@ -1702,28 +1713,32 @@ if (present) {
 
     fn isOk() -&gt; bool;
     fn isErr() -&gt; bool;
+
+    static fn Ok(value: T) -&gt; Result&lt;T, E&gt;;
+    static fn Err(error: E) -&gt; Result&lt;T, E&gt;;
+
+    fn unwrapOr(&amp;mut this, default: T) -&gt; T;
 }
 </code></pre>
 <p><strong>Methods:</strong></p>
 <ul>
 <li><code>isOk()</code>: Returns <code>true</code> if the result holds a success value</li>
 <li><code>isErr()</code>: Returns <code>true</code> if the result holds an error value</li>
+<li><code>Ok(value)</code> / <code>Err(error)</code>: Static factories. Neither infers <em>both</em> type parameters from its own argument (<code>Ok</code> never mentions <code>E</code>; <code>Err</code> never mentions <code>T</code>) — always use the explicit form, <code>Result&lt;T,E&gt;.Ok(x)</code> / <code>Result&lt;T,E&gt;.Err(e)</code>.</li>
+<li><code>unwrapOr(default)</code>: Returns the success value if present, else <code>default</code>. Drains the <code>Result</code> the same way <code>Option&lt;T&gt;.unwrapOr()</code> does — see its note above.</li>
 </ul>
-<p><strong>Note:</strong> There are no <code>Result.Ok(value)</code> / <code>Result.Err(error)</code> static factory methods — static methods on generic classes are not yet supported by the compiler (calling one either fails to parse, with explicit type arguments, or crashes the compiler, with inferred type arguments). Construct a <code>Result</code> directly instead, passing <code>null</code> for the unused side:</p>
 <pre><code class="language-firescript">import @firescript/std.types.Result;
 import @firescript/std.io.println;
 
 fn tryDivide(a: int32, b: int32) -&gt; Result&lt;int32, string&gt; {
     if (b == 0) {
-        return Result&lt;int32, string&gt;(null, &quot;division by zero&quot;);
+        return Result&lt;int32, string&gt;.Err(&quot;division by zero&quot;);
     }
-    return Result&lt;int32, string&gt;(a / b, null);
+    return Result&lt;int32, string&gt;.Ok(a / b);
 }
 
 outcome: Result&lt;int32, string&gt; = tryDivide(10, 0);
-if (outcome.isErr()) {
-    println(outcome.error);
-}
+println(outcome.unwrapOr(-1));  // -1
 </code></pre>
 <p><strong>Note:</strong> <code>Result</code> is an Owned type; construct carefully with move semantics in mind.</p>
 <h2 id="copyableresultte-implemented"><code>CopyableResult&lt;T,E&gt;</code> [IMPLEMENTED]<a class="headerlink" href="#copyableresultte-implemented" title="Permanent link">&para;</a></h2>
@@ -1736,16 +1751,19 @@ if (outcome.isErr()) {
 
     fn isOk() -&gt; bool;
     fn isErr() -&gt; bool;
+
+    static fn Ok(value: T) -&gt; CopyableResult&lt;T, E&gt;;
+    static fn Err(error: E) -&gt; CopyableResult&lt;T, E&gt;;
+
+    fn unwrapOr(default: T) -&gt; T;
 }
 </code></pre>
 <p><strong>Example:</strong></p>
 <pre><code class="language-firescript">import @firescript/std.types.CopyableResult;
 import @firescript/std.io.println;
 
-parsed: CopyableResult&lt;int32, bool&gt; = CopyableResult&lt;int32, bool&gt;(42, null);
-if (parsed.isOk()) {
-    println(parsed.value);
-}
+parsed: CopyableResult&lt;int32, bool&gt; = CopyableResult&lt;int32, bool&gt;.Ok(42);
+println(parsed.unwrapOr(-1));
 </code></pre>
 <h2 id="usage-notes">Usage Notes<a class="headerlink" href="#usage-notes" title="Permanent link">&para;</a></h2>
 <ul>
