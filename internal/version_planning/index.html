@@ -2117,9 +2117,77 @@ self-hosting work is not blocked by missing data structures.</p>
 <ul>
 <li>New module <code>@firescript/std.collections</code> — <code>Vec&lt;T&gt;</code>, <code>HashMap&lt;K,V&gt;</code> (and later <code>Stack&lt;T&gt;</code>,
   <code>Queue&lt;T&gt;</code>, <code>Deque&lt;T&gt;</code>)</li>
-<li><code>enumerate</code> generator for iterating over <code>Vec&lt;T&gt;</code> with index/value pairs <code>Tuple&lt;int32,T&gt;</code></li>
-<li>New module <code>@firescript/std.text</code> — <code>StringBuilder</code></li>
-<li>Enhanced <code>@firescript/std.types</code> — <code>Result&lt;T,E&gt;</code> with <code>Ok</code>, <code>Err</code> variants and combinators</li>
+<li><code>Vec&lt;T&gt;</code> — <strong>done</strong>: <code>push</code>/<code>pop</code>/<code>get</code>/<code>set</code>/<code>length</code>/<code>size</code>, capacity-doubling growth,
+    correct for both Copyable and Owned element types (owned elements are dropped by the
+    generated destructor before the backing buffer is freed — see the new <code>@owns_elements</code>
+    class decorator in <code>flir/lowering.py</code>). Built on two new compiler intrinsics private to
+    <code>std/collections/</code>, <code>fs_rt_array_new&lt;T&gt;</code>/<code>fs_rt_array_copy&lt;T&gt;</code>, which allocate/copy a
+    <code>T[]</code> buffer of a runtime-determined element count (the "Dynamic arrays (stdlib)"
+    <code>CLAUDE.md</code> feature-table entry, now flipped to <code>[IMPLEMENTED]</code>).</li>
+<li><code>enumerate</code> generator for iterating over <code>Vec&lt;T&gt;</code> with index/value pairs <code>Tuple&lt;int32,T&gt;</code>
+    — <strong>done</strong>. Surfaced (and fixed) a compiler bug where a generic-class-shaped type
+    string with an unresolved nested type argument (e.g. <code>Tuple&lt;int32, T&gt;</code>) substituted the
+    outer type but never the type parameters inside it, and a second bug where generic
+    generator functions had no type-argument inference/monomorphization at all.</li>
+<li><code>HashMap&lt;K,V&gt;</code> — <strong>done</strong>: <code>set</code>/<code>get</code>/<code>has</code>/<code>remove</code>/<code>length</code>/<code>size</code>, open addressing
+    with tombstones, capacity-doubling growth at a 70% load factor. <code>K</code> restricted to a
+    fixed hashable set (integer types, <code>bool</code>, <code>char</code>, <code>string</code>) via a new <code>fs_rt_hash&lt;K&gt;</code>
+    compiler intrinsic (dispatched by concrete <code>K</code> at FLIR-lowering time, same pattern as
+    <code>fs_rt_array_new&lt;T&gt;</code>) — no <code>Hashable</code> trait to dispatch through generically until 0.7.0.
+    <code>get</code>/<code>remove</code> return <code>V</code> directly rather than <code>Option&lt;V&gt;</code> — not because of a compiler
+    gap any more (see below), just to keep this milestone's changes scoped; switching to
+    <code>Option&lt;V&gt;</code> is a viable, purely additive follow-up. Surfaced (and
+    fixed) three more previously-unexercised generic-class bugs: a later type-checking pass
+    only pushed a <em>method's own</em> (empty) type parameters into scope, clobbering the
+    <em>enclosing class's</em> type parameters for the whole method body, so comparing two values
+    of the class's own type parameter with <code>==</code> failed; a generic class method calling
+    <em>another method on the same instance</em> didn't monomorphize the callee correctly (method
+    receivers are always typed by bare class name, never <code>ClassName&lt;Args&gt;</code>, and lowering
+    assumed otherwise); and <code>drop()</code> on a bare generic-type-parameter value that turns out
+    concretely Copyable/primitive tried to heap-free its raw bit pattern instead of no-op'ing
+    (needed for <code>HashMap&lt;K,V&gt;.set()</code>'s conditional <code>drop(key)</code> on overwrite). Also led directly
+    into full nullable-<em>scalar</em> support (locals, class fields, function/method/constructor
+    parameters, and plain-function return types all now carry a real "has a value" tag, not
+    just a zero-lowered <code>null</code>) — see the changelog and <code>Option&lt;T&gt;</code>/<code>CopyableOption&lt;T&gt;</code> note
+    below.</li>
+<li>Nullable-<em>scalar</em> types (<code>int32?</code>, <code>bool?</code>, <code>char?</code>, and the other fixed-width numeric
+    types) — <strong>done</strong>: a real, separate "has a value" tag alongside the value itself (a
+    companion <code>bool</code> binding/field/parameter, added transparently by the compiler), so <code>null</code>
+    and a legitimate stored <code>0</code>/<code>false</code> are always distinguishable. Covers local variables,
+    class fields, function/method/constructor parameters, and (for plain functions) return
+    types (<code>fn foo() -&gt; int32?</code>, previously a hard parse error — lifted this milestone). A
+    nullable-scalar return is compiled to an internal <code>__NullableReturn&lt;T&gt;</code> struct return,
+    unwrapped transparently at the call site (evaluating the callee at most once, even when
+    both its value and has-value flag are needed). <code>Option&lt;T&gt;</code>/<code>CopyableOption&lt;T&gt;</code> needed zero
+    source changes to become correct for a primitive <code>T</code> — <code>Option&lt;int32&gt;(0).isSome()</code> now
+    correctly returns <code>true</code>. String/class/array nullables were already unambiguous via the
+    pointer value <code>0</code> and are untouched by this.</li>
+<li>New module <code>@firescript/std.text</code> — <code>StringBuilder</code> — <strong>done</strong>: backed by a <code>Vec&lt;string&gt;</code>
+  of fragments rather than a raw growable byte buffer (<code>std/internal/strings.fire</code> can't
+  construct a <code>Vec&lt;T&gt;</code> itself — internal runtime files carry no import statements), with
+  <code>append</code>/<code>length</code>/<code>build</code>. <code>build()</code> drains fragments with <code>Vec&lt;T&gt;.pop()</code>, not
+  <code>get()</code>/<code>enumerate()</code> (unsafe for the Owned <code>string</code> element type — see
+  <code>docs/reference/std/collections.md</code>). No zero-arg constructor (<code>StringBuilder("")</code> starts
+  empty instead) — see the compiler-improvements note below.</li>
+<li>Extended string methods — <strong>done</strong>: <code>.indexOf()</code>, <code>.substring()</code>, <code>.startsWith()</code>,
+  <code>.endsWith()</code>, <code>.trim()</code>, <code>.replace()</code>, alongside the existing <code>.length()</code>/<code>.upper()</code>/
+  <code>.lower()</code>, all via <code>@builtin_method</code> in <code>std/internal/strings.fire</code> (<code>.indexOf()</code>/
+  <code>.substring()</code> decorate the pre-existing <code>fs_rt_str_index_of</code>/<code>fs_rt_str_slice</code>
+  primitives directly). <code>split</code> is the one method from this list that's a plain function
+  (<code>split(s, delim)</code>), not a <code>.split()</code> dot-method — it needs to return <code>Vec&lt;string&gt;</code>, and
+  <code>@builtin_method</code> backing functions live in <code>std/internal/</code>, which (as above) can't
+  reference <code>Vec&lt;T&gt;</code>. Lives in <code>@firescript/std.text</code> alongside <code>StringBuilder</code>.</li>
+<li>Enhanced <code>@firescript/std.types</code> — <code>Result&lt;T,E&gt;</code>/<code>CopyableResult&lt;T,E&gt;</code> — <strong>done</strong>: <code>value: T?</code>/<code>error: E?</code>
+  fields (mirrors <code>Option&lt;T&gt;</code>'s pattern exactly, including automatic nullable-scalar correctness for a
+  primitive <code>T</code>/<code>E</code>), <code>isOk()</code>/<code>isErr()</code>. No <code>Ok</code>/<code>Err</code> static factory constructors and no combinators
+  (<code>map</code>, <code>unwrapOr</code>, etc.) — while probing the natural <code>Result.Ok(value)</code>/<code>Result.Err(error)</code> design,
+  discovered static methods on generic classes didn't work in any form at the time (explicit type
+  arguments, <code>Box&lt;int32&gt;.make(5)</code>, were a parser error; inferred type arguments, <code>Box.make(5)</code>, crashed
+  AST-&gt;FIR conversion). <code>Result</code>/<code>CopyableResult</code> are constructed directly instead (<code>Result&lt;T,E&gt;(value,
+  error)</code>, <code>null</code> on the unused side); the underlying compiler gap is now fixed (see
+  <code>generics/generic_class_static_method_inferred.fire</code> and <code>generic_class_static_method_explicit.fire</code>
+  under Compiler improvements below) but <code>Result</code> was kept as direct construction rather than revisited,
+  as adding <code>Ok</code>/<code>Err</code> factories now would be a purely additive follow-up with no functional need.</li>
 <li><strong><code>@firescript/std.regex</code></strong> — full regex matching engine (lexer, parser, NFA/DFA
   compilation, matching over strings). Required by FCL and by compiler string-processing
   needs. (Existing stub needs real implementation.)</li>
@@ -2133,7 +2201,53 @@ self-hosting work is not blocked by missing data structures.</p>
   value-producing forms, tag-dispatched destructors for owned payload data) work across the
   full pipeline. Generic enums (<code>enum Option&lt;T&gt;</code>) remain a follow-up.</li>
 <li>Support <code>Vec&lt;T&gt;</code>, <code>HashMap&lt;K,V&gt;</code>, <code>StringBuilder</code>, and <code>Result&lt;T,E&gt;</code> as stdlib modules
-  with appropriate compiler intrinsics where needed</li>
+  with appropriate compiler intrinsics where needed — <code>Vec&lt;T&gt;</code> (including <code>enumerate</code>),
+  <code>HashMap&lt;K,V&gt;</code>, and <code>Result&lt;T,E&gt;</code>/<code>CopyableResult&lt;T,E&gt;</code> <strong>done</strong>; also unblocked unsized
+  array class fields (previously rejected entirely), added a <code>fs_rt_hash&lt;K&gt;</code> intrinsic and
+  multi-field <code>@owns_elements</code> support, and fixed a series of narrow, previously-unexercised
+  generic-class/generator bugs both surfaced (method-call return-type substitution for a bare
+  type-parameter return, missing receiver on a method with no explicit <code>&amp;this</code>/<code>this</code>
+  destroying the object on every call, a generic class's own bare-name Owned/Copyable
+  registration, a generator-loop-variable drop gap for Owned yield types, nested-type-argument
+  substitution inside a compound generic type string, generic generator functions having no
+  type-argument inference/monomorphization at all, class-body type-parameter scoping in the
+  standalone type-checking pass, a generic method calling another method on the same instance,
+  <code>drop()</code> on a primitive corrupting the heap, and <code>null</code> for a nullable scalar type) — see
+  <code>docs/changelog.md</code>'s 0.6.0 Bug Fixes. Another one surfaced while designing <code>Result&lt;T,E&gt;</code>
+  and later fixed: static methods on generic classes didn't work in any call form. The
+  parser's <code>Type.method(...)</code> special case (and its <code>Identifier&lt;TypeArgs&gt;.method(...)</code>
+  counterpart) only ever recognized a <em>concrete</em> class name, since a generic class's bare
+  template name is deliberately absent from <code>self.user_types</code>/<code>self.user_methods</code>
+  (registered as a <code>generic_class_templates</code> entry instead); <code>type_system.py</code>'s
+  <code>TYPE_METHOD_CALL</code> validation and <code>ast_to_fir.py</code>'s monomorphization needed the
+  equivalent generic-template fallback a constructor call already had, plus type-argument
+  inference from the call's own arguments (there's no receiver instance to read concrete
+  type arguments from) for the no-explicit-type-args form — see
+  <code>generics/generic_class_static_method_inferred.fire</code> and
+  <code>generic_class_static_method_explicit.fire</code>. Separately, fixed an unrelated lexer bug hit
+  while writing <code>Result&lt;T,E&gt;</code>'s regression tests: identifiers with <code>true</code>/<code>false</code>/<code>null</code> as
+  a literal prefix (e.g. <code>false_ok</code>) failed to parse, since those three literal token
+  patterns (unlike every keyword) had no trailing word-boundary — see <code>docs/changelog.md</code>'s
+  0.6.0 Bug Fixes and <code>tests/sources/identifiers/</code>.</li>
+<li>Extended string methods and <code>StringBuilder</code>/<code>split</code> <strong>done</strong> — see the Standard library
+  section above. Fixed another real bug hit while building <code>StringBuilder</code>: an owned
+  value moved via a method call through a <em>field-access</em> receiver (<code>this.parts.push(s)</code>)
+  was never recognized as moved, so it was also auto-dropped at scope exit (FIRV-O2) —
+  <code>semantic_analyzer.py</code> and <code>preprocessor.py</code> each only resolved a receiver's type for a
+  bare-identifier receiver, and the generic-field case additionally needed the "strip
+  generic type arguments" normalization <code>ast_to_fir.py</code> already had — see
+  <code>docs/changelog.md</code>'s 0.6.0 Bug Fixes and
+  <code>tests/sources/memory/memory_field_receiver_method_move.fire</code>. Two more surfaced in the
+  same investigation, and were also fixed (all <code>tests/sources/known_issues/</code> entries from
+  this release are now resolved, with regression tests moved to their normal categories):
+  a same-file class's bare <code>Foo(args)</code> constructor call resolved against field order
+  instead of the real declared constructor whenever they diverged (<code>func_name in
+  self.user_types</code> in <code>parser/type_system.py</code> now checks <code>self.user_methods</code> for a real
+  constructor first — see <code>classes/classes_zero_arg_constructor_bare_call.fire</code>), and a
+  class imported from another module lost its type for raw field access (not method calls)
+  after a bare-call construction (the deferred-import suppression in <code>FIELD_ACCESS</code>
+  handling widened from composite-generic-only to any not-yet-resolved non-primitive type
+  — see <code>classes/classes_cross_module_bare_construct_field_access.fire</code>).</li>
 <li>Implement <code>@firescript/std.regex</code> with necessary runtime support</li>
 <li>Regenerate and freeze goldens for all new features</li>
 </ul>
@@ -2142,8 +2256,16 @@ self-hosting work is not blocked by missing data structures.</p>
 <li>Comprehensive golden tests for enums and match — <strong>done</strong>: <code>tests/sources/enums/</code>,
   <code>tests/sources/match/</code>, plus error tests in <code>tests/sources/invalid/enums/</code> and
   <code>tests/sources/invalid/match/</code></li>
-<li>Comprehensive golden tests for Vec, HashMap, StringBuilder operations</li>
-<li>Golden tests for new string methods</li>
+<li>Comprehensive golden tests for Vec, HashMap, StringBuilder operations — Vec and HashMap
+  <strong>done</strong>: <code>tests/sources/std/collections/</code> (push/pop, growth, get/set, an Owned element
+  type; integer keys, string keys, growth/rehashing, an Owned value type with a
+  leak/double-free stress cycle). StringBuilder <strong>done</strong>:
+  <code>tests/sources/std/text/stringbuilder_basic.fire</code></li>
+<li>Golden tests for Result/CopyableResult — <strong>done</strong>: <code>tests/sources/std/types/</code>
+  (<code>result_isok_iserr.fire</code>, <code>result_null_vs_zero.fire</code>, <code>result_copyable.fire</code>)</li>
+<li>Golden tests for new string methods — <strong>done</strong>: <code>tests/sources/strings/</code>
+  (<code>strings_index_of_substring.fire</code>, <code>strings_starts_ends_with.fire</code>, <code>strings_trim.fire</code>,
+  <code>strings_replace.fire</code>) and <code>tests/sources/std/text/split_basic.fire</code></li>
 <li>Comprehensive golden tests for regex (matching, capture groups, anchors, character
   classes, alternation, quantifiers)</li>
 <li>Error tests for invalid enum/match usage — <strong>done</strong></li>
