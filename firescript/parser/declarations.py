@@ -993,6 +993,7 @@ class DeclarationsMixin(TypeSystemMixin):
         # Parse optional generic type parameters: <T, U, ...>
         class_type_params: list[str] = []
         prev_class_type_params = self._current_type_params
+        prev_generic_class_name = self._current_generic_class_name
         if self.current_token and self.current_token.type == "LESS_THAN":
             self.advance()  # consume <
             while True:
@@ -1016,6 +1017,7 @@ class DeclarationsMixin(TypeSystemMixin):
             self.advance()  # consume >
             # Make type params visible while parsing the class body
             self._current_type_params = class_type_params.copy()
+            self._current_generic_class_name = name_tok.value
 
         base_class: Optional[str] = None
         if self.current_token and self.current_token.type == "FROM":
@@ -1312,6 +1314,7 @@ class DeclarationsMixin(TypeSystemMixin):
 
         # Restore previous type parameter context
         self._current_type_params = prev_class_type_params
+        self._current_generic_class_name = prev_generic_class_name
 
         if class_type_params:
             # Generic class: store as a template, do NOT register as a concrete type yet.

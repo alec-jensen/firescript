@@ -139,7 +139,12 @@ Plain `assert` also works. Covers:
   function returning `generator<T>` defined inside a function body (which
   `ast_to_fir.py` cannot lower -- a newly-found, not-fixed crash, see the
   test module docstrings) and a generic function reusing the same type
-  parameter for multiple arguments.
+  parameter for multiple arguments. `test_generic_self_reference.py` covers a
+  generic class referencing itself inside its own body (a static factory
+  returning the enclosing class, or a self-call like `this.isSome()` from
+  another of its own methods) in a source string with *zero* import
+  statements -- the sharp edge of a fix that's otherwise masked whenever the
+  file happens to have an unrelated import (see `generics/generic_self_referential_static_factory.fire`).
 - `tests/python/cli/` -- `firescript/main.py` invocation behavior never
   exercised by the golden/error/snapshot kinds (`-v`, `--check`, `--emit
   ast`/`asm`/`--emit-fir`, `--emit-deps`, `-o` renaming, `--dir` batch
@@ -574,6 +579,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **classes_nullable_scalar_field.fire** - A nullable *scalar* class field (`balance: int32?;`, not `string?`/a class-typed field, which are already unambiguously null-able via their pointer's 0 value): constructor parameter, field assignment, and a `!= null`/`== null` field read all correctly distinguish "no value" from a stored zero. See `ast_to_fir.py`'s "Nullable scalars" section.
 - **classes_zero_arg_constructor_bare_call.fire** - Regression: a same-file class's bare `Foo(args)` constructor call resolves against the real declared constructor (matching `new Foo(args)`), not an implicit field-order constructor, when the two differ (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
 - **classes_cross_module_bare_construct_field_access.fire** / **classes_widget_helper.fire** - Regression: a raw field access on an instance constructed via bare `ClassName(args)` for a class *imported from another module* resolves correctly (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
+- **classes_cross_module_bare_static_method.fire** / **classes_cross_module_helper.fire** - Regression: a bare (no explicit type arguments), type-qualified static method call on a class imported from another module (`Counter.fromDouble(5)`) resolves correctly instead of crashing AST->FIR conversion — there was previously no deferred-import parsing fallback for the bare form at all, only the `<TypeArgs>` form
 
 ### `generics/`
 - **generics_basic.fire** - Basic generic functions
@@ -591,6 +597,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **generics_array_param_inference.fire** - A generic function taking an array parameter (`&arr: T[]`) infers `T` from the argument's *element* type, not the whole array type (regression: `int32[]` used to infer `T="int32[]"` instead of `T=int32`); also exercises the implicit array-length ABI parameter across a generic call, previously skipped for generic calls entirely
 - **generic_class_static_method_inferred.fire** - Regression: a `static fn` on a generic class can be called with inferred type arguments (`Box.make(5)` for `class Box<T>`); type arguments are inferred from the call's argument types, since there's no receiver instance to read them from (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
 - **generic_class_static_method_explicit.fire** - Same, with explicit type arguments (`Box<int32>.make(5)`) — the parser previously only expected a constructor call immediately after `<TypeArgs>`, never a `.method(...)` call (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
+- **generic_self_referential_static_factory.fire** - Regression: a generic class's own static factory returning an instance of the enclosing class itself (`Box<T>`), and an instance method calling another method on `this`, both parse and compile correctly; the sharper zero-import edge of this same fix is covered separately by `tests/python/parser/test_generic_self_reference.py` (see below), since this file's own `import @firescript/std.io.println;` for output happens to also exercise a different, unrelated fallback
 
 ### `identifiers/`
 - **identifiers_keyword_prefix.fire** - Regression: an identifier starting with a keyword-like literal token as a prefix (`false_flag`, `true_flag`, `nullable_count`) lexes as a single `IDENTIFIER`, not the literal token (`true`/`false`/`null`) followed by a stray remainder identifier (see `firescript/lexer.py`'s `BOOLEAN_LITERAL`/`NULL_LITERAL`/`VOID_LITERAL` patterns, which were missing the trailing `\b` word boundary every other keyword pattern has)

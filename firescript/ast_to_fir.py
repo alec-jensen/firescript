@@ -1739,7 +1739,16 @@ class ASTToFIRConverter:
         existing = self._lookup(node.name)
         is_nullable_scalar = existing is not None and self._nullable_scalar_base(existing[0]) is not None
         has_value = self._nullable_scalar_has_value(rhs) if is_nullable_scalar else None
+        prev_expected = self._expected_type_str
+        # So a bare `x = null;` re-assigning a nullable-scalar local
+        # resolves the NullLiteralInst to the local's actual scalar type
+        # instead of the context-less "string" fallback -- same reason as
+        # RETURN_STATEMENT's identical idiom above.
+        self._expected_type_str = (
+            self._expected_type_if_null(rhs, existing[0]) if is_nullable_scalar else None
+        )
         value = self._convert_expression(rhs) if rhs is not None else None
+        self._expected_type_str = prev_expected
         if value is None:
             raise FIRConversionError("Assignment without value", node)
         if rhs is not None and rhs.node_type == NodeTypes.IDENTIFIER:
@@ -1769,7 +1778,24 @@ class ASTToFIRConverter:
         has_value = (
             self._nullable_scalar_has_value(rhs) if is_nullable_scalar or is_nullable_scalar_field else None
         )
+        prev_expected = self._expected_type_str
+        # So a bare `this.field = null;` assigning a nullable-scalar
+        # field (including a generic field, e.g. `value: T?`, before its
+        # concrete T is known to be a scalar) resolves the NullLiteralInst
+        # to the field's actual declared type instead of the context-less
+        # "string" fallback -- same reason as RETURN_STATEMENT's and
+        # _convert_variable_assignment's identical idiom.
+        self._expected_type_str = None
+        if is_nullable_scalar:
+            self._expected_type_str = self._expected_type_if_null(rhs, lhs_symbol[0])
+        elif is_nullable_scalar_field:
+            field_type = next(
+                (ft for fname, ft in self.class_fields.get(field_base, []) if fname == lhs.name),
+                None,
+            )
+            self._expected_type_str = self._expected_type_if_null(rhs, field_type)
         value = self._convert_expression(rhs)
+        self._expected_type_str = prev_expected
         if rhs.node_type == NodeTypes.IDENTIFIER:
             self._mark_owned_identifier_moved(rhs.name)
 

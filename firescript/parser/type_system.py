@@ -444,11 +444,14 @@ class TypeSystemMixin(StatementsMixin):
             # failed with "Cannot compare types T and T with '=='" because
             # `T` wasn't recognized as a type parameter here, only as parsed.
             prev_type_params = self._current_type_params
+            prev_generic_class_name = self._current_generic_class_name
             self._current_type_params = node.type_params.copy()
+            self._current_generic_class_name = node.name
             child_types = [
                 self._type_check_node(child, symbol_table) for child in node.children
             ]
             self._current_type_params = prev_type_params
+            self._current_generic_class_name = prev_generic_class_name
         else:
             # First, recursively check children to determine their types
             child_types = [
@@ -965,6 +968,13 @@ class TypeSystemMixin(StatementsMixin):
                     # When imports are pending, defer method lookup for unresolved
                     # imported types (including composite generic types like
                     # Option<string>) until after import resolution/merge.
+                    # Also defer a self-referential call inside the generic
+                    # class's own body (e.g. `this.isSome()` inside one of
+                    # Option<T?>'s own methods) -- self.user_methods isn't
+                    # populated for the enclosing class until its whole body
+                    # finishes parsing, independent of defer_undefined_
+                    # identifiers (which is about *other*, not-yet-merged
+                    # modules, not this same-file timing gap).
                     if (
                         self.defer_undefined_identifiers
                         and object_type
@@ -972,8 +982,8 @@ class TypeSystemMixin(StatementsMixin):
                             "<" in object_type
                             or object_type not in self.user_methods
                         )
-                    ):
-                        pass  # Will be resolved after import merge
+                    ) or object_type == self._current_generic_class_name:
+                        pass  # Will be resolved after import merge / class body completes
                     else:
                         self.invalid_type_error(
                             f"Methods not supported for type {object_type}",
@@ -1044,6 +1054,25 @@ class TypeSystemMixin(StatementsMixin):
                 sig = self._generic_template_method_sig(base_class_name, method_name)
                 is_generic_template = sig is not None
             if sig is None:
+                # Deferred-import mode: base_class_name may be a generic
+                # class imported from another, not-yet-merged module (e.g.
+                # `Option<int32>.None()`, where "Option" isn't in
+                # user_methods/generic_class_templates until after merge) --
+                # same reasoning as the FIELD_ACCESS deferral above. Leave
+                # node.return_type unset (VARIABLE_DECLARATION's type-match
+                # check is a no-op when initializer_type is falsy) rather
+                # than rejecting a call that will resolve correctly once
+                # imports are merged; the real check happens then.
+                class_name_known = bool(
+                    base_class_name
+                    and (
+                        base_class_name in self.user_types
+                        or base_class_name in self.user_methods
+                        or base_class_name in self.generic_class_templates
+                    )
+                )
+                if self.defer_undefined_identifiers and base_class_name and not class_name_known:
+                    return None
                 self.invalid_type_error(f"Unknown constructor or static method '{method_name}' for type '{class_name}'", node.token)
                 return None
             is_static = bool(sig.get("is_static", False))

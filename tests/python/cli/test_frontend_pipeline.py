@@ -54,12 +54,19 @@ def test_hydrate_parser_symbols_skips_class_definition_without_a_name():
 
 def test_deferred_identifier_resolved_against_merged_class_definition():
     # A real, small two-file import graph: main.fire imports Helper from
-    # helper.fire and references Helper by name (a static method call) --
-    # the parser defers resolving the bare "Helper" identifier until after
-    # import merge (since imports are present), and it should resolve
-    # cleanly against the merged-in CLASS_DEFINITION with no reported
-    # error (frontend_pipeline.py's deferred-identifiers loop matching a
-    # class name, not a plain merged symbol).
+    # helper.fire and references Helper by name (a bare, no-explicit-type-
+    # args static method call, Helper.make()). "Helper" isn't in
+    # self.user_types/self.generic_class_templates yet at parse time (it's
+    # defined in a different, not-yet-merged module) -- expressions.py's
+    # deferred-import fallback (PascalCase-name heuristic, since a type-
+    # qualified static call and an ordinary `variable.method()` call are
+    # syntactically identical here) now recognizes this directly as a
+    # TYPE_METHOD_CALL, resolving with zero errors at parse time already --
+    # it no longer needs deferred_undefined_identifiers/frontend_pipeline.py's
+    # post-merge class-definition-matching loop at all for this shape
+    # (previously: "Helper" parsed as a bare IDENTIFIER, deferred, and only
+    # resolved after merge; this crashed FIR conversion before that gap was
+    # fixed, since nothing rewrote the misparsed METHOD_CALL node in time).
     with t.tmpdir() as tmp:
         helper_path = os.path.join(tmp, "helper.fire")
         with open(helper_path, "w", encoding="utf-8") as f:
@@ -80,10 +87,13 @@ def test_deferred_identifier_resolved_against_merged_class_definition():
         src = open(main_path, encoding="utf-8").read()
         pipeline = CompilerPipeline(src, "main.fire", main_path)
         pipeline.parse()
+        t.require(pipeline.parser_errors == [], pipeline.parser_errors)
+        call_node = pipeline.ast.children[-1].children[0]
         t.require(
-            any(name == "Helper" for name, _tok in pipeline.parser_instance.deferred_undefined_identifiers),
-            pipeline.parser_instance.deferred_undefined_identifiers,
+            call_node.node_type == NodeTypes.TYPE_METHOD_CALL,
+            f"expected TYPE_METHOD_CALL, got {call_node.node_type}",
         )
+        t.require(getattr(call_node, "class_name", None) == "Helper", call_node)
         pipeline.resolve_imports()
         t.require(pipeline.parser_errors == [], pipeline.parser_errors)
 

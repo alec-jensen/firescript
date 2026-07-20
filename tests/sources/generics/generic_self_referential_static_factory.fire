@@ -1,0 +1,49 @@
+// Regression: a generic class's own static factory method, returning an
+// instance of the enclosing class itself (Box<T>), and calling another
+// instance method on `this` (this.isEmpty()) from within one of its own
+// methods, both parse and compile correctly.
+//
+// This is normally masked by this file's own import statement below
+// (which happens to also enable a *different*, pre-existing fallback
+// built for a class imported from another module) -- the sharper edge of
+// this fix, a self-referential generic static factory in a file with
+// *no* imports at all, is covered separately by
+// tests/python/parser/test_generic_self_reference.py, since a `.fire`
+// test needs `@firescript/std.io.println` (itself an import) to produce
+// any checkable output at all.
+import @firescript/std.io.println;
+
+class Box<T?> {
+    value: T?;
+
+    fn Box(value: T?) {
+        this.value = value;
+    }
+
+    fn isEmpty() -> bool {
+        return this.value == null;
+    }
+
+    static fn wrap(v: T) -> Box<T> {
+        return Box<T>(v);
+    }
+
+    static fn empty() -> Box<T> {
+        return Box<T>(null);
+    }
+
+    fn describe() -> bool {
+        return this.isEmpty();
+    }
+}
+
+b: Box<int32> = Box.wrap(5);
+println(b.describe());
+
+e: Box<int32> = Box<int32>.empty();
+println(e.describe());
+
+/* EXPECT
+false
+true
+*/

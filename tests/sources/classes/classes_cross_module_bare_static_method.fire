@@ -1,0 +1,26 @@
+// Regression: a bare (no explicit type arguments) type-qualified static
+// method call on a class imported from another module -- Counter.
+// fromDouble(5), not new Counter(...) or a same-file class -- now
+// resolves correctly instead of crashing AST->FIR conversion ("'Counter'
+// has no dominating parameter, DeclareLocal, or global constant": the
+// bare class name lowered as a variable load instead of a static-call
+// target, since it fell through to being misparsed as an ordinary
+// instance method call on an IDENTIFIER named "Counter"). There's no
+// syntactic way to tell a type-qualified call apart from an ordinary
+// `variable.method()` call at this point (both are `IDENTIFIER .
+// IDENTIFIER (`) without knowing whether "Counter" is a type or a
+// variable, which isn't resolved until after import merge -- the parser
+// falls back to this codebase's PascalCase-for-types naming convention
+// in deferred-import mode.
+//
+// (classes_cross_module_helper.fire, the sibling module this test
+// imports, exists solely to exercise this cross-module path.)
+import @firescript/std.io.println;
+import classes_cross_module_helper.Counter;
+
+c: Counter = Counter.fromDouble(5);
+println(c.val);
+
+/* EXPECT
+10
+*/

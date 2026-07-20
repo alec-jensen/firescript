@@ -330,7 +330,32 @@ class ExpressionsMixin(ParserBase):
             # no dominating parameter, DeclareLocal, or global constant" --
             # the bare class name lowered as a variable load).
             if (
-                (token.value in self.user_types or token.value in self.generic_class_templates)
+                (
+                    token.value in self.user_types
+                    or token.value in self.generic_class_templates
+                    or token.value == self._current_generic_class_name
+                    # Deferred-import mode: a class imported from another,
+                    # not-yet-merged module (generic or not) is equally
+                    # unknown here -- e.g. `Widget.make(7)` (Widget imported,
+                    # no explicit type arguments) previously fell through to
+                    # being misparsed as an ordinary instance method call on
+                    # an IDENTIFIER named "Widget", crashing FIR conversion
+                    # the same way the same-file generic case above used to.
+                    # There's no syntactic way to tell a type-qualified
+                    # static call from an ordinary `variable.method()` call
+                    # here (both are `IDENTIFIER . IDENTIFIER (`) without
+                    # knowing whether "Widget" is a type or a variable, which
+                    # isn't resolved until after import merge -- fall back to
+                    # the codebase-wide PascalCase-for-types convention
+                    # (every type name in this codebase starts uppercase;
+                    # every local variable starts lowercase) the same way
+                    # user code already relies on it to read unambiguously.
+                    or (
+                        self.defer_undefined_identifiers
+                        and token.value[:1].isupper()
+                        and self._looks_like_bare_type_method_call()
+                    )
+                )
                 and self.current_token
                 and self.current_token.type == "DOT"
             ):
@@ -424,8 +449,13 @@ class ExpressionsMixin(ParserBase):
                 
                 # Explicit generic type arguments: func<T1, T2>(...)  or  GenericClass<T1,T2>(args)
                 elif self.current_token and self.current_token.type == "LESS_THAN":
-                    # Check if this is a generic class positional constructor
-                    if token.value in self.generic_class_templates:
+                    # Check if this is a generic class positional constructor.
+                    # Also matches a self-referential use of the enclosing
+                    # generic class inside its own body (e.g. `Option<T>(v)`
+                    # inside `class Option<T?>`'s own static factory) --
+                    # generic_class_templates isn't populated for it until
+                    # its whole body finishes parsing.
+                    if token.value in self.generic_class_templates or token.value == self._current_generic_class_name:
                         type_args = self._parse_type_arg_list()
                         if type_args is None:
                             break
@@ -486,7 +516,10 @@ class ExpressionsMixin(ParserBase):
                         node.type_args = type_args
                         node.return_type = self.user_functions.get(token.value, "void")
                         continue
-                    elif self.defer_undefined_identifiers and self._looks_like_generic_constructor_call():
+                    elif self.defer_undefined_identifiers and (
+                        self._looks_like_generic_constructor_call()
+                        or self._looks_like_generic_type_method_call()
+                    ):
                         # Deferred-import mode: the identifier is not yet known as a generic class
                         # or function (it comes from an imported module).  Parse it as a generic
                         # class constructor call so parsing can succeed; the semantic checks will
@@ -508,6 +541,28 @@ class ExpressionsMixin(ParserBase):
                         else:
                             self.advance()  # consume >
                         composite_name = self._register_generic_class_instance(token.value, type_args)
+
+                        # Explicit-type-argument static method call:
+                        # Option<int32>.None() -- as opposed to the
+                        # constructor-call form immediately below
+                        # (Option<int32>(...)). Mirrors the equivalent
+                        # branch for an already-known (same-file) generic
+                        # template above.
+                        if self.current_token and self.current_token.type == "DOT":
+                            self.consume("DOT")
+                            method_name = self.consume("IDENTIFIER")
+                            if not method_name:
+                                self.expected_token_error("method name after type '.'", self.current_token)
+                                return None
+                            if not self.consume("OPEN_PAREN"):
+                                self.expected_token_error("'(' after type method name", self.current_token)
+                                return None
+                            arguments = self._parse_argument_list()
+                            node = ASTNode(NodeTypes.TYPE_METHOD_CALL, method_name, method_name.value, arguments, method_name.index)
+                            setattr(node, "class_name", composite_name)
+                            node.type_args = type_args
+                            continue
+
                         if not (self.current_token and self.current_token.type == "OPEN_PAREN"):
                             self.expected_token_error("'(' after generic type arguments", self.current_token)
                             break

@@ -201,6 +201,16 @@ class ParserBase:
         self.monomorphized_functions: dict[tuple[str, tuple[str, ...]], str] = {}
         # Track type parameters in current scope (for parsing inside generic functions/classes)
         self._current_type_params: list[str] = []
+        # Name of the generic class currently being parsed (None outside one),
+        # so a self-referential composite type in its own body/signatures --
+        # e.g. `static fn Some(value: T) -> Option<T>` inside `class
+        # Option<T?>` -- parses correctly. generic_class_templates isn't
+        # populated for the enclosing class until its whole body finishes
+        # parsing (see declarations.py's _parse_class_definition), so a bare
+        # `token.value in self.generic_class_templates` check can't see it
+        # yet; this is consulted alongside that check wherever composite
+        # generic-instantiation syntax (Name<Args>) is recognized.
+        self._current_generic_class_name: Optional[str] = None
         # Generic class tracking: template name -> AST node / type param list
         self.generic_class_templates: dict[str, ASTNode] = {}
         self.generic_class_params: dict[str, list[str]] = {}
@@ -313,7 +323,11 @@ class ParserBase:
                 type_tok.type == "IDENTIFIER"
                 and self.current_token
                 and self.current_token.type == "LESS_THAN"
-                and (type_tok.value in self.generic_class_templates or self.defer_undefined_identifiers)
+                and (
+                    type_tok.value in self.generic_class_templates
+                    or type_tok.value == self._current_generic_class_name
+                    or self.defer_undefined_identifiers
+                )
             ):
                 composite = self._parse_generic_instantiation(type_tok)
                 if composite is None:
@@ -437,6 +451,53 @@ class ParserBase:
             return False
         i = self._skip_ws_from(gt_idx + 1)
         n = len(self.tokens)
+        return i < n and self.tokens[i].type == "OPEN_PAREN"
+
+    def _looks_like_generic_type_method_call(self) -> bool:
+        """Lookahead: current token is '<'.
+
+        Returns True when the token stream from the current position matches
+        ``< TYPE_ARGS > . IDENTIFIER (`` (an explicit-type-argument static
+        method call, e.g. ``Option<int32>.None()``), as opposed to a plain
+        less-than comparison. Used in deferred-import mode, mirroring
+        _looks_like_generic_constructor_call's '(' lookahead for the
+        constructor-call form.
+        """
+        idx = self._current_token_index()
+        if idx < 0 or self.tokens[idx].type != "LESS_THAN":
+            return False
+        gt_idx = self._scan_matching_gt(idx)
+        if gt_idx < 0:
+            return False
+        i = self._skip_ws_from(gt_idx + 1)
+        n = len(self.tokens)
+        if i >= n or self.tokens[i].type != "DOT":
+            return False
+        i = self._skip_ws_from(i + 1)
+        if i >= n or self.tokens[i].type != "IDENTIFIER":
+            return False
+        i = self._skip_ws_from(i + 1)
+        return i < n and self.tokens[i].type == "OPEN_PAREN"
+
+    def _looks_like_bare_type_method_call(self) -> bool:
+        """Lookahead: current token is '.'.
+
+        Returns True when the token stream matches ``. IDENTIFIER (``
+        (a type-qualified static method call with no explicit type
+        arguments, e.g. ``Widget.make(7)``), as opposed to a plain field
+        access or instance method call. Used in deferred-import mode,
+        alongside a PascalCase-name check (see the caller) since nothing
+        else here can tell a type-qualified call apart from an ordinary
+        one syntactically.
+        """
+        idx = self._current_token_index()
+        if idx < 0 or self.tokens[idx].type != "DOT":
+            return False
+        i = self._skip_ws_from(idx + 1)
+        n = len(self.tokens)
+        if i >= n or self.tokens[i].type != "IDENTIFIER":
+            return False
+        i = self._skip_ws_from(i + 1)
         return i < n and self.tokens[i].type == "OPEN_PAREN"
 
     def consume(self, token_type: str) -> Optional[Token]:

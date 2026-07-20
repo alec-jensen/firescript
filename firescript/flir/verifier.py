@@ -510,7 +510,7 @@ class _FunctionVerifier:
             self.emit("FLIRV-M1", f"store base has non-pointer type '{base_t.render()}'", block, index, inst)
             return
         self._check_typed_access(base_t, inst.offset, inst.value_type, block, index, inst, "store")
-        if value_t is not None and value_t != inst.value_type:
+        if value_t is not None and not _ptr_lenient_eq(value_t, inst.value_type):
             self.emit("FLIRV-T1", f"store value type '{value_t.render()}' does not match declared value_type '{inst.value_type.render()}'", block, index, inst)
 
     def _check_typed_access(self, base_t: FLIRType, offset: int, access_type: FLIRType, block, index, inst, opname) -> None:

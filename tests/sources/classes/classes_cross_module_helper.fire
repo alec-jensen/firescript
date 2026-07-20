@@ -1,0 +1,15 @@
+//@ helper
+// Helper module for classes_cross_module_bare_static_method.fire --
+// exists solely to exercise a cross-module (as opposed to same-file)
+// static method call.
+export class Counter {
+    val: int32;
+
+    fn Counter(v: int32) {
+        this.val = v;
+    }
+
+    static fn fromDouble(n: int32) -> Counter {
+        return Counter(n * 2);
+    }
+}
