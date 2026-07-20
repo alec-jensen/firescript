@@ -1,0 +1,25 @@
+// Regression: an identifier that starts with a keyword-like literal token
+// text (true/false/null) as a prefix must lex as a single IDENTIFIER, not
+// as that literal token followed by a stray remainder identifier.
+//
+// Root cause: firescript/lexer.py's BOOLEAN_LITERAL/NULL_LITERAL/
+// VOID_LITERAL regexes ("true|false", "null", "void") were missing the
+// trailing \b word boundary every other keyword pattern has, so e.g.
+// "false_ok" matched "false" as BOOLEAN_LITERAL, leaving "_ok" to tokenize
+// separately -- breaking any statement using such an identifier (e.g.
+// println(false_ok) failed to parse: "Expected ')' after argument list").
+import @firescript/std.io.println;
+
+false_flag: bool = false;
+true_flag: bool = true;
+println(false_flag);
+println(true_flag);
+
+nullable_count: int32 = 5;
+println(nullable_count);
+
+/* EXPECT
+false
+true
+5
+*/

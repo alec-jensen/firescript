@@ -583,6 +583,9 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **generic_function_same_type_param_modulo.fire** - Generic function reusing the same type parameter for multiple arguments (`fn<T>(a: T, b: T)` both typed `T`), exercising type-parameter unification during call inference
 - **generics_array_param_inference.fire** - A generic function taking an array parameter (`&arr: T[]`) infers `T` from the argument's *element* type, not the whole array type (regression: `int32[]` used to infer `T="int32[]"` instead of `T=int32`); also exercises the implicit array-length ABI parameter across a generic call, previously skipped for generic calls entirely
 
+### `identifiers/`
+- **identifiers_keyword_prefix.fire** - Regression: an identifier starting with a keyword-like literal token as a prefix (`false_flag`, `true_flag`, `nullable_count`) lexes as a single `IDENTIFIER`, not the literal token (`true`/`false`/`null`) followed by a stray remainder identifier (see `firescript/lexer.py`'s `BOOLEAN_LITERAL`/`NULL_LITERAL`/`VOID_LITERAL` patterns, which were missing the trailing `\b` word boundary every other keyword pattern has)
+
 ### `imports/`
 - **imports_single.fire** - Single symbol import
 - **imports_multi.fire** - Multiple symbol imports (merges `math_utils` and `string_utils`)

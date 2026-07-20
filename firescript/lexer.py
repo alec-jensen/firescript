@@ -127,9 +127,9 @@ class Lexer:
     int_core = r"(?:0[bB](?:_?[01])+|0[oO](?:_?[0-7])+|0[xX](?:_?[0-9a-fA-F])+|[0-9](?:_?[0-9])*)"
 
     literals: dict[str, str] = {
-        "BOOLEAN_LITERAL": r"true|false",
-        "NULL_LITERAL": r"null",
-        "VOID_LITERAL": r"void",
+        "BOOLEAN_LITERAL": r"true\b|false\b",
+        "NULL_LITERAL": r"null\b",
+        "VOID_LITERAL": r"void\b",
         # Float literal with explicit suffix (f, f32, f64, f128) - longest first to avoid premature 'f' match
         "FLOAT_LITERAL": rf"-?{float_core}(?:f128|f64|f32|f)",
         # Float literal without suffix
