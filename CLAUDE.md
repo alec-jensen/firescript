@@ -140,6 +140,7 @@ The table below reflects the **current implementation status** of major language
 | String concatenation (explicit, `string + string`) | [IMPLEMENTED] |
 | `string.length()` | [IMPLEMENTED] |
 | `string.upper()` / `string.lower()` | [IMPLEMENTED] |
+| `string.indexOf()` / `.substring()` / `.startsWith()` / `.endsWith()` / `.trim()` / `.replace()` | [IMPLEMENTED] |
 | String-to-numeric casting (`"42" as int32`) | [IMPLEMENTED] |
 | String iteration in `for-in` | [IMPLEMENTED] |
 | Explicit `as` casting (numeric ↔ numeric, built-ins → string) | [IMPLEMENTED] |

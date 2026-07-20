@@ -1,0 +1,32 @@
+// .trim(): strips leading/trailing space, tab, \n, \r (implemented via
+// @builtin_method, firescript/std/internal/strings.fire). Interior
+// whitespace is untouched.
+
+import @firescript/std.io.println;
+
+padded: string = "   hello world   ";
+println(padded.trim());
+
+tabsAndNewlines: string = "\t\nhi\r\n";
+println(tabsAndNewlines.trim());
+
+noPadding: string = "clean";
+println(noPadding.trim());
+
+allSpace: string = "     ";
+println(allSpace.trim());
+
+empty: string = "";
+println(empty.trim());
+
+interior: string = "  a  b  ";
+println(interior.trim());
+
+/* EXPECT
+hello world
+hi
+clean
+
+
+a  b
+*/

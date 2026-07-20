@@ -1,0 +1,29 @@
+// .indexOf()/.substring(): implemented via @builtin_method, directly
+// decorating the existing fs_rt_str_index_of/fs_rt_str_slice internal
+// primitives (see firescript/std/internal/strings.fire).
+
+import @firescript/std.io.println;
+
+s: string = "the quick brown fox";
+println(s.indexOf("quick"));
+println(s.indexOf("fox"));
+println(s.indexOf("cat"));
+println(s.indexOf(""));
+println(s.substring(4, 9));
+println(s.substring(16, 19));
+println(s.substring(0, s.length()));
+println(s.substring(-5, 3));
+println(s.substring(3, 100));
+println(s.substring(10, 2));
+
+/* EXPECT
+4
+16
+-1
+0
+quick
+fox
+the quick brown fox
+the
+ quick brown fox
+*/

@@ -1,0 +1,26 @@
+// .startsWith()/.endsWith(): implemented via @builtin_method
+// (firescript/std/internal/strings.fire). Every string starts/ends with
+// the empty string.
+
+import @firescript/std.io.println;
+
+s: string = "hello world";
+println(s.startsWith("hello"));
+println(s.startsWith("world"));
+println(s.startsWith(""));
+println(s.startsWith("hello world!"));
+println(s.endsWith("world"));
+println(s.endsWith("hello"));
+println(s.endsWith(""));
+println(s.endsWith("hello world!"));
+
+/* EXPECT
+true
+false
+true
+false
+true
+false
+true
+false
+*/

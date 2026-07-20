@@ -459,6 +459,10 @@ Split from a single `string_operations_comprehensive.fire` into per-behavior fil
 - **strings_comparison.fire** - `==` / `!=`
 - **strings_unicode.fire** - Emoji and accented characters
 - **strings_upper_lower.fire** - `.upper()` / `.lower()` ASCII case folding (mixed case, already-uppercase, empty string); implemented via `@builtin_method` in `firescript/std/internal/strings.fire`
+- **strings_index_of_substring.fire** - `.indexOf()` / `.substring()`: found/not-found/empty-needle, in-range/out-of-range/reversed-range slicing; implemented via `@builtin_method` directly decorating the existing `fs_rt_str_index_of`/`fs_rt_str_slice` internal primitives
+- **strings_starts_ends_with.fire** - `.startsWith()` / `.endsWith()`, including the empty-string case (every string starts/ends with `""`)
+- **strings_trim.fire** - `.trim()`: leading/trailing space, tab, `\n`, `\r`; all-whitespace and empty-string inputs; interior whitespace untouched
+- **strings_replace.fire** - `.replace()`: replaces every occurrence (not just the first), no-match and empty-`old` no-ops, whole-string match
 - **string_escape_edge_cases.fire** - A redundant `\'` escape and an unrecognized escape sequence (`\q`) inside a double-quoted string literal, exercising `codegen/x86_64/flir_to_asm.py`'s `_escape_asciz()` fallback branches (the lexer's `STRING_LITERAL` regex accepts `\.` for any character, not just a fixed escape set)
 - **strings_for_in.fire** - for-in iteration over strings: bare-identifier vs. fresh-expression collection, and `break`/`continue` inside the loop
 - **strings_for_in_regression_conditional_move.fire** - `for (chr: string in s)` where the loop variable is moved into an outer variable on only one arm of an `if`/`else` (the run-length-encoding accumulator pattern): previously crashed with an internal FIR verifier error (FIRV-O2, "possibly moved on some paths") because the automatic per-iteration drop of the loop variable was inserted unconditionally after the whole `if`/`else` instead of only on the arm that didn't already move it.

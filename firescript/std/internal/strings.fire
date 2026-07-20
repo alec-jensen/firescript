@@ -107,6 +107,7 @@ fn fs_rt_str_char_code(&s: string) -> uint8 {
     return mem_load_u8(src);
 }
 
+@builtin_method("string", "indexOf")
 fn fs_rt_str_index_of(&haystack: string, &needle: string) -> int32 {
     ph: uint64 = str_to_addr(haystack);
     pn: uint64 = str_to_addr(needle);
@@ -141,6 +142,7 @@ fn fs_rt_str_index_of(&haystack: string, &needle: string) -> int32 {
     return -1;
 }
 
+@builtin_method("string", "substring")
 fn fs_rt_str_slice(&s: string, start: int32, end: int32) -> string {
     src: uint64 = str_to_addr(s);
     len: uint64 = rt_str_len_addr(src);
@@ -196,4 +198,92 @@ fn fs_rt_str_lower(&s: string) -> string {
     }
     mem_store_u8(dst + len, 0u8);
     return addr_to_str(dst);
+}
+
+@builtin_method("string", "startsWith")
+fn fs_rt_str_starts_with(&s: string, &prefix: string) -> bool {
+    ps: uint64 = str_to_addr(s);
+    pp: uint64 = str_to_addr(prefix);
+    ls: uint64 = rt_str_len_addr(ps);
+    lp: uint64 = rt_str_len_addr(pp);
+    if (lp > ls) {
+        return false;
+    }
+    i: uint64 = 0u64;
+    while (i < lp) {
+        if (mem_load_u8(ps + i) != mem_load_u8(pp + i)) {
+            return false;
+        }
+        i = i + 1u64;
+    }
+    return true;
+}
+
+@builtin_method("string", "endsWith")
+fn fs_rt_str_ends_with(&s: string, &suffix: string) -> bool {
+    ps: uint64 = str_to_addr(s);
+    pt: uint64 = str_to_addr(suffix);
+    ls: uint64 = rt_str_len_addr(ps);
+    lt: uint64 = rt_str_len_addr(pt);
+    if (lt > ls) {
+        return false;
+    }
+    offset: uint64 = ls - lt;
+    i: uint64 = 0u64;
+    while (i < lt) {
+        if (mem_load_u8(ps + offset + i) != mem_load_u8(pt + i)) {
+            return false;
+        }
+        i = i + 1u64;
+    }
+    return true;
+}
+
+fn rt_str_is_space(c: uint8) -> bool {
+    return c == 32u8 || c == 9u8 || c == 10u8 || c == 13u8; // ' ', '\t', '\n', '\r'
+}
+
+@builtin_method("string", "trim")
+fn fs_rt_str_trim(&s: string) -> string {
+    src: uint64 = str_to_addr(s);
+    len: uint64 = rt_str_len_addr(src);
+    start: uint64 = 0u64;
+    while (start < len && rt_str_is_space(mem_load_u8(src + start))) {
+        start = start + 1u64;
+    }
+    end: uint64 = len;
+    while (end > start && rt_str_is_space(mem_load_u8(src + (end - 1u64)))) {
+        end = end - 1u64;
+    }
+    out_len: uint64 = end - start;
+    dst: uint64 = rt_raw_alloc(out_len + 1u64);
+    rt_reg_add(dst);
+    if (out_len > 0u64) {
+        mem_copy(dst, src + start, out_len);
+    }
+    mem_store_u8(dst + out_len, 0u8);
+    return addr_to_str(dst);
+}
+
+@builtin_method("string", "replace")
+fn fs_rt_str_replace(&s: string, &old: string, &replacement: string) -> string {
+    old_len: uint64 = rt_str_len_addr(str_to_addr(old));
+    if (old_len == 0u64) {
+        return fs_rt_str_dup(s);
+    }
+    result: string = "";
+    remaining: string = fs_rt_str_dup(s);
+    while (true) {
+        idx: int32 = fs_rt_str_index_of(remaining, old);
+        if (idx == -1) {
+            result = fs_rt_str_concat(result, remaining);
+            return result;
+        }
+        before: string = fs_rt_str_slice(remaining, 0, idx);
+        result = fs_rt_str_concat(result, before);
+        result = fs_rt_str_concat(result, replacement);
+        remaining_len: uint64 = rt_str_len_addr(str_to_addr(remaining));
+        remaining = fs_rt_str_slice(remaining, idx + (old_len as int32), remaining_len as int32);
+    }
+    return result;
 }

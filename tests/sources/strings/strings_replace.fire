@@ -1,0 +1,29 @@
+// .replace(): replaces every occurrence of `old` with `replacement`
+// (implemented via @builtin_method, firescript/std/internal/strings.fire).
+// An empty `old` is a no-op (matching the pattern; there's nothing well-
+// defined to replace between every character).
+
+import @firescript/std.io.println;
+
+s: string = "the cat sat on the mat";
+println(s.replace("at", "og"));
+
+repeated: string = "aXbXXc";
+println(repeated.replace("X", "-"));
+
+noMatch: string = "hello";
+println(noMatch.replace("z", "-"));
+
+emptyOld: string = "abc";
+println(emptyOld.replace("", "-"));
+
+wholeString: string = "aaa";
+println(wholeString.replace("aaa", "b"));
+
+/* EXPECT
+the cog sog on the mog
+a-b--c
+hello
+abc
+b
+*/
