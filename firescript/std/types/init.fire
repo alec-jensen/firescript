@@ -34,6 +34,32 @@ export class Option<T?> {
 	fn isNone() -> bool {
 		return this.value == null;
 	}
+
+	// Static factories require an explicit type argument when T can't be
+	// inferred from the call's own arguments -- true for None() (no
+	// arguments at all), so `Option<int32>.None()` rather than bare
+	// `Option.None()`. Some(value) infers T from value and works bare.
+	static fn Some(value: T) -> Option<T> {
+		return Option<T>(value);
+	}
+
+	static fn None() -> Option<T> {
+		return Option<T>(null);
+	}
+
+	// Extracts the value, leaving this Option empty (isSome() reads false
+	// afterward) -- safe for any T, including Owned: the field is nulled
+	// out immediately, so this Option's own destructor won't also try to
+	// free it (same aliasing hazard as Vec<T>.get() on an Owned element,
+	// avoided here the way Vec<T>.pop() avoids it instead).
+	fn unwrapOr(&mut this, default: T) -> T {
+		if (this.isSome()) {
+			v: T = this.value;
+			this.value = null;
+			return v;
+		}
+		return default;
+	}
 }
 
 export copyable class CopyableOption<T?> {
@@ -49,6 +75,28 @@ export copyable class CopyableOption<T?> {
 
 	fn isNone() -> bool {
 		return this.value == null;
+	}
+
+	static fn Some(value: T) -> CopyableOption<T> {
+		return CopyableOption<T>(value);
+	}
+
+	static fn None() -> CopyableOption<T> {
+		return CopyableOption<T>(null);
+	}
+
+	// Copyable T needs no extraction trick -- just read the value (via a
+	// local first, not `return this.value;` directly -- the field's
+	// declared type is T?, and a direct return doesn't get the same T?-
+	// to-T narrowing a local variable's initializer does). No explicit
+	// receiver, matching isSome()/isNone() above -- a Copyable class
+	// receiver can't be borrowed (&this), only passed by value.
+	fn unwrapOr(default: T) -> T {
+		if (this.isSome()) {
+			v: T = this.value;
+			return v;
+		}
+		return default;
 	}
 }
 
@@ -68,6 +116,30 @@ export class Result<T?, E?> {
 	fn isErr() -> bool {
 		return this.error != null;
 	}
+
+	// Ok(value) infers T from value but never E (E doesn't appear in
+	// Ok's own parameters), so `Result.Ok(x)` alone leaves E unresolved --
+	// use the explicit form, `Result<T,E>.Ok(x)`, when assigning to a
+	// declared Result<T,E> doesn't already pin E some other way. Same for
+	// Err(error) and T.
+	static fn Ok(value: T) -> Result<T, E> {
+		return Result<T, E>(value, null);
+	}
+
+	static fn Err(error: E) -> Result<T, E> {
+		return Result<T, E>(null, error);
+	}
+
+	// See Option<T>.unwrapOr()'s comment -- same extraction trick, same
+	// Owned-T safety argument.
+	fn unwrapOr(&mut this, default: T) -> T {
+		if (this.isOk()) {
+			v: T = this.value;
+			this.value = null;
+			return v;
+		}
+		return default;
+	}
 }
 
 export copyable class CopyableResult<T?, E?> {
@@ -85,5 +157,22 @@ export copyable class CopyableResult<T?, E?> {
 
 	fn isErr() -> bool {
 		return this.error != null;
+	}
+
+	static fn Ok(value: T) -> CopyableResult<T, E> {
+		return CopyableResult<T, E>(value, null);
+	}
+
+	static fn Err(error: E) -> CopyableResult<T, E> {
+		return CopyableResult<T, E>(null, error);
+	}
+
+	// No explicit receiver -- see CopyableOption.unwrapOr()'s comment.
+	fn unwrapOr(default: T) -> T {
+		if (this.isOk()) {
+			v: T = this.value;
+			return v;
+		}
+		return default;
 	}
 }

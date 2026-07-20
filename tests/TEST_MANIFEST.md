@@ -656,6 +656,10 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **result_isok_iserr.fire** - `Result<T,E>` basic usage: `Ok`/`Err` construction via the direct constructor (`Result<T,E>(value, error)` with the unused side `null` — designed before static methods on generic classes worked, see `generics/generic_class_static_method_inferred.fire`; kept as direct construction rather than revisited, no functional need to change it) and `isOk()`/`isErr()` correctness for Owned `T`/`E`
 - **result_null_vs_zero.fire** - Regression: `Result<T,E>` for scalar `T`/`E` correctly distinguishes `null` from a legitimately-stored `0`/`false`, same as `Option<T>`, across both of `Result`'s independent nullable fields (`value: T?`, `error: E?`)
 - **result_copyable.fire** - `CopyableResult<T,E>` usage: construction, `isOk()`/`isErr()`, and that a copy is independent (value semantics, not moved/shared)
+- **option_static_factories.fire** - `Option`/`CopyableOption`'s `Some()` (bare/inferred) and `None()` (explicit type args) static factories
+- **result_static_factories.fire** - `Result`/`CopyableResult`'s `Ok()`/`Err()` static factories (explicit type args only — neither factory's own argument mentions both type parameters)
+- **option_unwrap_or.fire** - `unwrapOr(default)` on `Option`/`CopyableOption`: Owned `Option<string>` and `Option<int32>` (scalar `T`, regression coverage for the null-to-scalar-field lowering fix) drain on extract; `CopyableOption<int32>` doesn't
+- **result_unwrap_or.fire** - `unwrapOr(default)` on `Result`/`CopyableResult`, same drain-vs-non-draining split as `Option`
 
 ### `std/collections/`
 - **vec_push_pop.fire** - `Vec<int32>` basic `push`/`pop`/`get`/`length`

@@ -1,0 +1,45 @@
+// Option<T>.unwrapOr(default): extracts the value, or returns default if
+// None. For Owned T, extraction drains the Option (isSome() reads false
+// afterward) -- the field is nulled out immediately so the Option's own
+// destructor won't also try to free it (same aliasing hazard as
+// Vec<T>.get() on an Owned element, avoided here the way Vec<T>.pop()
+// avoids it). CopyableOption<T> needs no such trick; it's left intact.
+import @firescript/std.io.println;
+import @firescript/std.types.Option;
+import @firescript/std.types.CopyableOption;
+
+someStr: Option<string> = Option.Some("hi");
+println(someStr.unwrapOr("fallback"));
+println(someStr.isSome());
+
+noneStr: Option<string> = Option<string>.None();
+println(noneStr.unwrapOr("fallback"));
+
+// Owned Option<int32> (scalar T, not a pointer like string above):
+// unwrapOr()'s `this.value = null;` must zero-lower for a scalar field,
+// not just null a pointer -- a separate fix from the string case.
+someInt: Option<int32> = Option.Some(0);
+println(someInt.unwrapOr(-1));
+println(someInt.isSome());
+
+noneInt: Option<int32> = Option<int32>.None();
+println(noneInt.unwrapOr(-1));
+
+cSome: CopyableOption<int32> = CopyableOption.Some(7);
+println(cSome.unwrapOr(0));
+println(cSome.isSome());
+
+cNone: CopyableOption<int32> = CopyableOption<int32>.None();
+println(cNone.unwrapOr(99));
+
+/* EXPECT
+hi
+false
+fallback
+0
+false
+-1
+7
+true
+99
+*/

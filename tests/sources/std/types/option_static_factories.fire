@@ -1,0 +1,25 @@
+// Option<T>/CopyableOption<T>.Some()/.None() static factories. Some(value)
+// infers T from its argument and works bare; None() has no argument to
+// infer T from, so it needs the explicit form, Option<T>.None().
+import @firescript/std.io.println;
+import @firescript/std.types.Option;
+import @firescript/std.types.CopyableOption;
+
+some1: Option<int32> = Option.Some(42);
+println(some1.isSome());
+
+none1: Option<int32> = Option<int32>.None();
+println(none1.isNone());
+
+cSome: CopyableOption<int32> = CopyableOption.Some(7);
+println(cSome.isSome());
+
+cNone: CopyableOption<bool> = CopyableOption<bool>.None();
+println(cNone.isNone());
+
+/* EXPECT
+true
+true
+true
+true
+*/

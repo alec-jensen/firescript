@@ -120,6 +120,45 @@ function<T> @Option.isNone(this: &Option) -> bool {
     ret %2
 }
 
+function<T> @Option.Some(value: T) -> Option<T> {
+  L0:
+    %0 = loadvar.T value
+    %1 = bconst true
+    %2 = call.Option<T> @Option.Option(%0 own, %1 own)
+    ret %2
+}
+
+function<T> @Option.None() -> Option<T> {
+  L0:
+    %0 = nullconst T?
+    %1 = bconst false
+    %2 = call.Option<T> @Option.Option(%0 own, %1 own)
+    ret %2
+}
+
+function<T> @Option.unwrapOr(this: &mut Option, default: T) -> T {
+  L0:
+    %0 = loadvar.Option this
+    %1 = mcall.bool %0, "isSome"()
+    br %1, L2, L1
+
+  L1:
+    %2 = loadvar.T default
+    ret %2
+
+  L2:
+    %3 = loadvar.Option this
+    %4 = loadfield.T? %3, "value"
+    local v: T = %4
+    %5 = bconst false
+    %6 = nullconst T?
+    %7 = loadvar.Option this
+    storefield %7, "value", %6
+    storefield %7, "value__hasval", %5
+    %8 = loadvar.T v
+    ret %8
+}
+
 function<T> @CopyableOption.CopyableOption(value: T?, value__hasval: bool) -> CopyableOption {
   L0:
     %0 = alloc.CopyableOption()
@@ -146,6 +185,40 @@ function<T> @CopyableOption.isNone(this: CopyableOption) -> bool {
     %1 = loadfield.bool %0, "value__hasval"
     %2 = unop "!", %1
     ret %2
+}
+
+function<T> @CopyableOption.Some(value: T) -> CopyableOption<T> {
+  L0:
+    %0 = loadvar.T value
+    %1 = bconst true
+    %2 = call.CopyableOption<T> @CopyableOption.CopyableOption(%0 own, %1 own)
+    ret %2
+}
+
+function<T> @CopyableOption.None() -> CopyableOption<T> {
+  L0:
+    %0 = nullconst T?
+    %1 = bconst false
+    %2 = call.CopyableOption<T> @CopyableOption.CopyableOption(%0 own, %1 own)
+    ret %2
+}
+
+function<T> @CopyableOption.unwrapOr(this: CopyableOption, default: T) -> T {
+  L0:
+    %0 = loadvar.CopyableOption this
+    %1 = mcall.bool %0, "isSome"()
+    br %1, L2, L1
+
+  L1:
+    %2 = loadvar.T default
+    ret %2
+
+  L2:
+    %3 = loadvar.CopyableOption this
+    %4 = loadfield.T? %3, "value"
+    local v: T = %4
+    %5 = loadvar.T v
+    ret %5
 }
 
 function<T, E> @Result.Result(value: T?, error: E?, value__hasval: bool, error__hasval: bool) -> Result {
@@ -180,6 +253,49 @@ function<T, E> @Result.isErr(this: &Result) -> bool {
     ret %1
 }
 
+function<T, E> @Result.Ok(value: T) -> Result<T, E> {
+  L0:
+    %0 = loadvar.T value
+    %1 = nullconst E?
+    %2 = bconst true
+    %3 = bconst false
+    %4 = call.Result<T, E> @Result.Result(%0 own, %1 own, %2 own, %3 own)
+    ret %4
+}
+
+function<T, E> @Result.Err(error: E) -> Result<T, E> {
+  L0:
+    %0 = nullconst T?
+    %1 = loadvar.E error
+    %2 = bconst false
+    %3 = bconst true
+    %4 = call.Result<T, E> @Result.Result(%0 own, %1 own, %2 own, %3 own)
+    ret %4
+}
+
+function<T, E> @Result.unwrapOr(this: &mut Result, default: T) -> T {
+  L0:
+    %0 = loadvar.Result this
+    %1 = mcall.bool %0, "isOk"()
+    br %1, L2, L1
+
+  L1:
+    %2 = loadvar.T default
+    ret %2
+
+  L2:
+    %3 = loadvar.Result this
+    %4 = loadfield.T? %3, "value"
+    local v: T = %4
+    %5 = bconst false
+    %6 = nullconst T?
+    %7 = loadvar.Result this
+    storefield %7, "value", %6
+    storefield %7, "value__hasval", %5
+    %8 = loadvar.T v
+    ret %8
+}
+
 function<T, E> @CopyableResult.CopyableResult(value: T?, error: E?, value__hasval: bool, error__hasval: bool) -> CopyableResult {
   L0:
     %0 = alloc.CopyableResult()
@@ -210,6 +326,44 @@ function<T, E> @CopyableResult.isErr(this: CopyableResult) -> bool {
     %0 = loadvar.CopyableResult this
     %1 = loadfield.bool %0, "error__hasval"
     ret %1
+}
+
+function<T, E> @CopyableResult.Ok(value: T) -> CopyableResult<T, E> {
+  L0:
+    %0 = loadvar.T value
+    %1 = nullconst E?
+    %2 = bconst true
+    %3 = bconst false
+    %4 = call.CopyableResult<T, E> @CopyableResult.CopyableResult(%0 own, %1 own, %2 own, %3 own)
+    ret %4
+}
+
+function<T, E> @CopyableResult.Err(error: E) -> CopyableResult<T, E> {
+  L0:
+    %0 = nullconst T?
+    %1 = loadvar.E error
+    %2 = bconst false
+    %3 = bconst true
+    %4 = call.CopyableResult<T, E> @CopyableResult.CopyableResult(%0 own, %1 own, %2 own, %3 own)
+    ret %4
+}
+
+function<T, E> @CopyableResult.unwrapOr(this: CopyableResult, default: T) -> T {
+  L0:
+    %0 = loadvar.CopyableResult this
+    %1 = mcall.bool %0, "isOk"()
+    br %1, L2, L1
+
+  L1:
+    %2 = loadvar.T default
+    ret %2
+
+  L2:
+    %3 = loadvar.CopyableResult this
+    %4 = loadfield.T? %3, "value"
+    local v: T = %4
+    %5 = loadvar.T v
+    ret %5
 }
 
 function @main() -> void {

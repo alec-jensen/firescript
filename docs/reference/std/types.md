@@ -64,6 +64,11 @@ class Option<T?> {
 
     fn isSome() -> bool;
     fn isNone() -> bool;
+
+    static fn Some(value: T) -> Option<T>;
+    static fn None() -> Option<T>;
+
+    fn unwrapOr(&mut this, default: T) -> T;
 }
 ```
 
@@ -71,20 +76,23 @@ class Option<T?> {
 
 - `isSome()`: Returns `true` if a value is present
 - `isNone()`: Returns `true` if no value is present
+- `Some(value)`: Static factory for a present value. Infers `T` from `value`, so it works bare (`Option.Some(5)`).
+- `None()`: Static factory for an absent value. Takes no argument to infer `T` from — use the explicit form, `Option<int32>.None()`.
+- `unwrapOr(default)`: Returns the value if present, else `default`. **Drains the Option** — extracts the value by nulling out the field, so `isSome()` reads `false` immediately afterward. Safe for any `T`, including Owned types (the same aliasing hazard `Vec<T>.get()` has for an Owned element is avoided here the way `Vec<T>.pop()` avoids it — see [Collections](collections.md)).
 
 **Example:**
-
-Intended usage (see the known issue above):
 
 ```firescript
 import @firescript/std.types.Option;
 import @firescript/std.io.println;
 
-maybe_name: Option<string> = Option<string>("Alice");
-present: bool = maybe_name.isSome();
-if (present) {
-    println(maybe_name.value);
+maybe_name: Option<string> = Option.Some("Alice");
+if (maybe_name.isSome()) {
+    println(maybe_name.unwrapOr("unknown"));
 }
+
+nothing: Option<string> = Option<string>.None();
+println(nothing.unwrapOr("fallback"));  // fallback
 ```
 
 **Note:** `Option` is an Owned type; construct carefully with move semantics in mind.
@@ -101,22 +109,24 @@ copyable class CopyableOption<T?> {
 
     fn isSome() -> bool;
     fn isNone() -> bool;
+
+    static fn Some(value: T) -> CopyableOption<T>;
+    static fn None() -> CopyableOption<T>;
+
+    fn unwrapOr(default: T) -> T;
 }
 ```
 
-**Example:**
+`unwrapOr` here doesn't drain anything — Copyable values are just read, not extracted, so the option is left intact and can be read again.
 
-Intended usage (see the known issue above):
+**Example:**
 
 ```firescript
 import @firescript/std.types.CopyableOption;
 import @firescript/std.io.println;
 
-maybe_count: CopyableOption<int32> = CopyableOption<int32>(5);
-present: bool = maybe_count.isSome();
-if (present) {
-    println(maybe_count.value);
-}
+maybe_count: CopyableOption<int32> = CopyableOption.Some(5);
+println(maybe_count.unwrapOr(0));
 ```
 
 ## `Result<T,E>` [IMPLEMENTED]
@@ -132,6 +142,11 @@ class Result<T?, E?> {
 
     fn isOk() -> bool;
     fn isErr() -> bool;
+
+    static fn Ok(value: T) -> Result<T, E>;
+    static fn Err(error: E) -> Result<T, E>;
+
+    fn unwrapOr(&mut this, default: T) -> T;
 }
 ```
 
@@ -139,8 +154,8 @@ class Result<T?, E?> {
 
 - `isOk()`: Returns `true` if the result holds a success value
 - `isErr()`: Returns `true` if the result holds an error value
-
-**Note:** There are no `Result.Ok(value)` / `Result.Err(error)` static factory methods — static methods on generic classes are not yet supported by the compiler (calling one either fails to parse, with explicit type arguments, or crashes the compiler, with inferred type arguments). Construct a `Result` directly instead, passing `null` for the unused side:
+- `Ok(value)` / `Err(error)`: Static factories. Neither infers *both* type parameters from its own argument (`Ok` never mentions `E`; `Err` never mentions `T`) — always use the explicit form, `Result<T,E>.Ok(x)` / `Result<T,E>.Err(e)`.
+- `unwrapOr(default)`: Returns the success value if present, else `default`. Drains the `Result` the same way `Option<T>.unwrapOr()` does — see its note above.
 
 ```firescript
 import @firescript/std.types.Result;
@@ -148,15 +163,13 @@ import @firescript/std.io.println;
 
 fn tryDivide(a: int32, b: int32) -> Result<int32, string> {
     if (b == 0) {
-        return Result<int32, string>(null, "division by zero");
+        return Result<int32, string>.Err("division by zero");
     }
-    return Result<int32, string>(a / b, null);
+    return Result<int32, string>.Ok(a / b);
 }
 
 outcome: Result<int32, string> = tryDivide(10, 0);
-if (outcome.isErr()) {
-    println(outcome.error);
-}
+println(outcome.unwrapOr(-1));  // -1
 ```
 
 **Note:** `Result` is an Owned type; construct carefully with move semantics in mind.
@@ -174,6 +187,11 @@ copyable class CopyableResult<T?, E?> {
 
     fn isOk() -> bool;
     fn isErr() -> bool;
+
+    static fn Ok(value: T) -> CopyableResult<T, E>;
+    static fn Err(error: E) -> CopyableResult<T, E>;
+
+    fn unwrapOr(default: T) -> T;
 }
 ```
 
@@ -183,10 +201,8 @@ copyable class CopyableResult<T?, E?> {
 import @firescript/std.types.CopyableResult;
 import @firescript/std.io.println;
 
-parsed: CopyableResult<int32, bool> = CopyableResult<int32, bool>(42, null);
-if (parsed.isOk()) {
-    println(parsed.value);
-}
+parsed: CopyableResult<int32, bool> = CopyableResult<int32, bool>.Ok(42);
+println(parsed.unwrapOr(-1));
 ```
 
 ## Usage Notes

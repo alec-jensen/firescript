@@ -1,0 +1,26 @@
+// Result<T,E>/CopyableResult<T,E>.Ok()/.Err() static factories. Neither
+// infers both type parameters from its own arguments (Ok(value) never
+// mentions E; Err(error) never mentions T) -- always use the explicit
+// form, Result<T,E>.Ok(x) / Result<T,E>.Err(e).
+import @firescript/std.io.println;
+import @firescript/std.types.Result;
+import @firescript/std.types.CopyableResult;
+
+ok1: Result<int32, string> = Result<int32, string>.Ok(10);
+println(ok1.isOk());
+
+err1: Result<int32, string> = Result<int32, string>.Err("bad");
+println(err1.isErr());
+
+cOk: CopyableResult<int32, bool> = CopyableResult<int32, bool>.Ok(5);
+println(cOk.isOk());
+
+cErr: CopyableResult<int32, bool> = CopyableResult<int32, bool>.Err(true);
+println(cErr.isErr());
+
+/* EXPECT
+true
+true
+true
+true
+*/

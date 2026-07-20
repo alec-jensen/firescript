@@ -1,0 +1,29 @@
+// Result<T,E>.unwrapOr(default): extracts the Ok value, or returns
+// default if Err. Same Owned-T extraction/draining behavior as
+// Option<T>.unwrapOr() -- see that test's header comment.
+import @firescript/std.io.println;
+import @firescript/std.types.Result;
+import @firescript/std.types.CopyableResult;
+
+okStr: Result<string, string> = Result<string, string>.Ok("value");
+println(okStr.unwrapOr("default"));
+println(okStr.isOk());
+
+errStr: Result<string, string> = Result<string, string>.Err("oops");
+println(errStr.unwrapOr("default"));
+
+cOk: CopyableResult<int32, bool> = CopyableResult<int32, bool>.Ok(5);
+println(cOk.unwrapOr(-1));
+println(cOk.isOk());
+
+cErr: CopyableResult<int32, bool> = CopyableResult<int32, bool>.Err(true);
+println(cErr.unwrapOr(-1));
+
+/* EXPECT
+value
+false
+default
+5
+true
+-1
+*/

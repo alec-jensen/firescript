@@ -208,6 +208,27 @@ self-hosting work is not blocked by missing data structures.
   after a bare-call construction (the deferred-import suppression in `FIELD_ACCESS`
   handling widened from composite-generic-only to any not-yet-resolved non-primitive type
   — see `classes/classes_cross_module_bare_construct_field_access.fire`).
+- Added `Some`/`None`/`Ok`/`Err` static factories and `unwrapOr()` to
+  `Option`/`CopyableOption`/`Result`/`CopyableResult` **done** — see
+  `docs/reference/std/types.md`. Building these surfaced four more previously-unexercised
+  compiler bugs, all fixed (see `docs/changelog.md`'s 0.6.0 Bug Fixes): the FLIR verifier's
+  store check was the one place not using the codebase's established pointer-leniency
+  comparison, breaking `this.value = null;` for a pointer-shaped generic field; the same
+  assignment for a *scalar*-shaped generic field lowered `null` to a bare pointer instead of
+  the scalar's zero value, since the assignment-conversion paths never propagated the
+  target's expected type before converting a `null` RHS; a generic class referencing itself
+  inside its own body (a static factory returning `Box<T>`, or a self-call like
+  `this.isSome()` from another of its own methods) failed to parse/type-check in a file with
+  no imports at all — exactly `std/types/init.fire`'s own shape — because the enclosing
+  class isn't registered in the parser's normal registries until its whole body finishes
+  parsing, and a pre-existing fallback for this only ever activated in files that happened
+  to have an unrelated import; fixed with a dedicated `_current_generic_class_name` tracked
+  independently across the parser's parse-time and separate type-check-time traversals. And
+  a *general*, non-generic-specific gap: a bare (no explicit type arguments) type-qualified
+  static call on a class imported from another module (`Counter.fromDouble(5)`) had no
+  deferred-import parsing fallback at all — only the `<TypeArgs>` form did — so it silently
+  fell through to being parsed as an ordinary instance method call and crashed AST->FIR
+  conversion.
 - Implement `@firescript/std.regex` with necessary runtime support
 - Regenerate and freeze goldens for all new features
 
@@ -223,6 +244,13 @@ self-hosting work is not blocked by missing data structures.
   `tests/sources/std/text/stringbuilder_basic.fire`
 - Golden tests for Result/CopyableResult — **done**: `tests/sources/std/types/`
   (`result_isok_iserr.fire`, `result_null_vs_zero.fire`, `result_copyable.fire`)
+- Golden tests for the `Some`/`None`/`Ok`/`Err`/`unwrapOr` static factories/combinator —
+  **done**: `tests/sources/std/types/` (`option_static_factories.fire`,
+  `result_static_factories.fire`, `option_unwrap_or.fire`, `result_unwrap_or.fire`), plus
+  regression coverage for the compiler bugs found along the way:
+  `tests/sources/generics/generic_self_referential_static_factory.fire`,
+  `tests/python/parser/test_generic_self_reference.py` (the no-imports edge specifically),
+  and `tests/sources/classes/classes_cross_module_bare_static_method.fire`
 - Golden tests for new string methods — **done**: `tests/sources/strings/`
   (`strings_index_of_substring.fire`, `strings_starts_ends_with.fire`, `strings_trim.fire`,
   `strings_replace.fire`) and `tests/sources/std/text/split_basic.fire`
