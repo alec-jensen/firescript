@@ -123,7 +123,16 @@ self-hosting work is not blocked by missing data structures.
     correctly returns `true`. String/class/array nullables were already unambiguous via the
     pointer value `0` and are untouched by this.
 - New module `@firescript/std.text` — `StringBuilder`
-- Enhanced `@firescript/std.types` — `Result<T,E>` with `Ok`, `Err` variants and combinators
+- Enhanced `@firescript/std.types` — `Result<T,E>`/`CopyableResult<T,E>` — **done**: `value: T?`/`error: E?`
+  fields (mirrors `Option<T>`'s pattern exactly, including automatic nullable-scalar correctness for a
+  primitive `T`/`E`), `isOk()`/`isErr()`. No `Ok`/`Err` static factory constructors and no combinators
+  (`map`, `unwrapOr`, etc.) — while probing the natural `Result.Ok(value)`/`Result.Err(error)` design,
+  discovered static methods on generic classes don't work at all yet: explicit type arguments
+  (`Box<int32>.make(5)`) are a parser error, and inferred type arguments (`Box.make(5)`) crash AST->FIR
+  conversion (FIRV-L1, the bare class name lowers as a variable load instead of a static-call target) —
+  see `tests/sources/known_issues/generic_class_static_method_crash.fire`. `Result`/`CopyableResult` are
+  constructed directly instead (`Result<T,E>(value, error)`, `null` on the unused side), a purely
+  additive follow-up once that compiler gap is fixed.
 - **`@firescript/std.regex`** — full regex matching engine (lexer, parser, NFA/DFA
   compilation, matching over strings). Required by FCL and by compiler string-processing
   needs. (Existing stub needs real implementation.)
@@ -137,19 +146,25 @@ self-hosting work is not blocked by missing data structures.
   value-producing forms, tag-dispatched destructors for owned payload data) work across the
   full pipeline. Generic enums (`enum Option<T>`) remain a follow-up.
 - Support `Vec<T>`, `HashMap<K,V>`, `StringBuilder`, and `Result<T,E>` as stdlib modules
-  with appropriate compiler intrinsics where needed — `Vec<T>` (including `enumerate`) and
-  `HashMap<K,V>` **done**; also unblocked unsized array class fields (previously rejected
-  entirely), added a `fs_rt_hash<K>` intrinsic and multi-field `@owns_elements` support, and
-  fixed a series of narrow, previously-unexercised generic-class/generator bugs both
-  surfaced (method-call return-type substitution for a bare type-parameter return, missing
-  receiver on a method with no explicit `&this`/`this` destroying the object on every call,
-  a generic class's own bare-name Owned/Copyable registration, a generator-loop-variable
-  drop gap for Owned yield types, nested-type-argument substitution inside a compound
-  generic type string, generic generator functions having no type-argument
-  inference/monomorphization at all, class-body type-parameter scoping in the standalone
-  type-checking pass, a generic method calling another method on the same instance, `drop()`
-  on a primitive corrupting the heap, and `null` for a nullable scalar type) — see
-  `docs/changelog.md`'s 0.6.0 Bug Fixes.
+  with appropriate compiler intrinsics where needed — `Vec<T>` (including `enumerate`),
+  `HashMap<K,V>`, and `Result<T,E>`/`CopyableResult<T,E>` **done**; also unblocked unsized
+  array class fields (previously rejected entirely), added a `fs_rt_hash<K>` intrinsic and
+  multi-field `@owns_elements` support, and fixed a series of narrow, previously-unexercised
+  generic-class/generator bugs both surfaced (method-call return-type substitution for a bare
+  type-parameter return, missing receiver on a method with no explicit `&this`/`this`
+  destroying the object on every call, a generic class's own bare-name Owned/Copyable
+  registration, a generator-loop-variable drop gap for Owned yield types, nested-type-argument
+  substitution inside a compound generic type string, generic generator functions having no
+  type-argument inference/monomorphization at all, class-body type-parameter scoping in the
+  standalone type-checking pass, a generic method calling another method on the same instance,
+  `drop()` on a primitive corrupting the heap, and `null` for a nullable scalar type) — see
+  `docs/changelog.md`'s 0.6.0 Bug Fixes. A new, still-open one surfaced while designing
+  `Result<T,E>`: static methods on generic classes don't work in any call form (see
+  `tests/sources/known_issues/generic_class_static_method_crash.fire`). Separately, fixed an
+  unrelated lexer bug hit while writing `Result<T,E>`'s regression tests: identifiers with
+  `true`/`false`/`null` as a literal prefix (e.g. `false_ok`) failed to parse, since those
+  three literal token patterns (unlike every keyword) had no trailing word-boundary — see
+  `docs/changelog.md`'s 0.6.0 Bug Fixes and `tests/sources/identifiers/`.
 - Implement `@firescript/std.regex` with necessary runtime support
 - Regenerate and freeze goldens for all new features
 
@@ -162,6 +177,8 @@ self-hosting work is not blocked by missing data structures.
   **done**: `tests/sources/std/collections/` (push/pop, growth, get/set, an Owned element
   type; integer keys, string keys, growth/rehashing, an Owned value type with a
   leak/double-free stress cycle)
+- Golden tests for Result/CopyableResult — **done**: `tests/sources/std/types/`
+  (`result_isok_iserr.fire`, `result_null_vs_zero.fire`, `result_copyable.fire`)
 - Golden tests for new string methods
 - Comprehensive golden tests for regex (matching, capture groups, anchors, character
   classes, alternation, quantifiers)

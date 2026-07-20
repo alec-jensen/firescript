@@ -1,0 +1,27 @@
+// Basic usage of Result<T,E>: Ok/Err construction via the direct
+// constructor (Result<T,E>(value, error) with the unused side left null --
+// there are no static Ok()/Err() factories, since static methods on
+// generic classes don't work yet, see
+// tests/sources/known_issues/generic_class_static_method_crash.fire) and
+// isOk()/isErr() correctness for Owned T/E.
+import @firescript/std.io.println;
+import @firescript/std.types.Result;
+
+ok_result: Result<string, string> = Result<string, string>("42", null);
+println(ok_result.isOk());
+println(ok_result.isErr());
+println(ok_result.value);
+
+err_result: Result<string, string> = Result<string, string>(null, "boom");
+println(err_result.isOk());
+println(err_result.isErr());
+println(err_result.error);
+
+/* EXPECT
+true
+false
+42
+false
+true
+boom
+*/

@@ -1,0 +1,24 @@
+// CopyableResult<T,E> usage: construction, isOk()/isErr(), and that a copy
+// of a CopyableResult is independent (a value-semantics copy, not a
+// shared/moved reference) -- mirrors the Copyable-vs-Owned distinction
+// already covered for CopyableOption.
+import @firescript/std.io.println;
+import @firescript/std.types.CopyableResult;
+
+original: CopyableResult<int32, bool> = CopyableResult<int32, bool>(10, null);
+copy: CopyableResult<int32, bool> = original;
+println(original.isOk());
+println(copy.isOk());
+println(copy.value);
+
+err_result: CopyableResult<int32, bool> = CopyableResult<int32, bool>(null, true);
+println(err_result.isErr());
+println(err_result.error);
+
+/* EXPECT
+true
+true
+10
+true
+true
+*/

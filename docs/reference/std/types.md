@@ -2,7 +2,7 @@
 
 The `std.types` module provides generic container and utility types.
 
-> Status: `Tuple`, `CopyableTuple`, `Option`, and `CopyableOption` are all [IMPLEMENTED] and tested.
+> Status: `Tuple`, `CopyableTuple`, `Option`, `CopyableOption`, `Result`, and `CopyableResult` are all [IMPLEMENTED] and tested.
 
 ## `Tuple<T, U>`
 
@@ -119,9 +119,79 @@ if (present) {
 }
 ```
 
+## `Result<T,E>` [IMPLEMENTED]
+
+A value that is either a success (`T`) or a failure (`E`). Use this to represent operations that can fail without relying on exceptions or sentinel values.
+
+```firescript
+class Result<T?, E?> {
+    value: T?;
+    error: E?;
+
+    fn Result(value: T?, error: E?);
+
+    fn isOk() -> bool;
+    fn isErr() -> bool;
+}
+```
+
+**Methods:**
+
+- `isOk()`: Returns `true` if the result holds a success value
+- `isErr()`: Returns `true` if the result holds an error value
+
+**Note:** There are no `Result.Ok(value)` / `Result.Err(error)` static factory methods — static methods on generic classes are not yet supported by the compiler (calling one either fails to parse, with explicit type arguments, or crashes the compiler, with inferred type arguments). Construct a `Result` directly instead, passing `null` for the unused side:
+
+```firescript
+import @firescript/std.types.Result;
+import @firescript/std.io.println;
+
+fn tryDivide(a: int32, b: int32) -> Result<int32, string> {
+    if (b == 0) {
+        return Result<int32, string>(null, "division by zero");
+    }
+    return Result<int32, string>(a / b, null);
+}
+
+outcome: Result<int32, string> = tryDivide(10, 0);
+if (outcome.isErr()) {
+    println(outcome.error);
+}
+```
+
+**Note:** `Result` is an Owned type; construct carefully with move semantics in mind.
+
+## `CopyableResult<T,E>` [IMPLEMENTED]
+
+A copyable variant of `Result` for copyable types.
+
+```firescript
+copyable class CopyableResult<T?, E?> {
+    value: T?;
+    error: E?;
+
+    fn CopyableResult(value: T?, error: E?);
+
+    fn isOk() -> bool;
+    fn isErr() -> bool;
+}
+```
+
+**Example:**
+
+```firescript
+import @firescript/std.types.CopyableResult;
+import @firescript/std.io.println;
+
+parsed: CopyableResult<int32, bool> = CopyableResult<int32, bool>(42, null);
+if (parsed.isOk()) {
+    println(parsed.value);
+}
+```
+
 ## Usage Notes
 
-- **Prefer `CopyableTuple` and `CopyableOption`** for numeric/scalar types to avoid unnecessary moves.
+- **Prefer `CopyableTuple`, `CopyableOption`, and `CopyableResult`** for numeric/scalar types to avoid unnecessary moves.
 - **Use owned variants** for containers or strings that you want to pass around differently.
 - Both variants support generic type parameters; compile-time monomorphization produces efficient code.
 

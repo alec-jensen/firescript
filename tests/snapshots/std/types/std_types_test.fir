@@ -20,6 +20,20 @@ type CopyableOption<T> copyable {
   value__hasval: bool
 }
 
+type Result<T, E> owned {
+  value: T?
+  value__hasval: bool
+  error: E?
+  error__hasval: bool
+}
+
+type CopyableResult<T, E> copyable {
+  value: T?
+  value__hasval: bool
+  error: E?
+  error__hasval: bool
+}
+
 function<T> @print(value: &T) -> void {
   L0:
     %0 = loadvar.T value
@@ -132,6 +146,70 @@ function<T> @CopyableOption.isNone(this: CopyableOption) -> bool {
     %1 = loadfield.bool %0, "value__hasval"
     %2 = unop "!", %1
     ret %2
+}
+
+function<T, E> @Result.Result(value: T?, error: E?, value__hasval: bool, error__hasval: bool) -> Result {
+  L0:
+    %0 = alloc.Result()
+    local this: Result = %0
+    %1 = loadvar.bool value__hasval
+    %2 = loadvar.T? value
+    %3 = loadvar.Result this
+    storefield %3, "value", %2
+    storefield %3, "value__hasval", %1
+    %4 = loadvar.bool error__hasval
+    %5 = loadvar.E? error
+    %6 = loadvar.Result this
+    storefield %6, "error", %5
+    storefield %6, "error__hasval", %4
+    %7 = loadvar.Result this
+    ret %7
+}
+
+function<T, E> @Result.isOk(this: &Result) -> bool {
+  L0:
+    %0 = loadvar.Result this
+    %1 = loadfield.bool %0, "value__hasval"
+    ret %1
+}
+
+function<T, E> @Result.isErr(this: &Result) -> bool {
+  L0:
+    %0 = loadvar.Result this
+    %1 = loadfield.bool %0, "error__hasval"
+    ret %1
+}
+
+function<T, E> @CopyableResult.CopyableResult(value: T?, error: E?, value__hasval: bool, error__hasval: bool) -> CopyableResult {
+  L0:
+    %0 = alloc.CopyableResult()
+    local this: CopyableResult = %0
+    %1 = loadvar.bool value__hasval
+    %2 = loadvar.T? value
+    %3 = loadvar.CopyableResult this
+    storefield %3, "value", %2
+    storefield %3, "value__hasval", %1
+    %4 = loadvar.bool error__hasval
+    %5 = loadvar.E? error
+    %6 = loadvar.CopyableResult this
+    storefield %6, "error", %5
+    storefield %6, "error__hasval", %4
+    %7 = loadvar.CopyableResult this
+    ret %7
+}
+
+function<T, E> @CopyableResult.isOk(this: CopyableResult) -> bool {
+  L0:
+    %0 = loadvar.CopyableResult this
+    %1 = loadfield.bool %0, "value__hasval"
+    ret %1
+}
+
+function<T, E> @CopyableResult.isErr(this: CopyableResult) -> bool {
+  L0:
+    %0 = loadvar.CopyableResult this
+    %1 = loadfield.bool %0, "error__hasval"
+    ret %1
 }
 
 function @main() -> void {

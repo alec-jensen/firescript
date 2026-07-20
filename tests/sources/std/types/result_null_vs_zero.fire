@@ -1,0 +1,26 @@
+// Regression: Result<T,E> for scalar T/E (e.g. int32, bool) must
+// distinguish `null` from a legitimately-stored zero/false, same as
+// Option<T> (see option_null_vs_zero.fire) -- Result<T,E> reuses the same
+// nullable-scalar field mechanism on two independent fields (value: T?,
+// error: E?) instead of one.
+import @firescript/std.io.println;
+import @firescript/std.types.Result;
+
+zero_ok: Result<int32, string> = Result<int32, string>(0, null);
+println(zero_ok.isOk());
+println(zero_ok.isErr());
+
+false_ok: Result<bool, string> = Result<bool, string>(false, null);
+println(false_ok.isOk());
+
+zero_err: Result<string, int32> = Result<string, int32>(null, 0);
+println(zero_err.isErr());
+println(zero_err.isOk());
+
+/* EXPECT
+true
+false
+true
+true
+false
+*/

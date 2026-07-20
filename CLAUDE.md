@@ -169,6 +169,7 @@ The table below reflects the **current implementation status** of major language
 | `@firescript/std.math` | [IMPLEMENTED] |
 | `@firescript/std.types` — `Tuple`, `CopyableTuple` | [IMPLEMENTED] |
 | `@firescript/std.types` — `Option`, `CopyableOption` | [IMPLEMENTED] |
+| `@firescript/std.types` — `Result`, `CopyableResult` | [IMPLEMENTED] |
 | `@firescript/std.fs` (`File`, `FileResult`) | [IMPLEMENTED] |
 | `@firescript/std.regex` | [IMPLEMENTED] |
 | `@firescript/std.cli.args` | [IMPLEMENTED] |

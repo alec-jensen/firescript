@@ -51,3 +51,39 @@ export copyable class CopyableOption<T?> {
 		return this.value == null;
 	}
 }
+
+export class Result<T?, E?> {
+	value: T?;
+	error: E?;
+
+	fn Result(value: T?, error: E?) {
+		this.value = value;
+		this.error = error;
+	}
+
+	fn isOk() -> bool {
+		return this.value != null;
+	}
+
+	fn isErr() -> bool {
+		return this.error != null;
+	}
+}
+
+export copyable class CopyableResult<T?, E?> {
+	value: T?;
+	error: E?;
+
+	fn CopyableResult(value: T?, error: E?) {
+		this.value = value;
+		this.error = error;
+	}
+
+	fn isOk() -> bool {
+		return this.value != null;
+	}
+
+	fn isErr() -> bool {
+		return this.error != null;
+	}
+}
