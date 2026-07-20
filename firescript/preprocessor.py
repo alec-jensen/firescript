@@ -786,6 +786,27 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
                         vt, _ia, _origin = frame[receiver.name]
                         receiver_type = vt
                         break
+            elif receiver is not None:
+                # A non-identifier receiver (e.g. a field access like
+                # this.sink.take(...)) has no var_maps entry to look up --
+                # fall back to the type parser/type_system.py already
+                # resolved onto the node. Without this, receiver_type
+                # stayed None for any such receiver, so an owned argument
+                # moved through it (e.g. this.parts.push(s)) never had
+                # _apply_move_semantics applied -- it was never removed
+                # from scope tracking, so it looked doubly consumed once
+                # params/locals started being auto-dropped at scope exit
+                # (FIRV-O2), same root shape as the this.super(...) case
+                # handled above.
+                expr_type = getattr(receiver, "return_type", None)
+                if isinstance(expr_type, str) and expr_type:
+                    receiver_type = expr_type[:-2] if expr_type.endswith("[]") else expr_type
+            if receiver_type and "<" in receiver_type:
+                # method_sigs is keyed by the bare declared class name
+                # (e.g. "Vec"), never a generic instantiation string --
+                # same normalization ast_to_fir.py's _convert_method_call
+                # already does for its own receiver_base lookup.
+                receiver_type = receiver_type.split("<", 1)[0]
             if receiver_type and receiver_type in method_sigs:
                 flags = method_sigs[receiver_type].get(node.name)
                 if flags:

@@ -711,21 +711,45 @@ class SemanticAnalyzer:
             self._analyze_node(receiver)
 
             method_sig = None
+            receiver_type: Optional[str] = None
+            receiver_is_array = False
             if receiver.node_type == NodeTypes.IDENTIFIER:
                 receiver_binding = self._lookup_binding(receiver.name)
                 if receiver_binding:
-                    # Array/string dot-methods are @builtin_method-registered
-                    # (see builtin_methods.py), not user class methods -- and
-                    # must be checked ahead of the class-method lookup below,
-                    # since `method_signatures` keys on var_type alone and
-                    # doesn't distinguish e.g. a plain `string` from a
-                    # `string[]` (both would key on "string").
-                    if receiver_binding.is_array:
-                        method_sig = self._builtin_method_sig("array", node.name)
-                    elif receiver_binding.var_type == "string":
-                        method_sig = self._builtin_method_sig("string", node.name)
+                    receiver_type = receiver_binding.var_type
+                    receiver_is_array = receiver_binding.is_array
+            else:
+                # A non-identifier receiver (e.g. a field access like
+                # this.sink.take(...)) has no binding to look up -- fall
+                # back to the type parser/type_system.py already resolved
+                # onto the node, same as _expr_is_owned_value. Without
+                # this, method_sig stayed None for any such receiver, so
+                # _analyze_call_args_with_signature silently skipped move-
+                # marking its "own"-mode arguments -- the semantic
+                # analyzer's conclusions (which drop-insertion trusts)
+                # never recorded the move, so an already-moved argument
+                # got a second, erroneous auto-drop at scope end (FIRV-O2).
+                expr_type = getattr(receiver, "return_type", None)
+                if isinstance(expr_type, str) and expr_type:
+                    if expr_type.endswith("[]"):
+                        receiver_type = expr_type[:-2]
+                        receiver_is_array = True
                     else:
-                        method_sig = self.method_signatures.get((receiver_binding.var_type or "", node.name))
+                        receiver_type = expr_type
+
+            if receiver_type is not None:
+                # Array/string dot-methods are @builtin_method-registered
+                # (see builtin_methods.py), not user class methods -- and
+                # must be checked ahead of the class-method lookup below,
+                # since `method_signatures` keys on var_type alone and
+                # doesn't distinguish e.g. a plain `string` from a
+                # `string[]` (both would key on "string").
+                if receiver_is_array:
+                    method_sig = self._builtin_method_sig("array", node.name)
+                elif receiver_type == "string":
+                    method_sig = self._builtin_method_sig("string", node.name)
+                else:
+                    method_sig = self.method_signatures.get((receiver_type, node.name))
 
             args = node.children[1:]
             self._analyze_call_args_with_signature(args, method_sig, node)

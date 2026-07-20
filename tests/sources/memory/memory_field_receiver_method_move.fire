@@ -1,0 +1,81 @@
+// Regression: an owned parameter/local moved via a method call whose
+// *receiver* is a field access (this.field.method(x)) -- rather than a
+// bare identifier (field.method(x)) -- must be recognized as moved, same
+// as the bare-identifier case, so it isn't also auto-dropped at scope
+// exit (which previously crashed with an internal FIR verifier error,
+// FIRV-O2: "use of 'x', which is moved").
+//
+// Two distinct root causes, both in receiver-type resolution ahead of
+// move-tracking: semantic_analyzer.py's METHOD_CALL handling and
+// preprocessor.py's drop-insertion pass each only resolved a receiver's
+// type when it was a bare IDENTIFIER (via a variable binding lookup),
+// leaving a field-access receiver's type unresolved and its "own"-mode
+// arguments never marked moved. Fixed by falling back to the type
+// parser/type_system.py already stamped onto the receiver node
+// (`return_type`) for any non-identifier receiver.
+//
+// A second, narrower issue surfaced once the first was fixed: for a
+// *generic*-typed field (Vec<string>), that stamped return_type is the
+// full instantiation string ("Vec<string>"), but method_sigs is keyed by
+// the bare declared class name ("Vec") -- preprocessor.py's fallback
+// needed the same "strip generic type arguments" normalization
+// ast_to_fir.py's _convert_method_call already applied for its own
+// receiver_base lookup.
+import @firescript/std.io.println;
+import @firescript/std.collections.Vec;
+
+class Sink {
+    last: string;
+
+    fn Sink() {
+        this.last = "";
+    }
+
+    fn take(&mut this, s: string) -> void {
+        this.last = s;
+    }
+}
+
+class Wrapper {
+    sink: Sink;
+
+    fn Wrapper() {
+        this.sink = new Sink();
+    }
+
+    // Non-generic field receiver: this.sink.take(s).
+    fn forward(&mut this, s: string) -> void {
+        this.sink.take(s);
+    }
+}
+
+class Collector {
+    items: Vec<string>;
+
+    fn Collector() {
+        this.items = Vec<string>();
+    }
+
+    // Generic-field receiver: this.items.push(s).
+    fn add(&mut this, s: string) -> void {
+        this.items.push(s);
+    }
+
+    fn count(&this) -> int32 {
+        return this.items.length();
+    }
+}
+
+w: Wrapper = new Wrapper();
+w.forward("hello");
+println(w.sink.last);
+
+c: Collector = new Collector();
+c.add("a");
+c.add("b");
+println(c.count());
+
+/* EXPECT
+hello
+2
+*/
