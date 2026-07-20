@@ -18,7 +18,7 @@ class Holder {
         this.v = 3;
     }
 }
-h: Holder = Holder();  //~ ERROR FS-SEM-0010 @13
+h: Holder = Holder();
 h.v;  //~ ERROR FS-PARSE-0010 @4
 
 // Missing expression after field assignment

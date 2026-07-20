@@ -1,5 +1,5 @@
 //@ helper
-// Helper module for zero_arg_constructor_field_access_after_bare_call.fire
+// Helper module for classes_cross_module_bare_construct_field_access.fire
 // -- exists solely to exercise a cross-module (as opposed to same-file)
 // class import.
 export class Widget {

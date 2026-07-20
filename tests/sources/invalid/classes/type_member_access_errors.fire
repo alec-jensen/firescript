@@ -20,6 +20,6 @@ b: int32 = Foo.bar;  //~ ERROR FS-PARSE-0010 @19
 //~^ ERROR FS-PARSE-0010 @19
 
 // Missing identifier after instance '.'
-f: Foo = Foo();  //~ ERROR FS-SEM-0010 @10
+f: Foo = Foo();
 c: int32 = f.;  //~ ERROR FS-PARSE-0010 @14
 //~^ ERROR FS-SEM-0002 @1

@@ -19,7 +19,7 @@ a: float64 = arr as float64;  //~ ERROR FS-SEM-0010 @21
 b: int32 = 5 as Widget;  //~ ERROR FS-SEM-0010 @17
 
 // Cannot cast a non-numeric source type
-w: Widget = Widget();  //~ ERROR FS-SEM-0010 @13
+w: Widget = Widget();
 c: int32 = w as int32;  //~ ERROR FS-SEM-0010 @17
 
 // Wrong number of explicit generic type arguments

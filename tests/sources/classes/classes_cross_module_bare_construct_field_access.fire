@@ -1,0 +1,24 @@
+// Regression: constructing an instance of a class *imported from another
+// module* via the bare `ClassName(args)` form, then reading a field on it
+// directly, now works -- previously the construction itself type-checked
+// fine, but the resulting variable's type wasn't registered for a later
+// raw field access ("Field access on non-class type 'Widget'"), even
+// though calling a *method* on the same instance always worked.
+// parser/type_system.py's FIELD_ACCESS handling deferred this error only
+// for a composite generic type ("Tuple<int32, string>") not yet merged
+// in; a plain imported class name ("Widget") needed the same deferral,
+// since it's equally unresolved at the point this file's own (pre-merge)
+// parse runs -- FIR conversion resolves the real field type afterward
+// from the fully-merged class definitions, independent of this check.
+//
+// (classes_widget_helper.fire, the sibling module this test imports,
+// exists solely to exercise this cross-module path.)
+import @firescript/std.io.println;
+import classes_widget_helper.Widget;
+
+w: Widget = Widget(7);
+println(w.val);
+
+/* EXPECT
+7
+*/

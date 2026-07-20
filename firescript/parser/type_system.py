@@ -827,30 +827,57 @@ class TypeSystemMixin(StatementsMixin):
                         )
 
             # Return type is already set in the node for builtins during parsing
-            # Constructors: calling a class name acts as a constructor with positional args matching field order
+            # Constructors: calling a class name acts as a constructor call.
             if func_name in self.user_types:
-                # Validate against class fields order
-                fields_map = self.user_classes.get(func_name, {})
-                field_order = list(fields_map.items())  # [(name, type), ...] insertion order preserved
-                if len(child_types) != len(field_order):
-                    self.invalid_type_error(
-                        f"Constructor '{func_name}' expected {len(field_order)} args, got {len(child_types)}",
-                        node.token,
-                    )
+                # A bare `ClassName(args)` call must resolve against the
+                # class's real declared constructor (self.user_methods),
+                # same as `new ClassName(args)` (NodeTypes.CONSTRUCTOR_CALL,
+                # below) already does -- not against field order. Every
+                # class in current firescript has an explicit constructor
+                # (see docs/reference/classes.md); the field-order fallback
+                # below is only reachable for a class with no constructor
+                # at all, which "new" reports as "No constructor defined".
+                ctor_sig = self.user_methods.get(func_name, {}).get(func_name)
+                if ctor_sig is not None:
+                    expected_params = ctor_sig.get("params", [])
+                    if len(child_types) != len(expected_params):
+                        self.invalid_type_error(
+                            f"Constructor '{func_name}' expected {len(expected_params)} args, got {len(child_types)}",
+                            node.token,
+                        )
+                    else:
+                        for i, (arg_t, exp_t) in enumerate(zip(child_types, expected_params)):
+                            # See the matching comment on the field-order
+                            # fallback below: `null` isn't tracked in
+                            # expected_params' type strings.
+                            if arg_t != "null" and arg_t != exp_t:
+                                self.invalid_type_error(
+                                    f"Constructor '{func_name}' arg {i+1} expected {exp_t}, got {arg_t}",
+                                    node.children[i].token if i < len(node.children) else node.token,
+                                )
                 else:
-                    for i, (arg_t, (_, exp_t)) in enumerate(zip(child_types, field_order)):
-                        # `null` is not tracked in field_order's type
-                        # strings (they never carry a nullable "?" -- see
-                        # ast_to_fir.py's "Nullable scalars" section for
-                        # where that's actually enforced), so it can't be
-                        # strictly compared here; trust the later FIR-level
-                        # check instead of rejecting a legitimately
-                        # nullable field's null argument.
-                        if arg_t != "null" and arg_t != exp_t:
-                            self.invalid_type_error(
-                                f"Constructor '{func_name}' arg {i+1} expected {exp_t}, got {arg_t}",
-                                node.children[i].token if i < len(node.children) else node.token,
-                            )
+                    # Validate against class fields order
+                    fields_map = self.user_classes.get(func_name, {})
+                    field_order = list(fields_map.items())  # [(name, type), ...] insertion order preserved
+                    if len(child_types) != len(field_order):
+                        self.invalid_type_error(
+                            f"Constructor '{func_name}' expected {len(field_order)} args, got {len(child_types)}",
+                            node.token,
+                        )
+                    else:
+                        for i, (arg_t, (_, exp_t)) in enumerate(zip(child_types, field_order)):
+                            # `null` is not tracked in field_order's type
+                            # strings (they never carry a nullable "?" -- see
+                            # ast_to_fir.py's "Nullable scalars" section for
+                            # where that's actually enforced), so it can't be
+                            # strictly compared here; trust the later FIR-level
+                            # check instead of rejecting a legitimately
+                            # nullable field's null argument.
+                            if arg_t != "null" and arg_t != exp_t:
+                                self.invalid_type_error(
+                                    f"Constructor '{func_name}' arg {i+1} expected {exp_t}, got {arg_t}",
+                                    node.children[i].token if i < len(node.children) else node.token,
+                                )
                 node_type_str = func_name
                 node.return_type = func_name
             else:
@@ -1055,10 +1082,17 @@ class TypeSystemMixin(StatementsMixin):
                     self.invalid_type_error(f"Type '{obj_type}' has no field '{field_name}'", node.token)
                     node_type_str = None
             else:
-                # In deferred-import mode a composite generic type like "Tuple<int32, string>"
-                # may not be registered until imports are fully merged.  Suppress the error so
-                # parsing can complete; the real check happens after merging.
-                if self.defer_undefined_identifiers and obj_type and "<" in obj_type:
+                # In deferred-import mode a class type -- composite generic
+                # ("Tuple<int32, string>") or a plain class imported from
+                # another module ("Widget") -- may not be registered until
+                # imports are fully merged. Suppress the error so parsing
+                # can complete; FIR conversion resolves the real field type
+                # afterward from the fully-merged class definitions,
+                # independent of this parser-level check. Only a genuine
+                # primitive type (never a valid class-field-access target)
+                # is still reported immediately.
+                primitive_types = self.INTEGER_TYPES | {"float32", "float64", "float128", "bool", "char", "string", "void"}
+                if self.defer_undefined_identifiers and obj_type and obj_type not in primitive_types:
                     node_type_str = None
                 else:
                     self.invalid_type_error(f"Field access on non-class type '{obj_type}'", node.token)

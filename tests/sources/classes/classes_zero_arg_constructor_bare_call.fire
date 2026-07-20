@@ -1,0 +1,27 @@
+// Regression: a same-file class's bare `Foo(args)` constructor call now
+// correctly resolves against the class's real declared constructor
+// (matching `new Foo(args)`), instead of being misresolved as an
+// *implicit* field-order constructor whenever the declared constructor's
+// params don't exactly match the class's field list (count or type) --
+// here, a zero-declared-param constructor on a class with one field
+// previously failed with "Constructor 'Foo' expected 1 args, got 0".
+// parser/type_system.py's FUNCTION_CALL handling now checks
+// self.user_methods for a real constructor before falling back to
+// field-order matching (the field-order path is only reachable for a
+// class with no explicit constructor at all).
+import @firescript/std.io.println;
+
+class Foo {
+    val: int32;
+
+    fn Foo() {
+        this.val = 42;
+    }
+}
+
+f: Foo = Foo();
+println(f.val);
+
+/* EXPECT
+42
+*/
