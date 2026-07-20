@@ -47,6 +47,19 @@ The changelog lives at `docs/changelog.md`. Changelog rules:
 - Any change to how an end-user interacts with firescript — new keyword, removed built-in, new flag, changed error message format, new or removed stdlib function — **must** be documented under `## Currently in Development` before it is merged.
 - Do not move items from `## Currently in Development` into a versioned section; that is done at release time by the project maintainer.
 
+## Commits and Pushes
+
+- **Changelog**: any commit with a user-facing change updates `docs/changelog.md` in the same commit (see Changelog rules above) — not a follow-up commit.
+- **Regression tests**: any commit that fixes a bug includes its regression test in the same commit (see Bug Fix Tests below) — not a follow-up commit.
+- **Feature Status Reference**: any commit that adds, completes, or removes a language feature updates the table below in the same commit.
+- **Docs status markers**: any commit that changes a feature's implementation status updates that feature's `[IMPLEMENTED]` / `[IN DEVELOPMENT]` / `[PLANNED]` marker under `/docs` in the same commit (see Documentation Accuracy above).
+- **Test manifest**: any commit that adds a new test category or file updates `tests/TEST_MANIFEST.md` in the same commit.
+- **One logical change per commit**: don't bundle an unrelated fix or cleanup into a feature/bugfix commit.
+- **No stray build artifacts**: check `git status` before staging — `.gitignore` covers known cases (`build/`, `*.pyc`, `hello.fire`, `kiln.exe`) but is hand-maintained, so watch for one-off compiled binaries or scratch `.fire` files it doesn't yet know about.
+- **Commit messages**: short imperative summary line, matching the style already in `git log`; a body only when the *why* isn't obvious from the diff. No co-authored-by trailer.
+- Never commit with `--no-verify`; never amend a commit that's already been pushed.
+- Never push without asking first — every time, even within the same session; a prior approval doesn't carry forward.
+
 ## Tests
 
 ### Philosophy
