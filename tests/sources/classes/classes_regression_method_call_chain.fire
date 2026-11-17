@@ -1,0 +1,15 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.pattern.RegexPattern;
+import @firescript/std.regex.pattern.Match;
+
+// Regression: a call chained directly off an instance method call
+// (`obj.method().other()`) on an imported class failed to parse with
+// "Expected ')' after argument list".
+p: RegexPattern = RegexPattern("b+");
+println(p.find_first("abbc", 0).group(0));
+println(p.find_first("abbc", 0).end());
+
+/* EXPECT
+bb
+3
+*/

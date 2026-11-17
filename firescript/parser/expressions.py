@@ -419,6 +419,9 @@ class ExpressionsMixin(ParserBase):
                             ident_tok.index,
                         )
                         # Array methods: handled in type checker later
+                        # Keep looping so a call can be chained off a method call's
+                        # result (`a.b().c()`), not only off a field access.
+                        continue
                     else:
                         # Field access: chainable
                         node = ASTNode(

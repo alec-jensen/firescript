@@ -596,6 +596,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **classes_zero_arg_constructor_bare_call.fire** - Regression: a same-file class's bare `Foo(args)` constructor call resolves against the real declared constructor (matching `new Foo(args)`), not an implicit field-order constructor, when the two differ (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
 - **classes_cross_module_bare_construct_field_access.fire** / **classes_widget_helper.fire** - Regression: a raw field access on an instance constructed via bare `ClassName(args)` for a class *imported from another module* resolves correctly (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
 - **classes_cross_module_bare_static_method.fire** / **classes_cross_module_helper.fire** - Regression: a bare (no explicit type arguments), type-qualified static method call on a class imported from another module (`Counter.fromDouble(5)`) resolves correctly instead of crashing AST->FIR conversion — there was previously no deferred-import parsing fallback for the bare form at all, only the `<TypeArgs>` form
+- **classes_regression_method_call_chain.fire** - Regression: a call chained directly off an instance method call's result (`obj.method().other()`) on an imported class parses instead of failing with "Expected ')' after argument list"
 
 ### `generics/`
 - **generics_basic.fire** - Basic generic functions
