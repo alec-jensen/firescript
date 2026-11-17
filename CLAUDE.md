@@ -64,7 +64,7 @@ The changelog lives at `docs/changelog.md`. Changelog rules:
 
 ### Philosophy
 
-The goal is **100% test coverage** of all implemented language features. Every implemented feature must have at least one test. Every bug fix must be accompanied by a regression test that would have caught the bug.
+The goal is **good path coverage of the parts that matter**: every implemented language feature has at least one test, and the compiler's real decision points and error paths (parser rejections, verifier checks, ownership and borrow rules, lowering) are exercised on both the valid and invalid sides. Line coverage is a diagnostic for finding untested paths, not a target; defensive or unreachable lines don't need contrived tests. Every implemented feature must have at least one test. Every bug fix must be accompanied by a regression test that would have caught the bug.
 
 ### Never Skip Tests
 
