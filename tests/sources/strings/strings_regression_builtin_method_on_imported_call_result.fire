@@ -1,0 +1,21 @@
+import @firescript/std.io.println;
+import @firescript/std.text.StringBuilder;
+
+// Regression: a string builtin method (`.length()`, `.upper()`) called on the
+// result of a method call on an imported class (`sb.build().length()`) had no
+// resolved result type in AST->FIR conversion (the call's own return type is
+// unknown at parse time while the class is still a deferred import), so
+// using it as an operand of `as string` failed with "cannot convert void to
+// string" in FIR->FLIR lowering.
+sb: StringBuilder = StringBuilder("");
+sb.append("hello");
+println(sb.build().length() as string);
+
+sb2: StringBuilder = StringBuilder("");
+sb2.append("hello");
+println(sb2.build().upper());
+
+/* EXPECT
+5
+HELLO
+*/

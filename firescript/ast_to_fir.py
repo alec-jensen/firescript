@@ -962,7 +962,25 @@ class ASTToFIRConverter:
                     subst = dict(zip(self.class_generic_params.get(base, []), args))
                     return subst.get(ret, ret)
                 return ret
-            return "void"
+            # No user-defined method: a dot-method on a primitive receiver
+            # (string/array) is a @builtin_method. node.return_type is unset
+            # when the receiver was itself a call on a not-yet-merged
+            # imported class (`sb.build().length()`), so resolve the
+            # registered signature here, as _convert_builtin_method does.
+            if object_type == "string":
+                family, elem_type = "string", None
+            elif object_type.endswith("[]"):
+                family, elem_type = "array", object_type[:-2]
+            else:
+                return "void"
+            from builtin_methods import get_builtin_method_registry
+
+            spec = get_builtin_method_registry().lookup(family, node.name)
+            if spec is None:
+                return "void"
+            if elem_type is not None and spec.return_type in spec.type_params:
+                return elem_type
+            return spec.return_type
 
         if node.node_type == NodeTypes.TYPE_METHOD_CALL:
             class_name = getattr(node, "class_name", "")

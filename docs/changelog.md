@@ -70,6 +70,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - A trailing escaped dollar in a `@firescript/std.regex` pattern (`a\$`) is now a literal `$` instead of being mistaken for the end anchor (which left a dangling `\` and made the pattern invalid).
 - An imported class used as a generic type argument (`ArrayList<Match>` with `Match` imported, in a type annotation or a constructor call) no longer fails to parse with "Expected type argument in generic instantiation".
 - A call chained off an instance method call's result (`obj.method().other()`) no longer fails to parse with "Expected ')' after argument list".
+- A string or array builtin method called on the result of a method call on an imported class (`sb.build().length() as string`) no longer fails FIR->FLIR lowering with "cannot convert void to string".
 
 ## 0.5.0 - Kirin
 *July 2, 2026*
