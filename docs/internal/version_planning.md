@@ -281,6 +281,9 @@ the compiler is large (lexer, parser, semantic analysis, FIR/FLIR, the assembler
 - ELF validity checks (readelf or a pure-Python ELF inspector) on Linux target builds
 - Linux target golden suite runs on CI (native Linux)
 - Cross-target tests: the same source produces equivalent output on both targets
+- Fuzzing and edge-case infrastructure, phase 1 (see [testing_plan.md](testing_plan.md)): the
+  `fuzz` test kind with minimization, the error-code coverage check, `PYTHONHASHSEED`
+  determinism variation, numeric-boundary matrices, and the regex / collection oracles
 
 ### Gate
 
@@ -332,6 +335,8 @@ writing them twice.
 - Golden and error tests for copy, move, use-after-move, move-only types, `&`/`&mut` exclusivity,
   reference-return rules, const, and visibility
 - Regression tests for the unified `Option` / `Result` / `Pair`
+- Ownership and borrowing fuzzer plus the runtime allocation counter (see
+  [testing_plan.md](testing_plan.md))
 
 ### Gate
 
@@ -383,6 +388,8 @@ on it. Full design: [language_model_redesign.md](language_model_redesign.md) §5
   needed
 - Binding tests (implicit import, every integer width, generic `Integer` bound)
 - Function-interface and lambda golden and error tests
+- Generated tests for dispatch, interface bounds, and bindings (see
+  [testing_plan.md](testing_plan.md))
 
 ### Gate
 
@@ -482,6 +489,8 @@ firescript front-end is developed alongside it and tested against the same test 
 ### Test coverage
 
 - firescript lexer produces identical token streams to Python lexer across all test files
+- Fuzz both front-ends with the same inputs and require identical diagnostics (see
+  [testing_plan.md](testing_plan.md))
 - firescript parser produces identical ASTs across all test files
 - firescript semantic analysis passes all golden and error tests (output-identical)
 - firescript FIR builder produces FIR dumps matching Python FIR dumps (deterministic)
@@ -546,6 +555,8 @@ since 0.7.0).
 - firescript assembler + PE writer pass `tests/python/backend/test_asm_encoding.py`
 - Bootstrap binary passes full test suite on its own
 - Determinism test: bootstrap binary is byte-identical on repeated compilations
+- Fuzz the Python and firescript backends against each other: identical FIR, assembly, and bytes
+  (see [testing_plan.md](testing_plan.md))
 
 ### Gate
 
@@ -685,6 +696,7 @@ making firescript production-ready and retiring the Python compiler.
 7. No feature in `docs/` carries `[IN DEVELOPMENT]`; `[PLANNED]` items are explicitly
    marked for post-1.0
 8. The Python compiler is removed; `python firescript/main.py` is a thin shim or gone
+9. A nightly fuzz run (see [testing_plan.md](testing_plan.md)) completes with no open crashers
 
 ## Post-1.0
 
