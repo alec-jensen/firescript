@@ -5,6 +5,7 @@ stay in one spot."""
 from __future__ import annotations
 
 import os
+import shlex
 import sys
 
 from harness.config import REPO_ROOT
@@ -16,6 +17,30 @@ MAIN_PY = os.path.join(REPO_ROOT, "firescript", "main.py")
 # IR-invariant test for free. A verifier failure must be surfaced as ERROR
 # (compiler bug), never a test FAIL.
 VERIFY_IR_FLAG: list[str] = []
+
+
+# Opt-in cross-target testing (e.g. running the Windows-only backend's output
+# under wine on Linux). Both are unset by default, which leaves behavior
+# unchanged:
+#   FIRESCRIPT_TEST_TARGET=windows/x86_64   adds --platform/--arch to compiles
+#   FIRESCRIPT_TEST_RUN_PREFIX=wine         prefixed to the command that runs a binary
+TARGET_ENV = "FIRESCRIPT_TEST_TARGET"
+RUN_PREFIX_ENV = "FIRESCRIPT_TEST_RUN_PREFIX"
+
+
+def target_flags() -> list[str]:
+    value = os.environ.get(TARGET_ENV)
+    if not value:
+        return []
+    platform, _, arch = value.partition("/")
+    flags = ["--platform", platform]
+    if arch:
+        flags += ["--arch", arch]
+    return flags
+
+
+def run_prefix() -> list[str]:
+    return shlex.split(os.environ.get(RUN_PREFIX_ENV, ""))
 
 
 def build_compile_cmd(
@@ -46,6 +71,7 @@ def build_compile_cmd(
     if emit_flir:
         cmd.append("--emit-flir")
     cmd += VERIFY_IR_FLAG
+    cmd += target_flags()
     if extra_flags:
         cmd += extra_flags
     cmd.append(src)

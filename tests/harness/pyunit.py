@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 
+from harness.compilecmd import target_flags
 from harness.config import REPO_ROOT, SOURCES_DIR
 
 repo_root = REPO_ROOT
@@ -59,6 +60,8 @@ def subtest(label: str):
 
 def run_compiler(args: list[str], cwd: str | None = None, timeout: float = 60.0) -> subprocess.CompletedProcess:
     cmd = [sys.executable, MAIN_PY] + list(args)
+    if "--platform" not in args:
+        cmd += target_flags()
     return subprocess.run(
         cmd, cwd=cwd or REPO_ROOT, text=True, encoding="utf-8", errors="replace",
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout,

@@ -55,6 +55,22 @@ python tests/run.py --uncovered   # show only uncovered lines
 python tests/run.py --profile ci
 ```
 
+### Running on Linux (cross-target, via wine)
+
+The only native backend target is Windows x86_64. To run the suite on a Linux
+machine, set two opt-in environment variables (both unset by default, which
+leaves behavior unchanged):
+
+```bash
+export FIRESCRIPT_TEST_TARGET=windows/x86_64   # appends --platform/--arch to every compile
+export FIRESCRIPT_TEST_RUN_PREFIX=wine         # prefixes the command that runs a compiled binary
+python tests/run.py
+```
+
+`tests/python/backend/test_asm_encoding.py` additionally compares against a
+MinGW `as` (COFF output) on `PATH`; with a Linux `as` (ELF output) its cases
+fail locally and pass on the Windows CI runner.
+
 The master seed for the run is always printed as the first and last line of
 output (`Seed: 0x...`) so any run -- including anything that used sampling
 (matrix cells, determinism sampling) -- is exactly reproducible with `--seed`.

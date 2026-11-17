@@ -7,6 +7,7 @@ import os
 import subprocess
 import sys
 
+from harness.compilecmd import target_flags
 from harness.config import REPO_ROOT, SNAPSHOTS_DIR, SOURCES_DIR
 from harness.directives import DirectiveError, parse_fire_directives
 from harness.kinds.base import ExecContext, Kind
@@ -52,7 +53,7 @@ class SnapshotKind(Kind):
 
     def _emit(self, src: str, work_dir: str, formats: list[str], timeout: float) -> dict:
         os.makedirs(work_dir, exist_ok=True)
-        cmd = [sys.executable, os.path.join(REPO_ROOT, "firescript", "main.py"), src]
+        cmd = [sys.executable, os.path.join(REPO_ROOT, "firescript", "main.py"), src] + target_flags()
         if "fir" in formats:
             cmd.append("--emit-fir")
         if "flir" in formats:

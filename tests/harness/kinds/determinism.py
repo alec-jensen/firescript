@@ -9,6 +9,7 @@ import sys
 import time
 
 from harness import seeds
+from harness.compilecmd import target_flags
 from harness.config import REPO_ROOT
 from harness.directives import DirectiveError, parse_fire_directives
 from harness.kinds.base import ExecContext, Kind
@@ -78,7 +79,7 @@ class DeterminismKind(Kind):
     def _compile_once_attempt(self, src: str, work_dir: str, timeout: float) -> str:
         os.makedirs(work_dir, exist_ok=True)
         binary = os.path.join(work_dir, os.path.splitext(os.path.basename(src))[0] + ".exe")
-        cmd = [sys.executable, os.path.join(REPO_ROOT, "firescript", "main.py"), src, "-o", binary]
+        cmd = [sys.executable, os.path.join(REPO_ROOT, "firescript", "main.py"), src, "-o", binary] + target_flags()
         proc = subprocess.run(
             cmd, cwd=work_dir, text=True, encoding="utf-8", errors="replace",
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout,

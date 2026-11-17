@@ -7,7 +7,7 @@ import os
 import subprocess
 import sys
 
-from harness.compilecmd import build_compile_cmd
+from harness.compilecmd import build_compile_cmd, run_prefix
 from harness.config import REPO_ROOT, SOURCES_DIR
 from harness.directives import DirectiveError, build_argv, build_stdin, parse_fire_directives
 from harness.expectations import normalize_output, parse_expect, update_expect
@@ -134,7 +134,7 @@ class RunKind(Kind):
         # build/ is gitignored, so a fresh checkout won't have it yet.
         os.makedirs(os.path.join(REPO_ROOT, "build", "temp"), exist_ok=True)
 
-        run_cmd = [resolved_binary] + argv
+        run_cmd = run_prefix() + [resolved_binary] + argv
         try:
             proc = subprocess.run(
                 run_cmd, cwd=REPO_ROOT, text=True, encoding="utf-8", errors="replace",
