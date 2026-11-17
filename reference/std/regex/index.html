@@ -1060,10 +1060,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#fn-is_matchpattern-string-text-string-bool" class="md-nav__link">
+  <a href="#fn-is_matchpattern-string-text-string-bool-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        fn is_match(pattern: string, text: string) -&gt; bool
+        fn is_match(pattern: string, text: string) -&gt; bool [IMPLEMENTED]
       
     </span>
   </a>
@@ -1071,10 +1071,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fn-find_matchpattern-string-text-string-bool" class="md-nav__link">
+  <a href="#fn-find_matchpattern-string-text-string-bool-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        fn find_match(pattern: string, text: string) -&gt; bool
+        fn find_match(pattern: string, text: string) -&gt; bool [IMPLEMENTED]
       
     </span>
   </a>
@@ -1082,10 +1082,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fn-find_atpattern-string-text-string-start_pos-int32-int32" class="md-nav__link">
+  <a href="#fn-find_atpattern-string-text-string-start_pos-int32-int32-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        fn find_at(pattern: string, text: string, start_pos: int32) -&gt; int32
+        fn find_at(pattern: string, text: string, start_pos: int32) -&gt; int32 [IMPLEMENTED]
       
     </span>
   </a>
@@ -1093,10 +1093,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fn-last_errorpattern-string-string" class="md-nav__link">
+  <a href="#fn-last_errorpattern-string-string-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        fn last_error(pattern: string) -&gt; string
+        fn last_error(pattern: string) -&gt; string [IMPLEMENTED]
       
     </span>
   </a>
@@ -1104,10 +1104,54 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#regexpattern" class="md-nav__link">
+  <a href="#fn-find_firstpattern-string-text-string-start_pos-int32-match-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        RegexPattern
+        fn find_first(pattern: string, text: string, start_pos: int32) -&gt; Match [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fn-find_allpattern-string-text-string-arraylistmatch-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fn find_all(pattern: string, text: string) -&gt; ArrayList&lt;Match&gt; [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fn-replacepattern-string-text-string-replacement-string-string-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fn replace(pattern: string, text: string, replacement: string) -&gt; string [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#match-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Match [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regexpattern-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RegexPattern [IMPLEMENTED]
       
     </span>
   </a>
@@ -1128,13 +1172,41 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Supported Syntax">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#matching-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matching semantics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#notes" class="md-nav__link">
+  <a href="#errors" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Notes
+        Errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#not-supported-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not Supported Yet
       
     </span>
   </a>
@@ -1477,10 +1549,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#fn-is_matchpattern-string-text-string-bool" class="md-nav__link">
+  <a href="#fn-is_matchpattern-string-text-string-bool-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        fn is_match(pattern: string, text: string) -&gt; bool
+        fn is_match(pattern: string, text: string) -&gt; bool [IMPLEMENTED]
       
     </span>
   </a>
@@ -1488,10 +1560,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fn-find_matchpattern-string-text-string-bool" class="md-nav__link">
+  <a href="#fn-find_matchpattern-string-text-string-bool-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        fn find_match(pattern: string, text: string) -&gt; bool
+        fn find_match(pattern: string, text: string) -&gt; bool [IMPLEMENTED]
       
     </span>
   </a>
@@ -1499,10 +1571,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fn-find_atpattern-string-text-string-start_pos-int32-int32" class="md-nav__link">
+  <a href="#fn-find_atpattern-string-text-string-start_pos-int32-int32-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        fn find_at(pattern: string, text: string, start_pos: int32) -&gt; int32
+        fn find_at(pattern: string, text: string, start_pos: int32) -&gt; int32 [IMPLEMENTED]
       
     </span>
   </a>
@@ -1510,10 +1582,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fn-last_errorpattern-string-string" class="md-nav__link">
+  <a href="#fn-last_errorpattern-string-string-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        fn last_error(pattern: string) -&gt; string
+        fn last_error(pattern: string) -&gt; string [IMPLEMENTED]
       
     </span>
   </a>
@@ -1521,10 +1593,54 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#regexpattern" class="md-nav__link">
+  <a href="#fn-find_firstpattern-string-text-string-start_pos-int32-match-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        RegexPattern
+        fn find_first(pattern: string, text: string, start_pos: int32) -&gt; Match [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fn-find_allpattern-string-text-string-arraylistmatch-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fn find_all(pattern: string, text: string) -&gt; ArrayList&lt;Match&gt; [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fn-replacepattern-string-text-string-replacement-string-string-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fn replace(pattern: string, text: string, replacement: string) -&gt; string [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#match-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Match [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regexpattern-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RegexPattern [IMPLEMENTED]
       
     </span>
   </a>
@@ -1545,13 +1661,41 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Supported Syntax">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#matching-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matching semantics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#notes" class="md-nav__link">
+  <a href="#errors" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Notes
+        Errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#not-supported-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not Supported Yet
       
     </span>
   </a>
@@ -1661,70 +1805,213 @@
 
 
 <h1 id="stdregex">std.regex<a class="headerlink" href="#stdregex" title="Permanent link">&para;</a></h1>
-<p><code>@firescript/std.regex</code> provides a small, pure firescript regular-expression helper module.</p>
-<p>This page covers the current API and syntax that the module supports today, and leaves room for future sections on captures, search helpers, replacements, and richer pattern syntax.</p>
+<p><code>@firescript/std.regex</code> provides a pure firescript regular-expression module: matching, position-aware matching, capture groups, search helpers, and replacement.</p>
+<blockquote>
+<p>Status: everything below marked <code>[IMPLEMENTED]</code> is complete and covered by tests under <code>tests/sources/std/regex/</code>. Items marked <code>[PLANNED]</code> do not work yet.</p>
+</blockquote>
 <h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
 <pre><code class="language-firescript">import @firescript/std.io.println;
 import @firescript/std.regex.is_match;
 import @firescript/std.regex.find_at;
+import @firescript/std.regex.find_first;
+import @firescript/std.regex.replace;
 import @firescript/std.regex.last_error;
+import @firescript/std.regex.pattern.Match;
 
-println(is_match(&quot;(ab)+c&quot;, &quot;ababc&quot;));
-println(is_match(&quot;[a-z]+&quot;, &quot;firescript&quot;));
-println(is_match(&quot;^fire&quot;, &quot;firescript&quot;));
-println(find_at(&quot;script&quot;, &quot;firescript&quot;, 4));
-println(last_error(&quot;[ab&quot;));
+println(is_match(&quot;(ab)+c&quot;, &quot;ababc&quot;));            // true
+println(is_match(&quot;\\d{3}-\\d{4}&quot;, &quot;555-1234&quot;));  // true
+println(find_at(&quot;script&quot;, &quot;firescript&quot;, 4));     // 6
+println(last_error(&quot;[ab&quot;));                      // unmatched '[' in pattern
+
+m: Match = find_first(&quot;(\\w+)@(\\w+)&quot;, &quot;mail me@host now&quot;, 0);
+println(m.group(1));                             // me
+println(m.group(2));                             // host
+println(replace(&quot;(\\w+)@(\\w+)&quot;, &quot;me@host&quot;, &quot;$2:$1&quot;));  // host:me
 </code></pre>
 <h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
-<h3 id="fn-is_matchpattern-string-text-string-bool"><code>fn is_match(pattern: string, text: string) -&gt; bool</code><a class="headerlink" href="#fn-is_matchpattern-string-text-string-bool" title="Permanent link">&para;</a></h3>
-<p>Returns <code>true</code> when the pattern matches the input text. Without anchors, the pattern must match the entire input; <code>^</code> and <code>$</code> control anchoring explicitly.</p>
-<h3 id="fn-find_matchpattern-string-text-string-bool"><code>fn find_match(pattern: string, text: string) -&gt; bool</code><a class="headerlink" href="#fn-find_matchpattern-string-text-string-bool" title="Permanent link">&para;</a></h3>
+<h3 id="fn-is_matchpattern-string-text-string-bool-implemented"><code>fn is_match(pattern: string, text: string) -&gt; bool</code> [IMPLEMENTED]<a class="headerlink" href="#fn-is_matchpattern-string-text-string-bool-implemented" title="Permanent link">&para;</a></h3>
+<p>Returns <code>true</code> when the pattern matches the input text. Without anchors, the pattern must match the entire input; <code>^</code> and <code>$</code> control anchoring explicitly. Matching backtracks fully, so any way of matching the whole text is found. An invalid pattern never matches.</p>
+<h3 id="fn-find_matchpattern-string-text-string-bool-implemented"><code>fn find_match(pattern: string, text: string) -&gt; bool</code> [IMPLEMENTED]<a class="headerlink" href="#fn-find_matchpattern-string-text-string-bool-implemented" title="Permanent link">&para;</a></h3>
 <p>Alias of <code>is_match</code>. Named <code>match</code> prior to 0.6.0; renamed because <code>match</code> is now a reserved keyword.</p>
-<h3 id="fn-find_atpattern-string-text-string-start_pos-int32-int32"><code>fn find_at(pattern: string, text: string, start_pos: int32) -&gt; int32</code><a class="headerlink" href="#fn-find_atpattern-string-text-string-start_pos-int32-int32" title="Permanent link">&para;</a></h3>
-<p>Position-aware matching: returns the length of the match starting at <code>start_pos</code>, or <code>-1</code> if there is no match at that position.</p>
-<h3 id="fn-last_errorpattern-string-string"><code>fn last_error(pattern: string) -&gt; string</code><a class="headerlink" href="#fn-last_errorpattern-string-string" title="Permanent link">&para;</a></h3>
-<p>Validates a pattern and returns an empty string when the pattern is usable. If validation fails, it returns a short error message.</p>
-<h3 id="regexpattern"><code>RegexPattern</code><a class="headerlink" href="#regexpattern" title="Permanent link">&para;</a></h3>
-<p>The <code>RegexPattern</code> class (<code>@firescript/std.regex.pattern.RegexPattern</code>) lets you construct a pattern once and match it repeatedly:</p>
+<h3 id="fn-find_atpattern-string-text-string-start_pos-int32-int32-implemented"><code>fn find_at(pattern: string, text: string, start_pos: int32) -&gt; int32</code> [IMPLEMENTED]<a class="headerlink" href="#fn-find_atpattern-string-text-string-start_pos-int32-int32-implemented" title="Permanent link">&para;</a></h3>
+<p>Position-aware matching: returns the length of the match starting exactly at <code>start_pos</code>, or <code>-1</code> if there is no match at that position (or <code>start_pos</code> is out of range, or the pattern is invalid). With a leading <code>^</code> the match can only start at position 0; with a trailing <code>$</code> it must end at the end of the text.</p>
+<h3 id="fn-last_errorpattern-string-string-implemented"><code>fn last_error(pattern: string) -&gt; string</code> [IMPLEMENTED]<a class="headerlink" href="#fn-last_errorpattern-string-string-implemented" title="Permanent link">&para;</a></h3>
+<p>Validates a pattern and returns an empty string when the pattern is usable. If validation fails, it returns a short error message (see <a href="#errors">Errors</a>).</p>
+<h3 id="fn-find_firstpattern-string-text-string-start_pos-int32-match-implemented"><code>fn find_first(pattern: string, text: string, start_pos: int32) -&gt; Match</code> [IMPLEMENTED]<a class="headerlink" href="#fn-find_firstpattern-string-text-string-start_pos-int32-match-implemented" title="Permanent link">&para;</a></h3>
+<p>Finds the leftmost match starting at or after <code>start_pos</code> (a negative <code>start_pos</code> is treated as 0). The result is always a <code>Match</code>; check <code>found()</code> to see whether anything matched. An invalid pattern never matches.</p>
+<h3 id="fn-find_allpattern-string-text-string-arraylistmatch-implemented"><code>fn find_all(pattern: string, text: string) -&gt; ArrayList&lt;Match&gt;</code> [IMPLEMENTED]<a class="headerlink" href="#fn-find_allpattern-string-text-string-arraylistmatch-implemented" title="Permanent link">&para;</a></h3>
+<p>Returns every non-overlapping match, left to right. An empty match advances the scan by one character, so the scan always terminates (<code>find_all("x*", "abc")</code> yields four empty matches, at 0, 1, 2 and 3). An invalid pattern yields an empty list.</p>
+<p><code>ArrayList&lt;Match&gt;</code> holds an Owned element type, so read it with <code>removeLast()</code> rather than <code>get()</code> (see <a href="../collections/">Collections</a>). <code>removeLast()</code> returns the <em>last</em> match first:</p>
+<pre><code class="language-firescript">all: ArrayList&lt;Match&gt; = find_all(&quot;\\d+&quot;, &quot;a1b22c333&quot;);
+while (all.size() &gt; 0) {
+    m: Match = all.removeLast();
+    println(m.group(0));   // 333, then 22, then 1
+}
+</code></pre>
+<h3 id="fn-replacepattern-string-text-string-replacement-string-string-implemented"><code>fn replace(pattern: string, text: string, replacement: string) -&gt; string</code> [IMPLEMENTED]<a class="headerlink" href="#fn-replacepattern-string-text-string-replacement-string-string-implemented" title="Permanent link">&para;</a></h3>
+<p>Replaces every non-overlapping match with <code>replacement</code> and returns the result. In the replacement:</p>
+<ul>
+<li><code>$0</code> .. <code>$9</code> insert that capture group (<code>$0</code> is the whole match). A group number past the last group, or a group that did not take part in the match, inserts nothing.</li>
+<li><code>$$</code> is a literal <code>$</code>.</li>
+<li>Any other <code>$</code> is a literal <code>$</code>.</li>
+</ul>
+<p>Empty matches are replaced too (<code>replace("x*", "abc", "-")</code> is <code>-a-b-c-</code>). An invalid pattern returns the text unchanged.</p>
+<h3 id="match-implemented"><code>Match</code> [IMPLEMENTED]<a class="headerlink" href="#match-implemented" title="Permanent link">&para;</a></h3>
+<p><code>@firescript/std.regex.pattern.Match</code>, returned by <code>find_first</code> and held in the list from <code>find_all</code>. Group 0 is the whole match; groups are numbered by their opening <code>(</code>, left to right.</p>
+<ul>
+<li><code>fn found(&amp;this) -&gt; bool</code> — <code>false</code> when nothing matched. On a no-match <code>Match</code>, <code>start()</code>/<code>end()</code>/<code>group_start()</code>/<code>group_end()</code> return <code>-1</code>, <code>group_count()</code> returns <code>0</code> and <code>group(i)</code> returns <code>""</code>.</li>
+<li><code>fn start(&amp;this) -&gt; int32</code> / <code>fn end(&amp;this) -&gt; int32</code> — offsets of the match in the searched text (<code>end</code> is exclusive).</li>
+<li><code>fn group(&amp;this, i: int32) -&gt; string</code> — the text matched by group <code>i</code>. Returns <code>""</code> for a group that did not take part in the match (for example the unused side of an alternation, or a group quantified to zero repetitions), and for an out-of-range <code>i</code>. Use <code>group_start(i) &gt;= 0</code> to tell "did not participate" apart from "matched the empty string".</li>
+<li><code>fn group_start(&amp;this, i: int32) -&gt; int32</code> / <code>fn group_end(&amp;this, i: int32) -&gt; int32</code> — offsets of group <code>i</code> in the searched text, or <code>-1</code> if the group did not take part or <code>i</code> is out of range.</li>
+<li><code>fn group_count(&amp;this) -&gt; int32</code> — number of capture groups in the pattern, not counting group 0.</li>
+</ul>
+<p>A group inside a repeated group (<code>(ab)+</code>, <code>(a|b){2,3}</code>) reports its <strong>last</strong> repetition.</p>
+<h3 id="regexpattern-implemented"><code>RegexPattern</code> [IMPLEMENTED]<a class="headerlink" href="#regexpattern-implemented" title="Permanent link">&para;</a></h3>
+<p>The <code>RegexPattern</code> class (<code>@firescript/std.regex.pattern.RegexPattern</code>) compiles a pattern once and lets you search repeatedly:</p>
 <pre><code class="language-firescript">import @firescript/std.regex.pattern.RegexPattern;
+import @firescript/std.regex.pattern.Match;
 import @firescript/std.io.println;
 
 p: RegexPattern = RegexPattern(&quot;[a-z]+&quot;);
 println(p.is_match(&quot;firescript&quot;));
 println(p.find_at(&quot;firescript&quot;, 4));
+m: Match = p.find_first(&quot;123 abc&quot;, 0);
+println(m.group(0));   // abc
 </code></pre>
 <p>Methods:</p>
 <ul>
-<li><code>fn is_match(&amp;this, &amp;text: string) -&gt; bool</code> — match against the text</li>
+<li><code>fn is_match(&amp;this, &amp;text: string) -&gt; bool</code></li>
 <li><code>fn matches(&amp;this, &amp;text: string) -&gt; bool</code> — alias of <code>is_match</code></li>
-<li><code>fn find_at(&amp;this, &amp;text: string, start_pos: int32) -&gt; int32</code> — position-aware matching</li>
+<li><code>fn find_at(&amp;this, &amp;text: string, start_pos: int32) -&gt; int32</code></li>
+<li><code>fn find_first(&amp;this, &amp;text: string, start_pos: int32) -&gt; Match</code></li>
+<li><code>fn find_all(&amp;this, &amp;text: string) -&gt; ArrayList&lt;Match&gt;</code></li>
+<li><code>fn replace(&amp;this, &amp;text: string, &amp;replacement: string) -&gt; string</code></li>
+<li><code>fn group_count(&amp;this) -&gt; int32</code> — number of capture groups (<code>0</code> for an invalid pattern)</li>
 <li><code>fn last_error(&amp;this) -&gt; string</code> — pattern validation error, or empty string</li>
 </ul>
+<p>The free functions each build a <code>RegexPattern</code> per call; construct one yourself to reuse it.</p>
 <h2 id="supported-syntax">Supported Syntax<a class="headerlink" href="#supported-syntax" title="Permanent link">&para;</a></h2>
-<p>The current matcher supports:</p>
+<p>All of the following is [IMPLEMENTED]:</p>
 <ul>
 <li>Literals like <code>abc</code></li>
-<li>Escapes like <code>\n</code>, <code>\t</code>, <code>\r</code>, and escaped metacharacters</li>
-<li>Wildcard <code>.</code></li>
-<li>Anchors <code>^</code> (start) and <code>$</code> (end)</li>
-<li>Grouping with <code>( ... )</code></li>
-<li>Alternation with <code>|</code></li>
-<li>Quantifiers <code>*</code>, <code>+</code>, and <code>?</code></li>
-<li>Character classes like <code>[abc]</code>, <code>[^abc]</code>, and simple ranges like <code>[a-z]</code></li>
+<li>Escapes <code>\n</code>, <code>\t</code>, <code>\r</code>, and escaped metacharacters (<code>\.</code>, <code>\(</code>, <code>\\</code>, <code>\{</code>, ...). An escape of any other character stands for that character.</li>
+<li>Wildcard <code>.</code> (any single byte, including newline)</li>
+<li>Anchors: a leading <code>^</code> (start of text) and a trailing <code>$</code> (end of text). A trailing <code>\$</code> is a literal dollar. A <code>^</code> or <code>$</code> anywhere else is an ordinary literal character, and a pattern with nothing between its anchors (<code>^</code>, <code>$</code>, <code>^$</code>) is reported as empty.</li>
+<li>Capturing groups <code>( ... )</code> and non-capturing groups <code>(?: ... )</code>, which can be nested and quantified</li>
+<li>Alternation with <code>|</code>; the leftmost alternative that leads to an overall match wins, and an alternative may be empty (<code>a|</code>)</li>
+<li>Quantifiers <code>*</code>, <code>+</code>, <code>?</code> (greedy)</li>
+<li>Counted quantifiers <code>{n}</code>, <code>{n,}</code>, <code>{n,m}</code> on any atom or group (<code>n</code> and <code>m</code> up to 1000). <code>{n,m}</code> requires <code>n &lt;= m</code>.</li>
+<li>Character classes <code>[abc]</code>, <code>[^abc]</code>, ranges <code>[a-z]</code> (over any byte values), and shorthand classes inside a class (<code>[\d_]</code>, <code>[^\s]</code>). A <code>-</code> just before the closing <code>]</code> (or first in the class) is a literal.</li>
+<li>Shorthand classes, inside or outside <code>[...]</code>:</li>
 </ul>
-<h2 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Escape</th>
+<th>Matches</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>\d</code> / <code>\D</code></td>
+<td>an ASCII digit / anything else</td>
+</tr>
+<tr>
+<td><code>\w</code> / <code>\W</code></td>
+<td><code>[A-Za-z0-9_]</code> / anything else</td>
+</tr>
+<tr>
+<td><code>\s</code> / <code>\S</code></td>
+<td>space, <code>\t</code>, <code>\n</code>, <code>\v</code>, <code>\f</code>, <code>\r</code> / anything else</td>
+</tr>
+</tbody>
+</table>
+<p>Matching works on bytes, so non-ASCII text is matched byte by byte.</p>
+<h3 id="matching-semantics">Matching semantics<a class="headerlink" href="#matching-semantics" title="Permanent link">&para;</a></h3>
+<p>Matching is a backtracking search: leftmost, with greedy quantifiers that give characters back when the rest of the pattern needs them. Alternation tries alternatives left to right. A repetition of something that can match the empty string (<code>(a*)*</code>) stops as soon as an iteration consumes nothing, so it always terminates.</p>
+<p>Because it is a backtracking matcher, a pattern with nested unbounded quantifiers can take exponential time on adversarial input, and a repeat whose body is a group uses native stack per iteration: a single greedy repeat over several thousand characters can overflow the 1 MiB stack. A counted quantifier is expanded into copies of its atom, so <code>(a{1000}){1000}</code> is rejected as <code>pattern too large</code>.</p>
+<h2 id="errors">Errors<a class="headerlink" href="#errors" title="Permanent link">&para;</a></h2>
+<p>Pattern errors are reported at runtime via <code>last_error</code>; there is no compile-time pattern validation yet. Searches with an invalid pattern never match. The messages are:</p>
+<table>
+<thead>
+<tr>
+<th>Message</th>
+<th>Cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pattern is empty</code></td>
+<td>empty pattern, or nothing between the anchors</td>
+</tr>
+<tr>
+<td><code>dangling escape at end of pattern</code></td>
+<td>a trailing <code>\</code></td>
+</tr>
+<tr>
+<td><code>unmatched '[' in pattern</code></td>
+<td>a class with no closing <code>]</code></td>
+</tr>
+<tr>
+<td><code>empty character class</code></td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>invalid range in character class</code></td>
+<td>a reversed range (<code>[z-a]</code>) or a shorthand as a range end (<code>[a-\d]</code>)</td>
+</tr>
+<tr>
+<td><code>unmatched '(' in pattern</code> / <code>unmatched ')' in pattern</code></td>
+<td>unbalanced parentheses</td>
+</tr>
+<tr>
+<td><code>unsupported group syntax</code></td>
+<td><code>(?</code> followed by anything but <code>:</code> (lookarounds, named groups, flags)</td>
+</tr>
+<tr>
+<td><code>quantifier without target</code></td>
+<td>a <code>*</code>, <code>+</code>, <code>?</code> or <code>{</code> with nothing to repeat (<code>*a</code>, <code>(+)</code>, <code>a|*</code>)</td>
+</tr>
+<tr>
+<td><code>nested or non-greedy quantifiers are not supported</code></td>
+<td><code>a**</code>, <code>a+?</code>, <code>a{2}{3}</code></td>
+</tr>
+<tr>
+<td><code>unterminated '{' in pattern</code></td>
+<td><code>{</code> with no closing <code>}</code></td>
+</tr>
+<tr>
+<td><code>invalid counted quantifier</code></td>
+<td>malformed count (<code>a{}</code>, <code>a{,3}</code>, <code>a{x}</code>)</td>
+</tr>
+<tr>
+<td><code>counted quantifier minimum exceeds maximum</code></td>
+<td><code>a{3,1}</code></td>
+</tr>
+<tr>
+<td><code>counted quantifier too large</code></td>
+<td>a count above 1000</td>
+</tr>
+<tr>
+<td><code>pattern too large</code></td>
+<td>the compiled pattern would exceed the size limit</td>
+</tr>
+</tbody>
+</table>
+<h2 id="not-supported-yet">Not Supported Yet<a class="headerlink" href="#not-supported-yet" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Pattern errors are reported at runtime via <code>last_error</code>; there is no compile-time pattern validation yet.</li>
-<li>Counted quantifiers (<code>{n,m}</code>), lookarounds, non-greedy quantifiers, captures, and backreferences are not supported yet.</li>
-<li>Character-class range ordering is intentionally simple and currently best suited to ASCII alphanumeric ranges.</li>
+<li>Lookahead and lookbehind (<code>(?=...)</code>, <code>(?!...)</code>, <code>(?&lt;=...)</code>) [PLANNED]</li>
+<li>Non-greedy quantifiers (<code>*?</code>, <code>+?</code>, <code>??</code>, <code>{n,m}?</code>) [PLANNED]</li>
+<li>Backreferences (<code>\1</code>) [PLANNED]</li>
+<li>Named groups (<code>(?&lt;name&gt;...)</code>) and inline flags (<code>(?i)</code>) [PLANNED]</li>
+<li>Word-boundary and other anchors inside a pattern (<code>\b</code>, <code>\A</code>, <code>\z</code>, <code>^</code>/<code>$</code> in the middle) [PLANNED]</li>
+<li>Unicode-aware classes and case-insensitive matching [PLANNED]</li>
+<li>Compile-time pattern validation [PLANNED]</li>
 </ul>
 <h2 id="future-sections-planned">Future Sections [PLANNED]<a class="headerlink" href="#future-sections-planned" title="Permanent link">&para;</a></h2>
-<p>These are good follow-up topics for later expansion:</p>
 <ul>
-<li>Capturing groups and submatch extraction</li>
-<li>Search helpers like <code>find_first</code> and <code>find_all</code></li>
-<li>Replacement helpers</li>
-<li>More complete character classes and escaping rules</li>
+<li>Linear-time matching (NFA/DFA simulation) for patterns that backtrack badly</li>
+<li>Named capture groups and iteration over matches</li>
 </ul>
 
 

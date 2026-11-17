@@ -1093,10 +1093,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#tuplet-u" class="md-nav__link">
+  <a href="#pairt-u" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tuple&lt;T, U&gt;
+        Pair&lt;T, U&gt;
       
     </span>
   </a>
@@ -1104,10 +1104,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#copyabletuplet-u" class="md-nav__link">
+  <a href="#copyablepairt-u" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CopyableTuple&lt;T, U&gt;
+        CopyablePair&lt;T, U&gt;
       
     </span>
   </a>
@@ -1426,10 +1426,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#tuplet-u" class="md-nav__link">
+  <a href="#pairt-u" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tuple&lt;T, U&gt;
+        Pair&lt;T, U&gt;
       
     </span>
   </a>
@@ -1437,10 +1437,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#copyabletuplet-u" class="md-nav__link">
+  <a href="#copyablepairt-u" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CopyableTuple&lt;T, U&gt;
+        CopyablePair&lt;T, U&gt;
       
     </span>
   </a>
@@ -1607,40 +1607,40 @@
 <h1 id="generic-types-stdtypes">Generic Types (<code>std.types</code>)<a class="headerlink" href="#generic-types-stdtypes" title="Permanent link">&para;</a></h1>
 <p>The <code>std.types</code> module provides generic container and utility types.</p>
 <blockquote>
-<p>Status: <code>Tuple</code>, <code>CopyableTuple</code>, <code>Option</code>, <code>CopyableOption</code>, <code>Result</code>, and <code>CopyableResult</code> are all [IMPLEMENTED] and tested.</p>
+<p>Status: <code>Pair</code>, <code>CopyablePair</code>, <code>Option</code>, <code>CopyableOption</code>, <code>Result</code>, and <code>CopyableResult</code> are all [IMPLEMENTED] and tested.</p>
 </blockquote>
-<h2 id="tuplet-u"><code>Tuple&lt;T, U&gt;</code><a class="headerlink" href="#tuplet-u" title="Permanent link">&para;</a></h2>
+<h2 id="pairt-u"><code>Pair&lt;T, U&gt;</code><a class="headerlink" href="#pairt-u" title="Permanent link">&para;</a></h2>
 <p>A pair of values of potentially different types.</p>
-<pre><code class="language-firescript">class Tuple&lt;T, U&gt; {
+<pre><code class="language-firescript">class Pair&lt;T, U&gt; {
     first: T;
     second: U;
 
-    fn Tuple(first: T, second: U);
+    fn Pair(first: T, second: U);
 }
 </code></pre>
 <p><strong>Example:</strong></p>
-<pre><code class="language-firescript">import @firescript/std.types.Tuple;
+<pre><code class="language-firescript">import @firescript/std.types.Pair;
 import @firescript/std.io.println;
 
-pair: Tuple&lt;int32, string&gt; = Tuple&lt;int32, string&gt;(42, &quot;answer&quot;);
+pair: Pair&lt;int32, string&gt; = Pair&lt;int32, string&gt;(42, &quot;answer&quot;);
 println(pair.first);   // 42
 println(pair.second);  // answer
 </code></pre>
-<p><strong>Note:</strong> <code>Tuple</code> is an Owned type; values are moved, not copied.</p>
-<h2 id="copyabletuplet-u"><code>CopyableTuple&lt;T, U&gt;</code><a class="headerlink" href="#copyabletuplet-u" title="Permanent link">&para;</a></h2>
-<p>A copyable variant of <code>Tuple</code> for use with copyable types only.</p>
-<pre><code class="language-firescript">copyable class CopyableTuple&lt;T, U&gt; {
+<p><strong>Note:</strong> <code>Pair</code> is an Owned type; values are moved, not copied.</p>
+<h2 id="copyablepairt-u"><code>CopyablePair&lt;T, U&gt;</code><a class="headerlink" href="#copyablepairt-u" title="Permanent link">&para;</a></h2>
+<p>A copyable variant of <code>Pair</code> for use with copyable types only.</p>
+<pre><code class="language-firescript">copyable class CopyablePair&lt;T, U&gt; {
     first: T;
     second: U;
 
-    fn CopyableTuple(first: T, second: U);
+    fn CopyablePair(first: T, second: U);
 }
 </code></pre>
 <p><strong>Example:</strong></p>
-<pre><code class="language-firescript">import @firescript/std.types.CopyableTuple;
+<pre><code class="language-firescript">import @firescript/std.types.CopyablePair;
 
-coord: CopyableTuple&lt;float64, float64&gt; = CopyableTuple&lt;float64, float64&gt;(3.14, 2.71);
-copy: CopyableTuple&lt;float64, float64&gt; = coord;  // copies
+coord: CopyablePair&lt;float64, float64&gt; = CopyablePair&lt;float64, float64&gt;(3.14, 2.71);
+copy: CopyablePair&lt;float64, float64&gt; = coord;  // copies
 </code></pre>
 <h2 id="optiont-implemented"><code>Option&lt;T&gt;</code> [IMPLEMENTED]<a class="headerlink" href="#optiont-implemented" title="Permanent link">&para;</a></h2>
 <p>An optional value of type <code>T</code>. Use this to represent potentially missing values without explicit nullability.</p>
@@ -1664,7 +1664,7 @@ copy: CopyableTuple&lt;float64, float64&gt; = coord;  // copies
 <li><code>isNone()</code>: Returns <code>true</code> if no value is present</li>
 <li><code>Some(value)</code>: Static factory for a present value. Infers <code>T</code> from <code>value</code>, so it works bare (<code>Option.Some(5)</code>).</li>
 <li><code>None()</code>: Static factory for an absent value. Takes no argument to infer <code>T</code> from — use the explicit form, <code>Option&lt;int32&gt;.None()</code>.</li>
-<li><code>unwrapOr(default)</code>: Returns the value if present, else <code>default</code>. <strong>Drains the Option</strong> — extracts the value by nulling out the field, so <code>isSome()</code> reads <code>false</code> immediately afterward. Safe for any <code>T</code>, including Owned types (the same aliasing hazard <code>Vec&lt;T&gt;.get()</code> has for an Owned element is avoided here the way <code>Vec&lt;T&gt;.pop()</code> avoids it — see <a href="../collections/">Collections</a>).</li>
+<li><code>unwrapOr(default)</code>: Returns the value if present, else <code>default</code>. <strong>Drains the Option</strong> — extracts the value by nulling out the field, so <code>isSome()</code> reads <code>false</code> immediately afterward. Safe for any <code>T</code>, including Owned types (the same aliasing hazard <code>ArrayList&lt;T&gt;.get()</code> has for an Owned element is avoided here the way <code>ArrayList&lt;T&gt;.removeLast()</code> avoids it — see <a href="../collections/">Collections</a>).</li>
 </ul>
 <p><strong>Example:</strong></p>
 <pre><code class="language-firescript">import @firescript/std.types.Option;
@@ -1767,16 +1767,16 @@ println(parsed.unwrapOr(-1));
 </code></pre>
 <h2 id="usage-notes">Usage Notes<a class="headerlink" href="#usage-notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Prefer <code>CopyableTuple</code>, <code>CopyableOption</code>, and <code>CopyableResult</code></strong> for numeric/scalar types to avoid unnecessary moves.</li>
+<li><strong>Prefer <code>CopyablePair</code>, <code>CopyableOption</code>, and <code>CopyableResult</code></strong> for numeric/scalar types to avoid unnecessary moves.</li>
 <li><strong>Use owned variants</strong> for containers or strings that you want to pass around differently.</li>
 <li>Both variants support generic type parameters; compile-time monomorphization produces efficient code.</li>
 </ul>
 <h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
-<pre><code class="language-firescript">import @firescript/std.types.Tuple;
+<pre><code class="language-firescript">import @firescript/std.types.Pair;
 import @firescript/std.io.println;
 
-// Tuple usage
-user: Tuple&lt;int32, string&gt; = Tuple&lt;int32, string&gt;(1, &quot;alice&quot;);
+// Pair usage
+user: Pair&lt;int32, string&gt; = Pair&lt;int32, string&gt;(1, &quot;alice&quot;);
 println(&quot;User ID: &quot; + (user.first as string));
 println(user.second);
 </code></pre>

@@ -1278,15 +1278,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#vect" class="md-nav__link">
+  <a href="#arraylistt" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Vec&lt;T&gt;
+        ArrayList&lt;T&gt;
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Vec&lt;T&gt;">
+    <nav class="md-nav" aria-label="ArrayList&lt;T&gt;">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1400,97 +1400,96 @@
 
 
 <h1 id="collections-stdcollections">Collections (<code>std.collections</code>)<a class="headerlink" href="#collections-stdcollections" title="Permanent link">&para;</a></h1>
-<p>The <code>std.collections</code> module provides <code>Vec&lt;T&gt;</code> (a dynamically-growable array) and
+<p>The <code>std.collections</code> module provides <code>ArrayList&lt;T&gt;</code> (a dynamically-growable array) and
 <code>HashMap&lt;K,V&gt;</code> (a hash table).</p>
 <blockquote>
-<p>Status: <code>Vec&lt;T&gt;</code> <code>push</code>/<code>pop</code>/<code>get</code>/<code>set</code>/<code>length</code>/<code>size</code>/<code>enumerate</code> and <code>HashMap&lt;K,V&gt;</code>
-<code>set</code>/<code>get</code>/<code>has</code>/<code>remove</code>/<code>length</code>/<code>size</code> are all [IMPLEMENTED] and tested.</p>
+<p>Status: <code>ArrayList&lt;T&gt;</code> <code>add</code>/<code>removeLast</code>/<code>get</code>/<code>set</code>/<code>size</code>/<code>enumerate</code> and <code>HashMap&lt;K,V&gt;</code>
+<code>set</code>/<code>get</code>/<code>has</code>/<code>remove</code>/<code>size</code> are all [IMPLEMENTED] and tested.</p>
 </blockquote>
-<h2 id="vect"><code>Vec&lt;T&gt;</code><a class="headerlink" href="#vect" title="Permanent link">&para;</a></h2>
-<pre><code class="language-firescript">class Vec&lt;T&gt; {
-    fn Vec(&amp;mut this);
+<h2 id="arraylistt"><code>ArrayList&lt;T&gt;</code><a class="headerlink" href="#arraylistt" title="Permanent link">&para;</a></h2>
+<pre><code class="language-firescript">class ArrayList&lt;T&gt; {
+    fn ArrayList(&amp;mut this);
 
-    fn length(&amp;this) -&gt; int32;
     fn size(&amp;this) -&gt; int32;
 
-    fn push(&amp;mut this, value: T);
-    fn pop(&amp;mut this) -&gt; T;
+    fn add(&amp;mut this, value: T);
+    fn removeLast(&amp;mut this) -&gt; T;
 
     fn get(&amp;this, i: int32) -&gt; T;
     fn set(&amp;mut this, i: int32, value: T);
 }
 </code></pre>
 <p><strong>Example:</strong></p>
-<pre><code class="language-firescript">import @firescript/std.collections.Vec;
+<pre><code class="language-firescript">import @firescript/std.collections.ArrayList;
 import @firescript/std.io.println;
 
-v: Vec&lt;int32&gt; = Vec&lt;int32&gt;();
-v.push(10);
-v.push(20);
-v.push(30);
-println(v.length());   // 3
+v: ArrayList&lt;int32&gt; = ArrayList&lt;int32&gt;();
+v.add(10);
+v.add(20);
+v.add(30);
+println(v.size());   // 3
 println(v.get(1));     // 20
 
 v.set(1, 99);
 println(v.get(1));     // 99
 
-last: int32 = v.pop();
+last: int32 = v.removeLast();
 println(last);          // 30
-println(v.length());   // 2
+println(v.size());   // 2
 </code></pre>
 <p><strong>Methods:</strong></p>
 <ul>
-<li><code>length()</code> / <code>size()</code>: Number of elements currently stored.</li>
-<li><code>push(value)</code>: Appends <code>value</code>, growing the backing buffer (capacity doubles, starting
+<li><code>size()</code>: Number of elements currently stored.</li>
+<li><code>add(value)</code>: Appends <code>value</code>, growing the backing buffer (capacity doubles, starting
   at 4) if needed.</li>
-<li><code>pop()</code>: Removes and returns the last element. Shrinks the tracked length before
-  reading, so it's safe to call on a <code>Vec&lt;T&gt;</code> of any <code>T</code>, including an Owned type.</li>
+<li><code>removeLast()</code>: Removes and returns the last element. Shrinks the tracked length before
+  reading, so it's safe to call on an <code>ArrayList&lt;T&gt;</code> of any <code>T</code>, including an Owned type.</li>
 <li><code>get(i)</code> / <code>set(i, value)</code>: Read or overwrite the element at index <code>i</code>. No bounds
   checking is performed; an out-of-range index is undefined behavior (matches core
   array indexing).</li>
 </ul>
 <h3 id="owned-vs-copyable-element-types">Owned vs. Copyable element types<a class="headerlink" href="#owned-vs-copyable-element-types" title="Permanent link">&para;</a></h3>
-<p><code>Vec&lt;T&gt;</code> itself is an Owned type. Its destructor always frees its own backing buffer,
+<p><code>ArrayList&lt;T&gt;</code> itself is an Owned type. Its destructor always frees its own backing buffer,
 and (via a compiler-internal <code>@owns_elements</code> mechanism) also drops each live element
-first when <code>T</code> is itself an Owned type (a class or <code>string</code>) -- so <code>push</code>/<code>pop</code>/<code>set</code>
+first when <code>T</code> is itself an Owned type (a class or <code>string</code>) -- so <code>add</code>/<code>removeLast</code>/<code>set</code>
 are safe for any <code>T</code>.</p>
 <p><strong><code>get()</code> (and therefore <code>enumerate&lt;T&gt;</code>, which calls <code>get()</code> internally) is only safe
 for Copyable-ish <code>T</code></strong> (numeric types, <code>bool</code>, <code>char</code>). <code>get()</code> reads an element out by
-value <em>without</em> removing it from the <code>Vec</code>, so for an Owned <code>T</code> the returned value and
-the <code>Vec</code>'s own copy would alias the same heap allocation -- both the caller and the
-<code>Vec</code>'s eventual destructor would try to free it, a double-free. firescript does not yet
+value <em>without</em> removing it from the <code>ArrayList</code>, so for an Owned <code>T</code> the returned value and
+the <code>ArrayList</code>'s own copy would alias the same heap allocation -- both the caller and the
+<code>ArrayList</code>'s eventual destructor would try to free it, a double-free. firescript does not yet
 have <code>Owned</code>/<code>Copyable</code> generic constraints to enforce this restriction at the type
 level (planned for a future release; see <code>docs/internal/version_planning.md</code>'s 0.7.0
 "Wyvern" milestone), so it isn't enforced by the compiler today -- calling <code>get()</code> on a
-<code>Vec</code> of an Owned <code>T</code> will compile, but risks a runtime double-free.</p>
-<p><strong>Example (Owned element type, <code>push</code>/<code>pop</code>/<code>set</code> only):</strong></p>
-<pre><code class="language-firescript">import @firescript/std.collections.Vec;
+<code>ArrayList</code> of an Owned <code>T</code> will compile, but risks a runtime double-free.</p>
+<p><strong>Example (Owned element type, <code>add</code>/<code>removeLast</code>/<code>set</code> only):</strong></p>
+<pre><code class="language-firescript">import @firescript/std.collections.ArrayList;
 import @firescript/std.io.println;
 
-names: Vec&lt;string&gt; = Vec&lt;string&gt;();
-names.push(&quot;Alice&quot;);
-names.push(&quot;Bob&quot;);
+names: ArrayList&lt;string&gt; = ArrayList&lt;string&gt;();
+names.add(&quot;Alice&quot;);
+names.add(&quot;Bob&quot;);
 names.set(1, &quot;Robert&quot;);
-last: string = names.pop();
+last: string = names.removeLast();
 println(last);            // Robert
-println(names.length());  // 1
+println(names.size());  // 1
 </code></pre>
 <h2 id="enumeratet"><code>enumerate&lt;T&gt;</code><a class="headerlink" href="#enumeratet" title="Permanent link">&para;</a></h2>
-<pre><code class="language-firescript">fn enumerate&lt;T&gt;(&amp;v: Vec&lt;T&gt;) -&gt; generator&lt;Tuple&lt;int32, T&gt;&gt;;
+<pre><code class="language-firescript">fn enumerate&lt;T&gt;(&amp;v: ArrayList&lt;T&gt;) -&gt; generator&lt;Pair&lt;int32, T&gt;&gt;;
 </code></pre>
-<p>Yields <code>(index, value)</code> pairs as <code>Tuple&lt;int32, T&gt;</code> while iterating a <code>Vec&lt;T&gt;</code>. Calls
+<p>Yields <code>(index, value)</code> pairs as <code>Pair&lt;int32, T&gt;</code> while iterating an <code>ArrayList&lt;T&gt;</code>. Calls
 <code>get()</code> internally, so it's subject to the same Copyable-<code>T</code> caveat above.</p>
-<pre><code class="language-firescript">import @firescript/std.collections.Vec;
+<pre><code class="language-firescript">import @firescript/std.collections.ArrayList;
 import @firescript/std.collections.enumerate;
-import @firescript/std.types.Tuple;
+import @firescript/std.types.Pair;
 import @firescript/std.io.println;
 
-v: Vec&lt;int32&gt; = Vec&lt;int32&gt;();
-v.push(10);
-v.push(20);
-v.push(30);
+v: ArrayList&lt;int32&gt; = ArrayList&lt;int32&gt;();
+v.add(10);
+v.add(20);
+v.add(30);
 
-for (pair: Tuple&lt;int32, int32&gt; in enumerate(v)) {
+for (pair: Pair&lt;int32, int32&gt; in enumerate(v)) {
     println(pair.first);   // index
     println(pair.second);  // value
 }
@@ -1499,7 +1498,6 @@ for (pair: Tuple&lt;int32, int32&gt; in enumerate(v)) {
 <pre><code class="language-firescript">class HashMap&lt;K, V&gt; {
     fn HashMap(&amp;mut this);
 
-    fn length(&amp;this) -&gt; int32;
     fn size(&amp;this) -&gt; int32;
 
     fn set(&amp;mut this, key: K, value: V);
@@ -1517,7 +1515,7 @@ import @firescript/std.io.println;
 ages: HashMap&lt;string, int32&gt; = HashMap&lt;string, int32&gt;();
 ages.set(&quot;Alice&quot;, 30);
 ages.set(&quot;Bob&quot;, 25);
-println(ages.length());        // 2
+println(ages.size());        // 2
 println(ages.has(&quot;Alice&quot;));    // true
 println(ages.get(&quot;Alice&quot;));    // 30
 
@@ -1530,18 +1528,18 @@ println(ages.has(&quot;Bob&quot;));      // false
 </code></pre>
 <p><strong>Methods:</strong></p>
 <ul>
-<li><code>length()</code> / <code>size()</code>: Number of entries currently stored.</li>
+<li><code>size()</code>: Number of entries currently stored.</li>
 <li><code>set(key, value)</code>: Inserts or overwrites the entry for <code>key</code>.</li>
 <li><code>has(key)</code>: Returns whether <code>key</code> is present.</li>
 <li><code>get(key)</code> / <code>remove(key)</code>: Only well-defined when <code>has(key)</code> is <code>true</code> first -- like
-  core array indexing (and <code>Vec&lt;T&gt;.get()</code>), there's no presence check. Calling either for
+  core array indexing (and <code>ArrayList&lt;T&gt;.get()</code>), there's no presence check. Calling either for
   an absent key reads whatever currently occupies the slot probing would have chosen for
   an insert, which for a removed slot can be a stale, already-moved-out pointer for an
   Owned <code>V</code>. Always check <code>has()</code> first.</li>
 <li><code>remove(key)</code> moves the stored value out and marks the slot a tombstone in the same
     operation, so it's safe to call for any <code>V</code> (Owned or Copyable) -- matching
-    <code>Vec&lt;T&gt;.pop()</code>'s equivalent safety argument.</li>
-<li><code>get(key)</code> reads the value out <em>without</em> removing it, so (like <code>Vec&lt;T&gt;.get()</code>) it's
+    <code>ArrayList&lt;T&gt;.removeLast()</code>'s equivalent safety argument.</li>
+<li><code>get(key)</code> reads the value out <em>without</em> removing it, so (like <code>ArrayList&lt;T&gt;.get()</code>) it's
     only safe for Copyable-ish <code>V</code> (numeric types, <code>bool</code>, <code>char</code>) -- for an Owned <code>V</code> the
     returned copy and the map's own copy would alias the same allocation.</li>
 </ul>
@@ -1563,7 +1561,7 @@ work) -- it just hasn't been done in this release, to keep this change scoped to
 compiler-level fix.</p>
 <h2 id="usage-notes">Usage Notes<a class="headerlink" href="#usage-notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>Vec&lt;T&gt;</code>/<code>HashMap&lt;K,V&gt;</code> are built on compiler intrinsics private to <code>std/collections/</code>:
+<li><code>ArrayList&lt;T&gt;</code>/<code>HashMap&lt;K,V&gt;</code> are built on compiler intrinsics private to <code>std/collections/</code>:
   <code>fs_rt_array_new&lt;T&gt;</code>/<code>fs_rt_array_copy&lt;T&gt;</code> allocate/copy a <code>T[]</code> buffer of a
   runtime-determined element count (ordinary fixed-size arrays can only be sized by a
   compile-time literal), and <code>fs_rt_hash&lt;K&gt;</code> computes a key's hash, dispatched by concrete

@@ -2199,7 +2199,7 @@ p: Pair&lt;int32, string&gt; = Pair&lt;int32, string&gt;(42, &quot;hello&quot;);
 println(p.first);   // 42
 println(p.second);  // hello
 </code></pre>
-<p>Both <code>copyable</code> and owned (heap-allocated) generic classes are supported. <code>@firescript/std.types</code> provides ready-made <code>Tuple&lt;T, U&gt;</code> and <code>Option&lt;T&gt;</code> types (see <a href="../std/types/">Standard Library — Types</a>).</p>
+<p>Both <code>copyable</code> and owned (heap-allocated) generic classes are supported. <code>@firescript/std.types</code> provides ready-made <code>Pair&lt;T, U&gt;</code> and <code>Option&lt;T&gt;</code> types (see <a href="../std/types/">Standard Library — Types</a>).</p>
 <h2 id="copyable-classes">Copyable Classes<a class="headerlink" href="#copyable-classes" title="Permanent link">&para;</a></h2>
 <p>A class may be annotated <code>copyable</code> to become Copyable if it satisfies:
 1. All fields are Copyable.

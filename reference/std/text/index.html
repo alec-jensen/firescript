@@ -1392,7 +1392,7 @@ println(sb.length());  // 0 -- build() drains the builder
 <p><strong>Methods:</strong></p>
 <ul>
 <li><code>append(s)</code>: Adds <code>s</code> to the end of the accumulated content. Takes ownership of <code>s</code>
-  (matching <code>Vec&lt;T&gt;.push()</code>).</li>
+  (matching <code>ArrayList&lt;T&gt;.add()</code>).</li>
 <li><code>length()</code>: Total character count of everything appended so far, tracked incrementally
   (not recomputed by summing fragments).</li>
 <li><code>build()</code>: Joins every appended fragment into a single string and returns it, <strong>draining
@@ -1404,39 +1404,39 @@ println(sb.length());  // 0 -- build() drains the builder
 resolution (see <code>tests/sources/classes/classes_zero_arg_constructor_bare_call.fire</code>) and
 was kept as-is since there's no functional need to change it.</p>
 <h3 id="implementation-notes">Implementation notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h3>
-<p><code>StringBuilder</code> is backed by a <code>Vec&lt;string&gt;</code> of fragments rather than a raw growable byte
+<p><code>StringBuilder</code> is backed by an <code>ArrayList&lt;string&gt;</code> of fragments rather than a raw growable byte
 buffer -- string primitives (<code>std/internal/strings.fire</code>) have no way to construct a
-<code>Vec&lt;T&gt;</code> themselves (internal runtime files carry no import statements), so building on
-the already-public <code>Vec&lt;T&gt;</code> was the straightforward option. <code>build()</code> drains fragments
-with <code>Vec&lt;T&gt;.pop()</code> rather than <code>get()</code>/<code>enumerate()</code>, which aren't safe for an Owned
+<code>ArrayList&lt;T&gt;</code> themselves (internal runtime files carry no import statements), so building on
+the already-public <code>ArrayList&lt;T&gt;</code> was the straightforward option. <code>build()</code> drains fragments
+with <code>ArrayList&lt;T&gt;.removeLast()</code> rather than <code>get()</code>/<code>enumerate()</code>, which aren't safe for an Owned
 element type like <code>string</code> (see <a href="../collections/">Collections</a>'s note on <code>get()</code>).</p>
 <h2 id="split"><code>split</code><a class="headerlink" href="#split" title="Permanent link">&para;</a></h2>
-<pre><code class="language-firescript">fn split(&amp;s: string, &amp;delim: string) -&gt; Vec&lt;string&gt;;
+<pre><code class="language-firescript">fn split(&amp;s: string, &amp;delim: string) -&gt; ArrayList&lt;string&gt;;
 </code></pre>
 <p>Splits <code>s</code> on every occurrence of <code>delim</code>, including leading, trailing, and adjacent
-empty fields. An empty <code>delim</code> returns a single-element <code>Vec</code> containing the whole string
-unchanged. If <code>delim</code> never occurs, the result is a single-element <code>Vec</code> containing <code>s</code>.</p>
+empty fields. An empty <code>delim</code> returns a single-element <code>ArrayList</code> containing the whole string
+unchanged. If <code>delim</code> never occurs, the result is a single-element <code>ArrayList</code> containing <code>s</code>.</p>
 <p><strong>Example:</strong></p>
 <pre><code class="language-firescript">import @firescript/std.text.split;
-import @firescript/std.collections.Vec;
+import @firescript/std.collections.ArrayList;
 import @firescript/std.io.println;
 
-parts: Vec&lt;string&gt; = split(&quot;a,bb,ccc&quot;, &quot;,&quot;);
-println(parts.length());  // 3
-println(parts.pop());     // ccc -- pop() drains in reverse order
-println(parts.pop());     // bb
-println(parts.pop());     // a
+parts: ArrayList&lt;string&gt; = split(&quot;a,bb,ccc&quot;, &quot;,&quot;);
+println(parts.size());  // 3
+println(parts.removeLast());     // ccc -- removeLast() drains in reverse order
+println(parts.removeLast());     // bb
+println(parts.removeLast());     // a
 </code></pre>
 <p><strong>Note:</strong> <code>split</code> isn't a <code>.split()</code> dot-method on <code>string</code> like <code>.indexOf()</code>/
 <code>.substring()</code>/etc. (see the <a href="../../../CLAUDE.md">strings feature table entry</a> for the
-full list) -- it needs to return <code>Vec&lt;string&gt;</code>, and the compiler's <code>@builtin_method</code>
+full list) -- it needs to return <code>ArrayList&lt;string&gt;</code>, and the compiler's <code>@builtin_method</code>
 dispatch (used for those other string methods) only supports backing functions defined in
-<code>std/internal/</code>, which can't reference <code>Vec&lt;T&gt;</code> (a normal importable module, not an
+<code>std/internal/</code>, which can't reference <code>ArrayList&lt;T&gt;</code> (a normal importable module, not an
 internal runtime file). Called as a plain function instead: <code>split(s, delim)</code>.</p>
 <h2 id="usage-notes">Usage Notes<a class="headerlink" href="#usage-notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Draining a <code>Vec&lt;string&gt;</code> (via <code>StringBuilder.build()</code> internally, or directly from
-  <code>split</code>'s result) should always go through <code>pop()</code>, never <code>get()</code>/<code>enumerate()</code> -- see
+<li>Draining an <code>ArrayList&lt;string&gt;</code> (via <code>StringBuilder.build()</code> internally, or directly from
+  <code>split</code>'s result) should always go through <code>removeLast()</code>, never <code>get()</code>/<code>enumerate()</code> -- see
   <a href="../collections/">Collections</a> for why.</li>
 </ul>
 
