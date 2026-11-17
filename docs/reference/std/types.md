@@ -2,54 +2,54 @@
 
 The `std.types` module provides generic container and utility types.
 
-> Status: `Tuple`, `CopyableTuple`, `Option`, `CopyableOption`, `Result`, and `CopyableResult` are all [IMPLEMENTED] and tested.
+> Status: `Pair`, `CopyablePair`, `Option`, `CopyableOption`, `Result`, and `CopyableResult` are all [IMPLEMENTED] and tested.
 
-## `Tuple<T, U>`
+## `Pair<T, U>`
 
 A pair of values of potentially different types.
 
 ```firescript
-class Tuple<T, U> {
+class Pair<T, U> {
     first: T;
     second: U;
 
-    fn Tuple(first: T, second: U);
+    fn Pair(first: T, second: U);
 }
 ```
 
 **Example:**
 
 ```firescript
-import @firescript/std.types.Tuple;
+import @firescript/std.types.Pair;
 import @firescript/std.io.println;
 
-pair: Tuple<int32, string> = Tuple<int32, string>(42, "answer");
+pair: Pair<int32, string> = Pair<int32, string>(42, "answer");
 println(pair.first);   // 42
 println(pair.second);  // answer
 ```
 
-**Note:** `Tuple` is an Owned type; values are moved, not copied.
+**Note:** `Pair` is an Owned type; values are moved, not copied.
 
-## `CopyableTuple<T, U>`
+## `CopyablePair<T, U>`
 
-A copyable variant of `Tuple` for use with copyable types only.
+A copyable variant of `Pair` for use with copyable types only.
 
 ```firescript
-copyable class CopyableTuple<T, U> {
+copyable class CopyablePair<T, U> {
     first: T;
     second: U;
 
-    fn CopyableTuple(first: T, second: U);
+    fn CopyablePair(first: T, second: U);
 }
 ```
 
 **Example:**
 
 ```firescript
-import @firescript/std.types.CopyableTuple;
+import @firescript/std.types.CopyablePair;
 
-coord: CopyableTuple<float64, float64> = CopyableTuple<float64, float64>(3.14, 2.71);
-copy: CopyableTuple<float64, float64> = coord;  // copies
+coord: CopyablePair<float64, float64> = CopyablePair<float64, float64>(3.14, 2.71);
+copy: CopyablePair<float64, float64> = coord;  // copies
 ```
 
 ## `Option<T>` [IMPLEMENTED]
@@ -78,7 +78,7 @@ class Option<T?> {
 - `isNone()`: Returns `true` if no value is present
 - `Some(value)`: Static factory for a present value. Infers `T` from `value`, so it works bare (`Option.Some(5)`).
 - `None()`: Static factory for an absent value. Takes no argument to infer `T` from — use the explicit form, `Option<int32>.None()`.
-- `unwrapOr(default)`: Returns the value if present, else `default`. **Drains the Option** — extracts the value by nulling out the field, so `isSome()` reads `false` immediately afterward. Safe for any `T`, including Owned types (the same aliasing hazard `Vec<T>.get()` has for an Owned element is avoided here the way `Vec<T>.pop()` avoids it — see [Collections](collections.md)).
+- `unwrapOr(default)`: Returns the value if present, else `default`. **Drains the Option** — extracts the value by nulling out the field, so `isSome()` reads `false` immediately afterward. Safe for any `T`, including Owned types (the same aliasing hazard `ArrayList<T>.get()` has for an Owned element is avoided here the way `ArrayList<T>.removeLast()` avoids it — see [Collections](collections.md)).
 
 **Example:**
 
@@ -207,18 +207,18 @@ println(parsed.unwrapOr(-1));
 
 ## Usage Notes
 
-- **Prefer `CopyableTuple`, `CopyableOption`, and `CopyableResult`** for numeric/scalar types to avoid unnecessary moves.
+- **Prefer `CopyablePair`, `CopyableOption`, and `CopyableResult`** for numeric/scalar types to avoid unnecessary moves.
 - **Use owned variants** for containers or strings that you want to pass around differently.
 - Both variants support generic type parameters; compile-time monomorphization produces efficient code.
 
 ## Example
 
 ```firescript
-import @firescript/std.types.Tuple;
+import @firescript/std.types.Pair;
 import @firescript/std.io.println;
 
-// Tuple usage
-user: Tuple<int32, string> = Tuple<int32, string>(1, "alice");
+// Pair usage
+user: Pair<int32, string> = Pair<int32, string>(1, "alice");
 println("User ID: " + (user.first as string));
 println(user.second);
 ```

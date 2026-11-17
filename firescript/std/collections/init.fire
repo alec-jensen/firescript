@@ -1,6 +1,6 @@
 // firescript std.collections library
 //
-// Vec<T>: a dynamically-growable array. Backed by fs_rt_array_new<T>/
+// ArrayList<T>: a dynamically-growable array. Backed by fs_rt_array_new<T>/
 // fs_rt_array_copy<T> (compiler intrinsics -- see firescript/flir/lowering.py
 // lower_array_alloc/lower_array_copy), which allocate/copy a T[] buffer of a
 // runtime-determined element count; ordinary fixed-size arrays can only be
@@ -10,43 +10,39 @@
 // flir/lowering.py::ensure_destructor/_owns_elements_field/_emit_free_value.
 //
 // get()/enumerate() read an element out by value without shrinking the
-// Vec's tracked length, which is only safe for Copyable-ish T (numeric
+// ArrayList's tracked length, which is only safe for Copyable-ish T (numeric
 // types, bool, char): for an Owned T, the read aliases the buffer's copy of
-// the pointer, and both the caller's copy and the Vec's own destructor would
+// the pointer, and both the caller's copy and the ArrayList's own destructor would
 // eventually free the same allocation. firescript has no Owned/Copyable
 // generic constraint yet (planned for 0.7.0) to enforce this at the type
 // level, so it isn't enforced here either -- see docs/reference/std/collections.md.
-// push()/pop() properly transfer ownership (pop shrinks _len before reading)
+// add()/removeLast() properly transfer ownership (removeLast shrinks _len before reading)
 // and are safe for any T.
 
 directive enable_lowlevel_runtime;
 directive enable_drops;
 directive enable_process_args;
 
-import @firescript/std.types.Tuple;
-import @firescript/std.types.CopyableTuple;
+import @firescript/std.types.Pair;
+import @firescript/std.types.CopyablePair;
 
 export @owns_elements("data", "_len")
-class Vec<T> {
+class ArrayList<T> {
     data: T[];
     _len: int32;
     _cap: int32;
 
-    fn Vec(&mut this) {
+    fn ArrayList(&mut this) {
         this._len = 0;
         this._cap = 0;
         this.data = fs_rt_array_new<T>(0);
-    }
-
-    fn length(&this) -> int32 {
-        return this._len;
     }
 
     fn size(&this) -> int32 {
         return this._len;
     }
 
-    fn push(&mut this, value: T) -> void {
+    fn add(&mut this, value: T) -> void {
         if (this._len == this._cap) {
             new_cap: int32 = 4;
             if (this._cap != 0) {
@@ -62,7 +58,7 @@ class Vec<T> {
         this._len = this._len + 1;
     }
 
-    fn pop(&mut this) -> T {
+    fn removeLast(&mut this) -> T {
         this._len = this._len - 1;
         return this.data[this._len];
     }
@@ -76,10 +72,10 @@ class Vec<T> {
     }
 }
 
-export fn enumerate<T>(&v: Vec<T>) -> generator<Tuple<int32, T>> {
+export fn enumerate<T>(&v: ArrayList<T>) -> generator<Pair<int32, T>> {
     i: int32 = 0;
-    while (i < v.length()) {
-        yield Tuple<int32, T>(i, v.get(i));
+    while (i < v.size()) {
+        yield Pair<int32, T>(i, v.get(i));
         i = i + 1;
     }
 }
@@ -88,7 +84,7 @@ export fn enumerate<T>(&v: Vec<T>) -> generator<Tuple<int32, T>> {
 // probing), modeled on std/internal/alloc.fire's own allocation-registry
 // table (rt_reg_add/rt_reg_remove/rt_reg_grow). `states[i]` is 0 (empty), 1
 // (occupied), or 2 (tombstone); `keys`/`values`/`states` are always sized
-// exactly `_cap` (unlike Vec, where only `0.._len` is logically populated --
+// exactly `_cap` (unlike ArrayList, where only `0.._len` is logically populated --
 // a hash table's live slots are scattered across the whole capacity, not a
 // contiguous prefix). Both `@owns_elements` decorators pass `states` as a
 // 3rd argument: the generated destructor only frees `keys[i]`/`values[i]`
@@ -104,11 +100,11 @@ export fn enumerate<T>(&v: Vec<T>) -> generator<Tuple<int32, T>> {
 // no Hashable trait to dispatch through generically yet.
 //
 // get(key)/remove(key) are only well-defined once `has(key)` is true --
-// like core array indexing (and Vec<T>.get()), there's no presence check.
+// like core array indexing (and ArrayList<T>.get()), there's no presence check.
 // remove() moves the stored value out and marks the slot a tombstone in the
-// same operation (safe for any V, matching Vec<T>.pop()'s equivalent
+// same operation (safe for any V, matching ArrayList<T>.removeLast()'s equivalent
 // safety argument); get() reads the value out *without* removing it, which
-// is only safe for Copyable-ish V, same caveat as Vec<T>.get(). Neither
+// is only safe for Copyable-ish V, same caveat as ArrayList<T>.get(). Neither
 // returns an Option<V> to signal "not found": Option<V>(null) for a
 // Copyable/primitive V hits a separate, pre-existing representation gap
 // (a nullable scalar's "no value" and its legitimate zero value are
@@ -152,10 +148,6 @@ class HashMap<K, V> {
         this.states = fs_rt_array_new<uint8>(8);
     }
 
-    fn length(&this) -> int32 {
-        return this._count;
-    }
-
     fn size(&this) -> int32 {
         return this._count;
     }
@@ -164,7 +156,7 @@ class HashMap<K, V> {
     // index is the first tombstone seen during the probe, or (if none was
     // seen) the terminating empty slot -- either way, the correct slot to
     // insert `key` into.
-    fn _probe(&this, &key: K) -> CopyableTuple<int32, bool> {
+    fn _probe(&this, &key: K) -> CopyablePair<int32, bool> {
         h: uint64 = fs_rt_hash<K>(key);
         idx: int32 = (h % (this._cap as uint64)) as int32;
         first_tombstone: int32 = -1;
@@ -173,12 +165,12 @@ class HashMap<K, V> {
             st: uint8 = this.states[idx];
             if (st == 0u8) {
                 if (first_tombstone != -1) {
-                    return CopyableTuple<int32, bool>(first_tombstone, false);
+                    return CopyablePair<int32, bool>(first_tombstone, false);
                 }
-                return CopyableTuple<int32, bool>(idx, false);
+                return CopyablePair<int32, bool>(idx, false);
             }
             if (st == 1u8 && this.keys[idx] == key) {
-                return CopyableTuple<int32, bool>(idx, true);
+                return CopyablePair<int32, bool>(idx, true);
             }
             if (st == 2u8 && first_tombstone == -1) {
                 first_tombstone = idx;
@@ -186,7 +178,7 @@ class HashMap<K, V> {
             idx = (idx + 1) % this._cap;
             steps = steps + 1;
         }
-        return CopyableTuple<int32, bool>(first_tombstone, false);
+        return CopyablePair<int32, bool>(first_tombstone, false);
     }
 
     fn _grow(&mut this) -> void {
@@ -226,7 +218,7 @@ class HashMap<K, V> {
         if (this._count * 10 >= this._cap * 7) {
             this._grow();
         }
-        found: CopyableTuple<int32, bool> = this._probe(key);
+        found: CopyablePair<int32, bool> = this._probe(key);
         idx: int32 = found.first;
         if (found.second) {
             drop(this.values[idx]);
@@ -241,7 +233,7 @@ class HashMap<K, V> {
     }
 
     fn has(&this, key: K) -> bool {
-        found: CopyableTuple<int32, bool> = this._probe(key);
+        found: CopyablePair<int32, bool> = this._probe(key);
         drop(key);
         return found.second;
     }
@@ -252,14 +244,14 @@ class HashMap<K, V> {
     // stale, already-moved-out pointer for an Owned V. Always check has()
     // first.
     fn get(&mut this, key: K) -> V {
-        found: CopyableTuple<int32, bool> = this._probe(key);
+        found: CopyablePair<int32, bool> = this._probe(key);
         drop(key);
         idx: int32 = found.first;
         return this.values[idx];
     }
 
     fn remove(&mut this, key: K) -> V {
-        found: CopyableTuple<int32, bool> = this._probe(key);
+        found: CopyablePair<int32, bool> = this._probe(key);
         idx: int32 = found.first;
         if (found.second) {
             drop(this.keys[idx]);

@@ -67,7 +67,7 @@ self-hosting work is not blocked by missing data structures.
 |---|---|
 | `enum` / sum types with data payloads | AST node types, tokens, and type variants map naturally to enums. Without them the compiler code is class hierarchies and manual dispatch. |
 | `match` expressions | Ergonomic destructuring of enums. Without match, working with enums is verbose if-else chains. |
-| `Vec<T>` in `@firescript/std.collections` | Dynamic arrays are the single most critical missing collection — needed for token lists, AST child lists, symbol tables, etc. |
+| `ArrayList<T>` in `@firescript/std.collections` | Dynamic arrays are the single most critical missing collection — needed for token lists, AST child lists, symbol tables, etc. |
 | `HashMap<K,V>` in `@firescript/std.collections` | Symbol tables, type environments, and identifier lookups require associative maps. |
 | `StringBuilder` in `@firescript/std.text` | Code generation and error message formatting need efficient string accumulation. |
 | Extended string methods: `split`, `substring`, `indexOf`, `startsWith`, `endsWith`, `trim`, `lower`, `upper`, `replace` | Lexing and string processing require these — cannot write a parser without substring search and splitting. |
@@ -75,18 +75,18 @@ self-hosting work is not blocked by missing data structures.
 
 ### Standard library
 
-- New module `@firescript/std.collections` — `Vec<T>`, `HashMap<K,V>` (and later `Stack<T>`,
+- New module `@firescript/std.collections` — `ArrayList<T>`, `HashMap<K,V>` (and later `Stack<T>`,
   `Queue<T>`, `Deque<T>`)
-  - `Vec<T>` — **done**: `push`/`pop`/`get`/`set`/`length`/`size`, capacity-doubling growth,
+  - `ArrayList<T>` — **done**: `add`/`removeLast`/`get`/`set`/`size`, capacity-doubling growth,
     correct for both Copyable and Owned element types (owned elements are dropped by the
     generated destructor before the backing buffer is freed — see the new `@owns_elements`
     class decorator in `flir/lowering.py`). Built on two new compiler intrinsics private to
     `std/collections/`, `fs_rt_array_new<T>`/`fs_rt_array_copy<T>`, which allocate/copy a
     `T[]` buffer of a runtime-determined element count (the "Dynamic arrays (stdlib)"
     `CLAUDE.md` feature-table entry, now flipped to `[IMPLEMENTED]`).
-  - `enumerate` generator for iterating over `Vec<T>` with index/value pairs `Tuple<int32,T>`
+  - `enumerate` generator for iterating over `ArrayList<T>` with index/value pairs `Pair<int32,T>`
     — **done**. Surfaced (and fixed) a compiler bug where a generic-class-shaped type
-    string with an unresolved nested type argument (e.g. `Tuple<int32, T>`) substituted the
+    string with an unresolved nested type argument (e.g. `Pair<int32, T>`) substituted the
     outer type but never the type parameters inside it, and a second bug where generic
     generator functions had no type-argument inference/monomorphization at all.
   - `HashMap<K,V>` — **done**: `set`/`get`/`has`/`remove`/`length`/`size`, open addressing
@@ -122,10 +122,10 @@ self-hosting work is not blocked by missing data structures.
     source changes to become correct for a primitive `T` — `Option<int32>(0).isSome()` now
     correctly returns `true`. String/class/array nullables were already unambiguous via the
     pointer value `0` and are untouched by this.
-- New module `@firescript/std.text` — `StringBuilder` — **done**: backed by a `Vec<string>`
+- New module `@firescript/std.text` — `StringBuilder` — **done**: backed by an `ArrayList<string>`
   of fragments rather than a raw growable byte buffer (`std/internal/strings.fire` can't
-  construct a `Vec<T>` itself — internal runtime files carry no import statements), with
-  `append`/`length`/`build`. `build()` drains fragments with `Vec<T>.pop()`, not
+  construct an `ArrayList<T>` itself — internal runtime files carry no import statements), with
+  `append`/`length`/`build`. `build()` drains fragments with `ArrayList<T>.removeLast()`, not
   `get()`/`enumerate()` (unsafe for the Owned `string` element type — see
   `docs/reference/std/collections.md`). No zero-arg constructor (`StringBuilder("")` starts
   empty instead) — see the compiler-improvements note below.
@@ -134,9 +134,9 @@ self-hosting work is not blocked by missing data structures.
   `.lower()`, all via `@builtin_method` in `std/internal/strings.fire` (`.indexOf()`/
   `.substring()` decorate the pre-existing `fs_rt_str_index_of`/`fs_rt_str_slice`
   primitives directly). `split` is the one method from this list that's a plain function
-  (`split(s, delim)`), not a `.split()` dot-method — it needs to return `Vec<string>`, and
+  (`split(s, delim)`), not a `.split()` dot-method — it needs to return `ArrayList<string>`, and
   `@builtin_method` backing functions live in `std/internal/`, which (as above) can't
-  reference `Vec<T>`. Lives in `@firescript/std.text` alongside `StringBuilder`.
+  reference `ArrayList<T>`. Lives in `@firescript/std.text` alongside `StringBuilder`.
 - Enhanced `@firescript/std.types` — `Result<T,E>`/`CopyableResult<T,E>` — **done**: `value: T?`/`error: E?`
   fields (mirrors `Option<T>`'s pattern exactly, including automatic nullable-scalar correctness for a
   primitive `T`/`E`), `isOk()`/`isErr()`. No `Ok`/`Err` static factory constructors and no combinators
@@ -160,8 +160,8 @@ self-hosting work is not blocked by missing data structures.
   optional rename, exhaustiveness/duplicate/wildcard-order checks, statement and
   value-producing forms, tag-dispatched destructors for owned payload data) work across the
   full pipeline. Generic enums (`enum Option<T>`) remain a follow-up.
-- Support `Vec<T>`, `HashMap<K,V>`, `StringBuilder`, and `Result<T,E>` as stdlib modules
-  with appropriate compiler intrinsics where needed — `Vec<T>` (including `enumerate`),
+- Support `ArrayList<T>`, `HashMap<K,V>`, `StringBuilder`, and `Result<T,E>` as stdlib modules
+  with appropriate compiler intrinsics where needed — `ArrayList<T>` (including `enumerate`),
   `HashMap<K,V>`, and `Result<T,E>`/`CopyableResult<T,E>` **done**; also unblocked unsized
   array class fields (previously rejected entirely), added a `fs_rt_hash<K>` intrinsic and
   multi-field `@owns_elements` support, and fixed a series of narrow, previously-unexercised
@@ -191,7 +191,7 @@ self-hosting work is not blocked by missing data structures.
   0.6.0 Bug Fixes and `tests/sources/identifiers/`.
 - Extended string methods and `StringBuilder`/`split` **done** — see the Standard library
   section above. Fixed another real bug hit while building `StringBuilder`: an owned
-  value moved via a method call through a *field-access* receiver (`this.parts.push(s)`)
+  value moved via a method call through a *field-access* receiver (`this.parts.add(s)`)
   was never recognized as moved, so it was also auto-dropped at scope exit (FIRV-O2) —
   `semantic_analyzer.py` and `preprocessor.py` each only resolved a receiver's type for a
   bare-identifier receiver, and the generic-field case additionally needed the "strip
@@ -237,7 +237,7 @@ self-hosting work is not blocked by missing data structures.
 - Comprehensive golden tests for enums and match — **done**: `tests/sources/enums/`,
   `tests/sources/match/`, plus error tests in `tests/sources/invalid/enums/` and
   `tests/sources/invalid/match/`
-- Comprehensive golden tests for Vec, HashMap, StringBuilder operations — Vec and HashMap
+- Comprehensive golden tests for ArrayList, HashMap, StringBuilder operations — ArrayList and HashMap
   **done**: `tests/sources/std/collections/` (push/pop, growth, get/set, an Owned element
   type; integer keys, string keys, growth/rehashing, an Owned value type with a
   leak/double-free stress cycle). StringBuilder **done**:
@@ -262,7 +262,7 @@ self-hosting work is not blocked by missing data structures.
 
 ### Gate
 
-All stdlib modules are usable from firescript code. Vec, HashMap, string methods, and regex
+All stdlib modules are usable from firescript code. ArrayList, HashMap, string methods, and regex
 are thoroughly tested. Enum and match work across the full pipeline (no FIR/FLIR gaps) —
 **done**.
 

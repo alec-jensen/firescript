@@ -2,7 +2,7 @@
 // None. For Owned T, extraction drains the Option (isSome() reads false
 // afterward) -- the field is nulled out immediately so the Option's own
 // destructor won't also try to free it (same aliasing hazard as
-// Vec<T>.get() on an Owned element, avoided here the way Vec<T>.pop()
+// ArrayList<T>.get() on an Owned element, avoided here the way ArrayList<T>.removeLast()
 // avoids it). CopyableOption<T> needs no such trick; it's left intact.
 import @firescript/std.io.println;
 import @firescript/std.types.Option;

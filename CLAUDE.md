@@ -123,7 +123,7 @@ Whenever you add a file to `examples/` or `tests/sources/<category>/`, give it a
 
 ## Standard Library
 
-Standard library modules live under `firescript/std/`. Sibling modules can be imported with short relative paths (e.g., `import tuple.Tuple;`).
+Standard library modules live under `firescript/std/`. Sibling modules can be imported with short relative paths (e.g., `import pair.Pair;`).
 
 ## Feature Status Reference
 
@@ -168,7 +168,7 @@ The table below reflects the **current implementation status** of major language
 | Deterministic drop / destructor insertion | [IMPLEMENTED] |
 | `@firescript/std.io` (`print`, `println`) | [IMPLEMENTED] |
 | `@firescript/std.math` | [IMPLEMENTED] |
-| `@firescript/std.types` — `Tuple`, `CopyableTuple` | [IMPLEMENTED] |
+| `@firescript/std.types` — `Pair`, `CopyablePair` | [IMPLEMENTED] |
 | `@firescript/std.types` — `Option`, `CopyableOption` | [IMPLEMENTED] |
 | `@firescript/std.types` — `Result`, `CopyableResult` | [IMPLEMENTED] |
 | `@firescript/std.text` (`StringBuilder`, `split`) | [IMPLEMENTED] |
@@ -186,7 +186,7 @@ The table below reflects the **current implementation status** of major language
 | Self-hosted toolchain (Python x86-64 assembler + PE writer; no external tools) | [IMPLEMENTED] |
 | firescript-implemented runtime (`std/internal/*.fire`) | [IMPLEMENTED] |
 | Linux / macOS native targets | [PLANNED] |
-| Dynamic arrays (stdlib, `std.collections.Vec<T>`) | [IMPLEMENTED] |
+| Dynamic arrays (stdlib, `std.collections.ArrayList<T>`) | [IMPLEMENTED] |
 | Built-in `input()` function | Removed in current dev cycle |
 | `enum` declarations, tag-only and named-data-payload variants (`Circle(float64 radius)`) | [IMPLEMENTED] |
 | Generic enums (`enum Option<T>`) | [PLANNED] |

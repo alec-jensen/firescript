@@ -1,0 +1,33 @@
+// ArrayList<T> with an Owned element type (string): add/removeLast/set correctly
+// transfer ownership (removeLast shrinks _len before reading, so it never aliases
+// a slot the destructor would also try to free -- see
+// firescript/std/collections/init.fire's header comment). Many
+// construct/populate/drop cycles double as a leak/double-free sanity check
+// for the @owns_elements destructor hook (same technique as
+// tests/sources/enums/enum_owned_payload_drop.fire), which must drop each
+// live string before freeing ArrayList's own backing buffer.
+
+import @firescript/std.collections.ArrayList;
+import @firescript/std.io.println;
+
+cycle: int32 = 0;
+while (cycle < 2000) {
+    v: ArrayList<string> = ArrayList<string>();
+    v.add("alpha");
+    v.add("beta");
+    v.add("gamma");
+    v.set(1, "replaced");
+    cycle = cycle + 1;
+}
+
+v2: ArrayList<string> = ArrayList<string>();
+v2.add("first");
+v2.add("second");
+last: string = v2.removeLast();
+println(last);
+println(v2.size());
+
+/* EXPECT
+second
+1
+*/

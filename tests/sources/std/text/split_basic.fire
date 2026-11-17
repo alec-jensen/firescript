@@ -1,35 +1,35 @@
 // split(s, delim): splits on every occurrence of delim, including
-// leading/trailing/adjacent empty fields. Returns Vec<string> -- drained
-// with pop() below (LIFO order) rather than get()/enumerate(), which are
+// leading/trailing/adjacent empty fields. Returns ArrayList<string> -- drained
+// with removeLast() below (LIFO order) rather than get()/enumerate(), which are
 // only safe for a Copyable element type; string is Owned (see
-// firescript/std/collections/init.fire's Vec<T> doc comment).
+// firescript/std/collections/init.fire's ArrayList<T> doc comment).
 
 import @firescript/std.io.println;
 import @firescript/std.text.split;
-import @firescript/std.collections.Vec;
+import @firescript/std.collections.ArrayList;
 
 csv: string = "a,bb,ccc";
-parts: Vec<string> = split(csv, ",");
-println(parts.length());
-println(parts.pop());
-println(parts.pop());
-println(parts.pop());
+parts: ArrayList<string> = split(csv, ",");
+println(parts.size());
+println(parts.removeLast());
+println(parts.removeLast());
+println(parts.removeLast());
 
 withEmpties: string = ",a,,b,";
-parts2: Vec<string> = split(withEmpties, ",");
-println(parts2.length());
+parts2: ArrayList<string> = split(withEmpties, ",");
+println(parts2.size());
 
 noDelim: string = "hello world";
-parts3: Vec<string> = split(noDelim, "::");
-println(parts3.length());
-println(parts3.pop());
+parts3: ArrayList<string> = split(noDelim, "::");
+println(parts3.size());
+println(parts3.removeLast());
 
 multiChar: string = "a::b::c";
-parts4: Vec<string> = split(multiChar, "::");
-println(parts4.length());
-println(parts4.pop());
-println(parts4.pop());
-println(parts4.pop());
+parts4: ArrayList<string> = split(multiChar, "::");
+println(parts4.size());
+println(parts4.removeLast());
+println(parts4.removeLast());
+println(parts4.removeLast());
 
 /* EXPECT
 3

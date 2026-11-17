@@ -430,7 +430,7 @@ class TypeSystemMixin(StatementsMixin):
             ]
             self._current_type_params = prev_type_params
         elif node.node_type == NodeTypes.CLASS_DEFINITION and hasattr(node, 'type_params') and node.type_params:
-            # A generic class's own type parameters (e.g. Vec<T>'s `T`,
+            # A generic class's own type parameters (e.g. ArrayList<T>'s `T`,
             # HashMap<K,V>'s `K`/`V`) must stay visible while type-checking
             # every method body in the class, not just the class's own
             # field/method *signatures* -- this recursive walk runs once,
@@ -1192,7 +1192,7 @@ class TypeSystemMixin(StatementsMixin):
                     node_type_str = None
             else:
                 # In deferred-import mode a class type -- composite generic
-                # ("Tuple<int32, string>") or a plain class imported from
+                # ("Pair<int32, string>") or a plain class imported from
                 # another module ("Widget") -- may not be registered until
                 # imports are fully merged. Suppress the error so parsing
                 # can complete; FIR conversion resolves the real field type

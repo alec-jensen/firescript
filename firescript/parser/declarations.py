@@ -311,7 +311,7 @@ class DeclarationsMixin(TypeSystemMixin):
     def _validate_owns_elements_decorator(self, class_node: ASTNode, decorators: list[dict]) -> None:
         """Enforce @owns_elements(array_field, length_field[, state_field])'s
         contract: a compiler-internal hint (stdlib use only, e.g.
-        std.collections.Vec<T>/HashMap<K,V>) telling the generated
+        std.collections.ArrayList<T>/HashMap<K,V>) telling the generated
         destructor that `array_field` is an unsized array field holding up
         to `length_field` live elements, so owned elements must be dropped
         before the buffer itself is freed (see
@@ -320,11 +320,11 @@ class DeclarationsMixin(TypeSystemMixin):
         one for `values`). The optional 3rd argument names a parallel
         `uint8[]` occupancy field (HashMap-style open addressing, where the
         live slots are scattered across the whole capacity rather than a
-        contiguous `0..length` prefix like Vec<T>'s): the destructor only
+        contiguous `0..length` prefix like ArrayList<T>'s): the destructor only
         frees `array_field[i]` when `state_field[i] == 1` (the hardcoded
         "occupied" sentinel these classes use). All fields must already be
         declared on this exact class (not inherited -- generic containers
-        like Vec<T>/HashMap<K,V> don't use inheritance) with the expected
+        like ArrayList<T>/HashMap<K,V> don't use inheritance) with the expected
         shapes."""
         for dec in decorators:
             if dec["name"] != "owns_elements":
@@ -1142,7 +1142,7 @@ class DeclarationsMixin(TypeSystemMixin):
                     # end of the method body, silently destroying the
                     # receiver on every call to any method that omits
                     # `&this`/`&mut this` on a class whose destructor does
-                    # real work (e.g. Option<T>.isSome(), Vec<T>.length()).
+                    # real work (e.g. Option<T>.isSome(), ArrayList<T>.size()).
                     # Copyable classes are exempted: they're stack values
                     # with no destructor to worry about (dropping one is
                     # already a no-op, see flir/lowering.py::lower_drop's

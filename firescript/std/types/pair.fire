@@ -1,0 +1,22 @@
+// Pair types: immutable, copyable product types.
+// A Pair holds two values of potentially different types.
+
+class Pair<T, U> {
+    first: T;
+    second: U;
+
+    fn Pair(first: T, second: U) {
+        this.first = first;
+        this.second = second;
+    }
+}
+
+copyable class CopyablePair<T, U> {
+    first: T;
+    second: U;
+
+    fn CopyablePair(first: T, second: U) {
+        this.first = first;
+        this.second = second;
+    }
+}

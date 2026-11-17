@@ -1,0 +1,29 @@
+// ArrayList<T>'s enumerate<T> generator: yields Pair<int32,T> (index, value)
+// pairs while iterating. get()/enumerate() read elements by value without
+// shrinking the ArrayList's tracked length -- only safe for Copyable-ish T (see
+// firescript/std/collections/init.fire's header comment), so this test
+// sticks to int32.
+
+import @firescript/std.collections.ArrayList;
+import @firescript/std.collections.enumerate;
+import @firescript/std.types.Pair;
+import @firescript/std.io.println;
+
+v: ArrayList<int32> = ArrayList<int32>();
+v.add(10);
+v.add(20);
+v.add(30);
+
+for (pair: Pair<int32, int32> in enumerate(v)) {
+    println(pair.first);
+    println(pair.second);
+}
+
+/* EXPECT
+0
+10
+1
+20
+2
+30
+*/

@@ -1,11 +1,11 @@
 fir module std_types_test
 
-type Tuple<T, U> owned {
+type Pair<T, U> owned {
   first: T
   second: U
 }
 
-type CopyableTuple<T, U> copyable {
+type CopyablePair<T, U> copyable {
   first: T
   second: U
 }
@@ -64,31 +64,31 @@ function<T> @println(value: &T) -> void {
     ret
 }
 
-function<T, U> @Tuple.Tuple(first: T, second: U) -> Tuple {
+function<T, U> @Pair.Pair(first: T, second: U) -> Pair {
   L0:
-    %0 = alloc.Tuple()
-    local this: Tuple = %0
+    %0 = alloc.Pair()
+    local this: Pair = %0
     %1 = loadvar.T first
-    %2 = loadvar.Tuple this
+    %2 = loadvar.Pair this
     storefield %2, "first", %1
     %3 = loadvar.U second
-    %4 = loadvar.Tuple this
+    %4 = loadvar.Pair this
     storefield %4, "second", %3
-    %5 = loadvar.Tuple this
+    %5 = loadvar.Pair this
     ret %5
 }
 
-function<T, U> @CopyableTuple.CopyableTuple(first: T, second: U) -> CopyableTuple {
+function<T, U> @CopyablePair.CopyablePair(first: T, second: U) -> CopyablePair {
   L0:
-    %0 = alloc.CopyableTuple()
-    local this: CopyableTuple = %0
+    %0 = alloc.CopyablePair()
+    local this: CopyablePair = %0
     %1 = loadvar.T first
-    %2 = loadvar.CopyableTuple this
+    %2 = loadvar.CopyablePair this
     storefield %2, "first", %1
     %3 = loadvar.U second
-    %4 = loadvar.CopyableTuple this
+    %4 = loadvar.CopyablePair this
     storefield %4, "second", %3
-    %5 = loadvar.CopyableTuple this
+    %5 = loadvar.CopyablePair this
     ret %5
 }
 
@@ -370,15 +370,15 @@ function @main() -> void {
   L0:
     %0 = const.int32 42
     %1 = strconst "hello"
-    %2 = call.Tuple<int32, string> @Tuple.Tuple(%0 own, %1 own)
-    local t1: Tuple<int32, string> = %2
-    %3 = loadvar.Tuple<int32, string> t1
+    %2 = call.Pair<int32, string> @Pair.Pair(%0 own, %1 own)
+    local t1: Pair<int32, string> = %2
+    %3 = loadvar.Pair<int32, string> t1
     %4 = loadfield.int32 %3, "first"
     call @println(%4 borrow)
-    %5 = loadvar.Tuple<int32, string> t1
+    %5 = loadvar.Pair<int32, string> t1
     %6 = loadfield.string %5, "second"
     call @println(%6 borrow)
-    %7 = loadvar.Tuple<int32, string> t1
+    %7 = loadvar.Pair<int32, string> t1
     drop %7
     ret
 }

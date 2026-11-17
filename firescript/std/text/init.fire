@@ -1,23 +1,23 @@
 // firescript std.text library
 //
 // StringBuilder: efficient accumulation of many string fragments. Backed
-// by a Vec<string> of fragments rather than a raw growable byte buffer --
+// by an ArrayList<string> of fragments rather than a raw growable byte buffer --
 // see docs/reference/std/text.md for why. build() drains the fragment
-// list via Vec<T>.pop() (documented safe for any T, including Owned
+// list via ArrayList<T>.removeLast() (documented safe for any T, including Owned
 // string) rather than get()/enumerate() (only safe for Copyable T --
-// reading an Owned element out by value aliases the Vec's own copy of the
+// reading an Owned element out by value aliases the ArrayList's own copy of the
 // pointer, a double-free once both are eventually dropped).
 //
 // split(): can't be a @builtin_method dot-method like the other string
 // methods (std/internal/strings.fire) since it needs to return
-// Vec<string>, and std/internal/ files carry no import statements -- Vec
+// ArrayList<string>, and std/internal/ files carry no import statements -- ArrayList
 // lives in std/collections, a normal importable module. Implemented here
 // instead, in terms of the already-public string methods.
 
-import @firescript/std.collections.Vec;
+import @firescript/std.collections.ArrayList;
 
 export class StringBuilder {
-    parts: Vec<string>;
+    parts: ArrayList<string>;
     _len: int32;
 
     // Takes an initial fragment (pass "" to start empty) rather than a
@@ -28,14 +28,14 @@ export class StringBuilder {
     // fragment is harmless for build()'s later drain, and it keeps the
     // constructor to a single straight-line path.
     fn StringBuilder(initial: string) {
-        this.parts = Vec<string>();
+        this.parts = ArrayList<string>();
         this._len = initial.length();
-        this.parts.push(initial);
+        this.parts.add(initial);
     }
 
     fn append(&mut this, s: string) -> void {
         this._len = this._len + s.length();
-        this.parts.push(s);
+        this.parts.add(s);
     }
 
     fn length(&this) -> int32 {
@@ -46,8 +46,8 @@ export class StringBuilder {
     // Leaves the builder empty (length() reads 0 afterward).
     fn build(&mut this) -> string {
         result: string = "";
-        while (this.parts.length() > 0) {
-            piece: string = this.parts.pop();
+        while (this.parts.size() > 0) {
+            piece: string = this.parts.removeLast();
             result = piece + result;
         }
         this._len = 0;
@@ -55,12 +55,12 @@ export class StringBuilder {
     }
 }
 
-export fn split(&s: string, &delim: string) -> Vec<string> {
-    result: Vec<string> = Vec<string>();
+export fn split(&s: string, &delim: string) -> ArrayList<string> {
+    result: ArrayList<string> = ArrayList<string>();
     dlen: int32 = delim.length();
     slen: int32 = s.length();
     if (dlen == 0) {
-        result.push(s.substring(0, slen));
+        result.add(s.substring(0, slen));
         return result;
     }
     start: int32 = 0;
@@ -68,10 +68,10 @@ export fn split(&s: string, &delim: string) -> Vec<string> {
         remaining: string = s.substring(start, slen);
         rel: int32 = remaining.indexOf(delim);
         if (rel == -1) {
-            result.push(remaining);
+            result.add(remaining);
             return result;
         }
-        result.push(remaining.substring(0, rel));
+        result.add(remaining.substring(0, rel));
         start = start + rel + dlen;
     }
     return result;

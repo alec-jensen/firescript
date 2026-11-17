@@ -113,4 +113,4 @@ if (message != null) {
 
 ## Implementation Status
 
-Variable declaration and initialization is fully supported for all primitive types and user-defined classes (including generic classes from the standard library such as `Tuple<T, U>`). Constants and nullability are supported.
+Variable declaration and initialization is fully supported for all primitive types and user-defined classes (including generic classes from the standard library such as `Pair<T, U>`). Constants and nullability are supported.

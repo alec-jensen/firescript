@@ -1,9 +1,9 @@
 //@ snapshot: fir, flir
 import @firescript/std.io.println;
-import @firescript/std.types.Tuple;
+import @firescript/std.types.Pair;
 
-// Test basic usage of the Tuple type
-t1: Tuple<int32, string> = Tuple<int32, string>(42, "hello");
+// Test basic usage of the Pair type
+t1: Pair<int32, string> = Pair<int32, string>(42, "hello");
 println(t1.first);  // Should print: 42
 println(t1.second); // Should print: hello
 

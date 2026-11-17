@@ -792,7 +792,7 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
                 # fall back to the type parser/type_system.py already
                 # resolved onto the node. Without this, receiver_type
                 # stayed None for any such receiver, so an owned argument
-                # moved through it (e.g. this.parts.push(s)) never had
+                # moved through it (e.g. this.parts.add(s)) never had
                 # _apply_move_semantics applied -- it was never removed
                 # from scope tracking, so it looked doubly consumed once
                 # params/locals started being auto-dropped at scope exit
@@ -803,7 +803,7 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
                     receiver_type = expr_type[:-2] if expr_type.endswith("[]") else expr_type
             if receiver_type and "<" in receiver_type:
                 # method_sigs is keyed by the bare declared class name
-                # (e.g. "Vec"), never a generic instantiation string --
+                # (e.g. "ArrayList"), never a generic instantiation string --
                 # same normalization ast_to_fir.py's _convert_method_call
                 # already does for its own receiver_base lookup.
                 receiver_type = receiver_type.split("<", 1)[0]

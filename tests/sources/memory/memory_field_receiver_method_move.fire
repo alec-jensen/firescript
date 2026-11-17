@@ -15,14 +15,14 @@
 // (`return_type`) for any non-identifier receiver.
 //
 // A second, narrower issue surfaced once the first was fixed: for a
-// *generic*-typed field (Vec<string>), that stamped return_type is the
-// full instantiation string ("Vec<string>"), but method_sigs is keyed by
-// the bare declared class name ("Vec") -- preprocessor.py's fallback
+// *generic*-typed field (ArrayList<string>), that stamped return_type is the
+// full instantiation string ("ArrayList<string>"), but method_sigs is keyed by
+// the bare declared class name ("ArrayList") -- preprocessor.py's fallback
 // needed the same "strip generic type arguments" normalization
 // ast_to_fir.py's _convert_method_call already applied for its own
 // receiver_base lookup.
 import @firescript/std.io.println;
-import @firescript/std.collections.Vec;
+import @firescript/std.collections.ArrayList;
 
 class Sink {
     last: string;
@@ -50,19 +50,19 @@ class Wrapper {
 }
 
 class Collector {
-    items: Vec<string>;
+    items: ArrayList<string>;
 
     fn Collector() {
-        this.items = Vec<string>();
+        this.items = ArrayList<string>();
     }
 
-    // Generic-field receiver: this.items.push(s).
+    // Generic-field receiver: this.items.add(s).
     fn add(&mut this, s: string) -> void {
-        this.items.push(s);
+        this.items.add(s);
     }
 
     fn count(&this) -> int32 {
-        return this.items.length();
+        return this.items.size();
     }
 }
 

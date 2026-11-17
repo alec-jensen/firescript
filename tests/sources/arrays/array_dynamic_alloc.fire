@@ -1,9 +1,9 @@
 // Low-level fs_rt_array_new<T>/fs_rt_array_copy<T> intrinsics: allocate a
 // T[] buffer of a runtime-determined element count, write/read elements,
 // and copy into a larger buffer. These are the compiler primitives
-// std.collections.Vec<T> is built on (see docs/internal/version_planning.md's
+// std.collections.ArrayList<T> is built on (see docs/internal/version_planning.md's
 // 0.6.0 dynamic-arrays work) -- not meant for direct user-code use outside
-// std/collections/*.fire, but exercised standalone here before any Vec code
+// std/collections/*.fire, but exercised standalone here before any ArrayList code
 // exists.
 
 directive enable_lowlevel_runtime;

@@ -3,12 +3,12 @@
 // deferred-import-mode generic-call lookahead branch in expressions.py,
 // distinct from generic_call_errors.fire's same-module-defined-class cases.
 import @firescript/std.io.println;
-import @firescript/std.types.Tuple;
+import @firescript/std.types.Pair;
 
 x: int32 = 1;
 
 // Non-type token in the type-argument list: the deferred-mode arg loop
 // just stops (no error of its own), so the missing '>' is what's reported.
-x = Tuple<5>(1, 2);  //~ ERROR FS-PARSE-0010 @11
-//~^ ERROR FS-PARSE-0010 @11
-//~^^ ERROR FS-PARSE-0010 @11
+x = Pair<5>(1, 2);  //~ ERROR FS-PARSE-0010 @10
+//~^ ERROR FS-PARSE-0010 @10
+//~^^ ERROR FS-PARSE-0010 @10

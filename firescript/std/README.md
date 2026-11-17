@@ -7,8 +7,8 @@ This directory contains the standard library for firescript, providing essential
 - `std.math`: Mathematical utilities (`abs`, `min`, `max`, `clamp` exported; more in development).
 - `std.fs`: File I/O utilities backed by syscall wrappers, centered on `File` object methods (`read`, `readBytes`, `writeAll`, `appendAll`, `exists`, `remove`, `renameTo`, `moveTo`) with `FileResult` helper accessors.
 - `std.regex`: Regular-expression matching helpers (`is_match`, `match`, `find_at`, `last_error`) plus the `RegexPattern` class, with anchor (`^`/`$`) support.
-- `std.types`: Generic container types (`Tuple`, `CopyableTuple`, `Option`, `CopyableOption`).
-- `std.collections`: `Vec<T>`, a dynamically-growable array (`push`, `pop`, `get`, `set`, `length`/`size`, `enumerate<T>`), and `HashMap<K,V>`, an open-addressing hash table (`set`, `get`, `has`, `remove`, `length`/`size`; keys restricted to integer types, `bool`, `char`, `string`).
+- `std.types`: Generic container types (`Pair`, `CopyablePair`, `Option`, `CopyableOption`).
+- `std.collections`: `ArrayList<T>`, a dynamically-growable array (`add`, `removeLast`, `get`, `set`, `size`, `enumerate<T>`), and `HashMap<K,V>`, an open-addressing hash table (`set`, `get`, `has`, `remove`, `size`; keys restricted to integer types, `bool`, `char`, `string`).
 - `std.ranges`: `range`, `rangeFrom`, and `rangeStep` generators for counting loops.
 - `std.cli.args`: Command-line argument parsing (`argc`, `argv_at`, flags, options, positionals).
 - `std.fcl`: Lexer for firescript config language (FCL) data.

@@ -732,7 +732,7 @@ class ASTToFIRConverter:
     # `__NullableReturn<T>` copyable struct { value: T, hasval: bool }
     # instead of a bare T -- reusing the already-tested copyable-struct-
     # by-value construct/return/field-access machinery (the same one
-    # CopyableTuple/CopyableOption use) rather than inventing new IR.
+    # CopyablePair/CopyableOption use) rather than inventing new IR.
     # Callers unwrap it back to (value, hasval) in
     # _convert_function_call_unwrapped / _nullable_scalar_has_value's
     # FUNCTION_CALL branch, which -- critically -- convert the call
@@ -951,7 +951,7 @@ class ASTToFIRConverter:
                 # be unset because the call site was type-checked (parser/
                 # type_system.py) before the receiver's defining module was
                 # merged in (a cross-module generic class, e.g.
-                # `vec.get(i)` on an imported `Vec<int32>`), leaving
+                # `vec.get(i)` on an imported `ArrayList<int32>`), leaving
                 # method_def.return_type an unsubstituted generic
                 # placeholder like "T" -- substitute it using the receiver's
                 # concrete type arguments, the same way FIELD_ACCESS below
@@ -2033,7 +2033,7 @@ class ASTToFIRConverter:
             # its comment there). Every existing for-in-over-generator test
             # only yields a Copyable type (int32), so dropping a fresh value
             # each iteration was never needed until a generator yielding an
-            # Owned type (e.g. Vec<T>'s `enumerate` yielding Tuple<int32,T>)
+            # Owned type (e.g. ArrayList<T>'s `enumerate` yielding Pair<int32,T>)
             # exposed it as a real gap (FIRV-O3: unconsumed on the loop-back
             # path). Only the normal fallthrough path is handled -- break/
             # continue out of a for-in-over-generator loop with an Owned
@@ -3066,10 +3066,10 @@ class ASTToFIRConverter:
         """Like _infer_type_args, but for a generic generator function call
         (e.g. `enumerate<T>(v)`), and additionally unifies a composite
         generic-class parameter type against the argument's concrete
-        instantiation (e.g. param `Vec<T>` vs. argument type `Vec<int32>` ->
+        instantiation (e.g. param `ArrayList<T>` vs. argument type `ArrayList<int32>` ->
         T=int32) -- `_infer_type_args` only matches a bare `T`/`T[]` param,
         which a generator taking a generic-class-typed receiver-like
-        parameter (`&v: Vec<T>`) doesn't fit. Generators aren't registered in
+        parameter (`&v: ArrayList<T>`) doesn't fit. Generators aren't registered in
         self.function_defs/self.generic_functions (only self.generator_defs),
         so this reads gen_def/type_params directly instead of reusing that
         registry lookup."""

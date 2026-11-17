@@ -1,7 +1,7 @@
 //@ snapshot: fir, flir
 // Unsized array-typed class fields (T[]): construction from an array literal,
 // field element read/write, and destructor-frees-the-buffer (no leak/crash on
-// scope exit). Precursor to std.collections.Vec<T>, which stores its backing
+// scope exit). Precursor to std.collections.ArrayList<T>, which stores its backing
 // buffer the same way.
 
 import @firescript/std.io.println;

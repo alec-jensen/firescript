@@ -316,7 +316,7 @@ println(p.first);   // 42
 println(p.second);  // hello
 ```
 
-Both `copyable` and owned (heap-allocated) generic classes are supported. `@firescript/std.types` provides ready-made `Tuple<T, U>` and `Option<T>` types (see [Standard Library — Types](std/types.md)).
+Both `copyable` and owned (heap-allocated) generic classes are supported. `@firescript/std.types` provides ready-made `Pair<T, U>` and `Option<T>` types (see [Standard Library — Types](std/types.md)).
 
 ## Copyable Classes
 

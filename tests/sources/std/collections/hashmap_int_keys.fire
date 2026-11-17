@@ -4,11 +4,11 @@ import @firescript/std.collections.HashMap;
 import @firescript/std.io.println;
 
 m: HashMap<int32, int32> = HashMap<int32, int32>();
-println(m.length());
+println(m.size());
 m.set(1, 100);
 m.set(2, 200);
 m.set(3, 300);
-println(m.length());
+println(m.size());
 println(m.has(2));
 println(m.has(5));
 println(m.get(2));
@@ -18,7 +18,7 @@ println(m.get(2));
 
 removed: int32 = m.remove(2);
 println(removed);
-println(m.length());
+println(m.size());
 println(m.has(2));
 
 /* EXPECT

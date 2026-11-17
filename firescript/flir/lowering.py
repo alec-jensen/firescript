@@ -932,7 +932,7 @@ class FIRToFLIRLowering:
     def lower_array_alloc(self, inst: ArrayAllocInst, ctx: _FuncCtx) -> None:
         """Like lower_array_literal, but the element count is a runtime
         Value rather than a Python-time-known literal list -- the one
-        primitive std.collections.Vec<T> needs that fixed-size arrays
+        primitive std.collections.ArrayList<T> needs that fixed-size arrays
         can't express (see docs/internal/version_planning.md's 0.6.0
         dynamic-arrays work)."""
         array_type = inst.result_type
@@ -950,7 +950,7 @@ class FIRToFLIRLowering:
     def lower_array_copy(self, inst: ArrayCopyInst, ctx: _FuncCtx) -> None:
         """Raw byte copy of `count` elements from src into dst, element size
         resolved the same way lower_array_alloc/lower_array_literal do.
-        Used by Vec<T>'s grow path; ownership of the copied elements
+        Used by ArrayList<T>'s grow path; ownership of the copied elements
         transfers with the bytes (see fir/ir_node.py::ArrayCopyInst)."""
         dst_fir, src_fir, count_fir = inst.operands
         dst = self.val(dst_fir, ctx)

@@ -136,14 +136,14 @@ def test_lower_type_str_handles_copyable_generic_instance_text():
     # *copyable* generic class -- hits the struct_type(...) (by-value)
     # branch instead of ptr_to(...). Real firescript source can't spell a
     # generic array-of-generic-instance type directly (the parser doesn't
-    # accept `CopyableTuple<int32, int32>[N]` as a declaration), so this is
+    # accept `CopyablePair<int32, int32>[N]` as a declaration), so this is
     # exercised directly instead.
     module = FIRModule("firescript")
     module.add_type(
-        TypeDef("CopyableTuple", category="copyable", fields=[("a", INT32), ("b", INT32)], generic_params=["A", "B"])
+        TypeDef("CopyablePair", category="copyable", fields=[("a", INT32), ("b", INT32)], generic_params=["A", "B"])
     )
     lowering = FIRToFLIRLowering(module)
-    flir_type = lowering.lower_type_str("CopyableTuple<int32, int32>", {})
+    flir_type = lowering.lower_type_str("CopyablePair<int32, int32>", {})
     t.require(flir_type.kind == "struct", flir_type.kind)
 
 

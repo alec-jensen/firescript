@@ -12,7 +12,7 @@ while (i < 50) {
     m.set(i, i * 10);
     i = i + 1;
 }
-println(m.length());
+println(m.size());
 println(m.get(0));
 println(m.get(25));
 println(m.get(49));

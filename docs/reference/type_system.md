@@ -739,7 +739,7 @@ class Box<T> {
 intBox: Box<int32> = Box<int32>(42i32);
 ```
 
-The standard library's `Tuple<T, U>` and `Option<T>` (`@firescript/std.types`) are generic classes. See [Classes & Inheritance — Generic Classes](classes.md#generic-classes).
+The standard library's `Pair<T, U>` and `Option<T>` (`@firescript/std.types`) are generic classes. See [Classes & Inheritance — Generic Classes](classes.md#generic-classes).
 
 #### Generic Arrays and Collections (Planned)
 

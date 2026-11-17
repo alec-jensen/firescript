@@ -8,7 +8,7 @@ sm: HashMap<string, int32> = HashMap<string, int32>();
 sm.set("alpha", 1);
 sm.set("beta", 2);
 sm.set("gamma", 3);
-println(sm.length());
+println(sm.size());
 println(sm.has("beta"));
 println(sm.get("gamma"));
 
@@ -17,7 +17,7 @@ println(sm.get("beta"));
 
 removed: int32 = sm.remove("alpha");
 println(removed);
-println(sm.length());
+println(sm.size());
 println(sm.has("alpha"));
 
 /* EXPECT

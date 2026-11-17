@@ -1,20 +1,20 @@
 // firescript std.types library
 
-export class Tuple<T, U> {
+export class Pair<T, U> {
 	first: T;
 	second: U;
 
-	fn Tuple(first: T, second: U) {
+	fn Pair(first: T, second: U) {
 		this.first = first;
 		this.second = second;
 	}
 }
 
-export copyable class CopyableTuple<T, U> {
+export copyable class CopyablePair<T, U> {
 	first: T;
 	second: U;
 
-	fn CopyableTuple(first: T, second: U) {
+	fn CopyablePair(first: T, second: U) {
 		this.first = first;
 		this.second = second;
 	}
@@ -50,8 +50,8 @@ export class Option<T?> {
 	// Extracts the value, leaving this Option empty (isSome() reads false
 	// afterward) -- safe for any T, including Owned: the field is nulled
 	// out immediately, so this Option's own destructor won't also try to
-	// free it (same aliasing hazard as Vec<T>.get() on an Owned element,
-	// avoided here the way Vec<T>.pop() avoids it instead).
+	// free it (same aliasing hazard as ArrayList<T>.get() on an Owned element,
+	// avoided here the way ArrayList<T>.removeLast() avoids it instead).
 	fn unwrapOr(&mut this, default: T) -> T {
 		if (this.isSome()) {
 			v: T = this.value;
