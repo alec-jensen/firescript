@@ -1,0 +1,29 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.last_error;
+
+println(last_error("*a"));
+println(last_error("+a"));
+println(last_error("?a"));
+println(last_error("a|*"));
+println(last_error("(*a)"));
+println(last_error("(+)"));
+println(last_error("{2}a"));
+println(last_error("a|{2}"));
+println(last_error("a**"));
+println(last_error("a+?"));
+println(last_error("a{2}{3}"));
+println(last_error("a*"));
+
+/* EXPECT
+quantifier without target
+quantifier without target
+quantifier without target
+quantifier without target
+quantifier without target
+quantifier without target
+quantifier without target
+quantifier without target
+nested or non-greedy quantifiers are not supported
+nested or non-greedy quantifiers are not supported
+nested or non-greedy quantifiers are not supported
+*/

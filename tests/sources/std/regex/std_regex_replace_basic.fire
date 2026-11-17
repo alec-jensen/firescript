@@ -1,0 +1,31 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.replace;
+
+println(replace("a", "banana", "o"));
+println(replace("an", "banana", "AN"));
+println(replace("\\d+", "a1b22c333", "#"));
+println(replace("[aeiou]", "education", ""));
+println(replace("z", "banana", "!"));
+println(replace("a", "", "x"));
+println(replace("ab", "ababab", "x"));
+// Matches are replaced left to right and never overlap
+println(replace("aa", "aaaaa", "b"));
+// A longer replacement than the match
+println(replace("o", "foo", "000"));
+// Anchors
+println(replace("^a", "aaa", "b"));
+println(replace("a$", "aaa", "b"));
+
+/* EXPECT
+bonono
+bANANa
+a#b#c#
+dctn
+banana
+
+xxx
+bba
+f000000
+baa
+aab
+*/

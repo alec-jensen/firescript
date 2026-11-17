@@ -116,6 +116,14 @@ self-hosting work is not blocked by missing data structures.
 - **`@firescript/std.regex`** — full regex matching engine (lexer, parser, NFA/DFA
   compilation, matching over strings). Required by FCL and by compiler string-processing
   needs. (Existing stub needs real implementation.)
+  - Parser + backtracking matcher over a compiled program (literals, escapes, `.`, anchors,
+    groups, alternation, `* + ?`, classes) — **done**
+  - Shorthand classes `\d \D \w \W \s \S`, counted quantifiers `{n}`/`{n,}`/`{n,m}`,
+    non-capturing groups — **done**
+  - Capture groups with submatch extraction (`Match`, `find_first`, `find_all`, `replace`
+    with `$0`..`$9`) — **done**
+  - NFA/DFA compilation (linear-time matching), lookarounds, non-greedy quantifiers,
+    backreferences, named groups, `\b` — not done
 
 ### Compiler improvements
 
@@ -220,9 +228,9 @@ self-hosting work is not blocked by missing data structures.
   (`strings_index_of_substring.fire`, `strings_starts_ends_with.fire`, `strings_trim.fire`,
   `strings_replace.fire`) and `tests/sources/std/text/split_basic.fire`
 - Comprehensive golden tests for regex (matching, capture groups, anchors, character
-  classes, alternation, quantifiers)
+  classes, alternation, quantifiers) — **done**: `tests/sources/std/regex/`
 - Error tests for invalid enum/match usage — **done**
-- Error tests for invalid regex patterns
+- Error tests for invalid regex patterns — **done**: `tests/sources/std/regex/std_regex_error_*.fire`
 - Improve overall test coverage
 
 ### Gate

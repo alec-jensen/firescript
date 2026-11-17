@@ -1,469 +1,894 @@
 // firescript std.regex pattern engine
-// v2: full-string match, position-aware matching, anchors, and basic quantifiers
+//
+// A pattern is parsed once, in the RegexPattern constructor, into a small flat
+// program (see "Program layout" below) which a backtracking matcher
+// (RegexExec) then runs. Matching is leftmost with greedy quantifiers and
+// full backtracking, and capture groups are recorded as the program runs.
+//
+// Supported syntax: literals, escapes (\n \t \r and escaped metacharacters),
+// shorthand classes (\d \D \w \W \s \S, also inside [...]), '.', a leading '^'
+// and a trailing '$' anchor, groups ( ... ) and (?: ... ), alternation, the
+// quantifiers * + ? {n} {n,} {n,m}, and classes [abc] [^abc] [a-z].
+//
+// Program layout: ArrayList<int32> `code`, three ints per instruction
+// (op, a, b). SPLIT/JMP targets are RELATIVE instruction offsets (target =
+// pc + offset) so a span of code can be wrapped by inserting instructions in
+// front of it without having to rewrite the jumps inside it.
+//
+//   op 0 CHAR  a=byte         match one literal byte
+//   op 1 ANY                  match any one byte ('.')
+//   op 2 CLASS a=offset       match one byte against a class in `ranges`
+//   op 3 SPLIT a=off1 b=off2  try pc+a first, then pc+b (this is how greed is expressed)
+//   op 4 JMP   a=offset       unconditional jump
+//   op 5 SAVE  a=slot         record the current position in capture slot `a`
+//   op 6 MATCH                success (the whole text must be consumed when a required end is given)
+//   op 7 LSTART a=loop        remember the position at the start of a loop iteration
+//   op 8 LCHECK a=loop        fail if the iteration consumed nothing (stops `(a*)*` looping forever)
+//
+// Class table: ArrayList<int32> `ranges`; a class at offset o is
+// [negated, count, lo0, hi0, lo1, hi1, ...] over byte values 0..255.
 
 directive enable_process_args;
+directive enable_lowlevel_runtime;
+
+import @firescript/std.collections.ArrayList;
+
+// Upper bounds that keep a hostile pattern such as (a{1000}){1000} from
+// expanding without limit.
+// max instructions: 20000, max count in {n,m}: 1000.
+
+// Result of a search. found() is false when nothing matched (every other
+// accessor then returns -1 / "" / 0). Group 0 is the whole match.
+export class Match {
+    mstart: int32;
+    mend: int32;
+    mtext: string;             // the matched substring (group 0)
+    bounds: ArrayList<int32>;  // absolute [start, end] per group; -1 = group did not participate
+
+    fn Match(&mut this, start: int32, end: int32, matched: string, group_bounds: ArrayList<int32>) {
+        this.mstart = start;
+        this.mend = end;
+        this.mtext = matched;
+        this.bounds = group_bounds;
+    }
+
+    fn found(&this) -> bool {
+        return this.mstart >= 0;
+    }
+
+    fn start(&this) -> int32 {
+        return this.mstart;
+    }
+
+    fn end(&this) -> int32 {
+        return this.mend;
+    }
+
+    // Number of capture groups, not counting group 0.
+    fn group_count(&this) -> int32 {
+        n: int32 = this.bounds.size() / 2;
+        if (n == 0) {
+            return 0;
+        }
+        return n - 1;
+    }
+
+    fn group_start(&this, i: int32) -> int32 {
+        if (this.mstart < 0 || i < 0 || i > this.group_count()) {
+            return -1;
+        }
+        return this.bounds.get(i * 2);
+    }
+
+    fn group_end(&this, i: int32) -> int32 {
+        if (this.mstart < 0 || i < 0 || i > this.group_count()) {
+            return -1;
+        }
+        return this.bounds.get(i * 2 + 1);
+    }
+
+    // The text matched by group i ("" for a group that did not participate,
+    // an out-of-range i, or a Match that found nothing).
+    fn group(&this, i: int32) -> string {
+        s: int32 = this.group_start(i);
+        e: int32 = this.group_end(i);
+        if (s < 0 || e < 0) {
+            return "";
+        }
+        return str_slice(this.mtext, s - this.mstart, e - this.mstart);
+    }
+}
+
+// Backtracking matcher state: capture slots, per-loop position slots and the
+// text being matched. Slot writes are logged on `trail` as (slot, old value)
+// pairs (a loop slot n is logged as -(n + 1)) so a failed SPLIT branch can undo
+// them; only SPLIT recurses, which keeps both the recursion depth and the
+// per-call stack frame small (the native stack is 1 MiB).
+class RegexExec {
+    caps: ArrayList<int32>;
+    loops: ArrayList<int32>;
+    trail: ArrayList<int32>;
+    base: uint64;      // address of the text
+    tlen: int32;       // length of the text
+    end_req: int32;    // required end of the match, or -1
+    pc: int32;         // current instruction
+    sp: int32;         // current text position
+
+    fn RegexExec(&mut this, ncaps: int32, nloops: int32) {
+        this.caps = ArrayList<int32>();
+        this.loops = ArrayList<int32>();
+        this.trail = ArrayList<int32>();
+        this.base = 0u64;
+        this.tlen = 0;
+        this.end_req = -1;
+        this.pc = 0;
+        this.sp = 0;
+        i: int32 = 0;
+        while (i < ncaps) {
+            this.caps.add(-1);
+            i = i + 1;
+        }
+        i = 0;
+        while (i < nloops) {
+            this.loops.add(-1);
+            i = i + 1;
+        }
+    }
+
+    // Record the slot's old value, then set it.
+    fn _set_slot(&mut this, slot: int32, sp: int32) -> void {
+        if (slot >= 0) {
+            this.trail.add(slot);
+            this.trail.add(this.caps.get(slot));
+            this.caps.set(slot, sp);
+        } else {
+            this.trail.add(slot);
+            this.trail.add(this.loops.get(0 - slot - 1));
+            this.loops.set(0 - slot - 1, sp);
+        }
+    }
+
+    // Roll slot writes back to a previous trail length.
+    fn _undo(&mut this, mark: int32) -> void {
+        while (this.trail.size() > mark) {
+            old: int32 = this.trail.removeLast();
+            slot: int32 = this.trail.removeLast();
+            if (slot >= 0) {
+                this.caps.set(slot, old);
+            } else {
+                this.loops.set(0 - slot - 1, old);
+            }
+        }
+    }
+
+    // Does the byte at `sp` satisfy a CHAR (op 0), ANY (op 1) or CLASS (op 2) instruction?
+    fn _byte_ok(&this, &p: RegexPattern, op: int32, a: int32, sp: int32) -> bool {
+        if (sp >= this.tlen) {
+            return false;
+        }
+        if (op == 1) {
+            return true;
+        }
+        c: int32 = mem_load_u8(this.base + (sp as uint64)) as int32;
+        if (op == 0) {
+            return c == a;
+        }
+        return p._class_has(a, c);
+    }
+
+    // Execute straight-line instructions from (this.pc, this.sp) until the
+    // program fails (-1), reaches a SPLIT (-2, with this.pc on it) or matches
+    // (the end position). Deliberately holds all state in fields and keeps few
+    // locals: `run` below recurses once per SPLIT taken, and its frame size
+    // bounds how long a text can be matched.
+    fn _advance(&mut this, &p: RegexPattern) -> int32 {
+        while (true) {
+            op: int32 = p.code.get(this.pc * 3);
+            a: int32 = p.code.get(this.pc * 3 + 1);
+            if (op <= 2) {
+                if (this._byte_ok(p, op, a, this.sp) == false) {
+                    return -1;
+                }
+                this.sp = this.sp + 1;
+                this.pc = this.pc + 1;
+            } else if (op == 3) {
+                return -2;
+            } else if (op == 4) {
+                this.pc = this.pc + a;
+            } else if (op == 5) {
+                this._set_slot(a, this.sp);
+                this.pc = this.pc + 1;
+            } else if (op == 7) {
+                this._set_slot(0 - a - 1, this.sp);
+                this.pc = this.pc + 1;
+            } else if (op == 8) {
+                if (this.loops.get(a) == this.sp) {
+                    return -1;
+                }
+                this.pc = this.pc + 1;
+            } else {
+                // MATCH
+                if (this.end_req >= 0 && this.sp != this.end_req) {
+                    return -1;
+                }
+                return this.sp;
+            }
+        }
+        return -1;
+    }
+
+    // Take branch 1 (first) or 2 (second) of the SPLIT at instruction `at`, resuming at text position `sp`.
+    fn _take(&mut this, &p: RegexPattern, at: int32, branch: int32, sp: int32) -> void {
+        this.pc = at + p.code.get(at * 3 + branch);
+        this.sp = sp;
+    }
+
+    // Run from (this.pc, this.sp). Returns the end position or -1.
+    fn run(&mut this, &p: RegexPattern) -> int32 {
+        while (true) {
+            r: int32 = this._advance(p);
+            if (r != -2) {
+                return r;
+            }
+            // At a SPLIT: try the first branch, then (undoing its slot writes) the second.
+            at: int32 = this.pc;
+            sp: int32 = this.sp;
+            mark: int32 = this.trail.size();
+            this._take(p, at, 1, sp);
+            r = this.run(p);
+            if (r >= 0) {
+                return r;
+            }
+            this._undo(mark);
+            this._take(p, at, 2, sp);
+        }
+        return -1;
+    }
+
+    // Try to match the whole program starting exactly at `start`. Returns the
+    // end position or -1. On success caps[0..1] hold the overall match span.
+    fn match_at(&mut this, &p: RegexPattern, &text: string, start: int32, required_end: int32) -> int32 {
+        this.tlen = str_length(text);
+        this.base = str_to_addr(text);
+        this.end_req = required_end;
+        this.pc = 0;
+        this.sp = start;
+        end: int32 = this.run(p);
+        if (end >= 0) {
+            this.caps.set(0, start);
+            this.caps.set(1, end);
+        } else {
+            this._undo(0);
+        }
+        return end;
+    }
+}
 
 export class RegexPattern {
     pattern: string;           // The core pattern without anchors
     anchor_start: bool;        // True if pattern began with ^
     anchor_end: bool;          // True if pattern ended with $
+    code: ArrayList<int32>;    // Compiled program (see header)
+    ranges: ArrayList<int32>;  // Character class table
+    ngroups: int32;            // Number of capture groups (excluding group 0)
+    nloops: int32;             // Number of loop-guard slots
+    err: string;               // Validation error, or ""
+    _pos: int32;               // Parser cursor
+    _plen: int32;              // Length of the core pattern
+    _qmin: int32;              // Result of _parse_counted
+    _qmax: int32;              // (-1 = unbounded)
 
     fn RegexPattern(&mut this, original_pattern: string) {
         // Parse and strip anchors from pattern
         plen: int32 = str_length(original_pattern);
         start: int32 = 0;
         end: int32 = plen;
-        
+
         this.anchor_start = false;
         this.anchor_end = false;
-        
+
         // Check for leading ^
         if (plen > 0 && str_char_at(original_pattern, 0) == "^") {
             this.anchor_start = true;
             start = 1;
         }
-        
-        // Check for trailing $
-        if (plen > 0 && str_char_at(original_pattern, plen - 1) == "$") {
-            this.anchor_end = true;
-            end = plen - 1;
+
+        // Check for trailing $ (an escaped \$ is a literal dollar, not an anchor)
+        if (plen > start && str_char_at(original_pattern, plen - 1) == "$") {
+            backslashes: int32 = 0;
+            k: int32 = plen - 2;
+            while (k >= start && str_char_at(original_pattern, k) == "\\") {
+                backslashes = backslashes + 1;
+                k = k - 1;
+            }
+            if (backslashes % 2 == 0) {
+                this.anchor_end = true;
+                end = plen - 1;
+            }
         }
-        
+
         // Extract core pattern using str_slice
         if (start < end) {
             this.pattern = str_slice(original_pattern, start, end);
         } else {
             this.pattern = "";
         }
+
+        this.code = ArrayList<int32>();
+        this.ranges = ArrayList<int32>();
+        this.ngroups = 0;
+        this.nloops = 0;
+        this.err = "";
+        this._pos = 0;
+        this._plen = str_length(this.pattern);
+        this._qmin = 0;
+        this._qmax = 0;
+        this._compile();
     }
 
-    // ----- Helper methods (instance) -----
-    fn _decode_escape_char(&this, &esc: string) -> string {
-        if (esc == "n") {
-            return "\n";
-        }
-        if (esc == "t") {
-            return "\t";
-        }
-        if (esc == "r") {
-            return "\r";
-        }
-        return "" + esc;
+    // ----- Parser helpers -----
+    fn _byte(&this, i: int32) -> int32 {
+        return mem_load_u8(str_to_addr(this.pattern) + (i as uint64)) as int32;
     }
 
-    fn _is_quantifier(&this, &ch: string) -> bool {
-        if (ch == "*") {
-            return true;
-        }
-        if (ch == "+") {
-            return true;
-        }
-        if (ch == "?") {
-            return true;
-        }
-        return false;
+    fn _emit(&mut this, op: int32, a: int32, b: int32) -> void {
+        this.code.add(op);
+        this.code.add(a);
+        this.code.add(b);
     }
 
-    fn _find_matching_paren(&this, open_index: int32, end_index: int32) -> int32 {
-        depth: int32 = 0;
-        i: int32 = open_index;
-
-        while (i < end_index) {
-            ch: string = str_char_at(this.pattern, i);
-
-            if (ch == "\\") {
-                i = i + 2;
-                continue;
-            }
-
-            if (ch == "(") {
-                depth = depth + 1;
-            } else if (ch == ")") {
-                depth = depth - 1;
-                if (depth == 0) {
-                    return i;
-                }
-            }
-
-            i = i + 1;
-        }
-
-        return -1;
+    fn _count(&this) -> int32 {
+        return this.code.size() / 3;
     }
 
-    fn _find_matching_class_end(&this, open_index: int32, end_index: int32) -> int32 {
-        i: int32 = open_index + 1;
-
-        while (i < end_index) {
-            ch: string = str_char_at(this.pattern, i);
-            if (ch == "\\") {
-                i = i + 2;
-                continue;
-            }
-            if (ch == "]") {
-                return i;
-            }
-            i = i + 1;
+    // Insert an instruction at instruction index `at`, shifting later code up.
+    fn _insert(&mut this, at: int32, op: int32, a: int32, b: int32) -> void {
+        this.code.add(0);
+        this.code.add(0);
+        this.code.add(0);
+        i: int32 = this.code.size() - 1;
+        lo: int32 = at * 3 + 3;
+        while (i >= lo) {
+            this.code.set(i, this.code.get(i - 3));
+            i = i - 1;
         }
-
-        return -1;
+        this.code.set(at * 3, op);
+        this.code.set(at * 3 + 1, a);
+        this.code.set(at * 3 + 2, b);
     }
 
-    fn _char_between(&this, &c: string, lo: string, hi: string) -> bool {
-        range_order: string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        c_idx: int32 = str_index_of(range_order, c);
-        lo_idx: int32 = str_index_of(range_order, lo);
-        hi_idx: int32 = str_index_of(range_order, hi);
-
-        if (c_idx < 0 || lo_idx < 0 || hi_idx < 0) {
-            return false;
+    fn _truncate(&mut this, instr_count: int32) -> void {
+        while (this.code.size() > instr_count * 3) {
+            this.code.removeLast();
         }
-        return c_idx >= lo_idx && c_idx <= hi_idx;
     }
 
-    fn _class_contains(&this, class_start: int32, class_end: int32, &c: string) -> bool {
-        i: int32 = class_start + 1;
-        negated: bool = false;
-        matched: bool = false;
-
-        if (i < class_end && str_char_at(this.pattern, i) == "^") {
-            negated = true;
-            i = i + 1;
+    fn _fail(&mut this, msg: string) -> void {
+        if (this.err == "") {
+            this.err = msg;
         }
+    }
 
-        while (i < class_end) {
-            first: string = str_char_at(this.pattern, i);
-            first_val: string = "";
+    fn _decode_escape(&this, e: int32) -> int32 {
+        if (e == 110) {
+            return 10;   // \n
+        }
+        if (e == 116) {
+            return 9;    // \t
+        }
+        if (e == 114) {
+            return 13;   // \r
+        }
+        return e;
+    }
 
-            if (first == "\\") {
-                if (i + 1 >= class_end) {
-                    drop(first);
-                    return false;
-                }
-                esc: string = str_char_at(this.pattern, i + 1);
-                first_val = this._decode_escape_char(esc);
-                drop(esc);
-                drop(first);
-                i = i + 2;
+    fn _is_shorthand(&this, e: int32) -> bool {
+        // d D w W s S
+        return e == 100 || e == 68 || e == 119 || e == 87 || e == 115 || e == 83;
+    }
+
+    fn _add_range(&mut this, lo: int32, hi: int32) -> void {
+        this.ranges.add(lo);
+        this.ranges.add(hi);
+    }
+
+    // Append the byte ranges of a shorthand class (the current class's entries).
+    fn _add_shorthand(&mut this, e: int32) -> void {
+        if (e == 100) {            // \d
+            this._add_range(48, 57);
+        } else if (e == 68) {      // \D
+            this._add_range(0, 47);
+            this._add_range(58, 255);
+        } else if (e == 119) {     // \w
+            this._add_range(48, 57);
+            this._add_range(65, 90);
+            this._add_range(95, 95);
+            this._add_range(97, 122);
+        } else if (e == 87) {      // \W
+            this._add_range(0, 47);
+            this._add_range(58, 64);
+            this._add_range(91, 94);
+            this._add_range(96, 96);
+            this._add_range(123, 255);
+        } else if (e == 115) {     // \s : \t \n \v \f \r and space
+            this._add_range(9, 13);
+            this._add_range(32, 32);
+        } else {                   // \S
+            this._add_range(0, 8);
+            this._add_range(14, 31);
+            this._add_range(33, 255);
+        }
+    }
+
+    // Begin a class entry; returns its offset in `ranges`.
+    fn _class_begin(&mut this, negated: int32) -> int32 {
+        off: int32 = this.ranges.size();
+        this.ranges.add(negated);
+        this.ranges.add(0);
+        return off;
+    }
+
+    fn _class_end(&mut this, off: int32) -> void {
+        this.ranges.set(off + 1, (this.ranges.size() - off - 2) / 2);
+    }
+
+    fn _class_has(&this, off: int32, c: int32) -> bool {
+        n: int32 = this.ranges.get(off + 1);
+        found: bool = false;
+        j: int32 = 0;
+        while (j < n) {
+            if (c >= this.ranges.get(off + 2 + j * 2) && c <= this.ranges.get(off + 3 + j * 2)) {
+                found = true;
+                j = n;
             } else {
-                first_val = first;
-                i = i + 1;
+                j = j + 1;
             }
-
-            if (i + 1 < class_end && str_char_at(this.pattern, i) == "-") {
-                rhs_i: int32 = i + 1;
-                rhs_raw: string = str_char_at(this.pattern, rhs_i);
-                last_val: string = "";
-
-                if (rhs_raw == "\\") {
-                    if (rhs_i + 1 >= class_end) {
-                        drop(rhs_raw);
-                        drop(first_val);
-                        return false;
-                    }
-                    esc2: string = str_char_at(this.pattern, rhs_i + 1);
-                    last_val = this._decode_escape_char(esc2);
-                    drop(esc2);
-                    drop(rhs_raw);
-                    i = rhs_i + 2;
-                } else {
-                    last_val = rhs_raw;
-                    i = rhs_i + 1;
-                }
-
-                if (this._char_between(c, first_val, last_val)) {
-                    matched = true;
-                }
-                continue;
-            }
-
-            if (c == first_val) {
-                matched = true;
-            }
-            drop(first_val);
         }
-
-        if (negated) {
-            return matched == false;
+        if (this.ranges.get(off) == 1) {
+            return found == false;
         }
-        return matched;
+        return found;
     }
 
-    fn _match_one_atom(&this, atom_start: int32, atom_end: int32, &text: string, cur: int32, t_len: int32) -> int32 {
-        if (cur >= t_len) {
-            return -1;
+    // ----- Parser -----
+    fn _compile(&mut this) -> void {
+        if (this._plen == 0) {
+            this._fail("pattern is empty");
+            return;
         }
-
-        atom_ch: string = str_char_at(this.pattern, atom_start);
-        text_ch: string = str_char_at(text, cur);
-
-        if (atom_ch == "(") {
-            return this._match_range(atom_start + 1, atom_end - 1, text, cur, t_len);
+        this._parse_alt();
+        if (this.err != "") {
+            return;
         }
-
-        if (atom_ch == ".") {
-            return cur + 1;
+        if (this._pos < this._plen) {
+            // Only an unmatched ')' can stop the top-level parse early.
+            this._fail("unmatched ')' in pattern");
+            return;
         }
-
-        if (atom_ch == "[") {
-            if (this._class_contains(atom_start, atom_end - 1, text_ch)) {
-                return cur + 1;
-            }
-            return -1;
-        }
-
-        if (atom_ch == "\\") {
-            esc_ch: string = str_char_at(this.pattern, atom_start + 1);
-            want_ch: string = this._decode_escape_char(esc_ch);
-            if (want_ch == text_ch) {
-                return cur + 1;
-            }
-            return -1;
-        }
-
-        if (text_ch == atom_ch) {
-            return cur + 1;
-        }
-        return -1;
+        this._emit(6, 0, 0);
     }
 
-    fn _match_range(&this, p_start: int32, p_end: int32, &text: string, t_index: int32, t_len: int32) -> int32 {
-        // Expression level: split by top-level alternation first.
-        depth: int32 = 0;
-        i: int32 = p_start;
-        while (i < p_end) {
-            ch: string = str_char_at(this.pattern, i);
-
-            if (ch == "\\") {
-                i = i + 2;
-                continue;
-            }
-
-            if (ch == "(") {
-                depth = depth + 1;
-            } else if (ch == ")") {
-                depth = depth - 1;
-            } else if (ch == "|" && depth == 0) {
-                left: int32 = this._match_range(p_start, i, text, t_index, t_len);
-                if (left >= 0) {
-                    return left;
-                }
-                return this._match_range(i + 1, p_end, text, t_index, t_len);
-            }
-
-            i = i + 1;
+    // alternation := sequence ('|' sequence)*
+    fn _parse_alt(&mut this) -> void {
+        jmps: ArrayList<int32> = ArrayList<int32>();
+        branch_start: int32 = this._count();
+        this._parse_seq();
+        while (this.err == "" && this._pos < this._plen && this._byte(this._pos) == 124) {
+            // Wrap the branch just parsed: SPLIT before it, JMP-to-end after it.
+            this._insert(branch_start, 3, 1, 0);
+            this._emit(4, 0, 0);
+            jmps.add(this._count() - 1);
+            this.code.set(branch_start * 3 + 2, this._count() - branch_start);
+            this._pos = this._pos + 1;
+            branch_start = this._count();
+            this._parse_seq();
         }
-
-        // Sequence level.
-        p: int32 = p_start;
-        cur: int32 = t_index;
-
-        while (p < p_end) {
-            ch0: string = str_char_at(this.pattern, p);
-
-            if (ch0 == "|") {
-                return -1;
-            }
-            if (this._is_quantifier(ch0)) {
-                return -1;
-            }
-
-            atom_start: int32 = p;
-            atom_end: int32 = p + 1;
-
-            if (ch0 == "\\") {
-                atom_end = p + 2;
-                if (atom_end > p_end) {
-                    return -1;
-                }
-            } else if (ch0 == "[") {
-                class_close: int32 = this._find_matching_class_end(p, p_end);
-                if (class_close < 0) {
-                    return -1;
-                }
-                atom_end = class_close + 1;
-            } else if (ch0 == "(") {
-                close: int32 = this._find_matching_paren(p, p_end);
-                if (close < 0) {
-                    return -1;
-                }
-                atom_end = close + 1;
-            } else if (ch0 == ")") {
-                return -1;
-            }
-
-            quant: string = "";
-            next_pattern: int32 = atom_end;
-            if (atom_end < p_end) {
-                maybe_q: string = str_char_at(this.pattern, atom_end);
-                if (this._is_quantifier(maybe_q)) {
-                    quant = maybe_q;
-                    next_pattern = atom_end + 1;
-                } else {
-                    drop(maybe_q);
-                }
-            }
-
-            one: int32 = this._match_one_atom(atom_start, atom_end, text, cur, t_len);
-
-            if (quant == "") {
-                if (one < 0) {
-                    return -1;
-                }
-                cur = one;
-                p = next_pattern;
-                continue;
-            }
-
-            if (quant == "?") {
-                if (one >= 0) {
-                    with_one: int32 = this._match_range(next_pattern, p_end, text, one, t_len);
-                    if (with_one >= 0) {
-                        return with_one;
-                    }
-                }
-                return this._match_range(next_pattern, p_end, text, cur, t_len);
-            }
-
-            if (quant == "*") {
-                if (one < 0 || one == cur) {
-                    return this._match_range(next_pattern, p_end, text, cur, t_len);
-                }
-
-                // Greedy first, then backtrack to zero-consumption path.
-                greedy: int32 = this._match_range(p, p_end, text, one, t_len);
-                if (greedy >= 0) {
-                    return greedy;
-                }
-                return this._match_range(next_pattern, p_end, text, cur, t_len);
-            }
-
-            // quant == '+'
-            if (one < 0 || one == cur) {
-                return -1;
-            }
-
-            greedy_plus: int32 = this._match_range(p, p_end, text, one, t_len);
-            if (greedy_plus >= 0) {
-                return greedy_plus;
-            }
-            return this._match_range(next_pattern, p_end, text, one, t_len);
+        end: int32 = this._count();
+        while (jmps.size() > 0) {
+            j: int32 = jmps.removeLast();
+            this.code.set(j * 3 + 1, end - j);
         }
-
-        return cur;
     }
 
-    fn _validate_pattern(&this) -> string {
-        n: int32 = str_length(this.pattern);
-        
-        // Pattern should not be empty (anchors are stripped)
-        if (n == 0) {
-            return "pattern is empty";
+    // sequence := term*   (stops at '|' or ')')
+    fn _parse_seq(&mut this) -> void {
+        while (this.err == "" && this._pos < this._plen) {
+            c: int32 = this._byte(this._pos);
+            if (c == 124 || c == 41) {
+                return;
+            }
+            this._parse_term();
         }
-        
+    }
+
+    // term := atom quantifier?
+    fn _parse_term(&mut this) -> void {
+        c: int32 = this._byte(this._pos);
+        if (c == 42 || c == 43 || c == 63 || c == 123) {
+            this._fail("quantifier without target");
+            return;
+        }
+
+        atom_src: int32 = this._pos;
+        g0: int32 = this.ngroups;
+        atom_start: int32 = this._count();
+        this._parse_atom();
+        if (this.err != "") {
+            return;
+        }
+        g1: int32 = this.ngroups;
+
+        qmin: int32 = 1;
+        qmax: int32 = 1;
+        quantified: bool = false;
+        if (this._pos < this._plen) {
+            q: int32 = this._byte(this._pos);
+            if (q == 42) {
+                qmin = 0;
+                qmax = -1;
+                quantified = true;
+                this._pos = this._pos + 1;
+            } else if (q == 43) {
+                qmin = 1;
+                qmax = -1;
+                quantified = true;
+                this._pos = this._pos + 1;
+            } else if (q == 63) {
+                qmin = 0;
+                qmax = 1;
+                quantified = true;
+                this._pos = this._pos + 1;
+            } else if (q == 123) {
+                quantified = true;
+                this._parse_counted();
+                if (this.err != "") {
+                    return;
+                }
+                qmin = this._qmin;
+                qmax = this._qmax;
+            }
+        }
+        if (quantified == false) {
+            return;
+        }
+
+        // A second quantifier directly after the first ("a**", "a+?", "a{2}{3}").
+        if (this._pos < this._plen) {
+            n: int32 = this._byte(this._pos);
+            if (n == 42 || n == 43 || n == 63 || n == 123) {
+                this._fail("nested or non-greedy quantifiers are not supported");
+                return;
+            }
+        }
+
+        // The atom was emitted once while parsing it. Discard that copy and
+        // re-emit it once per repetition by re-parsing it from the source;
+        // each re-parse yields the same group numbers, so repeated copies of
+        // a capture group share one group number.
+        after: int32 = this._pos;
+        this._truncate(atom_start);
+        this._emit_repeat(atom_src, g0, qmin, qmax);
+        this._pos = after;
+        this.ngroups = g1;
+    }
+
+    // Re-parse the atom at source offset `atom_src`, emitting one more copy of it.
+    fn _emit_copy(&mut this, atom_src: int32, g0: int32) -> void {
+        this._pos = atom_src;
+        this.ngroups = g0;
+        this._parse_atom();
+        if (this._count() > 20000) {
+            this._fail("pattern too large");
+        }
+    }
+
+    // Emit `atom{qmin,qmax}` (qmax == -1 means unbounded).
+    fn _emit_repeat(&mut this, atom_src: int32, g0: int32, qmin: int32, qmax: int32) -> void {
         i: int32 = 0;
-        depth: int32 = 0;
-        can_quantify: bool = false;
-
-        while (i < n) {
-            ch: string = str_char_at(this.pattern, i);
-
-            if (ch == "\\") {
-                if (i + 1 >= n) {
-                    return "dangling escape at end of pattern";
-                }
-                can_quantify = true;
-                i = i + 2;
-                continue;
-            }
-
-            if (ch == "(") {
-                depth = depth + 1;
-                can_quantify = false;
-            } else if (ch == "[") {
-                class_end: int32 = this._find_matching_class_end(i, n);
-                if (class_end < 0) {
-                    return "unmatched '[' in pattern";
-                }
-                if (class_end == i + 1) {
-                    return "empty character class";
-                }
-                i = class_end;
-                can_quantify = true;
-            } else if (ch == ")") {
-                if (depth == 0) {
-                    return "unmatched ')' in pattern";
-                }
-                depth = depth - 1;
-                can_quantify = true;
-            } else if (this._is_quantifier(ch)) {
-                if (can_quantify == false) {
-                    return "quantifier without target";
-                }
-                can_quantify = true;
-            } else if (ch == "|") {
-                can_quantify = false;
-            } else {
-                can_quantify = true;
-            }
-
+        while (i < qmin && this.err == "") {
+            this._emit_copy(atom_src, g0);
             i = i + 1;
         }
-
-        if (depth != 0) {
-            return "unmatched '(' in pattern";
+        if (this.err != "") {
+            return;
         }
 
-        return "";
+        if (qmax == -1) {
+            // Star unit: L: SPLIT body,end ; [LSTART] body [LCHECK] ; JMP L
+            us: int32 = this._count();
+            this._emit_copy(atom_src, g0);
+            if (this.err != "") {
+                return;
+            }
+            n: int32 = this._count() - us;
+            if (n == 1) {
+                this._insert(us, 3, 1, n + 2);
+                this._emit(4, 0 - (n + 1), 0);
+            } else {
+                slot: int32 = this.nloops;
+                this.nloops = this.nloops + 1;
+                this._insert(us, 7, slot, 0);
+                this._insert(us, 3, 1, n + 4);
+                this._emit(8, slot, 0);
+                this._emit(4, 0 - (n + 3), 0);
+            }
+            return;
+        }
+
+        // Optional copies: SPLIT next,end ; body ; SPLIT next,end ; body ... end
+        splits: ArrayList<int32> = ArrayList<int32>();
+        extra: int32 = qmax - qmin;
+        k: int32 = 0;
+        while (k < extra && this.err == "") {
+            splits.add(this._count());
+            this._emit(3, 1, 0);
+            this._emit_copy(atom_src, g0);
+            k = k + 1;
+        }
+        end: int32 = this._count();
+        while (splits.size() > 0) {
+            sp: int32 = splits.removeLast();
+            this.code.set(sp * 3 + 2, end - sp);
+        }
+    }
+
+    // counted := '{' digits (',' digits?)? '}'  -- sets _qmin/_qmax
+    fn _parse_counted(&mut this) -> void {
+        this._pos = this._pos + 1;   // '{'
+        lo: int32 = this._parse_digits();
+        if (lo < 0) {
+            if (this._pos >= this._plen) {
+                this._fail("unterminated '{' in pattern");
+            } else {
+                this._fail("invalid counted quantifier");
+            }
+            return;
+        }
+        hi: int32 = lo;
+        if (this._pos < this._plen && this._byte(this._pos) == 44) {
+            this._pos = this._pos + 1;
+            if (this._pos < this._plen && this._byte(this._pos) == 125) {
+                hi = -1;
+            } else {
+                hi = this._parse_digits();
+                if (hi < 0) {
+                    if (this._pos >= this._plen) {
+                        this._fail("unterminated '{' in pattern");
+                    } else {
+                        this._fail("invalid counted quantifier");
+                    }
+                    return;
+                }
+            }
+        }
+        if (this._pos >= this._plen) {
+            this._fail("unterminated '{' in pattern");
+            return;
+        }
+        if (this._byte(this._pos) != 125) {
+            this._fail("invalid counted quantifier");
+            return;
+        }
+        this._pos = this._pos + 1;
+        if (lo > 1000 || hi > 1000) {
+            this._fail("counted quantifier too large");
+            return;
+        }
+        if (hi != -1 && lo > hi) {
+            this._fail("counted quantifier minimum exceeds maximum");
+            return;
+        }
+        this._qmin = lo;
+        this._qmax = hi;
+    }
+
+    // Parse a run of decimal digits at the cursor; -1 if there are none.
+    fn _parse_digits(&mut this) -> int32 {
+        v: int32 = -1;
+        while (this._pos < this._plen) {
+            d: int32 = this._byte(this._pos);
+            if (d < 48 || d > 57) {
+                return v;
+            }
+            if (v < 0) {
+                v = 0;
+            }
+            v = v * 10 + (d - 48);
+            if (v > 100000) {
+                v = 100000;
+            }
+            this._pos = this._pos + 1;
+        }
+        return v;
+    }
+
+    // atom := group | class | escape | '.' | literal
+    fn _parse_atom(&mut this) -> void {
+        c: int32 = this._byte(this._pos);
+
+        if (c == 40) {
+            this._pos = this._pos + 1;
+            capturing: bool = true;
+            idx: int32 = 0;
+            if (this._pos < this._plen && this._byte(this._pos) == 63) {
+                if (this._pos + 1 < this._plen && this._byte(this._pos + 1) == 58) {
+                    capturing = false;
+                    this._pos = this._pos + 2;
+                } else {
+                    this._fail("unsupported group syntax");
+                    return;
+                }
+            }
+            if (capturing) {
+                this.ngroups = this.ngroups + 1;
+                idx = this.ngroups;
+                this._emit(5, idx * 2, 0);
+            }
+            this._parse_alt();
+            if (this.err != "") {
+                return;
+            }
+            if (this._pos >= this._plen || this._byte(this._pos) != 41) {
+                this._fail("unmatched '(' in pattern");
+                return;
+            }
+            this._pos = this._pos + 1;
+            if (capturing) {
+                this._emit(5, idx * 2 + 1, 0);
+            }
+            return;
+        }
+
+        if (c == 91) {
+            this._parse_class();
+            return;
+        }
+
+        if (c == 92) {
+            if (this._pos + 1 >= this._plen) {
+                this._fail("dangling escape at end of pattern");
+                return;
+            }
+            e: int32 = this._byte(this._pos + 1);
+            this._pos = this._pos + 2;
+            if (this._is_shorthand(e)) {
+                off: int32 = this._class_begin(0);
+                this._add_shorthand(e);
+                this._class_end(off);
+                this._emit(2, off, 0);
+            } else {
+                this._emit(0, this._decode_escape(e), 0);
+            }
+            return;
+        }
+
+        this._pos = this._pos + 1;
+        if (c == 46) {
+            this._emit(1, 0, 0);
+        } else {
+            this._emit(0, c, 0);
+        }
+    }
+
+    // class := '[' '^'? item* ']'   item := char | char '-' char | shorthand
+    fn _parse_class(&mut this) -> void {
+        this._pos = this._pos + 1;   // '['
+        if (this._pos < this._plen && this._byte(this._pos) == 93) {
+            this._fail("empty character class");
+            return;
+        }
+        negated: int32 = 0;
+        if (this._pos < this._plen && this._byte(this._pos) == 94) {
+            negated = 1;
+            this._pos = this._pos + 1;
+        }
+        off: int32 = this._class_begin(negated);
+        while (true) {
+            if (this._pos >= this._plen) {
+                this._fail("unmatched '[' in pattern");
+                return;
+            }
+            c: int32 = this._byte(this._pos);
+            if (c == 93) {
+                this._pos = this._pos + 1;
+                break;
+            }
+            lo: int32 = c;
+            if (c == 92) {
+                if (this._pos + 1 >= this._plen) {
+                    this._fail("unmatched '[' in pattern");
+                    return;
+                }
+                e: int32 = this._byte(this._pos + 1);
+                this._pos = this._pos + 2;
+                if (this._is_shorthand(e)) {
+                    this._add_shorthand(e);
+                    continue;
+                }
+                lo = this._decode_escape(e);
+            } else {
+                this._pos = this._pos + 1;
+            }
+
+            // A '-' that is not directly before the closing ']' makes a range.
+            if (this._pos + 1 < this._plen && this._byte(this._pos) == 45 && this._byte(this._pos + 1) != 93) {
+                this._pos = this._pos + 1;
+                hi: int32 = this._byte(this._pos);
+                if (hi == 92) {
+                    if (this._pos + 1 >= this._plen) {
+                        this._fail("unmatched '[' in pattern");
+                        return;
+                    }
+                    e2: int32 = this._byte(this._pos + 1);
+                    this._pos = this._pos + 2;
+                    if (this._is_shorthand(e2)) {
+                        this._fail("invalid range in character class");
+                        return;
+                    }
+                    hi = this._decode_escape(e2);
+                } else {
+                    this._pos = this._pos + 1;
+                }
+                if (lo > hi) {
+                    this._fail("invalid range in character class");
+                    return;
+                }
+                this._add_range(lo, hi);
+            } else {
+                this._add_range(lo, lo);
+            }
+        }
+        this._class_end(off);
+        this._emit(2, off, 0);
+    }
+
+    // ----- Matching helpers -----
+    fn _new_exec(&this) -> RegexExec {
+        return RegexExec((this.ngroups + 1) * 2, this.nloops);
+    }
+
+    fn _required_end(&this, tlen: int32) -> int32 {
+        if (this.anchor_end) {
+            return tlen;
+        }
+        return -1;
     }
 
     fn _match_full(&this, &text: string) -> bool {
-        p_len: int32 = str_length(this.pattern);
         t_len: int32 = str_length(text);
-        end: int32 = this._match_range(0, p_len, text, 0, t_len);
-        
-        // If anchor_end is set, must match exactly to end of text
-        if (this.anchor_end) {
-            return end == t_len;
-        }
-        
-        // Otherwise, must consume entire text
+        ex: RegexExec = this._new_exec();
+        end: int32 = ex.match_at(this, text, 0, t_len);
         return end == t_len;
     }
 
     fn _match_at_position(&this, &text: string, start_pos: int32) -> int32 {
         t_len: int32 = str_length(text);
-        
+
         // Check if start position is valid
         if (start_pos < 0 || start_pos > t_len) {
             return -1;
         }
-        
+
         // If anchor_start is set, can only match at position 0
         if (this.anchor_start && start_pos != 0) {
             return -1;
         }
-        
-        // Try to match pattern starting at start_pos
-        p_len: int32 = str_length(this.pattern);
-        matched_end: int32 = this._match_range(0, p_len, text, start_pos, t_len);
-        
+
+        ex: RegexExec = this._new_exec();
+        matched_end: int32 = ex.match_at(this, text, start_pos, this._required_end(t_len));
         if (matched_end < 0) {
             return -1;
         }
-        
-        // If anchor_end is set, must match to end of text
-        if (this.anchor_end && matched_end != t_len) {
-            return -1;
-        }
-        
         return matched_end - start_pos;  // Return match length
+    }
+
+    fn _no_match(&this) -> Match {
+        return Match(-1, -1, "", ArrayList<int32>());
     }
 
     // ----- Public methods -----
     fn is_match(&this, &text: string) -> bool {
-        err: string = this._validate_pattern();
-        if (err != "") {
+        if (this.err != "") {
             return false;
         }
 
@@ -475,15 +900,128 @@ export class RegexPattern {
     }
 
     fn find_at(&this, &text: string, start_pos: int32) -> int32 {
-        err: string = this._validate_pattern();
-        if (err != "") {
+        if (this.err != "") {
             return -1;
         }
-        
+
         return this._match_at_position(text, start_pos);
     }
 
     fn last_error(&this) -> string {
-        return this._validate_pattern();
+        return str_slice(this.err, 0, str_length(this.err));
+    }
+
+    // Number of capture groups (not counting group 0); 0 for an invalid pattern.
+    fn group_count(&this) -> int32 {
+        if (this.err != "") {
+            return 0;
+        }
+        return this.ngroups;
+    }
+
+    // Leftmost match starting at or after start_pos. Returns a Match whose
+    // found() is false when there is none (or the pattern is invalid).
+    fn find_first(&this, &text: string, start_pos: int32) -> Match {
+        if (this.err != "") {
+            return this._no_match();
+        }
+        t_len: int32 = str_length(text);
+        s: int32 = start_pos;
+        if (s < 0) {
+            s = 0;
+        }
+        req: int32 = this._required_end(t_len);
+        ex: RegexExec = this._new_exec();
+        while (s <= t_len) {
+            if (this.anchor_start && s != 0) {
+                return this._no_match();
+            }
+            end: int32 = ex.match_at(this, text, s, req);
+            if (end >= 0) {
+                bounds: ArrayList<int32> = ArrayList<int32>();
+                n: int32 = ex.caps.size();
+                g: int32 = 0;
+                while (g < n) {
+                    bounds.add(ex.caps.get(g));
+                    g = g + 1;
+                }
+                return Match(s, end, str_slice(text, s, end), bounds);
+            }
+            s = s + 1;
+        }
+        return this._no_match();
+    }
+
+    // All non-overlapping matches, left to right. An empty match advances the
+    // search by one character so the scan always terminates. Read the result
+    // with removeLast() (last match first); see the collections docs.
+    fn find_all(&this, &text: string) -> ArrayList<Match> {
+        result: ArrayList<Match> = ArrayList<Match>();
+        t_len: int32 = str_length(text);
+        pos: int32 = 0;
+        while (pos <= t_len) {
+            m: Match = this.find_first(text, pos);
+            if (m.found() == false) {
+                return result;
+            }
+            if (m.end() == m.start()) {
+                pos = m.end() + 1;
+            } else {
+                pos = m.end();
+            }
+            result.add(m);
+        }
+        return result;
+    }
+
+    // Replace every non-overlapping match with `replacement`. In the
+    // replacement, $0..$9 insert that group, $$ is a literal '$', and any
+    // other '$' is literal. An invalid pattern returns the text unchanged.
+    fn replace(&this, &text: string, &replacement: string) -> string {
+        t_len: int32 = str_length(text);
+        if (this.err != "") {
+            return str_slice(text, 0, t_len);
+        }
+        r_len: int32 = str_length(replacement);
+        out: string = "";
+        last: int32 = 0;
+        pos: int32 = 0;
+        while (pos <= t_len) {
+            m: Match = this.find_first(text, pos);
+            if (m.found() == false) {
+                pos = t_len + 1;
+            } else {
+                out = out + str_slice(text, last, m.start());
+                i: int32 = 0;
+                while (i < r_len) {
+                    ch: string = str_char_at(replacement, i);
+                    if (ch == "$" && i + 1 < r_len) {
+                        nxt: string = str_char_at(replacement, i + 1);
+                        d: int32 = str_index_of("0123456789", nxt);
+                        if (d >= 0) {
+                            out = out + m.group(d);
+                            i = i + 2;
+                        } else if (nxt == "$") {
+                            out = out + "$";
+                            i = i + 2;
+                        } else {
+                            out = out + ch;
+                            i = i + 1;
+                        }
+                    } else {
+                        out = out + ch;
+                        i = i + 1;
+                    }
+                }
+                last = m.end();
+                if (m.end() == m.start()) {
+                    pos = m.end() + 1;
+                } else {
+                    pos = m.end();
+                }
+            }
+        }
+        out = out + str_slice(text, last, t_len);
+        return out;
     }
 }

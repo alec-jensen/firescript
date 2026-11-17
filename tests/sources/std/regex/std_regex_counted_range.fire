@@ -1,0 +1,31 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.is_match;
+
+println(is_match("a{2,4}", "a"));
+println(is_match("a{2,4}", "aa"));
+println(is_match("a{2,4}", "aaa"));
+println(is_match("a{2,4}", "aaaa"));
+println(is_match("a{2,4}", "aaaaa"));
+println(is_match("a{0,2}", ""));
+println(is_match("a{0,2}", "aaa"));
+println(is_match("a{3,3}", "aaa"));
+println(is_match("x\\d{1,3}y", "x12y"));
+println(is_match("x\\d{1,3}y", "x1234y"));
+// Backtracking: the greedy repeat must give characters back
+println(is_match("a{1,3}a", "aaa"));
+println(is_match("a{1,3}a", "a"));
+
+/* EXPECT
+false
+true
+true
+true
+false
+true
+false
+true
+true
+false
+true
+false
+*/

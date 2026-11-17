@@ -1,0 +1,41 @@
+import @firescript/std.io.println;
+import @firescript/std.collections.ArrayList;
+import @firescript/std.regex.find_all;
+import @firescript/std.regex.pattern.Match;
+
+// find_all returns an ArrayList<Match>; removeLast() drains it back to front,
+// so prepend each piece to get the matches in text order.
+fn show(ms: ArrayList<Match>) -> string {
+    out: string = "";
+    while (ms.size() > 0) {
+        m: Match = ms.removeLast();
+        out = "[" + m.group(0) + "]" + out;
+    }
+    return out;
+}
+
+fn spans(ms: ArrayList<Match>) -> string {
+    out: string = "";
+    while (ms.size() > 0) {
+        m: Match = ms.removeLast();
+        out = (m.start() as string) + ":" + (m.end() as string) + " " + out;
+    }
+    return out;
+}
+
+fn pairs(ms: ArrayList<Match>) -> string {
+    out: string = "";
+    while (ms.size() > 0) {
+        m: Match = ms.removeLast();
+        out = m.group(1) + "=" + m.group(2) + ";" + out;
+    }
+    return out;
+}
+
+println(pairs(find_all("(\\w+)=(\\d+)", "a=1, bb=22, c=x, d=4")));
+println(pairs(find_all("(a)(b)?", "ab a ab")));
+
+/* EXPECT
+a=1;bb=22;d=4;
+a=b;a=;a=b;
+*/

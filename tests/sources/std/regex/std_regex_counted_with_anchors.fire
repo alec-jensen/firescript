@@ -1,0 +1,21 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.find_at;
+import @firescript/std.regex.is_match;
+
+println(find_at("^a{2,3}", "aaaa", 0));
+println(find_at("^a{2,3}", "aaaa", 1));
+println(find_at("a{2}$", "baa", 1));
+println(find_at("a{2}$", "baaa", 1));
+println(find_at("a{2}$", "baaa", 2));
+println(is_match("^\\d{3}$", "123"));
+println(is_match("^\\d{3}$", "1234"));
+
+/* EXPECT
+3
+-1
+2
+-1
+2
+true
+false
+*/

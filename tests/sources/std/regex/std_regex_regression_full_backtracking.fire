@@ -1,0 +1,28 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.is_match;
+import @firescript/std.regex.find_at;
+
+// is_match must backtrack into earlier quantifiers/alternatives to consume the
+// whole text; the old matcher committed to the first successful sub-match.
+println(is_match("a*a", "aaa"));
+println(is_match("a|ab", "ab"));
+println(is_match("(a|ab)(c|bcd)", "abcd"));
+println(is_match("a+ab", "aaab"));
+println(is_match("(a*)*b", "aab"));
+println(is_match(".*c", "abcabc"));
+println(is_match("(a|b)*abb", "babaabb"));
+// A required end also forces backtracking for find_at with a trailing $
+println(find_at("a*a$", "aaa", 0));
+println(find_at("(a|ab)$", "ab", 0));
+
+/* EXPECT
+true
+true
+true
+true
+true
+true
+true
+3
+2
+*/

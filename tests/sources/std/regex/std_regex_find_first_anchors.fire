@@ -1,0 +1,32 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.find_first;
+import @firescript/std.regex.pattern.Match;
+
+m: Match = find_first("^ab", "abab", 0);
+println(m.found());
+println(m.end());
+// ^ only matches at position 0, never at a later start_pos
+println(find_first("^ab", "abab", 2).found());
+println(find_first("^b", "ab", 0).found());
+
+// $ requires the match to end at the end of the text
+n: Match = find_first("ab$", "abab", 0);
+println(n.start());
+println(find_first("ab$", "abx", 0).found());
+
+p: Match = find_first("^(a+)(b+)$", "aabbb", 0);
+println(p.group(1));
+println(p.group(2));
+println(find_first("^(a+)(b+)$", "aabbbc", 0).found());
+
+/* EXPECT
+true
+2
+false
+false
+2
+false
+aa
+bbb
+false
+*/

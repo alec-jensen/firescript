@@ -1,0 +1,38 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.find_first;
+import @firescript/std.regex.pattern.Match;
+
+// A quantified group reports its last iteration
+m: Match = find_first("(ab)+", "xababab!", 0);
+println(m.group(0));
+println(m.group(1));
+println(m.group_start(1));
+println(m.group_end(1));
+
+n: Match = find_first("(\\w)*", "xyz", 0);
+println(n.group(0));
+println(n.group(1));
+
+// A group quantified to zero repetitions does not participate
+p: Match = find_first("a(b)?c", "ac", 0);
+println(p.found());
+println(p.group(1) == "");
+println(p.group_start(1));
+
+q: Match = find_first("(a|b){2,3}", "abba", 0);
+println(q.group(0));
+println(q.group(1));
+
+/* EXPECT
+ababab
+ab
+5
+7
+xyz
+z
+true
+true
+-1
+abb
+b
+*/

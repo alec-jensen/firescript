@@ -1,0 +1,47 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.is_match;
+
+// \d \D
+println(is_match("\\d+", "2024"));
+println(is_match("\\d+", "20a4"));
+println(is_match("\\D+", "abc"));
+println(is_match("\\D+", "ab1"));
+// \w \W
+println(is_match("\\w+", "Fire_script9"));
+println(is_match("\\w+", "fire-script"));
+println(is_match("\\W", "-"));
+println(is_match("\\W", "_"));
+// \s \S
+println(is_match("a\\sb", "a b"));
+println(is_match("a\\sb", "a\tb"));
+println(is_match("a\\sb", "a\nb"));
+println(is_match("a\\sb", "ab"));
+println(is_match("\\S+", "nospace"));
+println(is_match("\\S+", "has space"));
+// Combined
+println(is_match("\\d\\d-\\d\\d", "12-34"));
+println(is_match("\\w+@\\w+", "user@host"));
+// An unknown escape is still the literal character
+println(is_match("\\.", "."));
+println(is_match("\\.", "x"));
+
+/* EXPECT
+true
+false
+true
+false
+true
+false
+true
+false
+true
+true
+true
+false
+true
+false
+true
+true
+true
+false
+*/

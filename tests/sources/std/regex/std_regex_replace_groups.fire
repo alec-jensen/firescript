@@ -1,0 +1,31 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.replace;
+
+// $0..$9 insert a capture group; $0 is the whole match
+println(replace("(\\w+)@(\\w+)", "me@host", "$2:$1"));
+println(replace("\\d+", "a12b", "<$0>"));
+println(replace("(a)(b)?", "ab a", "[$1$2]"));
+println(replace("(a)", "a", "$1$1$1"));
+// A group number past the last group (or a group that did not take part) is empty
+println(replace("(a)", "a", "[$2]"));
+println(replace("a(x)?", "a", "[$1]"));
+// $$ is a literal dollar; any other $ is literal too
+println(replace("a", "a", "$$"));
+println(replace("a", "a", "$$1"));
+println(replace("a", "a", "cost $"));
+println(replace("a", "a", "$x"));
+println(replace("(a)(b)(c)", "abc", "$3$2$1"));
+
+/* EXPECT
+host:me
+a<12>b
+[ab] [a]
+aaa
+[]
+[]
+$
+$1
+cost $
+$x
+cba
+*/

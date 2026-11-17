@@ -1,0 +1,40 @@
+import @firescript/std.io.println;
+import @firescript/std.collections.ArrayList;
+import @firescript/std.regex.find_all;
+import @firescript/std.regex.pattern.Match;
+
+// find_all returns an ArrayList<Match>; removeLast() drains it back to front,
+// so prepend each piece to get the matches in text order.
+fn show(ms: ArrayList<Match>) -> string {
+    out: string = "";
+    while (ms.size() > 0) {
+        m: Match = ms.removeLast();
+        out = "[" + m.group(0) + "]" + out;
+    }
+    return out;
+}
+
+fn spans(ms: ArrayList<Match>) -> string {
+    out: string = "";
+    while (ms.size() > 0) {
+        m: Match = ms.removeLast();
+        out = (m.start() as string) + ":" + (m.end() as string) + " " + out;
+    }
+    return out;
+}
+
+// ^ matches only once, at the start of the text
+println(show(find_all("^a", "aaa")));
+println(find_all("^a", "baa").size());
+// $ matches only a match that ends at the end of the text
+println(spans(find_all("a$", "aaa")));
+println(find_all("a$", "aab").size());
+println(spans(find_all("^a*$", "aaa")));
+
+/* EXPECT
+[a]
+0
+2:3
+0
+0:3
+*/

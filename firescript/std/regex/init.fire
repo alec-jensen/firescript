@@ -7,6 +7,8 @@
 directive enable_process_args;
 
 import @firescript/std.regex.pattern.RegexPattern;
+import @firescript/std.regex.pattern.Match;
+import @firescript/std.collections.ArrayList;
 
 export fn is_match(pattern: string, text: string) -> bool {
     result: bool = RegexPattern(pattern).is_match(text);
@@ -25,4 +27,16 @@ export fn find_at(pattern: string, text: string, start_pos: int32) -> int32 {
 
 export fn last_error(pattern: string) -> string {
     return RegexPattern(pattern).last_error();
+}
+
+export fn find_first(pattern: string, text: string, start_pos: int32) -> Match {
+    return RegexPattern(pattern).find_first(text, start_pos);
+}
+
+export fn find_all(pattern: string, text: string) -> ArrayList<Match> {
+    return RegexPattern(pattern).find_all(text);
+}
+
+export fn replace(pattern: string, text: string, replacement: string) -> string {
+    return RegexPattern(pattern).replace(text, replacement);
 }

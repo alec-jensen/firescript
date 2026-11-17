@@ -1,0 +1,22 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.last_error;
+import @firescript/std.regex.is_match;
+
+println(last_error("[abc"));
+println(last_error("a[bc"));
+println(last_error("[a\\]"));
+println(last_error("[a-"));
+println(last_error("[]"));
+println(last_error("[z-a]"));
+// An invalid pattern never matches
+println(is_match("[abc", "a"));
+
+/* EXPECT
+unmatched '[' in pattern
+unmatched '[' in pattern
+unmatched '[' in pattern
+unmatched '[' in pattern
+empty character class
+invalid range in character class
+false
+*/

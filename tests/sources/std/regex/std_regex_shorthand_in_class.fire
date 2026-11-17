@@ -1,0 +1,32 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.is_match;
+
+println(is_match("[\\d_]+", "12_3"));
+println(is_match("[\\d_]+", "12a3"));
+println(is_match("[a-f\\d]+", "c0ffee42"));
+println(is_match("[a-f\\d]+", "c0ffeeg"));
+println(is_match("[^\\s]+", "word"));
+println(is_match("[^\\s]+", "two words"));
+println(is_match("[\\w-]+", "kebab-case_1"));
+println(is_match("[\\W]+", "!?."));
+println(is_match("[\\W]+", "a!"));
+println(is_match("[\\D\\s]+", "a b"));
+println(is_match("[\\D\\s]+", "a1"));
+println(is_match("[\\S]", " "));
+println(is_match("[\\S]", "x"));
+
+/* EXPECT
+true
+false
+true
+false
+true
+false
+true
+true
+false
+true
+false
+false
+true
+*/

@@ -1,0 +1,43 @@
+import @firescript/std.io.println;
+import @firescript/std.collections.ArrayList;
+import @firescript/std.regex.find_all;
+import @firescript/std.regex.pattern.Match;
+
+// find_all returns an ArrayList<Match>; removeLast() drains it back to front,
+// so prepend each piece to get the matches in text order.
+fn show(ms: ArrayList<Match>) -> string {
+    out: string = "";
+    while (ms.size() > 0) {
+        m: Match = ms.removeLast();
+        out = "[" + m.group(0) + "]" + out;
+    }
+    return out;
+}
+
+fn spans(ms: ArrayList<Match>) -> string {
+    out: string = "";
+    while (ms.size() > 0) {
+        m: Match = ms.removeLast();
+        out = (m.start() as string) + ":" + (m.end() as string) + " " + out;
+    }
+    return out;
+}
+
+// Empty text
+println(find_all("a*", "").size());
+println(find_all("a", "").size());
+// An empty match advances by one char, so the scan terminates
+println(find_all("x*", "abc").size());
+println(spans(find_all("x*", "abc")));
+// Empty matches interleave with non-empty ones
+println(spans(find_all("a*", "baac")));
+println(show(find_all("a*", "baac")));
+
+/* EXPECT
+1
+0
+4
+0:0 1:1 2:2 3:3
+0:0 1:3 3:3 4:4
+[][aa][][]
+*/

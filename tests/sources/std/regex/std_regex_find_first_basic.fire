@@ -1,0 +1,50 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.find_first;
+import @firescript/std.regex.pattern.Match;
+
+m: Match = find_first("b+", "aabbbcc", 0);
+println(m.found());
+println(m.start());
+println(m.end());
+println(m.group(0));
+
+// Leftmost match wins
+n: Match = find_first("a|aa", "baab", 0);
+println(n.start());
+println(n.group(0));
+
+// start_pos skips earlier matches
+p: Match = find_first("a", "banana", 2);
+println(p.start());
+q: Match = find_first("a", "banana", 6);
+println(q.found());
+println(find_first("a", "banana", 99).found());
+println(find_first("a", "banana", -5).start());
+
+// No match: every accessor degrades to an empty value
+r: Match = find_first("z", "banana", 0);
+println(r.found());
+println(r.start());
+println(r.end());
+println(r.group_count());
+println(r.group(0) == "");
+println(r.group_start(0));
+
+/* EXPECT
+true
+2
+5
+bbb
+1
+a
+3
+false
+false
+1
+false
+-1
+-1
+0
+true
+-1
+*/

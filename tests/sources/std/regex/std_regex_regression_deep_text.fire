@@ -1,0 +1,30 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.is_match;
+import @firescript/std.regex.find_first;
+import @firescript/std.regex.pattern.Match;
+
+fn repeat(s: string, n: int32) -> string {
+    out: string = "";
+    i: int32 = 0;
+    while (i < n) {
+        out = out + s;
+        i = i + 1;
+    }
+    return out;
+}
+
+// Long inputs must not blow the matcher's recursion
+println(is_match("(ab)*", repeat("ab", 500)));
+println(is_match(".*", repeat("ab", 500)));
+println(is_match("[ab]+", repeat("ab", 500)));
+m: Match = find_first("(ab)+", "x" + repeat("ab", 500) + "y", 0);
+println(m.start());
+println(m.end());
+
+/* EXPECT
+true
+true
+true
+1
+1001
+*/

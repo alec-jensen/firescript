@@ -1,0 +1,44 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.last_error;
+import @firescript/std.regex.is_match;
+
+println(last_error("a{3,1}"));
+println(last_error("a{2,1}"));
+println(last_error("a{"));
+println(last_error("a{3"));
+println(last_error("a{3,"));
+println(last_error("a{3,4"));
+println(last_error("a{}"));
+println(last_error("a{,3}"));
+println(last_error("a{x}"));
+println(last_error("a{2x}"));
+println(last_error("a{2,x}"));
+println(last_error("a{1001}"));
+println(last_error("(a{1000}){1000}"));
+println(last_error("a{2,2}"));
+println(last_error("a{0}"));
+println(is_match("a{3,1}", "aa"));
+// An escaped brace is a literal
+println(is_match("a\\{2\\}", "a{2}"));
+println(is_match("}", "}"));
+
+/* EXPECT
+counted quantifier minimum exceeds maximum
+counted quantifier minimum exceeds maximum
+unterminated '{' in pattern
+unterminated '{' in pattern
+unterminated '{' in pattern
+unterminated '{' in pattern
+invalid counted quantifier
+invalid counted quantifier
+invalid counted quantifier
+invalid counted quantifier
+invalid counted quantifier
+counted quantifier too large
+pattern too large
+
+
+false
+true
+true
+*/

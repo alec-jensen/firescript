@@ -1,0 +1,38 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.is_match;
+
+println(is_match("(ab){2}", "abab"));
+println(is_match("(ab){2}", "ab"));
+println(is_match("(ab){2}", "ababab"));
+println(is_match("(ab){2,}", "ababab"));
+println(is_match("(ab){2,}", "ab"));
+println(is_match("(ab){1,2}c", "ababc"));
+println(is_match("(ab){1,2}c", "abababc"));
+println(is_match("(a|b){3}", "bab"));
+println(is_match("(a|b){3}", "bac"));
+println(is_match("(?:ab|c){2}d", "cabd"));
+println(is_match("((a)(b)){2}", "abab"));
+// Nested counted quantifiers
+println(is_match("(a{2}b){2}", "aabaab"));
+println(is_match("(a{2}b){2}", "aabab"));
+// A group that can match empty, repeated
+println(is_match("(a*){3}", ""));
+println(is_match("(a*){3}", "aaaa"));
+
+/* EXPECT
+true
+false
+false
+true
+false
+true
+false
+true
+false
+true
+true
+true
+false
+true
+true
+*/

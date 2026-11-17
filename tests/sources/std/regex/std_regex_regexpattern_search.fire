@@ -1,0 +1,53 @@
+import @firescript/std.io.println;
+import @firescript/std.collections.ArrayList;
+import @firescript/std.regex.pattern.RegexPattern;
+import @firescript/std.regex.pattern.Match;
+
+// One compiled pattern reused for every search method
+p: RegexPattern = RegexPattern("(\\d+)-(\\d+)");
+println(p.last_error() == "");
+println(p.group_count());
+println(p.is_match("12-34"));
+println(p.is_match("12-34x"));
+println(p.find_at("12-34x", 0));
+
+m: Match = p.find_first("a 1-2 b 30-40", 0);
+println(m.group(0));
+println(m.group(2));
+n: Match = p.find_first("a 1-2 b 30-40", m.end());
+println(n.group(0));
+println(n.group(1));
+
+all: ArrayList<Match> = p.find_all("a 1-2 b 30-40 c 5-6");
+println(all.size());
+last: Match = all.removeLast();
+println(last.group(0));
+
+println(p.replace("1-2 and 30-40", "$2-$1"));
+
+bad: RegexPattern = RegexPattern("(1");
+println(bad.last_error());
+println(bad.group_count());
+println(bad.find_first("(1", 0).found());
+println(bad.find_all("1").size());
+println(bad.replace("1", "2"));
+
+/* EXPECT
+true
+2
+true
+false
+5
+1-2
+2
+30-40
+30
+3
+5-6
+2-1 and 40-30
+unmatched '(' in pattern
+0
+false
+0
+1
+*/

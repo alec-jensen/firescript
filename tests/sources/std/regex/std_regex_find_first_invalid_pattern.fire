@@ -1,0 +1,17 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.find_first;
+import @firescript/std.regex.pattern.Match;
+
+// An invalid pattern never matches; use last_error to find out why
+m: Match = find_first("(ab", "ab", 0);
+println(m.found());
+println(m.group_count());
+println(find_first("a{3,1}", "aaa", 0).found());
+println(find_first("[a", "a", 0).found());
+
+/* EXPECT
+false
+0
+false
+false
+*/

@@ -1,0 +1,17 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.replace;
+
+// An empty match is replaced too, then the scan advances by one character
+println(replace("x*", "abc", "-"));
+println(replace("a*", "baac", "-"));
+println(replace("x*", "", "-"));
+println(replace("a*", "aaa", "-"));
+println(replace("x*$", "ab", "!"));
+
+/* EXPECT
+-a-b-c-
+-b--c-
+-
+--
+ab!
+*/

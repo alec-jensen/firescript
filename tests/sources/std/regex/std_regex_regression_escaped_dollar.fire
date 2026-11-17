@@ -1,0 +1,22 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.is_match;
+import @firescript/std.regex.last_error;
+import @firescript/std.regex.find_at;
+
+// A trailing \$ is a literal dollar sign, not an end anchor
+println(last_error("a\\$") == "");
+println(is_match("a\\$", "a$"));
+println(is_match("a\\$", "a"));
+println(find_at("a\\$", "a$ and more", 0));
+// \\$ is an escaped backslash followed by a real end anchor
+println(is_match("a\\\\$", "a\\"));
+println(find_at("a\\\\$", "a\\x", 0));
+
+/* EXPECT
+true
+true
+false
+2
+true
+-1
+*/

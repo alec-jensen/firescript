@@ -1,0 +1,27 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.find_first;
+import @firescript/std.regex.pattern.Match;
+
+m: Match = find_first("((a)(b(c)))d", "xabcd", 0);
+println(m.group_count());
+println(m.group(0));
+println(m.group(1));
+println(m.group(2));
+println(m.group(3));
+println(m.group(4));
+// Out-of-range groups are empty
+println(m.group(5));
+println(m.group(-1));
+println(m.group_start(5));
+
+/* EXPECT
+4
+abcd
+abc
+a
+bc
+c
+
+
+-1
+*/

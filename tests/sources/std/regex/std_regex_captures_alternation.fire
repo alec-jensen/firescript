@@ -1,0 +1,36 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.find_first;
+import @firescript/std.regex.pattern.Match;
+
+m: Match = find_first("(cat|dog)s?", "hotdogs", 0);
+println(m.group(0));
+println(m.group(1));
+println(m.start());
+
+// Alternation inside a group, with the unused branch's group not participating
+n: Match = find_first("(a)|(b)", "b", 0);
+println(n.group_count());
+println(n.group(0));
+println(n.group(1) == "");
+println(n.group(2));
+println(n.group_start(1));
+println(n.group_start(2));
+
+// A branch that fails after setting a capture must not leak that capture
+p: Match = find_first("(?:(a)x|(a)y)", "ay", 0);
+println(p.group(1) == "");
+println(p.group(2));
+
+/* EXPECT
+dogs
+dog
+3
+2
+b
+true
+b
+-1
+0
+true
+a
+*/

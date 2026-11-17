@@ -1,0 +1,20 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.find_first;
+import @firescript/std.regex.pattern.Match;
+
+m: Match = find_first("(?:ab)+(c)", "ababc", 0);
+println(m.group_count());
+println(m.group(0));
+println(m.group(1));
+
+n: Match = find_first("(?:a|b)(?:c|d)", "xbd", 0);
+println(n.group_count());
+println(n.group(0));
+
+/* EXPECT
+1
+ababc
+c
+0
+bd
+*/

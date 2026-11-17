@@ -1,0 +1,38 @@
+import @firescript/std.io.println;
+import @firescript/std.regex.find_first;
+import @firescript/std.regex.pattern.Match;
+
+// Greedy quantifiers take as much as they can, then give back to let the rest match
+m: Match = find_first("(.*)(\\d+)", "abc123", 0);
+println(m.group(1));
+println(m.group(2));
+
+n: Match = find_first("(a+)(a+)", "aaaa", 0);
+println(n.group(1));
+println(n.group(2));
+
+p: Match = find_first("(a*)(ab)*b", "aab", 0);
+println(p.group(0));
+println(p.group(1));
+println(p.group(2));
+
+q: Match = find_first("<(.+)>", "<a><b>", 0);
+println(q.group(1));
+
+// Earlier alternative wins when both lead to a match
+r: Match = find_first("(a|ab)(c|bcd)", "abcd", 0);
+println(r.group(1));
+println(r.group(2));
+
+/* EXPECT
+abc12
+3
+aaa
+a
+aab
+aa
+
+a><b
+a
+bcd
+*/
