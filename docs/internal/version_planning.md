@@ -10,48 +10,13 @@ this end state.
 
 The bootstrap path has three phases:
 1. **Stdlib foundation** — give firescript the data structures and string utilities a compiler
-   needs (Vec, HashMap, StringBuilder, enums, pattern matching)
-2. **Language maturity** — traits, ownership ergonomics, diagnostics infrastructure — so the
-   firescript compiler code is clean and idiomatic
+   needs (ArrayList, HashMap, StringBuilder, enums, pattern matching)
+2. **Language maturity** — a value-semantics memory model, const and visibility, an interface-
+   based object model, diagnostics infrastructure — so the firescript compiler code is clean and
+   idiomatic. This precedes self-hosting so the compiler is not written twice. Linux support
+   (Python backend) is pulled forward ahead of it.
 3. **Self-hosted implementation** — write the compiler front-end, then the backend, in
    firescript, culminating in a full bootstrap
-
----
-
-## 0.5.0 — Kirin
-
-*FIR + FLIR pipeline, self-hosted native toolchain, runtime in firescript, generators, char,
-`&mut this`, module exports, generic classes, stdlib expansion, true float128.*
-
-### Already complete
-
-- **FIR + FLIR pipeline** — AST → FIR → FLIR → x86-64 assembly is the only pipeline
-- **Self-hosted native toolchain** — pure-Python x86-64 assembler and PE32+ writer;
-  no external tools, no MinGW binutils, zero subprocess calls
-- **firescript runtime** — `std/internal/*.fire` implements strings, arrays, numeric
-  formatting and parsing, process arguments, file syscalls in firescript
-- Generators (`generator<T>`, `yield`), `for-in` over generators, `std.ranges`
-- `char` type and character literal syntax (`'A'`, `'\n'`)
-- `&mut this` receiver syntax
-- Module exports (private by default)
-- Generic classes (`class Pair<T, U>`)
-- String methods (`length`, string iteration)
-- String-to-numeric casting
-- `std.types` (`Tuple`, `Option`, `CopyableTuple`, `CopyableOption`)
-- `std.fs` (file I/O), `std.regex`, `std.cli.args` (expanded), `std.fcl`
-- Logical operators (`&&`, `||`, `!`), exponentiation (`**`), compound assignment,
-  increment/decrement
-- Sized array declarations with optional initializers, negative indexing, utility methods
-- LSP server, VS Code extension
-- Unified structured diagnostics
-- **True `float128` (IEEE binary128)** — 16-byte soft-float over `uint64` pairs;
-  correctly-rounded literal parsing, full arithmetic/comparison/conversion set
-
-### Remaining for Kirin
-
-Nothing — all planned Kirin items are complete.
-
----
 
 ## 0.6.0 — Griffin (Current)
 
@@ -93,7 +58,7 @@ self-hosting work is not blocked by missing data structures.
     with tombstones, capacity-doubling growth at a 70% load factor. `K` restricted to a
     fixed hashable set (integer types, `bool`, `char`, `string`) via a new `fs_rt_hash<K>`
     compiler intrinsic (dispatched by concrete `K` at FLIR-lowering time, same pattern as
-    `fs_rt_array_new<T>`) — no `Hashable` trait to dispatch through generically until 0.7.0.
+    `fs_rt_array_new<T>`) — no `Hashable` trait to dispatch through generically until the interfaces release (0.9.0).
     `get`/`remove` return `V` directly rather than `Option<V>` — not because of a compiler
     gap any more (see below), just to keep this milestone's changes scoped; switching to
     `Option<V>` is a viable, purely additive follow-up. Surfaced (and
@@ -268,30 +233,171 @@ are thoroughly tested. Enum and match work across the full pipeline (no FIR/FLIR
 
 ---
 
-## 0.7.0 — Wyvern
+## 0.7.0 — Chimera
 
-**Theme: Language maturity + FCL configuration system.**
+**Theme: Linux x86_64 target (Python backend).**
 
-With basic collections and regex in place, this release adds the abstraction features that
-make a firescript compiler readable and maintainable, and delivers FCL — the config language
-that kiln will use for package manifests.
+Linux support moves up the timeline. It is independent of the language-model work below, it
+gives the project native Linux CI early, and the audit found the target-independent portion of
+the compiler is large (lexer, parser, semantic analysis, FIR/FLIR, the assembler core, most of
+`flir_to_asm`). Only the self-hosted tooling (`elf_writer.fire`) stays later, in 0.12.0.
+
+### Python backend support
+
+- Add an ELF64 writer under `backend/linux/elf.py` (mirrors `backend/windows/pe.py`): a static
+  executable with no imports and a `_start` entry point
+- Add a Linux runtime-extern table under `firescript/platforms/linux.py` (mirrors
+  `firescript/platforms/windows.py`), wired into `flir/lowering.py` for the Linux target
+- Add a System V AMD64 calling convention to `codegen/x86_64/flir_to_asm.py` alongside the
+  existing `Win64Convention`, selected per-target (rdi/rsi/rdx/rcx/r8/r9, no shadow space,
+  16-byte stack alignment); update the register assumptions in the `fs_rt_mem_copy` thunk and
+  the stack-argument offsets
+- Replace the Windows entry sequence with a `_start` that reads argc/argv from the stack, calls
+  the entry function, and exits via `exit_group`
+- Add a `syscall` instruction to the assembler and an FLIR intrinsic that lowers to
+  `mov rax, n; syscall`
+- Runtime: a Linux layer under `std/internal` — heap via `mmap`/`brk`, I/O and file operations
+  via raw syscalls (read, write, open, close, unlink, rename, lseek/fstat, exit_group), and
+  process arguments from the initial stack. `main.py` currently compiles every
+  `std/internal/*.fire` file into every program, with the `win_*` externs inside them, so the
+  runtime sources must become per-target
+- `main.py` selects the writer and output suffix per target (no `.exe` on Linux)
+- Add `Target(Platform.LINUX, Arch.X86_64)` to `SUPPORTED_TARGETS` in `firescript/targets.py`
+  (already selectable on the CLI via `--platform linux --arch x86_64`, since the choices mirror
+  the full README support matrix — this just wires up the backend)
+- firescript-on-Linux CI (GitHub Actions) runs the golden suite under a native Linux build
+- Update `tests/run.py`'s `run` kind / matrix engine to support cross-target testing
+
+### Test coverage
+
+- ELF validity checks (readelf or a pure-Python ELF inspector) on Linux target builds
+- Linux target golden suite runs on CI (native Linux)
+- Cross-target tests: the same source produces equivalent output on both targets
+
+### Gate
+
+`--platform linux --arch x86_64` produces a working native ELF binary for all test sources, and
+both targets pass their golden suites on CI.
+
+---
+
+## 0.8.0 — Basilisk
+
+**Theme: Memory and safety model.**
+
+Replaces the Owned/Copyable model with value semantics: every type is a value, copying is the
+default, moving and borrowing are explicit. Also delivers const enforcement and member
+visibility. Full design: [language_model_redesign.md](language_model_redesign.md) §1–§4.
+
+This release deliberately precedes self-hosting. The Python compiler is the only implementation
+right now; reworking the model before the self-hosted front-end and backend are written avoids
+writing them twice.
 
 ### Language features
 
 | Feature | Rationale |
 |---|---|
-| Trait / interface system | Abstraction over AST node types, type representations, and backends. Essential for a modular compiler architecture. |
-| Ownership-aware generic constraints (`Owned`, `Copyable`) | Generic compiler code (e.g., a `Vec<T>` used with both owned and copyable types) needs constraint clarity. |
-| `move()` and `borrow()` call-site syntax | Explicit ownership operations make compiler code self-documenting and catch ownership bugs at compile time. |
-| Improved error messages / diagnostic infrastructure | The firescript compiler should produce rich, helpful diagnostics. Implementing this in firescript requires the same. |
+| Memberwise copy by default; explicit move; first-party deep-copy hook | Predictable value semantics like C++; the Owned/Copyable categories disappear from user code. |
+| Inline class layout (classes are values, not implicit heap pointers) | Required by value semantics and by the performance goal. |
+| `&T` / `&mut T` as real reference types with exclusive `&mut` | Memory safety without runtime checks. Elided-lifetime returns allowed; no reference fields yet. |
+| `const` enforcement: binding const, transitive const through `&T`, const fields | `const` is currently parsed but not enforced. |
+| `private` / `protected` / `public` on class members | Encapsulation; no member visibility exists today. |
+| Removal of `copyable class`, `CopyableOption`/`CopyableResult`/`CopyablePair`, and the planned `Owned`/`Copyable` generic constraints | One kind of value; no duplicated stdlib types. |
+
+### Compiler improvements
+
+- Consolidate move/drop logic (currently duplicated in `semantic_analyzer.py`, `preprocessor.py`
+  and the FIR ownership verifier) into one source of truth before changing the rules
+- Change class lowering from heap-pointer to inline layout in FIR/FLIR
+- Derive *trivially copyable* / *needs destructor* / *copyable* internally; derive the
+  destructor for `ArrayList`-style types from field types instead of `@owns_elements`
+- Implement `&T` as a type, exclusivity checking over lexical scope, and the elided-return rules
+- Enforce const and read-only access through `&T`
+- Enforce that compiler directives are usable only from the standard library
+- Rewrite `docs/reference/memory_management.md`, `docs/glossary.md` and the other docs that use
+  the Owned/Copyable terms (see the migration notes in the design document); resolve the
+  doc/implementation drift listed there
+
+### Test coverage
+
+- Intentional, documented update of the memory tests that encode the old model
+- Golden and error tests for copy, move, use-after-move, move-only types, `&`/`&mut` exclusivity,
+  reference-return rules, const, and visibility
+- Regression tests for the unified `Option` / `Result` / `Pair`
+
+### Gate
+
+No `Owned`/`Copyable` terminology remains in the language or docs. Copy, move, borrow, const
+and visibility rules are enforced by the compiler and covered by tests. All existing programs
+that are still valid under the new model pass; any change to a test's expectations is
+documented in the changelog.
+
+---
+
+## 0.9.0 — Manticore
+
+**Theme: Object model and standard library architecture.**
+
+Java-style OOP that compiles to flat, statically dispatched code, and a standard library built
+on it. Full design: [language_model_redesign.md](language_model_redesign.md) §5–§8.
+
+### Language features
+
+| Feature | Rationale |
+|---|---|
+| Interfaces, with static dispatch by default and `&Interface` for dynamic dispatch | Abstraction over AST node types, type representations and backends; `Comparable`, `Iterable`, `Hashable`. |
+| Abstract classes | Java-style class hierarchies. |
+| `Object` root class, with vtable pointers only where dynamic dispatch needs them and whole-program devirtualization | A single related hierarchy without a universal per-object cost. |
+| Primitive bindings (`@bind`, std-only), with implicit import, and `Integer` as an interface for generic `<T: Integer>` | `a.abs()` on an `int32`; accept any precision with type safety. |
+| Function interfaces (`interface fn`) and non-capturing lambdas | Contracts on callable parameters. |
+| Conversion methods on bindings replace the `as` keyword; `contains` replaces `in`-membership; `isInstance<T>()` / `isExactly<T>()` / `downcast<T>()` on `Object` | Fewer keywords, explicit conversion semantics, fallible parsing via `Result`. See design doc §8. |
+| `Box<T>` and `Shared<T>` | Recursive types, owned polymorphism and dynamic lifetime. Lowest priority in this release; may slip. |
+| Capturing and escaping closures | Depend on exclusivity and `Box`. Lowest priority; may slip. |
+| Improved error messages / diagnostic infrastructure | The firescript compiler should produce rich, helpful diagnostics; implementing this in firescript requires the same. |
+
+### Compiler improvements
+
+- Interface and abstract-class parsing, semantic checking, and FIR/FLIR lowering (monomorphized
+  static dispatch, vtables only where needed, devirtualization of non-overridden methods)
+- Replace the parse-time copy-down inheritance with real subtyping
+- Binding table (type to class) with deterministic implicit module loading; generalize
+  `@builtin_method` beyond the string and array families
+- Function-type syntax, signature matching, and lambda lowering (non-capturing first)
+- Initial standard library abstractions modeled on Java: `Object`, `Comparable<T>`,
+  `Iterable<T>`, `Hashable`, `Equatable`, `Printable`; migrate `HashMap<K,V>` off its fixed
+  hashable-type set onto `Hashable`
+
+### Test coverage
+
+- Golden tests for interfaces, abstract classes, `Object`, bounds on generic functions, and
+  dispatch (static and dynamic)
+- Tests that unoverridden methods are devirtualized and that vtables are emitted only where
+  needed
+- Binding tests (implicit import, every integer width, generic `Integer` bound)
+- Function-interface and lambda golden and error tests
+
+### Gate
+
+Interfaces, abstract classes, `Object`, primitive bindings, and function interfaces work across
+the full pipeline, and the standard library collections use the new abstractions. The language
+is mature enough to begin writing a compiler front-end.
+
+---
+
+## 0.10.0 — Wyvern
+
+**Theme: FCL configuration system.**
+
+With collections, regex and the object model in place, this release delivers FCL — the config
+language that kiln will use for package manifests.
 
 ### FCL
 
 FCL (firescript config language) is a typed configuration DSL that kiln will use for
 package manifests and project configuration. It is a mini-compiler: lexer, parser,
 typechecker, and (eventually) interpreter. Implementing FCL in firescript serves as
-a crucible for the self-hosting work in 0.8.0 — the same patterns (enums for tokens/AST,
-recursive-descent parsing, trait-based visitors) are exercised here at smaller scale
+a crucible for the self-hosting work in 0.11.0 — the same patterns (enums for tokens/AST,
+recursive-descent parsing, interface-based visitors) are exercised here at smaller scale
 before tackling the full firescript compiler.
 
 - Lexer (tokenizer) — builds on the existing `std/fcl/lexer.fire` stub
@@ -303,36 +409,23 @@ before tackling the full firescript compiler.
 
 ### Compiler improvements
 
-- Add trait parsing, semantic checking, and FIR/FLIR lowering (monomorphization-based;
-  no vtables unless needed)
-- Add `move(expr)` / `borrow(expr)` as expression forms with semantic enforcement
-- Generalize generic constraint system to accept `Owned` and `Copyable` as built-in
-  constraint kinds
-- Deprecation warning path for implicit moves (prepare for future mandatory explicit
-  move/borrow)
 - Implement FCL pipeline in the firescript compiler (recognize `.fcl` imports, invoke
   FCL interpreter, merge results into the FIR module)
-- Optional: initial trait-based standard library abstractions (`Iterable<T>`, `Cloneable`)
 
 ### Test coverage
 
-- Comprehensive golden tests for traits (impl, bounds, generic functions with trait bounds)
-- Tests for `move()` / `borrow()` at call sites
-- Ownership-aware generic constraint tests
 - Comprehensive FCL golden tests (valid config files produce expected output)
 - FCL error tests (invalid config syntax, type mismatches, missing values)
 - End-to-end tests for `.fcl` imports in firescript source
 
 ### Gate
 
-Traits, ownership-aware generics, and explicit move/borrow all work across the pipeline.
 FCL is usable: valid `.fcl` files produce correct config values; invalid ones report clear
-diagnostics. The compiler can import and consume FCL configuration. The language is mature
-enough to begin writing a compiler front-end.
+diagnostics. The compiler can import and consume FCL configuration.
 
 ---
 
-## 0.8.0 — Dragon
+## 0.11.0 — Dragon
 
 **Theme: Self-hosted compiler front-end.**
 
@@ -393,13 +486,14 @@ firescript front-end is feature-complete.
 
 ---
 
-## 0.9.0 — Behemoth
+## 0.12.0 — Behemoth
 
-**Theme: Self-hosted backend and bootstrap (Windows).**
+**Theme: Self-hosted backend and bootstrap (Windows and Linux).**
 
 Write the code generator (FLIR lowering, assembly emission) and the self-hosted toolchain
-(assembler, PE writer) in firescript. The firescript compiler compiles itself end-to-end
-on Windows x86_64.
+(assembler, PE writer, ELF writer) in firescript. The firescript compiler compiles itself
+end-to-end on Windows x86_64 and Linux x86_64 (the Linux target exists in the Python backend
+since 0.7.0).
 
 ### firescript/std/compiler/codegen.fire
 - FIR → FLIR lowering (monomorphization, class lowering, generator lowering)
@@ -415,6 +509,12 @@ on Windows x86_64.
 - Pure-firescript PE32+ writer
 - DOS header, COFF header, optional header, section layout, import directory, IAT
 - Must produce byte-identical output to Python `backend/windows/pe.py`
+
+### firescript/std/compiler/elf_writer.fire
+- Pure-firescript ELF64 writer for Linux x86_64
+- ELF header, program headers, section headers, symbol table, relocation handling
+- Must produce byte-identical output to Python `backend/linux/elf.py`
+- Linux x86-64 syscall ABI and System V AMD64 calling convention in the firescript codegen
 
 ### Bootstrap
 - `python firescript/main.py --compiler firescript` toggle uses the firescript
@@ -442,54 +542,29 @@ on Windows x86_64.
 ### Gate
 
 `python firescript/main.py --compiler firescript <file>.fire` produces a working binary
-for any test source (Windows x86_64). The firescript compiler can compile itself end-to-end.
+for any test source (Windows x86_64 and Linux x86_64). The firescript compiler can compile itself end-to-end.
 The resulting binary, when run on the firescript compiler sources, produces a byte-identical
 (or semantically equivalent) copy of itself.
 
 ---
 
-## 0.10.0 — Chimera
+## 0.13.0 — Hydra
 
-**Theme: Linux x86_64 target + kiln foundations.**
+**Theme: kiln foundations.**
 
-Two parallel tracks: (A) port the compiler to Linux x86_64 with ELF output, and (B) build
-kiln basics on top of FCL. Chimera is the hybrid beast — fitting for a hybrid-platform,
-hybrid-tool release.
+Build kiln basics on top of FCL.
 
-### Track A: Linux x86_64 target
-
-#### firescript/std/compiler/elf_writer.fire
-- Pure-firescript ELF64 writer for Linux x86_64
-- ELF header, program headers, section headers, symbol table, relocation handling
-- Linux x86-64 syscall ABI (instead of kernel32.dll imports)
-- System V AMD64 calling convention differences from Win64
-
-#### Python backend support
-- Add an ELF64 writer under `backend/linux/elf.py` (mirrors `backend/windows/pe.py`)
-- Add a Linux runtime-extern table under `firescript/platforms/linux.py` (mirrors
-  `firescript/platforms/windows.py`), wired into `flir/lowering.py` for the Linux target
-- Add a System V AMD64 calling convention to `codegen/x86_64/flir_to_asm.py` alongside
-  the existing `Win64Convention`, selected per-target
-- Runtime: Linux syscall wrappers for heap (brk/mmap), I/O (read/write), process exit
-- Add `Target(Platform.LINUX, Arch.X86_64)` to `SUPPORTED_TARGETS` in `firescript/targets.py`
-  (already selectable on the CLI via `--platform linux --arch x86_64`, since the choices
-  mirror the full README support matrix — this just wires up the backend)
-- firescript-on-Linux CI (GitHub Actions) runs the golden suite under native Linux build
-- Update `tests/run.py`'s `run` kind / matrix engine to support cross-target testing
-
-### Track B: kiln foundations
-
-#### Package manifest format
+### Package manifest format
 - Define FCL-based package manifest format (`firescript.toml` or equivalent `.fcl` schema)
 - Define lockfile format for deterministic dependency resolution
 
-#### Commands
+### Commands
 - `kiln init` — scaffold a new project with a valid manifest
 - `kiln build` — invoke the compiler on a project
 - `kiln run` — build and execute a project
 - Local-only dependency resolution (path/workspace deps; no network yet)
 
-#### Integration
+### Integration
 - kiln is implemented in firescript (uses `std.cli.args`, `std.fs`, FCL)
 - Python driver initially shells out to the firescript binary, later self-hosted
 - kiln source lives at `firescript/tools/kiln/`
@@ -501,22 +576,18 @@ hybrid-tool release.
 
 ### Test coverage
 
-- ELF validity checks (readelf or pure-Python ELF inspector) on Linux target builds
-- Linux target golden suite runs on CI (native Linux)
-- Cross-target tests: same source produces equivalent output on both targets
 - Kiln end-to-end CLI tests for `init`, `build`, `run` on a smoke project
 - Kiln negative tests: invalid manifest, missing source, build failures
 - Lockfile determinism tests
 
 ### Gate
 
-`--platform linux --arch x86_64` produces a working native ELF binary for all test sources.
-Kiln can `init`, `build`, and `run` a simple project with local-only dependencies. Both
-targets pass their golden suites on CI.
+Kiln can `init`, `build`, and `run` a simple project with local-only dependencies on both
+targets.
 
 ---
 
-## 0.11.0 — Leviathan
+## 0.14.0 — Leviathan
 
 **Theme: std.net + kiln networking.**
 
@@ -571,7 +642,9 @@ making firescript production-ready and retiring the Python compiler.
 
 ### Language and stdlib stabilization
 
-- Finalize all language features for 1.0 (no breaking changes after this)
+- Finalize all language features for 1.0 (no breaking changes after this); this assumes the
+  memory model (0.8.0) and object model (0.9.0) have shipped — see
+  [language_model_redesign.md](language_model_redesign.md)
 - Complete standard library documentation across all modules
 - Performance profiling and optimization of the self-hosted compiler
 - `@firescript/std.cli.args` final API surface

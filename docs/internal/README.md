@@ -10,6 +10,12 @@ This is documentation for internal language features intended for use in the com
 
 [float128](development/float128.md) - The self-hosted IEEE 754 binary128 `float128` type and its soft-float runtime. **[IMPLEMENTED]**
 
+## Design
+
+[Language model redesign](language_model_redesign.md) - Design for the 1.0 memory model (value semantics, move, `&T`/`&mut T`), const, visibility, the object model (interfaces, abstract classes, `Object`), primitive bindings, and function interfaces. **[PLANNED]**
+
+[Version planning](version_planning.md) - Release roadmap toward 1.0.0.
+
 ## Directives
 
 [Directives](directives.md) - Internal directives for controlling compiler behavior, used in the standard library and for testing. Not intended for user code.
