@@ -252,7 +252,16 @@ class ParserBase:
         self.advance()  # consume '<'
         type_args: list[str] = []
         while True:
-            if not (self.current_token and self._is_type_token(self.current_token)):
+            # In deferred-import mode a bare IDENTIFIER not yet registered as a type is
+            # accepted as a type argument too (forward reference to an imported class,
+            # e.g. `ArrayList<Match>` with `Match` imported), as in _parse_type_expression.
+            deferred_arg_ok = (
+                self.defer_undefined_identifiers
+                and self.current_token is not None
+                and self.current_token.type == "IDENTIFIER"
+                and bool(self.current_token.value.strip())
+            )
+            if not (self.current_token and (self._is_type_token(self.current_token) or deferred_arg_ok)):
                 self.expected_token_error("type argument in generic instantiation", self.current_token)
                 return None
             arg_tok = self.current_token

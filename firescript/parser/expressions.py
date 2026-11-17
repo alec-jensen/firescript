@@ -530,7 +530,16 @@ class ExpressionsMixin(ParserBase):
                         self.advance()  # consume <
                         type_args = []
                         while True:
-                            if not (self.current_token and self._is_type_token(self.current_token)):
+                            # An unregistered IDENTIFIER is a forward reference to an
+                            # imported class (e.g. `ArrayList<Match>()`), as in
+                            # _parse_generic_instantiation's deferred-import handling.
+                            if not (
+                                self.current_token
+                                and (
+                                    self._is_type_token(self.current_token)
+                                    or self.current_token.type == "IDENTIFIER"
+                                )
+                            ):
                                 break
                             targ_tok = self.current_token
                             self.advance()

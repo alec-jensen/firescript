@@ -1,0 +1,19 @@
+import @firescript/std.io.println;
+import @firescript/std.collections.ArrayList;
+import @firescript/std.regex.pattern.Match;
+import @firescript/std.regex.pattern.RegexPattern;
+
+// Regression: an imported (not yet merged) class used as a generic type
+// argument, both in a type annotation and a constructor call, failed to parse
+// with "Expected type argument in generic instantiation".
+matches: ArrayList<Match> = ArrayList<Match>();
+patterns: ArrayList<RegexPattern> = ArrayList<RegexPattern>();
+patterns.add(RegexPattern("a+"));
+matches.add(RegexPattern("a+").find_first("baa", 0));
+println(matches.size());
+println(patterns.size());
+
+/* EXPECT
+1
+1
+*/
