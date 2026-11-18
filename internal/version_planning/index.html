@@ -2398,6 +2398,9 @@ the compiler is large (lexer, parser, semantic analysis, FIR/FLIR, the assembler
 <li>ELF validity checks (readelf or a pure-Python ELF inspector) on Linux target builds</li>
 <li>Linux target golden suite runs on CI (native Linux)</li>
 <li>Cross-target tests: the same source produces equivalent output on both targets</li>
+<li>Fuzzing and edge-case infrastructure, phase 1 (see <a href="../testing_plan/">testing_plan.md</a>): the
+  <code>fuzz</code> test kind with minimization, the error-code coverage check, <code>PYTHONHASHSEED</code>
+  determinism variation, numeric-boundary matrices, and the regex / collection oracles</li>
 </ul>
 <h3 id="gate_1">Gate<a class="headerlink" href="#gate_1" title="Permanent link">&para;</a></h3>
 <p><code>--platform linux --arch x86_64</code> produces a working native ELF binary for all test sources, and
@@ -2466,6 +2469,8 @@ writing them twice.</p>
 <li>Golden and error tests for copy, move, use-after-move, move-only types, <code>&amp;</code>/<code>&amp;mut</code> exclusivity,
   reference-return rules, const, and visibility</li>
 <li>Regression tests for the unified <code>Option</code> / <code>Result</code> / <code>Pair</code></li>
+<li>Ownership and borrowing fuzzer plus the runtime allocation counter (see
+  <a href="../testing_plan/">testing_plan.md</a>)</li>
 </ul>
 <h3 id="gate_2">Gate<a class="headerlink" href="#gate_2" title="Permanent link">&para;</a></h3>
 <p>No <code>Owned</code>/<code>Copyable</code> terminology remains in the language or docs. Copy, move, borrow, const
@@ -2544,6 +2549,8 @@ on it. Full design: <a href="../language_model_redesign/">language_model_redesig
   needed</li>
 <li>Binding tests (implicit import, every integer width, generic <code>Integer</code> bound)</li>
 <li>Function-interface and lambda golden and error tests</li>
+<li>Generated tests for dispatch, interface bounds, and bindings (see
+  <a href="../testing_plan/">testing_plan.md</a>)</li>
 </ul>
 <h3 id="gate_3">Gate<a class="headerlink" href="#gate_3" title="Permanent link">&para;</a></h3>
 <p>Interfaces, abstract classes, <code>Object</code>, primitive bindings, and function interfaces work across
@@ -2635,6 +2642,8 @@ firescript front-end is developed alongside it and tested against the same test 
 <h3 id="test-coverage_5">Test coverage<a class="headerlink" href="#test-coverage_5" title="Permanent link">&para;</a></h3>
 <ul>
 <li>firescript lexer produces identical token streams to Python lexer across all test files</li>
+<li>Fuzz both front-ends with the same inputs and require identical diagnostics (see
+  <a href="../testing_plan/">testing_plan.md</a>)</li>
 <li>firescript parser produces identical ASTs across all test files</li>
 <li>firescript semantic analysis passes all golden and error tests (output-identical)</li>
 <li>firescript FIR builder produces FIR dumps matching Python FIR dumps (deterministic)</li>
@@ -2698,6 +2707,8 @@ since 0.7.0).</p>
 <li>firescript assembler + PE writer pass <code>tests/python/backend/test_asm_encoding.py</code></li>
 <li>Bootstrap binary passes full test suite on its own</li>
 <li>Determinism test: bootstrap binary is byte-identical on repeated compilations</li>
+<li>Fuzz the Python and firescript backends against each other: identical FIR, assembly, and bytes
+  (see <a href="../testing_plan/">testing_plan.md</a>)</li>
 </ul>
 <h3 id="gate_6">Gate<a class="headerlink" href="#gate_6" title="Permanent link">&para;</a></h3>
 <p><code>python firescript/main.py --compiler firescript &lt;file&gt;.fire</code> produces a working binary
@@ -2822,6 +2833,7 @@ making firescript production-ready and retiring the Python compiler.</p>
 <li>No feature in <code>docs/</code> carries <code>[IN DEVELOPMENT]</code>; <code>[PLANNED]</code> items are explicitly
    marked for post-1.0</li>
 <li>The Python compiler is removed; <code>python firescript/main.py</code> is a thin shim or gone</li>
+<li>A nightly fuzz run (see <a href="../testing_plan/">testing_plan.md</a>) completes with no open crashers</li>
 </ol>
 <h2 id="post-10">Post-1.0<a class="headerlink" href="#post-10" title="Permanent link">&para;</a></h2>
 <p>Features deferred beyond 1.0, prioritized for subsequent releases:</p>

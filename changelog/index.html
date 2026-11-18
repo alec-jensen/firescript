@@ -2090,6 +2090,7 @@
 <li>An imported class used as a generic type argument (<code>ArrayList&lt;Match&gt;</code> with <code>Match</code> imported, in a type annotation or a constructor call) no longer fails to parse with "Expected type argument in generic instantiation".</li>
 <li>A call chained off an instance method call's result (<code>obj.method().other()</code>) no longer fails to parse with "Expected ')' after argument list".</li>
 <li>A string or array builtin method called on the result of a method call on an imported class (<code>sb.build().length() as string</code>) no longer fails FIR-&gt;FLIR lowering with "cannot convert void to string".</li>
+<li><code>firescript --check -o &lt;file&gt;</code> no longer exits 1 with "rename: src should be string, bytes or os.PathLike, not bool"; it now exits 0 and writes no output.</li>
 </ul>
 <h2 id="050-kirin">0.5.0 - Kirin<a class="headerlink" href="#050-kirin" title="Permanent link">&para;</a></h2>
 <p><em>July 2, 2026</em></p>
