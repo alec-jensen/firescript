@@ -113,48 +113,23 @@ micro-framework (`from harness import pyunit as t`; see
 Plain `assert` also works. Covers:
 
 - `tests/python/parser/` -- direct (in-process) unit tests for
-  `firescript/parser/`'s defensive "impossible" branches and dead guards
-  that can't be reached by compiling a full real source file: `test_parser_base.py`
-  (error-reporting wrappers, literal-suffix inference, comment-anchored
-  diagnostic positions, EOF edge cases), `test_declarations_dead_guards.py`
-  and `test_declarations_coverage.py` (`_parse_import_symbol_group`,
-  `_parse_class_definition`, `_parse_constraint_declaration`,
-  `_parse_function_definition`/`_parse_generator_definition` guards
-  duplicating checks the top-level `parse()` dispatcher already performed),
-  `test_expressions_dead_guards.py` (`parse_array_access`,
-  `parse_increment_or_decrement` defensive None branches),
-  `test_type_system.py` and `test_type_system_dead_guards.py`
-  (`_annotate_value_category`, `_get_node_type` fallbacks unreachable
-  because the parser always pre-annotates `return_type`,
-  `_infer_generic_type_args` edge cases, array-cast rejection), and
-  `test_ast_node.py` (`ASTNode`'s None-children rejection and
-  `__repr__`==`__str__`). `_dead_guard_helpers.py` is a shared (non-test)
-  helper module, not a test file itself. `test_declarations_dead_guards_more.py`
-  (with its own shared helper module `_dead_guard_helpers2.py`, a
-  differently-shaped API from `_dead_guard_helpers.py`) adds further
-  declarations.py dead-guard coverage: `_parse_function_definition`'s
-  invalid-return-type/missing-name/unclosed-array-bracket/missing-open-paren/
-  missing-body-brace/type-param-consume-failure branches,
-  `_parse_generator_definition`'s missing-GENERATOR-token and
-  missing-body-brace branches, `_parse_import`'s `@`-segment
-  consume-failure branch, `_parse_import_symbol_group`'s consume-failure
-  branch, `_parse_class_definition`'s missing-CLASS-token and
-  type-param-consume-failure branches, `parse()`'s top-level
-  blank-placeholder-token skip and pending-export-before-constraint-dispatch
-  branches. `test_statements_dead_guards.py`/`test_statements_coverage.py`
-  and `test_type_system_dead_guards_more.py`/`test_type_system_coverage.py`
-  (with their own shared helper `_helpers.py`) push
-  `firescript/parser/statements.py` to 100% and `firescript/parser/type_system.py`
-  to 99%: dead-guard coverage for `parse_if_statement`/`parse_while_statement`/
-  `parse_for_statement` off-token direct calls, `parse_scope`'s brace guard,
-  `parse_variable_assignment`/`parse_function_call` precondition rechecks,
-  for-in's redundant type/identifier/`in`-keyword rechecks, `_get_node_type`'s
-  dead node-kind fallbacks, and `_infer_generic_type_args`/unary/binary/cast
-  defensive branches; plus real-syntax coverage for a nested `directive`/a
-  function returning `generator<T>` defined inside a function body (which
-  `ast_to_fir.py` cannot lower -- a newly-found, not-fixed crash, see the
-  test module docstrings) and a generic function reusing the same type
-  parameter for multiple arguments. `test_generic_self_reference.py` covers a
+  `firescript/parser/` helpers that need a Parser constructed or driven
+  directly. `test_parser_base.py` (comment-anchored diagnostic positions with
+  exact line/column, literal-suffix inference table, token-helper EOF edge
+  cases, `_looks_like_generic_constructor_call` positive and negative cases,
+  `report_error` fallbacks), `test_declarations_coverage.py`
+  (`_parse_function_definition`'s missing-name and missing-`(` rejections and
+  an `owned` array parameter, none of which any `.fire` source reaches),
+  `test_type_system.py` (`_annotate_value_category` Owned/Copyable
+  classification and its exception-swallowing fallback), `test_ast_node.py`
+  (`ASTNode`'s None-children rejection), and `test_statements_coverage.py`
+  (real-syntax cases the parser accepts but `ast_to_fir.py` cannot lower: a
+  bare `arr[0];` statement, a nested `directive`, and a nested generic type
+  argument -- newly-found, not-fixed bugs, see the test module docstring).
+  `_helpers.py` is a shared (non-test) helper module. Contrived tests that
+  forced unreachable defensive guards (monkeypatched `consume`, hand-built
+  ASTNodes, blank placeholder tokens) were removed: defensive/unreachable
+  lines do not need tests. `test_generic_self_reference.py` covers a
   generic class referencing itself inside its own body (a static factory
   returning the enclosing class, or a self-call like `this.isSome()` from
   another of its own methods) in a source string with *zero* import
@@ -385,14 +360,6 @@ Plain `assert` also works. Covers:
   from a method call on a constructor or identifier receiver, break/continue
   outside any recorded loop boundary (fallback drain), and a C-style
   for-loop with an omitted (`None`) middle clause.
-- `tests/python/lexer/test_lexer_internals.py` -- direct unit test for
-  `firescript/lexer.py`'s `Lexer.tokenize()` defensive `token_type is None`
-  fallback (a successful regex match whose `.lastgroup` is `None`). Every
-  alternative in the master token regex is a named group requiring at least
-  one character, so this branch looks structurally unreachable through any
-  real input; it is exercised only by monkeypatching the compiled regex
-  object to return a fake match, purely to cover the branch's own
-  formatting logic.
 - `tests/python/log_formatter/test_log_formatter_internals.py` -- direct
   unit tests for `firescript/log_formatter.py`'s two hard-to-reach branches:
   `Colors`' Windows-console VT-mode setup (module-level code that only runs
