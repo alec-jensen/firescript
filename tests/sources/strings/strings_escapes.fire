@@ -12,10 +12,21 @@ println(quote);
 backslash: string = "Path\\to\\file";
 println(backslash);
 
+// Raw (unescaped) newline and tab characters inside a literal are kept verbatim.
+raw_newline: string = "line1
+line2";
+println(raw_newline);
+
+raw_tab: string = "col1	col2";
+println(raw_tab);
+
 /* EXPECT
 Line1
 Line2
 Col1	Col2	Col3
 She said "Hello"
 Path\to\file
+line1
+line2
+col1	col2
 */

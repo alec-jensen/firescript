@@ -1,4 +1,4 @@
-flir module arrays_iteration_for_in
+flir module for_in
 entry @fs_main
 extern @GetProcessHeap() -> u64 from "kernel32.dll"
 extern @GetStdHandle(i32) -> u64 from "kernel32.dll"
@@ -10,57 +10,244 @@ global mut __fs_runtime_state: u64 = 0
 
 func @fs_main() -> void {
   L0:
-    %0 = const.i32 5
-    %1 = const.i32 10
-    %2 = const.i32 15
-    %3 = const.i32 20
-    %4 = const.i64 16
-    %5 = call.ptr @impl_fs_rt_alloc_zeroed(%4)
-    store.i32 %5, 0, %0
-    store.i32 %5, 4, %1
-    store.i32 %5, 8, %2
-    store.i32 %5, 12, %3
-    slot nums: ptr
-    slotstore nums, %5
-    %6 = const.i32 0
-    slot __i_n: i32
-    slotstore __i_n, %6
+    %0 = const.i32 1
+    %1 = const.i32 2
+    %2 = const.i32 3
+    %3 = const.i32 4
+    %4 = const.i32 5
+    %5 = const.i64 20
+    %6 = call.ptr @impl_fs_rt_alloc_zeroed(%5)
+    store.i32 %6, 0, %0
+    store.i32 %6, 4, %1
+    store.i32 %6, 8, %2
+    store.i32 %6, 12, %3
+    store.i32 %6, 16, %4
+    slot __arr_num: ptr
+    slotstore __arr_num, %6
+    %7 = const.i32 0
+    slot __i_num: i32
+    slotstore __i_num, %7
     jmp L1
 
   L1:
-    %7 = slotload.i32 __i_n
-    %8 = const.i32 4
-    %9 = lt.i32 %7, %8
-    br %9, L2, L3
+    %8 = slotload.i32 __i_num
+    %9 = const.i32 5
+    %10 = lt.i32 %8, %9
+    br %10, L2, L3
 
   L2:
-    %10 = slotload.ptr nums
-    %11 = slotload.i32 __i_n
-    %12 = const.i32 4
-    %13 = const.i32 0
-    %14 = lt.i32 %11, %13
-    %15 = cvt.bool_to_i32 %14
-    %16 = mul.i32 %15, %12
-    %17 = add.i32 %11, %16
-    %18 = ptradd %10, %17, 4
-    %19 = load.i32 %18, 0
-    slot n: i32
-    slotstore n, %19
-    %20 = slotload.i32 n
-    call.void @println__int32(%20)
+    %11 = slotload.ptr __arr_num
+    %12 = slotload.i32 __i_num
+    %13 = const.i32 5
+    %14 = const.i32 0
+    %15 = lt.i32 %12, %14
+    %16 = cvt.bool_to_i32 %15
+    %17 = mul.i32 %16, %13
+    %18 = add.i32 %12, %17
+    %19 = ptradd %11, %18, 4
+    %20 = load.i32 %19, 0
+    slot num: i32
+    slotstore num, %20
+    %21 = slotload.i32 num
+    call.void @println__int32(%21)
     jmp L4
 
   L3:
-    %21 = slotload.ptr nums
-    call.void @impl_fs_rt_free(%21)
-    ret
+    %22 = slotload.ptr __arr_num
+    call.void @impl_fs_rt_free(%22)
+    %23 = const.i32 10
+    %24 = const.i32 20
+    %25 = const.i32 30
+    %26 = const.i32 40
+    %27 = const.i32 50
+    %28 = const.i64 20
+    %29 = call.ptr @impl_fs_rt_alloc_zeroed(%28)
+    store.i32 %29, 0, %23
+    store.i32 %29, 4, %24
+    store.i32 %29, 8, %25
+    store.i32 %29, 12, %26
+    store.i32 %29, 16, %27
+    slot numbers: ptr
+    slotstore numbers, %29
+    %30 = const.i32 0
+    slot __i_n: i32
+    slotstore __i_n, %30
+    jmp L5
 
   L4:
-    %22 = slotload.i32 __i_n
-    %23 = const.i32 1
-    %24 = add.i32 %22, %23
-    slotstore __i_n, %24
+    %31 = slotload.i32 __i_num
+    %32 = const.i32 1
+    %33 = add.i32 %31, %32
+    slotstore __i_num, %33
     jmp L1
+
+  L5:
+    %34 = slotload.i32 __i_n
+    %35 = const.i32 5
+    %36 = lt.i32 %34, %35
+    br %36, L6, L7
+
+  L6:
+    %37 = slotload.ptr numbers
+    %38 = slotload.i32 __i_n
+    %39 = const.i32 5
+    %40 = const.i32 0
+    %41 = lt.i32 %38, %40
+    %42 = cvt.bool_to_i32 %41
+    %43 = mul.i32 %42, %39
+    %44 = add.i32 %38, %43
+    %45 = ptradd %37, %44, 4
+    %46 = load.i32 %45, 0
+    slot n: i32
+    slotstore n, %46
+    %47 = slotload.i32 n
+    call.void @println__int32(%47)
+    jmp L8
+
+  L7:
+    %48 = const.i32 1
+    %49 = const.i32 2
+    %50 = const.i32 3
+    %51 = const.i32 4
+    %52 = const.i32 5
+    %53 = const.i32 6
+    %54 = const.i32 7
+    %55 = const.i32 8
+    %56 = const.i32 9
+    %57 = const.i32 10
+    %58 = const.i64 40
+    %59 = call.ptr @impl_fs_rt_alloc_zeroed(%58)
+    store.i32 %59, 0, %48
+    store.i32 %59, 4, %49
+    store.i32 %59, 8, %50
+    store.i32 %59, 12, %51
+    store.i32 %59, 16, %52
+    store.i32 %59, 20, %53
+    store.i32 %59, 24, %54
+    store.i32 %59, 28, %55
+    store.i32 %59, 32, %56
+    store.i32 %59, 36, %57
+    slot __arr_num__2: ptr
+    slotstore __arr_num__2, %59
+    %60 = const.i32 0
+    slot __i_num__2: i32
+    slotstore __i_num__2, %60
+    jmp L9
+
+  L8:
+    %61 = slotload.i32 __i_n
+    %62 = const.i32 1
+    %63 = add.i32 %61, %62
+    slotstore __i_n, %63
+    jmp L5
+
+  L9:
+    %64 = slotload.i32 __i_num__2
+    %65 = const.i32 10
+    %66 = lt.i32 %64, %65
+    br %66, L10, L11
+
+  L10:
+    %67 = slotload.ptr __arr_num__2
+    %68 = slotload.i32 __i_num__2
+    %69 = const.i32 10
+    %70 = const.i32 0
+    %71 = lt.i32 %68, %70
+    %72 = cvt.bool_to_i32 %71
+    %73 = mul.i32 %72, %69
+    %74 = add.i32 %68, %73
+    %75 = ptradd %67, %74, 4
+    %76 = load.i32 %75, 0
+    slot num__2: i32
+    slotstore num__2, %76
+    %77 = slotload.i32 num__2
+    %78 = const.i32 6
+    %79 = eq.i32 %77, %78
+    br %79, L14, L13
+
+  L11:
+    %80 = slotload.ptr __arr_num__2
+    call.void @impl_fs_rt_free(%80)
+    %81 = const.i32 1
+    %82 = const.i32 2
+    %83 = const.i32 3
+    %84 = const.i32 4
+    %85 = const.i32 5
+    %86 = const.i64 20
+    %87 = call.ptr @impl_fs_rt_alloc_zeroed(%86)
+    store.i32 %87, 0, %81
+    store.i32 %87, 4, %82
+    store.i32 %87, 8, %83
+    store.i32 %87, 12, %84
+    store.i32 %87, 16, %85
+    slot __arr_num__3: ptr
+    slotstore __arr_num__3, %87
+    %88 = const.i32 0
+    slot __i_num__3: i32
+    slotstore __i_num__3, %88
+    jmp L15
+
+  L12:
+    %89 = slotload.i32 __i_num__2
+    %90 = const.i32 1
+    %91 = add.i32 %89, %90
+    slotstore __i_num__2, %91
+    jmp L9
+
+  L13:
+    %92 = slotload.i32 num__2
+    call.void @println__int32(%92)
+    jmp L12
+
+  L14:
+    jmp L11
+
+  L15:
+    %93 = slotload.i32 __i_num__3
+    %94 = const.i32 5
+    %95 = lt.i32 %93, %94
+    br %95, L16, L17
+
+  L16:
+    %96 = slotload.ptr __arr_num__3
+    %97 = slotload.i32 __i_num__3
+    %98 = const.i32 5
+    %99 = const.i32 0
+    %100 = lt.i32 %97, %99
+    %101 = cvt.bool_to_i32 %100
+    %102 = mul.i32 %101, %98
+    %103 = add.i32 %97, %102
+    %104 = ptradd %96, %103, 4
+    %105 = load.i32 %104, 0
+    slot num__3: i32
+    slotstore num__3, %105
+    %106 = slotload.i32 num__3
+    %107 = const.i32 3
+    %108 = eq.i32 %106, %107
+    br %108, L20, L19
+
+  L17:
+    %109 = slotload.ptr __arr_num__3
+    call.void @impl_fs_rt_free(%109)
+    %110 = slotload.ptr numbers
+    call.void @impl_fs_rt_free(%110)
+    %111 = const.i32 0
+    ret
+
+  L18:
+    %112 = slotload.i32 __i_num__3
+    %113 = const.i32 1
+    %114 = add.i32 %112, %113
+    slotstore __i_num__3, %114
+    jmp L15
+
+  L19:
+    %115 = slotload.i32 num__3
+    call.void @println__int32(%115)
+    jmp L18
+
+  L20:
+    jmp L18
 }
 
 func @impl_fs_rt_alloc_zeroed(n: i64) -> ptr<i8> {

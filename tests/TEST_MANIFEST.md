@@ -483,9 +483,8 @@ Split by conversion category:
 
 ### `strings/`
 Split from a single `string_operations_comprehensive.fire` into per-behavior files (see "Splitting large test files" below):
-- **strings_basics.fire** - Declaration, empty string, long strings
 - **strings_concatenation.fire** - Concatenation (literal, repeated, with a cast expression, via variables)
-- **strings_escapes.fire** - Escape sequences (`\n`, `\t`, `\"`, `\\`)
+- **strings_escapes.fire** - Escape sequences (`\n`, `\t`, `\"`, `\\`) and raw newline/tab characters inside a literal
 - **strings_comparison.fire** - `==` / `!=`
 - **strings_unicode.fire** - Emoji and accented characters
 - **strings_upper_lower.fire** - `.upper()` / `.lower()` ASCII case folding (mixed case, already-uppercase, empty string); implemented via `@builtin_method` in `firescript/std/internal/strings.fire`
@@ -504,18 +503,13 @@ Split from a single `string_operations_comprehensive.fire` into per-behavior fil
 Split from a single `array_operations_comprehensive.fire` into per-behavior files, plus pre-existing focused tests:
 - **arrays_basics.fire** - Declaration, indexing, `.length()`, empty array, large array, bounds access
 - **arrays_typed.fire** - int8/int64/float32/float64/string/bool element arrays
-- **arrays_mutation.fire** - Element reassignment
-- **arrays_iteration_for_in.fire** - for-in iteration
-- **arrays_iteration_c_style.fire** - C-style for iteration
-- **arrays_iteration_while.fire** - while-loop iteration
 - **arrays_function_param.fire** - Array passed to a function and summed
 - **arrays_length_param.fire** - `.length()` / `.size()` called on a borrowed array function parameter (size not statically known at the call site, unlike a local from an array literal)
-- **arrays_move_assign_from_var.fire** - Declaring an array-typed local whose initializer is another array variable (a move), not an array literal
 - **array_tests.fire** - Basic array operations
 - **array_to_string.fire** - `array as string` conversion for int32, float64, string, and empty arrays (`[a, b, c]` formatting)
 - **array_index_count.fire** - `.index()` / `.count()` array methods
 - **array_negative_indexing.fire** - Negative index access
-- **array_length_propagation.fire** - Length propagation when an unsized-array local is initialized from another array: from a runtime-length-tracked function parameter (slot metadata) and from a statically-sized array literal (const metadata).
+- **array_length_propagation.fire** - Length propagation when an unsized-array local is initialized from another array: from a runtime-length-tracked function parameter (slot metadata) and from a statically-sized array literal (const metadata). Also a move from an unsized array-literal local (formerly `arrays_move_assign_from_var.fire`) and positive-index element reassignment (formerly `arrays_mutation.fire`).
 - **arrays_of_class_instances.fire** - Arrays whose element type is a user class (owned and copyable), forcing element/index/store lowering to resolve a bare class name string through `lower_type_str`'s typedef-lookup and generic-instance branches rather than `lower_type`'s `FIRType`-object path.
 - **array_dynamic_alloc.fire** - `fs_rt_array_new<T>`/`fs_rt_array_copy<T>` (compiler intrinsics gated behind `directive enable_lowlevel_runtime;`, private to `std/collections/`): allocate a `T[]` buffer of a runtime-determined element count, write/read elements, copy into a larger buffer, for `int32` and `string` element types. The primitive `std.collections.ArrayList<T>` (`tests/sources/std/collections/`) is built on.
 
@@ -523,6 +517,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **functions_basic_params.fire** - No/single/multiple parameters, return values
 - **functions_calling_functions.fire** - One function calling another, multi-step internal logic
 - **functions_recursion.fire** - Recursive functions (factorial)
+- **fibonacci.fire** - Tree-recursive fibonacci over `int64` (relocated from `performance/`); FIR/FLIR snapshots
 - **functions_return_types.fire** - float/bool/string return types; also fallthrough functions (no explicit `return` on every path -- firescript doesn't enforce all-paths-return) with `bool`/`float128` return types, and an if/else where both arms already `return` (dead join block), exercising `ast_to_fir.py`'s implicit-zero-return synthesis and dead-block pruning
 - **functions_array_return.fire** - Array-typed function return value used in further expressions (array access)
 - **functions_early_and_multiple_returns.fire** - Early return, multiple return paths
@@ -622,11 +617,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **io_test.fire** - Input/output functions
 
 ### `performance/`
-- **fibonacci.fire** - Recursive fibonacci (also used for benchmarking)
-- **stress_array_bounds.fire** - Array boundary access stress test (off-by-one, index validation)
-- **stress_deep_recursion.fire** - Deep recursion stress test
 - **stress_integer_overflow.fire** - Integer overflow behavior under repeated operations
-- **stress_string_operations.fire** - Heavy string concatenation/manipulation
 - **stress_type_conversions.fire** - Repeated type conversion stress test
 
 ### `special_types/`
