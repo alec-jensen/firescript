@@ -1,34 +1,46 @@
 // Invalid syntax tests (lexer/parser should flag)
-// EXPECT: parser errors
 
-print("-- invalid syntax: missing semicolons --")  //~ ERROR FS-PARSE-0012 @1
-a: int32 = 5 // missing semicolon  //~ ERROR FS-PARSE-0010 @13
-b: int32 = 6; c: int32 = 7 // missing semicolon after chained declaration style (unsupported)  //~ ERROR FS-PARSE-0010 @27
+import @firescript/std.io.println;
 
-print("-- invalid syntax: unclosed paren --");
-x: int32 = (1 + 2; // unclosed paren  //~ ERROR FS-PARSE-0010 @18
+// unclosed paren
+fn unclosedParen() -> void {
+    x: int32 = (1 + 2; // unclosed paren  //~ ERROR FS-PARSE-0010 @22
+}
 
-print("-- invalid syntax: unclosed array literal --");  //~ ERROR FS-PARSE-0012 @1
-arr: int32[] = [1,2,3; // missing closing bracket  //~ ERROR FS-PARSE-0010 @22
-//~^ ERROR FS-PARSE-0010 @22
+// unclosed array literal
+fn unclosedArray() -> void {
+    arr: int32[] = [1,2,3; // missing closing bracket  //~ ERROR FS-PARSE-0010 @26
+//~^ ERROR FS-PARSE-0010 @26
+}
 
-print("-- invalid syntax: stray tokens --");  //~ ERROR FS-PARSE-0012 @1
+// malformed if
+fn malformedIf() -> void {
+    if 1) { println(1); }  //~ ERROR FS-PARSE-0010 @8
+}
+
+// while missing condition parens
+fn whileNoParens() -> void {
+    while 1 < 2 { println(1); }  //~ ERROR FS-PARSE-0010 @11
+}
+
+// dangling else
+fn danglingElse() -> void {
+    else { println(1); }  //~ ERROR FS-PARSE-0012 @5
+}
+
+// array type missing closing
+fn arrayTypeUnclosed() -> void {
+    y: int32[ = 4;  //~ ERROR FS-PARSE-0010 @15
+}
+
+// missing semicolons (top level); each is reported at the next token
+println("a")
+ok1: int32 = 8;  //~ ERROR FS-PARSE-0010 @1
+a: int32 = 5
+ok2: int32 = 9;  //~ ERROR FS-PARSE-0010 @1
+b: int32 = 6; c: int32 = 7 // chained declaration style is unsupported  //~ ERROR FS-PARSE-0010 @27
+ok3: int32 = 10;
+
+// stray tokens (top level)
 @ # $ // unexpected symbols (if lexer produces tokens)  //~ ERROR FS-PARSE-0010 @3
 //~^ ERROR FS-PARSE-0012 @3
-
-print("-- invalid syntax: malformed if --");  //~ ERROR FS-PARSE-0012 @1
-if 1) { print(1); }  //~ ERROR FS-PARSE-0010 @4
-//~^ ERROR FS-PARSE-0012 @9
-
-print("-- invalid syntax: while missing condition parens --");  //~ ERROR FS-PARSE-0012 @1
-while 1 < 2 { print(1); }  //~ ERROR FS-PARSE-0010 @7
-//~^ ERROR FS-PARSE-0012 @15
-
-print("-- invalid syntax: dangling else --");  //~ ERROR FS-PARSE-0012 @1
-else { print(1); }  //~ ERROR FS-PARSE-0012 @1
-//~^ ERROR FS-PARSE-0012 @8
-
-print("-- invalid syntax: array type missing closing --");  //~ ERROR FS-PARSE-0012 @1
-x: int32[ = 4;  //~ ERROR FS-PARSE-0010 @11
-
-print("-- invalid syntax tests end --");  //~ ERROR FS-PARSE-0012 @1

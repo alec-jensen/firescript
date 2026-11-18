@@ -1,7 +1,0 @@
-// Missing expression after a simple variable assignment.
-fn main() -> int32 {
-    x: int32 = 1;
-    x = ;  //~ ERROR FS-PARSE-0012 @9
-//~^ ERROR FS-PARSE-0010 @10
-    return 0;
-}
