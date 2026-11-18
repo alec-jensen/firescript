@@ -34,18 +34,23 @@ from fir.ir_node import (  # noqa: E402
     BinaryOpInst,
     CallInst,
     ConstructVariantInst,
-    DeclareLocalInst,
     GenNewInst,
     IntLiteralInst,
-    LoadVarInst,
     MethodCallInst,
-    NullLiteralInst,
     UnaryOpInst,
 )
 
 INT32 = make_simple("int32")
 BOOL = make_simple("bool")
 STRING = make_simple("string")
+
+
+def _rules(module: FIRModule) -> list[str]:
+    try:
+        module.validate()
+    except IRVerificationError as e:
+        return [v.rule_id for v in e.violations]
+    return []
 
 
 def _expect_rule(module: FIRModule, rule_id: str) -> None:
@@ -150,18 +155,6 @@ def test_verifier_accepts_clean_type_defs():
 
 # -- FIRV-D1/D2/D3: operand resolution ---------------------------------------
 
-def test_d2_param_value_not_a_parameter():
-    module = FIRModule("firescript")
-    func = FIRFunction("f", return_type=INT32)
-    module.add_function(func)
-    b = FIRBuilder(func)
-    ghost = ParamValue("ghost", INT32)
-    one = b.int_literal("1", INT32)
-    b.emit(BinaryOpInst("+", ghost, one, INT32))
-    b.ret(one)
-    _expect_rule(module, "FIRV-D2")
-
-
 def test_d1_operand_from_other_function():
     module = FIRModule("firescript")
     other = FIRFunction("other", return_type=INT32)
@@ -232,6 +225,81 @@ def test_d1_unsupported_operand_kind():
     _expect_rule(module, "FIRV-D1")
 
 
+def _d2_binary_op(b, func):
+    ghost = ParamValue("ghost", INT32)
+    one = b.int_literal("1", INT32)
+    b.ret(b.emit(BinaryOpInst("+", ghost, one, INT32)))
+
+
+def _d2_unary_op(b, func):
+    b.ret(b.emit(UnaryOpInst("!", ParamValue("ghost", BOOL), BOOL)))
+
+
+def _d2_return(b, func):
+    b.ret(ParamValue("ghost", INT32))
+
+
+def _d2_load_field(b, func):
+    b.ret(b.load_field(ParamValue("ghost", make_simple("Point")), "x", INT32))
+
+
+def _d2_store_field(b, func):
+    b.store_field(ParamValue("ghost", make_simple("Point")), "x", b.int_literal("1", INT32))
+    b.ret()
+
+
+def _d2_extract_tag(b, func):
+    b.ret(b.extract_tag(ParamValue("ghost", make_simple("E")), INT32))
+
+
+def _d2_extract_payload_field(b, func):
+    b.ret(b.extract_payload_field(ParamValue("ghost", make_simple("E")), "A", 0, INT32))
+
+
+def _d2_method_call(b, func):
+    b.method_call(ParamValue("ghost", make_simple("Point")), "foo", [], [], None)
+    b.ret()
+
+
+def _d2_yield(b, func):
+    b.yield_value(ParamValue("ghost", INT32))
+    b.ret()
+
+
+def _d2_gen_value(b, func):
+    b.ret(b.gen_value(ParamValue("ghost", GeneratorType(INT32)), INT32))
+
+
+# (builder, function return type, is_generator)
+_D2_CASES = {
+    "binary_op": (_d2_binary_op, INT32, False),
+    "unary_op": (_d2_unary_op, BOOL, False),
+    "return": (_d2_return, INT32, False),
+    "load_field": (_d2_load_field, INT32, False),
+    "store_field": (_d2_store_field, None, False),
+    "extract_tag": (_d2_extract_tag, INT32, False),
+    "extract_payload_field": (_d2_extract_payload_field, INT32, False),
+    "method_call": (_d2_method_call, None, False),
+    "yield": (_d2_yield, GeneratorType(INT32), True),
+    "gen_value": (_d2_gen_value, INT32, False),
+}
+
+
+@t.params(sorted(_D2_CASES))
+def test_d2_param_value_not_a_parameter(case):
+    """A ParamValue that names no real parameter is FIRV-D2 whichever
+    instruction uses it, and the instruction-specific type rules skip the
+    unresolved operand instead of piling on a second violation."""
+    builder, ret_type, is_gen = _D2_CASES[case]
+    module = FIRModule("firescript")
+    func = FIRFunction("f", return_type=ret_type, is_generator=is_gen)
+    module.add_function(func)
+    builder(FIRBuilder(func), func)
+    rules = _rules(module)
+    t.require("FIRV-D2" in rules, rules)
+    t.require(all(r == "FIRV-D2" for r in rules), rules)
+
+
 def test_d3_void_operand_used_as_value():
     module = FIRModule("firescript")
     void_fn = FIRFunction("void_fn", return_type=None)
@@ -263,21 +331,9 @@ def test_type_assignable_skips_check_on_invalid_operand():
     call_inst = CallInst("callee", ["not_a_value"], ["own"], INT32)
     result = b.emit(call_inst)
     b.ret(result)
-    _expect_rule(module, "FIRV-D1")
-
-
-def test_type_assignable_array_size_mismatch():
-    module = FIRModule("firescript")
-    arr5 = ArrayType(INT32, 5)
-    arr3 = ArrayType(INT32, 3)
-    callee = FIRFunction("callee", params=[("arr", arr5)], return_type=INT32)
-    module.add_function(callee)
-    caller = FIRFunction("caller", params=[("small", arr3)], return_type=INT32)
-    module.add_function(caller)
-    b = FIRBuilder(caller)
-    result = b.call("callee", [caller.param_value("small")], ["own"], INT32)
-    b.ret(result)
-    _expect_rule(module, "FIRV-T5")
+    rules = _rules(module)
+    t.require("FIRV-D1" in rules, rules)
+    t.require("FIRV-T5" not in rules, rules)
 
 
 # -- FIRV-T1: binary op remaining branches -----------------------------------
@@ -433,20 +489,6 @@ def _widget_module():
     return module, widget_t
 
 
-def test_t6_method_call_arg_modes_count_mismatch():
-    module, widget_t = _widget_module()
-    func = FIRFunction("f", return_type=INT32)
-    module.add_function(func)
-    b = FIRBuilder(func)
-    obj = b.allocate(widget_t, [b.int_literal("0", INT32)])
-    extra = b.int_literal("1", INT32)
-    # MethodCallInst.__init__ replaces a falsy (empty) arg_modes with a
-    # matching-length default, so the mismatch must use a non-empty list.
-    result = b.emit(MethodCallInst(obj, "getX", [extra], ["own", "own"], INT32))
-    b.ret(result)
-    _expect_rule(module, "FIRV-T6")
-
-
 def test_t6_method_call_arg_mode_invalid():
     module, widget_t = _widget_module()
     func = FIRFunction("f", return_type=None)
@@ -550,18 +592,32 @@ def test_resolve_method_traverses_base_chain():
     module.validate()  # resolved via base chain, must not raise
 
 
-# -- FIRV-T7: LoadField / StoreField remaining branches ----------------------
-
-def test_t7_load_field_invalid_object_operand():
+def test_resolve_method_traverses_base_chain_to_check_arguments():
+    """The method is only declared on Base, so the wrong-typed argument of a
+    call made on a Derived receiver is reported (FIRV-T6) only if method
+    resolution really walks the base chain; an unresolved method would be
+    silently skipped."""
     module = FIRModule("firescript")
-    func = FIRFunction("f", return_type=INT32)
+    module.add_type(TypeDef("Base", "owned", fields=[("x", INT32)]))
+    module.add_type(TypeDef("Derived", "owned", base="Base"))
+    base_t = make_simple("Base")
+    base_set = FIRFunction(
+        "Base.set", params=[("this", base_t), ("v", INT32)], return_type=None,
+        param_modes=["borrow", "own"],
+    )
+    FIRBuilder(base_set).ret()
+    module.add_function(base_set)
+
+    func = FIRFunction("f", return_type=None)
     module.add_function(func)
     b = FIRBuilder(func)
-    ghost = ParamValue("ghost", make_simple("Point"))
-    bad = b.load_field(ghost, "x", INT32)
-    b.ret(bad)
-    _expect_rule(module, "FIRV-D2")
+    obj = b.allocate(make_simple("Derived"), [b.int_literal("0", INT32)])
+    b.method_call(obj, "set", [b.string_literal("bad", STRING)], ["own"], None)
+    b.ret()
+    _expect_rule(module, "FIRV-T6")
 
+
+# -- FIRV-T7: LoadField / StoreField remaining branches ----------------------
 
 def test_t7_load_field_non_class_operand():
     module = FIRModule("firescript")
@@ -585,18 +641,6 @@ def test_t7_load_field_result_type_mismatch():
     bad = b.load_field(obj, "x", STRING)
     b.ret(bad)
     _expect_rule(module, "FIRV-T7")
-
-
-def test_t7_store_field_invalid_object_operand():
-    module = FIRModule("firescript")
-    func = FIRFunction("f", return_type=None)
-    module.add_function(func)
-    b = FIRBuilder(func)
-    ghost = ParamValue("ghost", make_simple("Point"))
-    one = b.int_literal("1", INT32)
-    b.store_field(ghost, "x", one)
-    b.ret()
-    _expect_rule(module, "FIRV-D2")
 
 
 def test_t7_store_field_non_class_operand():
@@ -799,28 +843,6 @@ def test_t10_construct_variant_payload_type_mismatch():
 
 # -- FIRV-T11: ExtractTag / ExtractPayloadField remaining branches -----------
 
-def test_t11_extract_tag_invalid_operand():
-    module = FIRModule("firescript")
-    func = FIRFunction("f", return_type=INT32)
-    module.add_function(func)
-    b = FIRBuilder(func)
-    ghost = ParamValue("ghost", make_simple("E"))
-    bad = b.extract_tag(ghost, INT32)
-    b.ret(bad)
-    _expect_rule(module, "FIRV-D2")
-
-
-def test_t11_extract_payload_field_invalid_operand():
-    module = FIRModule("firescript")
-    func = FIRFunction("f", return_type=INT32)
-    module.add_function(func)
-    b = FIRBuilder(func)
-    ghost = ParamValue("ghost", make_simple("E"))
-    bad = b.extract_payload_field(ghost, "A", 0, INT32)
-    b.ret(bad)
-    _expect_rule(module, "FIRV-D2")
-
-
 def test_t11_extract_payload_field_non_enum():
     module = FIRModule("firescript")
     func = FIRFunction("f", return_type=INT32)
@@ -877,39 +899,7 @@ def test_l2_store_var_type_mismatch():
     _expect_rule(module, "FIRV-L2")
 
 
-def test_var_access_declared_type_none_is_skipped():
-    """A DeclareLocal with var_type=None (never produced by the real
-    lowering pipeline, but not structurally forbidden) short-circuits
-    LoadVar's type check (verifier.py line 798-799) rather than crashing on
-    .render(). Paired with an unrelated FIRV-T12 violation elsewhere in the
-    same function so Tier 1 fails and the (unrelated) Tier-2 ownership pass
-    -- which does assume a well-typed local and is not this rule's concern
-    -- never runs against the None-typed local."""
-    module = FIRModule("firescript")
-    func = FIRFunction("f", return_type=None)
-    module.add_function(func)
-    b = FIRBuilder(func)
-    one = b.int_literal("1", INT32)
-    b.emit(DeclareLocalInst("x", None, one))
-    b.emit(LoadVarInst("x", None))
-    b.emit(NullLiteralInst(STRING))  # unrelated FIRV-T12: STRING is not nullable
-    b.ret()
-    _expect_rule(module, "FIRV-T12")
-
-
 # -- FIRV-G1: Yield remaining branches ----------------------------------------
-
-def test_g1_yield_invalid_operand():
-    module = FIRModule("firescript")
-    gen_t = GeneratorType(INT32)
-    func = FIRFunction("g", return_type=gen_t, is_generator=True)
-    module.add_function(func)
-    b = FIRBuilder(func)
-    ghost = ParamValue("ghost", INT32)
-    b.yield_value(ghost)
-    b.ret()
-    _expect_rule(module, "FIRV-D2")
-
 
 def test_g1_yield_value_type_mismatch():
     module = FIRModule("firescript")
@@ -1011,17 +1001,6 @@ def test_g3_gen_next_result_not_bool():
     _expect_rule(module, "FIRV-G3")
 
 
-def test_g3_gen_value_invalid_operand():
-    module = FIRModule("firescript")
-    func = FIRFunction("f", return_type=INT32)
-    module.add_function(func)
-    b = FIRBuilder(func)
-    ghost = ParamValue("ghost", GeneratorType(INT32))
-    val = b.gen_value(ghost, INT32)
-    b.ret(val)
-    _expect_rule(module, "FIRV-D2")
-
-
 def test_g3_gen_value_non_generator_operand():
     module = FIRModule("firescript")
     func = FIRFunction("f", return_type=INT32)
@@ -1094,17 +1073,6 @@ def test_t1_comparison_operand_type_mismatch():
 
 # -- FIRV-T2/D2: unary op operand edge cases ----------------------------------
 
-def test_t2_unary_op_invalid_operand_is_skipped():
-    module = FIRModule("firescript")
-    func = FIRFunction("f", return_type=BOOL)
-    module.add_function(func)
-    b = FIRBuilder(func)
-    ghost = ParamValue("ghost", BOOL)
-    result = b.emit(UnaryOpInst("!", ghost, BOOL))
-    b.ret(result)
-    _expect_rule(module, "FIRV-D2")
-
-
 def test_t2_unary_bang_result_not_bool():
     module = FIRModule("firescript")
     func = FIRFunction("f", return_type=INT32)
@@ -1117,16 +1085,6 @@ def test_t2_unary_bang_result_not_bool():
 
 
 # -- FIRV-T4: Return with an invalid operand ----------------------------------
-
-def test_t4_return_invalid_operand_is_skipped():
-    module = FIRModule("firescript")
-    func = FIRFunction("f", return_type=INT32)
-    module.add_function(func)
-    b = FIRBuilder(func)
-    ghost = ParamValue("ghost", INT32)
-    b.ret(ghost)
-    _expect_rule(module, "FIRV-D2")
-
 
 # -- FIRV-T9/T10: Allocate / ConstructVariant on an unregistered type --------
 

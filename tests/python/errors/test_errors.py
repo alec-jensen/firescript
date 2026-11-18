@@ -25,7 +25,8 @@ def test_render_falls_back_to_raw_template_on_format_error():
     t.require_eq(err.message, "missing key: {not_supplied}")
 
 
-def test_to_log_string_without_snippet_omits_caret_line():
-    err = CompileTimeError(source_file="x.fire", line=0, column=0, snippet=None)
-    log = err.to_log_string()
-    t.require("^" not in log)
+def test_to_log_string_without_snippet_omits_caret_and_location():
+    # A real position (line/column/file) but no snippet: the whole
+    # caret + location block is suppressed, leaving just the message.
+    err = CompileTimeError(source_file="x.fire", line=3, column=2, snippet=None)
+    t.require_eq(err.to_log_string(), err.message)

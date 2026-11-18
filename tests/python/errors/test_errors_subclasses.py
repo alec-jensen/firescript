@@ -49,12 +49,11 @@ def test_to_log_string_empty_snippet_still_renders_location():
     t.require_eq(err.to_log_string(), "boom\n> \n ^\n(a.fire:1:0)")
 
 
+# The parser/semantic/type/import-not-found codes are pinned end to end by the
+# compile-fail tests; only the codes no source-level test can produce are
+# pinned here.
 @t.params([
-    (errors.ParserError, "FS-PARSE-0001", errors.ErrorCategory.PARSER),
-    (errors.SemanticError, "FS-SEM-0001", errors.ErrorCategory.SEMANTIC),
-    (errors.TypeError, "FS-SEM-0002", errors.ErrorCategory.SEMANTIC),
     (errors.CodegenError, "FS-CGEN-0001", errors.ErrorCategory.CODEGEN),
-    (errors.ImportNotFoundError, "FS-IMP-0001", errors.ErrorCategory.IMPORT),
     (errors.CyclicImportError, "FS-IMP-0002", errors.ErrorCategory.IMPORT),
 ])
 def test_subclass_code_and_category(case):

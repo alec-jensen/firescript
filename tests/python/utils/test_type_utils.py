@@ -19,11 +19,6 @@ def test_is_copyable_none_base_type_is_false():
     t.require(not tu.is_copyable(None, False))
 
 
-def test_is_copyable_array_is_always_false():
-    tu.reset_registries()
-    t.require(not tu.is_copyable("int32", True))
-
-
 def test_is_owned_none_base_type_is_false():
     tu.reset_registries()
     t.require(not tu.is_owned(None, False))

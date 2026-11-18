@@ -1,5 +1,5 @@
 """Direct unit tests for firescript/parser/ast_node.py's ASTNode: the
-None-children guard and __repr__."""
+None-children guard."""
 from __future__ import annotations
 
 import os
@@ -21,7 +21,3 @@ def test_constructor_rejects_none_in_children():
     except ValueError as e:
         t.require("None" in str(e), str(e))
 
-
-def test_repr_matches_str():
-    node = ASTNode(NodeTypes.IDENTIFIER, None, "x", [], 0)
-    t.require_eq(repr(node), str(node))

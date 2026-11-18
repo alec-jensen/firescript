@@ -186,21 +186,6 @@ def test_o6_clone_non_owned():
     _expect_rule(module, "FIRV-O6")
 
 
-def test_o4_borrow_mut_passed_twice_same_call():
-    module, point_t = _point_module()
-    callee = FIRFunction(
-        "callee", params=[("a", point_t), ("b", point_t)], param_modes=["borrow_mut", "borrow_mut"], return_type=None
-    )
-    module.add_function(callee)
-    func = FIRFunction("f", params=[("p", point_t)], param_modes=["borrow"], return_type=None)
-    module.add_function(func)
-    b = FIRBuilder(func)
-    p = func.param_value("p")
-    b.call("callee", [p, p], ["borrow_mut", "borrow_mut"], None)
-    b.ret()
-    _expect_rule(module, "FIRV-O4")
-
-
 def test_identifier_of_aliased_field_read_not_tracked_as_owned():
     """A local bound directly to a LoadField result aliases the containing
     object's field storage rather than allocating a fresh owned value; it

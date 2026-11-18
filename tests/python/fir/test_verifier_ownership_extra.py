@@ -43,9 +43,6 @@ from fir.ir_node import (  # noqa: E402
     Value,
 )
 from fir.ownership_verifier import (  # noqa: E402
-    _StateDict,
-    _ident_text,
-    _meet_states,
     verify_enum_payload_guards,
     verify_generator_dominance,
     verify_no_shadowing,
@@ -89,34 +86,6 @@ def _analyze(function: FIRFunction):
         if block.terminator is not None:
             def_positions[id(block.terminator)] = (block.id, len(block.instructions))
     return cfg, idom, def_positions
-
-
-# ---------------------------------------------------------------------------
-# Pure helper functions, tested directly.
-# ---------------------------------------------------------------------------
-
-def test_meet_states_empty_list_returns_empty_dict():
-    t.require_eq(_meet_states([]), {})
-
-
-def test_state_dict_eq_compares_by_value():
-    a = _StateDict({"x": 1})
-    b = _StateDict({"x": 1})
-    c = {"x": 1}
-    t.require(a == b, "two _StateDicts with equal contents should compare equal")
-    t.require(a == c, "_StateDict should compare equal to a plain dict with the same contents")
-    t.require(not (a == "not a dict"), "_StateDict should not compare equal to a non-dict")
-
-
-def test_ident_text_formats_temp_tuple_identifiers():
-    # _identifier_of never actually produces these ("temp", ...) shapes
-    # today (see ownership_verifier.py's long comment on expression-
-    # temporary tracking being deliberately out of scope), but _ident_text
-    # is a pure formatter that must still render them correctly if/when
-    # that tracking is added -- exercised directly here.
-    t.require_eq(_ident_text(("temp", ("block_0", 3))), "<temp block_0[3]>")
-    t.require_eq(_ident_text(("temp", 7)), "<temp %7>")
-    t.require_eq(_ident_text("plain_name"), "plain_name")
 
 
 # ---------------------------------------------------------------------------
@@ -177,26 +146,6 @@ def test_drop_of_anonymous_temporary_is_untracked():
     b.drop(anon)
     b.ret()
     module.validate()  # must not raise
-
-
-# ---------------------------------------------------------------------------
-# CloneInst: FIRV-O6 for a non-owned operand (no existing test built a
-# CloneInst at all before this).
-# ---------------------------------------------------------------------------
-
-def test_o6_clone_non_owned():
-    module = FIRModule("firescript")
-    func = FIRFunction("f", return_type=INT32)
-    module.add_function(func)
-    b = FIRBuilder(func)
-    x = b.int_literal("1", INT32)
-    cloned = b.clone(x)  # int32 is copyable, not owned
-    b.ret(cloned)
-    try:
-        module.validate()
-        t.require(False, "no error raised (expected FIRV-O6)")
-    except Exception as e:
-        t.require(any(v.rule_id == "FIRV-O6" for v in e.violations), e.violations)
 
 
 # ---------------------------------------------------------------------------
@@ -270,25 +219,6 @@ def test_generator_identity_param_dominance_ok():
 # reject outright (a bare Value(), a mismatched arg_modes list, an
 # unreachable block), exercised directly against the Tier-2 entry points.
 # ---------------------------------------------------------------------------
-
-def test_safe_resolve_fallback_for_unsupported_operand_kind():
-    module = FIRModule("firescript")
-    func = FIRFunction("f", return_type=None)
-    module.add_function(func)
-    block = func.new_block()
-    raw = Value()
-    raw.result_type = INT32  # copyable -> Drop should flag FIRV-O5
-    block.add_instruction(DropInst(raw))
-    block.set_terminator(ReturnInst())
-    cfg, idom, _ = _analyze(func)
-    violations: list = []
-    verify_ownership(module, func, cfg, idom, violations)
-    matches = [v for v in violations if v.rule_id == "FIRV-O5"]
-    t.require(matches, violations)
-    # raw is neither a ParamValue nor a FIRValue, so _safe_resolve falls
-    # back to "<?>" when formatting the violation's instruction text.
-    t.require("<?>" in matches[0].instruction_text, matches[0].instruction_text)
-
 
 def test_ownership_run_skips_unreachable_block_in_reporting_pass():
     module, point_t = _point_module()
@@ -372,85 +302,6 @@ def test_enum_guard_recognizes_tag_on_rhs_of_equality():
     cfg, idom, _ = _analyze(func)
     violations: list = []
     verify_enum_payload_guards(module, func, idom, cfg, violations)
-    t.require(violations == [], violations)
-
-
-def test_enum_guard_skips_non_literal_comparison_operand():
-    module = FIRModule("firescript")
-    module.add_type(TypeDef("E", "owned", kind="enum", variants=[EnumVariantDef("A", [("v", INT32)])]))
-    enum_t = make_simple("E")
-    func = FIRFunction("f", return_type=INT32)
-    module.add_function(func)
-    b = FIRBuilder(func)
-    ev = b.construct_variant(enum_t, "A", [])
-    tag = b.extract_tag(ev, INT32)
-    tag2 = b.extract_tag(ev, INT32)  # not an IntLiteral: guard collection must skip this branch
-    cond = b.binary_op("==", tag, tag2, BOOL)
-    then_block = b.new_block()
-    else_block = b.new_block()
-    b.branch(cond, then_block.id, else_block.id)
-    b.position_at(then_block)
-    b.ret(tag)
-    b.position_at(else_block)
-    b.ret(tag2)
-
-    cfg, idom, _ = _analyze(func)
-    violations: list = []
-    verify_enum_payload_guards(module, func, idom, cfg, violations)
-    # No ExtractPayloadField anywhere, so there's nothing to flag; this
-    # just exercises the "comparison operand isn't an IntLiteral" skip in
-    # the guard-collection loop without crashing.
-    t.require(violations == [], violations)
-
-
-def test_enum_guard_skips_unparseable_int_literal_text():
-    module = FIRModule("firescript")
-    module.add_type(TypeDef("E", "owned", kind="enum", variants=[EnumVariantDef("A", [("v", INT32)])]))
-    enum_t = make_simple("E")
-    func = FIRFunction("f", return_type=INT32)
-    module.add_function(func)
-    block = func.new_block()
-    ev = block.add_instruction(ConstructVariantInst(enum_t, "A", []))
-    tag = block.add_instruction(ExtractTagInst(ev, INT32))
-    # A hand-built IntLiteral whose text doesn't parse as an integer --
-    # Tier 1 (FIRV-T12) would reject this in the real pipeline, so it's
-    # only reachable here via the direct bypass.
-    bad_lit = block.add_instruction(IntLiteralInst("not_a_number", INT32))
-    cond = block.add_instruction(BinaryOpInst("==", tag, bad_lit, BOOL))
-    then_block = func.new_block()
-    else_block = func.new_block()
-    block.set_terminator(BranchInst(cond, then_block.id, else_block.id))
-    then_block.set_terminator(ReturnInst())
-    else_block.set_terminator(ReturnInst())
-
-    cfg, idom, _ = _analyze(func)
-    violations: list = []
-    verify_enum_payload_guards(module, func, idom, cfg, violations)
-    t.require(violations == [], violations)
-
-
-def test_enum_guard_ignores_extract_tag_of_unsupported_operand():
-    module = FIRModule("firescript")
-    func = FIRFunction("f", return_type=None)
-    module.add_function(func)
-    block = func.new_block()
-    raw = Value()
-    raw.result_type = make_simple("E")
-    tag = block.add_instruction(ExtractTagInst(raw, INT32))
-    zero = block.add_instruction(IntLiteralInst("0", INT32))
-    cond = block.add_instruction(BinaryOpInst("==", tag, zero, BOOL))
-    then_block = func.new_block()
-    else_block = func.new_block()
-    block.set_terminator(BranchInst(cond, then_block.id, else_block.id))
-    then_block.set_terminator(ReturnInst())
-    else_block.set_terminator(ReturnInst())
-
-    cfg, idom, _ = _analyze(func)
-    violations: list = []
-    verify_enum_payload_guards(module, func, idom, cfg, violations)
-    # ExtractTag's own operand (the enum value) isn't a Param/FIRValue, so
-    # _generator_identity returns None for it and the branch is skipped as
-    # a guard candidate entirely.
     t.require(violations == [], violations)
 
 

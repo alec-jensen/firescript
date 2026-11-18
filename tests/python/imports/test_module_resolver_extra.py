@@ -36,6 +36,32 @@ def _root(children=None):
     return ASTNode(NodeTypes.ROOT, None, "root", children or [], 0)
 
 
+class _capture_logging:
+    """Collect root-logger records emitted inside the `with` block."""
+
+    def __enter__(self):
+        import logging
+
+        self.records = []
+        outer = self
+
+        class _Handler(logging.Handler):
+            def emit(self, record):
+                outer.records.append(record)
+
+        self._logging = logging
+        self._handler = _Handler(level=logging.DEBUG)
+        self._old_level = logging.getLogger().level
+        logging.getLogger().addHandler(self._handler)
+        logging.getLogger().setLevel(logging.DEBUG)
+        return self.records
+
+    def __exit__(self, *exc):
+        self._logging.getLogger().removeHandler(self._handler)
+        self._logging.getLogger().setLevel(self._old_level)
+        return False
+
+
 def _write(path: str, text: str) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
@@ -43,12 +69,13 @@ def _write(path: str, text: str) -> None:
 
 
 def test_default_import_root_defaults_to_project_root():
-    # No import_root given: falls back to the parent of firescript/.
+    # No import_root given: falls back to the parent of firescript/, i.e. the
+    # repository root.
     resolver = ModuleResolver()
-    expected = os.path.dirname(os.path.dirname(os.path.abspath(
-        os.path.join(REPO_ROOT, "firescript", "imports.py")
-    )))
-    t.require_eq(os.path.normcase(resolver.import_root), os.path.normcase(expected))
+    t.require_eq(
+        os.path.normcase(os.path.realpath(resolver.import_root)),
+        os.path.normcase(os.path.realpath(REPO_ROOT)),
+    )
 
 
 def test_dotted_to_path_stdlib_fallback_when_neither_form_exists():
@@ -202,29 +229,6 @@ def test_stdlib_sibling_relative_import_resolves_within_package():
         t.require("firescript.std.pkg.user" in dotted_names, dotted_names)
 
 
-def test_resolve_for_entry_topo_sort_skips_external_kind_modules():
-    # `visit()` inside resolve_for_entry has a defensive
-    # `if imp.kind == "external": continue` -- but _load_module already
-    # raises RuntimeError as soon as it sees an external import (before
-    # resolve_for_entry's topo sort ever runs), so this branch can't be
-    # reached by loading an entry file normally. We hit it by pre-seeding
-    # `resolver.modules` with a fabricated module that has an external
-    # import, disjoint from the real entry's dependency graph.
-    with t.tmpdir() as root:
-        resolver = ModuleResolver(import_root=root)
-        entry_path = os.path.join(root, "entry.fire")
-        _write(entry_path, "")
-
-        fake_ast = _root()
-        fake_mod = Module("fake.module", os.path.join(root, "fake.fire"), fake_ast, "")
-        fake_mod.imports = [ImportSpec("someuser/pkg", "external", [], None, (0, 0))]
-        resolver.modules["fake.module"] = fake_mod
-
-        entry_mod, ordered = resolver.resolve_for_entry(entry_path)
-        t.require(entry_mod.dotted in [m.dotted for m in ordered])
-        t.require("fake.module" in [m.dotted for m in ordered])
-
-
 def test_build_merged_ast_skips_source_read_failure_silently():
     # cache_source_text's disk-read fallback (used when Module.source_text
     # is empty) swallows any exception from open(); construct a Module by
@@ -271,9 +275,16 @@ def test_append_symbol_with_deps_skips_node_already_emitted():
     entry_ast = _root()
     entry = Module("entry", "/nonexistent/entry.fire", entry_ast, "unused")
 
-    root = build_merged_ast(entry, [dep, entry])
+    with _capture_logging() as records:
+        root = build_merged_ast(entry, [dep, entry])
     names = sorted(getattr(c, "name", None) for c in root.children)
     t.require_eq(names, ["a", "b"])
+    # `b` is emitted once as a dependency of `a` and must not then be
+    # re-appended as a direct export (which would be logged as a conflict).
+    t.require(
+        not any("Conflicting top-level symbol" in r.getMessage() for r in records),
+        [r.getMessage() for r in records],
+    )
 
 
 def test_append_export_skips_duplicate_symbol_name_across_modules():

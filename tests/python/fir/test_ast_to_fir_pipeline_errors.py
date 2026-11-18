@@ -29,6 +29,7 @@ from compiler_pipeline import CompilerPipeline  # noqa: E402
 from ast_to_fir import ASTToFIRConverter, FIRConversionError  # noqa: E402
 from errors import IRVerificationError  # noqa: E402
 from fir import FIRBuilder, FIRFunction, FIRModule, make_simple  # noqa: E402
+from fir.textual import dump_module  # noqa: E402
 
 
 def _convert(source: str, module_name: str = "test", is_runtime_module: bool = False):
@@ -93,13 +94,7 @@ def test_increment_as_subexpression_produces_no_value():
     """`++`/`--` is only supported as a standalone statement -- when used
     as a sub-expression (e.g. as an array-literal element) it converts to
     None, and any call site that requires an actual value
-    (_require_value()) rejects it. Note: not every value-requiring call
-    site in ast_to_fir.py goes through _require_value() -- e.g. `int32 y =
-    x++ + 1;` (a binary-operator operand) instead reaches
-    fir/verifier.py's FIRV-D1 check as an internal compiler error (a
-    latent bug: BinaryOp's operand converts to None silently instead of
-    being rejected at the ast_to_fir.py level), which is a separate,
-    unrelated crash from the one exercised here."""
+    (_require_value()) rejects it."""
     _expect_conversion_error(
         """
         x: int32 = 1;
@@ -255,3 +250,18 @@ def test_runtime_module_rejects_top_level_statements():
         "Runtime modules must not contain top-level statements",
         is_runtime_module=True,
     )
+
+
+def test_sized_array_without_initializer_is_zero_initialized():
+    """`arr: int32[4];` (no initializer) lowers to a zero-initialized
+    array literal of the declared size."""
+    dump = dump_module(_convert("arr: int32[4];\n"))
+    t.require("%0 = arrayconst.int32[4] []" in dump, dump)
+    t.require("local arr: int32[4] = %0" in dump, dump)
+
+
+def test_bare_return_in_non_void_function_synthesizes_zero():
+    """`return;` in an `int32` function falls back to returning a
+    zero-valued int32 so the Return stays well-typed."""
+    dump = dump_module(_convert("fn f() -> int32 { return; }\nx: int32 = f();\n"))
+    t.require("%0 = const.int32 0\n    ret %0" in dump, dump)

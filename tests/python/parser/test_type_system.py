@@ -52,3 +52,13 @@ def test_annotate_value_category_copyable():
     node = ASTNode(NodeTypes.IDENTIFIER, None, "x", [], 0)
     p._annotate_value_category(node, "int32", False)
     t.require_eq(node.value_category, "Copyable")
+
+
+def test_cast_of_array_to_non_string_type_is_rejected():
+    """`arr as int32` is a reachable user error (only array -> string casts
+    are allowed); no compile-fail fixture pins its message."""
+    src = "a: int32[3] = [1, 2, 3];\nb: int32 = a as int32;\n"
+    p = _parser_for(src)
+    p.parse()
+    messages = [e.message for e in p.errors]
+    t.require(messages == ["Cannot cast array type int32[] to int32"], messages)

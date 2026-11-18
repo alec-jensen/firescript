@@ -113,48 +113,24 @@ micro-framework (`from harness import pyunit as t`; see
 Plain `assert` also works. Covers:
 
 - `tests/python/parser/` -- direct (in-process) unit tests for
-  `firescript/parser/`'s defensive "impossible" branches and dead guards
-  that can't be reached by compiling a full real source file: `test_parser_base.py`
-  (error-reporting wrappers, literal-suffix inference, comment-anchored
-  diagnostic positions, EOF edge cases), `test_declarations_dead_guards.py`
-  and `test_declarations_coverage.py` (`_parse_import_symbol_group`,
-  `_parse_class_definition`, `_parse_constraint_declaration`,
-  `_parse_function_definition`/`_parse_generator_definition` guards
-  duplicating checks the top-level `parse()` dispatcher already performed),
-  `test_expressions_dead_guards.py` (`parse_array_access`,
-  `parse_increment_or_decrement` defensive None branches),
-  `test_type_system.py` and `test_type_system_dead_guards.py`
-  (`_annotate_value_category`, `_get_node_type` fallbacks unreachable
-  because the parser always pre-annotates `return_type`,
-  `_infer_generic_type_args` edge cases, array-cast rejection), and
-  `test_ast_node.py` (`ASTNode`'s None-children rejection and
-  `__repr__`==`__str__`). `_dead_guard_helpers.py` is a shared (non-test)
-  helper module, not a test file itself. `test_declarations_dead_guards_more.py`
-  (with its own shared helper module `_dead_guard_helpers2.py`, a
-  differently-shaped API from `_dead_guard_helpers.py`) adds further
-  declarations.py dead-guard coverage: `_parse_function_definition`'s
-  invalid-return-type/missing-name/unclosed-array-bracket/missing-open-paren/
-  missing-body-brace/type-param-consume-failure branches,
-  `_parse_generator_definition`'s missing-GENERATOR-token and
-  missing-body-brace branches, `_parse_import`'s `@`-segment
-  consume-failure branch, `_parse_import_symbol_group`'s consume-failure
-  branch, `_parse_class_definition`'s missing-CLASS-token and
-  type-param-consume-failure branches, `parse()`'s top-level
-  blank-placeholder-token skip and pending-export-before-constraint-dispatch
-  branches. `test_statements_dead_guards.py`/`test_statements_coverage.py`
-  and `test_type_system_dead_guards_more.py`/`test_type_system_coverage.py`
-  (with their own shared helper `_helpers.py`) push
-  `firescript/parser/statements.py` to 100% and `firescript/parser/type_system.py`
-  to 99%: dead-guard coverage for `parse_if_statement`/`parse_while_statement`/
-  `parse_for_statement` off-token direct calls, `parse_scope`'s brace guard,
-  `parse_variable_assignment`/`parse_function_call` precondition rechecks,
-  for-in's redundant type/identifier/`in`-keyword rechecks, `_get_node_type`'s
-  dead node-kind fallbacks, and `_infer_generic_type_args`/unary/binary/cast
-  defensive branches; plus real-syntax coverage for a nested `directive`/a
-  function returning `generator<T>` defined inside a function body (which
-  `ast_to_fir.py` cannot lower -- a newly-found, not-fixed crash, see the
-  test module docstrings) and a generic function reusing the same type
-  parameter for multiple arguments. `test_generic_self_reference.py` covers a
+  `firescript/parser/` helpers that need a Parser constructed or driven
+  directly. `test_parser_base.py` (comment-anchored diagnostic positions with
+  exact line/column, literal-suffix inference table, token-helper EOF edge
+  cases, `_looks_like_generic_constructor_call` positive and negative cases,
+  `report_error` fallbacks), `test_declarations_coverage.py`
+  (`_parse_function_definition`'s missing-name and missing-`(` rejections and
+  an `owned` array parameter, none of which any `.fire` source reaches),
+  `test_type_system.py` (`_annotate_value_category` Owned/Copyable
+  classification, its exception-swallowing fallback, and the reachable
+  `Cannot cast array type X to Y` rejection), `test_ast_node.py`
+  (`ASTNode`'s None-children rejection), and `test_statements_coverage.py`
+  (real-syntax cases the parser accepts but `ast_to_fir.py` cannot lower: a
+  bare `arr[0];` statement, a nested `directive`, and a nested generic type
+  argument -- newly-found, not-fixed bugs, see the test module docstring).
+  `_helpers.py` is a shared (non-test) helper module. Contrived tests that
+  forced unreachable defensive guards (monkeypatched `consume`, hand-built
+  ASTNodes, blank placeholder tokens) were removed: defensive/unreachable
+  lines do not need tests. `test_generic_self_reference.py` covers a
   generic class referencing itself inside its own body (a static factory
   returning the enclosing class, or a self-call like `this.isSome()` from
   another of its own methods) in a source string with *zero* import
@@ -253,12 +229,14 @@ Plain `assert` also works. Covers:
   `firescript/ir_analysis.py` (used by both the FIR and FLIR verifiers)
   directly: `dominates()`'s missing-node and cyclic-idom-chain guards, and
   a basic `compute_dominators()` diamond shape. `test_verifier_more.py`
-  fills further Tier-1 FIR verifier gaps (T5-T9 branches: call-result type
-  mismatch, unknown struct field store, array-index/value type checks,
-  `Allocate`'s unregistered-class/explicit-constructor/argument-type
-  branches, `_type_assignable`'s array-size-mismatch and invalid-operand
-  skip cases). Also
-  `test_ast_to_fir_errors.py` -- coverage-focused unit tests for
+  is the one home for most single-corruption Tier-1 rule tests (FIRV-S6
+  duplicate-name/type-def rules, FIRV-D1-D3 operand resolution including a
+  single parametrized FIRV-D2 test that also asserts no other rule fires,
+  and the per-instruction FIRV-T1-T12/L2/G1/G3 branches); the former
+  duplicate copies of these cases in `test_verifier_structure.py`,
+  `test_verifier_types.py`, `test_verifier_structural_and_method_call.py`
+  and `test_verifier_types_extra.py` were removed. Also
+  `test_ast_to_fir_errors.py` -- coverage-focused unit tests (each `FIRConversionError` case asserts its message) for
   `firescript/ast_to_fir.py`'s internal defensive branches and edge cases
   (malformed/edge-case AST shapes semantic analysis normally rejects
   first, or that no current parser rule can produce): every
@@ -283,7 +261,9 @@ Plain `assert` also works. Covers:
   several newly-found, not-fixed bugs (a `for-in`/`FIRV-T4` verifier crash
   for array-returning functions; `const string`/`const bool`/`const char`
   each failing to compile end-to-end for three separate, unrelated reasons
-  downstream of `ast_to_fir.py`). Also
+  downstream of `ast_to_fir.py`); it also pins the FIR a sized array without
+  an initializer (zero-initialized array literal) and a bare `return;` in a
+  non-void function (synthesized zero) lower to. Also
   `test_verifier_ownership_extra.py` -- additional gap-filling cases
   (FIRV-O6 via Clone, FIRV-O4 via a doubled `borrow_mut` argument, FIRV-O7
   via a LoadVar-wrapped borrow parameter, the arg_modes/args
@@ -346,65 +326,55 @@ Plain `assert` also works. Covers:
   selector matching). The harness ships with its own test coverage since it
   is the arbiter of every other test.
 - `tests/python/imports/test_module_resolver.py` -- direct unit tests for
-  `firescript/imports.py`'s `ModuleResolver` and `build_merged_ast`: default
-  `import_root`, `dotted_to_path`/`path_to_dotted` fallback branches,
-  `parse_file`'s FileNotFoundError/parse-error branches, cycle/external/
-  relative-import rejection in `_load_module` (via monkeypatching
-  `parse_file`/`dotted_to_path`/`Module.__post_init__` to inject hand-built
-  ASTs), and `build_merged_ast`'s no-name-export, duplicate-import-symbol,
-  and entry-vs-import conflict (including its `ValueError` fallback)
-  branches. Documents a suspected bug: `_load_module`'s cycle-detection
-  branch is effectively unreachable for a genuine A->B->A import cycle,
-  since `self.modules[dotted]` is populated before recursing into that
-  module's dependencies (see the test's docstring and
+  `firescript/imports.py`'s `ModuleResolver` and `build_merged_ast`:
+  `_stdlib_package_for`'s package derivation, and three cases that pin
+  known, not-yet-fixed bugs: `_load_module`'s cycle-detection branch is
+  effectively unreachable for a genuine A->B->A import cycle (it fires only
+  when called directly with a faked `load_stack`; see
   `tests/sources/invalid/imports/import_cycle_a.fire`, which is caught by a
-  downstream undefined-symbol error instead of `CyclicImportError`).
-  `test_module_resolver_extra.py` adds further `ModuleResolver`/
-  `build_merged_ast` gap-filling cases (mutual-recursion resolving-guard,
-  stdlib sibling-relative-import resolution within a package, topo-sort's
-  external-kind skip, `append_symbol_with_deps`/`append_export` dedup
-  branches) using the same hand-built-AST-injection technique.
+  downstream undefined-symbol error instead of `CyclicImportError`), and
+  `build_merged_ast`'s entry-vs-import conflict handling (including its
+  `ValueError` fallback), which only logs the conflict instead of failing
+  the compile.
+  `test_module_resolver_extra.py` covers the rest of `ModuleResolver`/
+  `build_merged_ast` with real temp files or hand-built ASTs: default
+  `import_root`, `dotted_to_path`/`path_to_dotted` fallbacks, `parse_file`
+  error paths, external/relative-import rejection, mutual-recursion
+  resolving guard, stdlib sibling-relative-import resolution, and
+  `append_symbol_with_deps`/`append_export` dedup branches (asserting no
+  spurious conflict is logged).
 - `tests/python/semantic/test_semantic_analyzer_internals.py` -- direct unit
   tests for `firescript/semantic_analyzer.py`'s less-common branches:
-  `BorrowInfo` construction, `report_error()`'s node-less and
-  index-out-of-range-fallback branches, `error()`'s convenience wrapper,
-  `_is_direct_borrow_view`/`_expr_is_owned_value` fallbacks,
-  `_merge_state_pair`'s BORROWED/VALID/both-moved branches,
-  `_definitely_terminates`'s default-False fallback, `_validate_match_arms`'
-  empty-arms/enum-mismatch/unknown-enum branches, `_validate_borrow`'s
-  error-reporting branch, and several "no children -> return early" guards
-  in `_analyze_node`'s dispatch (METHOD_CALL, IF_STATEMENT,
-  MATCH_EXPRESSION, WHILE_STATEMENT) plus the ELIF/ELSE recurse branch.
-  Also `test_semantic_analyzer_report_error.py` -- `report_error()`/`error()`
-  called with no `source_code` and with an out-of-range/negative `node.index`.
+  `report_error()`'s node-less, no-`source_code` and out-of-range fallbacks,
+  `_expr_is_owned_value` fallbacks (including an array return type being
+  Owned), `_merge_state_pair`'s full truth table (including
+  MOVED + VALID -> MAYBE_MOVED), `_definitely_terminates`'s default-False
+  fallback, `_validate_match_arms`' empty-arms/enum-mismatch/unknown-enum
+  branches, `_validate_borrow`'s error-reporting branch, and the "no
+  children -> return early" guards plus ELIF/ELSE recursion (observed through
+  a spy on `_analyze_node`) in its dispatch.
 - `tests/python/preprocessor/test_preprocessor_internals.py` -- direct unit
   tests for `firescript/preprocessor.py`'s internal helpers and
   `enable_and_insert_drops()`'s less-common branches: directive-already-
-  present, unmentioned-variable, `_is_drop_call` var_name matching,
-  return-expression walk helpers (including FUNCTION_CALL/CONSTRUCTOR_CALL
-  borrow-flag-driven transfer detection), implicit-declaration inference
-  from a method call on a constructor or identifier receiver, break/continue
-  outside any recorded loop boundary (fallback drain), and a C-style
-  for-loop with an omitted (`None`) middle clause.
-- `tests/python/lexer/test_lexer_internals.py` -- direct unit test for
-  `firescript/lexer.py`'s `Lexer.tokenize()` defensive `token_type is None`
-  fallback (a successful regex match whose `.lastgroup` is `None`). Every
-  alternative in the master token regex is a named group requiring at least
-  one character, so this branch looks structurally unreachable through any
-  real input; it is exercised only by monkeypatching the compiled regex
-  object to return a fake match, purely to cover the branch's own
-  formatting logic.
+  present, `_mentions_var` (direct, nested, absent), `_is_drop_call`
+  var_name matching, return-expression transfer detection through
+  FUNCTION_CALL/CONSTRUCTOR_CALL borrow flags (an owned parameter transfers
+  the argument, a borrowed twin leaves it marked for a post-return drop),
+  implicit-declaration inference from a method call on a constructor or
+  identifier receiver (asserting the inferred variable is auto-dropped), and
+  a C-style for-loop with an omitted (`None`) middle clause.
 - `tests/python/log_formatter/test_log_formatter_internals.py` -- direct
   unit tests for `firescript/log_formatter.py`'s two hard-to-reach branches:
   `Colors`' Windows-console VT-mode setup (module-level code that only runs
-  when `sys.stdout.isatty()` is True on Windows; exercised by monkeypatching
-  `isatty` and reloading the module) and `JsonFormatter.format()`'s
+  when `sys.stdout.isatty()` is True on Windows; exercised with faked
+  `isatty`/`platform.system`/`ctypes.windll` and a module reload, asserting
+  the `SetConsoleMode(handle, 7)` call) and `JsonFormatter.format()`'s
   `except ImportError` fallback (forced via the `sys.modules[name] = None`
   trick).
 
 - Decision-point and error-path unit tests added to close verifier, CLI and utility gaps:
   - `tests/python/fir/test_verifier_checks.py` -- single-corruption tests of the FIR Tier-1 verifier (generic-parameter skips FIRV-T1/T2/T5/T6/T7/T9, array-size and nullable argument assignability, StoreVar nullable assignment FIRV-L2, ArrayAlloc/ArrayCopy FIRV-T8, LoadField/StoreField/Allocate field type mismatches), each asserting the specific rule id.
-  - `tests/python/fir/test_ownership_verifier_checks.py` -- Tier-2 ownership verifier: dataflow meet of differing binding sets, StoreArray consuming its value, borrow-parameter check (FIRV-O1/O7), FIRV-G4 with a generator held in a local, enum-guard collection ignoring non-ExtractTag `==` branches.
+  - `tests/python/fir/test_ownership_verifier_checks.py` -- Tier-2 ownership verifier: dataflow meet of differing binding sets, StoreArray consuming its value, borrow-parameter check (FIRV-O1/O7), FIRV-G4 with a generator held in a local, and FIRV-E1 enum-guard cases (matching tag accepted; another variant's tag or a non-literal comparison does not protect the payload).
   - `tests/python/flir/test_verifier_checks.py` -- single-corruption tests of FLIR Tier-1 verifier decision points with valid counterparts: jmp/br targets, slot dominance and parameter slots, FLIRV-T2 null-check and narrow-int exemptions, pointee leniency on ret/calls, M1/M2 field checks, ptradd scale, Tier-2 gating after a Tier-1 failure and violation ordering.
   - `tests/python/flir/test_heap_verifier_checks.py` -- one heap lifecycle per test: leak, double free, use after free, free of a non-heap pointer, A5 destructor totality, meet semantics at joins, escapes by store/call/return, slot re-binding.
   - `tests/python/flir/test_heap_verifier_loops.py` -- heap-lifecycle verifier across loop back-edges: a pre-loop allocation never freed (A4), freed inside the body (A1 on the next iteration), use-after-free across the back-edge, nested loops and a conditional free in a while body, with valid counterparts that must report nothing.
