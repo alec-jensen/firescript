@@ -547,6 +547,7 @@ class StatementsMixin(ExpressionsMixin):
                 "MULTIPLY_ASSIGN",
                 "DIVIDE_ASSIGN",
                 "MODULO_ASSIGN",
+                "POWER_ASSIGN",
             )
         ):
             return self.parse_compound_assignment()

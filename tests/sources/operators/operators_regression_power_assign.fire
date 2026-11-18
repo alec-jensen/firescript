@@ -1,0 +1,33 @@
+import @firescript/std.io.println;
+
+// Regression: `**=` is lexed (POWER_ASSIGN) and documented, but the parser
+// rejected it ("Expected assignment, function call, or method call") because
+// it was missing from the compound-assignment token lists, and AST->FIR had
+// no operator mapping for it.
+n: int32 = 2;
+n **= 10;
+println(n);
+
+f: float64 = 1.5;
+f **= 2.0;
+println(f);
+
+x: int64 = 3i64;
+x **= 3i64;
+println(x);
+
+// Zero exponent and use after compound assignment in an expression.
+z: int32 = 7;
+z **= 0;
+println(z + 1);
+
+// Right-associative plain `**` for comparison.
+println(2 ** 3 ** 2);
+
+/* EXPECT
+1024
+2.250000
+27
+2
+512
+*/

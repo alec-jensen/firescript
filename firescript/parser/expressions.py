@@ -813,6 +813,7 @@ class ExpressionsMixin(ParserBase):
             "MULTIPLY_ASSIGN",
             "DIVIDE_ASSIGN",
             "MODULO_ASSIGN",
+            "POWER_ASSIGN",
         ):
             op_token = self.current_token
             self.advance()

@@ -426,6 +426,7 @@ Each heading below is a directory under `tests/sources/`.
 - **operators_comparison.fire** - Equality (==, !=), relational (<, >, <=, >=) for all numeric types and strings
 - **operators_logical.fire** - Logical operators (`&&`, `||`, `!`) including nested and combined conditions
 - **unary_test.fire** - Unary numeric operators (-, +)
+- **operators_regression_power_assign.fire** - Regression: `**=` on int32, float64 and int64, plus right-associative `**`; `**=` was lexed and documented but rejected by the parser ("Expected assignment, function call, or method call")
 
 ### `control_flow/`
 - **control_flow_if.fire** - if/else/else-if chains, nested if
