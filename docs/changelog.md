@@ -71,6 +71,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - An imported class used as a generic type argument (`ArrayList<Match>` with `Match` imported, in a type annotation or a constructor call) no longer fails to parse with "Expected type argument in generic instantiation".
 - A call chained off an instance method call's result (`obj.method().other()`) no longer fails to parse with "Expected ')' after argument list".
 - A string or array builtin method called on the result of a method call on an imported class (`sb.build().length() as string`) no longer fails FIR->FLIR lowering with "cannot convert void to string".
+- `firescript --check -o <file>` no longer exits 1 with "rename: src should be string, bytes or os.PathLike, not bool"; it now exits 0 and writes no output.
 
 ## 0.5.0 - Kirin
 *July 2, 2026*

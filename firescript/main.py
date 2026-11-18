@@ -584,8 +584,9 @@ def main():
             sys.exit(1)
 
         # Handle output file renaming for single file case
-        # (if compile_file didn't already write it directly to output_path)
-        if output_path and args.output and output_path != args.output:
+        # (if compile_file didn't already write it directly to output_path;
+        # --check returns a bare True, not a path, and writes nothing)
+        if isinstance(output_path, str) and args.output and output_path != args.output:
             try:
                 shutil.move(output_path, args.output)  # deepcode ignore PathTraversal: user-selected local output path.
                 logging.info(f"Output moved to {args.output}")
