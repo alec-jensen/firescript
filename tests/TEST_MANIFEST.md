@@ -340,26 +340,24 @@ Plain `assert` also works. Covers:
   branches) using the same hand-built-AST-injection technique.
 - `tests/python/semantic/test_semantic_analyzer_internals.py` -- direct unit
   tests for `firescript/semantic_analyzer.py`'s less-common branches:
-  `BorrowInfo` construction, `report_error()`'s node-less and
-  index-out-of-range-fallback branches, `error()`'s convenience wrapper,
-  `_is_direct_borrow_view`/`_expr_is_owned_value` fallbacks,
-  `_merge_state_pair`'s BORROWED/VALID/both-moved branches,
-  `_definitely_terminates`'s default-False fallback, `_validate_match_arms`'
-  empty-arms/enum-mismatch/unknown-enum branches, `_validate_borrow`'s
-  error-reporting branch, and several "no children -> return early" guards
-  in `_analyze_node`'s dispatch (METHOD_CALL, IF_STATEMENT,
-  MATCH_EXPRESSION, WHILE_STATEMENT) plus the ELIF/ELSE recurse branch.
-  Also `test_semantic_analyzer_report_error.py` -- `report_error()`/`error()`
-  called with no `source_code` and with an out-of-range/negative `node.index`.
+  `report_error()`'s node-less, no-`source_code` and out-of-range fallbacks,
+  `_expr_is_owned_value` fallbacks (including an array return type being
+  Owned), `_merge_state_pair`'s full truth table (including
+  MOVED + VALID -> MAYBE_MOVED), `_definitely_terminates`'s default-False
+  fallback, `_validate_match_arms`' empty-arms/enum-mismatch/unknown-enum
+  branches, `_validate_borrow`'s error-reporting branch, and the "no
+  children -> return early" guards plus ELIF/ELSE recursion (observed through
+  a spy on `_analyze_node`) in its dispatch.
 - `tests/python/preprocessor/test_preprocessor_internals.py` -- direct unit
   tests for `firescript/preprocessor.py`'s internal helpers and
   `enable_and_insert_drops()`'s less-common branches: directive-already-
-  present, unmentioned-variable, `_is_drop_call` var_name matching,
-  return-expression walk helpers (including FUNCTION_CALL/CONSTRUCTOR_CALL
-  borrow-flag-driven transfer detection), implicit-declaration inference
-  from a method call on a constructor or identifier receiver, break/continue
-  outside any recorded loop boundary (fallback drain), and a C-style
-  for-loop with an omitted (`None`) middle clause.
+  present, `_mentions_var` (direct, nested, absent), `_is_drop_call`
+  var_name matching, return-expression transfer detection through
+  FUNCTION_CALL/CONSTRUCTOR_CALL borrow flags (an owned parameter transfers
+  the argument, a borrowed twin leaves it marked for a post-return drop),
+  implicit-declaration inference from a method call on a constructor or
+  identifier receiver (asserting the inferred variable is auto-dropped), and
+  a C-style for-loop with an omitted (`None`) middle clause.
 - `tests/python/log_formatter/test_log_formatter_internals.py` -- direct
   unit tests for `firescript/log_formatter.py`'s two hard-to-reach branches:
   `Colors`' Windows-console VT-mode setup (module-level code that only runs

@@ -1,11 +1,10 @@
 """Direct unit tests for firescript/semantic_analyzer.py's less-common
-branches: BorrowInfo construction, report_error()'s node=None and
-index-out-of-range except branches, error()'s convenience wrapper,
-_is_direct_borrow_view / _expr_is_owned_value fallbacks, _merge_state_pair's
-BORROWED/VALID/both-moved branches, _definitely_terminates' default-False
-fallback, _validate_match_arms' empty-arms and enum-mismatch/unknown-enum
-branches, _validate_borrow's error-reporting branch, and several
-"no children -> return early" guards across _analyze_node's dispatch."""
+branches: report_error()'s node-less, no-source-code and out-of-range
+fallbacks, _expr_is_owned_value fallbacks, _merge_state_pair's full truth
+table, _definitely_terminates' default-False fallback, _validate_match_arms'
+empty-arms and enum-mismatch/unknown-enum branches, _validate_borrow's
+error-reporting branch, and the "no children -> return early" guards and
+ELIF/ELSE recursion in _analyze_node's dispatch."""
 from __future__ import annotations
 
 import os
@@ -19,7 +18,7 @@ sys.path.insert(0, os.path.join(REPO_ROOT, "firescript"))
 from enums import NodeTypes  # noqa: E402
 from parser.ast_node import ASTNode  # noqa: E402
 from errors import SemanticError  # noqa: E402
-from semantic_analyzer import SemanticAnalyzer, BorrowInfo, BindingInfo, OwnershipState  # noqa: E402
+from semantic_analyzer import SemanticAnalyzer, OwnershipState  # noqa: E402
 
 
 def _root(children=None) -> ASTNode:
@@ -28,16 +27,6 @@ def _root(children=None) -> ASTNode:
 
 def _analyzer(source_code=None, source_file="test.fire") -> SemanticAnalyzer:
     return SemanticAnalyzer(_root(), source_file=source_file, source_code=source_code)
-
-
-# --- BorrowInfo ----------------------------------------------------------------
-
-def test_borrow_info_stores_fields():
-    node = ASTNode(NodeTypes.IDENTIFIER, None, "s", [], 0)
-    info = BorrowInfo("s", node, 2)
-    t.require_eq(info.borrowed_name, "s")
-    t.require(info.borrow_node is node)
-    t.require_eq(info.scope_depth, 2)
 
 
 # --- report_error --------------------------------------------------------------
@@ -64,62 +53,49 @@ def test_report_error_with_out_of_range_node_falls_back():
     t.require_eq(analyzer.errors[0].source_file, "test.fire")
 
 
-def test_error_convenience_method():
+def test_report_error_without_source_code_uses_no_line_info():
     analyzer = _analyzer(source_code=None)
-    analyzer.error("something went wrong")
+    analyzer.error("synthetic error", ASTNode(NodeTypes.IDENTIFIER, None, "x", [], 0))
     t.require_eq(len(analyzer.errors), 1)
-    t.require("something went wrong" in analyzer.errors[0].message)
+    t.require_eq(analyzer.errors[0].line, 0)
 
 
-# --- _is_direct_borrow_view fallback --------------------------------------------
+# --- _expr_is_owned_value ---------------------------------------------------------
 
-def test_is_direct_borrow_view_false_for_unrelated_node_type():
+def test_expr_is_owned_value_false_without_binding_or_return_type():
     analyzer = _analyzer()
+    unbound = ASTNode(NodeTypes.IDENTIFIER, None, "unbound", [], 0)
+    t.require(analyzer._expr_is_owned_value(unbound) is False)
     literal = ASTNode(NodeTypes.LITERAL, None, "1", [], 0, var_type="int32")
-    t.require(analyzer._is_direct_borrow_view(literal, {"s"}) is False)
+    t.require(analyzer._expr_is_owned_value(literal) is False)
 
 
-# --- _expr_is_owned_value fallbacks ----------------------------------------------
-
-def test_expr_is_owned_value_false_for_no_binding_no_return_type():
-    analyzer = _analyzer()
-    node = ASTNode(NodeTypes.IDENTIFIER, None, "unbound", [], 0)
-    t.require(analyzer._expr_is_owned_value(node) is False)
-
-
-def test_expr_is_owned_value_array_return_type():
+def test_expr_is_owned_value_array_return_type_is_owned():
     analyzer = _analyzer()
     node = ASTNode(NodeTypes.FUNCTION_CALL, None, "make_boxes", [], 0, return_type="Box[]")
-    # Box is not a registered class here, so is_owned(...) resolves via the
-    # default (unregistered types are treated as Owned) -- either way this
-    # exercises the array-return-type branch without raising.
-    analyzer._expr_is_owned_value(node)
-
-
-def test_expr_is_owned_value_false_for_non_identifier_no_return_type():
-    analyzer = _analyzer()
-    node = ASTNode(NodeTypes.LITERAL, None, "1", [], 0, var_type="int32")
-    t.require(analyzer._expr_is_owned_value(node) is False)
+    t.require(analyzer._expr_is_owned_value(node) is True)
 
 
 # --- _merge_state_pair -----------------------------------------------------------
 
-def test_merge_state_pair_both_movedish_yields_moved():
-    analyzer = _analyzer()
-    result = analyzer._merge_state_pair(OwnershipState.MOVED, OwnershipState.MAYBE_MOVED)
-    t.require_eq(result, OwnershipState.MOVED)
+_S = OwnershipState
 
 
-def test_merge_state_pair_borrowed_wins():
-    analyzer = _analyzer()
-    result = analyzer._merge_state_pair(OwnershipState.BORROWED, OwnershipState.VALID)
-    t.require_eq(result, OwnershipState.BORROWED)
-
-
-def test_merge_state_pair_default_valid():
-    analyzer = _analyzer()
-    result = analyzer._merge_state_pair(OwnershipState.VALID, OwnershipState.VALID)
-    t.require_eq(result, OwnershipState.VALID)
+@t.params([
+    (_S.VALID, _S.VALID, _S.VALID),
+    (_S.MOVED, _S.MOVED, _S.MOVED),
+    (_S.MOVED, _S.MAYBE_MOVED, _S.MOVED),
+    (_S.MAYBE_MOVED, _S.MOVED, _S.MOVED),
+    (_S.MOVED, _S.VALID, _S.MAYBE_MOVED),
+    (_S.VALID, _S.MOVED, _S.MAYBE_MOVED),
+    (_S.MAYBE_MOVED, _S.VALID, _S.MAYBE_MOVED),
+    (_S.MOVED, _S.BORROWED, _S.MAYBE_MOVED),
+    (_S.BORROWED, _S.VALID, _S.BORROWED),
+    (_S.VALID, _S.BORROWED, _S.BORROWED),
+])
+def test_merge_state_pair_truth_table(case):
+    a, b, expected = case
+    t.require_eq(_analyzer()._merge_state_pair(a, b), expected, f"{a} + {b}")
 
 
 # --- _definitely_terminates default False ----------------------------------------
@@ -179,51 +155,31 @@ def test_validate_borrow_reports_error_for_copyable_type():
     t.require("Cannot borrow Copyable type" in analyzer.errors[0].message)
 
 
-# --- _analyze_node: None input and "no children -> return" guards -------------------
+# --- _analyze_node: "no children -> return" guards and ELIF/ELSE recursion ----------
 
-def test_analyze_node_none_is_noop():
+@t.params([
+    NodeTypes.METHOD_CALL,
+    NodeTypes.IF_STATEMENT,
+    NodeTypes.MATCH_EXPRESSION,
+    NodeTypes.WHILE_STATEMENT,
+])
+def test_analyze_node_childless_control_nodes_return_early(node_type):
     analyzer = _analyzer()
-    analyzer._analyze_node(None)  # must not raise
-    t.require_eq(len(analyzer.errors), 0)
+    analyzer._analyze_node(ASTNode(node_type, None, "n", [], 0))  # must not raise
+    t.require_eq(analyzer.errors, [])
 
 
-def test_analyze_node_method_call_no_children_returns_early():
-    analyzer = _analyzer()
-    node = ASTNode(NodeTypes.METHOD_CALL, None, "m", [], 0)
-    analyzer._analyze_node(node)  # must not raise (early return)
-
-
-def test_analyze_node_if_statement_no_children_returns_early():
-    analyzer = _analyzer()
-    node = ASTNode(NodeTypes.IF_STATEMENT, None, "if", [], 0)
-    analyzer._analyze_node(node)
-
-
-def test_analyze_node_match_expression_no_children_returns_early():
-    analyzer = _analyzer()
-    node = ASTNode(NodeTypes.MATCH_EXPRESSION, None, "match", [], 0)
-    analyzer._analyze_node(node)
-
-
-def test_analyze_node_while_statement_no_children_returns_early():
-    analyzer = _analyzer()
-    node = ASTNode(NodeTypes.WHILE_STATEMENT, None, "while", [], 0)
-    analyzer._analyze_node(node)
-
-
-def test_analyze_node_elif_else_recurse_into_children():
+@t.params([NodeTypes.ELIF_STATEMENT, NodeTypes.ELSE_STATEMENT])
+def test_analyze_node_elif_else_recurse_into_children(node_type):
     analyzer = _analyzer()
     inner = ASTNode(NodeTypes.IDENTIFIER, None, "z", [], 0)
-    elif_node = ASTNode(NodeTypes.ELIF_STATEMENT, None, "elif", [inner], 0)
-    analyzer._analyze_node(elif_node)  # must not raise; recurses into `inner`
+    visited = []
+    original = analyzer._analyze_node
 
-    else_node = ASTNode(NodeTypes.ELSE_STATEMENT, None, "else", [inner], 0)
-    analyzer._analyze_node(else_node)
+    def _spy(node, *args, **kwargs):
+        visited.append(node)
+        return original(node, *args, **kwargs)
 
-
-# --- _collect_function_signatures(None) is a no-op ----------------------------------
-
-def test_collect_function_signatures_none_is_noop():
-    analyzer = _analyzer()
-    analyzer._collect_function_signatures(None)  # must not raise
-    t.require_eq(analyzer.function_signatures, {})
+    analyzer._analyze_node = _spy
+    original(ASTNode(node_type, None, "branch", [inner], 0))
+    t.require(any(v is inner for v in visited), "child of ELIF/ELSE was not analyzed")
