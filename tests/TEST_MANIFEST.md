@@ -533,6 +533,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **functions_rare_constructs.fire** - `.length()` called on an array *parameter* (size not statically known, vs. a locally-sized array) and `for-in` over a named array identifier (vs. an array literal), exercising less-common `ast_to_fir.py` array-size-lookup paths
 - **functions_fallthrough_return.fire** - Non-void (float64/bool) function whose only `if` has no `else`; falling off the end synthesizes a zero value of the declared return type
 - **functions_many_params.fire** - Functions with more than 4 parameters (int, float, and copyable-struct), exercising the Windows x64 calling convention's stack-spill path for the 5th+ argument (only the first 4 are passed in registers)
+- **functions.fire** - Basic function examples (multi-return-type, array param, string concat, void with multiple args — a different set of scenarios from the `functions_*` files above)
 - **functions_sized_array_param.fire** - Fixed-size array parameter type (`int32[N]`), distinct from the unsized `int32[]` form
 - **functions_nullable_scalar_param.fire** - A nullable *scalar* function parameter (`count: int32?`): a legitimate zero argument is distinguishable from an omitted (`null`) one via the implicit trailing has-value companion parameter `_function_params` appends. See `ast_to_fir.py`'s "Nullable scalars" section.
 
