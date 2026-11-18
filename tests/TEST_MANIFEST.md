@@ -320,24 +320,23 @@ Plain `assert` also works. Covers:
   selector matching). The harness ships with its own test coverage since it
   is the arbiter of every other test.
 - `tests/python/imports/test_module_resolver.py` -- direct unit tests for
-  `firescript/imports.py`'s `ModuleResolver` and `build_merged_ast`: default
-  `import_root`, `dotted_to_path`/`path_to_dotted` fallback branches,
-  `parse_file`'s FileNotFoundError/parse-error branches, cycle/external/
-  relative-import rejection in `_load_module` (via monkeypatching
-  `parse_file`/`dotted_to_path`/`Module.__post_init__` to inject hand-built
-  ASTs), and `build_merged_ast`'s no-name-export, duplicate-import-symbol,
-  and entry-vs-import conflict (including its `ValueError` fallback)
-  branches. Documents a suspected bug: `_load_module`'s cycle-detection
-  branch is effectively unreachable for a genuine A->B->A import cycle,
-  since `self.modules[dotted]` is populated before recursing into that
-  module's dependencies (see the test's docstring and
+  `firescript/imports.py`'s `ModuleResolver` and `build_merged_ast`:
+  `_stdlib_package_for`'s package derivation, and three cases that pin
+  known, not-yet-fixed bugs: `_load_module`'s cycle-detection branch is
+  effectively unreachable for a genuine A->B->A import cycle (it fires only
+  when called directly with a faked `load_stack`; see
   `tests/sources/invalid/imports/import_cycle_a.fire`, which is caught by a
-  downstream undefined-symbol error instead of `CyclicImportError`).
-  `test_module_resolver_extra.py` adds further `ModuleResolver`/
-  `build_merged_ast` gap-filling cases (mutual-recursion resolving-guard,
-  stdlib sibling-relative-import resolution within a package, topo-sort's
-  external-kind skip, `append_symbol_with_deps`/`append_export` dedup
-  branches) using the same hand-built-AST-injection technique.
+  downstream undefined-symbol error instead of `CyclicImportError`), and
+  `build_merged_ast`'s entry-vs-import conflict handling (including its
+  `ValueError` fallback), which only logs the conflict instead of failing
+  the compile.
+  `test_module_resolver_extra.py` covers the rest of `ModuleResolver`/
+  `build_merged_ast` with real temp files or hand-built ASTs: default
+  `import_root`, `dotted_to_path`/`path_to_dotted` fallbacks, `parse_file`
+  error paths, external/relative-import rejection, mutual-recursion
+  resolving guard, stdlib sibling-relative-import resolution, and
+  `append_symbol_with_deps`/`append_export` dedup branches (asserting no
+  spurious conflict is logged).
 - `tests/python/semantic/test_semantic_analyzer_internals.py` -- direct unit
   tests for `firescript/semantic_analyzer.py`'s less-common branches:
   `report_error()`'s node-less, no-`source_code` and out-of-range fallbacks,
