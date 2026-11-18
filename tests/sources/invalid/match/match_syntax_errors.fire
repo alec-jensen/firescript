@@ -1,17 +1,12 @@
-// Malformed match expressions (pure syntax errors).
+// Malformed match expressions (pure syntax errors). A missing scrutinee, a missing variant name after '.' and a
+// non-identifier payload field name are covered by match_missing_scrutinee.fire,
+// match_pattern_missing_variant.fire and match_pattern_bad_binding.fire.
 enum Shape {
     Dot,
     Line(len: float64)
 }
 
 s1: Shape = Shape.Dot;
-
-// Missing scrutinee expression
-z: int32 = match {  //~ ERROR FS-PARSE-0012 @18
-//~^ ERROR FS-PARSE-0010 @19
-//~^^ ERROR FS-PARSE-0010 @19
-    _ -> 1  //~ ERROR FS-PARSE-0010 @5
-};
 
 // Missing '{' to start match body
 a: int32 = match s1 5;  //~ ERROR FS-PARSE-0010 @21
@@ -40,14 +35,6 @@ d: int32 = match s4 {
     _ -> 2
 };
 
-s4b: Shape = Shape.Dot;
-
-// Missing variant name after '.'
-d2: int32 = match s4b {
-    Shape. -> 1,  //~ ERROR FS-PARSE-0010 @12
-    _ -> 2
-};
-
 s5: Shape = Shape.Dot;
 
 // Missing local binding name after ':'
@@ -61,16 +48,6 @@ s6: Shape = Shape.Dot;
 // Missing ')' to close pattern bindings
 f: int32 = match s6 {
     Shape.Line(len -> 1,  //~ ERROR FS-PARSE-0010 @20
-    _ -> 2
-};
-
-s7: Shape = Shape.Dot;
-
-// Payload field name is not an identifier
-h: int32 = match s7 {
-    Shape.Line(5) -> 1,  //~ ERROR FS-PARSE-0010 @16
-//~^ ERROR FS-PARSE-0010 @16
-//~^^ ERROR FS-PARSE-0010 @16
     _ -> 2
 };
 

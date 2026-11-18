@@ -5,7 +5,7 @@ fn badRet() -> int32[ {  //~ ERROR FS-PARSE-0010 @23
     return 0;
 }
 
-// Missing parameter type
+// Parameter that is not a name
 fn badParamType(!) -> void {  //~ ERROR FS-PARSE-0010 @17
 }
 

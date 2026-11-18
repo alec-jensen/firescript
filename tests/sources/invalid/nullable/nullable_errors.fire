@@ -1,5 +1,4 @@
 // Invalid tests: nullable errors
-// EXPECT: compiler errors about invalid null usage
 
 // Non-nullable variable initialized with null
 a: int32 = null; // error  //~ ERROR FS-SEM-0010 @1

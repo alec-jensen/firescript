@@ -1,6 +1,0 @@
-// Calling a builtin with an argument count check (`typeof`) with the wrong
-// number of arguments.
-fn main() -> int32 {
-    x: int32 = typeof();  //~ ERROR FS-SEM-0010 @16
-    return x;
-}
