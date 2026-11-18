@@ -2,7 +2,7 @@
 the dataflow meet of binding sets that differ between predecessors,
 StoreArray consumption and its borrow-parameter check (FIRV-O7),
 generator identity through LoadVar (FIRV-G4), and enum-guard collection
-skipping `==` branches that do not compare an ExtractTag. Built by hand with
+only treating an `==` against the payload variant's own tag as a guard. Built by hand with
 FIRBuilder and corrupted in exactly one place."""
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.join(REPO_ROOT, "firescript"))
 
 from errors import IRVerificationError  # noqa: E402
 from fir import ArrayType, FIRBuilder, FIRFunction, FIRModule, TypeDef, make_simple  # noqa: E402
+from fir.ir_module import EnumVariantDef  # noqa: E402
 from fir.ir_types import GeneratorType  # noqa: E402
 from fir.ownership_verifier import OwnState, _meet_states  # noqa: E402
 
@@ -123,16 +124,43 @@ def test_g4_gen_value_on_local_without_gen_next():
 
 # -- enum guard collection ignores non-tag equality branches ----------------
 
-def test_e1_equality_branch_without_extract_tag_is_not_a_guard():
+
+# -- enum guard collection: only a matching tag comparison is a guard --------
+
+def _enum_guard_module(rhs_kind: str) -> FIRModule:
+    """`if (tag(e) == <rhs>) { return e.A.v; }` for enum E { A(v), B }."""
     module = FIRModule("firescript")
-    func = FIRFunction("f", return_type=None)
+    module.add_type(TypeDef("E", "owned", kind="enum",
+                            variants=[EnumVariantDef("A", [("v", INT32)]), EnumVariantDef("B")]))
+    enum_t = make_simple("E")
+    func = FIRFunction("f", return_type=INT32)
     module.add_function(func)
     b = FIRBuilder(func)
-    cond = b.binary_op("==", b.int_literal("1", INT32), b.int_literal("2", INT32), BOOL)
+    ev = b.construct_variant(enum_t, "A", [b.int_literal("1", INT32)])
+    tag = b.extract_tag(ev, INT32)
+    if rhs_kind == "variant_a_tag":
+        rhs = b.int_literal("0", INT32)
+    elif rhs_kind == "variant_b_tag":
+        rhs = b.int_literal("1", INT32)
+    else:  # "non_literal"
+        rhs = b.extract_tag(ev, INT32)
+    cond = b.binary_op("==", tag, rhs, BOOL)
     then_b, else_b = b.new_block(), b.new_block()
     b.branch(cond, then_b.id, else_b.id)
     b.position_at(then_b)
-    b.ret()
+    b.ret(b.extract_payload_field(ev, "A", 0, INT32))
     b.position_at(else_b)
-    b.ret()
-    t.require_eq(_rules(module), [])
+    b.ret(b.int_literal("0", INT32))
+    return module
+
+
+def test_e1_guard_on_matching_variant_tag_is_accepted():
+    t.require_eq(_rules(_enum_guard_module("variant_a_tag")), [])
+
+
+def test_e1_guard_on_other_variants_tag_does_not_protect_payload():
+    t.require("FIRV-E1" in _rules(_enum_guard_module("variant_b_tag")))
+
+
+def test_e1_comparison_against_non_literal_is_not_a_guard():
+    t.require("FIRV-E1" in _rules(_enum_guard_module("non_literal")))

@@ -227,12 +227,14 @@ Plain `assert` also works. Covers:
   `firescript/ir_analysis.py` (used by both the FIR and FLIR verifiers)
   directly: `dominates()`'s missing-node and cyclic-idom-chain guards, and
   a basic `compute_dominators()` diamond shape. `test_verifier_more.py`
-  fills further Tier-1 FIR verifier gaps (T5-T9 branches: call-result type
-  mismatch, unknown struct field store, array-index/value type checks,
-  `Allocate`'s unregistered-class/explicit-constructor/argument-type
-  branches, `_type_assignable`'s array-size-mismatch and invalid-operand
-  skip cases). Also
-  `test_ast_to_fir_errors.py` -- coverage-focused unit tests for
+  is the one home for most single-corruption Tier-1 rule tests (FIRV-S6
+  duplicate-name/type-def rules, FIRV-D1-D3 operand resolution including a
+  single parametrized FIRV-D2 test that also asserts no other rule fires,
+  and the per-instruction FIRV-T1-T12/L2/G1/G3 branches); the former
+  duplicate copies of these cases in `test_verifier_structure.py`,
+  `test_verifier_types.py`, `test_verifier_structural_and_method_call.py`
+  and `test_verifier_types_extra.py` were removed. Also
+  `test_ast_to_fir_errors.py` -- coverage-focused unit tests (each `FIRConversionError` case asserts its message) for
   `firescript/ast_to_fir.py`'s internal defensive branches and edge cases
   (malformed/edge-case AST shapes semantic analysis normally rejects
   first, or that no current parser rule can produce): every
@@ -360,14 +362,15 @@ Plain `assert` also works. Covers:
 - `tests/python/log_formatter/test_log_formatter_internals.py` -- direct
   unit tests for `firescript/log_formatter.py`'s two hard-to-reach branches:
   `Colors`' Windows-console VT-mode setup (module-level code that only runs
-  when `sys.stdout.isatty()` is True on Windows; exercised by monkeypatching
-  `isatty` and reloading the module) and `JsonFormatter.format()`'s
+  when `sys.stdout.isatty()` is True on Windows; exercised with faked
+  `isatty`/`platform.system`/`ctypes.windll` and a module reload, asserting
+  the `SetConsoleMode(handle, 7)` call) and `JsonFormatter.format()`'s
   `except ImportError` fallback (forced via the `sys.modules[name] = None`
   trick).
 
 - Decision-point and error-path unit tests added to close verifier, CLI and utility gaps:
   - `tests/python/fir/test_verifier_checks.py` -- single-corruption tests of the FIR Tier-1 verifier (generic-parameter skips FIRV-T1/T2/T5/T6/T7/T9, array-size and nullable argument assignability, StoreVar nullable assignment FIRV-L2, ArrayAlloc/ArrayCopy FIRV-T8, LoadField/StoreField/Allocate field type mismatches), each asserting the specific rule id.
-  - `tests/python/fir/test_ownership_verifier_checks.py` -- Tier-2 ownership verifier: dataflow meet of differing binding sets, StoreArray consuming its value, borrow-parameter check (FIRV-O1/O7), FIRV-G4 with a generator held in a local, enum-guard collection ignoring non-ExtractTag `==` branches.
+  - `tests/python/fir/test_ownership_verifier_checks.py` -- Tier-2 ownership verifier: dataflow meet of differing binding sets, StoreArray consuming its value, borrow-parameter check (FIRV-O1/O7), FIRV-G4 with a generator held in a local, and FIRV-E1 enum-guard cases (matching tag accepted; another variant's tag or a non-literal comparison does not protect the payload).
   - `tests/python/flir/test_verifier_checks.py` -- single-corruption tests of FLIR Tier-1 verifier decision points with valid counterparts: jmp/br targets, slot dominance and parameter slots, FLIRV-T2 null-check and narrow-int exemptions, pointee leniency on ret/calls, M1/M2 field checks, ptradd scale, Tier-2 gating after a Tier-1 failure and violation ordering.
   - `tests/python/flir/test_heap_verifier_checks.py` -- one heap lifecycle per test: leak, double free, use after free, free of a non-heap pointer, A5 destructor totality, meet semantics at joins, escapes by store/call/return, slot re-binding.
   - `tests/python/flir/test_ir_analysis_edges.py` -- CFG, reverse postorder and dominators on diamond/loop/unreachable/nested shapes, `dominates`/`instruction_dominates` boundaries, `forward_dataflow` fixpoint and reachability, Violation formatting, `FLIRStruct.finalize`/`field`, and textual FLIR dump of entry, externs and globals.

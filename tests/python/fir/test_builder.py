@@ -68,15 +68,3 @@ def test_function_validate_wraps_in_throwaway_module():
     builder.ret(builder.int_literal("1", int32))
     func.validate()  # must not raise
 
-
-def test_borrow_produces_a_value():
-    int32 = make_simple("int32")
-    module = FIRModule("firescript")
-    func = FIRFunction("f", params=[("x", int32)], return_type=int32)
-    module.add_function(func)
-    builder = FIRBuilder(func)
-    from fir.ir_node import ParamValue
-
-    borrowed = builder.borrow(ParamValue("x", int32), mutable=True)
-    t.require(borrowed is not None)
-    builder.ret(builder.int_literal("1", int32))

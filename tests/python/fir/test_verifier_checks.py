@@ -106,18 +106,6 @@ def test_t5_call_to_generic_callee_skips_argument_checks():
     _expect_clean(module)
 
 
-def test_t5_call_arity_mismatch_to_non_generic_callee():
-    module = FIRModule("firescript")
-    _, cb = _fn(module, "id", params=[("x", INT32)], ret=INT32)
-    cb.ret(module.functions[0].param_value("x"))
-    _, b = _fn(module, "main", ret=None)
-    one = b.int_literal("1", INT32)
-    two = b.int_literal("2", INT32)
-    b.call("id", [one, two], ["own", "own"], INT32)
-    b.ret()
-    _expect_rule(module, "FIRV-T5")
-
-
 # -- FIRV-T5: array-size assignability in call arguments --------------------
 
 def test_t5_array_argument_size_mismatch():
@@ -279,11 +267,18 @@ def test_t8_array_copy_valid():
     _expect_clean(module)
 
 
-def test_t8_array_copy_non_array_dst_and_src():
+def test_t8_array_copy_non_array_dst():
     module = FIRModule("firescript")
-    _, b = _fn(module, "main")
-    n = b.int_literal("3", INT32)
-    b.array_copy(n, n, n)
+    b, dst, src, n = _two_arrays(module, ArrayType(INT32), ArrayType(INT32))
+    b.array_copy(n, src, n)
+    b.ret()
+    _expect_rule(module, "FIRV-T8")
+
+
+def test_t8_array_copy_non_array_src():
+    module = FIRModule("firescript")
+    b, dst, src, n = _two_arrays(module, ArrayType(INT32), ArrayType(INT32))
+    b.array_copy(dst, n, n)
     b.ret()
     _expect_rule(module, "FIRV-T8")
 

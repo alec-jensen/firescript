@@ -93,13 +93,7 @@ def test_increment_as_subexpression_produces_no_value():
     """`++`/`--` is only supported as a standalone statement -- when used
     as a sub-expression (e.g. as an array-literal element) it converts to
     None, and any call site that requires an actual value
-    (_require_value()) rejects it. Note: not every value-requiring call
-    site in ast_to_fir.py goes through _require_value() -- e.g. `int32 y =
-    x++ + 1;` (a binary-operator operand) instead reaches
-    fir/verifier.py's FIRV-D1 check as an internal compiler error (a
-    latent bug: BinaryOp's operand converts to None silently instead of
-    being rejected at the ast_to_fir.py level), which is a separate,
-    unrelated crash from the one exercised here."""
+    (_require_value()) rejects it."""
     _expect_conversion_error(
         """
         x: int32 = 1;

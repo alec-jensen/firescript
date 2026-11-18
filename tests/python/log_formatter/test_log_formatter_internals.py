@@ -5,9 +5,8 @@ branches:
    only runs when sys.stdout.isatty() is True *and* platform.system() ==
    "Windows"). Under the test harness stdout is normally redirected/piped
    (not a real tty), so this branch never runs during a normal coverage
-   pass. We are running on native Windows here (see CLAUDE.md env), so
-   monkeypatching isatty() to True and reloading the module exercises the
-   real (harmless, standard) kernel32.SetConsoleMode call.
+   pass. Platform detection and ctypes.windll are faked so the branch runs
+   on any host.
 2. JsonFormatter.format()'s `except ImportError` fallback when `from errors
    import CompileTimeError` fails -- forced via the standard
    sys.modules[name] = None trick, which makes any subsequent `import
@@ -29,16 +28,45 @@ import log_formatter  # noqa: E402
 
 
 def test_colors_windows_vt_mode_setup_when_isatty_true():
+    """On a tty under Windows, importing the module switches the console
+    into VT mode via kernel32.SetConsoleMode(stdout_handle, 7). Platform and
+    ctypes.windll are faked so this runs (and can fail) on every host."""
+    import ctypes
+    import platform
+
+    calls = []
+
+    class _FakeKernel32:
+        def GetStdHandle(self, which):
+            calls.append(("GetStdHandle", which))
+            return 1234
+
+        def SetConsoleMode(self, handle, mode):
+            calls.append(("SetConsoleMode", handle, mode))
+
+    class _FakeWindll:
+        kernel32 = _FakeKernel32()
+
     orig_isatty = sys.stdout.isatty
+    orig_system = platform.system
+    had_windll = hasattr(ctypes, "windll")
+    orig_windll = getattr(ctypes, "windll", None)
     sys.stdout.isatty = lambda: True
+    platform.system = lambda: "Windows"
+    ctypes.windll = _FakeWindll()
     try:
         reloaded = importlib.reload(log_formatter)
-        # The module executed its Windows VT-mode branch without raising;
+        t.require_eq(calls, [("GetStdHandle", -11), ("SetConsoleMode", 1234, 7)])
         # Colors' SGR codes remain real ANSI escapes in this branch (not
         # blanked out, unlike the non-tty branch).
         t.require(reloaded.Colors.BLUE.startswith("\033["), reloaded.Colors.BLUE)
     finally:
         sys.stdout.isatty = orig_isatty
+        platform.system = orig_system
+        if had_windll:
+            ctypes.windll = orig_windll
+        else:
+            del ctypes.windll
         # Restore normal (non-tty) module state for any tests that run after.
         importlib.reload(log_formatter)
 

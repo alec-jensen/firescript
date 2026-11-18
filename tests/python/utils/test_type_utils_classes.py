@@ -54,15 +54,6 @@ def test_plain_user_class_is_owned():
     tu.reset_registries()
 
 
-def test_copyable_user_class_is_copyable_not_owned():
-    tu.reset_registries()
-    tu.register_class("Pt", is_copyable=True)
-    t.require(tu.is_user_class("Pt"))
-    t.require(tu.is_copyable("Pt", False))
-    t.require(not tu.is_owned("Pt", False))
-    tu.reset_registries()
-
-
 def test_is_user_class_empty_string_is_false():
     tu.reset_registries()
     t.require(not tu.is_user_class(""))

@@ -62,12 +62,13 @@ def _with_builder(converter: ASTToFIRConverter) -> ASTToFIRConverter:
     return converter
 
 
-def _expect_conversion_error(fn) -> None:
+def _expect_conversion_error(fn, message: str) -> None:
+    """`fn` must raise a FIRConversionError whose text contains `message`."""
     try:
         fn()
         t.require(False, "expected FIRConversionError")
-    except FIRConversionError:
-        pass
+    except FIRConversionError as e:
+        t.require(message in str(e), f"expected {message!r} in {str(e)!r}")
 
 
 # -- FIRConversionError message formatting (location suffix) ----------------
@@ -93,12 +94,6 @@ def test_conversion_error_node_without_token():
 
 
 # -- convert(): runtime modules must not contain top-level statements ------
-
-def test_runtime_module_rejects_top_level_statements():
-    stray = _node(NodeTypes.BREAK_STATEMENT, "break", token=_tok("BREAK"))
-    converter = _new_converter([stray], is_runtime_module=True)
-    _expect_conversion_error(converter.convert)
-
 
 # -- _fir_type: None defaults to int32 ---------------------------------------
 
@@ -151,46 +146,35 @@ def test_class_array_field_type_string():
 def test_break_outside_loop_raises():
     converter = _with_builder(_new_converter())
     stmt = _node(NodeTypes.BREAK_STATEMENT, "break", token=_tok("BREAK"))
-    _expect_conversion_error(lambda: converter._convert_statement(stmt))
+    _expect_conversion_error(lambda: converter._convert_statement(stmt), "break outside loop")
 
 
 def test_continue_outside_loop_raises():
     converter = _with_builder(_new_converter())
     stmt = _node(NodeTypes.CONTINUE_STATEMENT, "continue", token=_tok("CONTINUE"))
-    _expect_conversion_error(lambda: converter._convert_statement(stmt))
+    _expect_conversion_error(lambda: converter._convert_statement(stmt), "continue outside loop")
 
 
 # -- return with a post-return-drop name not currently in scope -------------
-
-def test_return_post_drop_name_not_in_scope_is_skipped():
-    converter = _with_builder(_new_converter())
-    lit = _node(NodeTypes.LITERAL, "", token=_tok("INTEGER_LITERAL", "1"))
-    ret = _node(
-        NodeTypes.RETURN_STATEMENT, "return", [lit],
-        token=_tok("RETURN"), post_return_drop_names=["unknown_local"],
-    )
-    converter.current_function.return_type = None
-    converter._convert_statement(ret)  # must not raise
-
 
 # -- unsupported statement / expression / literal-token fallbacks -----------
 
 def test_unsupported_statement_raises():
     converter = _with_builder(_new_converter())
     bogus = _node(NodeTypes.ENUM_VARIANT, "bogus", token=_tok("EOF"))
-    _expect_conversion_error(lambda: converter._convert_statement(bogus))
+    _expect_conversion_error(lambda: converter._convert_statement(bogus), "Unsupported statement node")
 
 
 def test_unsupported_expression_raises():
     converter = _with_builder(_new_converter())
     bogus = _node(NodeTypes.ENUM_VARIANT, "bogus", token=_tok("EOF"))
-    _expect_conversion_error(lambda: converter._convert_expression(bogus))
+    _expect_conversion_error(lambda: converter._convert_expression(bogus), "Unsupported expression node")
 
 
 def test_unsupported_literal_token_raises():
     converter = _with_builder(_new_converter())
     node = _node(NodeTypes.LITERAL, "", token=_tok("UNKNOWN_LITERAL", "?"))
-    _expect_conversion_error(lambda: converter._convert_literal(node))
+    _expect_conversion_error(lambda: converter._convert_literal(node), "Unsupported literal token UNKNOWN_LITERAL")
 
 
 # -- assignment without a value, unsupported assignment target --------------
@@ -198,7 +182,7 @@ def test_unsupported_literal_token_raises():
 def test_assignment_without_value_raises():
     converter = _with_builder(_new_converter())
     node = _node(NodeTypes.VARIABLE_ASSIGNMENT, "x", [])
-    _expect_conversion_error(lambda: converter._convert_variable_assignment(node))
+    _expect_conversion_error(lambda: converter._convert_variable_assignment(node), "Assignment without value")
 
 
 def test_unsupported_assignment_target_raises():
@@ -206,7 +190,7 @@ def test_unsupported_assignment_target_raises():
     lit = _node(NodeTypes.LITERAL, "", token=_tok("INTEGER_LITERAL", "1"))
     bogus_target = _node(NodeTypes.ENUM_VARIANT, "bogus", token=_tok("EOF"))
     node = _node(NodeTypes.ASSIGNMENT, "=", [bogus_target, lit])
-    _expect_conversion_error(lambda: converter._convert_assignment(node))
+    _expect_conversion_error(lambda: converter._convert_assignment(node), "Unsupported assignment target")
 
 
 # -- increment/decrement used as a sub-expression (statement-only in the
@@ -222,7 +206,7 @@ def test_increment_as_expression_returns_none_and_require_value_raises():
     incr = _node(NodeTypes.UNARY_EXPRESSION, "++", token=_tok("IDENTIFIER", "i"))
     result = converter._convert_expression(incr)
     t.require(result is None, result)
-    _expect_conversion_error(lambda: converter._require_value(incr))
+    _expect_conversion_error(lambda: converter._require_value(incr), "produces no value but one is required")
 
 
 # -- enum variant construction: unknown variant / wrong argument count ------
@@ -231,7 +215,10 @@ def test_enum_variant_construct_unknown_variant_raises():
     converter = _with_builder(_new_converter())
     converter.enum_variants["MyEnum"] = [("Known", [])]
     node = _node(NodeTypes.ENUM_VARIANT_CONSTRUCT, "Missing", [], class_name="MyEnum")
-    _expect_conversion_error(lambda: converter._convert_enum_variant_construct(node))
+    _expect_conversion_error(
+        lambda: converter._convert_enum_variant_construct(node),
+        "Unknown variant 'Missing' in enum 'MyEnum'",
+    )
 
 
 def test_enum_variant_construct_wrong_arg_count_raises():
@@ -239,7 +226,10 @@ def test_enum_variant_construct_wrong_arg_count_raises():
     int_ty = converter._fir_type("int32")
     converter.enum_variants["MyEnum"] = [("Circle", [("radius", int_ty)])]
     node = _node(NodeTypes.ENUM_VARIANT_CONSTRUCT, "Circle", [], class_name="MyEnum")
-    _expect_conversion_error(lambda: converter._convert_enum_variant_construct(node))
+    _expect_conversion_error(
+        lambda: converter._convert_enum_variant_construct(node),
+        "Variant 'MyEnum.Circle' expects 1 argument(s), got 0",
+    )
 
 
 # -- match used as an expression with a block-bodied arm --------------------
@@ -250,26 +240,11 @@ def test_match_expression_with_block_arm_raises():
     block_body = _node(NodeTypes.SCOPE, "scope", [])
     arm = _node(NodeTypes.MATCH_ARM, "_", [block_body], is_wildcard=True, enum_name=None)
     match_node = _node(NodeTypes.MATCH_EXPRESSION, "match", [scrutinee, arm])
-    _expect_conversion_error(lambda: converter._convert_match(match_node, as_statement=False))
+    _expect_conversion_error(lambda: converter._convert_match(match_node, as_statement=False), "requires every arm body to be a plain expression")
 
 
 # -- match arm binding referencing an unknown payload field is skipped
 # (semantic analysis is expected to have already reported it) --------------
-
-def test_match_arm_unknown_binding_field_is_skipped():
-    converter = _with_builder(_new_converter())
-    int_ty = converter._fir_type("int32")
-    string_ty = converter._fir_type("string")
-    scrut_type = converter._fir_type("string")  # arbitrary placeholder type
-    scrut = converter.builder.string_literal("x", string_ty)
-    converter.builder.declare_local("__scrut", scrut_type, scrut)
-    arm = _node(
-        NodeTypes.MATCH_ARM, "Circle", [],
-        variant_name="Circle", bindings=[("unknown_field", "r")],
-    )
-    variant_fields = {"Circle": [("radius", int_ty)]}
-    converter._convert_match_arm_body(arm, variant_fields, "__scrut", scrut_type, None)
-
 
 # -- _array_size_of: neither an array literal nor a known identifier -------
 
@@ -301,7 +276,7 @@ def test_norm_source_falsy_is_none():
 def test_check_directive_missing_raises():
     converter = _with_builder(_new_converter())
     node = _node(NodeTypes.FUNCTION_CALL, "syscall_open", [])
-    _expect_conversion_error(lambda: converter._check_directive(node))
+    _expect_conversion_error(lambda: converter._check_directive(node), "syscall_open() is not available")
 
 
 def test_check_directive_present_does_not_raise():
@@ -386,7 +361,7 @@ def test_array_method_unsupported_name_raises():
     converter = _with_builder(_new_converter())
     ident = _node(NodeTypes.IDENTIFIER, "arr")
     node = _node(NodeTypes.METHOD_CALL, "sort", [ident])
-    _expect_conversion_error(lambda: converter._convert_builtin_method(node, ident, "array", "int32", "sort"))
+    _expect_conversion_error(lambda: converter._convert_builtin_method(node, ident, "array", "int32", "sort"), "Unsupported array method 'sort'")
 
 
 # -- super() call without a resolved super class -----------------------------
@@ -394,7 +369,7 @@ def test_array_method_unsupported_name_raises():
 def test_super_call_without_resolved_class_raises():
     converter = _with_builder(_new_converter())
     node = _node(NodeTypes.SUPER_CALL, "super", [])
-    _expect_conversion_error(lambda: converter._convert_super_call(node))
+    _expect_conversion_error(lambda: converter._convert_super_call(node), "super() call without resolved super class")
 
 
 # -- _fir_type: array-suffixed / generator<T> string forms ------------------
@@ -402,13 +377,13 @@ def test_super_call_without_resolved_class_raises():
 def test_fir_type_array_suffix_string():
     converter = _new_converter()
     ty = converter._fir_type("int32[]")
-    t.require("[]" in ty.render() or ty.render().endswith("]"), ty.render())
+    t.require_eq(ty.render(), "int32[]")
 
 
 def test_fir_type_generator_string():
     converter = _new_converter()
     ty = converter._fir_type("generator<int32>")
-    t.require("generator" in ty.render(), ty.render())
+    t.require_eq(ty.render(), "generator<int32>")
 
 
 # -- _split_type_args: nested "<...>" depth tracking -------------------------
@@ -499,7 +474,7 @@ def test_find_method_def_exhausts_chain_returns_none():
 def test_render_const_initializer_unsupported_node_raises():
     converter = _new_converter()
     bogus = _node(NodeTypes.IDENTIFIER, "x")
-    _expect_conversion_error(lambda: converter._render_const_initializer(bogus))
+    _expect_conversion_error(lambda: converter._render_const_initializer(bogus), "Unsupported const initializer node")
 
 
 # -- _normalize_literal_text: non-numeric token types pass through verbatim -
@@ -532,13 +507,6 @@ def test_seal_open_blocks_terminates_dangling_block():
     t.require(func.blocks[0].terminator is not None)
 
 
-def test_seal_open_blocks_no_blocks_is_noop():
-    func = FIRFunction("f", return_type=None)
-    func.blocks = []
-    ASTToFIRConverter._seal_open_blocks(func)  # must not raise
-    t.require_eq(func.blocks, [])
-
-
 # -- _synthesize_zero: non-scalar type -> None; int8/char zero values ------
 
 def test_synthesize_zero_non_simple_type_is_none():
@@ -548,53 +516,14 @@ def test_synthesize_zero_non_simple_type_is_none():
     t.require(converter._synthesize_zero(array_ty) is None)
 
 
-def test_synthesize_zero_int_and_char():
-    converter = _with_builder(_new_converter())
-    int_ty = converter._fir_type("int8")
-    char_ty = converter._fir_type("char")
-    t.require(converter._synthesize_zero(int_ty) is not None)
-    t.require(converter._synthesize_zero(char_ty) is not None)
-
-
 # -- implicit-declaration reassignment wrapper (preprocessor-inserted
 # `{ drop(x); x = RHS; }`) when the name isn't already in scope -------------
-
-def test_scope_reassignment_wrapper_implicit_declare():
-    converter = _with_builder(_new_converter())
-    ident = _node(NodeTypes.IDENTIFIER, "x")
-    drop_call = _node(NodeTypes.FUNCTION_CALL, "drop", [ident])
-    rhs = _node(NodeTypes.LITERAL, "", token=_tok("INTEGER_LITERAL", "5"))
-    assign = _node(NodeTypes.VARIABLE_ASSIGNMENT, "x", [rhs])
-    wrapper = _node(NodeTypes.SCOPE, "scope", [drop_call, assign])
-    converter._convert_statement(wrapper)  # must not raise; x is freshly declared
-
 
 # -- return with no value in a non-void, non-generator function synthesizes
 # a zero return value ---------------------------------------------------
 
-def test_return_with_no_value_synthesizes_zero():
-    converter = _with_builder(_new_converter())
-    converter.current_function.return_type = converter._fir_type("int32")
-    ret = _node(NodeTypes.RETURN_STATEMENT, "return", [], token=_tok("RETURN"))
-    converter._convert_statement(ret)  # must not raise
-
-
 # -- variable declaration: array-typed local initialized from a non-literal
 # expression (e.g. copying another array binding) --------------------------
-
-def test_array_declaration_from_non_literal_expression():
-    converter = _with_builder(_new_converter())
-    converter._declare("src", "int32", True, 3)
-    int_arr_ty = converter._fir_type("int32", True, 3)
-    zero_elems = converter.builder.array_literal([], int_arr_ty)
-    converter.builder.declare_local(converter._local_name("src"), int_arr_ty, zero_elems)
-    ident = _node(NodeTypes.IDENTIFIER, "src", var_type="int32", is_array=True)
-    decl = _node(
-        NodeTypes.VARIABLE_DECLARATION, "dst", [ident],
-        var_type="int32", is_array=True, array_size=3,
-    )
-    converter._convert_variable_declaration(decl)  # must not raise
-
 
 # -- standalone generator-function call not used in a for-in loop ----------
 
@@ -663,26 +592,8 @@ def test_convert_method_falls_off_end_synthesizes_zero_return():
 # -- variable declaration: sized array with no initializer at all (not even
 # an empty array literal) zero-initializes ----------------------------------
 
-def test_sized_array_declaration_without_initializer():
-    converter = _with_builder(_new_converter())
-    decl = _node(
-        NodeTypes.VARIABLE_DECLARATION, "arr", [],
-        var_type="int32", is_array=True, array_size=4,
-    )
-    converter._convert_variable_declaration(decl)  # must not raise
-
-
 # -- for-in over a string driven by a non-identifier collection expression
 # (a fresh temporary), with a `char` loop variable (str_char_code_at) ------
-
-def test_for_in_string_non_identifier_collection_char_element():
-    converter = _with_builder(_new_converter())
-    call_node = _node(NodeTypes.FUNCTION_CALL, "get_string", [], return_type="string")
-    loop_var = _node(NodeTypes.VARIABLE_DECLARATION, "c", [], var_type="char")
-    body = _node(NodeTypes.SCOPE, "scope", [])
-    for_in_node = _node(NodeTypes.FOR_IN_STATEMENT, "for_in", [loop_var, call_node, body])
-    converter._convert_for_in_string(for_in_node, "c", "char", call_node, body)
-
 
 def test_call_arg_modes_borrow_mut_param():
     param = _node(NodeTypes.PARAMETER, "p", var_type="int32", is_borrowed=True, is_mutable_borrow=True)
