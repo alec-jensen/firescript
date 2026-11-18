@@ -6,6 +6,11 @@ println(last_error("^"));
 println(last_error("$"));
 println(last_error("a\\"));
 println(last_error("[a-\\d]"));
+// Valid patterns with anchors report no error
+println(last_error("^abc") == "");
+println(last_error("^abc$") == "");
+println(last_error("abc$") == "");
+println(last_error("abc") == "");
 println(last_error("a|"));
 println(last_error("|a"));
 println(last_error("()"));
@@ -16,4 +21,8 @@ pattern is empty
 pattern is empty
 dangling escape at end of pattern
 invalid range in character class
+true
+true
+true
+true
 */

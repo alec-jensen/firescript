@@ -1,0 +1,83 @@
+// Counted quantifiers {n}, {n,} and {n,m} through is_match: true/false tables per form,
+// including {0}, {3,3} == {3}, and the backtracking case where the repeat gives characters back.
+import @firescript/std.io.println;
+import @firescript/std.regex.is_match;
+
+// {n}
+println(is_match("a{3}", "aaa"));
+println(is_match("a{3}", "aa"));
+println(is_match("a{3}", "aaaa"));
+println(is_match("a{1}", "a"));
+println(is_match("ab{2}c", "abbc"));
+println(is_match("ab{2}c", "abc"));
+println(is_match("\\d{4}", "2024"));
+println(is_match("\\d{4}", "202"));
+println(is_match("[xyz]{2}", "zy"));
+println(is_match(".{3}", "abc"));
+// {0} matches the empty string
+println(is_match("a{0}", ""));
+println(is_match("a{0}", "a"));
+println(is_match("xa{0}y", "xy"));
+
+// {n,}
+println(is_match("a{2,}", "a"));
+println(is_match("a{2,}", "aa"));
+println(is_match("a{2,}", "aaaaaaaa"));
+println(is_match("a{0,}", ""));
+println(is_match("a{0,}", "aaa"));
+println(is_match("ba{1,}b", "bb"));
+println(is_match("ba{1,}b", "baaab"));
+println(is_match("[0-9]{2,}", "7"));
+println(is_match("[0-9]{2,}", "70123"));
+
+// {n,m}
+println(is_match("a{2,4}", "a"));
+println(is_match("a{2,4}", "aa"));
+println(is_match("a{2,4}", "aaa"));
+println(is_match("a{2,4}", "aaaa"));
+println(is_match("a{2,4}", "aaaaa"));
+println(is_match("a{0,2}", ""));
+println(is_match("a{0,2}", "aaa"));
+println(is_match("a{3,3}", "aaa"));
+println(is_match("x\\d{1,3}y", "x12y"));
+println(is_match("x\\d{1,3}y", "x1234y"));
+// Backtracking: the greedy repeat must give characters back
+println(is_match("a{1,3}a", "aaa"));
+println(is_match("a{1,3}a", "a"));
+
+/* EXPECT
+true
+false
+false
+true
+true
+false
+true
+false
+true
+true
+true
+false
+true
+false
+true
+true
+true
+true
+false
+true
+false
+true
+false
+true
+true
+true
+false
+true
+false
+true
+true
+false
+true
+false
+*/

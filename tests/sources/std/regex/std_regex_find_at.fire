@@ -1,13 +1,34 @@
 import @firescript/std.io.println;
 import @firescript/std.regex.find_at;
 
-// Test find_at basic matching
+// Position-aware matching: find_at(pattern, text, pos) returns the end index
+// of a match that starts exactly at `pos`, or -1.
 println(find_at("abc", "abc", 0));        // 3: full match at position 0
 println(find_at("ab", "abc", 0));         // 2: partial match at position 0
 println(find_at("ab", "xab", 1));         // 2: match at position 1
 println(find_at("ab", "xab", 0));         // -1: no match at position 0
 println(find_at("a", "xaxbx", 1));        // 1: match at position 1
 println(find_at("a", "xaxbx", 2));        // -1: no match at position 2
+println(find_at("abc", "xabc", 1));       // 3: match at position 1
+println(find_at("abc", "xabc", 0));       // -1: no match at position 0
+println(find_at("abc", "ab", 0));         // -1: text too short
+
+// ^ anchor: only matches at the start of the text
+println(find_at("^abc", "abc", 0));       // 3
+println(find_at("^abc", "abc", 1));       // -1 (anchor only at start)
+
+// $ anchor: the match must reach the end of the text
+println(find_at("abc$", "abc", 0));       // 3
+println(find_at("abc$", "ab", 0));        // -1 (doesn't reach end)
+
+// Without anchors
+println(find_at("ab", "cab", 1));         // 2
+
+// Alternation (lexer-style matching)
+println(find_at("if|else|while", "if x", 0));     // 2: matches "if"
+println(find_at("if|else|while", "else x", 0));   // 4: matches "else"
+println(find_at("if|else|while", "while x", 0));  // 5: matches "while"
+println(find_at("if|else|while", "for x", 0));    // -1: no match
 
 /* EXPECT
 3
@@ -15,5 +36,17 @@ println(find_at("a", "xaxbx", 2));        // -1: no match at position 2
 2
 -1
 1
+-1
+3
+-1
+-1
+3
+-1
+3
+-1
+2
+2
+4
+5
 -1
 */

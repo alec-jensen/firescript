@@ -623,21 +623,21 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 
 ### `std/regex/`
 - **std_regex_basic.fire** - `is_match` over literals, `.`, alternation, quantifiers (`* + ?`), groups, character classes (including ranges and negation), and `last_error` for invalid patterns
-- **std_regex_anchor_simple.fire** / **std_regex_anchors.fire** - Anchor handling (`^`, `$`) in `is_match`
-- **std_regex_find_at.fire** / **std_regex_find_at_anchors.fire** - Position-aware matching via `find_at`, with and without anchors
-- **std_regex_validate_anchors.fire** / **std_regex_validate_anchors2.fire** - Pattern validation with anchors
+- **std_regex_anchors.fire** - Anchor handling (`^`, `$`) in `is_match`
+- **std_regex_find_at.fire** - Position-aware matching via `find_at`: plain, with `^`/`$` anchors, and lexer-style alternation (merged from the former `std_regex_find_at_anchors` and the `find_at` blocks of `std_regex_anchors`)
+- **std_regex_invalid_pattern.fire** - An invalid pattern never matches through `find_first`, `replace`, `is_match`, `find_at` and `find_all` (merged from the former `std_regex_find_first_invalid_pattern` and `std_regex_replace_invalid_pattern`)
 - **std_regex_regression_generic_matcher.fire** - Regression: quantifier/group/class patterns (`xy?z`, `(cd)+e`, `[b-d]+`, `x*z`) must go through the generic matcher; guards against reintroducing per-pattern hard-coded results in `is_match`
 - **std_regex_shorthand_classes.fire** / **std_regex_shorthand_in_class.fire** - Shorthand classes `\d \D \w \W \s \S` outside and inside `[...]` (including negated classes and combinations)
-- **std_regex_counted_exact.fire** / **std_regex_counted_open.fire** / **std_regex_counted_range.fire** - Counted quantifiers `{n}` (including `{0}`), `{n,}` and `{n,m}`, with backtracking cases
+- **std_regex_counted_quantifiers.fire** - Counted quantifiers `{n}`, `{n,}` and `{n,m}` through `is_match` (merged from the former `std_regex_counted_exact`, `_open` and `_range` tests)
 - **std_regex_counted_group.fire** - Counted quantifiers on groups: alternation, non-capturing, nested counts, and groups that can match empty
 - **std_regex_counted_with_anchors.fire** - Counted quantifiers combined with `^`/`$` in `find_at` and `is_match`
 - **std_regex_captures_basic.fire** / **std_regex_captures_nested.fire** / **std_regex_captures_alternation.fire** / **std_regex_captures_quantified_group.fire** / **std_regex_captures_noncapturing.fire** - `Match` accessors; nested groups; non-participating groups; last-iteration capture of a quantified group; `(?:...)`
 - **std_regex_captures_greedy_backtrack.fire** - Greedy-versus-backtracking capture results and earlier-alternative priority
-- **std_regex_find_first_basic.fire** / **std_regex_find_first_empty.fire** / **std_regex_find_first_anchors.fire** / **std_regex_find_first_invalid_pattern.fire** - `find_first`: leftmost match, `start_pos`, no-match `Match`, empty text and empty matches, anchors, invalid patterns
+- **std_regex_find_first_basic.fire** / **std_regex_find_first_empty.fire** / **std_regex_find_first_anchors.fire** - `find_first`: leftmost match, `start_pos`, no-match `Match`, empty text and empty matches, anchors
 - **std_regex_find_all_basic.fire** / **std_regex_find_all_empty_matches.fire** / **std_regex_find_all_anchors.fire** / **std_regex_find_all_groups.fire** - `find_all`: non-overlapping scan, empty-match advancement, anchors, per-match captures
-- **std_regex_replace_basic.fire** / **std_regex_replace_groups.fire** / **std_regex_replace_empty_matches.fire** / **std_regex_replace_invalid_pattern.fire** - `replace`: plain replacement, `$0..$9` and `$$`, empty matches, invalid patterns
+- **std_regex_replace_basic.fire** / **std_regex_replace_groups.fire** / **std_regex_replace_empty_matches.fire** - `replace`: plain replacement, `$0..$9` and `$$`, empty matches
 - **std_regex_regexpattern_search.fire** - `RegexPattern` reuse across `is_match`/`find_at`/`find_first`/`find_all`/`replace`/`group_count`, including an invalid pattern
-- **std_regex_error_unterminated_class.fire** / **std_regex_error_unbalanced_parens.fire** / **std_regex_error_dangling_quantifier.fire** / **std_regex_error_bad_counted.fire** / **std_regex_error_misc.fire** - `last_error` messages for invalid patterns (run tests; there is no compile-time check)
+- **std_regex_error_unterminated_class.fire** / **std_regex_error_unbalanced_parens.fire** / **std_regex_error_dangling_quantifier.fire** / **std_regex_error_bad_counted.fire** / **std_regex_error_misc.fire** - `last_error` messages for invalid patterns, plus no error for valid anchored patterns (run tests; there is no compile-time check)
 - **std_regex_regression_full_backtracking.fire** - Regression: `is_match`/`find_at` must backtrack into earlier quantifiers and alternatives (`a*a`, `a|ab`)
 - **std_regex_regression_escaped_dollar.fire** - Regression: a trailing `\$` is a literal dollar, not the end anchor
 - **std_regex_regression_deep_text.fire** - A repeat over a ~1000-character text must not overflow the matcher's recursion (guards the small `RegexExec.run` stack frame)
