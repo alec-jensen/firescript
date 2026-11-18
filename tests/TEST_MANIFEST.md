@@ -643,13 +643,11 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **std_regex_regression_deep_text.fire** - A repeat over a ~1000-character text must not overflow the matcher's recursion (guards the small `RegexExec.run` stack frame)
 
 ### `std/fs/`
-- **std_fs_basic.fire** - Basic `File`/`FileResult` usage
-- **std_fs_helpers.fire** - Filesystem helper functions
+- **std_fs_basic.fire** - Basic `File`/`FileResult` usage; also `exists()` and `err_code()` on a missing file (merged from the former `std_fs_helpers.fire`)
 - **std_fs_path_ops.fire** - Path manipulation operations
 
 ### `std/cli/`
-- **std_cli_args_basic.fire** - Basic `std.cli.args` usage
-- **std_cli_args_parser.fire** - Argument parser behavior
+- **std_cli_args_basic.fire** - Basic `std.cli.args` usage; also the no-argument fallbacks of `has_flag`, `option_value`, `positional` (merged from the former `std_cli_args_parser.fire`)
 - **std_cli_args_with_argv.fire** / **std_cli_args_edge_with_argv.fire** - Argument handling with real argv input (`.args` sidecar supplies the process's own command-line tokens)
 
 ### `std/fcl/`
