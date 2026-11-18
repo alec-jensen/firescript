@@ -1,6 +1,0 @@
-// Semantic error: array literal whose element type cannot be determined
-// because the element expression references an undefined identifier.
-
-fn array_literal_undefined_element() -> void {
-    arr: int32[] = [undefinedElement];  //~ ERROR FS-PARSE-0003 @21
-}

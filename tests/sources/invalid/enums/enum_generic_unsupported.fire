@@ -1,5 +1,4 @@
 // Invalid: generic enums are not yet supported.
-// EXPECT: parser error
 
 enum Option<T> {  //~ ERROR FS-PARSE-0012 @12
     Some,

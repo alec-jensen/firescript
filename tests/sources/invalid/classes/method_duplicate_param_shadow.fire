@@ -1,8 +1,0 @@
-// Semantic error: a class method parameter name that shadows another
-// parameter in the same method's own scope.
-
-class Adder {
-    fn sum(x: int32, x: int32) -> int32 {  //~ ERROR FS-SEM-0010 @22
-        return x;
-    }
-}

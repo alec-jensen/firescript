@@ -1,5 +1,4 @@
 // Invalid: constructing a payload variant with the wrong number of arguments.
-// EXPECT: parser error
 
 enum Shape {
     Circle(radius: float64),

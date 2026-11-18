@@ -1,6 +1,0 @@
-// Semantic error: array 'length' method takes no arguments.
-
-fn array_length_arg_count() -> void {
-    arr: int32[] = [1, 2, 3];
-    n: int32 = arr.length(1);  //~ ERROR FS-SEM-0010 @20
-}

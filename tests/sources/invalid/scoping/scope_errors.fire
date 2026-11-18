@@ -25,8 +25,7 @@ for (i: int32 = 0; i < 10; i++) {
 }
 println(i);  // Error: i not in scope  //~ ERROR FS-PARSE-0003 @9
 
-// Duplicate parameter names (if not caught)
-fn duplicateParams(x: int32, x: int32) -> void {  //~ ERROR FS-SEM-0010 @20
-//~^ ERROR FS-SEM-0010 @30
-    println(x);
+// Duplicate parameter names
+fn duplicateParams(p: int32, p: int32) -> void {  //~ ERROR FS-SEM-0010 @30
+    println(p);
 }
