@@ -32,6 +32,10 @@ println(cSome.isSome());
 cNone: CopyableOption<int32> = CopyableOption<int32>.None();
 println(cNone.unwrapOr(99));
 
+// Static factory on a CopyableOption of a non-integer type.
+cNoneBool: CopyableOption<bool> = CopyableOption<bool>.None();
+println(cNoneBool.isNone());
+
 /* EXPECT
 hi
 false
@@ -42,4 +46,5 @@ false
 7
 true
 99
+true
 */

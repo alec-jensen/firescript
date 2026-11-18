@@ -444,9 +444,8 @@ Each heading below is a directory under `tests/sources/`.
 ### `generators/`
 - **generators_basic.fire** - Generator functions (`fn` returning `generator<T>`), `yield`, stdlib `range`/`rangeFrom`/`rangeStep`, user-defined generators, for-in over generators
 - **generators_break_continue.fire** - `break`/`continue` inside a for-in loop over a generator, and nested for-in-over-generator loops
-- **generators_multi_yield_sites.fire** - A generator with two distinct (syntactic) `yield` statements, forcing the multi-way resume-state dispatch chain in `lower_generator` (`generators_basic.fire`'s single-yield-site `countdown()` only ever needs a single resume block).
 - **generators_frame_zero_init_types.fire** - A generator with `bool`/`float128`/copyable-class local variables, exercising `_zero_value`'s per-`FLIRType`-kind branches used to zero-initialize the generator's frame struct up front. Documents a newly-found bug: a *pointer*-kind generator local (`string`, a non-copyable class, or an array) currently crashes the compiler with an internal `FLIRV-T1` type-mismatch error, so this file intentionally avoids that combination.
-- **generators_advanced.fire** - Early `return` from within a generator body (exhaustion before the loop condition would naturally end it), multiple `yield` points in one generator, and calling the same generator function from two separate for-in sites (exercises the FLIR lowering's "generator already lowered" guard). Note: a third case (a generator's body containing a for-in loop over another generator call) was tried and found to trigger an internal compiler error in `flir/lowering.py`'s generator frame lowering; see the comment in the file.
+- **generators_advanced.fire** - Early `return` from within a generator body (exhaustion before the loop condition would naturally end it), multiple `yield` points in one generator, and calling the same generator function from two separate for-in sites (exercises the FLIR lowering's "generator already lowered" guard). Note: a third case (a generator's body containing a for-in loop over another generator call) was tried and found to trigger an internal compiler error in `flir/lowering.py`'s generator frame lowering; see the comment in the file. Also a two-parameter generator with three yield sites (multi-way resume dispatch; parameters persist across resumes), merged from the former `generators_multi_yield_sites.fire`.
 
 ### `enums/`
 - **enum_tag_only.fire** - Tag-only (no data payload) enum declarations, variant construction (`EnumName.Variant`), and reassignment (verifies the previously-held owned enum value is dropped without corrupting later allocations).
@@ -466,8 +465,6 @@ Per-type min/max value and overflow/underflow behavior, split by numeric type:
 - **types_int8.fire** / **types_int16.fire** / **types_int32.fire** / **types_int64.fire**
 - **types_uint8.fire** / **types_uint16.fire** / **types_uint32.fire** / **types_uint64.fire**
 - **types_float32.fire** / **types_float64.fire**
-- **types_bool.fire**
-- **types_tests.fire** - Basic type operations and comparisons
 - **types_deep.fire** - Deep type testing (arithmetic across all widths with arbitrary values, distinct focus from the `types_<type>.fire` min/max-boundary files above)
 - **char_type.fire** - `char` type: literals (`'A'`, escape chars `'\t'` `'\n'` `'\\'`), copyability, cast to string, and an unrecognized escape sequence (`'\d'`) falling back to the escaped character's own code point
 - **const_declarations.fire** - Top-level `const` declarations (int32/float64/float32) becoming module-level constants; documents that `const string`/`const bool`/`const char` currently each fail to compile end-to-end for three separate, unrelated bugs (see `tests/python/fir/test_ast_to_fir_pipeline_errors.py`)
@@ -480,7 +477,7 @@ Split by conversion category:
 - **conversions_signed_unsigned.fire** - Signed<->unsigned reinterpretation
 - **conversions_int_float.fire** - int<->float, float-to-int truncation
 - **conversions_float_precision.fire** - float32<->float64
-- **conversions_in_expressions.fire** - Casts combined with arithmetic operations
+- **conversions_in_expressions.fire** - Casts combined with arithmetic operations (including int8+int16 widening and float32 division)
 - **conversions_to_string.fire** - Numeric/bool `as string`
 - **numeric_casts.fire** - Numeric type casting (downcast-focused, distinct scenarios from the `conversions_*` files above)
 - **string_cast_test.fire** - String casting operations
@@ -495,9 +492,8 @@ Split by conversion category:
 
 ### `strings/`
 Split from a single `string_operations_comprehensive.fire` into per-behavior files (see "Splitting large test files" below):
-- **strings_basics.fire** - Declaration, empty string, long strings
 - **strings_concatenation.fire** - Concatenation (literal, repeated, with a cast expression, via variables)
-- **strings_escapes.fire** - Escape sequences (`\n`, `\t`, `\"`, `\\`)
+- **strings_escapes.fire** - Escape sequences (`\n`, `\t`, `\"`, `\\`) and raw newline/tab characters inside a literal
 - **strings_comparison.fire** - `==` / `!=`
 - **strings_unicode.fire** - Emoji and accented characters
 - **strings_upper_lower.fire** - `.upper()` / `.lower()` ASCII case folding (mixed case, already-uppercase, empty string); implemented via `@builtin_method` in `firescript/std/internal/strings.fire`
@@ -516,18 +512,13 @@ Split from a single `string_operations_comprehensive.fire` into per-behavior fil
 Split from a single `array_operations_comprehensive.fire` into per-behavior files, plus pre-existing focused tests:
 - **arrays_basics.fire** - Declaration, indexing, `.length()`, empty array, large array, bounds access
 - **arrays_typed.fire** - int8/int64/float32/float64/string/bool element arrays
-- **arrays_mutation.fire** - Element reassignment
-- **arrays_iteration_for_in.fire** - for-in iteration
-- **arrays_iteration_c_style.fire** - C-style for iteration
-- **arrays_iteration_while.fire** - while-loop iteration
 - **arrays_function_param.fire** - Array passed to a function and summed
 - **arrays_length_param.fire** - `.length()` / `.size()` called on a borrowed array function parameter (size not statically known at the call site, unlike a local from an array literal)
-- **arrays_move_assign_from_var.fire** - Declaring an array-typed local whose initializer is another array variable (a move), not an array literal
 - **array_tests.fire** - Basic array operations
 - **array_to_string.fire** - `array as string` conversion for int32, float64, string, and empty arrays (`[a, b, c]` formatting)
 - **array_index_count.fire** - `.index()` / `.count()` array methods
 - **array_negative_indexing.fire** - Negative index access
-- **array_length_propagation.fire** - Length propagation when an unsized-array local is initialized from another array: from a runtime-length-tracked function parameter (slot metadata) and from a statically-sized array literal (const metadata).
+- **array_length_propagation.fire** - Length propagation when an unsized-array local is initialized from another array: from a runtime-length-tracked function parameter (slot metadata) and from a statically-sized array literal (const metadata). Also a move from an unsized array-literal local (formerly `arrays_move_assign_from_var.fire`) and positive-index element reassignment (formerly `arrays_mutation.fire`).
 - **arrays_of_class_instances.fire** - Arrays whose element type is a user class (owned and copyable), forcing element/index/store lowering to resolve a bare class name string through `lower_type_str`'s typedef-lookup and generic-instance branches rather than `lower_type`'s `FIRType`-object path.
 - **array_dynamic_alloc.fire** - `fs_rt_array_new<T>`/`fs_rt_array_copy<T>` (compiler intrinsics gated behind `directive enable_lowlevel_runtime;`, private to `std/collections/`): allocate a `T[]` buffer of a runtime-determined element count, write/read elements, copy into a larger buffer, for `int32` and `string` element types. The primitive `std.collections.ArrayList<T>` (`tests/sources/std/collections/`) is built on.
 
@@ -535,8 +526,8 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **functions_basic_params.fire** - No/single/multiple parameters, return values
 - **functions_calling_functions.fire** - One function calling another, multi-step internal logic
 - **functions_recursion.fire** - Recursive functions (factorial)
+- **fibonacci.fire** - Tree-recursive fibonacci over `int64` (relocated from `performance/`); FIR/FLIR snapshots
 - **functions_return_types.fire** - float/bool/string return types; also fallthrough functions (no explicit `return` on every path -- firescript doesn't enforce all-paths-return) with `bool`/`float128` return types, and an if/else where both arms already `return` (dead join block), exercising `ast_to_fir.py`'s implicit-zero-return synthesis and dead-block pruning
-- **functions_array_params.fire** - Array parameters
 - **functions_array_return.fire** - Array-typed function return value used in further expressions (array access)
 - **functions_early_and_multiple_returns.fire** - Early return, multiple return paths
 - **functions_void.fire** - Void functions with side effects
@@ -554,44 +545,27 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **scoping_function.fire** - Function scope (parameters and locals not visible outside)
 - **scoping_variable_declaration_order.fire** - Declared-before-use, same names in separate sibling scopes
 - **scope_stray_token_recovery.fire** - Parser error-recovery around a stray/unexpected token in statement position, verifying the recovered scope's remaining valid statements still resolve correctly
-- **scope_tests.fire** - Basic scoping tests
 
 ### `expressions/`
 - **expressions_function_calls.fire** - Function call expressions, nested function calls
-- **expressions_array_and_string.fire** - Array indexing arithmetic, string concatenation expressions
-- **expressions_casts.fire** - Casts within expressions, mixed-type expressions
-- **expressions_unary_and_incdec.fire** - Unary +/-, increment/decrement
-- **expressions_nested_and_conditional.fire** - Complex nested parenthesized expressions, conditional value via if/else
 - **operator_precedence.fire** - Operator precedence (each expression commented with the expected value, so a wrong precedence produces an obviously-wrong number)
 
 ### `edge_cases/`
 - **edge_cases_zero_values.fire** - Zero/empty values across types
-- **edge_cases_numeric_bounds.fire** - Min/max values, very large/small numbers
-- **edge_cases_arithmetic.fire** - Division and modulo edge cases
 - **edge_cases_overflow_underflow.fire** - int8/uint8 overflow, int8 underflow
-- **edge_cases_arrays.fire** - Empty array, single-element array, identical elements
-- **edge_cases_strings.fire** - Single-char and whitespace-only strings
-- **edge_cases_comparisons.fire** - Equality/relational edge cases
 - **edge_cases_loops.fire** - Zero-iteration and single-iteration loops
-- **edge_cases_nesting_and_functions.fire** - Deeply nested blocks, minimal function, all-paths return function
-- **edge_cases.fire** - Various edge case scenarios
 
 ### `memory/`
-- **memory_branching.fire** - Memory behavior with branching
+- **memory_branching.fire** - Scope-exit drops of fixed-size array locals on if/else exit, bare-block exit and early `return` (merged from the former `memory_scopes` and `memory_early_return`); the FIR snapshot pins the drops
 - **memory_break_continue_owned.fire** - Owned vars correctly dropped on break/continue
 - **memory_class_owned_fields.fire** - Classes with owned fields (string) use generated destructors
 - **memory_constructor_move.fire** - Owned objects moved into a constructor not double-freed
 - **memory_early_exit_precision.fire** - Precise drop insertion around early exits (only variables actually in scope at the exit point are dropped)
-- **memory_early_return.fire** - Memory with early returns
 - **memory_move_no_use_after_free.fire** - Moving an owned value via declaration/assignment does not drop the moved-from variable (no use-after-free / double-drop)
 - **memory_reassign.fire** - Memory during reassignment (int and string)
-- **memory_scopes.fire** - Memory in different scopes
-- **ownership_demo.fire** - Ownership model demonstration
-- **ownership_test.fire** - Ownership testing
 - **move_semantics_test.fire** - Move semantics
 - **borrow_test.fire** - Borrowing tests
 - **copyable_test.fire** - Copyable type testing
-- **copyable_local_drop.fire** - A copyable class local going out of scope inside a function body (`copyable_test.fire` only exercises a copy-then-use case at top level). Documents that no `DropInst` is ever emitted for a copyable local (`is_owned()` never treats a copyable class as owned), making `lower_drop`'s `is_copyable_class_str(...)` early-return in `firescript/flir/lowering.py` unreachable dead code.
 - **receiver_mut.fire** - `&this` / `&mut this` borrow receivers on class methods
 - **memory_owned_function_param.fire** - Explicit `owned` keyword on a plain (non-receiver) function parameter
 - **memory_implicit_receiver_borrow.fire** - Regression: a method declared with no receiver parameter at all (found while building `std.collections.ArrayList<T>`) now correctly defaults its implicit `this` to borrowed instead of owned; the object survives repeated calls instead of being destroyed on the first one (previously affected any such method on a class with an owned field, including `Option<T>.isSome()`/`isNone()`)
@@ -601,7 +575,6 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **classes_smoke.fire** - Basic class smoke tests
 - **classes_field_access.fire** - Class field access
 - **classes_methods.fire** - Class methods
-- **classes_nested.fire** - Nested classes
 - **classes_deep.fire** - Deep class testing
 - **classes_static_methods.fire** - Static methods
 - **inheritance.fire** - Class inheritance, `super()`, multi-level (double/triple/quad) inheritance chains
@@ -610,8 +583,6 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **classes_method_nullable_param.fire** - A regular (non-constructor) instance method with a nullable parameter (`name: string?`)
 - **classes_explicit_constructor_call.fire** - Explicit type-qualified constructor call `ClassName.ClassName(args)`, parsed as `TYPE_METHOD_CALL` where the resolved method is the constructor itself
 - **classes_constructor_owned_borrowed_param.fire** - Constructor with `owned`/borrowed markers on regular (non-receiver) parameters, following an explicit receiver
-- **classes_new_constructor_syntax.fire** - Java-like `new ClassName(args)` constructor syntax, an alternate to the direct `ClassName(args)` form
-- **type_method_call_constructor_form.fire** - Type-qualified `ClassName.methodName(args)` call form resolving to a static method (as opposed to the constructor-via-`ClassName.ClassName(args)` case covered by `classes_explicit_constructor_call.fire`)
 - **classes_owned_this_constructor.fire** - Regression: `owned this` as a constructor receiver (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
 - **classes_array_field.fire** - An unsized array-typed class field (`data: int32[];`): construction (via a value round-tripped through a free function's owned `int32[]` parameter/return, the only way to produce a genuinely unsized-typed array value before `fs_rt_array_new<T>` existed), field element read/write, and destructor-frees-the-buffer (the null-guarded free path, since the field is always owned) on scope exit. Precursor to `std.collections.ArrayList<T>`, which stores its backing buffer the same way.
 - **classes_nullable_scalar_field.fire** - A nullable *scalar* class field (`balance: int32?;`, not `string?`/a class-typed field, which are already unambiguously null-able via their pointer's 0 value): constructor parameter, field assignment, and a `!= null`/`== null` field read all correctly distinguish "no value" from a stored zero. See `ast_to_fir.py`'s "Nullable scalars" section.
@@ -624,7 +595,6 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **generics_basic.fire** - Basic generic functions
 - **generics_simple.fire** - Simple generic examples
 - **generics_clamp.fire** - Generic clamp function
-- **generics_constraint.fire** - Type constraints on generics
 - **generics_swap.fire** - Generic swap function
 - **constraint_alias_test.fire** - Constraint aliases
 - **nested_constraint_test.fire** - Nested constraints
@@ -644,61 +614,50 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **identifiers_keyword_prefix.fire** - Regression: an identifier starting with a keyword-like literal token as a prefix (`false_flag`, `true_flag`, `nullable_count`) lexes as a single `IDENTIFIER`, not the literal token (`true`/`false`/`null`) followed by a stray remainder identifier (see `firescript/lexer.py`'s `BOOLEAN_LITERAL`/`NULL_LITERAL`/`VOID_LITERAL` patterns, which were missing the trailing `\b` word boundary every other keyword pattern has)
 
 ### `imports/`
-- **imports_single.fire** - Single symbol import
 - **imports_multi.fire** - Multiple symbol imports (merges `math_utils` and `string_utils`)
 - **imports_symbols.fire** - Specific symbol imports (`utils`)
 - **imports_wildcard.fire** - Wildcard imports (`utils.*`)
-- **export_visibility.fire** - Importing an explicitly exported symbol (`visibility_provider.addOne`)
 - **utils.fire**, **math_utils.fire**, **string_utils.fire**, **visibility_provider.fire** - Helper modules, not standalone tests
 - **imports_alias.fire** - Import aliasing (`as`) on a symbol import and on a whole-module import; calls through the symbol alias. Qualified access through a module alias (e.g. `U.helper(...)`) is still `[PLANNED]` (see `docs/reference/imports.md`), so the whole-module alias is imported but only called through its unaliased import
-- **imports_symbol_alias.fire** - Regression: calling through an aliased symbol import (`import x.y as z; z();`) (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
 
 ### `io/`
 - **io_test.fire** - Input/output functions
 
 ### `performance/`
-- **fibonacci.fire** - Recursive fibonacci (also used for benchmarking)
-- **stress_array_bounds.fire** - Array boundary access stress test (off-by-one, index validation)
-- **stress_deep_recursion.fire** - Deep recursion stress test
 - **stress_integer_overflow.fire** - Integer overflow behavior under repeated operations
-- **stress_string_operations.fire** - Heavy string concatenation/manipulation
 - **stress_type_conversions.fire** - Repeated type conversion stress test
 
 ### `special_types/`
-- **float128_test.fire** - 128-bit float testing
 - **float128_ops.fire** - binary128 soft-float: arithmetic (`+ - * /`, unary `-`), comparisons, and conversions (int, float64, string parse)
 - **float128_narrow_casts.fire** - float128 <-> narrower numeric types not covered by `float128_ops.fire` (which only covers float128 <-> int64/uint64/float64): int8/int16/int32 -> float128 (widened via int64), float128 -> int8/int16/int32 (narrowed via int64), and float128 <-> float32.
-- **float128_narrow_conversions.fire** - float128 narrowing to int8/int16/int32/float32, and widening from int8/int16/int32/float32 to float128
 
 ### `std/regex/`
 - **std_regex_basic.fire** - `is_match` over literals, `.`, alternation, quantifiers (`* + ?`), groups, character classes (including ranges and negation), and `last_error` for invalid patterns
-- **std_regex_anchor_simple.fire** / **std_regex_anchors.fire** - Anchor handling (`^`, `$`) in `is_match`
-- **std_regex_find_at.fire** / **std_regex_find_at_anchors.fire** - Position-aware matching via `find_at`, with and without anchors
-- **std_regex_validate_anchors.fire** / **std_regex_validate_anchors2.fire** - Pattern validation with anchors
+- **std_regex_anchors.fire** - Anchor handling (`^`, `$`) in `is_match`
+- **std_regex_find_at.fire** - Position-aware matching via `find_at`: plain, with `^`/`$` anchors, and lexer-style alternation (merged from the former `std_regex_find_at_anchors` and the `find_at` blocks of `std_regex_anchors`)
+- **std_regex_invalid_pattern.fire** - An invalid pattern never matches through `find_first`, `replace`, `is_match`, `find_at` and `find_all` (merged from the former `std_regex_find_first_invalid_pattern` and `std_regex_replace_invalid_pattern`)
 - **std_regex_regression_generic_matcher.fire** - Regression: quantifier/group/class patterns (`xy?z`, `(cd)+e`, `[b-d]+`, `x*z`) must go through the generic matcher; guards against reintroducing per-pattern hard-coded results in `is_match`
 - **std_regex_shorthand_classes.fire** / **std_regex_shorthand_in_class.fire** - Shorthand classes `\d \D \w \W \s \S` outside and inside `[...]` (including negated classes and combinations)
-- **std_regex_counted_exact.fire** / **std_regex_counted_open.fire** / **std_regex_counted_range.fire** - Counted quantifiers `{n}` (including `{0}`), `{n,}` and `{n,m}`, with backtracking cases
+- **std_regex_counted_quantifiers.fire** - Counted quantifiers `{n}`, `{n,}` and `{n,m}` through `is_match` (merged from the former `std_regex_counted_exact`, `_open` and `_range` tests)
 - **std_regex_counted_group.fire** - Counted quantifiers on groups: alternation, non-capturing, nested counts, and groups that can match empty
 - **std_regex_counted_with_anchors.fire** - Counted quantifiers combined with `^`/`$` in `find_at` and `is_match`
 - **std_regex_captures_basic.fire** / **std_regex_captures_nested.fire** / **std_regex_captures_alternation.fire** / **std_regex_captures_quantified_group.fire** / **std_regex_captures_noncapturing.fire** - `Match` accessors; nested groups; non-participating groups; last-iteration capture of a quantified group; `(?:...)`
 - **std_regex_captures_greedy_backtrack.fire** - Greedy-versus-backtracking capture results and earlier-alternative priority
-- **std_regex_find_first_basic.fire** / **std_regex_find_first_empty.fire** / **std_regex_find_first_anchors.fire** / **std_regex_find_first_invalid_pattern.fire** - `find_first`: leftmost match, `start_pos`, no-match `Match`, empty text and empty matches, anchors, invalid patterns
+- **std_regex_find_first_basic.fire** / **std_regex_find_first_empty.fire** / **std_regex_find_first_anchors.fire** - `find_first`: leftmost match, `start_pos`, no-match `Match`, empty text and empty matches, anchors
 - **std_regex_find_all_basic.fire** / **std_regex_find_all_empty_matches.fire** / **std_regex_find_all_anchors.fire** / **std_regex_find_all_groups.fire** - `find_all`: non-overlapping scan, empty-match advancement, anchors, per-match captures
-- **std_regex_replace_basic.fire** / **std_regex_replace_groups.fire** / **std_regex_replace_empty_matches.fire** / **std_regex_replace_invalid_pattern.fire** - `replace`: plain replacement, `$0..$9` and `$$`, empty matches, invalid patterns
+- **std_regex_replace_basic.fire** / **std_regex_replace_groups.fire** / **std_regex_replace_empty_matches.fire** - `replace`: plain replacement, `$0..$9` and `$$`, empty matches
 - **std_regex_regexpattern_search.fire** - `RegexPattern` reuse across `is_match`/`find_at`/`find_first`/`find_all`/`replace`/`group_count`, including an invalid pattern
-- **std_regex_error_unterminated_class.fire** / **std_regex_error_unbalanced_parens.fire** / **std_regex_error_dangling_quantifier.fire** / **std_regex_error_bad_counted.fire** / **std_regex_error_misc.fire** - `last_error` messages for invalid patterns (run tests; there is no compile-time check)
+- **std_regex_error_unterminated_class.fire** / **std_regex_error_unbalanced_parens.fire** / **std_regex_error_dangling_quantifier.fire** / **std_regex_error_bad_counted.fire** / **std_regex_error_misc.fire** - `last_error` messages for invalid patterns, plus no error for valid anchored patterns (run tests; there is no compile-time check)
 - **std_regex_regression_full_backtracking.fire** - Regression: `is_match`/`find_at` must backtrack into earlier quantifiers and alternatives (`a*a`, `a|ab`)
 - **std_regex_regression_escaped_dollar.fire** - Regression: a trailing `\$` is a literal dollar, not the end anchor
 - **std_regex_regression_deep_text.fire** - A repeat over a ~1000-character text must not overflow the matcher's recursion (guards the small `RegexExec.run` stack frame)
 
 ### `std/fs/`
-- **std_fs_basic.fire** - Basic `File`/`FileResult` usage
-- **std_fs_helpers.fire** - Filesystem helper functions
+- **std_fs_basic.fire** - Basic `File`/`FileResult` usage; also `exists()` and `err_code()` on a missing file (merged from the former `std_fs_helpers.fire`)
 - **std_fs_path_ops.fire** - Path manipulation operations
 
 ### `std/cli/`
-- **std_cli_args_basic.fire** - Basic `std.cli.args` usage
-- **std_cli_args_parser.fire** - Argument parser behavior
+- **std_cli_args_basic.fire** - Basic `std.cli.args` usage; also the no-argument fallbacks of `has_flag`, `option_value`, `positional` (merged from the former `std_cli_args_parser.fire`)
 - **std_cli_args_with_argv.fire** / **std_cli_args_edge_with_argv.fire** - Argument handling with real argv input (`.args` sidecar supplies the process's own command-line tokens)
 
 ### `std/fcl/`
@@ -706,15 +665,12 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 
 ### `std/types/`
 - **std_types_test.fire** - `std.types` `Pair`/`Option` basic usage
-- **option_issome_isnone.fire** - Regression: `Option`/`CopyableOption`'s `isSome()`/`isNone()` resolve correctly through a same-file vs. cross-module generic-method lookup
 - **option_null_vs_zero.fire** - Regression: `Option<int32>`/`CopyableOption<bool>` (a primitive payload type) correctly distinguish `null` from a legitimately-stored `0`/`false`, now that `Option`'s own `value: T?` field gets real nullable-scalar-field compiler support (see `ast_to_fir.py`'s "Nullable scalars" section) with zero changes to `Option`'s own source
 - **result_isok_iserr.fire** - `Result<T,E>` basic usage: `Ok`/`Err` construction via the direct constructor (`Result<T,E>(value, error)` with the unused side `null` — designed before static methods on generic classes worked, see `generics/generic_class_static_method_inferred.fire`; kept as direct construction rather than revisited, no functional need to change it) and `isOk()`/`isErr()` correctness for Owned `T`/`E`
 - **result_null_vs_zero.fire** - Regression: `Result<T,E>` for scalar `T`/`E` correctly distinguishes `null` from a legitimately-stored `0`/`false`, same as `Option<T>`, across both of `Result`'s independent nullable fields (`value: T?`, `error: E?`)
 - **result_copyable.fire** - `CopyableResult<T,E>` usage: construction, `isOk()`/`isErr()`, and that a copy is independent (value semantics, not moved/shared)
-- **option_static_factories.fire** - `Option`/`CopyableOption`'s `Some()` (bare/inferred) and `None()` (explicit type args) static factories
-- **result_static_factories.fire** - `Result`/`CopyableResult`'s `Ok()`/`Err()` static factories (explicit type args only — neither factory's own argument mentions both type parameters)
-- **option_unwrap_or.fire** - `unwrapOr(default)` on `Option`/`CopyableOption`: Owned `Option<string>` and `Option<int32>` (scalar `T`, regression coverage for the null-to-scalar-field lowering fix) drain on extract; `CopyableOption<int32>` doesn't
-- **result_unwrap_or.fire** - `unwrapOr(default)` on `Result`/`CopyableResult`, same drain-vs-non-draining split as `Option`
+- **option_unwrap_or.fire** - `unwrapOr(default)` on `Option`/`CopyableOption`: Owned `Option<string>` and `Option<int32>` (scalar `T`, regression coverage for the null-to-scalar-field lowering fix) drain on extract; `CopyableOption<int32>` doesn't Also the `CopyableOption<bool>.None()` static factory.
+- **result_unwrap_or.fire** - `unwrapOr(default)` on `Result`/`CopyableResult`, same drain-vs-non-draining split as `Option` Also the `Result<int32, string>.Ok/.Err` static factories (scalar T).
 
 ### `std/collections/`
 - **arraylist_add_remove_last.fire** - `ArrayList<int32>` basic `add`/`removeLast`/`get`/`size`

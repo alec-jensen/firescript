@@ -1380,6 +1380,49 @@ func @fs_main() -> void {
     %16 = strconst ""
     %17 = call.bool @impl_fs_rt_str_eq(%15, %16)
     call.void @println__bool(%17)
+    %18 = strconst "verbose"
+    %19 = call.bool @has_flag(%18)
+    %20 = bconst false
+    %21 = eq.bool %19, %20
+    call.void @println__bool(%21)
+    %22 = strconst "verbose"
+    %23 = strconst "v"
+    %24 = call.bool @has_flag_alias(%22, %23)
+    %25 = bconst false
+    %26 = eq.bool %24, %25
+    call.void @println__bool(%26)
+    %27 = strconst "output"
+    %28 = strconst "none"
+    %29 = call.ptr<i8> @option_value(%27, %28)
+    %30 = strconst "none"
+    %31 = call.bool @impl_fs_rt_str_eq(%29, %30)
+    call.void @println__bool(%31)
+    %32 = strconst "output"
+    %33 = strconst "o"
+    %34 = strconst "none"
+    %35 = call.ptr<i8> @option_value_alias(%32, %33, %34)
+    %36 = strconst "none"
+    %37 = call.bool @impl_fs_rt_str_eq(%35, %36)
+    call.void @println__bool(%37)
+    %38 = const.i32 0
+    %39 = strconst "none"
+    %40 = call.ptr<i8> @positional(%38, %39)
+    %41 = strconst "none"
+    %42 = call.bool @impl_fs_rt_str_eq(%40, %41)
+    call.void @println__bool(%42)
+    %43 = const.i32 1
+    %44 = strconst "none"
+    %45 = call.ptr<i8> @positional(%43, %44)
+    %46 = strconst "none"
+    %47 = call.bool @impl_fs_rt_str_eq(%45, %46)
+    call.void @println__bool(%47)
+    %48 = const.i32 1
+    %49 = neg.i32 %48
+    %50 = strconst "none"
+    %51 = call.ptr<i8> @positional(%49, %50)
+    %52 = strconst "none"
+    %53 = call.bool @impl_fs_rt_str_eq(%51, %52)
+    call.void @println__bool(%53)
     ret
 }
 

@@ -31,6 +31,18 @@ fn multiply(x: int32, y: int32) -> int32 {
 }
 println(multiply(4, 5));
 
+// Bool parameters
+fn bothTrue(x: bool, y: bool) -> bool {
+    if (x == true) {
+        if (y == true) {
+            return true;
+        }
+    }
+    return false;
+}
+println(bothTrue(true, true));
+println(bothTrue(true, false));
+
 /* EXPECT
 Hello from function!
 42
@@ -39,4 +51,6 @@ Hello from function!
 10
 300
 20
+true
+false
 */

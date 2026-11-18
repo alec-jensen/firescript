@@ -23,6 +23,35 @@ missing_file: File = File("build/temp/does_not_exist_std_fs_basic.txt");
 missing_result: FileResult = missing_file.read();
 println(missing_result.result_status());
 
+// Helper methods: exists() and err_code() on a missing file.
+h_path: string = "build/temp/std_fs_helpers.txt";
+h_missing: string = "build/temp/does_not_exist_std_fs_helpers.txt";
+h_file: File = File(h_path);
+h_missingFile: File = File(h_missing);
+
+h_write_result: FileResult = h_file.writeAll("one");
+println(h_write_result.result_status());
+h_append_result: FileResult = h_file.appendAll(" two");
+println(h_append_result.result_status());
+
+if (h_file.exists()) {
+    println("exists");
+} else {
+    println("missing");
+}
+
+if (h_missingFile.exists()) {
+    println("exists");
+} else {
+    println("missing");
+}
+
+h_read_result: FileResult = h_file.read();
+println(h_read_result.result_status());
+println(h_read_result.result_data());
+h_missing_result: FileResult = h_missingFile.read();
+println(h_missing_result.err_code());
+
 /* EXPECT
 5
 5
@@ -31,4 +60,11 @@ alpha beta
 5
 alpha
 -2
+3
+4
+exists
+missing
+7
+one two
+2
 */

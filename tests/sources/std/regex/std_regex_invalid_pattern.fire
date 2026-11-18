@@ -1,0 +1,55 @@
+import @firescript/std.io.println;
+import @firescript/std.collections.ArrayList;
+import @firescript/std.regex.find_first;
+import @firescript/std.regex.find_all;
+import @firescript/std.regex.find_at;
+import @firescript/std.regex.is_match;
+import @firescript/std.regex.replace;
+import @firescript/std.regex.pattern.Match;
+
+// An invalid pattern never matches, through every entry point; use
+// last_error to find out why.
+
+// find_first
+m: Match = find_first("(ab", "ab", 0);
+println(m.found());
+println(m.group_count());
+println(find_first("a{3,1}", "aaa", 0).found());
+println(find_first("[a", "a", 0).found());
+
+// replace: the text comes back unchanged
+println(replace("(a", "banana", "x"));
+println(replace("a{2,1}", "banana", "x"));
+println(replace("[a", "banana", "x"));
+println(replace("*", "banana", "x"));
+
+// is_match
+println(is_match("[ab", "ab"));
+println(is_match("(ab", "ab"));
+
+// find_at: no match
+println(find_at("(ab", "ab", 0));
+println(find_at("[a", "a", 0));
+
+// find_all: empty list
+all1: ArrayList<Match> = find_all("(ab", "abab");
+println(all1.size());
+all2: ArrayList<Match> = find_all("a{2,1}", "aaaa");
+println(all2.size());
+
+/* EXPECT
+false
+0
+false
+false
+banana
+banana
+banana
+banana
+false
+false
+-1
+-1
+0
+0
+*/

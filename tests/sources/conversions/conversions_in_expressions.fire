@@ -11,7 +11,11 @@ y: float32 = 2.0f;
 div_result: float32 = (x as float32) / y;
 println(div_result);
 
+f_result: float32 = (10 as float32) / 4.0f + 2.5f;
+println(f_result);
+
 /* EXPECT
 30
 2.500000
+5.000000
 */

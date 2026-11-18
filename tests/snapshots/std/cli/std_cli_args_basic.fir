@@ -1352,5 +1352,48 @@ function @main() -> void {
     %15 = strconst ""
     %16 = binop "==", %14, %15
     call @println(%16 borrow)
+    %17 = strconst "verbose"
+    %18 = call.bool @has_flag(%17 own)
+    %19 = bconst false
+    %20 = binop "==", %18, %19
+    call @println(%20 borrow)
+    %21 = strconst "verbose"
+    %22 = strconst "v"
+    %23 = call.bool @has_flag_alias(%21 own, %22 own)
+    %24 = bconst false
+    %25 = binop "==", %23, %24
+    call @println(%25 borrow)
+    %26 = strconst "output"
+    %27 = strconst "none"
+    %28 = call.string @option_value(%26 own, %27 own)
+    %29 = strconst "none"
+    %30 = binop "==", %28, %29
+    call @println(%30 borrow)
+    %31 = strconst "output"
+    %32 = strconst "o"
+    %33 = strconst "none"
+    %34 = call.string @option_value_alias(%31 own, %32 own, %33 own)
+    %35 = strconst "none"
+    %36 = binop "==", %34, %35
+    call @println(%36 borrow)
+    %37 = const.int32 0
+    %38 = strconst "none"
+    %39 = call.string @positional(%37 own, %38 own)
+    %40 = strconst "none"
+    %41 = binop "==", %39, %40
+    call @println(%41 borrow)
+    %42 = const.int32 1
+    %43 = strconst "none"
+    %44 = call.string @positional(%42 own, %43 own)
+    %45 = strconst "none"
+    %46 = binop "==", %44, %45
+    call @println(%46 borrow)
+    %47 = const.int32 1
+    %48 = unop "-", %47
+    %49 = strconst "none"
+    %50 = call.string @positional(%48 own, %49 own)
+    %51 = strconst "none"
+    %52 = binop "==", %50, %51
+    call @println(%52 borrow)
     ret
 }
