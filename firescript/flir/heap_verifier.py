@@ -89,22 +89,30 @@ class _State:
     equality/copy support the forward_dataflow fixpoint driver.
     """
 
-    __slots__ = ("tokens", "slot_alias")
+    __slots__ = ("tokens", "slot_alias", "top")
 
-    def __init__(self, tokens: Optional[dict[Identifier, HeapState]] = None, slot_alias: Optional[dict[str, Identifier]] = None):
+    def __init__(self, tokens: Optional[dict[Identifier, HeapState]] = None, slot_alias: Optional[dict[str, Identifier]] = None, top: bool = False):
+        # `top` marks the not-yet-visited sentinel: the identity of the meet
+        # (see _meet_states), so an unprocessed back-edge predecessor does
+        # not erase what the already-visited predecessors established.
+        self.top = top
         self.tokens: dict[Identifier, HeapState] = dict(tokens) if tokens else {}
         self.slot_alias: dict[str, Identifier] = dict(slot_alias) if slot_alias else {}
 
     def copy(self) -> "_State":
-        return _State(self.tokens, self.slot_alias)
+        return _State(self.tokens, self.slot_alias, self.top)
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, _State) and self.tokens == other.tokens and self.slot_alias == other.slot_alias
+        return isinstance(other, _State) and self.top == other.top and self.tokens == other.tokens and self.slot_alias == other.slot_alias
 
 
 def _meet_states(states: list[_State]) -> _State:
-    if not states:
-        return _State()
+    # TOP (unvisited) states are the meet's identity: drop them. If every
+    # incoming state is still TOP, the result is TOP too.
+    live = [st for st in states if not st.top]
+    if not live:
+        return _State(top=True) if states else _State()
+    states = live
     tokens: dict[Identifier, HeapState] = dict(states[0].tokens)
     slot_alias: dict[str, Identifier] = dict(states[0].slot_alias)
     for other in states[1:]:
@@ -399,11 +407,16 @@ class _HeapChecker:
             return
         entry = self.function.blocks[0].id
         entry_state = _State()
-        bottom = _State()
+        # forward_dataflow seeds every out-state with `bottom`; using the TOP
+        # sentinel makes unvisited predecessors (loop back-edges on the
+        # first pass) neutral in the meet instead of emptying the header.
+        bottom = _State(top=True)
         block_by_id = {b.id: b for b in self.function.blocks}
 
         def transfer(block_id: str, in_state: _State) -> _State:
             block = block_by_id[block_id]
+            if in_state.top:
+                return in_state
             state = in_state.copy()
             for idx, inst in enumerate(block.instructions):
                 self._process(block, idx, inst, state)
