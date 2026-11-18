@@ -25,12 +25,15 @@ def test_dir_and_output_conflict():
         shutil.copy(os.path.join(SOURCES_DIR, "functions", "functions.fire"), os.path.join(tmp, "a.fire"))
         proc = t.run_compiler(["--dir", tmp, "-o", os.path.join(tmp, "out.exe")], cwd=tmp)
         t.require_eq(proc.returncode, 1)
+        t.require("Cannot specify output file when compiling a directory" in proc.stdout + proc.stderr,
+                  proc.stdout + proc.stderr)
 
 
 def test_dir_not_found():
     missing = os.path.join(t.repo_root, "tests", "__no_such_dir__")
     proc = t.run_compiler(["--dir", missing])
     t.require_eq(proc.returncode, 1)
+    t.require("Directory not found" in proc.stdout + proc.stderr, proc.stdout + proc.stderr)
 
 
 def test_dir_partial_failure():

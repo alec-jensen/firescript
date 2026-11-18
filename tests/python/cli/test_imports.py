@@ -49,3 +49,4 @@ def test_import_with_syntax_error():
             f.write("import @firescript/std.io.println;\nx: int32 = ;\nprintln(x);\n")
         proc = t.run_compiler([src])
         t.require_eq(proc.returncode, 1)
+        t.require("Parsing failed" in proc.stdout + proc.stderr, proc.stdout + proc.stderr)

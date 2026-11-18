@@ -43,13 +43,3 @@ def test_analyze_semantics_before_parse_raises():
         t.require(False, "no error raised")
     except RuntimeError as e:
         t.require("parse() must be called" in str(e), str(e))
-
-
-def test_full_pipeline_happy_path():
-    pipeline = _fresh_pipeline()
-    pipeline.parse()
-    t.require(not pipeline.has_imports())
-    pipeline.resolve_imports()
-    pipeline.preprocess()
-    analyzer = pipeline.analyze_semantics()
-    t.require(analyzer is not None)

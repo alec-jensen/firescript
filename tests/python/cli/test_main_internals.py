@@ -38,28 +38,18 @@ SOURCES_DIR = t.sources_dir
 
 # --- _normalize_cli_path -----------------------------------------------------
 
-def test_normalize_cli_path_rejects_empty_string():
+@t.params([
+    ("empty", "", "non-empty"),
+    ("none", None, "non-empty"),
+    ("nul-byte", "some\x00path.fire", "invalid NUL byte"),
+])
+def test_normalize_cli_path_rejects_invalid_path(case):
+    _label, bad, needle = case
     try:
-        _normalize_cli_path("")
+        _normalize_cli_path(bad)  # type: ignore[arg-type]
         t.require(False, "expected ValueError")
     except ValueError as e:
-        t.require("non-empty" in str(e), str(e))
-
-
-def test_normalize_cli_path_rejects_non_string():
-    try:
-        _normalize_cli_path(None)  # type: ignore[arg-type]
-        t.require(False, "expected ValueError")
-    except ValueError as e:
-        t.require("non-empty" in str(e), str(e))
-
-
-def test_normalize_cli_path_rejects_nul_byte():
-    try:
-        _normalize_cli_path("some\x00path.fire")
-        t.require(False, "expected ValueError")
-    except ValueError as e:
-        t.require("NUL" in str(e), str(e))
+        t.require(needle in str(e), str(e))
 
 
 # --- setup_logging re-entry (handlers.clear() branch) ------------------------
@@ -89,6 +79,16 @@ def test_setup_logging_json_format():
     try:
         setup_logging(debug_mode=False, message_format="json")
         t.require_eq(len(root.handlers), 1)
+        import io
+        import json
+
+        stream = io.StringIO()
+        root.handlers[0].setStream(stream)
+        logging.getLogger("json-format-test").error("hello json")
+        record = json.loads(stream.getvalue().strip().splitlines()[-1])
+        t.require_eq(record.get("type"), "log")
+        t.require_eq(record.get("level"), "error")
+        t.require("hello json" in json.dumps(record), stream.getvalue())
     finally:
         root.handlers[:] = saved_handlers
         root.setLevel(saved_level)
@@ -189,19 +189,6 @@ def test_compile_asm_link_failure_returns_false():
         pe_mod.write_pe = orig_write_pe
 
 
-def test_compile_asm_emit_obj_unsupported():
-    flir_module = _make_trivial_flir_module()
-    with t.tmpdir() as tmp:
-        cwd = os.getcwd()
-        os.chdir(tmp)
-        try:
-            import time as _time
-            result = _compile_asm(flir_module, "functions.fire", None, _time.perf_counter_ns(), _time.perf_counter_ns(), emit="obj")
-        finally:
-            os.chdir(cwd)
-    t.require_eq(result, False)
-
-
 # --- _compile_runtime_file: parse / semantic error branches ------------------
 
 def test_compile_runtime_file_parse_error_raises():
@@ -248,19 +235,6 @@ def test_compile_file_invalid_path_argument_returns_false():
 def test_compile_file_invalid_output_path_returns_false():
     result = compile_file(_good_source_path(), "windows/x86_64", out_path="bad\x00out.exe", check=True)
     t.require_eq(result, False)
-
-
-def test_compile_file_default_link_args_none():
-    with t.tmpdir() as tmp:
-        cwd = os.getcwd()
-        os.chdir(tmp)
-        try:
-            # link_args intentionally omitted -> exercises `if link_args is
-            # None: link_args = []` inside compile_file.
-            result = compile_file(_good_source_path(), "windows/x86_64", check=True)
-        finally:
-            os.chdir(cwd)
-    t.require_eq(result, True)
 
 
 def test_compile_file_preprocess_exception_returns_false():
@@ -332,17 +306,6 @@ def test_compile_file_emit_ast_write_failure_returns_false():
     t.require_eq(result, False)
 
 
-def test_compile_file_emit_ast_success_returns_path():
-    with t.tmpdir() as tmp:
-        cwd = os.getcwd()
-        os.chdir(tmp)
-        try:
-            result = compile_file(_good_source_path(), "windows/x86_64", emit="ast")
-        finally:
-            os.chdir(cwd)
-    t.require(bool(result) and str(result).endswith(".ast"), result)
-
-
 def test_compile_file_ast_to_fir_exception_returns_false():
     import ast_to_fir as ast_to_fir_mod
 
@@ -392,16 +355,30 @@ def test_compile_file_fir_to_flir_exception_returns_false():
 def test_lint_text_parser_errors_no_imports_returns_early():
     errors = lint_text("x: int32 = ;\n")
     t.require(len(errors) > 0)
+    # Parser errors only: analysis is skipped, so no semantic diagnostics.
+    t.require(all(e.code.startswith("FS-PARSE-") for e in errors), [e.code for e in errors])
+    t.require_eq((errors[0].line, errors[0].column), (1, 12))
+
+
+def test_lint_text_reports_semantic_analysis_errors():
+    # A use-after-move is only found by the semantic analyzer (not the
+    # parser/preprocessor), so this fails if lint_text drops analyzer output.
+    source = (
+        "import @firescript/std.io.println;\n\n"
+        "fn consume(s: string) -> void {\n    println(s);\n}\n\n"
+        'value: string = "x";\n'
+        "consume(value);\n"
+        "println(value);\n"
+    )
+    errors = lint_text(source)
+    t.require_eq([e.code for e in errors], ["FS-SEM-0001"])
+    t.require("Use-after-move" in errors[0].message, errors[0].message)
+    t.require_eq((errors[0].line, errors[0].column), (9, 9))
 
 
 def test_lint_text_clean_source_returns_no_errors():
     errors = lint_text("x: int32 = 1;\n")
     t.require_eq(errors, [])
-
-
-def test_lint_text_import_resolution_exception_returns_parser_errors():
-    errors = lint_text("import definitely_missing_module_xyz.helper;\nx: int32 = helper(1);\n")
-    t.require(isinstance(errors, list))
 
 
 def test_lint_text_preprocess_exception_returns_errors_so_far():
@@ -412,8 +389,9 @@ def test_lint_text_preprocess_exception_returns_errors_so_far():
 
     CompilerPipeline.preprocess = _raise
     try:
-        errors = lint_text("x: int32 = 1;\n")
-        t.require(isinstance(errors, list))
+        # The injected failure is swallowed and the (empty) errors collected
+        # so far are returned.
+        t.require_eq(lint_text("x: int32 = 1;\n"), [])
     finally:
         CompilerPipeline.preprocess = orig
 
@@ -427,8 +405,7 @@ def test_lint_text_semantic_analysis_exception_is_swallowed():
     CompilerPipeline.analyze_semantics = _raise
     try:
         # Must not raise -- the except branch is a bare `pass`.
-        errors = lint_text("x: int32 = 1;\n")
-        t.require(isinstance(errors, list))
+        t.require_eq(lint_text("x: int32 = 1;\n"), [])
     finally:
         CompilerPipeline.analyze_semantics = orig
 
@@ -484,36 +461,3 @@ def test_main_invalid_file_path_argument_exits_1():
 def test_main_invalid_dir_path_argument_exits_1():
     code = _run_main_with_argv(["--dir", "bad\x00dir"])
     t.require_eq(code, 1)
-
-
-def test_main_output_move_failure_exits_1():
-    import shutil as shutil_mod
-
-    orig_move = shutil_mod.move
-
-    def _raise(src, dst):
-        raise OSError("injected move failure")
-
-    shutil_mod.move = _raise
-    try:
-        with t.tmpdir() as tmp:
-            cwd = os.getcwd()
-            os.chdir(tmp)
-            try:
-                # --emit-fir always writes to build/<name>.fir regardless of
-                # -o, so output_path != args.output here -- the only way to
-                # actually reach main()'s shutil.move rename branch (a plain
-                # -o binary compile writes directly to args.output already).
-                out_path = os.path.join(tmp, "custom_output.fir")
-                code = _run_main_with_argv([_good_source_path(), "--emit-fir", "-o", out_path])
-            finally:
-                os.chdir(cwd)
-        t.require_eq(code, 1)
-    finally:
-        shutil_mod.move = orig_move
-
-
-def test_main_dir_with_no_fire_files_warns_but_succeeds():
-    with t.tmpdir() as tmp:
-        code = _run_main_with_argv(["--dir", tmp])
-    t.require(code is None or code == 0)

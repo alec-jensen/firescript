@@ -15,11 +15,6 @@ def test_version():
     t.require("firescript" in proc.stdout.lower())
 
 
-def test_no_input_specified():
-    proc = t.run_compiler([])
-    t.require_eq(proc.returncode, 1)
-
-
 def test_check_valid_file():
     src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
     exe = os.path.join(BUILD_DIR, "functions.exe")
@@ -34,47 +29,33 @@ def test_check_invalid_file():
     src = os.path.join(SOURCES_DIR, "invalid", "types", "type_mismatches.fire")
     proc = t.run_compiler(["--check", src])
     t.require_eq(proc.returncode, 1)
+    t.require("Parsing failed" in proc.stdout + proc.stderr, proc.stdout + proc.stderr)
 
 
-def test_file_not_found():
-    proc = t.run_compiler(["--check", os.path.join(t.repo_root, "tests", "__no_such_file__.fire")])
-    t.require_eq(proc.returncode, 1)
-
-
-def test_unsupported_target():
-    src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
-    proc = t.run_compiler(["--platform", "linux", "--arch", "x86_64", src])
-    t.require_eq(proc.returncode, 1)
-
-
-def test_invalid_platform_choice_rejected():
-    src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
-    proc = t.run_compiler(["--platform", "not-a-real-platform", src])
-    t.require_eq(proc.returncode, 2)
-
-
-def test_invalid_arch_choice_rejected():
-    src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
-    proc = t.run_compiler(["--arch", "not-a-real-arch", src])
-    t.require_eq(proc.returncode, 2)
-
-
-def test_default_target_compiles():
+def test_compile_with_configured_target_produces_binary():
+    # t.run_compiler() adds --platform/--arch from FIRESCRIPT_TEST_TARGET when
+    # it is set (and otherwise leaves the compiler's host default), so this
+    # tests "whatever target this test run is configured for", not the host
+    # default specifically; host-default resolution is covered by
+    # test_targets_resolution.py.
     src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
     exe = os.path.join(BUILD_DIR, "functions.exe")
     if os.path.exists(exe):
         os.remove(exe)
     proc = t.run_compiler([src])
     t.require_eq(proc.returncode, 0, proc.stderr)
-    t.require(os.path.exists(exe), "default --platform/--arch must resolve to a supported target on CI")
+    t.require(os.path.exists(exe), "the configured target must produce build/functions.exe")
 
 
 def test_no_link_rejected():
     src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
     proc = t.run_compiler(["--no-link", src])
     t.require_eq(proc.returncode, 1)
+    t.require("--emit obj / --no-link is not supported" in proc.stdout + proc.stderr,
+              proc.stdout + proc.stderr)
 
 
 def test_input_is_directory():
     proc = t.run_compiler(["--check", SOURCES_DIR])
     t.require_eq(proc.returncode, 1)
+    t.require("Is a directory" in proc.stdout + proc.stderr, proc.stdout + proc.stderr)

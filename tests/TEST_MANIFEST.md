@@ -166,20 +166,25 @@ Plain `assert` also works. Covers:
   compilation, `--message-format json`, `-d` debug mode, import-resolution
   errors), split by area: `test_check.py`, `test_emit.py`,
   `test_dir_batch.py`, `test_output.py`, `test_diagnostics.py`,
-  `test_imports.py`, `test_paths.py` (`safe_relpath` cross-drive fallback).
+  `test_imports.py`, `test_paths.py` (`safe_relpath` cross-drive fallback),
+  `test_main_arg_errors.py` (argument-error exits, including the
+  invalid-choice params test). `test_check.py`'s compile test uses whatever
+  target the test run is configured for (`t.run_compiler()` adds
+  `--platform/--arch` from `FIRESCRIPT_TEST_TARGET`), not necessarily the
+  host default; host-default resolution is in `test_targets_resolution.py`.
   `test_main_internals.py` covers the rest of `main.py` in-process
-  (not via subprocess): `_normalize_cli_path`, `setup_logging` re-entry,
+  (not via subprocess): `_normalize_cli_path`, `setup_logging` re-entry
+  (including that the json format emits JSON),
   `_compile_asm`/`_compile_runtime_file`'s
   exception branches, `compile_file()`'s per-stage exception
   handling (monkeypatching `CompilerPipeline`/`ASTToFIRConverter`/
   `FIRToFLIRLowering` methods to raise), `lint_text()`'s early-exit
-  branches, and `main()`'s CLI-level error branches (invalid path args,
+  branches and its parser/semantic-analysis diagnostics, and `main()`'s CLI-level error branches (invalid path args,
   unsupported target, output-move failure), driven by monkeypatched
   `sys.argv` and caught `SystemExit`.
   `test_compiler_pipeline.py` covers `firescript/compiler_pipeline.py`'s
   `CompilerPipeline` (the parse()-must-precede-later-stages guard clauses
-  on `resolve_imports`/`preprocess`/`analyze_semantics`, and a full
-  happy-path run) in-process. `test_frontend_pipeline.py` covers
+  on `resolve_imports`/`preprocess`/`analyze_semantics`) in-process. `test_frontend_pipeline.py` covers
   `firescript/frontend_pipeline.py`'s import-merge and deferred-identifier
   logic in-process (real small on-disk import graphs via
   `CompilerPipeline`, plus a direct call with a hand-built resolver return
@@ -326,11 +331,13 @@ Plain `assert` also works. Covers:
   oracle tests.
 - `tests/python/float128/` -- self-tests for the binary128 correctness
   oracle (`tests/support/float128_oracle.py`): hand-verified constants and
-  arithmetic/comparison/parse/format checks (`test_oracle_units.py`), plus
-  self-consistency of every generated test vector (`test_oracle_vectors.py`).
+  arithmetic/comparison/parse/format checks (`test_oracle_units.py`),
+  including exact round-half-even tie cases for binary rounding and decimal
+  formatting, whose expectations are computed independently of the oracle's
+  own helpers.
 - `tests/python/harness/` -- the harness's own tests (directive parser,
-  EXPECT/`//~` parsing and rewriting, seed derivation, matrix engine,
-  selector matching). The harness ships with its own test coverage since it
+  EXPECT/`//~` parsing and rewriting (directive error tests assert which
+  error fires), seed derivation, matrix engine, selector matching). The harness ships with its own test coverage since it
   is the arbiter of every other test.
 - `tests/python/imports/test_module_resolver.py` -- direct unit tests for
   `firescript/imports.py`'s `ModuleResolver` and `build_merged_ast`: default

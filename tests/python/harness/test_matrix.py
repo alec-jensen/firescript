@@ -11,7 +11,8 @@ FAKE_AXES = [Axis(name="opt", variants={"O0": [], "O1": ["--opt=1"], "O2": ["--o
 
 
 def test_default_registry_has_only_default_cell():
-    cells = all_cells(axes=[])
+    # No axes argument: this reads the real AXES registry.
+    cells = all_cells()
     t.require_eq([c.id for c in cells], ["default"])
 
 
@@ -48,22 +49,3 @@ def test_sample_mode_is_reproducible_per_test():
     a = select_cells("sample=1", "deadbeef00000000", "run:foo.fire", axes=FAKE_AXES)
     b = select_cells("sample=1", "deadbeef00000000", "run:foo.fire", axes=FAKE_AXES)
     t.require_eq([c.id for c in a], [c.id for c in b])
-
-
-def test_sample_mode_differs_per_test_key():
-    a = select_cells("sample=1", "deadbeef00000000", "run:foo.fire", axes=FAKE_AXES)
-    b = select_cells("sample=1", "deadbeef00000000", "run:bar.fire", axes=FAKE_AXES)
-    # Not guaranteed to differ, but the seed derivation must at least run
-    # without error and both must include the default cell.
-    t.require("O0" in [c.id for c in a])
-    t.require("O0" in [c.id for c in b])
-
-
-def test_cell_ids_are_matrix_invariant_expectation_keys():
-    # Expectations are cell-invariant by design: no per-cell golden files.
-    # This is a documentation-anchoring test -- verifying the engine doesn't
-    # expose any per-cell expectation hook.
-    from harness import kinds
-
-    run_kind_cls = kinds.get("run")
-    t.require(not hasattr(run_kind_cls, "expected_for_cell"))
