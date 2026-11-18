@@ -1,6 +1,0 @@
-// Semantic type error: cannot compare incompatible types with '=='.
-
-fn equality_mismatch() -> void {
-    a: int32 = 5;
-    b: bool = a == "hello";  //~ ERROR FS-SEM-0010 @17
-}

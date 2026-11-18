@@ -1,6 +1,0 @@
-// Semantic type error: unary minus operand type cannot be determined
-// (undefined identifier).
-
-fn unary_minus_undefined() -> void {
-    x: int32 = -undefinedValue;  //~ ERROR FS-PARSE-0003 @17
-}

@@ -26,6 +26,19 @@ fn equalityMismatch() -> bool {
     return y;
 }
 
+fn minusMismatch() -> int32 {
+    a: int32 = 5;
+    b: float64 = 2.0;
+    c: int32 = a - b;  //~ ERROR FS-SEM-0010 @18
+    return c;
+}
+
+fn orNonBoolLeft() -> bool {
+    a: int32 = 5;
+    d: bool = a || true;  //~ ERROR FS-SEM-0010 @17
+    return d;
+}
+
 fn main() -> int32 {
     return 0;
 }

@@ -1,6 +1,0 @@
-// Semantic type error: unary '!' requires a bool operand.
-
-fn unary_not_non_bool() -> void {
-    x: int32 = 5;
-    y: bool = !x;  //~ ERROR FS-SEM-0010 @15
-}

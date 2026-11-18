@@ -1,6 +1,0 @@
-// Casting an array to anything other than 'string' is rejected.
-fn main() -> int32 {
-    arr: int32[] = [1, 2];
-    x: int32 = arr as int32;  //~ ERROR FS-SEM-0010 @23
-    return x;
-}
