@@ -1,0 +1,12 @@
+// KNOWN ISSUE (not yet fixed): 'for (x in <non-iterable>)' (here an int32 literal) fails in FIR->FLIR lowering ("array_length on array of unknown size") instead of a semantic error.
+// The type checker (firescript/parser/type_system.py) has no check for this,
+// so it is either silently accepted or only caught by a later IR verifier
+// pass and reported as "internal compiler error ... this is a compiler bug"
+// instead of a user-facing diagnostic. This file fails until a real
+// diagnostic with the annotated code is produced; do not delete or loosen it.
+
+import @firescript/std.io.println;
+
+for (x: int32 in 5) {  //~ ERROR FS-SEM-0010
+    println(x);
+}

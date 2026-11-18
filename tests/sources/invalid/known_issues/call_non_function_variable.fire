@@ -1,0 +1,11 @@
+// KNOWN ISSUE (not yet fixed): calling a non-function variable as a function fails in FIR->FLIR lowering ("call to unknown function") instead of a semantic error.
+// The type checker (firescript/parser/type_system.py) has no check for this,
+// so it is either silently accepted or only caught by a later IR verifier
+// pass and reported as "internal compiler error ... this is a compiler bug"
+// instead of a user-facing diagnostic. This file fails until a real
+// diagnostic with the annotated code is produced; do not delete or loosen it.
+
+import @firescript/std.io.println;
+
+x: int32 = 5;
+x(10);  //~ ERROR FS-SEM-0010

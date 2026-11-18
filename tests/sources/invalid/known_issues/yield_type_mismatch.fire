@@ -1,0 +1,16 @@
+// KNOWN ISSUE (not yet fixed): yielding a value whose type differs from the generator's element type is reported as an internal FIR verifier error (FIRV-G1).
+// The type checker (firescript/parser/type_system.py) has no check for this,
+// so it is either silently accepted or only caught by a later IR verifier
+// pass and reported as "internal compiler error ... this is a compiler bug"
+// instead of a user-facing diagnostic. This file fails until a real
+// diagnostic with the annotated code is produced; do not delete or loosen it.
+
+import @firescript/std.io.println;
+
+fn numbers() -> generator<int32> {
+    yield "s";  //~ ERROR FS-SEM-0010
+}
+
+for (n: int32 in numbers()) {
+    println(n);
+}

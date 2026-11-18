@@ -1,0 +1,14 @@
+// KNOWN ISSUE (not yet fixed): a bare 'return;' in a non-void function is silently accepted (and miscompiles) instead of being rejected.
+// The type checker (firescript/parser/type_system.py) has no check for this,
+// so it is either silently accepted or only caught by a later IR verifier
+// pass and reported as "internal compiler error ... this is a compiler bug"
+// instead of a user-facing diagnostic. This file fails until a real
+// diagnostic with the annotated code is produced; do not delete or loosen it.
+
+import @firescript/std.io.println;
+
+fn bare() -> int32 {
+    return;  //~ ERROR FS-SEM-0010
+}
+
+println(bare());

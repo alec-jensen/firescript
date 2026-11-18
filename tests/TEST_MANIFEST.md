@@ -763,6 +763,8 @@ Prefer many small, single-behavior `.fire` files over one large multi-assertion 
 
 This category is specifically for currently-known, not-yet-fixed bugs (expected to fail). Normal regression tests added alongside a fix (per CLAUDE.md's standard "Bug Fix Tests" workflow — a test that would have failed before the fix and passes after) go in their feature's regular category directory, not here.
 
+`tests/sources/invalid/known_issues/*.fire` are compile-fail cases for diagnostics the front end does **not** emit yet; each is **expected to fail** until the check exists (each has a header comment): wrong argument count or type in a free-function call, `return` type mismatches (including `return;` in a non-void function and a value returned from a `void` function), `yield` with the wrong type or outside a generator, `for-in` over a non-iterable, calling a non-function variable, and a wrong argument type to a generic class method (`ArrayList<int32>.add("x")`). `firescript/parser/type_system.py` has no check for free-function call arguments, return values or `yield`, so these are either silently accepted or caught later as an internal IR-verifier error.
+
 ## Invalid Tests
 
 Tests in `tests/sources/invalid/<category>/` are expected to fail compilation and test error handling. Categories:
