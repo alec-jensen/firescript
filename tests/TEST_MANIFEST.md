@@ -401,6 +401,18 @@ Plain `assert` also works. Covers:
   `except ImportError` fallback (forced via the `sys.modules[name] = None`
   trick).
 
+- Decision-point and error-path unit tests added to close verifier, CLI and utility gaps:
+  - `tests/python/fir/test_verifier_checks.py` -- single-corruption tests of the FIR Tier-1 verifier (generic-parameter skips FIRV-T1/T2/T5/T6/T7/T9, array-size and nullable argument assignability, StoreVar nullable assignment FIRV-L2, ArrayAlloc/ArrayCopy FIRV-T8, LoadField/StoreField/Allocate field type mismatches), each asserting the specific rule id.
+  - `tests/python/fir/test_ownership_verifier_checks.py` -- Tier-2 ownership verifier: dataflow meet of differing binding sets, StoreArray consuming its value, borrow-parameter check (FIRV-O1/O7), FIRV-G4 with a generator held in a local, enum-guard collection ignoring non-ExtractTag `==` branches.
+  - `tests/python/flir/test_verifier_checks.py` -- single-corruption tests of FLIR Tier-1 verifier decision points with valid counterparts: jmp/br targets, slot dominance and parameter slots, FLIRV-T2 null-check and narrow-int exemptions, pointee leniency on ret/calls, M1/M2 field checks, ptradd scale, Tier-2 gating after a Tier-1 failure and violation ordering.
+  - `tests/python/flir/test_heap_verifier_checks.py` -- one heap lifecycle per test: leak, double free, use after free, free of a non-heap pointer, A5 destructor totality, meet semantics at joins, escapes by store/call/return, slot re-binding.
+  - `tests/python/flir/test_ir_analysis_edges.py` -- CFG, reverse postorder and dominators on diamond/loop/unreachable/nested shapes, `dominates`/`instruction_dominates` boundaries, `forward_dataflow` fixpoint and reachability, Violation formatting, `FLIRStruct.finalize`/`field`, and textual FLIR dump of entry, externs and globals.
+  - `tests/python/cli/test_targets_resolution.py` -- `targets.py` host platform/arch mapping for every recognized string, `UnknownHostError` for unrecognized ones, `resolve_target` defaults/explicit flags/invalid values, `is_supported`, `supported_targets_str`.
+  - `tests/python/cli/test_main_arg_errors.py` -- CLI black-box tests: invalid `--emit`/`--message-format`, extra positional files, no input, `--emit obj` unsupported, unsupported-target text, `--check` skipping the target check, `--dir` with an unsupported target, a non-UTF-8 source file, a missing file, the JSON read-error log event, `-d`.
+  - `tests/python/errors/test_errors_subclasses.py` -- `CompileTimeError.to_log_string` caret and location rendering, subclass codes/categories/templates, unique error codes, `IRVerificationError` message assembly.
+  - `tests/python/log_formatter/test_log_formatter_formats.py` -- `LogFormatter` format per log level and `JsonFormatter` diagnostic vs plain-log events.
+  - `tests/python/utils/test_type_utils_classes.py` and `tests/python/utils/test_file_utils.py` -- `type_utils.py` copyable/owned classification, and `file_utils.py` index-to-line/column mapping and `get_line` including out-of-range cases.
+
 ## Test Categories
 
 Each heading below is a directory under `tests/sources/`.
