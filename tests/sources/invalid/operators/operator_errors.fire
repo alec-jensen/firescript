@@ -57,7 +57,7 @@ fn assign_to_non_lvalue() -> void {
 // Compound assignment type mismatch
 fn compound_assign_mismatch() -> void {
     x: int32 = 5;
-    x += "hello";  // Type mismatch
+    x += "hello";  // Type mismatch //~ ERROR FS-SEM-0010 @7
 }
 
 // Increment/decrement on non-numeric
