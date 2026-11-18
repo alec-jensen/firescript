@@ -1,5 +1,7 @@
 // Malformed type-argument lists in a generic class instantiation used as a
-// variable-declaration type, e.g. `Pair<TYPE_ARGS> name = ...;`.
+// variable-declaration type, e.g. `p: Pair<TYPE_ARGS> = ...;`: a missing
+// type argument, a missing type argument inside a nested type argument, a
+// missing closing '>' (top-level and nested).
 class Pair<T, U> {
     a: T;
     b: U;
@@ -11,8 +13,36 @@ class Pair<T, U> {
 }
 
 // Missing first type argument.
-fn main() -> int32 {
+fn missingArg() -> int32 {
     p: Pair<,int32> = Pair(1, 2);  //~ ERROR FS-PARSE-0010 @13
 //~^ ERROR FS-PARSE-0012 @23
+    return 0;
+}
+
+// Missing type argument inside a nested generic type argument.
+fn missingNestedArg() -> int32 {
+    p: Pair<Pair<,int32>, int32> = Pair(Pair(1, 2), 3);  //~ ERROR FS-PARSE-0010 @18
+//~^ ERROR FS-PARSE-0012 @36
+    return 0;
+}
+
+// Missing closing '>' (top level).
+fn unclosed() -> int32 {
+    p: Pair<int32 int32> = Pair(1, 2);  //~ ERROR FS-PARSE-0010 @19
+//~^ ERROR FS-PARSE-0012 @28
+    return 0;
+}
+
+// Missing closing '>' for a nested generic type argument.
+fn nestedUnclosed() -> int32 {
+    p: Pair<Pair<int32, int32, int32> = Pair(Pair(1, 2), 3);  //~ ERROR FS-PARSE-0010 @39
+//~^ ERROR FS-PARSE-0012 @41
+    return 0;
+}
+
+// Nested generic type argument list missing its closing '>' before '='.
+fn nestedUnclosedString() -> int32 {
+    p: Pair<Pair<int32, int32, string = Pair(Pair(1, 2), "s");  //~ ERROR FS-PARSE-0010 @39
+//~^ ERROR FS-PARSE-0012 @41
     return 0;
 }
