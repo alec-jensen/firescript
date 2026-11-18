@@ -292,50 +292,39 @@ Plain `assert` also works. Covers:
   (`docs/internal/development/ir_verifier_spec.md`), FLIR modules built
   directly from `flir.ir` objects (there is no FLIRBuilder helper):
   structural rules (FLIRV-S) in `test_verifier_structure.py`, type/memory
-  rules (FLIRV-T, FLIRV-M1-M3) in `test_verifier_types.py`, and Tier-2
-  heap-token allocation-lifecycle rules (FLIRV-A1-A5, FLIRV-M4) in
-  `test_verifier_heap.py`, and defensive/unreachable-from-source guards in
-  the same Tier-2 heap-token verifier (`_meet_states([])`, `_HeapChecker
-  .run()` on a function with no blocks or with a block outside
-  `cfg.reachable`, and `_ident_text`'s dead `"slot"`-kind branch) in
-  `test_heap_verifier_defensive.py`, driven directly against the internal
-  classes since flir/verifier.py's Tier-1 gate rules out all of these at
-  the real pipeline's entry point. `test_verifier_extra.py` fills remaining Tier-1
-  coverage gaps (struct layout edge cases, an empty function/block, the
-  rest of the T1-T6/M1-M3 branches) and directly unit-tests
-  `_binop_operand_ok`/`_ptr_lenient_eq`/`_resolve_struct_type` (the last of
-  which is dead code -- see its test's comment). `test_dump.py` covers
-  `firescript/flir/textual.py` (mutable/immutable global dump lines, the
-  foreign-value ValueError path). `test_ir_helpers.py` covers small
-  standalone helpers in `firescript/flir/ir.py` (FLIRType predicates/
-  dunder methods, `FLIRStruct.field`, `FInst`'s default `format()`, block/
-  function guard clauses) not otherwise exercised elsewhere. Also unit
-  tests for `firescript/flir/lowering.py`
-  (FIRToFLIRLowering), driven directly via `fir.FIRBuilder` rather than
-  through the full compiler, covering internal branches that are either
-  unreachable through any valid FIR the real pipeline produces (defensive
-  `LoweringError`s, `SyscallResult`-without-runtime-module bootstrapping)
-  or awkward to force through the parser: `test_lowering_defensive_errors.py`
-  (every `LoweringError`/assert site, plus the MoveInst/BorrowInst/CloneInst
-  passthrough and non-short-circuit `&&`/`||` fallback that ast_to_fir.py
-  never actually emits) and `test_lowering_type_edge_cases.py` (lower_type/
-  lower_type_str/render_concrete/ensure_struct branches for `SyscallResult`,
-  unsubstituted generic parameters, and `GeneratorType`/`FunctionType`/
+  rules (FLIRV-T, FLIRV-M1-M3) in `test_verifier_types.py` and
+  `test_verifier_checks.py` (each corrupts one thing and asserts the rule
+  and message, with valid boundary twins), the gaps they leave
+  (an empty block as the only violation, duplicate mutable globals,
+  unresolved struct fields, T1 operand provenance, M1 base checks) in
+  `test_verifier_extra.py`, and Tier-2 heap-token allocation-lifecycle
+  rules (FLIRV-A1-A5, FLIRV-M4): A1/A2/A4 lifecycles, joins, loops, escapes
+  and `__destroy` frees in `test_heap_verifier_checks.py`, and the A3/A5/M4
+  cases it does not cover in `test_verifier_heap.py`.
+  `test_ir_analysis_edges.py` covers the shared CFG/dominator/dataflow
+  machinery in `firescript/ir_analysis.py` (including a subprocess test that
+  builds the CFG under different `PYTHONHASHSEED` values to enforce the
+  determinism rule) plus struct finalize and module-level dump lines.
+  `test_ir_helpers.py` covers small standalone helpers in
+  `firescript/flir/ir.py` (struct size/align without a module, `ConstF128`
+  formatting, block/function guard clauses); `test_textual_dump.py` covers
+  the textual dump's foreign-value rejection. Also unit tests for
+  `firescript/flir/lowering.py` (FIRToFLIRLowering), driven directly via
+  `fir.FIRBuilder`: `test_lowering_defensive_errors.py` (ensure_slot
+  idempotence, generator frame-slot lookup, root-function scan skip rules,
+  and a test that pins the known `float128 ** float128` LoweringError bug
+  -- rewrite it when that is fixed) and `test_lowering_type_edge_cases.py`
+  (lower_type/lower_type_str/render_concrete branches for unsubstituted
+  generic parameters and `GeneratorType`/`FunctionType`/
   `GenericInstanceType` shapes lowered outside their normal call sites).
-  Also `test_lowering_float128.py` -- the compile-time decimal-string ->
-  IEEE binary128 literal parser (`_decimal_to_f128_bits`): signs, scientific
-  notation, exponent overflow/underflow, subnormals, round-half-even ties
-  (cross-checked against `tests/support/float128_oracle.py`, an independent
-  implementation), and malformed input -- distinct from
-  `tests/python/float128/`'s *runtime* soft-float oracle tests.
-  `test_lowering_f128_decimal.py` covers further `_decimal_to_f128_bits`/
-  `_round_half_even` edge cases (inf/nan aliases, `f128` suffix stripping,
-  malformed text, subnormal clamping/rounding, zero-denominator fallback).
-  `test_lowering_f128_decimal_more.py` adds further cases (rounding-carry
-  overflow to infinity, subnormal significand clamping, the exponent-
-  correction `elif` branch proven mathematically unreachable). `test_textual_dump.py` covers `firescript/flir/textual.py`'s foreign-value
-  rejection, global-constant rendering, and `FLIRFunction.validate()`'s
-  throwaway-module wrapper.
+  `test_lowering_float128.py` -- the compile-time decimal-string -> IEEE
+  binary128 literal converter (`_decimal_to_f128_bits`) cross-checked against
+  `tests/support/float128_oracle.py`, an independent implementation --
+  and `test_lowering_f128_decimal.py` (exact-bit inf/nan aliases, suffix
+  stripping, malformed text, signed overflow/underflow, rounding carry and
+  ties, `_round_half_even`; includes a test that pins the known
+  subnormal-rounding bug) are distinct from `tests/python/float128/`'s
+  oracle tests.
 - `tests/python/float128/` -- self-tests for the binary128 correctness
   oracle (`tests/support/float128_oracle.py`): hand-verified constants and
   arithmetic/comparison/parse/format checks (`test_oracle_units.py`), plus

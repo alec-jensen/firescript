@@ -13,7 +13,6 @@ sys.path.insert(0, os.path.join(REPO_ROOT, "firescript"))
 
 from errors import IRVerificationError  # noqa: E402
 from flir.ir import (  # noqa: E402
-    BOOL,
     Br,
     ConstBool,
     ConstInt,
@@ -21,10 +20,8 @@ from flir.ir import (  # noqa: E402
     FLIRModule,
     FLIRStruct,
     I32,
-    Jmp,
     Ret,
     VOID,
-    ptr_to,
 )
 
 
@@ -54,16 +51,6 @@ def test_s1_rejects_duplicate_block_id():
     b1 = func.new_block()
     b1.id = b0.id
     b1.instructions.append(Ret())
-    _expect_rule(module, "FLIRV-S1")
-
-
-def test_s1_rejects_unknown_branch_target():
-    module = FLIRModule("firescript")
-    func = FLIRFunction("f", return_type=VOID)
-    module.add_function(func)
-    block = func.new_block()
-    cond = block.add(ConstBool(True))
-    block.instructions.append(Br(cond, "L99", "L98"))
     _expect_rule(module, "FLIRV-S1")
 
 
@@ -183,19 +170,6 @@ def test_s2_rejects_global_and_mutable_global_name_collision():
     func.new_block().instructions.append(Ret())
     module.add_function(func)
     _expect_rule(module, "FLIRV-S2")
-
-
-def test_s2_rejects_field_referencing_unresolved_struct():
-    module = FLIRModule("firescript")
-    struct = FLIRStruct("Holder", kind="class")
-    struct.fields = [("p", ptr_to("NoSuchStruct"), 0)]
-    struct.size = 8
-    struct.align = 8
-    module.add_struct(struct)
-    func = FLIRFunction("f", return_type=VOID)
-    func.new_block().instructions.append(Ret())
-    module.add_function(func)
-    module.validate()  # a ptr field's pointee isn't struct-checked; must not raise
 
 
 def test_s3_rejects_field_exceeding_struct_size():

@@ -7,6 +7,7 @@ float constant formatting, textual dump of entry/externs/globals)."""
 from __future__ import annotations
 
 import os
+import subprocess
 import sys
 
 from harness import pyunit as t
@@ -15,15 +16,11 @@ from harness.config import REPO_ROOT
 sys.path.insert(0, os.path.join(REPO_ROOT, "firescript"))
 
 from flir.ir import (  # noqa: E402
-    ConstFloat,
-    ConstNull,
-    F64,
     FLIRFunction,
     FLIRModule,
     FLIRStruct,
     I32,
     I64,
-    Jmp,
     Ret,
     VOID,
     ptr_to,
@@ -79,10 +76,38 @@ def test_cfg_edges_to_unknown_blocks_are_ignored_for_predecessors():
     t.require_eq(cfg.predecessors, {"A": [], "B": ["A"]})
 
 
-def test_cfg_rpo_is_deterministic_across_builds():
-    first = _cfg(LOOP, ["A", "H", "B", "X"]).rpo
-    for _ in range(5):
-        t.require_eq(_cfg(LOOP, ["A", "H", "B", "X"]).rpo, first)
+def test_cfg_rpo_is_deterministic_across_hash_seeds():
+    """Hash randomization is fixed per process, so building the CFG twice in
+    one process cannot expose iteration-order nondeterminism. Build it in
+    fresh interpreters with different PYTHONHASHSEED values instead and
+    require an identical reverse postorder (the project determinism rule)."""
+    code = (
+        "import sys\n"
+        f"sys.path.insert(0, {os.path.join(REPO_ROOT, 'firescript')!r})\n"
+        "from ir_analysis import build_cfg\n"
+        "graphs = [\n"
+        "  (['A','H','B','X'], {'A':['H'],'H':['B','X'],'B':['H'],'X':[]}),\n"
+        "  (['A','B','C','D','E','F','G','J'], {'A':['B','C','D','E'],'B':['F'],'C':['F','G'],'D':['G'],'E':['J'],'F':['J'],'G':['J'],'J':[]}),\n"
+        "]\n"
+        "for order, edges in graphs:\n"
+        "    cfg = build_cfg(order, order[0], lambda b: edges.get(b, []))\n"
+        "    print(' '.join(cfg.rpo), '|', ' '.join(sorted(cfg.reachable)))\n"
+    )
+    outputs = {}
+    for seed in ("0", "1", "2", "3", "4", "12345", "987654321"):
+        env = dict(os.environ, PYTHONHASHSEED=seed)
+        proc = subprocess.run(
+            [sys.executable, "-c", code], env=env, capture_output=True, text=True, timeout=60,
+        )
+        t.require_eq(proc.returncode, 0, proc.stderr)
+        outputs[seed] = proc.stdout
+    t.require_eq(len(set(outputs.values())), 1, str(outputs))
+    # Pin the exact order for the loop graph too, so a consistently wrong
+    # order is caught as well as a seed-dependent one.
+    first_line = outputs["0"].splitlines()[0].split("|")[0].split()
+    t.require_eq(first_line, _cfg(LOOP, ["A", "H", "B", "X"]).rpo)
+    t.require_eq(first_line[0], "A")
+    t.require(first_line.index("H") < first_line.index("B") and first_line.index("H") < first_line.index("X"), str(first_line))
 
 
 # -- dominators ---------------------------------------------------------------------------
@@ -256,21 +281,6 @@ def test_struct_field_lookup_returns_entry_and_raises_for_missing():
         t.require(False, "no KeyError raised")
     except KeyError as e:
         t.require("has no field nope" in str(e), str(e))
-
-
-def test_jmp_null_and_float_constant_formatting_via_dump():
-    func = FLIRFunction("f", return_type=VOID)
-    module = FLIRModule("firescript")
-    module.add_function(func)
-    entry, tail = func.new_block(), func.new_block()
-    entry.add(ConstFloat("1.5", F64))
-    entry.add(ConstNull())
-    entry.add(Jmp(tail.id))
-    tail.add(Ret())
-    text = dump_flir_module(module)
-    t.require("fconst.f64 1.5" in text, text)
-    t.require("nullconst" in text, text)
-    t.require(f"jmp {tail.id}" in text, text)
 
 
 # -- textual dump of module-level declarations ----------------------------------------------------------

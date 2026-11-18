@@ -16,7 +16,6 @@ from flir.ir import (  # noqa: E402
     BinOp,
     Br,
     Call,
-    ConstBool,
     ConstInt,
     ConstStr,
     Cvt,
@@ -30,17 +29,15 @@ from flir.ir import (  # noqa: E402
     Load,
     Neg,
     Not,
-    PTR,
     PtrAdd,
     Ret,
     SlotAddr,
     SlotDecl,
     SlotLoad,
     SlotStore,
-    Store,
-    U32,
     VOID,
     ptr_to,
+    struct_type,
 )
 
 
@@ -112,35 +109,12 @@ def test_t3_br_condition_not_bool():
     _expect_rule(module, "FLIRV-T3")
 
 
-def test_t3_ret_type_mismatch():
-    module, func = _simple_module()
-    entry = func.new_block()
-    s = entry.add(ConstStr("x"))
-    entry.instructions.append(Ret(s))
-    _expect_rule(module, "FLIRV-T3")
-
-
 def test_t4_call_unresolved_callee():
     module, func = _simple_module()
     entry = func.new_block()
     entry.add(Call("does_not_exist", [], VOID))
     zero = entry.add(ConstInt("0", I32))
     entry.instructions.append(Ret(zero))
-    _expect_rule(module, "FLIRV-T4")
-
-
-def test_t4_call_argument_count_mismatch():
-    module = FLIRModule("firescript")
-    callee = FLIRFunction("callee", params=[("x", I32)], return_type=I32)
-    callee_block = callee.new_block()
-    callee_zero = callee_block.add(ConstInt("0", I32))
-    callee_block.instructions.append(Ret(callee_zero))
-    module.add_function(callee)
-    caller = FLIRFunction("caller", return_type=I32)
-    module.add_function(caller)
-    entry = caller.new_block()
-    result = entry.add(Call("callee", [], I32))
-    entry.instructions.append(Ret(result))
     _expect_rule(module, "FLIRV-T4")
 
 
@@ -188,45 +162,6 @@ def test_m1_load_offset_not_a_field():
     bad = entry.add(Load(I32, p_val, 2))  # not a declared field offset
     entry.instructions.append(Ret(bad))
     _expect_rule(module, "FLIRV-M1")
-
-
-def test_m1_load_type_mismatch_at_field_offset():
-    module = FLIRModule("firescript")
-    struct = FLIRStruct("Point", kind="class")
-    struct.fields = [("x", I32, 0), ("y", I32, 4)]
-    struct.size = 8
-    struct.align = 4
-    module.add_struct(struct)
-    func = FLIRFunction("f", params=[("p", ptr_to("Point"))], return_type=I32)
-    module.add_function(func)
-    entry = func.new_block()
-    p = entry.add(SlotLoad("p", ptr_to("Point")))
-    entry.add(Load(BOOL, p, 0))  # field x is i32, not bool
-    zero = entry.add(ConstInt("0", I32))
-    entry.instructions.append(Ret(zero))
-    _expect_rule(module, "FLIRV-M1")
-
-
-def test_m3_ptradd_nonpositive_scale():
-    module, func = _simple_module()
-    entry = func.new_block()
-    base = entry.add(ConstInt("0", I64))
-    base_ptr = entry.add(Cvt(base, I64, PTR))
-    idx = entry.add(ConstInt("0", I32))
-    entry.add(PtrAdd(base_ptr, idx, 0))
-    zero = entry.add(ConstInt("0", I32))
-    entry.instructions.append(Ret(zero))
-    _expect_rule(module, "FLIRV-M3")
-
-
-def test_t2_binop_operand_type_does_not_match_operand_type():
-    module, func = _simple_module()
-    entry = func.new_block()
-    a = entry.add(ConstInt("1", I64))  # i64, but operand_type declared i32
-    b = entry.add(ConstInt("2", I32))
-    bad = entry.add(BinOp("add", I32, a, b, I32))
-    entry.instructions.append(Ret(b))
-    _expect_rule(module, "FLIRV-T2")
 
 
 def test_t2_binop_rhs_operand_type_does_not_match_operand_type():
@@ -287,23 +222,33 @@ def test_t2_unknown_binop():
 
 
 def test_t2_cvt_from_type_not_scalar():
+    # The operand's actual type IS the struct (a SlotLoad of a struct-typed
+    # slot), so from_type matches it and the only rule violated is "cvt
+    # from_type must be scalar" -- not the from_type-vs-operand-type rule.
     module = FLIRModule("firescript")
     struct = FLIRStruct("Point", kind="class")
     struct.fields = [("x", I32, 0)]
     struct.size = 4
     struct.align = 4
     module.add_struct(struct)
-    func = FLIRFunction("f", params=[("p", ptr_to("Point"))], return_type=I32)
+    func = FLIRFunction("f", return_type=I32)
     module.add_function(func)
     entry = func.new_block()
-    p = entry.add(SlotLoad("p", ptr_to("Point")))
-    from flir.ir import FLIRType
-
-    struct_scalar_type = FLIRType("struct", struct_name="Point")
-    entry.add(Cvt(p, struct_scalar_type, I32))  # struct is not a scalar kind
+    point = struct_type("Point")
+    entry.add(SlotDecl("s", point))
+    sv = entry.add(SlotLoad("s", point))
+    entry.add(Cvt(sv, point, I32))  # struct is not a scalar kind
     zero = entry.add(ConstInt("0", I32))
     entry.instructions.append(Ret(zero))
-    _expect_rule(module, "FLIRV-T2")
+    try:
+        module.validate()
+        t.require(False, "no error raised")
+    except IRVerificationError as e:
+        found = [(v.rule_id, v.message) for v in e.violations]
+        t.require(
+            found == [("FLIRV-T2", "cvt from_type '%Point' is not scalar")],
+            str(found),
+        )
 
 
 def test_t3_bare_ret_in_nonvoid_function():
@@ -412,9 +357,9 @@ def test_m2_load_misaligned_offset():
     module.add_function(func)
     entry = func.new_block()
     p = entry.add(SlotLoad("p", ptr_to("Packed")))
-    bad = entry.add(Load(I32, p, 5))  # not aligned, and not a declared field offset
+    bad = entry.add(Load(I32, p, 5))  # offset 5 is not 4-aligned (it is also not a field)
     entry.instructions.append(Ret(bad))
-    _expect_rule(module, "FLIRV-M1")
+    _expect_rule(module, "FLIRV-M2")
 
 
 def test_m3_ptradd_base_non_pointer():
