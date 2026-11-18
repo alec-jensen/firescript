@@ -44,6 +44,18 @@ for (v: int32 in multiYield()) {
     println(v);
 }
 
+// Parameters persist across resumes: `a` and `b` are read again after two
+// earlier yield sites have resumed.
+fn pair(a: int32, b: int32) -> generator<int32> {
+    yield a;
+    yield b;
+    yield a + b;
+}
+
+for (v: int32 in pair(100, 200)) {
+    println(v);
+}
+
 /* EXPECT
 0
 1
@@ -54,4 +66,7 @@ for (v: int32 in multiYield()) {
 10
 20
 30
+100
+200
+300
 */

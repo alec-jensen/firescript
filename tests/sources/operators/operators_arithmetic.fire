@@ -53,6 +53,7 @@ pos: int32 = 42;
 neg: int32 = -pos;
 println(neg);  // -42
 println(-neg);  // 42
+println(+pos);  // 42 (unary plus)
 
 // Compound assignment
 println("--- Compound Assignment ---");
@@ -125,6 +126,7 @@ println("=== All arithmetic operator tests passed ===");
 8.000000
 --- Unary Operations ---
 -42
+42
 42
 --- Compound Assignment ---
 15

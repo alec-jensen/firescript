@@ -439,9 +439,8 @@ Each heading below is a directory under `tests/sources/`.
 ### `generators/`
 - **generators_basic.fire** - Generator functions (`fn` returning `generator<T>`), `yield`, stdlib `range`/`rangeFrom`/`rangeStep`, user-defined generators, for-in over generators
 - **generators_break_continue.fire** - `break`/`continue` inside a for-in loop over a generator, and nested for-in-over-generator loops
-- **generators_multi_yield_sites.fire** - A generator with two distinct (syntactic) `yield` statements, forcing the multi-way resume-state dispatch chain in `lower_generator` (`generators_basic.fire`'s single-yield-site `countdown()` only ever needs a single resume block).
 - **generators_frame_zero_init_types.fire** - A generator with `bool`/`float128`/copyable-class local variables, exercising `_zero_value`'s per-`FLIRType`-kind branches used to zero-initialize the generator's frame struct up front. Documents a newly-found bug: a *pointer*-kind generator local (`string`, a non-copyable class, or an array) currently crashes the compiler with an internal `FLIRV-T1` type-mismatch error, so this file intentionally avoids that combination.
-- **generators_advanced.fire** - Early `return` from within a generator body (exhaustion before the loop condition would naturally end it), multiple `yield` points in one generator, and calling the same generator function from two separate for-in sites (exercises the FLIR lowering's "generator already lowered" guard). Note: a third case (a generator's body containing a for-in loop over another generator call) was tried and found to trigger an internal compiler error in `flir/lowering.py`'s generator frame lowering; see the comment in the file.
+- **generators_advanced.fire** - Early `return` from within a generator body (exhaustion before the loop condition would naturally end it), multiple `yield` points in one generator, and calling the same generator function from two separate for-in sites (exercises the FLIR lowering's "generator already lowered" guard). Note: a third case (a generator's body containing a for-in loop over another generator call) was tried and found to trigger an internal compiler error in `flir/lowering.py`'s generator frame lowering; see the comment in the file. Also a two-parameter generator with three yield sites (multi-way resume dispatch; parameters persist across resumes), merged from the former `generators_multi_yield_sites.fire`.
 
 ### `enums/`
 - **enum_tag_only.fire** - Tag-only (no data payload) enum declarations, variant construction (`EnumName.Variant`), and reassignment (verifies the previously-held owned enum value is dropped without corrupting later allocations).
@@ -475,7 +474,7 @@ Split by conversion category:
 - **conversions_signed_unsigned.fire** - Signed<->unsigned reinterpretation
 - **conversions_int_float.fire** - int<->float, float-to-int truncation
 - **conversions_float_precision.fire** - float32<->float64
-- **conversions_in_expressions.fire** - Casts combined with arithmetic operations
+- **conversions_in_expressions.fire** - Casts combined with arithmetic operations (including int8+int16 widening and float32 division)
 - **conversions_to_string.fire** - Numeric/bool `as string`
 - **numeric_casts.fire** - Numeric type casting (downcast-focused, distinct scenarios from the `conversions_*` files above)
 - **string_cast_test.fire** - String casting operations
@@ -527,7 +526,6 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **functions_calling_functions.fire** - One function calling another, multi-step internal logic
 - **functions_recursion.fire** - Recursive functions (factorial)
 - **functions_return_types.fire** - float/bool/string return types; also fallthrough functions (no explicit `return` on every path -- firescript doesn't enforce all-paths-return) with `bool`/`float128` return types, and an if/else where both arms already `return` (dead join block), exercising `ast_to_fir.py`'s implicit-zero-return synthesis and dead-block pruning
-- **functions_array_params.fire** - Array parameters
 - **functions_array_return.fire** - Array-typed function return value used in further expressions (array access)
 - **functions_early_and_multiple_returns.fire** - Early return, multiple return paths
 - **functions_void.fire** - Void functions with side effects
@@ -535,7 +533,6 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **functions_rare_constructs.fire** - `.length()` called on an array *parameter* (size not statically known, vs. a locally-sized array) and `for-in` over a named array identifier (vs. an array literal), exercising less-common `ast_to_fir.py` array-size-lookup paths
 - **functions_fallthrough_return.fire** - Non-void (float64/bool) function whose only `if` has no `else`; falling off the end synthesizes a zero value of the declared return type
 - **functions_many_params.fire** - Functions with more than 4 parameters (int, float, and copyable-struct), exercising the Windows x64 calling convention's stack-spill path for the 5th+ argument (only the first 4 are passed in registers)
-- **functions.fire** - Basic function examples (multi-return-type, array param, string concat, void with multiple args — a different set of scenarios from the `functions_*` files above)
 - **functions_sized_array_param.fire** - Fixed-size array parameter type (`int32[N]`), distinct from the unsized `int32[]` form
 - **functions_nullable_scalar_param.fire** - A nullable *scalar* function parameter (`count: int32?`): a legitimate zero argument is distinguishable from an omitted (`null`) one via the implicit trailing has-value companion parameter `_function_params` appends. See `ast_to_fir.py`'s "Nullable scalars" section.
 
@@ -545,14 +542,9 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **scoping_function.fire** - Function scope (parameters and locals not visible outside)
 - **scoping_variable_declaration_order.fire** - Declared-before-use, same names in separate sibling scopes
 - **scope_stray_token_recovery.fire** - Parser error-recovery around a stray/unexpected token in statement position, verifying the recovered scope's remaining valid statements still resolve correctly
-- **scope_tests.fire** - Basic scoping tests
 
 ### `expressions/`
 - **expressions_function_calls.fire** - Function call expressions, nested function calls
-- **expressions_array_and_string.fire** - Array indexing arithmetic, string concatenation expressions
-- **expressions_casts.fire** - Casts within expressions, mixed-type expressions
-- **expressions_unary_and_incdec.fire** - Unary +/-, increment/decrement
-- **expressions_nested_and_conditional.fire** - Complex nested parenthesized expressions, conditional value via if/else
 - **operator_precedence.fire** - Operator precedence (each expression commented with the expected value, so a wrong precedence produces an obviously-wrong number)
 
 ### `edge_cases/`
@@ -607,7 +599,6 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **generics_basic.fire** - Basic generic functions
 - **generics_simple.fire** - Simple generic examples
 - **generics_clamp.fire** - Generic clamp function
-- **generics_constraint.fire** - Type constraints on generics
 - **generics_swap.fire** - Generic swap function
 - **constraint_alias_test.fire** - Constraint aliases
 - **nested_constraint_test.fire** - Nested constraints
