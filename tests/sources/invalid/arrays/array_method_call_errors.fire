@@ -18,6 +18,8 @@ badLen: int32 = nums.length(1);  //~ ERROR FS-SEM-0010 @22
 badIndexArgs: int32 = nums.index();  //~ ERROR FS-SEM-0010 @28
 badIndexType: int32 = nums.index("two");  //~ ERROR FS-SEM-0010 @34
 badCountArgs: int32 = nums.count(1, 2);  //~ ERROR FS-SEM-0010 @28
+noCountArgs: int32 = nums.count();  //~ ERROR FS-SEM-0010 @27
+badCountType: int32 = nums.count(true);  //~ ERROR FS-SEM-0010 @34
 
 // Unknown array method
 nums.frobnicate();  //~ ERROR FS-SEM-0010 @6
