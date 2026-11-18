@@ -460,8 +460,6 @@ Per-type min/max value and overflow/underflow behavior, split by numeric type:
 - **types_int8.fire** / **types_int16.fire** / **types_int32.fire** / **types_int64.fire**
 - **types_uint8.fire** / **types_uint16.fire** / **types_uint32.fire** / **types_uint64.fire**
 - **types_float32.fire** / **types_float64.fire**
-- **types_bool.fire**
-- **types_tests.fire** - Basic type operations and comparisons
 - **types_deep.fire** - Deep type testing (arithmetic across all widths with arbitrary values, distinct focus from the `types_<type>.fire` min/max-boundary files above)
 - **char_type.fire** - `char` type: literals (`'A'`, escape chars `'\t'` `'\n'` `'\\'`), copyability, cast to string, and an unrecognized escape sequence (`'\d'`) falling back to the escaped character's own code point
 - **const_declarations.fire** - Top-level `const` declarations (int32/float64/float32) becoming module-level constants; documents that `const string`/`const bool`/`const char` currently each fail to compile end-to-end for three separate, unrelated bugs (see `tests/python/fir/test_ast_to_fir_pipeline_errors.py`)
@@ -550,15 +548,8 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 
 ### `edge_cases/`
 - **edge_cases_zero_values.fire** - Zero/empty values across types
-- **edge_cases_numeric_bounds.fire** - Min/max values, very large/small numbers
-- **edge_cases_arithmetic.fire** - Division and modulo edge cases
 - **edge_cases_overflow_underflow.fire** - int8/uint8 overflow, int8 underflow
-- **edge_cases_arrays.fire** - Empty array, single-element array, identical elements
-- **edge_cases_strings.fire** - Single-char and whitespace-only strings
-- **edge_cases_comparisons.fire** - Equality/relational edge cases
 - **edge_cases_loops.fire** - Zero-iteration and single-iteration loops
-- **edge_cases_nesting_and_functions.fire** - Deeply nested blocks, minimal function, all-paths return function
-- **edge_cases.fire** - Various edge case scenarios
 
 ### `memory/`
 - **memory_branching.fire** - Scope-exit drops of fixed-size array locals on if/else exit, bare-block exit and early `return` (merged from the former `memory_scopes` and `memory_early_return`); the FIR snapshot pins the drops
