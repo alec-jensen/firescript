@@ -126,44 +126,79 @@ def test_read_imports_dir_rva_outside_any_section_raises():
             t.require("import directory RVA not in any section" in str(e), str(e))
 
 
+def _image_with_imports(dlls: list[tuple[str, list]]) -> bytes:
+    """Hand-build a one-section PE32+ image whose import directory lists
+    `dlls` (in the given order). Each DLL is (name, thunks); a thunk is an
+    int (an ordinal import) or a str (a name import, via a hint/name entry)."""
+    base_rva = 0x1000
+    raw_ptr = 0x200
+    desc_size = 20 * (len(dlls) + 1)
+
+    blobs = bytearray()  # names, hint/name entries and ILTs, after the descriptors
+    descriptors = bytearray()
+    for dll_name, thunks in dlls:
+        # Name strings and hint/name entries first, so ILT thunks can point at them.
+        name_rva = base_rva + desc_size + len(blobs)
+        blobs += dll_name.encode("ascii") + b"\x00"
+        if len(blobs) % 2:
+            blobs += b"\x00"
+        thunk_values = []
+        for thunk in thunks:
+            if isinstance(thunk, int):
+                thunk_values.append((1 << 63) | thunk)
+            else:
+                hint_rva = base_rva + desc_size + len(blobs)
+                blobs += struct.pack("<H", 0) + thunk.encode("ascii") + b"\x00"
+                if len(blobs) % 2:
+                    blobs += b"\x00"
+                thunk_values.append(hint_rva)
+        ilt_rva = base_rva + desc_size + len(blobs)
+        for value in thunk_values + [0]:
+            blobs += struct.pack("<Q", value)
+        descriptors += struct.pack("<IIIII", ilt_rva, 0, 0, name_rva, 0)
+    descriptors += b"\x00" * 20
+    section_data = bytes(descriptors) + bytes(blobs)
+
+    sec = _section_header(b".rdata", len(section_data), base_rva, len(section_data), raw_ptr)
+    header = _pe_header(num_sections=1, import_dir_rva=base_rva,
+                         import_dir_size=desc_size, section_headers=sec)
+    image = bytearray(header)
+    image += b"\x00" * (raw_ptr - len(image))
+    image += section_data
+    return bytes(image)
+
+
 def test_read_imports_ordinal_thunk():
     # firescript's own writer never emits ordinal imports (only name-based
     # ones via the hint/name table), so this branch is unreachable from
     # real compiler output; build a minimal hand-crafted image instead.
-    base_rva = 0x1000
-    raw_ptr = 0x200
-
-    section_data = bytearray()
-    # Import descriptor #0 (real entry): ILT at +40, Name at +56, IAT=0.
-    section_data += struct.pack(
-        "<IIIII", base_rva + 40, 0, 0, base_rva + 56, 0
-    )
-    # Import descriptor #1: null terminator.
-    section_data += b"\x00" * 20
-    assert len(section_data) == 40
-    # ILT: one ordinal-import thunk (high bit set, ordinal 1), then a
-    # zero terminator thunk.
-    section_data += struct.pack("<Q", (1 << 63) | 1)
-    section_data += struct.pack("<Q", 0)
-    assert len(section_data) == 56
-    # DLL name string.
-    section_data += b"test.dll\x00\x00"  # padded to even length
-
-    sec = _section_header(b".rdata", len(section_data), base_rva,
-                           len(section_data), raw_ptr)
-    header = _pe_header(num_sections=1, import_dir_rva=base_rva,
-                         import_dir_size=40, section_headers=sec)
-    image = bytearray(header)
-    image += b"\x00" * (raw_ptr - len(image))
-    image += section_data
-
     with t.tmpdir() as d:
-        path = _write(d, "ordinal.exe", bytes(image))
+        path = _write(d, "ordinal.exe", _image_with_imports([("test.dll", [1])]))
         imports = pe_inspect.read_imports(path)
         t.require_eq(imports, {"test.dll": ["#ordinal:1"]})
 
 
+def test_read_imports_name_thunks():
+    # The shape firescript's writer actually produces: name-based imports via
+    # hint/name entries. The test harness relies on these names.
+    with t.tmpdir() as d:
+        path = _write(d, "names.exe", _image_with_imports([("kernel32.dll", ["ExitProcess", "GetStdHandle"])]))
+        imports = pe_inspect.read_imports(path)
+        t.require_eq(imports, {"kernel32.dll": ["ExitProcess", "GetStdHandle"]})
+
+
 def test_imported_dlls_sorted():
+    # The image lists its DLLs in reverse alphabetical order, so only an
+    # explicit sort yields the expected result.
+    with t.tmpdir() as d:
+        path = _write(d, "multi.exe", _image_with_imports([
+            ("zeta.dll", ["Z"]), ("kernel32.dll", ["K"]), ("alpha.dll", ["A"]),
+        ]))
+        t.require_eq(list(pe_inspect.read_imports(path)), ["zeta.dll", "kernel32.dll", "alpha.dll"])
+        t.require_eq(pe_inspect.imported_dlls(path), ["alpha.dll", "kernel32.dll", "zeta.dll"])
+
+
+def test_imported_dlls_empty_when_no_import_directory():
     with t.tmpdir() as d:
         data = _pe_header(import_dir_rva=0)
         path = _write(d, "noimports.exe", bytes(data))

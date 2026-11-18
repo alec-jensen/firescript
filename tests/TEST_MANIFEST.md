@@ -68,7 +68,7 @@ python tests/run.py
 ```
 
 `tests/python/backend/test_asm_encoding.py` compares the encoder against the
-`as` on `PATH`, reading `.text` from either COFF (MinGW) or ELF (Linux) output.
+`as` on `PATH` (required: those tests fail if it is missing), reading `.text` from either COFF (MinGW) or ELF (Linux) output.
 
 The master seed for the run is always printed as the first and last line of
 output (`Seed: 0x...`) so any run -- including anything that used sampling
@@ -189,46 +189,45 @@ Plain `assert` also works. Covers:
   rather than via `t.run_compiler()` (subprocess), since subprocess runs
   don't register against this process's coverage measurement.
 - `tests/python/backend/test_asm_encoding.py` -- differential + unit tests
-  for the pure-Python x86-64 assembler; unit assertions always run,
-  differential comparison against MinGW `as` only when `as` is on `PATH`.
-  `test_assembler_unit.py` adds further coverage-targeted error/edge
-  branches not exercised by the differential CASES table: malformed memory
-  operands, 16-bit ALU/mov/unary forms, `movq xmm,xmm` (including
-  extended-register REX forcing), unsupported mnemonics/operand-form
-  errors, directive dispatch (`.text`/`.data`/`.bss`/`.space`/`.quad`/
-  `.long`/`.align`), `.asciz` octal/unrecognized escapes and
-  non-locale-encodable characters, and the relocation/fixup resolution
-  paths (backward rip-relative code labels, a rip-relative branch into
-  `.rdata`, unresolved runtime-call symbols); also drives two internals
-  directly for guards provably unreachable from any assemble()-able
-  source text (a numeric `call` target, and `_encode` emitting zero
-  bytes).
+  for the pure-Python x86-64 assembler. The differential tests (the
+  `test_encode` table plus the conditional-jump/`jmp`/`call` label forms)
+  compare against the `as` on `PATH` and **fail** if it is missing, rejects
+  a line, or yields no bytes; the label forms compare the opcode against
+  `as`'s short form since `as` relaxes branches while our assembler always
+  emits rel32. The same file holds the error-path and directive unit tests
+  (malformed memory operands, unsupported mnemonics/operand forms,
+  `.bss`/`.data`/`.space`/`.long`/`.byte`, `.asciz` escapes, rip-relative
+  label resolution). `test_assembler_unit.py` holds the few remaining
+  cases it does not cover (unknown base in a base+index operand, a call to
+  an undefined runtime symbol, exact `.quad`/`.long` bytes, `.align`
+  emitting nothing, octal `.asciz` escapes).
 - `tests/python/backend/test_flir_to_asm_errors.py` -- unit tests for
   `firescript/codegen/x86_64/flir_to_asm.py` branches impractical to reach
-  through a full `.fire` compile (mutable-global `.bss` emission, f32/f64
-  global encoding, the catch-all `AsmError` for an unhandled FLIR opcode,
-  unsupported float/int `BinOp` operators, stack-spilled parameters beyond
-  the 4th). FLIR modules are hand-built directly from `flir.ir` objects and
-  handed straight to `FLIRToAsmBackend`, same construction style as
-  `tests/python/flir/test_verifier_structure.py`. Also documents a known
-  bug: driving the mutable-global path through actual `.fire` source
-  (`runtime_state_get`/`runtime_state_set`) compiles but segfaults at
-  runtime.
-- `tests/python/backend/test_flir_to_asm_coverage.py` -- coverage-focused
-  unit tests for `firescript/codegen/x86_64/flir_to_asm.py`, driving
-  `FLIRToAsmBackend` directly against hand-built `flir.ir` modules (no
-  assembler invoked): the `.asciz` escape-mapping branches, float128/f32
-  module-level globals, 5th+ struct/float parameters and call arguments
-  passed on the stack, the dangling-value/unhandled-opcode/unsupported-binop
-  defensive `AsmError` paths, and the u64<->float and narrow-int conversion
-  branches (exercised directly so the known *assembler*-stage uint64<->float
-  bug -- see `tests/sources/known_issues/` -- doesn't block codegen coverage).
-- `tests/python/backend/test_pe_writer.py`/`test_pe_writer_more.py` -- unit
-  tests for `firescript/backend/windows/pe.py`'s `write_pe`, hand-building
-  `ObjectImage`/`Reloc` instances to hit its defensive error branches
-  (missing `firescript_entry` symbol, a `bss`-section symbol with no
-  `.data` section, an unknown symbol section, an unsupported reloc kind)
-  that a normal successful compile never reaches.
+  through a full `.fire` compile (mutable-global `.bss` emission, exact
+  f32/f64/int/f128 global encodings, the catch-all `AsmError` for an
+  unhandled FLIR opcode, unsupported float/int `BinOp` operators,
+  stack-spilled parameters beyond the 4th). FLIR modules are hand-built
+  directly from `flir.ir` objects and handed straight to `FLIRToAsmBackend`,
+  same construction style as `tests/python/flir/test_verifier_structure.py`.
+- `tests/python/backend/test_flir_to_asm_coverage.py` -- unit tests for
+  `firescript/codegen/x86_64/flir_to_asm.py`'s emitted instruction
+  sequences, driving `FLIRToAsmBackend` directly against hand-built
+  `flir.ir` modules (no assembler invoked): the `.asciz` escape-mapping
+  table, 5th+ struct parameters and call arguments passed on the stack,
+  extern float arguments, struct-by-value load/store copies, and the
+  int->bool, u64<->float and narrow-int conversion sequences. (The u64->float
+  sequence uses `js`/`shr`, which the in-tree assembler does not encode, so
+  `uint64 as float64` currently fails at assembly -- a known bug.)
+- `tests/python/backend/test_pe_writer.py` -- unit tests for
+  `firescript/backend/windows/pe.py`'s `write_pe`: a smoke test that checks
+  the COFF/optional header and that the entry point lands on the entry
+  code, plus hand-built `ObjectImage`/`Reloc` instances that hit its
+  defensive error branches (missing `firescript_entry` symbol, a
+  `bss`-section symbol with no `.data` section, an unknown symbol section,
+  an unsupported reloc kind). `test_pe_inspect.py` covers the harness's PE
+  import reader: malformed-input errors and hand-built images with
+  name-based and ordinal imports and several DLLs (checking
+  `imported_dlls` really sorts).
 - `tests/python/fir/` -- unit tests for `firescript/fir/`: builder
   construction (`test_builder.py`, including `BasicBlock.set_terminator`'s
   double-terminator guard), textual dump format verified against

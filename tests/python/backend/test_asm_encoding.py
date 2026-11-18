@@ -2,10 +2,10 @@
 from tests/asm_encoding_tests.py (spec sec.4.4 migration table).
 
 For each instruction form the FLIR backend emits, assemble a single line
-with our encoder and (when available) with the system `as` (COFF or ELF output), then compare the
-`.text` bytes. `as` is only a bringup oracle: when absent, the differential
-half is skipped and only the unit assertion (bytes were emitted) runs, so
-the suite needs only Python -- matching the original script's behavior.
+with our encoder and with the system `as` (COFF or ELF output), then compare
+the `.text` bytes. `as` is only a bringup oracle, but it is required: when it
+is absent from PATH (or rejects a line, or yields no bytes) the differential
+tests fail loudly rather than silently degrading to a weaker check.
 """
 from __future__ import annotations
 
@@ -25,7 +25,9 @@ from backend.x86_64.assembler import assemble  # noqa: E402
 
 # Instruction forms covering the backend's closed grammar. Lines with a
 # label/RIP operand would need their displacement field masked before
-# comparison; none of the current cases use one.
+# comparison; none of the current cases use one. Label forms (jmp/jcc/call)
+# are checked separately below because `as` relaxes branches to the short
+# form while our assembler always emits rel32.
 CASES = [
     "mov rax, rcx", "mov eax, ecx", "mov r10, r11", "mov rax, 5",
     "mov rax, -1", "mov rcx, 4503599627370496000",
@@ -62,14 +64,20 @@ CASES = [
     "sete spl", "neg ax", "mov r8d, 5", "mov word ptr [rbp-2], 5",
     "mov byte ptr [rcx], 200", "add ax, 5", "mov ax, cx", "movq xmm0, xmm1",
     "movq xmm8, xmm9",
+    "not ax", "mov byte ptr [rbp-1], 5", "mul rcx",
+    "sete bpl", "sete sil", "sete dil",
 ]
 
 
-def _as_bytes(line: str):
-    """Assemble one line with the system `as` (MinGW COFF or Linux ELF); return its .text bytes or None."""
+def _as_bytes(line: str) -> bytes:
+    """Assemble one line with the system `as` (MinGW COFF or Linux ELF) and
+    return its .text bytes. Raises (failing the calling test) if `as` is not
+    on PATH, rejects the line, or produces no bytes."""
     as_exe = shutil.which("as")
     if not as_exe:
-        return None
+        raise AssertionError(
+            "the differential encoding tests need GNU `as` (binutils) on PATH; it was not found"
+        )
     src = ".intel_syntax noprefix\n.text\n" + line + "\n"
     with tempfile.TemporaryDirectory() as d:
         s = os.path.join(d, "t.s")
@@ -78,8 +86,11 @@ def _as_bytes(line: str):
             f.write(src)
         r = subprocess.run([as_exe, "-o", obj, s], capture_output=True, text=True)
         if r.returncode != 0:
-            return None
-        return _coff_text(obj)
+            raise AssertionError(f"`as` rejected {line!r}: {r.stderr.strip()}")
+        text = _coff_text(obj)
+        if not text:
+            raise AssertionError(f"could not extract any .text bytes from `as` output for {line!r}")
+        return text
 
 
 def _elf_text(data: bytes) -> bytes:
@@ -121,12 +132,37 @@ def _coff_text(path: str) -> bytes:
 @t.params(CASES)
 def test_encode(line: str):
     ours = bytes(assemble(".intel_syntax noprefix\n.text\n" + line + "\n").text)
+    t.require(len(ours) > 0, "no bytes emitted")
     theirs = _as_bytes(line)
-    if theirs is None:
-        # No `as` oracle available: at least assert we produced bytes.
-        t.require(len(ours) > 0, "no bytes emitted")
-        return
     t.require_eq(ours, theirs, f"encoding mismatch for {line!r}")
+
+
+# Conditional jumps our assembler supports, with the opcode GNU `as` emits for
+# the short (rel8) form. Our near (rel32) form is 0F <short opcode + 0x10>.
+_JCC_SHORT = {"jb": 0x72, "jae": 0x73, "je": 0x74, "jne": 0x75, "jz": 0x74, "jnz": 0x75}
+
+
+@t.params(sorted(_JCC_SHORT))
+def test_conditional_jump_encoding(mnemonic: str):
+    body = f"{mnemonic} 1f\n1:\nnop"
+    ours = bytes(assemble(".intel_syntax noprefix\n.text\n" + body + "\n").text)
+    theirs = _as_bytes(body)  # trailing nop padding is stripped: short jcc + rel8 0
+    t.require_eq(theirs, bytes([_JCC_SHORT[mnemonic], 0x00]), f"`as` disagreed on {mnemonic}")
+    t.require_eq(ours, bytes([0x0F, _JCC_SHORT[mnemonic] + 0x10, 0, 0, 0, 0, 0x90]))
+
+
+def test_unconditional_jump_encoding():
+    body = "jmp 1f\n1:\nnop"
+    ours = bytes(assemble(".intel_syntax noprefix\n.text\n" + body + "\n").text)
+    t.require_eq(_as_bytes(body), bytes([0xEB, 0x00]))  # `as` uses the short form
+    t.require_eq(ours, bytes([0xE9, 0, 0, 0, 0, 0x90]))
+
+
+def test_call_to_in_object_function_encoding():
+    body = "call fs_rt_target\nfs_rt_target:\nnop"
+    ours = bytes(assemble(".intel_syntax noprefix\n.text\n" + body + "\n").text)
+    t.require_eq(ours[:-1], _as_bytes(body))  # call rel32 with displacement 0
+    t.require_eq(ours, bytes([0xE8, 0, 0, 0, 0, 0x90]))
 
 
 # ---------------------------------------------------------------------------
@@ -140,7 +176,7 @@ def test_encode(line: str):
 # ---------------------------------------------------------------------------
 
 from backend.x86_64.assembler import (  # noqa: E402
-    AssemblerError, Sym, _Assembler, _parse_mem,
+    AssemblerError, _parse_mem,
 )
 import backend.x86_64.assembler as _asm_mod  # noqa: E402
 
@@ -265,18 +301,6 @@ def test_mov_imm_to_8bit_reg_raises():
 
 def test_alu_unsupported_forms_raises():
     _expect_error(".text\nadd [rax], rcx\n", "unsupported add forms")
-
-
-def test_call_numeric_target_unsupported():
-    # The public grammar can never produce a Sym() with an all-digit name
-    # for `call` (`_parse_operand` reads bare digits as an Imm, not a
-    # Sym), so this branch is only reachable by calling `_call` directly.
-    a = _Assembler("")
-    try:
-        a._call(Sym("5"))
-        t.require(False, "no error")
-    except AssemblerError as e:
-        t.require("numeric call target unsupported" in str(e), str(e))
 
 
 def test_unresolved_numeric_label_raises():

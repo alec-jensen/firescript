@@ -9,6 +9,7 @@ pipeline, no execution of the resulting assembly."""
 from __future__ import annotations
 
 import os
+import struct
 import sys
 
 from harness import pyunit as t
@@ -23,6 +24,7 @@ from flir.ir import (  # noqa: E402
     ConstFloat,
     ConstInt,
     F32,
+    F128,
     F64,
     FInst,
     FLIRFunction,
@@ -33,19 +35,15 @@ from flir.ir import (  # noqa: E402
     VOID,
 )
 from codegen.x86_64.flir_to_asm import AsmError, FLIRToAsmBackend  # noqa: E402
+from support import float128_oracle as oracle  # noqa: E402
 
 
 def test_mutable_global_emits_bss_section():
     """FLIRModule.mutable_globals is only ever populated by
     flir/lowering.py's _ensure_state_cell() (backing the
-    runtime_state_get/runtime_state_set intrinsics gated behind
-    `directive enable_lowlevel_runtime;`) -- exercised here directly since
-    driving it through actual .fire source and *running* the resulting
-    binary currently segfaults (a separate, pre-existing bug in how the
-    mutable-global .bss cell is set up/addressed, out of scope to fix
-    here). Generating the assembly text itself (this test) is unaffected
-    and exercises _emit_mutable_globals()'s ".section .bss" + ".space"
-    emission."""
+    runtime_state_get/runtime_state_set intrinsics, which the allocator in
+    std/internal/alloc.fire uses). This builds such a module directly and
+    checks _emit_mutable_globals()'s ".section .bss" + ".space" emission."""
     module = FLIRModule("test")
     module.mutable_globals.append(("__fs_runtime_state", U64))
     func = FLIRFunction("fs_main", return_type=VOID)
@@ -61,22 +59,25 @@ def test_mutable_global_emits_bss_section():
 def test_f32_and_f64_globals_use_distinct_encoding_paths():
     """_emit_globals() has a dedicated branch for f32 globals (pack as a
     4-byte float, store in the low half of the qword slot) distinct from
-    the f64/int branches -- both are exercised together here since a
-    single .fire const declaration test only ever reaches one type at a
-    time."""
+    the f64/int/f128 branches. Each global's encoded data is asserted
+    against an independently computed bit pattern."""
     module = FLIRModule("test")
     module.globals.append(("SCALE", F32, "1.5"))
     module.globals.append(("RATIO", F64, "2.5"))
     module.globals.append(("COUNT", I32, "42"))
+    module.globals.append(("WIDE", F128, "1.5"))
     func = FLIRFunction("fs_main", return_type=VOID)
     module.add_function(func)
     block = func.new_block()
     block.add(Ret())
     asm = FLIRToAsmBackend(module).generate()
-    t.require("fsg_SCALE:" in asm, asm)
-    t.require("fsg_RATIO:" in asm, asm)
-    t.require("fsg_COUNT:" in asm, asm)
-    t.require("    .quad 42" in asm, asm)
+    f32_bits = struct.unpack("<I", struct.pack("<f", 1.5))[0]
+    f64_bits = struct.unpack("<Q", struct.pack("<d", 2.5))[0]
+    f128_lo, f128_hi = oracle.to_halves(oracle.parse("1.5"))
+    t.require(f"fsg_SCALE:\n    .quad {f32_bits}\n" in asm, asm)
+    t.require(f"fsg_RATIO:\n    .quad {f64_bits}\n" in asm, asm)
+    t.require("fsg_COUNT:\n    .quad 42\n" in asm, asm)
+    t.require(f"fsg_WIDE:\n    .align 16\n    .quad {f128_lo}\n    .quad {f128_hi}\n" in asm, asm)
 
 
 def test_emit_inst_rejects_unknown_instruction_opcode():
