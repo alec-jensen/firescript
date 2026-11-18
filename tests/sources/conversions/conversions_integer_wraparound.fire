@@ -45,6 +45,24 @@ fpos: float64 = 3.99;
 println(fpos as int32);
 println(fpos as uint8);
 
+// In-range narrowing keeps the value; out-of-range wraps (1000 as int8 == -24).
+large: int64 = 1000i64;
+medium: int32 = (large as int32);
+small: int16 = (medium as int16);
+println(medium);
+println(small);
+println(small as int8);
+
+// Widening is value-preserving, including chained widening.
+i8: int8 = 42i8;
+println(i8 as int16);
+println((i8 as int16) as int32);
+println(((i8 as int16) as int32) as int64);
+
+// uint8 -> int8 wraps.
+wrap8: uint8 = 200u8;
+println(wrap8 as int8);
+
 /* EXPECT
 44
 255
@@ -70,4 +88,11 @@ println(fpos as uint8);
 -3
 3
 3
+1000
+1000
+-24
+42
+42
+42
+-56
 */

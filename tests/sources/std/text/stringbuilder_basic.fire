@@ -1,5 +1,6 @@
-// StringBuilder: append() accumulates fragments, length() tracks total
-// character count, build() joins and drains them. No zero-arg
+// StringBuilder: append() accumulates fragments (including empty appends),
+// length() tracks total character count, build() joins and drains them,
+// leaving length() at 0 and allowing the builder to be reused. No zero-arg
 // constructor -- see tests/sources/known_issues/ for why; construct with
 // StringBuilder("") to start empty.
 
@@ -20,10 +21,30 @@ seeded: StringBuilder = StringBuilder("Count: ");
 seeded.append("42");
 println(seeded.build());
 
+// Seeded, empty append, drain and reuse.
+reuse: StringBuilder = StringBuilder("ab");
+println(reuse.length());
+reuse.append("cde");
+reuse.append("");
+println(reuse.length());
+println(reuse.build());
+println(reuse.length());
+println("[" + reuse.build() + "]");
+reuse.append("xyz");
+println(reuse.length());
+println(reuse.build());
+
 /* EXPECT
 0
 13
 Hello, World!
 0
 Count: 42
+2
+5
+abcde
+0
+[]
+3
+xyz
 */

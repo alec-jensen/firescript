@@ -31,6 +31,15 @@ println(l as string);
 println(m as string);
 println("v=" + (l as string) + (e as string));
 
+// Positive extremes, zero, float precision and string -> string identity.
+println(127i8 as string);
+println(9223372036854775807i64 as string);
+println(0 as string);
+println(3.14159f32 as string);
+println(1.23456789f128 as string);
+sid: string = "Hello, World!";
+println(sid as string);
+
 /* EXPECT
 -128
 -32768
@@ -46,4 +55,10 @@ println("v=" + (l as string) + (e as string));
 true
 z
 v=true255
+127
+9223372036854775807
+0
+3.141590
+1.234568
+Hello, World!
 */
