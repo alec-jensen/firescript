@@ -74,6 +74,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - `firescript --check -o <file>` no longer exits 1 with "rename: src should be string, bytes or os.PathLike, not bool"; it now exits 0 and writes no output.
 - `uint64 as float32` and `uint64 as float64` casts no longer fail to compile with "Assembly failed: unsupported mnemonic: js".
 - `**=` (power compound assignment) is no longer rejected by the parser.
+- Compound assignment with mismatched operand types, a non-numeric target, or an undefined variable now reports a normal type error (`FS-SEM-0010`; `FS-PARSE-0003` for an undefined target) instead of an internal compiler error.
 
 ## 0.5.0 - Kirin
 *July 2, 2026*

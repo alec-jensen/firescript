@@ -521,6 +521,44 @@ class TypeSystemMixin(StatementsMixin):
                             node.token,
                         )
 
+        elif node.node_type == NodeTypes.COMPOUND_ASSIGNMENT:
+            # `x OP= expr` is `x = x OP expr`: the target must exist, and the
+            # operator must be valid for (type of x, type of expr) exactly as
+            # the equivalent binary expression would be. Without this check a
+            # mismatch only surfaced later as an internal FIR verifier error.
+            var_info = symbol_table.get(node.name)
+            if not var_info:
+                self.undefined_identifier_error(node.name, node.token)
+                return None
+            right_type = child_types[0] if child_types else None
+            if right_type is None:
+                return None
+            left_type = f"{var_info[0]}[]" if var_info[1] else var_info[0]
+            op_symbol = {
+                "ADD_ASSIGN": "+",
+                "SUBTRACT_ASSIGN": "-",
+                "MULTIPLY_ASSIGN": "*",
+                "DIVIDE_ASSIGN": "/",
+                "MODULO_ASSIGN": "%",
+                "POWER_ASSIGN": "**",
+            }.get(getattr(node.token, "type", ""), "+")
+            same = left_type == right_type
+            is_param = left_type in self._current_type_params
+            if op_symbol == "+" and same and left_type == "string":
+                ok = True
+            elif op_symbol == "%":
+                ok = same and (left_type in self.INTEGER_TYPES or is_param)
+            else:
+                float_types = {"float", "double", "float32", "float64", "float128"}
+                ok = same and (
+                    left_type in self.INTEGER_TYPES or left_type in float_types or is_param
+                )
+            if not ok:
+                self.invalid_type_error(
+                    f"Operator '{op_symbol}=' not supported between types {left_type} and {right_type}",
+                    node.token,
+                )
+
         elif node.node_type == NodeTypes.BINARY_EXPRESSION:
             left_type = child_types[0]
             right_type = child_types[1]

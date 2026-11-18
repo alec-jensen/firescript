@@ -1,0 +1,27 @@
+// Compound assignment (`x OP= expr` is `x = x OP expr`) is type-checked like
+// the equivalent binary expression: same-typed numeric operands (integer-only
+// for `%=`), same-typed strings for `+=`, and the target must be a declared
+// variable. Regression: these used to pass the semantic checker and only
+// failed later as an internal FIR verifier error ("this is a compiler bug").
+
+n: int32 = 1;
+n += 1.5;  //~ ERROR FS-SEM-0010 @3
+n **= 2.0;  //~ ERROR FS-SEM-0010 @3
+
+u: uint8 = 1u8;
+u += 1;  //~ ERROR FS-SEM-0010 @3
+
+f: float64 = 1.0;
+f %= 2.0;  //~ ERROR FS-SEM-0010 @3
+
+b: bool = true;
+b += 1;  //~ ERROR FS-SEM-0010 @3
+
+s: string = "a";
+s -= "b";  //~ ERROR FS-SEM-0010 @3
+s += 1;  //~ ERROR FS-SEM-0010 @3
+
+arr: int32[2] = [1, 2];
+arr += 1;  //~ ERROR FS-SEM-0010 @5
+
+missing += 1;  //~ ERROR FS-PARSE-0003 @9
