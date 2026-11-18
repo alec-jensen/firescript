@@ -442,23 +442,17 @@ Per-type min/max value and overflow/underflow behavior, split by numeric type:
 
 ### `conversions/`
 Split by conversion category:
-- **conversions_int_widening.fire** - int8->int16->int32->int64 upcasting, chained conversions
-- **conversions_int_narrowing.fire** - int64->int32->int16->int8 downcasting (potential data loss)
-- **conversions_signed_unsigned.fire** - Signed<->unsigned reinterpretation
 - **conversions_int_float.fire** - int<->float, float-to-int truncation
 - **conversions_float_precision.fire** - float32<->float64
 - **conversions_in_expressions.fire** - Casts combined with arithmetic operations (including int8+int16 widening and float32 division)
-- **conversions_to_string.fire** - Numeric/bool `as string`
 - **numeric_casts.fire** - Numeric type casting (downcast-focused, distinct scenarios from the `conversions_*` files above)
-- **string_cast_test.fire** - String casting operations
-- **string_to_numeric_casts.fire** - `as` casts from `string` to `int32`/`int64`/`uint64`/`float32`/`float64` (string -> bool and string -> char are not supported casts)
 - **builtin_conversions.fire** - Free-function conversion builtins (`toInt`, `toFloat`, `toDouble`, `toBool`, `toChar`, `toString`) called directly rather than via `as` casting. Note: `toChar` on a string takes its first character's code point, it does not parse the string as a numeric char code.
 - **builtin_conversions_numeric_source.fire** - Same conversion builtins as `builtin_conversions.fire`, but called with a numeric (non-string) source argument, e.g. `toInt(9.75)`, `toBool(0)`.
 - **int_float_cast_matrix.fire** - `float64`/`float32` -> `uint64` (including large values requiring the sign-bit correction dance) and `float64` -> narrow `int8`/`int16`/`uint8`/`uint16`/`uint32`. Notes two real bugs found and not worked around: `int32 as bool` (and other numeric-to-bool casts) is rejected by the frontend even though `flir/lowering.py`'s `Cvt` lowering and `flir_to_asm.py`'s `_emit_cvt` both have code for an int-to-bool target, and (now fixed, see `conversions_regression_uint64_to_float.fire`) `uint64 as float64`/`float32` used to fail to assemble ("unsupported mnemonic: js") because the backend emits a `js` instruction the self-hosted assembler didn't support.
 - **conversions_regression_uint64_to_float.fire** - Regression: `uint64 as float64`/`float32` across 0, small values, 2^63, 2^63+1 (sticky bit) and the maximum; previously failed to assemble because the self-hosted assembler lacked `js` and `shr r64, 1`
-- **conversions_string_to_numeric_all_types.fire** - `string as T` for every numeric type (int8 through uint32, float64, float128) at range extremes, with `+`, `-` and exponent forms
-- **conversions_to_string_all_types.fire** - `as string` for every numeric type at its extremes, plus bool and char, and use in concatenation
-- **conversions_integer_wraparound.fire** - Narrowing truncation, sign- vs zero-extension, and float-to-int truncation toward zero
+- **conversions_string_to_numeric_all_types.fire** - `string as T` for every numeric type (int8 through uint32, float64, float128) at range extremes, with `+`, `-` and exponent forms, plus int64/uint64 maxima and float32
+- **conversions_to_string_all_types.fire** - `as string` for every numeric type at its extremes, plus bool and char, positive extremes, zero, float precision, `string as string` identity, and use in concatenation
+- **conversions_integer_wraparound.fire** - Narrowing truncation, sign- vs zero-extension, float-to-int truncation toward zero, in-range narrowing, value-preserving (chained) widening, and uint8->int8 wrap
 
 ### `strings/`
 Split from a single `string_operations_comprehensive.fire` into per-behavior files (see "Splitting large test files" below):
@@ -568,7 +562,6 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **generics_swap.fire** - Generic swap function
 - **constraint_alias_test.fire** - Constraint aliases
 - **nested_constraint_test.fire** - Nested constraints
-- **math_with_constraints.fire** - Math operations with constraints
 - **generics_class_basic.fire** - Generic classes (`class Pair<T, U>`) with explicit type arguments at both declaration and construction sites
 - **generics_class_inferred_construct.fire** - Generic class construction with type arguments omitted at the call site (`Pair<int32, string> p = Pair(1, "x");`), inferred from the declared variable type
 - **constraint_intersection.fire** / **generic_intersection_constraint.fire** - Constraint/generic-function declarations using the intersection (`&`) operator to combine a primitive type with an interface/alias name (`T: int32 & Comparable`)
@@ -660,10 +653,9 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **ranges_empty_and_negative.fire** - Empty and reversed ranges, negative starts, a step larger than the span, and `break` out of a range loop
 
 ### `std/text/`
-- **stringbuilder_basic.fire** - `StringBuilder`: `append()` accumulates fragments, `length()` tracks total character count, `build()` joins and drains them (`length()` reads 0 afterward). No zero-arg constructor -- `StringBuilder("")` starts empty; designed before bare zero-arg constructor calls worked reliably, see `classes/classes_zero_arg_constructor_bare_call.fire` (kept as-is, no functional need to change it).
+- **stringbuilder_basic.fire** - `StringBuilder`: `append()` accumulates fragments, `length()` tracks total character count, `build()` joins and drains them (`length()` reads 0 afterward), empty appends, and reuse after `build()`. No zero-arg constructor -- `StringBuilder("")` starts empty; designed before bare zero-arg constructor calls worked reliably, see `classes/classes_zero_arg_constructor_bare_call.fire` (kept as-is, no functional need to change it).
 - **split_basic.fire** - `split(s, delim)`: splits on every occurrence including leading/trailing/adjacent empty fields, no-match (whole string as a single element), and a multi-character delimiter. Returns `ArrayList<string>`, drained here with `removeLast()` (LIFO) rather than `get()`/`enumerate()`, which aren't safe for an Owned element type.
 - **split_edge_cases.fire** - `split` on an empty source, an empty delimiter, and delimiter-only sources
-- **stringbuilder_reuse_after_build.fire** - `StringBuilder` `length()` tracking, `build()` draining the builder, and reuse afterwards
 
 ### `std/syscalls/`
 - **syscall_basic.fire** - Low-level syscall intrinsics (open/read/write/close/etc.)

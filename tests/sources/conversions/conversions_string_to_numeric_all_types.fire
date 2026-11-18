@@ -27,6 +27,11 @@ println(i);
 println(j);
 println(k + 1);
 
+// 64-bit maxima and float32 targets.
+println("9223372036854775807" as int64);
+println("18446744073709551615" as uint64);
+println("3.5" as float32);
+
 /* EXPECT
 -128
 32767
@@ -39,4 +44,7 @@ println(k + 1);
 7
 2.500000
 124
+9223372036854775807
+18446744073709551615
+3.500000
 */
