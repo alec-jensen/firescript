@@ -56,6 +56,23 @@ def test_write_pe_smoke():
         t.require(data[:2] == b"MZ")
         pe_off = struct.unpack_from("<I", data, 0x3C)[0]
         t.require(data[pe_off:pe_off + 4] == b"PE\x00\x00")
+        machine, num_sections, _ts, _sym, _nsym, opt_size = struct.unpack_from("<HHIIIH", data, pe_off + 4)
+        t.require_eq(machine, 0x8664)
+        t.require(num_sections >= 1, f"expected at least one section, got {num_sections}")
+        opt = pe_off + 24
+        t.require_eq(struct.unpack_from("<H", data, opt)[0], 0x20B)  # PE32+
+        entry_rva = struct.unpack_from("<I", data, opt + 16)[0]
+        # The entry point must land in a section, and that section's raw
+        # bytes at that spot must be our single `ret`.
+        sec_table = opt + opt_size
+        found = False
+        for i in range(num_sections):
+            base = sec_table + i * 40
+            vsize, vaddr, raw_size, raw_ptr = struct.unpack_from("<IIII", data, base + 8)
+            if vaddr <= entry_rva < vaddr + max(vsize, raw_size):
+                t.require_eq(data[raw_ptr + (entry_rva - vaddr)], 0xC3)
+                found = True
+        t.require(found, f"entry RVA {entry_rva:#x} is not inside any section")
 
 
 def test_write_pe_bss_symbol_without_data_section_raises():

@@ -28,8 +28,8 @@ def test_unknown_key_is_error():
     try:
         parse_fire_directives(text)
         t.require(False, "expected DirectiveError")
-    except DirectiveError:
-        pass
+    except DirectiveError as e:
+        t.require("unknown directive key 'bogus'" in str(e), str(e))
 
 
 def test_directive_after_code_is_error():
@@ -37,8 +37,8 @@ def test_directive_after_code_is_error():
     try:
         parse_fire_directives(text)
         t.require(False, "expected DirectiveError for misplaced //@")
-    except DirectiveError:
-        pass
+    except DirectiveError as e:
+        t.require("outside the leading header comment block" in str(e), str(e))
 
 
 def test_repeating_non_repeatable_key_is_error():
@@ -46,8 +46,8 @@ def test_repeating_non_repeatable_key_is_error():
     try:
         parse_fire_directives(text)
         t.require(False, "expected DirectiveError for repeated key")
-    except DirectiveError:
-        pass
+    except DirectiveError as e:
+        t.require("directive 'exit-code' repeated (not repeatable)" in str(e), str(e))
 
 
 def test_repeatable_keys_accumulate_in_order():
@@ -67,5 +67,5 @@ def test_two_spaces_after_marker_is_error():
     try:
         parse_fire_directives(text)
         t.require(False, "expected DirectiveError for double space")
-    except DirectiveError:
-        pass
+    except DirectiveError as e:
+        t.require("must be followed by exactly one space" in str(e), str(e))

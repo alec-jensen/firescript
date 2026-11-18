@@ -1,23 +1,11 @@
-"""Unit tests for FIRToFLIRLowering type-lowering branches that are
-unreachable through the real compiler pipeline today, exercised instead by
-driving the lowering internals directly.
-
-Two families of branch live here:
-
-1. The "SyscallResult" special cases in lower_type/lower_type_str/
-   ensure_struct/is_copyable_class_str. In the real pipeline,
-   firescript/std/internal/syscalls.fire declares `copyable class
-   SyscallResult`, and main.py always passes the merged std/internal/
-   module in as `runtime_module`, so `self.typedefs` always already contains
-   "SyscallResult" by the time any user code lowers -- these branches only
-   matter when FIRToFLIRLowering is driven without a runtime module (which
-   is exactly what a from-scratch unit test does).
-2. lower_type/lower_type_str/render_concrete branches for FIRType shapes
-   that either can't be spelled directly in firescript source in isolation
-   (a bare, unsubstituted generic type parameter reaching lowering; a
-   generator/function type lowered outside its special-cased slot/call
-   handling) or are awkward to force through the full parser/semantic
-   pipeline compared to just building the FIRType directly."""
+"""Unit tests for FIRToFLIRLowering type-lowering branches that are awkward
+to reach through the full compiler pipeline, exercised by driving the
+lowering internals directly: lower_type/lower_type_str/render_concrete
+branches for FIRType shapes that either can't be spelled directly in
+firescript source in isolation (a bare, unsubstituted generic type
+parameter reaching lowering; a generator/function type lowered outside its
+special-cased slot/call handling) or are cheaper to build as a FIRType
+directly than to force through the parser/semantic pipeline."""
 from __future__ import annotations
 
 import os
@@ -42,39 +30,6 @@ def _lowering() -> FIRToFLIRLowering:
     # as the special-cased branches assume when they check `not in
     # self.typedefs`.
     return FIRToFLIRLowering(FIRModule("firescript"))
-
-
-def test_ensure_struct_bootstraps_syscall_result_without_runtime_module():
-    lowering = _lowering()
-    t.require(not lowering.flir.has_struct("SyscallResult"), "sanity")
-    name = lowering.ensure_struct("SyscallResult", [])
-    t.require(name == "SyscallResult", name)
-    t.require(lowering.flir.has_struct("SyscallResult"), "struct should now exist")
-    struct = lowering.flir.struct("SyscallResult")
-    t.require([f[0] for f in struct.fields] == ["status", "data"], str(struct.fields))
-
-    # Calling again must not re-add the struct/fields.
-    name2 = lowering.ensure_struct("SyscallResult", [])
-    t.require(name2 == "SyscallResult", name2)
-
-
-def test_is_copyable_class_str_treats_bootstrap_syscall_result_as_copyable():
-    lowering = _lowering()
-    t.require(lowering.is_copyable_class_str("SyscallResult"), "should be copyable")
-
-
-def test_lower_type_bootstraps_syscall_result():
-    lowering = _lowering()
-    flir_type = lowering.lower_type(make_simple("SyscallResult"), {})
-    t.require(flir_type.kind == "struct", flir_type.kind)
-    t.require(flir_type.struct_name == "SyscallResult", flir_type.struct_name)
-
-
-def test_lower_type_str_bootstraps_syscall_result():
-    lowering = _lowering()
-    flir_type = lowering.lower_type_str("SyscallResult", {})
-    t.require(flir_type.kind == "struct", flir_type.kind)
-    t.require(flir_type.struct_name == "SyscallResult", flir_type.struct_name)
 
 
 def test_lower_type_treats_unsubstituted_generic_param_as_ptr():

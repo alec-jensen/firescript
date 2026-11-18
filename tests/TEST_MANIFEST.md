@@ -68,7 +68,7 @@ python tests/run.py
 ```
 
 `tests/python/backend/test_asm_encoding.py` compares the encoder against the
-`as` on `PATH`, reading `.text` from either COFF (MinGW) or ELF (Linux) output.
+`as` on `PATH` (required: those tests fail if it is missing), reading `.text` from either COFF (MinGW) or ELF (Linux) output.
 
 The master seed for the run is always printed as the first and last line of
 output (`Seed: 0x...`) so any run -- including anything that used sampling
@@ -142,20 +142,25 @@ Plain `assert` also works. Covers:
   compilation, `--message-format json`, `-d` debug mode, import-resolution
   errors), split by area: `test_check.py`, `test_emit.py`,
   `test_dir_batch.py`, `test_output.py`, `test_diagnostics.py`,
-  `test_imports.py`, `test_paths.py` (`safe_relpath` cross-drive fallback).
+  `test_imports.py`, `test_paths.py` (`safe_relpath` cross-drive fallback),
+  `test_main_arg_errors.py` (argument-error exits, including the
+  invalid-choice params test). `test_check.py`'s compile test uses whatever
+  target the test run is configured for (`t.run_compiler()` adds
+  `--platform/--arch` from `FIRESCRIPT_TEST_TARGET`), not necessarily the
+  host default; host-default resolution is in `test_targets_resolution.py`.
   `test_main_internals.py` covers the rest of `main.py` in-process
-  (not via subprocess): `_normalize_cli_path`, `setup_logging` re-entry,
+  (not via subprocess): `_normalize_cli_path`, `setup_logging` re-entry
+  (including that the json format emits JSON),
   `_compile_asm`/`_compile_runtime_file`'s
   exception branches, `compile_file()`'s per-stage exception
   handling (monkeypatching `CompilerPipeline`/`ASTToFIRConverter`/
   `FIRToFLIRLowering` methods to raise), `lint_text()`'s early-exit
-  branches, and `main()`'s CLI-level error branches (invalid path args,
+  branches and its parser/semantic-analysis diagnostics, and `main()`'s CLI-level error branches (invalid path args,
   unsupported target, output-move failure), driven by monkeypatched
   `sys.argv` and caught `SystemExit`.
   `test_compiler_pipeline.py` covers `firescript/compiler_pipeline.py`'s
   `CompilerPipeline` (the parse()-must-precede-later-stages guard clauses
-  on `resolve_imports`/`preprocess`/`analyze_semantics`, and a full
-  happy-path run) in-process. `test_frontend_pipeline.py` covers
+  on `resolve_imports`/`preprocess`/`analyze_semantics`) in-process. `test_frontend_pipeline.py` covers
   `firescript/frontend_pipeline.py`'s import-merge and deferred-identifier
   logic in-process (real small on-disk import graphs via
   `CompilerPipeline`, plus a direct call with a hand-built resolver return
@@ -165,20 +170,18 @@ Plain `assert` also works. Covers:
   rather than via `t.run_compiler()` (subprocess), since subprocess runs
   don't register against this process's coverage measurement.
 - `tests/python/backend/test_asm_encoding.py` -- differential + unit tests
-  for the pure-Python x86-64 assembler; unit assertions always run,
-  differential comparison against MinGW `as` only when `as` is on `PATH`.
-  `test_assembler_unit.py` adds further coverage-targeted error/edge
-  branches not exercised by the differential CASES table: malformed memory
-  operands, 16-bit ALU/mov/unary forms, `movq xmm,xmm` (including
-  extended-register REX forcing), unsupported mnemonics/operand-form
-  errors, directive dispatch (`.text`/`.data`/`.bss`/`.space`/`.quad`/
-  `.long`/`.align`), `.asciz` octal/unrecognized escapes and
-  non-locale-encodable characters, and the relocation/fixup resolution
-  paths (backward rip-relative code labels, a rip-relative branch into
-  `.rdata`, unresolved runtime-call symbols); also drives two internals
-  directly for guards provably unreachable from any assemble()-able
-  source text (a numeric `call` target, and `_encode` emitting zero
-  bytes).
+  for the pure-Python x86-64 assembler. The differential tests (the
+  `test_encode` table plus the conditional-jump/`jmp`/`call` label forms)
+  compare against the `as` on `PATH` and **fail** if it is missing, rejects
+  a line, or yields no bytes; the label forms compare the opcode against
+  `as`'s short form since `as` relaxes branches while our assembler always
+  emits rel32. The same file holds the error-path and directive unit tests
+  (malformed memory operands, unsupported mnemonics/operand forms,
+  `.bss`/`.data`/`.space`/`.long`/`.byte`, `.asciz` escapes, rip-relative
+  label resolution). `test_assembler_unit.py` holds the few remaining
+  cases it does not cover (unknown base in a base+index operand, a call to
+  an undefined runtime symbol, exact `.quad`/`.long` bytes, `.align`
+  emitting nothing, octal `.asciz` escapes).
 - `tests/python/backend/test_flir_to_asm_errors.py` -- unit tests for
   `firescript/codegen/x86_64/flir_to_asm.py` branches impractical to reach
   through a full `.fire` compile (mutable-global `.bss` emission, f32/f64
@@ -206,6 +209,31 @@ Plain `assert` also works. Covers:
   (missing `firescript_entry` symbol, a `bss`-section symbol with no
   `.data` section, an unknown symbol section, an unsupported reloc kind)
   that a normal successful compile never reaches.
+  through a full `.fire` compile (mutable-global `.bss` emission, exact
+  f32/f64/int/f128 global encodings, the catch-all `AsmError` for an
+  unhandled FLIR opcode, unsupported float/int `BinOp` operators,
+  stack-spilled parameters beyond the 4th). FLIR modules are hand-built
+  directly from `flir.ir` objects and handed straight to `FLIRToAsmBackend`,
+  same construction style as `tests/python/flir/test_verifier_structure.py`.
+- `tests/python/backend/test_flir_to_asm_coverage.py` -- unit tests for
+  `firescript/codegen/x86_64/flir_to_asm.py`'s emitted instruction
+  sequences, driving `FLIRToAsmBackend` directly against hand-built
+  `flir.ir` modules (no assembler invoked): the `.asciz` escape-mapping
+  table, 5th+ struct parameters and call arguments passed on the stack,
+  extern float arguments, struct-by-value load/store copies, and the
+  int->bool, u64<->float and narrow-int conversion sequences. (The u64->float
+  sequence uses `js`/`shr`, which the in-tree assembler does not encode, so
+  `uint64 as float64` currently fails at assembly -- a known bug.)
+- `tests/python/backend/test_pe_writer.py` -- unit tests for
+  `firescript/backend/windows/pe.py`'s `write_pe`: a smoke test that checks
+  the COFF/optional header and that the entry point lands on the entry
+  code, plus hand-built `ObjectImage`/`Reloc` instances that hit its
+  defensive error branches (missing `firescript_entry` symbol, a
+  `bss`-section symbol with no `.data` section, an unknown symbol section,
+  an unsupported reloc kind). `test_pe_inspect.py` covers the harness's PE
+  import reader: malformed-input errors and hand-built images with
+  name-based and ordinal imports and several DLLs (checking
+  `imported_dlls` really sorts).
 - `tests/python/fir/` -- unit tests for `firescript/fir/`: builder
   construction (`test_builder.py`, including `BasicBlock.set_terminator`'s
   double-terminator guard), textual dump format verified against
@@ -273,57 +301,48 @@ Plain `assert` also works. Covers:
   (`docs/internal/development/ir_verifier_spec.md`), FLIR modules built
   directly from `flir.ir` objects (there is no FLIRBuilder helper):
   structural rules (FLIRV-S) in `test_verifier_structure.py`, type/memory
-  rules (FLIRV-T, FLIRV-M1-M3) in `test_verifier_types.py`, and Tier-2
-  heap-token allocation-lifecycle rules (FLIRV-A1-A5, FLIRV-M4) in
-  `test_verifier_heap.py`, and defensive/unreachable-from-source guards in
-  the same Tier-2 heap-token verifier (`_meet_states([])`, `_HeapChecker
-  .run()` on a function with no blocks or with a block outside
-  `cfg.reachable`, and `_ident_text`'s dead `"slot"`-kind branch) in
-  `test_heap_verifier_defensive.py`, driven directly against the internal
-  classes since flir/verifier.py's Tier-1 gate rules out all of these at
-  the real pipeline's entry point. `test_verifier_extra.py` fills remaining Tier-1
-  coverage gaps (struct layout edge cases, an empty function/block, the
-  rest of the T1-T6/M1-M3 branches) and directly unit-tests
-  `_binop_operand_ok`/`_ptr_lenient_eq`/`_resolve_struct_type` (the last of
-  which is dead code -- see its test's comment). `test_dump.py` covers
-  `firescript/flir/textual.py` (mutable/immutable global dump lines, the
-  foreign-value ValueError path). `test_ir_helpers.py` covers small
-  standalone helpers in `firescript/flir/ir.py` (FLIRType predicates/
-  dunder methods, `FLIRStruct.field`, `FInst`'s default `format()`, block/
-  function guard clauses) not otherwise exercised elsewhere. Also unit
-  tests for `firescript/flir/lowering.py`
-  (FIRToFLIRLowering), driven directly via `fir.FIRBuilder` rather than
-  through the full compiler, covering internal branches that are either
-  unreachable through any valid FIR the real pipeline produces (defensive
-  `LoweringError`s, `SyscallResult`-without-runtime-module bootstrapping)
-  or awkward to force through the parser: `test_lowering_defensive_errors.py`
-  (every `LoweringError`/assert site, plus the MoveInst/BorrowInst/CloneInst
-  passthrough and non-short-circuit `&&`/`||` fallback that ast_to_fir.py
-  never actually emits) and `test_lowering_type_edge_cases.py` (lower_type/
-  lower_type_str/render_concrete/ensure_struct branches for `SyscallResult`,
-  unsubstituted generic parameters, and `GeneratorType`/`FunctionType`/
+  rules (FLIRV-T, FLIRV-M1-M3) in `test_verifier_types.py` and
+  `test_verifier_checks.py` (each corrupts one thing and asserts the rule
+  and message, with valid boundary twins), the gaps they leave
+  (an empty block as the only violation, duplicate mutable globals,
+  unresolved struct fields, T1 operand provenance, M1 base checks) in
+  `test_verifier_extra.py`, and Tier-2 heap-token allocation-lifecycle
+  rules (FLIRV-A1-A5, FLIRV-M4): A1/A2/A4 lifecycles, joins, loops, escapes
+  and `__destroy` frees in `test_heap_verifier_checks.py`, and the A3/A5/M4
+  cases it does not cover in `test_verifier_heap.py`.
+  `test_ir_analysis_edges.py` covers the shared CFG/dominator/dataflow
+  machinery in `firescript/ir_analysis.py` (including a subprocess test that
+  builds the CFG under different `PYTHONHASHSEED` values to enforce the
+  determinism rule) plus struct finalize and module-level dump lines.
+  `test_ir_helpers.py` covers small standalone helpers in
+  `firescript/flir/ir.py` (struct size/align without a module, `ConstF128`
+  formatting, block/function guard clauses); `test_textual_dump.py` covers
+  the textual dump's foreign-value rejection. Also unit tests for
+  `firescript/flir/lowering.py` (FIRToFLIRLowering), driven directly via
+  `fir.FIRBuilder`: `test_lowering_defensive_errors.py` (ensure_slot
+  idempotence, generator frame-slot lookup, root-function scan skip rules,
+  and a test that pins the known `float128 ** float128` LoweringError bug
+  -- rewrite it when that is fixed) and `test_lowering_type_edge_cases.py`
+  (lower_type/lower_type_str/render_concrete branches for unsubstituted
+  generic parameters and `GeneratorType`/`FunctionType`/
   `GenericInstanceType` shapes lowered outside their normal call sites).
-  Also `test_lowering_float128.py` -- the compile-time decimal-string ->
-  IEEE binary128 literal parser (`_decimal_to_f128_bits`): signs, scientific
-  notation, exponent overflow/underflow, subnormals, round-half-even ties
-  (cross-checked against `tests/support/float128_oracle.py`, an independent
-  implementation), and malformed input -- distinct from
-  `tests/python/float128/`'s *runtime* soft-float oracle tests.
-  `test_lowering_f128_decimal.py` covers further `_decimal_to_f128_bits`/
-  `_round_half_even` edge cases (inf/nan aliases, `f128` suffix stripping,
-  malformed text, subnormal clamping/rounding, zero-denominator fallback).
-  `test_lowering_f128_decimal_more.py` adds further cases (rounding-carry
-  overflow to infinity, subnormal significand clamping, the exponent-
-  correction `elif` branch proven mathematically unreachable). `test_textual_dump.py` covers `firescript/flir/textual.py`'s foreign-value
-  rejection, global-constant rendering, and `FLIRFunction.validate()`'s
-  throwaway-module wrapper.
+  `test_lowering_float128.py` -- the compile-time decimal-string -> IEEE
+  binary128 literal converter (`_decimal_to_f128_bits`) cross-checked against
+  `tests/support/float128_oracle.py`, an independent implementation --
+  and `test_lowering_f128_decimal.py` (exact-bit inf/nan aliases, suffix
+  stripping, malformed text, signed overflow/underflow, rounding carry and
+  ties, `_round_half_even`; includes a test that pins the known
+  subnormal-rounding bug) are distinct from `tests/python/float128/`'s
+  oracle tests.
 - `tests/python/float128/` -- self-tests for the binary128 correctness
   oracle (`tests/support/float128_oracle.py`): hand-verified constants and
-  arithmetic/comparison/parse/format checks (`test_oracle_units.py`), plus
-  self-consistency of every generated test vector (`test_oracle_vectors.py`).
+  arithmetic/comparison/parse/format checks (`test_oracle_units.py`),
+  including exact round-half-even tie cases for binary rounding and decimal
+  formatting, whose expectations are computed independently of the oracle's
+  own helpers.
 - `tests/python/harness/` -- the harness's own tests (directive parser,
-  EXPECT/`//~` parsing and rewriting, seed derivation, matrix engine,
-  selector matching). The harness ships with its own test coverage since it
+  EXPECT/`//~` parsing and rewriting (directive error tests assert which
+  error fires), seed derivation, matrix engine, selector matching). The harness ships with its own test coverage since it
   is the arbiter of every other test.
 - `tests/python/imports/test_module_resolver.py` -- direct unit tests for
   `firescript/imports.py`'s `ModuleResolver` and `build_merged_ast`:

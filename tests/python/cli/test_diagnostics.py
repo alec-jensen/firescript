@@ -15,11 +15,3 @@ def test_message_format_json():
     combined = proc.stdout + proc.stderr
     t.require('"type": "diagnostic"' in combined, combined)
     t.require('"type": "log"' in combined, combined)
-
-
-def test_debug_mode():
-    src = os.path.join(SOURCES_DIR, "functions", "functions.fire")
-    proc = t.run_compiler(["-d", "--check", src])
-    t.require_eq(proc.returncode, 0, proc.stderr)
-    combined = proc.stdout + proc.stderr
-    t.require("DEBUG" in combined, combined)

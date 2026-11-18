@@ -17,17 +17,18 @@ def _write(tmp: str, name: str, text: str = _GOOD_SRC) -> str:
     return path
 
 
-def test_invalid_emit_choice_rejected():
+@t.params([
+    ["--platform", "not-a-real-platform"],
+    ["--arch", "not-a-real-arch"],
+    ["--emit", "bogus"],
+    ["--message-format", "xml"],
+])
+def test_invalid_choice_rejected(flag_and_value):
     with t.tmpdir() as tmp:
-        proc = t.run_compiler(["--emit", "bogus", _write(tmp, "a.fire")], cwd=tmp)
+        proc = t.run_compiler(flag_and_value + [_write(tmp, "a.fire")], cwd=tmp)
         t.require_eq(proc.returncode, 2)
         t.require("invalid choice" in proc.stderr, proc.stderr)
-
-
-def test_invalid_message_format_rejected():
-    with t.tmpdir() as tmp:
-        proc = t.run_compiler(["--message-format", "xml", _write(tmp, "a.fire")], cwd=tmp)
-        t.require_eq(proc.returncode, 2)
+        t.require(flag_and_value[1] in proc.stderr, proc.stderr)
 
 
 def test_two_positional_files_rejected():

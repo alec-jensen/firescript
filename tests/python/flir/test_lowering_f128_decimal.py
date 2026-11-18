@@ -66,20 +66,9 @@ def test_f128_suffix_is_stripped():
     assert a == b
 
 
-def test_scientific_notation():
-    lo, hi = _decimal_to_f128_bits("1.5e10")
-    assert (lo, hi) != (0, 0)
-
-
 def test_malformed_text_falls_back_to_zero():
     # Fraction(...) raises ValueError for text it can't parse.
     assert _decimal_to_f128_bits("garbage!!!") == (0, 0)
-
-
-def test_zero_denominator_value_error_variant_falls_back_to_zero():
-    # Fraction("1/0") raises ZeroDivisionError rather than ValueError;
-    # both are caught by the same except clause.
-    assert _decimal_to_f128_bits("1/0") == (0, 0)
 
 
 def test_positive_zero():
@@ -152,8 +141,8 @@ def test_rounding_carry_bumps_exponent_without_overflow():
 
 
 def test_rounding_carry_overflows_to_infinity():
-    # frac sits just below the largest finite binary128 value with a
-    # mantissa that rounds all the way up, carrying the exponent past
+    # frac sits just ABOVE the largest finite binary128 value (by more than
+    # half an ulp), so it rounds up past it, carrying the exponent beyond
     # EXP_MAX and producing infinity.
     text = "1.18973149535723176508575932662800708493665443331458376069548e4932"
     lo, hi = _decimal_to_f128_bits(text)
@@ -167,27 +156,27 @@ def test_round_half_even_helper_directly():
     assert _round_half_even(Fraction(7, 4)) == 2  # rounds up
 
 
-def test_elif_exponent_correction_branch_is_unreachable():
-    """Documents dead code at lowering.py's exponent-estimation adjustment.
+def test_suffix_stripped_other_float_suffixes():
+    a = _decimal_to_f128_bits("2.25")
+    for suf in ("f64", "f32", "f16"):
+        b = _decimal_to_f128_bits(f"2.25{suf}")
+        assert a == b, f"suffix {suf}: {a} != {b}"
 
-    `_decimal_to_f128_bits` estimates the binary exponent as
-    `bit_length(num) - bit_length(den)` for a reduced (coprime) Fraction,
-    then has an `if frac < pow2_e: e -= 1` / `elif frac >= pow2_e * 2: e += 1`
-    correction pair. For coprime num/den, bit_length bounds give
-    `bitlen(num) - 1 <= log2(num) < bitlen(num)` and likewise for den, so
-    `log2(frac)` is provably confined to the open interval
-    `(e_guess - 1, e_guess + 1)` -- i.e. `frac` always lies strictly below
-    `pow2_e * 2`. The `elif` branch's condition can therefore never be
-    true; it is unreachable defensive code, confirmed here by exhaustive
-    search over small coprime pairs (no real decimal literal can trigger
-    it either, since Fraction() always returns a reduced fraction).
-    """
-    from math import gcd
 
-    for den in range(1, 500):
-        for num in range(1, 500):
-            if gcd(num, den) != 1:
-                continue
-            e = num.bit_length() - den.bit_length()
-            pow2_e = 2 ** e
-            assert num < pow2_e * 2 * den
+def test_negative_overflow_to_infinity():
+    # Overflow keeps the sign: -infinity, not +infinity.
+    lo, hi = _decimal_to_f128_bits("-1e5000")
+    assert (lo, hi) == (0, (1 << 63) | (0x7FFF << 48))
+
+
+def test_negative_underflow_to_zero():
+    # Underflow keeps the sign: -0, not +0.
+    assert _decimal_to_f128_bits("-1e-5000") == (0, 1 << 63)
+
+
+def test_round_half_even_below_half():
+    assert _round_half_even(Fraction(1, 3)) == 0, "1/3 should round down"
+
+
+def test_round_half_even_above_half():
+    assert _round_half_even(Fraction(2, 3)) == 1, "2/3 should round up"

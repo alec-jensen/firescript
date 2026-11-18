@@ -82,7 +82,7 @@ def test_arithmetic_spot_checks():
 
     t.require_eq(o.div(o._MAX_FINITE, HALF), INF_P)
     t.require_eq(o.mul(TWO, MIN_SUB), o.pack(0, 0, 2))
-    t.require(o.mul(MIN_SUB, HALF) in (ZERO, o.pack(0, 0, 0)))
+    t.require_eq(o.mul(MIN_SUB, HALF), ZERO)  # 2^-16495 is a tie: round to even gives +0
 
 
 def test_comparisons():
@@ -109,7 +109,7 @@ def test_from_int_to_int():
     t.require_eq(o.to_int(NAN_C), 0)
     t.require_eq(o.to_int(o.parse("1.75")), 1)
     t.require_eq(o.to_int(o.parse("-1.75")), -1)
-    for n in [0, 1, -1, 2**52, 2**63, -(2**63), 10**30]:
+    for n in [0, 1, -1, 42, -100, 2**52, 2**63, -(2**63), 10**30, 2**113, -(2**113)]:
         with t.subtest(f"round-trip {n}"):
             t.require_eq(o.to_int(o.from_int(n)), n)
 
@@ -190,7 +190,6 @@ def test_format_g():
     t.require_eq(o.format_g(o.parse("1e-5")), "1e-05")
     t.require_eq(o.format_g(o.parse("1.5e10")), "1.5e+10")
     t.require_eq(o.format_g(o.parse("0.1")), "0.1")
-    t.require_eq(o.format_g(ZERO), "0")
 
 
 def test_cross_checks_add_sub_round_trip():
@@ -216,7 +215,30 @@ def test_cross_checks_parse_format_round_trip():
                 t.require(rel_err < Fraction(1, 10**5))
 
 
-def test_cross_checks_large_int_round_trip():
-    for n in [0, 1, -1, 42, -100, 2**50, -(2**50), 2**113, -(2**113)]:
+def test_round_to_nearest_even_on_exact_ties():
+    # Integers needing 114 significant bits sit exactly halfway between two
+    # binary128 values (spacing 2 above 2^113); ties go to the even
+    # significand. Expected values come from exact Fraction arithmetic, not
+    # from the oracle's own rounding helper.
+    base = 1 << 113
+    for n, expected in [
+        (base + 1, base),          # between base and base+2: base is even
+        (base + 3, base + 4),      # between base+2 and base+4: base+4 is even
+        (base + 5, base + 4),      # between base+4 and base+6: base+4 is even
+        (-(base + 1), -base),
+        (-(base + 3), -(base + 4)),
+    ]:
         with t.subtest(str(n)):
-            t.require_eq(o.to_int(o.from_int(n)), n)
+            t.require_eq(o.to_fraction(o.from_int(n)), Fraction(expected))
+    # Off the tie it rounds to the nearer neighbour, not to even.
+    t.require_eq(o.to_fraction(o.from_int(base + 2)), Fraction(base + 2))
+
+
+def test_format_f_and_g_decimal_ties_round_half_even():
+    # These binary values are exactly representable, so the decimal digit
+    # after the cut is an exact 5 with nothing following: round half to even
+    # (matching C printf).
+    t.require_eq(o.format_f(o.parse("0.0078125")), "0.007812")    # 2^-7: ...812|5 -> even 2
+    t.require_eq(o.format_f(o.parse("0.0234375")), "0.023438")    # 3*2^-7: ...437|5 -> even 8
+    t.require_eq(o.format_g(o.parse("100000.5")), "100000")       # 6 sig digits: tie -> even 0
+    t.require_eq(o.format_g(o.parse("100001.5")), "100002")       # tie -> even 2

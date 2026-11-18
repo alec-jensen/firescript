@@ -1,9 +1,10 @@
 """Direct unit tests for firescript/flir/lowering.py's
 _decimal_to_f128_bits(): a pure decimal-string -> IEEE binary128 (lo, hi)
 converter used when lowering a float128 literal to its rodata bit pattern.
-Covers the sign-prefix, inf/nan, scientific-notation, and malformed-input
-fallback branches that a normal .fire program (which only ever produces
-plain decimal float128 literals) doesn't exercise."""
+Cross-checks the sign bit, scientific notation, overflow, subnormals,
+underflow, rounding carry and round-half-even ties against the independent
+oracle in tests/support/float128_oracle.py. Exact-bit special-value cases
+(inf/nan/malformed) live in test_lowering_f128_decimal.py."""
 from __future__ import annotations
 
 import os
@@ -19,41 +20,11 @@ from support import float128_oracle as oracle  # noqa: E402
 from fractions import Fraction  # noqa: E402
 
 
-def test_positive_sign_prefix():
-    lo_plain, hi_plain = _decimal_to_f128_bits("1.5")
-    lo_signed, hi_signed = _decimal_to_f128_bits("+1.5")
-    t.require_eq((lo_plain, hi_plain), (lo_signed, hi_signed))
-
-
 def test_negative_sign_prefix_sets_sign_bit():
     lo_pos, hi_pos = _decimal_to_f128_bits("1.5")
     lo_neg, hi_neg = _decimal_to_f128_bits("-1.5")
     t.require_eq(lo_pos, lo_neg)
     t.require_eq(hi_neg, hi_pos | (1 << 63))
-
-
-def test_infinity_positive():
-    lo, hi = _decimal_to_f128_bits("inf")
-    t.require_eq(lo, 0)
-    t.require_eq(hi, 0x7FFF << 48)
-
-
-def test_infinity_named_infinity():
-    lo, hi = _decimal_to_f128_bits("infinity")
-    t.require_eq(lo, 0)
-    t.require_eq(hi, 0x7FFF << 48)
-
-
-def test_infinity_negative():
-    lo, hi = _decimal_to_f128_bits("-inf")
-    t.require_eq(lo, 0)
-    t.require_eq(hi, (1 << 63) | (0x7FFF << 48))
-
-
-def test_nan():
-    lo, hi = _decimal_to_f128_bits("nan")
-    t.require_eq(lo, 0)
-    t.require_eq(hi, (0x7FFF << 48) | (1 << 47))
 
 
 def test_scientific_notation():
@@ -66,20 +37,6 @@ def test_scientific_notation_negative_exponent():
     lo, hi = _decimal_to_f128_bits("15e-1")
     lo_expanded, hi_expanded = _decimal_to_f128_bits("1.5")
     t.require_eq((lo, hi), (lo_expanded, hi_expanded))
-
-
-def test_malformed_text_falls_back_to_zero():
-    t.require_eq(_decimal_to_f128_bits("not-a-number"), (0, 0))
-
-
-def test_zero_division_falls_back_to_zero():
-    t.require_eq(_decimal_to_f128_bits("1/0"), (0, 0))
-
-
-def test_f128_suffix_is_stripped():
-    lo, hi = _decimal_to_f128_bits("2.0f128")
-    lo_plain, hi_plain = _decimal_to_f128_bits("2.0")
-    t.require_eq((lo, hi), (lo_plain, hi_plain))
 
 
 def _oracle_halves(text: str) -> tuple:

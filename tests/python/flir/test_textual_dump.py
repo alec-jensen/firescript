@@ -1,7 +1,7 @@
-"""Direct unit tests for the FLIR textual dump format (flir/textual.py)
-and the FLIRFunction.validate() convenience wrapper (flir/ir.py), driven
-directly with hand-built FLIR objects (no shipped test currently exercises
-`dump_flir_module` at all)."""
+"""Direct unit test for the FLIR textual dump's rejection of a value defined
+in another function (flir/textual.py), driven with hand-built FLIR objects.
+Dump formatting itself is covered by test_ir_analysis_edges.py and the
+tests/snapshots/**/*.flir snapshots."""
 from __future__ import annotations
 
 import os
@@ -14,14 +14,6 @@ sys.path.insert(0, os.path.join(REPO_ROOT, "firescript"))
 
 from flir.ir import ConstInt, FLIRFunction, FLIRModule, I32, Ret  # noqa: E402
 from flir.textual import dump_flir_module  # noqa: E402
-
-
-def test_global_constant_dump_rendering():
-    module = FLIRModule("firescript")
-    module.globals.append(("MAX_RETRIES", I32, "3"))
-
-    text = dump_flir_module(module)
-    t.require("global MAX_RETRIES: i32 = 3" in text, text)
 
 
 def test_resolve_rejects_foreign_value():
@@ -43,12 +35,3 @@ def test_resolve_rejects_foreign_value():
         t.require(False, "no error raised")
     except ValueError as e:
         t.require("not in function" in str(e), str(e))
-
-
-def test_function_validate_wraps_self_in_throwaway_module():
-    func = FLIRFunction("standalone", return_type=I32)
-    block = func.new_block()
-    v0 = block.add(ConstInt("1", I32))
-    block.add(Ret(v0))
-
-    func.validate()  # must not raise: a clean, terminated function is valid

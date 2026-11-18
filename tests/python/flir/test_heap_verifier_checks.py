@@ -136,7 +136,7 @@ def test_a1_double_free_message_says_freed_again():
     t.require("FLIRV-A4" not in _rules(module))
 
 
-def test_a2_use_after_free_via_load_through_token():
+def test_a2_use_after_free_via_borrowing_runtime_call():
     module, func = _func()
     b = func.new_block()
     _alloc(b)
@@ -157,7 +157,7 @@ def test_a2_storing_a_freed_token_into_another_slot_is_a_use():
     _expect(module, "FLIRV-A2", "which is freed")
 
 
-def test_a2_branching_on_nothing_but_using_freed_pointer_in_store_base():
+def test_a2_use_after_free_as_store_base():
     module, func = _func()
     b = func.new_block()
     _alloc(b)
@@ -256,17 +256,20 @@ def test_free_on_one_branch_only_is_not_reported_as_leak_conservative_meet():
     _expect_clean(module)
 
 
-def test_token_allocated_on_only_one_branch_is_dropped_at_join():
-    """Meet intersects: a token present on just one incoming path is not
-    tracked past the join, so neither leak nor reuse is reported for it."""
-    module, func, entry, then_b, else_b, join = _diamond(_func())
-    entry.add(SlotDecl("s", STR))
+def test_token_escaped_on_only_one_branch_is_dropped_at_join():
+    """Meet intersects the token sets: a token that escaped on one incoming
+    path (so is no longer tracked there) is not tracked past the join, even
+    though the other path still holds it LIVE and the slot alias survives.
+    Keeping it (a union meet) would report a leak at the Return."""
+    module, func, entry, then_b, else_b, join = _diamond(_func(params=[("holder", ptr_to("Holder"))]))
+    _alloc(entry)
     _wire_diamond(entry, then_b, else_b, join)
-    # build the then-branch allocation before its Jmp terminator
-    jmp = then_b.instructions.pop()
-    src = then_b.add(ConstStr("x"))
-    then_b.add(SlotStore("s", then_b.add(Call("fs_rt_str_dup", [src], STR))))
-    then_b.instructions.append(jmp)
+    # The escaping branch is the second predecessor of the join, so the
+    # meet has to drop a token that its first predecessor still holds.
+    jmp = else_b.instructions.pop()
+    holder = else_b.add(SlotLoad("holder", ptr_to("Holder")))
+    else_b.add(Store(STR, holder, 0, else_b.add(SlotLoad("s", STR))))  # escape
+    else_b.instructions.append(jmp)
     join.add(Ret())
     _expect_clean(module)
 
@@ -339,7 +342,7 @@ def test_escape_by_returning_the_token_is_not_a_leak():
     _expect_clean(module)
 
 
-def test_escape_by_storing_into_a_field_is_not_a_leak_and_later_free_is_untracked():
+def test_escape_by_storing_into_a_field_is_not_a_leak():
     module, func = _func(params=[("holder", ptr_to("Holder"))])
     b = func.new_block()
     _alloc(b)
@@ -428,7 +431,7 @@ def test_a4_pointer_returned_by_user_function_is_a_fresh_token_and_can_leak():
     _expect(module, "FLIRV-A4", "leaked")
 
 
-def test_user_function_returned_pointer_freed_once_is_clean_and_twice_is_a1():
+def test_user_function_returned_pointer_freed_once_is_clean():
     module, func = _func()
     _make_ptr_returner(module)
     b = func.new_block()
@@ -438,15 +441,17 @@ def test_user_function_returned_pointer_freed_once_is_clean_and_twice_is_a1():
     b.add(Ret())
     _expect_clean(module)
 
-    module2, func2 = _func()
-    _make_ptr_returner(module2)
-    b2 = func2.new_block()
-    b2.add(SlotDecl("s", STR))
-    b2.add(SlotStore("s", b2.add(Call("make", [], STR))))
-    _free(b2)
-    _free(b2)
-    b2.add(Ret())
-    _expect(module2, "FLIRV-A1", "is freed again")
+
+def test_user_function_returned_pointer_freed_twice_is_a1():
+    module, func = _func()
+    _make_ptr_returner(module)
+    b = func.new_block()
+    b.add(SlotDecl("s", STR))
+    b.add(SlotStore("s", b.add(Call("make", [], STR))))
+    _free(b)
+    _free(b)
+    b.add(Ret())
+    _expect(module, "FLIRV-A1", "is freed again")
 
 
 def test_user_function_returning_scalar_is_not_a_token():
@@ -456,12 +461,15 @@ def test_user_function_returning_scalar_is_not_a_token():
     sb = scalar.new_block()
     sb.add(Ret(sb.add(ConstInt("1", I32))))
     b = func.new_block()
-    b.add(Call("scalar", [], I32))
+    # Bound to a named slot and never freed: if a scalar result were treated
+    # as a fresh token this would be reported as a leak (FLIRV-A4).
+    b.add(SlotDecl("n", I32))
+    b.add(SlotStore("n", b.add(Call("scalar", [], I32))))
     b.add(Ret())
     _expect_clean(module)
 
 
-def test_destroy_call_frees_token_and_double_destroy_is_a1():
+def test_destroy_call_frees_token():
     module, func = _func()
     destroy = FLIRFunction("Thing__destroy", params=[("p", STR)], return_type=VOID)
     module.add_function(destroy)
@@ -472,16 +480,18 @@ def test_destroy_call_frees_token_and_double_destroy_is_a1():
     b.add(Ret())
     _expect_clean(module)
 
-    module2, func2 = _func()
-    d2 = FLIRFunction("Thing__destroy", params=[("p", STR)], return_type=VOID)
-    module2.add_function(d2)
-    d2.new_block().add(Ret())
-    b2 = func2.new_block()
-    _alloc(b2)
+
+def test_double_destroy_call_is_a1():
+    module, func = _func()
+    destroy = FLIRFunction("Thing__destroy", params=[("p", STR)], return_type=VOID)
+    module.add_function(destroy)
+    destroy.new_block().add(Ret())
+    b = func.new_block()
+    _alloc(b)
     for _ in range(2):
-        b2.add(Call("Thing__destroy", [b2.add(SlotLoad("s", STR))], VOID))
-    b2.add(Ret())
-    _expect(module2, "FLIRV-A1", "is freed again")
+        b.add(Call("Thing__destroy", [b.add(SlotLoad("s", STR))], VOID))
+    b.add(Ret())
+    _expect(module, "FLIRV-A1", "is freed again")
 
 
 def test_impl_prefixed_free_is_recognized_as_freeing_call():
