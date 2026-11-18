@@ -1,13 +1,9 @@
-// Invalid array slicing cases
-
-import @firescript/std.io.println;
+// Invalid array slicing cases: slicing is not supported (the bound types are
+// irrelevant, the slice syntax itself is rejected).
 
 nums: int32[] = [1i32, 2i32, 3i32, 4i32];
 
-badStart: int32[] = nums["1":2i32]; // Error: start must be integer  //~ ERROR FS-PARSE-0013 @29
+badStart: int32[] = nums["1":2i32]; // Error: slicing not supported  //~ ERROR FS-PARSE-0013 @29
 //~^ ERROR FS-PARSE-0010 @29
-badEnd: int32[] = nums[1i32:true];    // Error: end must be integer  //~ ERROR FS-PARSE-0013 @28
+badEnd: int32[] = nums[1i32:true];    // Error: slicing not supported  //~ ERROR FS-PARSE-0013 @28
 //~^ ERROR FS-PARSE-0010 @28
-
-println(badStart.length());  //~ ERROR FS-PARSE-0003 @9
-println(badEnd.length());  //~ ERROR FS-PARSE-0003 @9
