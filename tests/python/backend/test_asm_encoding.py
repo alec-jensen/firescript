@@ -2,7 +2,7 @@
 from tests/asm_encoding_tests.py (spec sec.4.4 migration table).
 
 For each instruction form the FLIR backend emits, assemble a single line
-with our encoder and (when available) with MinGW `as`, then compare the
+with our encoder and (when available) with the system `as` (COFF or ELF output), then compare the
 `.text` bytes. `as` is only a bringup oracle: when absent, the differential
 half is skipped and only the unit assertion (bytes were emitted) runs, so
 the suite needs only Python -- matching the original script's behavior.
@@ -66,7 +66,7 @@ CASES = [
 
 
 def _as_bytes(line: str):
-    """Assemble one line with MinGW `as`; return its .text bytes or None."""
+    """Assemble one line with the system `as` (MinGW COFF or Linux ELF); return its .text bytes or None."""
     as_exe = shutil.which("as")
     if not as_exe:
         return None
@@ -82,9 +82,28 @@ def _as_bytes(line: str):
         return _coff_text(obj)
 
 
+def _elf_text(data: bytes) -> bytes:
+    """Extract the .text section's raw bytes from an ELF64 object (what a
+    Linux `as` produces; the MinGW `as` produces COFF, handled below)."""
+    shoff = struct.unpack_from("<Q", data, 0x28)[0]
+    shentsize, shnum, shstrndx = struct.unpack_from("<HHH", data, 0x3A)
+    str_hdr = shoff + shstrndx * shentsize
+    str_off = struct.unpack_from("<Q", data, str_hdr + 0x18)[0]
+    for i in range(shnum):
+        hdr = shoff + i * shentsize
+        name_off = struct.unpack_from("<I", data, hdr)[0]
+        end = data.index(b"\x00", str_off + name_off)
+        if data[str_off + name_off:end] == b".text":
+            off, size = struct.unpack_from("<QQ", data, hdr + 0x18)
+            return data[off:off + size].rstrip(b"\x90")
+    return b""
+
+
 def _coff_text(path: str) -> bytes:
-    """Extract the .text section's raw bytes from a COFF object."""
+    """Extract the .text section's raw bytes from a COFF (or ELF64) object."""
     data = open(path, "rb").read()
+    if data[:4] == b"\x7fELF":
+        return _elf_text(data)
     num_sec = struct.unpack_from("<H", data, 2)[0]
     opt_size = struct.unpack_from("<H", data, 16)[0]
     sec_off = 20 + opt_size

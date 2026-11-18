@@ -67,9 +67,8 @@ export FIRESCRIPT_TEST_RUN_PREFIX=wine         # prefixes the command that runs 
 python tests/run.py
 ```
 
-`tests/python/backend/test_asm_encoding.py` additionally compares against a
-MinGW `as` (COFF output) on `PATH`; with a Linux `as` (ELF output) its cases
-fail locally and pass on the Windows CI runner.
+`tests/python/backend/test_asm_encoding.py` compares the encoder against the
+`as` on `PATH`, reading `.text` from either COFF (MinGW) or ELF (Linux) output.
 
 The master seed for the run is always printed as the first and last line of
 output (`Seed: 0x...`) so any run -- including anything that used sampling
