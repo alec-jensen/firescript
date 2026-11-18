@@ -568,21 +568,16 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **edge_cases.fire** - Various edge case scenarios
 
 ### `memory/`
-- **memory_branching.fire** - Memory behavior with branching
+- **memory_branching.fire** - Scope-exit drops of fixed-size array locals on if/else exit, bare-block exit and early `return` (merged from the former `memory_scopes` and `memory_early_return`); the FIR snapshot pins the drops
 - **memory_break_continue_owned.fire** - Owned vars correctly dropped on break/continue
 - **memory_class_owned_fields.fire** - Classes with owned fields (string) use generated destructors
 - **memory_constructor_move.fire** - Owned objects moved into a constructor not double-freed
 - **memory_early_exit_precision.fire** - Precise drop insertion around early exits (only variables actually in scope at the exit point are dropped)
-- **memory_early_return.fire** - Memory with early returns
 - **memory_move_no_use_after_free.fire** - Moving an owned value via declaration/assignment does not drop the moved-from variable (no use-after-free / double-drop)
 - **memory_reassign.fire** - Memory during reassignment (int and string)
-- **memory_scopes.fire** - Memory in different scopes
-- **ownership_demo.fire** - Ownership model demonstration
-- **ownership_test.fire** - Ownership testing
 - **move_semantics_test.fire** - Move semantics
 - **borrow_test.fire** - Borrowing tests
 - **copyable_test.fire** - Copyable type testing
-- **copyable_local_drop.fire** - A copyable class local going out of scope inside a function body (`copyable_test.fire` only exercises a copy-then-use case at top level). Documents that no `DropInst` is ever emitted for a copyable local (`is_owned()` never treats a copyable class as owned), making `lower_drop`'s `is_copyable_class_str(...)` early-return in `firescript/flir/lowering.py` unreachable dead code.
 - **receiver_mut.fire** - `&this` / `&mut this` borrow receivers on class methods
 - **memory_owned_function_param.fire** - Explicit `owned` keyword on a plain (non-receiver) function parameter
 - **memory_implicit_receiver_borrow.fire** - Regression: a method declared with no receiver parameter at all (found while building `std.collections.ArrayList<T>`) now correctly defaults its implicit `this` to borrowed instead of owned; the object survives repeated calls instead of being destroyed on the first one (previously affected any such method on a class with an owned field, including `Option<T>.isSome()`/`isNone()`)
@@ -592,7 +587,6 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **classes_smoke.fire** - Basic class smoke tests
 - **classes_field_access.fire** - Class field access
 - **classes_methods.fire** - Class methods
-- **classes_nested.fire** - Nested classes
 - **classes_deep.fire** - Deep class testing
 - **classes_static_methods.fire** - Static methods
 - **inheritance.fire** - Class inheritance, `super()`, multi-level (double/triple/quad) inheritance chains
@@ -601,8 +595,6 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **classes_method_nullable_param.fire** - A regular (non-constructor) instance method with a nullable parameter (`name: string?`)
 - **classes_explicit_constructor_call.fire** - Explicit type-qualified constructor call `ClassName.ClassName(args)`, parsed as `TYPE_METHOD_CALL` where the resolved method is the constructor itself
 - **classes_constructor_owned_borrowed_param.fire** - Constructor with `owned`/borrowed markers on regular (non-receiver) parameters, following an explicit receiver
-- **classes_new_constructor_syntax.fire** - Java-like `new ClassName(args)` constructor syntax, an alternate to the direct `ClassName(args)` form
-- **type_method_call_constructor_form.fire** - Type-qualified `ClassName.methodName(args)` call form resolving to a static method (as opposed to the constructor-via-`ClassName.ClassName(args)` case covered by `classes_explicit_constructor_call.fire`)
 - **classes_owned_this_constructor.fire** - Regression: `owned this` as a constructor receiver (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
 - **classes_array_field.fire** - An unsized array-typed class field (`data: int32[];`): construction (via a value round-tripped through a free function's owned `int32[]` parameter/return, the only way to produce a genuinely unsized-typed array value before `fs_rt_array_new<T>` existed), field element read/write, and destructor-frees-the-buffer (the null-guarded free path, since the field is always owned) on scope exit. Precursor to `std.collections.ArrayList<T>`, which stores its backing buffer the same way.
 - **classes_nullable_scalar_field.fire** - A nullable *scalar* class field (`balance: int32?;`, not `string?`/a class-typed field, which are already unambiguously null-able via their pointer's 0 value): constructor parameter, field assignment, and a `!= null`/`== null` field read all correctly distinguish "no value" from a stored zero. See `ast_to_fir.py`'s "Nullable scalars" section.
@@ -655,10 +647,8 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **stress_type_conversions.fire** - Repeated type conversion stress test
 
 ### `special_types/`
-- **float128_test.fire** - 128-bit float testing
 - **float128_ops.fire** - binary128 soft-float: arithmetic (`+ - * /`, unary `-`), comparisons, and conversions (int, float64, string parse)
 - **float128_narrow_casts.fire** - float128 <-> narrower numeric types not covered by `float128_ops.fire` (which only covers float128 <-> int64/uint64/float64): int8/int16/int32 -> float128 (widened via int64), float128 -> int8/int16/int32 (narrowed via int64), and float128 <-> float32.
-- **float128_narrow_conversions.fire** - float128 narrowing to int8/int16/int32/float32, and widening from int8/int16/int32/float32 to float128
 
 ### `std/regex/`
 - **std_regex_basic.fire** - `is_match` over literals, `.`, alternation, quantifiers (`* + ?`), groups, character classes (including ranges and negation), and `last_error` for invalid patterns

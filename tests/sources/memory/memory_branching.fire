@@ -1,17 +1,49 @@
+//@ snapshot: fir
+// Scope-exit drops of fixed-size array locals on the three ways out of a
+// scope: if/else branch exit, bare-block exit, and early `return`.
+// Array `.length()` is constant-folded, so the printed output alone cannot
+// observe the drops; the FIR snapshot pins where they are inserted.
 import @firescript/std.io.println;
 
-a: int32[] = [1, 2];
-cond: int32 = 1i32;
-if (cond == 1i32) {
-    b: int32[] = [5];
-    println(b.length());
-} else {
-    c: int32[] = [7, 8, 9];
-    println(c.length());
+fn branching() -> void {
+    a: int32[] = [1, 2];
+    cond: int32 = 1i32;
+    if (cond == 1i32) {
+        b: int32[] = [5];
+        println(b.length());
+    } else {
+        c: int32[] = [7, 8, 9];
+        println(c.length());
+    }
+    println(a.length());
 }
-println(a.length());
+
+fn scoped() -> void {
+    a: int32[] = [1, 2, 3];
+    println(a.length());
+    {
+        b: int32[] = [10, 20];
+        println(b.length());
+    }
+    println(a.length());
+}
+
+fn earlyReturn() -> int32 {
+    temp: int32[] = [1, 2, 3];
+    println(temp.length());
+    return 7i32;
+}
+
+branching();
+scoped();
+println(earlyReturn());
 
 /* EXPECT
 1
 2
+3
+2
+3
+3
+7
 */
