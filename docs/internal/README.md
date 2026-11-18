@@ -23,3 +23,7 @@ This is documentation for internal language features intended for use in the com
 [Directives](directives.md) - Internal directives for controlling compiler behavior, used in the standard library and for testing. Not intended for user code.
 
 [Syscall Directive](syscalls.md) - Internal directive for defining syscalls, used in the standard library to define OS-level syscalls. Not intended for user code.
+
+## Test audit
+
+[Test suite audit (snapshot at cfdae0d)](test_audit/README.md) - Consolidated findings of a read-only audit of the test suite: redundant, weak and incorrect tests, deduplicated compiler bugs, docs-vs-compiler conflicts, and a cleanup plan. Raw per-shard reports live alongside it.
