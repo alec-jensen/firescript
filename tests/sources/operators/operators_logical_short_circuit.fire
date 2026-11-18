@@ -1,0 +1,50 @@
+import @firescript/std.io.println;
+
+// `&&` / `||` short-circuit: the right operand is evaluated only when the
+// left one does not already decide the result. Side effects (the println
+// inside trace) make evaluation order observable.
+fn trace(label: string, value: bool) -> bool {
+    println("eval " + label);
+    return value;
+}
+
+r1: bool = trace("a", false) && trace("b", true);
+println(r1);
+
+r2: bool = trace("c", true) && trace("d", false);
+println(r2);
+
+r3: bool = trace("e", true) || trace("f", false);
+println(r3);
+
+r4: bool = trace("g", false) || trace("h", true);
+println(r4);
+
+// Chained: left-to-right, stops at the first deciding operand.
+r5: bool = trace("i", true) && trace("j", false) && trace("k", true);
+println(r5);
+
+// A short-circuit guard protects a division by zero.
+zero: int32 = 0;
+if (zero != 0 && 10 / zero > 1) {
+    println("unreachable");
+} else {
+    println("guarded");
+}
+
+/* EXPECT
+eval a
+false
+eval c
+eval d
+false
+eval e
+true
+eval g
+eval h
+true
+eval i
+eval j
+false
+guarded
+*/

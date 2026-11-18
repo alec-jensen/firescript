@@ -1,0 +1,42 @@
+import @firescript/std.io.println;
+
+// String -> numeric casts for every numeric target type, at the extremes of
+// each range, plus signs, fractions, exponents and a string-typed variable.
+a: int8 = "-128" as int8;
+b: int16 = "32767" as int16;
+c: uint8 = "255" as uint8;
+d: uint16 = "65535" as uint16;
+e: uint32 = "4294967295" as uint32;
+f: int32 = "-2147483648" as int32;
+g: float64 = "-0.25" as float64;
+h: float64 = "1e3" as float64;
+i: int32 = "+7" as int32;
+j: float128 = "2.5" as float128;
+s: string = "123";
+k: int32 = s as int32;
+
+println(a);
+println(b);
+println(c);
+println(d);
+println(e);
+println(f);
+println(g);
+println(h);
+println(i);
+println(j);
+println(k + 1);
+
+/* EXPECT
+-128
+32767
+255
+65535
+4294967295
+-2147483648
+-0.250000
+1000.000000
+7
+2.500000
+124
+*/

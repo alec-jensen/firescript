@@ -1,0 +1,49 @@
+import @firescript/std.io.println;
+
+// `as string` for every built-in numeric type at its extremes, plus bool and
+// char, and use inside string concatenation.
+a: int8 = -128i8;
+b: int16 = -32768i16;
+c: int32 = -2147483648;
+d: int64 = -9223372036854775807i64;
+e: uint8 = 255u8;
+f: uint16 = 65535u16;
+g: uint32 = 4294967295u32;
+h: uint64 = 18446744073709551615u64;
+i: float32 = 1.5f32;
+j: float64 = -2.25;
+k: float128 = 0.5f128;
+l: bool = true;
+m: char = 'z';
+
+println(a as string);
+println(b as string);
+println(c as string);
+println(d as string);
+println(e as string);
+println(f as string);
+println(g as string);
+println(h as string);
+println(i as string);
+println(j as string);
+println(k as string);
+println(l as string);
+println(m as string);
+println("v=" + (l as string) + (e as string));
+
+/* EXPECT
+-128
+-32768
+-2147483648
+-9223372036854775807
+255
+65535
+4294967295
+18446744073709551615
+1.500000
+-2.250000
+0.500000
+true
+z
+v=true255
+*/

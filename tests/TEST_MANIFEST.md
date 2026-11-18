@@ -427,11 +427,13 @@ Each heading below is a directory under `tests/sources/`.
 - **operators_logical.fire** - Logical operators (`&&`, `||`, `!`) including nested and combined conditions
 - **unary_test.fire** - Unary numeric operators (-, +)
 - **operators_regression_power_assign.fire** - Regression: `**=` on int32, float64 and int64, plus right-associative `**`; `**=` was lexed and documented but rejected by the parser ("Expected assignment, function call, or method call")
+- **operators_logical_short_circuit.fire** - `&&`/`||` evaluate the right operand only when needed (observable via println), chained, and guarding a division by zero
 
 ### `control_flow/`
 - **control_flow_if.fire** - if/else/else-if chains, nested if
 - **control_flow_while.fire** - while loops, break, continue, nested while
 - **control_flow_mixed_nesting.fire** - Interaction between for/if/while nested together
+- **control_flow_nested_break_continue.fire** - `break`/`continue` affect only the innermost for/while loop
 - **for_c_style.fire** - C-style for loop variations (including break/continue, nesting)
 - **for_in.fire** - For-in loop over arrays (including break/continue)
 - **for_in_and_match_temporaries.fire** - `for-in` over a non-identifier collection (array literal, function-call-returning string) and `match` over a non-identifier scrutinee (function-call result), exercising `ast_to_fir.py`'s temporary-value ownership-drop paths; also a sized-array declaration with no initializer and one initialized from another array identifier (not an array literal). Documents that `char` cannot be used as a `for-in` loop-variable type (the parser's for-in header only recognizes built-in type keywords).
@@ -487,6 +489,9 @@ Split by conversion category:
 - **builtin_conversions_numeric_source.fire** - Same conversion builtins as `builtin_conversions.fire`, but called with a numeric (non-string) source argument, e.g. `toInt(9.75)`, `toBool(0)`.
 - **int_float_cast_matrix.fire** - `float64`/`float32` -> `uint64` (including large values requiring the sign-bit correction dance) and `float64` -> narrow `int8`/`int16`/`uint8`/`uint16`/`uint32`. Notes two real bugs found and not worked around: `int32 as bool` (and other numeric-to-bool casts) is rejected by the frontend even though `flir/lowering.py`'s `Cvt` lowering and `flir_to_asm.py`'s `_emit_cvt` both have code for an int-to-bool target, and (now fixed, see `conversions_regression_uint64_to_float.fire`) `uint64 as float64`/`float32` used to fail to assemble ("unsupported mnemonic: js") because the backend emits a `js` instruction the self-hosted assembler didn't support.
 - **conversions_regression_uint64_to_float.fire** - Regression: `uint64 as float64`/`float32` across 0, small values, 2^63, 2^63+1 (sticky bit) and the maximum; previously failed to assemble because the self-hosted assembler lacked `js` and `shr r64, 1`
+- **conversions_string_to_numeric_all_types.fire** - `string as T` for every numeric type (int8 through uint32, float64, float128) at range extremes, with `+`, `-` and exponent forms
+- **conversions_to_string_all_types.fire** - `as string` for every numeric type at its extremes, plus bool and char, and use in concatenation
+- **conversions_integer_wraparound.fire** - Narrowing truncation, sign- vs zero-extension, and float-to-int truncation toward zero
 
 ### `strings/`
 Split from a single `string_operations_comprehensive.fire` into per-behavior files (see "Splitting large test files" below):
@@ -632,6 +637,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **generic_class_static_method_inferred.fire** - Regression: a `static fn` on a generic class can be called with inferred type arguments (`Box.make(5)` for `class Box<T>`); type arguments are inferred from the call's argument types, since there's no receiver instance to read them from (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
 - **generic_class_static_method_explicit.fire** - Same, with explicit type arguments (`Box<int32>.make(5)`) — the parser previously only expected a constructor call immediately after `<TypeArgs>`, never a `.method(...)` call (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
 - **generic_self_referential_static_factory.fire** - Regression: a generic class's own static factory returning an instance of the enclosing class itself (`Box<T>`), and an instance method calling another method on `this`, both parse and compile correctly; the sharper zero-import edge of this same fix is covered separately by `tests/python/parser/test_generic_self_reference.py` (see below), since this file's own `import @firescript/std.io.println;` for output happens to also exercise a different, unrelated fallback
+- **generics_compound_assignment.fire** - `+= *= -= /=` on a constrained generic `T` with int32, float64 and int64
 - **generics_regression_imported_class_type_arg.fire** - Regression: an imported class used as a generic type argument (`ArrayList<Match>`, `ArrayList<RegexPattern>`), in a type annotation and a constructor call, parses instead of failing with "Expected type argument in generic instantiation"
 
 ### `identifiers/`
@@ -721,9 +727,17 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **hashmap_growth.fire** - 50 inserts starting from capacity 8 to force several capacity-doubling rehash cycles, verifying every key remains reachable afterward (linear-probing collisions surviving a rehash into a differently-sized table)
 - **hashmap_of_owned_values.fire** - `HashMap<int32,string>` (an Owned value type): `remove()` safely transfers ownership out and tombstones the slot in the same operation, matching `ArrayList<T>.removeLast()`'s equivalent safety argument; 1000 construct/populate/remove/drop cycles with both `K` and `V` owned (`HashMap<string,string>`, leaving 2 of 3 entries live each cycle so the destructor's states-guarded sweep is exercised, not just `remove()`'s own drop) double as a leak/double-free sanity check for the `@owns_elements` destructor hook's occupancy-aware sweep
 
+### `std/math/`
+- **math_abs_min_max_clamp.fire** - std.math's exported `abs`, `min`, `max` and `clamp` across int, float and uint8, including ties and every clamp branch
+
+### `std/ranges/`
+- **ranges_empty_and_negative.fire** - Empty and reversed ranges, negative starts, a step larger than the span, and `break` out of a range loop
+
 ### `std/text/`
 - **stringbuilder_basic.fire** - `StringBuilder`: `append()` accumulates fragments, `length()` tracks total character count, `build()` joins and drains them (`length()` reads 0 afterward). No zero-arg constructor -- `StringBuilder("")` starts empty; designed before bare zero-arg constructor calls worked reliably, see `classes/classes_zero_arg_constructor_bare_call.fire` (kept as-is, no functional need to change it).
 - **split_basic.fire** - `split(s, delim)`: splits on every occurrence including leading/trailing/adjacent empty fields, no-match (whole string as a single element), and a multi-character delimiter. Returns `ArrayList<string>`, drained here with `removeLast()` (LIFO) rather than `get()`/`enumerate()`, which aren't safe for an Owned element type.
+- **split_edge_cases.fire** - `split` on an empty source, an empty delimiter, and delimiter-only sources
+- **stringbuilder_reuse_after_build.fire** - `StringBuilder` `length()` tracking, `build()` draining the builder, and reuse afterwards
 
 ### `std/syscalls/`
 - **syscall_basic.fire** - Low-level syscall intrinsics (open/read/write/close/etc.)

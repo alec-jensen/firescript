@@ -1,0 +1,73 @@
+import @firescript/std.io.println;
+
+// Integer casts truncate to the target width (two's complement), sign-extend
+// from signed sources and zero-extend from unsigned sources; float -> int
+// truncates toward zero.
+big: int32 = 300;
+println(big as uint8);
+neg: int32 = -1;
+println(neg as uint8);
+println(neg as uint16);
+println(neg as uint32);
+println(neg as uint64);
+
+n8: int8 = -1i8;
+println(n8 as uint64);
+println(n8 as uint32);
+println(n8 as int64);
+
+u8: uint8 = 255u8;
+println(u8 as int8);
+println(u8 as int32);
+println(u8 as int64);
+
+w: int32 = 70000;
+println(w as int16);
+println(w as int8);
+
+m: uint64 = 18446744073709551615u64;
+println(m as int32);
+println(m as int64);
+println(m as uint32);
+println(m as uint8);
+
+u32: uint32 = 3000000000u32;
+println(u32 as int32);
+println(u32 as int64);
+
+i64: int64 = -5000000000i64;
+println(i64 as int32);
+println(i64 as uint32);
+
+fneg: float64 = -3.99;
+println(fneg as int32);
+fpos: float64 = 3.99;
+println(fpos as int32);
+println(fpos as uint8);
+
+/* EXPECT
+44
+255
+65535
+4294967295
+18446744073709551615
+18446744073709551615
+4294967295
+-1
+-1
+255
+255
+4464
+112
+-1
+-1
+4294967295
+255
+-1294967296
+3000000000
+-705032704
+3589934592
+-3
+3
+3
+*/

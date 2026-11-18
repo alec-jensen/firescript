@@ -1,0 +1,21 @@
+// Compound assignment (`+=`, `*=`, `-=`, `/=`) on a value of a constrained
+// generic type parameter, instantiated with int32, float64 and int64.
+import @firescript/std.io.println;
+constraint Num = int32 | int64 | float64;
+fn total<T: Num>(a: T, b: T, c: T) -> T {
+    acc: T = a;
+    acc += b;
+    acc *= c;
+    acc -= a;
+    acc /= c;
+    return acc;
+}
+println(total(1, 2, 3));
+println(total(1.5, 2.5, 2.0));
+println(total(10i64, 5i64, 2i64));
+
+/* EXPECT
+2
+3.250000
+10
+*/

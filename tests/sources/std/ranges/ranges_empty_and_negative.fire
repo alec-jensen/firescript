@@ -1,0 +1,57 @@
+// std.ranges: ranges whose start is not below the end yield nothing, negative
+// starts work, a step larger than the span yields only the start, and `break`
+// leaves a range loop early.
+
+import @firescript/std.io.println;
+import @firescript/std.ranges.range;
+import @firescript/std.ranges.rangeFrom;
+import @firescript/std.ranges.rangeStep;
+
+n: int32 = 0;
+for (i: int32 in range(0)) {
+    n++;
+}
+for (i: int32 in range(-3)) {
+    n++;
+}
+for (i: int32 in rangeFrom(5, 5)) {
+    n++;
+}
+for (i: int32 in rangeFrom(7, 3)) {
+    n++;
+}
+for (i: int32 in rangeStep(4, 4, 2)) {
+    n++;
+}
+println(n);
+
+for (i: int32 in rangeFrom(-2, 2)) {
+    println(i);
+}
+
+println("-- step larger than span --");
+for (i: int32 in rangeStep(0, 3, 10)) {
+    println(i);
+}
+
+println("-- step with break --");
+for (i: int32 in rangeStep(0, 100, 7)) {
+    if (i > 20) {
+        break;
+    }
+    println(i);
+}
+
+/* EXPECT
+0
+-2
+-1
+0
+1
+-- step larger than span --
+0
+-- step with break --
+0
+7
+14
+*/

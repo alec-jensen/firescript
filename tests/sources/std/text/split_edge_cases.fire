@@ -1,0 +1,34 @@
+// split() edge cases: empty source string, empty delimiter (no split at
+// all), and sources made only of delimiters. ArrayList<string> is drained with
+// size()/removeLast() because string is Owned (see split_basic.fire).
+
+import @firescript/std.io.println;
+import @firescript/std.text.split;
+import @firescript/std.collections.ArrayList;
+
+empty: string = "";
+p1: ArrayList<string> = split(empty, ",");
+println(p1.size());
+println("[" + p1.removeLast() + "]");
+
+word: string = "abc";
+p2: ArrayList<string> = split(word, "");
+println(p2.size());
+println(p2.removeLast());
+
+adjacent: string = ",,";
+p3: ArrayList<string> = split(adjacent, ",");
+println(p3.size());
+
+onlyDelim: string = ",";
+p4: ArrayList<string> = split(onlyDelim, ",");
+println(p4.size());
+
+/* EXPECT
+1
+[]
+1
+abc
+3
+2
+*/

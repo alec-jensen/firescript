@@ -1,0 +1,57 @@
+// std.math's exported API: abs (takes an explicit zero of the same type),
+// min, max and clamp across integer and float types, including ties and
+// clamp's lower-bound / in-range / upper-bound branches.
+
+import @firescript/std.io.println;
+import @firescript/std.math.{abs, min, max, clamp}
+
+println(abs(-7, 0));
+println(abs(7, 0));
+println(abs(0, 0));
+println(abs(-2.5, 0.0));
+println(abs(-9i8, 0i8));
+
+println(min(3, 9));
+println(min(9, 3));
+println(min(4, 4));
+println(min(-1.5, 2.5));
+println(min(200u8, 100u8));
+
+println(max(3, 9));
+println(max(9, 3));
+println(max(-4i64, -8i64));
+println(max(-1.5, 2.5));
+println(max(200u8, 100u8));
+
+println(clamp(-5, 0, 10));
+println(clamp(5, 0, 10));
+println(clamp(15, 0, 10));
+println(clamp(0, 0, 10));
+println(clamp(10, 0, 10));
+println(clamp(1.5, 2.0, 3.0));
+println(clamp(250u8, 10u8, 200u8));
+
+/* EXPECT
+7
+7
+0
+2.500000
+9
+3
+3
+4
+-1.500000
+100
+9
+9
+-4
+2.500000
+200
+0
+5
+10
+0
+10
+2.000000
+200
+*/

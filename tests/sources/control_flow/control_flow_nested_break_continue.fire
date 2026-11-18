@@ -1,0 +1,48 @@
+import @firescript/std.io.println;
+
+// `break` and `continue` apply only to the innermost enclosing loop.
+for (i: int32 = 0; i < 4; i++) {
+    for (j: int32 = 0; j < 4; j++) {
+        if (j == 2) {
+            break;
+        }
+        if (i == 1) {
+            continue;
+        }
+        println(toString(i) + "," + toString(j));
+    }
+    println("end " + toString(i));
+}
+
+// Same, with nested while loops and a `continue` before a `break`.
+k: int32 = 0;
+while (k < 3) {
+    k++;
+    m: int32 = 0;
+    while (true) {
+        m++;
+        if (m % 2 == 0) {
+            continue;
+        }
+        if (m > 4) {
+            break;
+        }
+    }
+    println(toString(k) + ":" + toString(m));
+}
+
+/* EXPECT
+0,0
+0,1
+end 0
+end 1
+2,0
+2,1
+end 2
+3,0
+3,1
+end 3
+1:5
+2:5
+3:5
+*/
