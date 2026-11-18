@@ -1,0 +1,33 @@
+import @firescript/std.io.println;
+
+// Regression: `uint64 as float64` / `as float32` failed to assemble
+// ("unsupported mnemonic: js" / "shr") because the self-hosted assembler
+// lacked the `js` jump and `shr r64, 1` used by the unsigned 64-bit -> float
+// conversion sequence. Covers values below and at/above 2^63.
+zero: uint64 = 0u64;
+println(zero as float64);
+
+small: uint64 = 42u64;
+println(small as float64);
+
+half: uint64 = 9223372036854775808u64;
+println(half as float64);
+
+// High bit set and low bit set: the halving step must keep the sticky bit.
+odd: uint64 = 9223372036854775809u64;
+println(odd as float64);
+
+big: uint64 = 18446744073709551615u64;
+println(big as float64);
+
+f32small: uint64 = 1000u64;
+println(f32small as float32);
+
+/* EXPECT
+0.000000
+42.000000
+9223372036854775808.000000
+9223372036854775808.000000
+18446744073709551616.000000
+1000.000000
+*/

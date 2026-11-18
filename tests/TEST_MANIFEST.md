@@ -221,8 +221,9 @@ Plain `assert` also works. Covers:
   module-level globals, 5th+ struct/float parameters and call arguments
   passed on the stack, the dangling-value/unhandled-opcode/unsupported-binop
   defensive `AsmError` paths, and the u64<->float and narrow-int conversion
-  branches (exercised directly so the known *assembler*-stage uint64<->float
-  bug -- see `tests/sources/known_issues/` -- doesn't block codegen coverage).
+  branches (exercised directly; the assembler-stage uint64<->float bug they
+  originally worked around is fixed and covered end to end by
+  `tests/sources/conversions/conversions_regression_uint64_to_float.fire`).
 - `tests/python/backend/test_pe_writer.py`/`test_pe_writer_more.py` -- unit
   tests for `firescript/backend/windows/pe.py`'s `write_pe`, hand-building
   `ObjectImage`/`Reloc` instances to hit its defensive error branches
@@ -483,7 +484,8 @@ Split by conversion category:
 - **string_to_numeric_casts.fire** - `as` casts from `string` to `int32`/`int64`/`uint64`/`float32`/`float64` (string -> bool and string -> char are not supported casts)
 - **builtin_conversions.fire** - Free-function conversion builtins (`toInt`, `toFloat`, `toDouble`, `toBool`, `toChar`, `toString`) called directly rather than via `as` casting. Note: `toChar` on a string takes its first character's code point, it does not parse the string as a numeric char code.
 - **builtin_conversions_numeric_source.fire** - Same conversion builtins as `builtin_conversions.fire`, but called with a numeric (non-string) source argument, e.g. `toInt(9.75)`, `toBool(0)`.
-- **int_float_cast_matrix.fire** - `float64`/`float32` -> `uint64` (including large values requiring the sign-bit correction dance) and `float64` -> narrow `int8`/`int16`/`uint8`/`uint16`/`uint32`. Notes two real bugs found and not worked around: `int32 as bool` (and other numeric-to-bool casts) is rejected by the frontend even though `flir/lowering.py`'s `Cvt` lowering and `flir_to_asm.py`'s `_emit_cvt` both have code for an int-to-bool target, and `uint64 as float64`/`float32` always fails to assemble ("unsupported mnemonic: js") because the backend emits a `js` instruction the self-hosted assembler doesn't support.
+- **int_float_cast_matrix.fire** - `float64`/`float32` -> `uint64` (including large values requiring the sign-bit correction dance) and `float64` -> narrow `int8`/`int16`/`uint8`/`uint16`/`uint32`. Notes two real bugs found and not worked around: `int32 as bool` (and other numeric-to-bool casts) is rejected by the frontend even though `flir/lowering.py`'s `Cvt` lowering and `flir_to_asm.py`'s `_emit_cvt` both have code for an int-to-bool target, and (now fixed, see `conversions_regression_uint64_to_float.fire`) `uint64 as float64`/`float32` used to fail to assemble ("unsupported mnemonic: js") because the backend emits a `js` instruction the self-hosted assembler didn't support.
+- **conversions_regression_uint64_to_float.fire** - Regression: `uint64 as float64`/`float32` across 0, small values, 2^63, 2^63+1 (sticky bit) and the maximum; previously failed to assemble because the self-hosted assembler lacked `js` and `shr r64, 1`
 
 ### `strings/`
 Split from a single `string_operations_comprehensive.fire` into per-behavior files (see "Splitting large test files" below):

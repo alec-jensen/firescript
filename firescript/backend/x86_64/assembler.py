@@ -249,7 +249,7 @@ def _mem_encode(reg_field: int, mem: Mem):
 # ---------------------------------------------------------------------------
 
 # Two-byte jcc opcodes (second byte); rel32 form: 0F 8x cd.
-_JCC = {"jnz": 0x85, "jz": 0x84, "jb": 0x82, "jae": 0x83, "je": 0x84, "jne": 0x85}
+_JCC = {"jnz": 0x85, "jz": 0x84, "jb": 0x82, "jae": 0x83, "je": 0x84, "jne": 0x85, "js": 0x88}
 _SETCC = {
     "sete": 0x94, "setne": 0x95, "setb": 0x92, "setbe": 0x96,
     "seta": 0x97, "setae": 0x93, "setl": 0x9C, "setle": 0x9E,
@@ -459,6 +459,11 @@ class _Assembler:
         # --- unary r/m ---
         if mnem in ("neg", "not", "inc", "dec", "idiv", "div", "mul", "imul") and len(ops) == 1:
             self._unary(mnem, ops[0]); return
+
+        # --- shr r, 1 (D1 /5); only the shift-by-one form is needed ---
+        if mnem == "shr" and len(ops) == 2 and isinstance(ops[0], Reg) \
+                and isinstance(ops[1], Imm) and ops[1].value == 1 and ops[0].size == 64:
+            self._emit_unary_rm(0xD1, 5, ops[0]); return
 
         # --- setcc ---
         if mnem in _SETCC:
