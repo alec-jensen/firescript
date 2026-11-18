@@ -121,7 +121,8 @@ Plain `assert` also works. Covers:
   (`_parse_function_definition`'s missing-name and missing-`(` rejections and
   an `owned` array parameter, none of which any `.fire` source reaches),
   `test_type_system.py` (`_annotate_value_category` Owned/Copyable
-  classification and its exception-swallowing fallback), `test_ast_node.py`
+  classification, its exception-swallowing fallback, and the reachable
+  `Cannot cast array type X to Y` rejection), `test_ast_node.py`
   (`ASTNode`'s None-children rejection), and `test_statements_coverage.py`
   (real-syntax cases the parser accepts but `ast_to_fir.py` cannot lower: a
   bare `arr[0];` statement, a nested `directive`, and a nested generic type
@@ -259,7 +260,9 @@ Plain `assert` also works. Covers:
   several newly-found, not-fixed bugs (a `for-in`/`FIRV-T4` verifier crash
   for array-returning functions; `const string`/`const bool`/`const char`
   each failing to compile end-to-end for three separate, unrelated reasons
-  downstream of `ast_to_fir.py`). Also
+  downstream of `ast_to_fir.py`); it also pins the FIR a sized array without
+  an initializer (zero-initialized array literal) and a bare `return;` in a
+  non-void function (synthesized zero) lower to. Also
   `test_verifier_ownership_extra.py` -- additional gap-filling cases
   (FIRV-O6 via Clone, FIRV-O4 via a doubled `borrow_mut` argument, FIRV-O7
   via a LoadVar-wrapped borrow parameter, the arg_modes/args

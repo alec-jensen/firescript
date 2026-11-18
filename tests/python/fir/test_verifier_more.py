@@ -256,6 +256,11 @@ def _d2_extract_payload_field(b, func):
     b.ret(b.extract_payload_field(ParamValue("ghost", make_simple("E")), "A", 0, INT32))
 
 
+def _d2_method_call(b, func):
+    b.method_call(ParamValue("ghost", make_simple("Point")), "foo", [], [], None)
+    b.ret()
+
+
 def _d2_yield(b, func):
     b.yield_value(ParamValue("ghost", INT32))
     b.ret()
@@ -274,6 +279,7 @@ _D2_CASES = {
     "store_field": (_d2_store_field, None, False),
     "extract_tag": (_d2_extract_tag, INT32, False),
     "extract_payload_field": (_d2_extract_payload_field, INT32, False),
+    "method_call": (_d2_method_call, None, False),
     "yield": (_d2_yield, GeneratorType(INT32), True),
     "gen_value": (_d2_gen_value, INT32, False),
 }
