@@ -10,11 +10,16 @@ fn badFieldReturn(&b: Box) -> string {
     return b.name; // Error: direct borrowed projection escapes  //~ ERROR FS-SEM-0001 @14
 }
 
+fn badStringReturn(&s: string) -> string {
+    return s; // Error: borrowed value escapes callable scope  //~ ERROR FS-SEM-0001 @12
+}
+
 fn badArrayReturn(&arr: string[]) -> string[] {
     return arr; // Error: returning borrowed array escapes  //~ ERROR FS-SEM-0001 @12
 }
 
 values: string[] = ["a", "b"];
 bx: Box = Box("fire");
+println(badStringReturn("borrow"));
 println(badFieldReturn(bx));
 println(badArrayReturn(values).length());
