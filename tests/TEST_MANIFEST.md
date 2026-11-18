@@ -604,14 +604,11 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **identifiers_keyword_prefix.fire** - Regression: an identifier starting with a keyword-like literal token as a prefix (`false_flag`, `true_flag`, `nullable_count`) lexes as a single `IDENTIFIER`, not the literal token (`true`/`false`/`null`) followed by a stray remainder identifier (see `firescript/lexer.py`'s `BOOLEAN_LITERAL`/`NULL_LITERAL`/`VOID_LITERAL` patterns, which were missing the trailing `\b` word boundary every other keyword pattern has)
 
 ### `imports/`
-- **imports_single.fire** - Single symbol import
 - **imports_multi.fire** - Multiple symbol imports (merges `math_utils` and `string_utils`)
 - **imports_symbols.fire** - Specific symbol imports (`utils`)
 - **imports_wildcard.fire** - Wildcard imports (`utils.*`)
-- **export_visibility.fire** - Importing an explicitly exported symbol (`visibility_provider.addOne`)
 - **utils.fire**, **math_utils.fire**, **string_utils.fire**, **visibility_provider.fire** - Helper modules, not standalone tests
 - **imports_alias.fire** - Import aliasing (`as`) on a symbol import and on a whole-module import; calls through the symbol alias. Qualified access through a module alias (e.g. `U.helper(...)`) is still `[PLANNED]` (see `docs/reference/imports.md`), so the whole-module alias is imported but only called through its unaliased import
-- **imports_symbol_alias.fire** - Regression: calling through an aliased symbol import (`import x.y as z; z();`) (moved back from `known_issues/` — see "Known-Failing Regression Tests" below)
 
 ### `io/`
 - **io_test.fire** - Input/output functions
@@ -660,15 +657,12 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 
 ### `std/types/`
 - **std_types_test.fire** - `std.types` `Pair`/`Option` basic usage
-- **option_issome_isnone.fire** - Regression: `Option`/`CopyableOption`'s `isSome()`/`isNone()` resolve correctly through a same-file vs. cross-module generic-method lookup
 - **option_null_vs_zero.fire** - Regression: `Option<int32>`/`CopyableOption<bool>` (a primitive payload type) correctly distinguish `null` from a legitimately-stored `0`/`false`, now that `Option`'s own `value: T?` field gets real nullable-scalar-field compiler support (see `ast_to_fir.py`'s "Nullable scalars" section) with zero changes to `Option`'s own source
 - **result_isok_iserr.fire** - `Result<T,E>` basic usage: `Ok`/`Err` construction via the direct constructor (`Result<T,E>(value, error)` with the unused side `null` — designed before static methods on generic classes worked, see `generics/generic_class_static_method_inferred.fire`; kept as direct construction rather than revisited, no functional need to change it) and `isOk()`/`isErr()` correctness for Owned `T`/`E`
 - **result_null_vs_zero.fire** - Regression: `Result<T,E>` for scalar `T`/`E` correctly distinguishes `null` from a legitimately-stored `0`/`false`, same as `Option<T>`, across both of `Result`'s independent nullable fields (`value: T?`, `error: E?`)
 - **result_copyable.fire** - `CopyableResult<T,E>` usage: construction, `isOk()`/`isErr()`, and that a copy is independent (value semantics, not moved/shared)
-- **option_static_factories.fire** - `Option`/`CopyableOption`'s `Some()` (bare/inferred) and `None()` (explicit type args) static factories
-- **result_static_factories.fire** - `Result`/`CopyableResult`'s `Ok()`/`Err()` static factories (explicit type args only — neither factory's own argument mentions both type parameters)
-- **option_unwrap_or.fire** - `unwrapOr(default)` on `Option`/`CopyableOption`: Owned `Option<string>` and `Option<int32>` (scalar `T`, regression coverage for the null-to-scalar-field lowering fix) drain on extract; `CopyableOption<int32>` doesn't
-- **result_unwrap_or.fire** - `unwrapOr(default)` on `Result`/`CopyableResult`, same drain-vs-non-draining split as `Option`
+- **option_unwrap_or.fire** - `unwrapOr(default)` on `Option`/`CopyableOption`: Owned `Option<string>` and `Option<int32>` (scalar `T`, regression coverage for the null-to-scalar-field lowering fix) drain on extract; `CopyableOption<int32>` doesn't Also the `CopyableOption<bool>.None()` static factory.
+- **result_unwrap_or.fire** - `unwrapOr(default)` on `Result`/`CopyableResult`, same drain-vs-non-draining split as `Option` Also the `Result<int32, string>.Ok/.Err` static factories (scalar T).
 
 ### `std/collections/`
 - **arraylist_add_remove_last.fire** - `ArrayList<int32>` basic `add`/`removeLast`/`get`/`size`

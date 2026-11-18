@@ -19,6 +19,12 @@ println(cOk.isOk());
 cErr: CopyableResult<int32, bool> = CopyableResult<int32, bool>.Err(true);
 println(cErr.unwrapOr(-1));
 
+// Static factories with a scalar T and an owned E.
+ok1: Result<int32, string> = Result<int32, string>.Ok(10);
+println(ok1.isOk());
+err1: Result<int32, string> = Result<int32, string>.Err("bad");
+println(err1.isErr());
+
 /* EXPECT
 value
 false
@@ -26,4 +32,6 @@ default
 5
 true
 -1
+true
+true
 */
