@@ -18,6 +18,21 @@ from harness.model import Status, TestCase, TestResult
 from harness.workdir import ensure_dir, results_dir_for, work_dir_for
 
 
+def _flush_worker_coverage() -> None:
+    """Save this worker's coverage data after each case.
+
+    Pool workers exit via os._exit(), which skips coverage's atexit save, so
+    coverage gathered in-process (python unit tests) would otherwise be lost.
+    No-op unless coverage is already running in this process (it is only
+    imported when --coverage started it), so normal runs are unaffected."""
+    coverage = sys.modules.get("coverage")
+    if coverage is None:
+        return
+    cov = coverage.Coverage.current()
+    if cov is not None:
+        cov.save()
+
+
 def _execute_one(kind_name: str, case: TestCase, config, master_seed: str, update: bool) -> TestResult:
     if "discovery_error" in case.payload:
         return TestResult(case.id, Status.ERROR, message=case.payload["discovery_error"])
@@ -52,6 +67,7 @@ def _execute_one(kind_name: str, case: TestCase, config, master_seed: str, updat
         return TestResult(case.id, Status.ERROR, message=str(e), details=traceback.format_exc())
     if result.duration_s == 0.0:
         result.duration_s = time.perf_counter() - start
+    _flush_worker_coverage()
     return result
 
 

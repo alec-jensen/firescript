@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import glob
 import os
+import re
 
 from harness.config import BUILD_DIR, REPO_ROOT
 
@@ -40,11 +41,28 @@ def start():
     return cov
 
 
+def _strip_data_hash_suffixes() -> None:
+    """Make combine() dedupe worker data files by content, not by name.
+
+    Pool workers are killed with os._exit() (skipping coverage's atexit save),
+    so scheduler._flush_worker_coverage() saves their in-process coverage after
+    every case. coverage tags a data file with a ".H<hash>h" name suffix at its
+    first write and never updates it, so several workers whose first save was
+    identical share the suffix, and combine() skips all but one of them as
+    "duplicates", losing real data. Without the suffix combine falls back to
+    hashing the file contents, which is a correct duplicate check."""
+    for f in glob.glob(os.path.join(COVERAGE_DIR, ".coverage.*")):
+        stripped = re.sub(r"\.H[A-Za-z0-9]{10}h$", "", f)
+        if stripped != f:
+            os.replace(f, stripped)
+
+
 def finish(cov, uncovered_only: bool, fail_under: float | None = None) -> float | None:
     if cov is None:
         print("\n(coverage not available -- install 'coverage' for coverage reporting)")
         return None
     cov.stop()
+    _strip_data_hash_suffixes()
     cov.combine(keep=False)
     print()
     percent = cov.report(
