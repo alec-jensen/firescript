@@ -464,7 +464,7 @@ labeled commit on a branch; a session may build on it or discard it.
 - An internal ownership-verifier error (FIRV-O3) on an owned value moved in a loop that always
   exits via `break`. Reproduce, find the drop-insertion/move-state cause, fix, regression test.
 
-#### T-060-15 · Scope leak: a variable name clashes across functions · M · `todo`
+#### T-060-15 · Scope leak: a variable name clashes across functions · M · `done (task/T-060-15)`
 - Declaring `bexp` in `firescript/std/internal/float128.fire` produced "Expected uint64, got int64",
   apparently from an `int64 bexp` parameter in another runtime function. Reproduce with two
   functions that use the same name with different types, find where scope/type tables leak, fix,
