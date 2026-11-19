@@ -151,21 +151,24 @@ The table below reflects the **current implementation status** of major language
 | String-to-numeric casting (`"42" as int32`) | [IMPLEMENTED] |
 | String iteration in `for-in` | [IMPLEMENTED] |
 | Explicit `as` casting (numeric ↔ numeric, built-ins → string) | [IMPLEMENTED] |
-| `if` / `else if` / `else` | [IMPLEMENTED] |
+| `if` / `else if` / `else` (braces required on all bodies) | [IMPLEMENTED] |
 | `while` loops | [IMPLEMENTED] |
 | C-style `for` loops | [IMPLEMENTED] |
 | `for-in` loops (arrays and strings) | [IMPLEMENTED] |
 | `break` / `continue` | [IMPLEMENTED] |
-| Functions (params, return values, recursion) | [IMPLEMENTED] |
+| Functions (params, return values, recursion; missing `return` on a path is an error) | [IMPLEMENTED] |
+| `const` bindings (reassignment is an error; `const` class fields) | bindings [IMPLEMENTED]; fields [PLANNED] |
 | Global (module-level) variables, readable/writable from functions | [IMPLEMENTED] |
 | Generic functions | [IMPLEMENTED] |
+| Generic constraints (`Union<A, B>`; `Intersection<A, B>`) | `Union` [IMPLEMENTED]; `Intersection` [PLANNED] |
 | Fixed-size arrays | [IMPLEMENTED] |
 | Negative array indexing | [IMPLEMENTED] |
+| Runtime array bounds checks (out-of-range index traps, exit 101) | [IMPLEMENTED] |
 | Array utility methods (`index`, `count`) | [IMPLEMENTED] |
 | Classes (fields, methods, constructors, inheritance) | [IMPLEMENTED] |
 | Generic classes (`class Pair<T, U>`) | [IMPLEMENTED] |
 | Class static methods | [IMPLEMENTED] |
-| `&this` / `&mut this` borrow receivers | [IMPLEMENTED] |
+| `&this` / `&mut this` borrow receivers (required on instance methods and constructors) | [IMPLEMENTED] |
 | Logical operators (`&&`, `||`, `!`) | [IMPLEMENTED] |
 | Exponentiation (`**`) | [IMPLEMENTED] |
 | Checked integer arithmetic and division (overflow / divide-by-zero trap, exit 101) | [IMPLEMENTED] |
@@ -198,7 +201,7 @@ The table below reflects the **current implementation status** of major language
 | firescript-implemented runtime (`std/internal/*.fire`) | [IMPLEMENTED] |
 | Linux / macOS native targets | [PLANNED] |
 | Dynamic arrays (stdlib, `std.collections.ArrayList<T>`) | [IMPLEMENTED] |
-| Built-in `input()` function | Removed in current dev cycle |
+| Built-in `input()` function | Removed in 0.5.0 |
 | `enum` declarations, tag-only and named-data-payload variants (`Circle(float64 radius)`) | [IMPLEMENTED] |
 | Generic enums (`enum Option<T>`) | [PLANNED] |
 | `match` expressions, statement and value-producing forms | [IMPLEMENTED] |
