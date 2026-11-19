@@ -952,6 +952,110 @@ fn fs_rt_f128_ge(a: float128, b: float128) -> bool {
     return fs_rt_f128_le(b, a);
 }
 
+// ---- Exponentiation (the `**` operator) ----
+//
+// IEEE 754 pow special-value semantics. Integer exponents with |b| < 2^63
+// use repeated squaring in binary128 (exact when the result is exactly
+// representable; rounding error grows roughly with the exponent). Other
+// exponents, and bases outside the binary64 range, are evaluated in
+// binary64 and widened back, so they only carry about 15-16 digits.
+
+// True when the finite, non-zero binary128 value (bhi, blo) is an integer.
+fn f128_is_integer(bhi: uint64, blo: uint64) -> bool {
+    bex: uint64 = f128_ext_exp(bhi);
+    if (bex < 16383u64) { return false; }
+    e: uint64 = bex - 16383u64;
+    if (e >= 112u64) { return true; }
+    k: uint64 = 112u64 - e;
+    hisig: uint64 = f128_ext_hisig(bhi);
+    if (k >= 64u64) {
+        return blo == 0u64 && hisig % rt_pow2(k - 64u64) == 0u64;
+    }
+    return blo % rt_pow2(k) == 0u64;
+}
+
+fn fs_rt_f128_pow(a: float128, b: float128) -> float128 {
+    alo: uint64 = f128_lo(a);
+    ahi: uint64 = f128_hi(a);
+    blo: uint64 = f128_lo(b);
+    bhi: uint64 = f128_hi(b);
+    one: float128 = f128_pack(0u64, 16383u64, 0u64, 0u64);
+    zero: float128 = f128_pack(0u64, 0u64, 0u64, 0u64);
+    inf: float128 = f128_pack(0u64, 32767u64, 0u64, 0u64);
+    ninf: float128 = f128_pack(1u64, 32767u64, 0u64, 0u64);
+    nzero: float128 = f128_pack(1u64, 0u64, 0u64, 0u64);
+
+    if (f128_is_zero(bhi, blo)) { return one; }
+    if (fs_rt_f128_eq(a, one)) { return one; }
+    if (f128_is_nan(ahi, alo) || f128_is_nan(bhi, blo)) { return f128_qnan(); }
+
+    asign: uint64 = f128_ext_sign(ahi);
+    bsign: uint64 = f128_ext_sign(bhi);
+    b_inf: bool = f128_is_inf_nonan(bhi, blo);
+    b_int: bool = false;
+    b_odd: bool = false;
+    if (!b_inf && f128_is_integer(bhi, blo)) {
+        b_int = true;
+        bex: uint64 = f128_ext_exp(bhi);
+        mag_bits: uint64 = f128_trunc_mag(bex, f128_ext_hisig(bhi), blo);
+        b_odd = mag_bits % 2u64 == 1u64;
+    }
+    aexp: uint64 = f128_ext_exp(ahi);
+    ahisig: uint64 = f128_ext_hisig(ahi);
+    amag: float128 = f128_pack(0u64, aexp, ahisig, alo);
+
+    if (b_inf) {
+        if (fs_rt_f128_eq(amag, one)) { return one; }
+        if (fs_rt_f128_lt(amag, one) == (bsign == 0u64)) { return zero; }
+        return inf;
+    }
+    if (f128_is_zero(ahi, alo)) {
+        if (bsign == 1u64) {
+            if (asign == 1u64 && b_odd) { return ninf; }
+            return inf;
+        }
+        if (asign == 1u64 && b_odd) { return nzero; }
+        return zero;
+    }
+    if (f128_is_inf_nonan(ahi, alo)) {
+        if (asign == 0u64) {
+            if (bsign == 0u64) { return inf; }
+            return zero;
+        }
+        if (bsign == 0u64) {
+            if (b_odd) { return ninf; }
+            return inf;
+        }
+        if (b_odd) { return nzero; }
+        return zero;
+    }
+    if (asign == 1u64 && !b_int) { return f128_qnan(); }
+
+    result: float128 = one;
+    if (b_int && f128_ext_exp(bhi) < 16446u64) {
+        n: uint64 = f128_trunc_mag(f128_ext_exp(bhi), f128_ext_hisig(bhi), blo);
+        base: float128 = amag;
+        while (n > 0u64) {
+            if (n % 2u64 == 1u64) {
+                result = fs_rt_f128_mul(result, base);
+            }
+            n = n / 2u64;
+            if (n > 0u64) {
+                base = fs_rt_f128_mul(base, base);
+            }
+        }
+        if (bsign == 1u64) {
+            result = fs_rt_f128_div(one, result);
+        }
+    } else {
+        result = fs_rt_f64_to_f128(fs_rt_pow_f64(fs_rt_f128_to_f64(amag), fs_rt_f128_to_f64(b)));
+    }
+    if (asign == 1u64 && b_odd) {
+        return fs_rt_f128_neg(result);
+    }
+    return result;
+}
+
 // ===========================================================================
 // Conversions, string formatting, and parsing for binary128.
 // ===========================================================================

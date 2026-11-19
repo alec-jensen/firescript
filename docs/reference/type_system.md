@@ -167,6 +167,8 @@ Floating point numbers support:
 * Arithmetic: `+`, `-`, `*`, `/`, `**` (power)
 * Comparison: `==`, `!=`, `<`, `>`, `<=`, `>=`
 
+`float128 ** float128` is [IMPLEMENTED]: integer exponents use binary128 repeated squaring; fractional exponents (and bases outside the binary64 range) are evaluated at binary64 precision.
+
 #### Floating Point Literals
 
 Floating point literals can be specified in decimal or scientific notation.

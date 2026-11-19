@@ -1020,6 +1020,7 @@ class FIRToFLIRLowering:
                 "-":  "fs_rt_f128_sub",
                 "*":  "fs_rt_f128_mul",
                 "/":  "fs_rt_f128_div",
+                "**": "fs_rt_f128_pow",
             }.get(op)
             if f128_rt is None:
                 raise LoweringError(f"unsupported float128 operator {op}")

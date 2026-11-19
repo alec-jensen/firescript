@@ -322,8 +322,8 @@ Plain `assert` also works. Covers:
   `firescript/flir/lowering.py` (FIRToFLIRLowering), driven directly via
   `fir.FIRBuilder`: `test_lowering_defensive_errors.py` (ensure_slot
   idempotence, generator frame-slot lookup, root-function scan skip rules,
-  and a test that pins the known `float128 ** float128` LoweringError bug
-  -- rewrite it when that is fixed) and `test_lowering_type_edge_cases.py`
+  float128 `**` lowering to `fs_rt_f128_pow`, and the unsupported-operator
+  `LoweringError`) and `test_lowering_type_edge_cases.py`
   (lower_type/lower_type_str/render_concrete branches for unsubstituted
   generic parameters and `GeneratorType`/`FunctionType`/
   `GenericInstanceType` shapes lowered outside their normal call sites).
@@ -615,6 +615,8 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 ### `special_types/`
 - **float128_ops.fire** - binary128 soft-float: arithmetic (`+ - * /`, unary `-`), comparisons, and conversions (int, float64, string parse)
 - **float128_regression_nan_comparisons.fire** - float128 NaN is unordered under `== != < <= > >=`; infinity and signed-zero comparisons
+- **float128_regression_pow.fire** - Regression (B11): `float128 ** float128` (previously an uncaught compiler `LoweringError`): exact integer exponents incl. negative and large, fractional exponents at binary64 precision, IEEE special values, overflow/underflow
+- **float128_differential_oracle.fire** - Differential test: 24 seeded random `+ - * /` cases and integer-exponent `**` cases whose expected binary128 values come from `tests/support/float128_oracle.py` (exact Fraction arithmetic); each line prints whether the soft-float runtime result is bit-identical (or within 8 ulp for two squaring cases)
 - **float128_narrow_casts.fire** - float128 <-> narrower numeric types not covered by `float128_ops.fire` (which only covers float128 <-> int64/uint64/float64): int8/int16/int32 -> float128 (widened via int64), float128 -> int8/int16/int32 (narrowed via int64), and float128 <-> float32.
 
 ### `std/regex/`

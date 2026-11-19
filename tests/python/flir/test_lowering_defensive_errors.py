@@ -1,7 +1,7 @@
 """Unit tests for firescript/flir/lowering.py internals driven directly with
-hand-built FIR: the float128 `**` operator (currently a LoweringError that
-reaches users as an uncaught traceback -- this test pins that known bug and
-is expected to be rewritten when it is fixed), ensure_slot idempotence,
+hand-built FIR: float128 operator routing (`**` lowers to the soft-float
+fs_rt_f128_pow runtime call; operators with no runtime entry raise
+LoweringError), ensure_slot idempotence,
 generator frame-slot lookup, and the root-function scan's skip rules."""
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ def _materialize(lowering: FIRToFLIRLowering, ctx: _FuncCtx, fir_value) -> None:
     lowering.lower_inst(fir_value.instruction, ctx)
 
 
-def test_lower_binary_rejects_unsupported_float128_operator():
+def _lower_f128_binary(op: str):
     F128_T = make_simple("float128")
     module = FIRModule("firescript")
     func = FIRFunction("g", return_type=F128_T)
@@ -47,17 +47,29 @@ def test_lower_binary_rejects_unsupported_float128_operator():
     b = FIRBuilder(func)
     lhs = b.float_literal("2.0", F128_T)
     rhs = b.float_literal("3.0", F128_T)
-    # "**" has no fs_rt_f128_* runtime entry point -- see also the
-    # newly-discovered bug this documents: `float128 ** float128` in real
-    # firescript source crashes the compiler the same way (not fixed here).
-    inst = BinaryOpInst("**", lhs, rhs, F128_T)
+    inst = BinaryOpInst(op, lhs, rhs, F128_T)
 
     lowering = _lowering()
     ctx, func = _ctx()
     _materialize(lowering, ctx, lhs)
     _materialize(lowering, ctx, rhs)
+    lowering.lower_binary(inst, ctx)
+    return ctx
+
+
+def test_lower_binary_float128_power_calls_soft_float_runtime():
+    # Regression (B11): `float128 ** float128` used to raise an uncaught
+    # LoweringError ("unsupported float128 operator **").
+    ctx = _lower_f128_binary("**")
+    callees = [i.callee for blk in ctx.func.blocks for i in blk.instructions
+               if hasattr(i, "callee")]
+    t.require("fs_rt_f128_pow" in callees, str(callees))
+
+
+def test_lower_binary_rejects_unsupported_float128_operator():
+    # "%" has no fs_rt_f128_* runtime entry point.
     try:
-        lowering.lower_binary(inst, ctx)
+        _lower_f128_binary("%")
         t.require(False, "expected LoweringError")
     except LoweringError as e:
         t.require("unsupported float128 operator" in str(e), str(e))
