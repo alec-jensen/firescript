@@ -11,7 +11,7 @@ export class FclLexTokenResult {
 	end: int32;
 	next_index: int32;
 
-	fn FclLexTokenResult(status: int32, kind: string, lexeme: string, start: int32, end: int32, next_index: int32) {
+	fn FclLexTokenResult(&mut this, status: int32, kind: string, lexeme: string, start: int32, end: int32, next_index: int32) {
 		this.status = status;
 		this.kind = kind;
 		this.lexeme = lexeme;

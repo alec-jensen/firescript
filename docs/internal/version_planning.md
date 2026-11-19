@@ -438,10 +438,11 @@ labeled commit on a branch; a session may build on it or discard it.
   suite green again. **Merge this and T-060-10..12 together** (the suite is red between them),
   working on one branch `task/explicit-receivers`.
 
-#### T-060-10 · Explicit receivers: migrate the standard library · M · `todo` · Depends on T-060-09
+#### T-060-10 · Explicit receivers: migrate the standard library · M · `done (task/T-060-10)` · Depends on T-060-09
 - Every class in `firescript/std/**` (Pair/CopyablePair, Option/CopyableOption, Result/
   CopyableResult, ArrayList, HashMap, StringBuilder, fs, regex, fcl, ...): add `&this` to read-only
   methods and `&mut this` to mutating methods and constructors, deciding each by reading the body.
+- **Note:** most std methods already had receivers; the rest (constructors, `isSome`/`isNone`/`isOk`/`isErr`/`unwrapOr` on Option/Result, Pair, FileResult, StringBuilder, fcl results) were migrated. Copyable-class methods needed a small compiler fix (receiver exempt from the Owned-only borrow check). `std_types_test` FIR snapshot regenerated (receiver-only diffs).
 
 #### T-060-11 · Explicit receivers: migrate tests and examples · M · `todo` · Depends on T-060-10
 - `examples/` and the `.fire` sources under `tests/sources/` (run and invalid) and any

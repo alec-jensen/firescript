@@ -1,0 +1,24 @@
+import @firescript/std.io.println;
+
+// A Copyable class method may declare the `&this` receiver even though
+// Copyable types cannot be borrowed as ordinary parameters.
+copyable class Point {
+    x: int32;
+
+    fn Point(&mut this, x: int32) {
+        this.x = x;
+    }
+
+    fn getX(&this) -> int32 {
+        return this.x;
+    }
+}
+
+fn main() -> void {
+    p: Point = Point(5i32);
+    println(p.getX());
+}
+
+/* EXPECT
+5
+*/

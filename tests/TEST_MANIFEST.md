@@ -577,6 +577,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **inheritance.fire** - Class inheritance, `super()`, multi-level (double/triple/quad) inheritance chains
 - **return_class_test.fire** - Returning a class instance from a function
 - **classes_nested_copyable_field.fire** - A class holding a copyable (by-value) struct field: whole-struct assignment/read (not just scalar sub-field access), including a method returning the nested struct by value and field-to-field struct assignment (`l.start = l.end;`). Exercises the struct-sized Load/Store codegen paths.
+- **classes_copyable_borrow_receiver.fire** - A `copyable class` method declaring the `&this` receiver (regression: it was rejected as a borrow of a Copyable type).
 - **classes_method_nullable_param.fire** - A regular (non-constructor) instance method with a nullable parameter (`name: string?`)
 - **classes_explicit_constructor_call.fire** - Explicit type-qualified constructor call `ClassName.ClassName(args)`, parsed as `TYPE_METHOD_CALL` where the resolved method is the constructor itself
 - **classes_constructor_owned_borrowed_param.fire** - Constructor with `owned`/borrowed markers on regular (non-receiver) parameters, following an explicit receiver

@@ -6,7 +6,7 @@ export class FileResult {
     status: int32;
     data: string;
 
-    fn FileResult(status: int32, data: string) {
+    fn FileResult(&mut this, status: int32, data: string) {
         this.status = status;
         this.data = data;
     }

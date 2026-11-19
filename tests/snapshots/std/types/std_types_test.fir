@@ -172,14 +172,14 @@ function<T> @CopyableOption.CopyableOption(value: T?, value__hasval: bool) -> Co
     ret %4
 }
 
-function<T> @CopyableOption.isSome(this: CopyableOption) -> bool {
+function<T> @CopyableOption.isSome(this: &CopyableOption) -> bool {
   L0:
     %0 = loadvar.CopyableOption this
     %1 = loadfield.bool %0, "value__hasval"
     ret %1
 }
 
-function<T> @CopyableOption.isNone(this: CopyableOption) -> bool {
+function<T> @CopyableOption.isNone(this: &CopyableOption) -> bool {
   L0:
     %0 = loadvar.CopyableOption this
     %1 = loadfield.bool %0, "value__hasval"
@@ -203,7 +203,7 @@ function<T> @CopyableOption.None() -> CopyableOption<T> {
     ret %2
 }
 
-function<T> @CopyableOption.unwrapOr(this: CopyableOption, default: T) -> T {
+function<T> @CopyableOption.unwrapOr(this: &CopyableOption, default: T) -> T {
   L0:
     %0 = loadvar.CopyableOption this
     %1 = loadfield.bool %0, "value__hasval"
@@ -314,14 +314,14 @@ function<T, E> @CopyableResult.CopyableResult(value: T?, error: E?, value__hasva
     ret %7
 }
 
-function<T, E> @CopyableResult.isOk(this: CopyableResult) -> bool {
+function<T, E> @CopyableResult.isOk(this: &CopyableResult) -> bool {
   L0:
     %0 = loadvar.CopyableResult this
     %1 = loadfield.bool %0, "value__hasval"
     ret %1
 }
 
-function<T, E> @CopyableResult.isErr(this: CopyableResult) -> bool {
+function<T, E> @CopyableResult.isErr(this: &CopyableResult) -> bool {
   L0:
     %0 = loadvar.CopyableResult this
     %1 = loadfield.bool %0, "error__hasval"
@@ -348,7 +348,7 @@ function<T, E> @CopyableResult.Err(error: E) -> CopyableResult<T, E> {
     ret %4
 }
 
-function<T, E> @CopyableResult.unwrapOr(this: CopyableResult, default: T) -> T {
+function<T, E> @CopyableResult.unwrapOr(this: &CopyableResult, default: T) -> T {
   L0:
     %0 = loadvar.CopyableResult this
     %1 = loadfield.bool %0, "value__hasval"
