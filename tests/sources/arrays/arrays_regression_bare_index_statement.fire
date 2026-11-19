@@ -1,0 +1,22 @@
+import @firescript/std.io.println;
+
+// Regression: a bare array read used as a statement (`arr[0];`) used to crash
+// AST->FIR conversion ("Unsupported statement node ARRAY_ACCESS"). It is a
+// read with no side effects, so the statement does nothing.
+
+fn touch() -> int32 {
+    arr: int32[] = [4, 5, 6];
+    arr[0];
+    arr[2];
+    return arr[1];
+}
+
+nums: int32[] = [7, 8, 9];
+nums[1];
+println(touch());
+println(nums[1]);
+
+/* EXPECT
+5
+8
+*/

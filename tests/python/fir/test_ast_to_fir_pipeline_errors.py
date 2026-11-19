@@ -153,18 +153,32 @@ def test_synthesize_zero_for_char_return_type():
     t.require(value.result_type.render() == "char", f"unexpected type: {value.result_type.render()}")
 
 
-def test_bare_array_access_statement_is_unsupported():
-    """`arr[0];` as a standalone statement parses fine (an ARRAY_ACCESS
-    expression statement) and passes semantic analysis, but
-    _convert_statement() has no dispatch case for a bare ARRAY_ACCESS (only
-    call-like expression nodes are permitted as expression-statements), so
-    it falls through to the "Unsupported statement node" catch-all."""
-    _expect_conversion_error(
+def test_bare_array_access_statement_converts():
+    """Regression (B15): `arr[0];` as a standalone statement parses (an
+    ARRAY_ACCESS expression statement) and used to crash AST->FIR with
+    "Unsupported statement node"; a bare in-place read is now evaluated and
+    its value discarded."""
+    module = _convert(
         """
         a: int32[3] = [1, 2, 3];
         a[0];
+        """
+    )
+    t.require(any(f.name == "main" for f in module.functions), "main was not converted")
+
+
+def test_directive_statement_inside_function_is_rejected_cleanly():
+    """Regression (B15): `directive x;` inside a function body parses, then
+    used to crash AST->FIR with a generic "Unsupported statement node"
+    message; it is now rejected with a message saying where directives are
+    allowed."""
+    _expect_conversion_error(
+        """
+        fn f() -> void {
+            directive enable_syscalls;
+        }
         """,
-        "Unsupported statement node",
+        "only allowed at the top level",
     )
 
 

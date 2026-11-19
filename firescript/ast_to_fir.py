@@ -1867,6 +1867,25 @@ class ASTToFIRConverter:
             self._convert_expression(node, as_statement=True)
             return
 
+        if node_type in (
+            NodeTypes.ARRAY_ACCESS,
+            NodeTypes.FIELD_ACCESS,
+            NodeTypes.IDENTIFIER,
+            NodeTypes.LITERAL,
+        ):
+            # A bare read used as a statement (`arr[0];`): evaluated for its
+            # (nonexistent) side effects and the value discarded. These all
+            # read in place -- no fresh owned value is produced -- so nothing
+            # needs dropping.
+            self._convert_expression(node)
+            return
+
+        if node_type == NodeTypes.DIRECTIVE:
+            raise FIRConversionError(
+                f"'directive {node.name};' is only allowed at the top level of a file, not inside a function or block",
+                node,
+            )
+
         raise FIRConversionError(f"Unsupported statement node {node_type}", node)
 
     def _convert_variable_declaration(self, node: ASTNode) -> None:

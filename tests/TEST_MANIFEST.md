@@ -501,6 +501,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **arrays_function_param.fire** - Array passed to a function and summed
 - **arrays_length_param.fire** - `.length()` / `.size()` called on a borrowed array function parameter (size not statically known at the call site, unlike a local from an array literal)
 - **array_tests.fire** - Basic array operations
+- **arrays_regression_bare_index_statement.fire** - Regression: a bare `arr[0];` statement at top level and inside a function (previously "Unsupported statement node ARRAY_ACCESS")
 - **array_to_string.fire** - `array as string` conversion for int32, float64, string, and empty arrays (`[a, b, c]` formatting)
 - **array_index_count.fire** - `.index()` / `.count()` array methods
 - **array_negative_indexing.fire** - Negative index access
