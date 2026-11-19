@@ -329,7 +329,7 @@ are thoroughly tested. Enum and match work across the full pipeline (no FIR/FLIR
 Order matters only where `Depends on` says so. WIP means unfinished, untested work saved as a
 labeled commit on a branch; a session may build on it or discard it.
 
-#### T-060-01 · Fix the Windows CI `strings_unicode` failure · S · `in-progress (task/T-060-01)`
+#### T-060-01 · Fix the Windows CI `strings_unicode` failure · S · `done (80f121c)`
 - **Goal:** Windows CI is fully green.
 - **Evidence:** CI run 44572498054 (commit `6c0bb25`) has exactly one failure,
   `run:tests/sources/strings/strings_unicode.fire`, an output mismatch. After the compiler started
