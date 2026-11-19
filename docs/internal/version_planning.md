@@ -515,7 +515,7 @@ labeled commit on a branch; a session may build on it or discard it.
   expression arms work); then compare `git log 77a09c4..HEAD` against `docs/changelog.md` for any
   other user-facing change with no entry.
 
-#### T-060-21 · `CLAUDE.md` feature table and notes · S · `done (640094c)` · Depends on the language tasks above (640094c)
+#### T-060-21 · `CLAUDE.md` feature table and notes · S · `done (640094c)` · Depends on the language tasks above
 - Fix the stale `Built-in input()` row (removed in 0.5.0); update rows made inaccurate by the
   tasks above (traps, braces, receivers, constraints, globals are already listed). Add the
   fls/fsc terminology only when the owner starts that work.
