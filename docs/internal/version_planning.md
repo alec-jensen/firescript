@@ -356,7 +356,7 @@ labeled commit on a branch; a session may build on it or discard it.
   `git branch -d` (a refusal means it is not merged: investigate, do not force).
 - **Done when:** `git worktree list` shows only `main` and the four kept branches.
 
-#### T-060-03 · Review and merge `safety-runtime-traps` · M · `todo`
+#### T-060-03 · Review and merge `safety-runtime-traps` · M · `done (210c692)`
 - **Goal:** runtime safety traps on `main`.
 - **Start from:** branch `safety-runtime-traps` (5 commits, not merged): `stderr-contains` test
   directive; checked integer arithmetic, division by zero and `MIN / -1` through one runtime trap
