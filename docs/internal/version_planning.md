@@ -2,6 +2,12 @@
 
 Planning for future versions toward **1.0.0 — Titan**, the self-hosted release.
 
+> **Terminology.** The language is defined by the firescript Language Specification (fls); the
+> compiler is the firescript Compiler (fsc). They are versioned independently — see
+> [spec_and_versioning.md](spec_and_versioning.md). During 0.N the roadmap below builds toward a
+> preliminary fls 1.0.0; fsc 0.N tracks that draft without being a full implementation. fls 1.0.0
+> and fsc 1.0.0 are released together when the compiler implements the whole specification.
+
 ## Guiding Vision
 
 The goal of firescript 1.0 is a **self-hosted compiler**: a firescript compiler written in
@@ -17,6 +23,85 @@ The bootstrap path has three phases:
    (Python backend) is pulled forward ahead of it.
 3. **Self-hosted implementation** — write the compiler front-end, then the backend, in
    firescript, culminating in a full bootstrap
+
+## Working in tasks
+
+Work is done as **small, self-contained tasks**, one per session. A task block (below, under each
+release) carries everything a fresh session needs, so nothing depends on chat history. A session
+reads `CLAUDE.md`, this section, its one task block, and the docs the block links to, and does
+nothing else.
+
+### Session protocol
+
+1. **Pick one task** whose dependencies are done (the owner usually names it). Set its status to
+   `in-progress` with the branch name.
+2. **Work in the main checkout on a branch** `task/T-xxx-nn` (or continue the named WIP branch).
+   No subagent fan-out and no parallel agents: one task, one session, one line of work.
+3. **Keep runs small.** Use targeted tests (`python tests/run.py <path> --no-coverage`) while
+   working. Run the full CI profile only once, at the end: `python tests/run.py --profile ci`
+   (about 10 minutes; it also checks determinism on every run test).
+4. **Linux needs the wine environment** (the native backend targets Windows only):
+   `export FIRESCRIPT_TEST_TARGET=windows/x86_64 FIRESCRIPT_TEST_RUN_PREFIX=wine WINEDEBUG=-all`
+   (see "Running on Linux" in `tests/TEST_MANIFEST.md`).
+5. **Follow `CLAUDE.md`**: regression test with every bug fix, changelog entry with every
+   user-facing change, manifest and status-marker updates in the same commit, one logical change
+   per commit, determinism, never skip a test, never change an expectation just to pass.
+6. **Tests must be portable to Windows**: no assertions on OS-specific error wording, no
+   characters invalid in Windows file names (`<>:"\|?*`) in test ids or paths, never rely on the
+   platform default text encoding (always pass `encoding="utf-8"`). Windows CI is the real check.
+7. **If a task grows, stop and split it.** Add the new smaller tasks to this file, finish only the
+   first, and say so. A task that needs more than one session was defined too big.
+8. **Finish**: merge to `main`, set the status to `done` with the commit, and note anything the
+   next task needs. Push only when the owner says so (the project settings allow
+   `git push origin main`).
+9. **Record decisions here, not in chat.** An owner decision goes into the task block or the
+   relevant design doc in the same commit.
+
+Status values: `todo`, `in-progress (branch)`, `done (commit)`, `blocked (reason)`.
+Sizes: **S** is a short session, **M** is one full session. There is no **L**: split it.
+
+### Decisions that apply to every task
+
+Confirmed by the owner. Design detail is in
+[language_model_redesign.md](language_model_redesign.md); the audit evidence is in
+[test_audit/README.md](test_audit/README.md).
+
+- **Safety is the model.** Integer overflow, division by zero, `MIN / -1`, out-of-range array
+  indexing, and float-to-int casts of NaN/infinity/out-of-range values **trap** (a runtime error;
+  catchable exceptions come in 0.9.0). Narrowing `as` casts between integer widths stay explicit
+  truncation. Explicit `wrapping`/`saturating`/`checked` operations exist for control.
+- **Braces are required** on `if`, `else`, `while`, `for`. Missing `return` on a path in a non-void
+  function is an error. Unknown string/char escapes are errors. A nullable value may not flow into
+  a non-nullable position (the minimal null-check narrowing rule is a judgment call to review).
+- **Explicit receivers are required.** Instance methods declare `&this` or `&mut this`;
+  constructors declare `&mut this`; consuming receivers on ordinary methods are not supported yet.
+  `this` (the binding) can never be assigned; the receiver governs mutation of the object.
+- **`const` cannot be reassigned.** `const` class fields are `[PLANNED]`.
+- **Constraint unions are written `Union<A, B>`** (replacing `A | B`); `Intersection<A, B>` is
+  `[PLANNED]`; `&` is a syntax error; unknown constraint names are errors.
+- **The legacy conversion builtins are removed** (`toInt`, `toFloat`, `toDouble`, `toBool`,
+  `toChar`, `toString`, `int`, `i32_to_f64`, `i32_to_f32`, `f64_to_i32`, `f32_to_i32`, `i32_to_str`,
+  `i64_to_str`, `f64_to_str`, `f32_to_str`). `as` casts stay until the 0.9.0 bindings.
+- **Absence is `Option<T>`; `null` and `T?` go away (decided 2026-11-19).** One mechanism, not two.
+  `Option<T>` stays explicit: no implicit wrapping of a value or `null` into an `Option` on
+  return or assignment. `Some(5)` / `None()` infer their type arguments from the expected type
+  (a declared return type, a typed variable, a parameter), so `Option<int32>.None()` need not be
+  spelled out there. `T?`, the `null` literal and the null-flow rule are removed once generic
+  enums and `match` exist (0.9.0); until then they stay as shipped in 0.6.0, and the narrowing rule
+  under T-060-04 is interim. Design: [language_model_redesign.md](language_model_redesign.md) §12.
+- **Errors (0.9.0):** operations throw catchable exceptions (`Exception extends Object`);
+  fallible function calls return `Result`. Until then traps print a message and exit through one
+  runtime entry point.
+- **No real users yet**: breaking changes need only a changelog Breaking Changes entry.
+- **Deferred past 0.6.0**: borrow-checker holes and diagnostic-cascade cleanup (0.8.0 memory
+  rework), the fls/fsc terminology work, the formal specification, fuzzing.
+- **Open owner decisions** (do not decide in a task): a `?`-style propagation operator;
+  `Result.unwrap()` throwing; an `Indexable` interface for `list[i]`; naming of the explicit
+  arithmetic functions (camelCase vs snake_case); whether `catch` can rethrow; the `std.fs` split
+  between `Result` and exceptions.
+- **0.6.0 is done when** every task below is `done`, the full CI profile passes locally, the
+  Windows CI run is green, and the owner has cut the release (moving changelog entries into the
+  versioned section is the owner's job).
 
 ## 0.6.0 — Griffin (Current)
 
@@ -239,6 +324,198 @@ All stdlib modules are usable from firescript code. ArrayList, HashMap, string m
 are thoroughly tested. Enum and match work across the full pipeline (no FIR/FLIR gaps) —
 **done**.
 
+### Close-out tasks
+
+Order matters only where `Depends on` says so. WIP means unfinished, untested work saved as a
+labeled commit on a branch; a session may build on it or discard it.
+
+#### T-060-01 · Fix the Windows CI `strings_unicode` failure · S · `done (80f121c)`
+- **Goal:** Windows CI is fully green.
+- **Evidence:** CI run 44572498054 (commit `6c0bb25`) has exactly one failure,
+  `run:tests/sources/strings/strings_unicode.fire`, an output mismatch. After the compiler started
+  reading source as UTF-8 (`6c0bb25`), the likely cause is the test harness reading each test file
+  (the `/* EXPECT */` block, directives) with the platform default encoding (cp1252 on Windows).
+- **Steps:** find every `open(` without `encoding=` in `tests/harness/` (expectations, discovery,
+  directives, workdir) and read as UTF-8; add a Python test that forces a non-UTF-8 default
+  (`LC_ALL=C PYTHONUTF8=0 PYTHONCOERCECLOCALE=0`, as in
+  `tests/python/cli/test_main_arg_errors.py`) and parses a non-ASCII EXPECT block; push and check
+  the Windows run.
+- **Actual cause (found):** not the harness (it already reads UTF-8). The x86-64 assembler's
+  `_decode_gas_string` encoded string-literal characters with the locale codec (cp1252 on
+  Windows), so `é` became `0xE9`; it now always encodes UTF-8.
+- **Done when:** the Windows run on the pushed commit is green.
+
+#### T-060-02 · Housekeeping: remove merged agent worktrees and branches · S · `done`
+- **Goal:** a clean repository to work in.
+- **Steps:** every branch below is already merged into `main`; remove its worktree and branch:
+  `cleanup-compile-fail`, `cleanup-run-tests`, `cleanup-run-followup`, `cleanup-python-front`,
+  `cleanup-python-back`, `fix-numerics`, `fix-parser-imports-cli`, `fix-frontend-checks`,
+  `fix-fir-crashes`, plus the leftover `worktree-agent-*` branches and the superseded
+  `wip/coverage-worker-flush`. **Keep** `safety-runtime-traps`, `safety-frontend`,
+  `docs-and-cleanup-060`, `explicit-receivers` (open work). Use `git worktree remove` then
+  `git branch -d` (a refusal means it is not merged: investigate, do not force).
+- **Done when:** `git worktree list` shows only `main` and the four kept branches.
+
+#### T-060-03 · Review and merge `safety-runtime-traps` · M · `done (210c692)`
+- **Goal:** runtime safety traps on `main`.
+- **Start from:** branch `safety-runtime-traps` (5 commits, not merged): `stderr-contains` test
+  directive; checked integer arithmetic, division by zero and `MIN / -1` through one runtime trap
+  entry point, plus `std.math.wrapping` and an `enable_wrapping_arithmetic` std-only directive;
+  float-to-int cast traps; array bounds checks; ArrayList bounds docs. It regenerated many FLIR
+  snapshots.
+- **Steps:** `git switch -c task/T-060-03 safety-runtime-traps`, merge `main`; run the full CI
+  profile and fix fallout. **Verify** (not assumed): the stdlib no longer depends on wraparound
+  anywhere (hashing, float128 soft-float, collections, regex, text: grep unsigned arithmetic in
+  `firescript/std`); trap kinds go through a single entry point and the message format is
+  `firescript runtime error: <Kind>: <detail>` with one documented nonzero exit code; snapshot
+  diffs are only the added trap function; tests that pinned wraparound (`types_int8`,
+  `types_uint8`, `edge_cases_overflow_underflow`, `stress_integer_overflow`, out-of-range cast cases
+  in `int_float_cast_matrix`) now assert the trap or use `std.math.wrapping`; measure the
+  overhead on `tests/sources/performance/*` and record it in the commit message.
+- **Docs:** `docs/reference/error_handling.md`, `type_system.md` (overflow, casts), `arrays.md`
+  (bounds); mark catchable exceptions `[PLANNED]`; changelog Breaking Changes.
+- **Done when:** merged, CI profile green. If the verify list shows large gaps, split into new
+  tasks (e.g. "migrate stdlib to wrapping ops") instead of growing this one.
+
+#### T-060-04 · Review and merge `safety-frontend` · M · `todo`
+- **Goal:** front-end safety rules on `main`.
+- **Start from:** branch `safety-frontend` (5 commits, not merged): required braces; missing
+  `return` on a path is an error; unknown escapes are errors; nullable-to-non-nullable rejected
+  with a null-check narrowing rule; constant integer overflow, constant out-of-range index and
+  constant division by zero are errors. The 6th commit (`fd0a877`) is unrelated WIP for T-060-05
+  and may be left out of this merge.
+- **Steps:** branch from it, merge `main`; run the CI profile; fix fallout. Confirm firescript/std,
+  `examples/` and every test were migrated for the new rules; review the nullable narrowing design
+  with the owner (it is a judgment call: report exactly what it accepts; the whole nullable
+  feature is interim, see "Absence is `Option<T>`" above); docs
+  (`control_flow.md`, `functions.md`, `type_system.md`, the nullable docs); changelog Breaking
+  Changes.
+- **Done when:** merged, CI profile green.
+
+#### T-060-05 · Leftover parser bugs · M · `todo` · Depends on T-060-04
+- **Start from:** WIP commit `fd0a877` on `safety-frontend` (parser base/expressions/statements).
+- **Fix, each with a regression test:** statements that start with a non-identifier token are
+  silently dropped or get a misleading "Invalid assignment target" (`arr[0] = ;`); a nested explicit
+  generic constructor `Pair<Pair<int32,int32>,int32>(Pair<int32,int32>(1,2), 3)` does not parse;
+  `TITLE.length()` on an uppercase `const` string is parsed as a type method call;
+  `"é".length()` on a non-ASCII string literal is a parse error (verify first).
+- **Done when:** merged, CI profile green.
+
+#### T-060-06 · Remove the legacy conversion builtins · S · `todo`
+- **Goal:** the names listed under "Decisions" are gone.
+- **Start from:** WIP commit `1683fac` on `docs-and-cleanup-060` (12 files; likely this task plus
+  `const`/constraint work; read the diff first, take only what belongs to this task).
+- **Where:** `firescript/ast_to_fir.py` (intrinsic tables and return types),
+  `firescript/flir/lowering.py`, `firescript/parser/type_system.py` (arity check), `parser/base.py`.
+- **Steps:** a call afterwards gives the normal "Function 'X' is not defined" error; nothing in
+  `firescript/std` or `examples/` uses them (migrate to `as`); delete the tests that only exercised
+  them (`conversions/builtin_conversions*`, `performance/stress_type_conversions`) and rewrite
+  incidental uses to `as`; one compile-fail test; changelog Breaking Changes.
+
+#### T-060-07 · `const` reassignment is an error · S · `done (task/T-060-07)`
+- **Goal:** `PI = 3.2;` is a compile error (today it compiles); `PI += 1`, `PI++` too, for module
+  level and local consts. Mark `const` class fields `[PLANNED]` in `docs/reference/classes.md`
+  (they do not parse today). Compile-fail tests, a valid-twin run test, changelog.
+
+#### T-060-08 · Constraint syntax: `Union<A, B>` · M · `todo`
+- **Goal:** `Union<A, B, ...>` replaces `A | B` in constraints; `Intersection<A, B>` gives a clear
+  "not supported yet" diagnostic; `&` is a syntax error pointing at it; unknown constraint names
+  are errors. Keep `|` working everywhere else it exists.
+- **Update:** `firescript/std/constraints.fire`, every std/test/example/doc using `|` in a
+  constraint (grep `constraint ` and `<T: `), `docs/reference/type_system.md` (mark the unmarked
+  examples around the constraint-alias section), tests (valid twin bounded by `Union<int32,
+  float64>`; compile-fail for `|`, `Intersection<...>`, `&`, an unknown name), changelog Breaking.
+- **Start from:** parts may exist in WIP `1683fac` (`docs-and-cleanup-060`).
+
+#### T-060-09 · Explicit receivers: the compiler rule · M · `todo`
+- **Goal:** the rule in "Decisions" is enforced with coded diagnostics: receiver-less instance
+  method; receiver-less constructor; `owned this` in an ordinary method (today the misleading
+  "Constructor 'A' expected 0 args"); plain `this` receiver (today "Expected ':' after parameter
+  name"); assignment to `this`; mutation through `&this` (already an error; keep).
+- **Start from:** WIP commit `f5e6bac` on `explicit-receivers` (parser/declarations,
+  type_system, semantic_analyzer). Keep parser edits confined to receiver parsing.
+- **Done when:** compile-fail tests exist for each diagnostic; the migration tasks below make the
+  suite green again. **Merge this and T-060-10..12 together** (the suite is red between them),
+  working on one branch `task/explicit-receivers`.
+
+#### T-060-10 · Explicit receivers: migrate the standard library · M · `todo` · Depends on T-060-09
+- Every class in `firescript/std/**` (Pair/CopyablePair, Option/CopyableOption, Result/
+  CopyableResult, ArrayList, HashMap, StringBuilder, fs, regex, fcl, ...): add `&this` to read-only
+  methods and `&mut this` to mutating methods and constructors, deciding each by reading the body.
+
+#### T-060-11 · Explicit receivers: migrate tests and examples · M · `todo` · Depends on T-060-10
+- `examples/` and the `.fire` sources under `tests/sources/` (run and invalid) and any
+  `tests/python/**` that embeds receiver-less source or asserts the old behavior. Regenerate
+  FIR/FLIR snapshots only after confirming the only diffs are receiver-related. If it does not fit
+  one session, split by directory (classes, generics, memory, invalid, python).
+
+#### T-060-12 · Explicit receivers: docs and changelog · S · `todo` · Depends on T-060-09
+- `docs/reference/classes.md` (receiver convention), `memory_management.md` receiver wording,
+  `functions.md`, std doc samples; changelog Breaking Changes. Consuming receivers stay
+  `[PLANNED]`. Add the compile-fail test list for T-060-09 to the manifest.
+
+#### T-060-13 · Array returned from a call has no tracked length · M · `todo`
+- `fn mk() -> int32[] { return [1,2,3]; } x: int32[] = mk();` now compiles, but `.length()`,
+  negative indexing and `for-in` over `x` fail in lowering ("array_length on array of unknown
+  size"). Track or carry the length (hidden length value like array parameters have). Regression
+  tests for each use.
+
+#### T-060-14 · `while (true) { consume(x); break; }` internal error · S · `done (e2daf78)`
+- An internal ownership-verifier error (FIRV-O3) on an owned value moved in a loop that always
+  exits via `break`. Reproduce, find the drop-insertion/move-state cause, fix, regression test.
+
+#### T-060-15 · Scope leak: a variable name clashes across functions · M · `todo`
+- Declaring `bexp` in `firescript/std/internal/float128.fire` produced "Expected uint64, got int64",
+  apparently from an `int64 bexp` parameter in another runtime function. Reproduce with two
+  functions that use the same name with different types, find where scope/type tables leak, fix,
+  regression test.
+
+#### T-060-16 · Internal conversion errors print raw Python tracebacks · M · `todo`
+- AST-to-FIR and FIR-to-FLIR failures surface as a traceback with no error code: moving an owned
+  module-level variable, `directive x;` inside a function, `u: string? = "a"; u.length()`. Make
+  each a coded diagnostic (or fix the underlying bug), and make `main.py` print any remaining
+  conversion error as a normal diagnostic without a traceback. Tests for each.
+
+#### T-060-17 · Docs: `enums.md` and `match.md` reference pages · M · `todo`
+- There are no reference pages for enums and `match`, only changelog entries. Write
+  `docs/reference/enums.md` and `match.md` from `tests/sources/enums`, `tests/sources/match` and
+  the changelog, **running every code sample** and fixing the text where the compiler differs; mark
+  features `[IMPLEMENTED]`, generic enums `[PLANNED]`; link from the docs index.
+
+#### T-060-18 · Docs: string methods, `fn main`, implicit constructors, `%`, array methods · M · `todo`
+- Document `indexOf`, `substring` (clamps out-of-range), `startsWith`, `endsWith`, `trim`,
+  `replace`, `upper`, `lower`, `length`, and array `.size()` (same as `.length()`); the behavior of
+  `fn main` (top-level statements are ignored with a warning when `main` exists, while module-level
+  variable initializers still run); implicit constructors (`class Pt { x: int32; y: int32; }` gives
+  `Pt(1, 2)`, `new Pt(...)` needs a declared constructor); `%` is integer-only. Verify each by
+  running it.
+
+#### T-060-19 · Docs: stale and false statements · S · `todo`
+- `docs/reference/std/math.md` says nested generic calls fail (they work); `std/*.md` and
+  `type_system.md` still mention `push`/`pop`/`length()` on collections, `Tuple`, a `list<T>`
+  section for ArrayList, `char = "A"`, prefix-style signatures in `io.md`, and floats printed as
+  `3.14` (they print `3.140000`); `classes.md` shows a call-site `&` (a parse error) and a
+  `copyable class` that violates its own all-fields-Copyable rule (weaken that rule's text to
+  "intended, not yet enforced"); `memory_management.md:216` call-site `&`; `error_handling.md` says
+  `Result` is planned (it exists). Fix wording and markers only.
+
+#### T-060-20 · Changelog corrections · S · `todo`
+- Add the missing Breaking Changes entry for `Tuple`/`CopyableTuple` → `Pair`/`CopyablePair`
+  (`Tuple` shipped in 0.5.0); fix three stale entries (the never-shipped `int a?` form, the enum
+  entry's prefix payload syntax, the match entry saying statement arms must be braces when
+  expression arms work); then compare `git log 77a09c4..HEAD` against `docs/changelog.md` for any
+  other user-facing change with no entry.
+
+#### T-060-21 · `CLAUDE.md` feature table and notes · S · `todo` · Depends on the language tasks above
+- Fix the stale `Built-in input()` row (removed in 0.5.0); update rows made inaccurate by the
+  tasks above (traps, braces, receivers, constraints, globals are already listed). Add the
+  fls/fsc terminology only when the owner starts that work.
+
+#### T-060-22 · 0.6.0 release check · S · `todo` · Depends on everything above
+- `python tests/run.py --profile ci` passes locally; the Windows CI run is green; the roadmap's
+  0.6.0 section statuses are final; the owner moves `## Currently in Development` into a versioned
+  section (the owner's job, not an agent's).
+
 ---
 
 ## 0.7.0 — Chimera
@@ -352,7 +629,7 @@ documented in the changelog.
 **Theme: Object model and standard library architecture.**
 
 Java-style OOP that compiles to flat, statically dispatched code, and a standard library built
-on it. Full design: [language_model_redesign.md](language_model_redesign.md) §5–§8.
+on it. Full design: [language_model_redesign.md](language_model_redesign.md) §5–§9.
 
 ### Language features
 
@@ -366,6 +643,8 @@ on it. Full design: [language_model_redesign.md](language_model_redesign.md) §5
 | Conversion methods on bindings replace the `as` keyword; `contains` replaces `in`-membership; `isInstance<T>()` / `isExactly<T>()` / `downcast<T>()` on `Object` | Fewer keywords, explicit conversion semantics, fallible parsing via `Result`. See design doc §8. |
 | `Box<T>` and `Shared<T>` | Recursive types, owned polymorphism and dynamic lifetime. Lowest priority in this release; may slip. |
 | Capturing and escaping closures | Depend on exclusivity and `Box`. Lowest priority; may slip. |
+| Exceptions raised by language operations (overflow, division by zero, bounds, invalid casts) as catchable `Exception extends Object` subclasses with `try` / `catch` / `finally`; fallible function calls return `Result`; debug-build stack traces | Python-style error handling consistent with the safety model. See design doc §9. |
+| Generic enums and `Option<T>` as `enum { Some(T), None }`, matched with `match`; `Some`/`None` infer type arguments from the expected type; `null` and `T?` removed | One way to express absence, explicit and composable (nests, usable as a generic argument). Needs inline storage or a compact representation for small enums so `Option<int32>` does not allocate. See design doc §12. |
 | Improved error messages / diagnostic infrastructure | The firescript compiler should produce rich, helpful diagnostics; implementing this in firescript requires the same. |
 
 ### Compiler improvements

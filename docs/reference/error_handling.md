@@ -1,6 +1,6 @@
 # Error Handling
 
-firescript is designed in a way that minimizes runtime errors through static type checking and compile-time validation. However, some errors can still occur during execution, such as division by zero or out-of-bounds array access.
+firescript is designed in a way that minimizes runtime errors through static type checking and compile-time validation. However, some errors can still occur during execution, such as integer overflow, division by zero or out-of-bounds array access; these trap (see below).
 
 ## Error Types
 
@@ -26,16 +26,40 @@ Most errors are caught before the program ever runs. The compiler reports struct
 (main.fire:3:12)
 ```
 
-### Runtime Traps
+### Runtime Traps [IMPLEMENTED]
 
-Runtime errors terminate the program with an error. For example, arithmetic on fixed-size integers that exceeds the representable range traps at runtime rather than silently wrapping:
+firescript's model is safety: operations that would silently produce a wrong value instead **trap**. A trap writes one line to standard error and terminates the program with exit status **101**. No destructors run and nothing is unwound.
+
+```text
+firescript runtime error: <Kind>: <detail>
+```
+
+Every trap, whatever its cause, goes through a single runtime entry point (`fs_rt_trap` in `std/internal/trap.fire`); the compiler emits each check as a branch to a cold block that calls it. The trap kinds are:
+
+| Kind | Raised by | Detail |
+|---|---|---|
+| `IntegerOverflow` | `+`, `-`, `*`, unary `-`, `++`, `--`, compound assignment, and `**` whose exact result does not fit the integer type; signed `MIN / -1` and `MIN % -1` | operation and type, e.g. `addition on int8` |
+| `DivisionByZero` | integer `/` or `%` with a zero divisor | operation and type, e.g. `division on int32` |
+| `IndexOutOfBounds` | an array index outside `[-length, length)` (reads and writes; `ArrayList` `get`/`set`/`removeLast` past its size) | `index N, length L` |
+| `InvalidConversion` | a float-to-integer cast of NaN, an infinity, or a value outside the target type's range (float32, float64 and float128 sources) | e.g. `float64 to int8: NaN, infinity or out of range` |
+| `InvalidArgument` | a negative exponent in integer `**` | e.g. `negative exponent in integer exponentiation` |
 
 ```firescript
 max: int8 = 127i8;
-overflow: int8 = max + 1i8;  // Runtime error: integer overflow
+overflow: int8 = max + 1i8;  // firescript runtime error: IntegerOverflow: addition on int8  (exit status 101)
 ```
 
+The checks apply to every integer width (`int8`..`int64`, `uint8`..`uint64`). Floating-point arithmetic is not trapped: it follows IEEE 754 (`Infinity`, `NaN`). Narrowing `as` casts **between integer types** (e.g. `300 as int8`) are explicit truncation and do not trap; float-to-integer casts do (see [Type System](type_system.md)).
+
 Overflows that can be detected at compile time (constant expressions) are reported as compile-time errors instead.
+
+#### Explicit wrapping operations [IMPLEMENTED]
+
+Code that really wants modular arithmetic uses `wrapping_add`, `wrapping_sub`, `wrapping_mul` and `wrapping_neg` from `@firescript/std.math.wrapping` (see [Math](std/math.md)). Saturating and checked (`Option<T>`-returning) variants are [PLANNED].
+
+#### Catchable exceptions [PLANNED]
+
+In a later release (0.9.0) these traps become catchable exceptions (for example `ArithmeticException` and `IndexOutOfBoundsException`, subclasses of a language-level `Exception`), and debug builds will print stack traces. Because every trap already goes through one entry point and each check is a branch to a cold block, that change replaces only the body of the entry point. Until then, traps always terminate the program as described above.
 
 ### Result Types in the Standard Library
 

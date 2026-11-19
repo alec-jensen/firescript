@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: addition on int32
+// int32: MIN + -1 traps.
+import @firescript/std.io.println;
+
+println("before");
+a: int32 = -2147483648i32;
+b: int32 = -1i32;
+c: int32 = a + b;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

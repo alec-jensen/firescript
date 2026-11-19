@@ -1,0 +1,17 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IndexOutOfBounds: index 8, length 5
+// An array parameter's hidden length drives the check.
+import @firescript/std.io.println;
+fn get(&a: int32[], i: int32) -> int32 {
+    return a[i];
+}
+
+arr: int32[5] = [1, 2, 3, 4, 5];
+
+println("before");
+println(get(arr, 8));
+println("not reached");
+
+/* EXPECT
+before
+*/

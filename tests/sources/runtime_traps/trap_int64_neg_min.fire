@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: negation on int64
+// int64: -MIN traps.
+import @firescript/std.io.println;
+
+println("before");
+a: int64 = -9223372036854775808i64;
+c: int64 = -a;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

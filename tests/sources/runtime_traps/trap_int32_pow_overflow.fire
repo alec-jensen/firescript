@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: exponentiation on int32
+// int32: 2 ** 31 traps.
+import @firescript/std.io.println;
+
+println("before");
+base: int32 = 2;
+exp: int32 = 31;
+c: int32 = base ** exp;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

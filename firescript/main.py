@@ -86,7 +86,7 @@ def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
         return False
     # Locale-default encoding on purpose: source files are read with the
     # locale encoding, so the .s round-trips string literal bytes exactly.
-    with open(asm_path, "w", newline="\n") as f:
+    with open(asm_path, "w", encoding="utf-8", newline="\n") as f:
         f.write(asm_text)
     stage_start = _log_stage_duration("Code generation", stage_start)
 
@@ -213,6 +213,17 @@ def _compile_runtime_file(path: str, seed: dict = None) -> "ASTNode":
         raise RuntimeError(
             f"{rel} failed semantic analysis: {len(analyzer.errors)} errors"
         )
+    # Tag every node with the file it came from (as imports.py does for
+    # imported modules): the per-file directive bookkeeping in ast_to_fir
+    # (directive gating, enable_wrapping_arithmetic) keys off this, and the
+    # files are combined into one root before FIR conversion.
+    def _annotate(node):
+        setattr(node, "source_file", rel)
+        for child in node.children or []:
+            if child is not None:
+                _annotate(child)
+
+    _annotate(ast)
     return ast
 
 
@@ -274,7 +285,7 @@ def compile_file(file_path, target, out_path=None, emit="bin", check=False, emit
 
     try:
         # Read source file
-        with open(file_path, "r") as f:  # deepcode ignore PathTraversal: trusted local CLI input path.
+        with open(file_path, "r", encoding="utf-8") as f:  # deepcode ignore PathTraversal: trusted local CLI input path.
             file_content = f.read()
     except FileNotFoundError:
         logging.error(f"File not found: {file_path}")

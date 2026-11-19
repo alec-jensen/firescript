@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: InvalidConversion: float64 to int32:
+// float64 -> int32: below MIN traps.
+import @firescript/std.io.println;
+
+println("before");
+x: float64 = -2147483649.0;
+y: int32 = x as int32;
+println(y);
+println("not reached");
+
+/* EXPECT
+before
+*/

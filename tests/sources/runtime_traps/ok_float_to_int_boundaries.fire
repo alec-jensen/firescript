@@ -1,0 +1,56 @@
+// Float-to-integer casts that are exactly at, or just inside, a type's range
+// must NOT trap: truncation is toward zero, and -0.5 truncates to 0 even for
+// unsigned targets.
+import @firescript/std.io.println;
+
+a: float64 = 127.9;
+println(a as int8);
+b: float64 = -128.9;
+println(b as int8);
+c: float64 = 255.99;
+println(c as uint8);
+d: float64 = -0.5;
+println(d as uint8);
+e: float64 = 2147483647.9;
+println(e as int32);
+f: float64 = -2147483648.0;
+println(f as int32);
+g: float64 = -9223372036854775808.0;
+println(g as int64);
+h: float64 = 9223372036854774784.0;
+println(h as int64);
+i: float64 = 18446744073709549568.0;
+println(i as uint64);
+j: float32 = 100.7f32;
+println(j as int32);
+k: float32 = -100.7f32;
+println(k as int8);
+l: float64 = 4294967295.5;
+println(l as uint32);
+m: float128 = 123.75f128;
+println(m as int32);
+n: float128 = -123.75f128;
+println(n as int64);
+o: float128 = 255.5f128;
+println(o as uint8);
+zero: float64 = 0.0;
+println(zero as uint64);
+
+/* EXPECT
+127
+-128
+255
+0
+2147483647
+-2147483648
+-9223372036854775808
+9223372036854774784
+18446744073709549568
+100
+-100
+4294967295
+123
+-123
+255
+0
+*/

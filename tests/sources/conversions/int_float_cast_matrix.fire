@@ -37,7 +37,11 @@ println(bigF32AsU);
 
 println("-- float to narrow int/uint --");
 f1: float64 = 200.9;
-f1i8: int8 = f1 as int8;
+// 200.9 is out of range for int8 (that traps now -- see
+// tests/sources/runtime_traps/trap_float64_to_int8_out_of_range.fire), so
+// the int8 case uses an in-range value.
+f0: float64 = 100.9;
+f1i8: int8 = f0 as int8;
 println(f1i8);
 
 f1i16: int16 = f1 as int16;
@@ -58,7 +62,7 @@ println(f1u32);
 42
 18000000404716257280
 -- float to narrow int/uint --
--56
+100
 200
 200
 200

@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: addition on uint64
+// uint64: MAX + 1 traps.
+import @firescript/std.io.println;
+
+println("before");
+a: uint64 = 18446744073709551615u64;
+b: uint64 = 1u64;
+c: uint64 = a + b;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

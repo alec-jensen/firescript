@@ -69,3 +69,9 @@ def test_two_spaces_after_marker_is_error():
         t.require(False, "expected DirectiveError for double space")
     except DirectiveError as e:
         t.require("must be followed by exactly one space" in str(e), str(e))
+
+
+def test_stderr_contains_is_repeatable():
+    text = "//@ stderr-contains: first\n//@ stderr-contains: second one\nx: int32 = 1;\n"
+    d = parse_fire_directives(text)
+    t.require_eq(d.values("stderr-contains"), ["first", "second one"])

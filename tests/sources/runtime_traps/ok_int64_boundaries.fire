@@ -1,0 +1,47 @@
+// int64: operations that land exactly on MIN/MAX (or return to it) must NOT trap.
+import @firescript/std.io.println;
+
+max: int64 = 9223372036854775807i64;
+min: int64 = -9223372036854775808i64;
+one: int64 = 1i64;
+two: int64 = 2i64;
+zero: int64 = 0i64;
+println(max);
+println(min);
+println(max - one + one);
+println(min + one - one);
+println(max * one);
+println(max / one);
+println(min / one);
+println(min % two);
+println(max % max);
+println((max - one) / two * two);
+println(zero - zero);
+minus_one: int64 = -1i64;
+min_plus_one: int64 = -9223372036854775807i64;
+println(min_plus_one / minus_one);
+println(max / minus_one);
+println(-max);
+println(minus_one * max);
+println(max + min);
+println(min_plus_one % minus_one);
+
+/* EXPECT
+9223372036854775807
+-9223372036854775808
+9223372036854775807
+-9223372036854775808
+9223372036854775807
+9223372036854775807
+-9223372036854775808
+0
+0
+9223372036854775806
+0
+9223372036854775807
+-9223372036854775807
+-9223372036854775807
+-9223372036854775807
+-1
+0
+*/

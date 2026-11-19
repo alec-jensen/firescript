@@ -719,6 +719,10 @@ class FLIRToAsmBackend:
         self._load_int(inst.operands[0], _RAX, ctx)
         self._load_int(inst.operands[1], _RCX, ctx)
 
+        if op in ("ovf_add", "ovf_sub", "ovf_mul"):
+            self._emit_overflow_flag(inst, op[4:], t, signed, ctx)
+            return
+
         if op == "add":
             out.append("    add rax, rcx")
         elif op == "sub":
@@ -755,6 +759,39 @@ class FLIRToAsmBackend:
                 out.append("    mov eax, eax")
             else:
                 out.append(f"    movzx eax, {_RAX[_SIZES[rt.kind]]}")
+        self._store_result(inst, "rax", ctx)
+
+    def _emit_overflow_flag(self, inst: BinOp, op: str, t: FLIRType, signed: bool, ctx: "_EmitCtx") -> None:
+        """ovf_add/ovf_sub/ovf_mul: bool = the exact result does not fit in
+        `t`. Operands are already sign/zero-extended into rax/rcx. Narrow
+        types compute the exact 64-bit result and compare it with its own
+        truncate-and-re-extend; 64-bit types use the CPU overflow/carry flag."""
+        out = self.out
+        size = _SIZES[t.kind]
+        if size < 8:
+            out.append({"add": "    add rax, rcx", "sub": "    sub rax, rcx", "mul": "    imul rax, rcx"}[op])
+            out.append("    mov rdx, rax")
+            if t.kind == "i32":
+                out.append("    movsxd rax, eax")
+            elif t.kind in ("i8", "i16"):
+                out.append(f"    movsx rax, {_RAX[size]}")
+            elif t.kind == "u32":
+                out.append("    mov eax, eax")
+            else:
+                out.append(f"    movzx eax, {_RAX[size]}")
+            out.append("    cmp rax, rdx")
+            out.append("    setne al")
+        elif signed:
+            out.append({"add": "    add rax, rcx", "sub": "    sub rax, rcx", "mul": "    imul rax, rcx"}[op])
+            out.append("    seto al")
+        else:
+            if op == "mul":
+                out.append("    mul rcx")
+                out.append("    seto al")
+            else:
+                out.append(f"    {op} rax, rcx")
+                out.append("    setb al")
+        out.append("    movzx eax, al")
         self._store_result(inst, "rax", ctx)
 
     # -- conversions ----------------------------------------------------------

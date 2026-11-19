@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IndexOutOfBounds: index 2, length 2
+// Bounds checks apply to arrays of owned elements.
+import @firescript/std.io.println;
+
+println("before");
+words: string[2] = ["a", "b"];
+i: int32 = 2;
+println(words[i]);
+println("not reached");
+
+/* EXPECT
+before
+*/

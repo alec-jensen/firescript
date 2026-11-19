@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: subtraction on uint8
+// uint8: x-- at 0 traps.
+import @firescript/std.io.println;
+
+println("before");
+a: uint8 = 0u8;
+a--;
+println(a);
+println("not reached");
+
+/* EXPECT
+before
+*/

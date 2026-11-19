@@ -1,0 +1,33 @@
+// uint16: operations that land exactly on MIN/MAX (or return to it) must NOT trap.
+import @firescript/std.io.println;
+
+max: uint16 = 65535u16;
+min: uint16 = 0u16;
+one: uint16 = 1u16;
+two: uint16 = 2u16;
+zero: uint16 = 0u16;
+println(max);
+println(min);
+println(max - one + one);
+println(min + one - one);
+println(max * one);
+println(max / one);
+println(min / one);
+println(min % two);
+println(max % max);
+println((max - one) / two * two);
+println(zero - zero);
+
+/* EXPECT
+65535
+0
+65535
+0
+65535
+65535
+0
+0
+0
+65534
+0
+*/

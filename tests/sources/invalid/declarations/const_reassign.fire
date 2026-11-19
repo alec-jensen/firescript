@@ -1,0 +1,13 @@
+// A const binding can never be reassigned (plain, compound, ++/--),
+// at module level or locally.
+const PI: float64 = 3.14;
+const N: int32 = 1;
+
+fn main() -> void {
+    const local: int32 = 5;
+    PI = 3.2;  //~ ERROR FS-SEM-0010 @5
+    N += 1;  //~ ERROR FS-SEM-0010 @7
+    N++;  //~ ERROR FS-SEM-0010 @5
+    local = 6;  //~ ERROR FS-SEM-0010 @5
+    local--;  //~ ERROR FS-SEM-0010 @5
+}

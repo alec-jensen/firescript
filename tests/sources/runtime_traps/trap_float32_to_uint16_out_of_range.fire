@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: InvalidConversion: float32 to uint16:
+// float32 out-of-range -> uint16 traps.
+import @firescript/std.io.println;
+
+println("before");
+x: float32 = 3.0e10f32;
+y: uint16 = x as uint16;
+println(y);
+println("not reached");
+
+/* EXPECT
+before
+*/

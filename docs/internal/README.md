@@ -14,6 +14,8 @@ This is documentation for internal language features intended for use in the com
 
 [Language model redesign](language_model_redesign.md) - Design for the 1.0 memory model (value semantics, move, `&T`/`&mut T`), const, visibility, the object model (interfaces, abstract classes, `Object`), primitive bindings, and function interfaces. **[PLANNED]**
 
+[Specification and versioning](spec_and_versioning.md) - Terminology (firescript Language Specification `fls`, firescript Compiler `fsc`), independent semantic versioning, the fls/fsc/kiln compatibility contract, and how to prepare for spec-version gating. **[PLANNED]**
+
 [Fuzzing and edge-case testing plan](testing_plan.md) - Planned fuzz targets, oracles, and edge-case matrices. **[PLANNED]**
 
 [Version planning](version_planning.md) - Release roadmap toward 1.0.0.

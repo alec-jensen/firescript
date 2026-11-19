@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: InvalidConversion: float32 to int32:
+// float32 NaN -> int32 traps.
+import @firescript/std.io.println;
+
+println("before");
+z: float32 = 0.0f32;
+x: float32 = z / z;
+y: int32 = x as int32;
+println(y);
+println("not reached");
+
+/* EXPECT
+before
+*/

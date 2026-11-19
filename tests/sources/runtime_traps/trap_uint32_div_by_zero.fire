@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: DivisionByZero: division on uint32
+// uint32: x / 0 traps.
+import @firescript/std.io.println;
+
+println("before");
+a: uint32 = 7u32;
+b: uint32 = 0u32;
+c: uint32 = a / b;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

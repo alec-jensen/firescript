@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: InvalidConversion: float128 to int64:
+// float128 >= 2^63 -> int64 traps.
+import @firescript/std.io.println;
+
+println("before");
+x: float128 = 1.0e30f128;
+y: int64 = x as int64;
+println(y);
+println("not reached");
+
+/* EXPECT
+before
+*/
