@@ -664,6 +664,7 @@ class StatementsMixin(ExpressionsMixin):
             # target). Such a statement is dropped; but if it is an
             # assignment, say so instead of discarding it silently.
             idx = self._token_idx
+            reported = False
             while token_type in (
                 "INTEGER_LITERAL", "FLOAT_LITERAL", "DOUBLE_LITERAL", "STRING_LITERAL",
                 "CHAR_LITERAL", "BOOLEAN_LITERAL", "NULL_LITERAL", "OPEN_PAREN",
@@ -675,8 +676,22 @@ class StatementsMixin(ExpressionsMixin):
                     self._recover_to_statement_boundary()
                     if self.current_token and self.current_token.type == "SEMICOLON":
                         self.consume("SEMICOLON")
+                    reported = True
                     break
                 idx += 1
+            if not reported:
+                # Any other token that cannot start a statement (a stray
+                # operator, `,`, `:`, a literal, a type keyword, ...) used to
+                # be dropped silently. As with a stray closing bracket, only
+                # the first error is reported: once something has already
+                # gone wrong, a leftover token is most likely recovery fallout.
+                if not self.errors:
+                    self.invalid_expression_error(
+                        f"Unexpected token {self.current_token.value}", self.current_token
+                    )
+                self._recover_to_statement_boundary()
+                if self.current_token and self.current_token.type == "SEMICOLON":
+                    self.consume("SEMICOLON")
             return None
 
     def parse_scope(self):
