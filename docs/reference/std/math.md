@@ -74,11 +74,9 @@ smallest: float64 = min(2.5, 1.5);
 bounded: int32 = clamp(15, 0, 10);
 
 println(biggest);   // 7
-println(smallest);  // 1.5
+println(smallest);  // 1.500000
 println(bounded);   // 10
 ```
-
-> Note: assign the result of a generic call to a variable before passing it to another generic function (like `println`). Nesting generic calls directly (e.g., `println(max(3, 7))`) currently fails to compile — a known limitation.
 
 ## Wrapping arithmetic [IMPLEMENTED]
 

@@ -212,10 +212,13 @@ n: int32 = length(name); // borrow; name still valid
 ### Example: Invalid Borrow of Copyable (Compile Error)
 
 ```firescript
-id: int8 = 10;
-printId(&id);   // ERROR: cannot borrow Copyable type 'int8'; remove '&'
+// ERROR: Cannot borrow Copyable type 'int8'; pass by value instead.
+fn printIdBad(&v: int8) -> void {
+    print(v);
+}
 
 // Correct version:
+id: int8 = 10;
 fn printId(v: int8) -> void {
     print(v);
 }

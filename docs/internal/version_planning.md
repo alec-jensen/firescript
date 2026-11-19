@@ -498,7 +498,7 @@ labeled commit on a branch; a session may build on it or discard it.
   `Pt(1, 2)`, `new Pt(...)` needs a declared constructor); `%` is integer-only. Verify each by
   running it.
 
-#### T-060-19 · Docs: stale and false statements · S · `todo`
+#### T-060-19 · Docs: stale and false statements · S · `done (task/T-060-19)`
 - `docs/reference/std/math.md` says nested generic calls fail (they work); `std/*.md` and
   `type_system.md` still mention `push`/`pop`/`length()` on collections, `Tuple`, a `list<T>`
   section for ArrayList, `char = "A"`, prefix-style signatures in `io.md`, and floats printed as

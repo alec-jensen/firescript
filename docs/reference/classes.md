@@ -48,7 +48,7 @@ class HandleBundle {
 }
 
 hb: HandleBundle = makeHandles(); // this would be invalid since you need to provide owned File and Socket
-process(&hb);  // borrow
+process(hb);  // borrows, if process declares `&hb: HandleBundle` (borrows are declared on the parameter; the call site has no `&`)
 // last use of hb here -> compiler may drop immediately after
 ```
 
@@ -335,7 +335,7 @@ Both `copyable` and owned (heap-allocated) generic classes are supported. `@fire
 
 ## Copyable Classes
 
-A class may be annotated `copyable` to become Copyable if it satisfies:
+A class may be annotated `copyable` to become Copyable. The intended requirements are listed below; they are not all enforced by the compiler yet (for example, the all-fields-Copyable check is [PLANNED], and the generic `copyable class Pair<T, U>` above is accepted with arbitrary type arguments):
 1. All fields are Copyable.
 2. No `drop` defined.
 3. Fixed-size representation.
