@@ -352,7 +352,7 @@ documented in the changelog.
 **Theme: Object model and standard library architecture.**
 
 Java-style OOP that compiles to flat, statically dispatched code, and a standard library built
-on it. Full design: [language_model_redesign.md](language_model_redesign.md) §5–§8.
+on it. Full design: [language_model_redesign.md](language_model_redesign.md) §5–§9.
 
 ### Language features
 
@@ -366,6 +366,7 @@ on it. Full design: [language_model_redesign.md](language_model_redesign.md) §5
 | Conversion methods on bindings replace the `as` keyword; `contains` replaces `in`-membership; `isInstance<T>()` / `isExactly<T>()` / `downcast<T>()` on `Object` | Fewer keywords, explicit conversion semantics, fallible parsing via `Result`. See design doc §8. |
 | `Box<T>` and `Shared<T>` | Recursive types, owned polymorphism and dynamic lifetime. Lowest priority in this release; may slip. |
 | Capturing and escaping closures | Depend on exclusivity and `Box`. Lowest priority; may slip. |
+| Exceptions: `Exception extends Object` hierarchy, `throw` / `try` / `catch` / `finally`, catchable runtime traps, debug-build stack traces; `Result` kept for expected outcomes | Python-style error handling consistent with the safety model. See design doc §9. |
 | Improved error messages / diagnostic infrastructure | The firescript compiler should produce rich, helpful diagnostics; implementing this in firescript requires the same. |
 
 ### Compiler improvements

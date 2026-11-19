@@ -265,7 +265,66 @@ the one thing a function cannot do; it is added later only if `downcast` plus a 
 too clumsy in real code. The instanceof-style check is deliberately not a getClass/`Class`
 object: that would add a reflection concept.
 
-## 9. Migration notes
+## 9. Errors and exceptions [PLANNED]
+
+Today there is no catchable error mechanism. `std.fs` returns `FileResult` objects, `Result<T,E>`
+and `Option<T>` exist as library types, and runtime traps (integer overflow, division by zero,
+out-of-range indexing, invalid float-to-int conversions) print a message and terminate the
+program (`docs/reference/error_handling.md`). The design below is for 0.9.0, after the object
+model (§5) it depends on.
+
+### 9.1 Model
+
+- A Python-style exception hierarchy rooted at the language-level `Exception extends Object`,
+  carrying a message and an optional cause: `Exception` -> `IOException` -> `FileOpenException`,
+  `ArithmeticException` -> `DivisionByZeroException`, `IndexOutOfBoundsException`, and so on.
+- `throw expr;`, `try { } catch (T e) { } finally { }`. A catch clause matches by runtime type
+  (the `isInstance` rule of §8.3), so `catch (IOException e)` catches the whole subtree. Syntax is
+  provisional.
+- **Runtime traps are catchable exceptions.** Integer overflow, division by zero, bounds errors
+  and invalid float-to-int conversions raise subclasses of `ArithmeticException` /
+  `IndexOutOfBoundsException` etc. Catching one is the programmer acknowledging they will handle
+  it; not catching it terminates the program with a stack trace. The safety package that adds these
+  traps (before exceptions exist) routes every trap through one runtime entry point so it can later
+  throw instead of exiting.
+- A blanket `catch (Exception e)` is legal but discouraged; a lint warns on it.
+
+### 9.2 Exceptions and `Result` coexist
+
+They answer different questions. Exceptions are for **errors**: something went wrong that the
+immediate caller usually cannot handle (a trap, a violated precondition, an I/O failure in the
+middle of an operation). `Result<T,E>` / `Option<T>` are for **expected outcomes the caller
+branches on routinely** (input validation, "does this file open"). Guideline: if the caller is
+expected to check, return a `Result`; if failure means something is broken, throw.
+- `std.fs` opening a file is an expected outcome: `File.open` keeps returning a `Result` whose
+  error is a `FileOpenException`; unexpected failures during a read or write throw `IOException`
+  subclasses. The exact split per function is decided when 0.9.0 lands.
+- The two bridge: a `Result` has `unwrap()` that throws its error (the error type is an
+  `Exception`), and a caller can catch an exception and return a `Result` explicitly.
+
+### 9.3 Stack traces
+
+Debug builds produce Python-quality tracebacks (`Traceback (most recent call last):`, file, line,
+function, then `ExceptionType: message`, plus chained causes). Mechanism: frame pointers in debug
+builds, a deterministic address-to-(function, file, line) table embedded in the binary (sorted by
+address, so builds stay byte-identical), and the chain of return addresses captured when an
+exception is thrown and formatted lazily when printed. Release builds omit the tables and the
+capture. An uncaught exception prints its traceback to stderr and exits with a nonzero status.
+
+### 9.4 Implementation sketch
+
+- No stack unwinder is required initially. The compiler infers, over the whole program, which
+  functions can throw. A throwing function returns an extra error value, and each call site checks
+  it and branches. A throw is then an early return, and the compiler already inserts drops on every
+  early exit, so owned values are released correctly and `finally` is a cleanup block.
+- Callers of functions that cannot throw pay nothing. Because every integer operation can trap,
+  almost every function will be inferred as throwing; the per-call check is the cost. A table-based
+  unwinder (zero happy-path cost, more runtime machinery) is a later optimization. The semantics
+  above do not depend on which implementation is used.
+- A thrown exception is a heap-allocated object owned by the in-flight exception and moved into the
+  catch variable, so it depends on `Box`/owned polymorphism (§2.4) arriving with the object model.
+
+## 10. Migration notes
 
 Work implied by this design, from the November 2026 audit:
 
@@ -286,11 +345,12 @@ Work implied by this design, from the November 2026 audit:
 - **Tests:** the existing memory tests encode the old model and need an intentional, documented
   update (per the project's rules on editing tests), plus new coverage for each rule above.
 
-## 10. Open questions
+## 11. Open questions
 
 - Spelling of move (`move x` vs `move(x)`) and of the deep-copy hook.
 - Whether `&` moves into the type position for parameters.
 - Default member visibility and the exact meaning of `protected`.
 - How `Object`'s common methods are declared and overridden.
 - Whether references can be nullable (needed by `downcast`); whether lossless numeric widening is implicit.
+- Exact `std.fs` split between `Result` and thrown `IOException`s; whether a lint should warn on blanket `catch (Exception e)` by default.
 - Whether and when `Box` / `Shared` land relative to capturing closures.
