@@ -1,0 +1,64 @@
+import @firescript/std.io.println;
+
+// Regression: a pointer-shaped nullable (`string?`, `Class?`) parameter must
+// accept `null`, a `string?` variable, and a plain `string`, and a function
+// declared `-> string?` must be able to return a plain string literal.
+// Previously FIRV-T5/T6 ("argument has type 'string?', expected 'string'")
+// and FIRV-T4 ("Return value type 'string' does not match 'string?'") fired.
+
+class Greeter {
+    name: string;
+
+    fn Greeter(&mut this, name: string) {
+        this.name = name;
+    }
+
+    fn greet(&this, other: string?) -> string {
+        if (other == null) {
+            return this.name + " greets nobody";
+        }
+        return this.name + " greets " + other;
+    }
+}
+
+fn show(s: string?) -> void {
+    if (s == null) {
+        println("null");
+    } else {
+        println(s);
+    }
+}
+
+fn pick(b: bool) -> string? {
+    if (b) {
+        return "yes";
+    }
+    return null;
+}
+
+show(null);
+maybe: string? = "from variable";
+show(maybe);
+show("literal");
+
+g: Greeter = new Greeter("Ann");
+println(g.greet(null));
+who: string? = "Bob";
+println(g.greet(who));
+println(g.greet("Cy"));
+
+r1: string? = pick(true);
+r2: string? = pick(false);
+show(r1);
+show(r2);
+
+/* EXPECT
+null
+from variable
+literal
+Ann greets nobody
+Ann greets Bob
+Ann greets Cy
+yes
+null
+*/

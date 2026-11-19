@@ -75,6 +75,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - `uint64 as float32` and `uint64 as float64` casts no longer fail to compile with "Assembly failed: unsupported mnemonic: js".
 - `**=` (power compound assignment) is no longer rejected by the parser.
 - Compound assignment with mismatched operand types, a non-numeric target, or an undefined variable now reports a normal type error (`FS-SEM-0010`; `FS-PARSE-0003` for an undefined target) instead of an internal compiler error.
+- A `string?` / `Class?` (pointer-shaped nullable) function, method, or constructor parameter now accepts `null`, a `string?` variable, and a plain `string` instead of failing with an internal FIR verifier error (`FIRV-T5`/`FIRV-T6`). A function declared `-> string?` can now `return` a plain string literal, and a function declared `-> int32[]` can now `return` an array literal (previously `FIRV-T4`). Note: the length of an array that came back from a function call is not tracked, so `.length()`, negative indexing and `for`-in over such a result are still unsupported.
 
 ## 0.5.0 - Kirin
 *July 2, 2026*

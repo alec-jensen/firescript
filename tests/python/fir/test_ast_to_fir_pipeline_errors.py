@@ -205,38 +205,28 @@ def test_directive_gated_intrinsic_without_directive_enabled():
     )
 
 
-def test_for_in_over_array_returning_function_call_hits_known_verifier_bug():
-    """Known bug (not fixed here, per project convention -- see
-    tests/TEST_MANIFEST.md's "known issues" pattern): a function declared
-    with an unsized array return type (`int32[] f() { ... }`) that returns
-    a fixed-size array literal produces a FIR Return instruction typed
-    'int32[N]' against the function's declared 'int32[]' return type,
-    which trips FIRV-T4 ("Return value type does not match declared return
-    type") as an internal compiler error (IRVerificationError) instead of
-    either compiling successfully or being rejected with a clean
-    diagnostic at an earlier stage. This is triggered here via a `for-in`
-    over such a call (a non-identifier, non-array-literal for-in
-    collection expression), which also happens to be the only way to
-    reach _array_size_of()'s final `return None` fallthrough (the
-    collection is neither an ARRAY_LITERAL nor an IDENTIFIER) -- array
-    class fields and array-returning class methods are both unsupported
-    by the parser (`class Foo { int32[] x; }` / `int32[] get(&this) {}`
-    both fail to parse: "Expected identifier after type in class body"),
-    so a free function call is the only reachable non-identifier
-    array-typed for-in collection at all."""
-    try:
-        _convert(
-            """
-            fn makeArr() -> int32[] {
-                return [1, 2, 3];
-            }
-            for (v: int32 in makeArr()) {
-            }
-            """
-        )
-        t.require(False, "expected IRVerificationError (FIRV-T4) -- has the underlying bug been fixed?")
-    except IRVerificationError as e:
-        t.require("FIRV-T4" in str(e), f"expected FIRV-T4, got: {e}")
+def test_for_in_over_array_returning_function_call_converts():
+    """Regression (B07): a function declared with an unsized array return
+    type (`-> int32[]`) that returns a fixed-size array literal used to
+    produce a FIR Return typed 'int32[3]' against the declared 'int32[]',
+    tripping FIRV-T4 as an internal compiler error. The verifier now treats
+    a sized array as assignable to an unsized one on return, as it already
+    did for call arguments. The for-in over the call is also the only way to
+    reach _array_size_of()'s final `return None` fallthrough (the collection
+    is neither an ARRAY_LITERAL nor an IDENTIFIER) -- array class fields and
+    array-returning class methods are unsupported by the parser, so a free
+    function call is the only reachable non-identifier array-typed for-in
+    collection."""
+    module = _convert(
+        """
+        fn makeArr() -> int32[] {
+            return [1, 2, 3];
+        }
+        for (v: int32 in makeArr()) {
+        }
+        """
+    )
+    t.require(any(f.name == "makeArr" for f in module.functions), "makeArr was not converted")
 
 
 def test_runtime_module_rejects_top_level_statements():

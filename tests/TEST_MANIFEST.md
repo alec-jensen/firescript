@@ -512,6 +512,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **fibonacci.fire** - Tree-recursive fibonacci over `int64` (relocated from `performance/`); FIR/FLIR snapshots
 - **functions_return_types.fire** - float/bool/string return types; also fallthrough functions (no explicit `return` on every path -- firescript doesn't enforce all-paths-return) with `bool`/`float128` return types, and an if/else where both arms already `return` (dead join block), exercising `ast_to_fir.py`'s implicit-zero-return synthesis and dead-block pruning
 - **functions_array_return.fire** - Array-typed function return value used in further expressions (array access)
+- **functions_regression_array_literal_return.fire** - Regression: a function declared `-> int32[]`/`-> string[]` returning a fixed-size array literal (previously FIRV-T4); only positive indexing is used on the result (array length after a call is untracked).
 - **functions_early_and_multiple_returns.fire** - Early return, multiple return paths
 - **functions_void.fire** - Void functions with side effects
 - **functions_missing_return_fallthrough.fire** - A non-void function (no "missing return" diagnostic exists in firescript) falling off the end without an explicit `return`: ast_to_fir.py's `_synthesize_zero()` emits an implicit zero-valued return for scalar return types (int/float/bool/char). Documents a newly-found bug: the same fallthrough for a *non-scalar* return type (e.g. `string`) crashes the compiler with an internal `FLIRV-T4` verifier error instead of a clean diagnostic or a working implicit return.
@@ -682,6 +683,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 ### `nullable/`
 - **nullable_basic.fire** - Nullable variables, `== null` / `!= null` checks
 - **nullable_advanced.fire** - Nullable class fields
+- **nullable_regression_string_param_and_return.fire** - Regression: `string?` function/method parameters accepting `null`, a `string?` variable and a plain string, and a `-> string?` function returning a string literal (previously FIRV-T4/T5/T6).
 - **nullable_scalar_local.fire** - A nullable *scalar* local variable (`int32?`, not `string?`/a class?/an array?, which are already unambiguously null-able via 0): a nullable int32 holding the value `0` must still compare not-equal to `null`, via the compiler-tracked has-value companion binding. See `ast_to_fir.py`'s "Nullable scalars" section.
 - **nullable_scalar_return.fire** - A plain function declared `-> int32?` (a nullable-scalar return type): the callee is actually compiled to return an internal `__NullableReturn<T>` struct (`ast_to_fir.py`'s "Nullable-scalar return values" section), unwrapped transparently at the call site; also confirms a side-effecting nullable-scalar-returning call is evaluated exactly once even when both its value and has-value flag are needed.
 
