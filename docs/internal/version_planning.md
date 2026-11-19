@@ -470,7 +470,7 @@ labeled commit on a branch; a session may build on it or discard it.
   functions that use the same name with different types, find where scope/type tables leak, fix,
   regression test.
 
-#### T-060-16 · Internal conversion errors print raw Python tracebacks · M · `todo`
+#### T-060-16 · Internal conversion errors print raw Python tracebacks · M · `done (task/T-060-16)`
 - AST-to-FIR and FIR-to-FLIR failures surface as a traceback with no error code: moving an owned
   module-level variable, `directive x;` inside a function, `u: string? = "a"; u.length()`. Make
   each a coded diagnostic (or fix the underlying bug), and make `main.py` print any remaining

@@ -95,6 +95,13 @@ class CodegenError(CompileTimeError):
     message_template = "{message}"
 
 
+class ConversionError(CompileTimeError):
+    """A construct the AST->FIR or FIR->FLIR conversion rejects."""
+    code = "FS-CGEN-0002"
+    category = ErrorCategory.CODEGEN
+    message_template = "{message}"
+
+
 class ImportNotFoundError(CompileTimeError):
     code = "FS-IMP-0001"
     category = ErrorCategory.IMPORT
