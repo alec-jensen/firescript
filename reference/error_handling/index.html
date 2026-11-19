@@ -823,13 +823,41 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#runtime-traps" class="md-nav__link">
+  <a href="#runtime-traps-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Runtime Traps
+        Runtime Traps [IMPLEMENTED]
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Runtime Traps [IMPLEMENTED]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#explicit-wrapping-operations-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explicit wrapping operations [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#catchable-exceptions-planned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Catchable exceptions [PLANNED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1453,13 +1481,41 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#runtime-traps" class="md-nav__link">
+  <a href="#runtime-traps-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Runtime Traps
+        Runtime Traps [IMPLEMENTED]
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Runtime Traps [IMPLEMENTED]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#explicit-wrapping-operations-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explicit wrapping operations [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#catchable-exceptions-planned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Catchable exceptions [PLANNED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1575,7 +1631,7 @@
 
 
 <h1 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h1>
-<p>firescript is designed in a way that minimizes runtime errors through static type checking and compile-time validation. However, some errors can still occur during execution, such as division by zero or out-of-bounds array access.</p>
+<p>firescript is designed in a way that minimizes runtime errors through static type checking and compile-time validation. However, some errors can still occur during execution, such as integer overflow, division by zero or out-of-bounds array access; these trap (see below).</p>
 <h2 id="error-types">Error Types<a class="headerlink" href="#error-types" title="Permanent link">&para;</a></h2>
 <ol>
 <li><strong>Syntax Errors</strong>: Caught at compile-time, these errors occur when the code is not well-formed.</li>
@@ -1595,12 +1651,56 @@
              ^
 (main.fire:3:12)
 </code></pre>
-<h3 id="runtime-traps">Runtime Traps<a class="headerlink" href="#runtime-traps" title="Permanent link">&para;</a></h3>
-<p>Runtime errors terminate the program with an error. For example, arithmetic on fixed-size integers that exceeds the representable range traps at runtime rather than silently wrapping:</p>
-<pre><code class="language-firescript">max: int8 = 127i8;
-overflow: int8 = max + 1i8;  // Runtime error: integer overflow
+<h3 id="runtime-traps-implemented">Runtime Traps [IMPLEMENTED]<a class="headerlink" href="#runtime-traps-implemented" title="Permanent link">&para;</a></h3>
+<p>firescript's model is safety: operations that would silently produce a wrong value instead <strong>trap</strong>. A trap writes one line to standard error and terminates the program with exit status <strong>101</strong>. No destructors run and nothing is unwound.</p>
+<pre><code class="language-text">firescript runtime error: &lt;Kind&gt;: &lt;detail&gt;
 </code></pre>
+<p>Every trap, whatever its cause, goes through a single runtime entry point (<code>fs_rt_trap</code> in <code>std/internal/trap.fire</code>); the compiler emits each check as a branch to a cold block that calls it. The trap kinds are:</p>
+<table>
+<thead>
+<tr>
+<th>Kind</th>
+<th>Raised by</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IntegerOverflow</code></td>
+<td><code>+</code>, <code>-</code>, <code>*</code>, unary <code>-</code>, <code>++</code>, <code>--</code>, compound assignment, and <code>**</code> whose exact result does not fit the integer type; signed <code>MIN / -1</code> and <code>MIN % -1</code></td>
+<td>operation and type, e.g. <code>addition on int8</code></td>
+</tr>
+<tr>
+<td><code>DivisionByZero</code></td>
+<td>integer <code>/</code> or <code>%</code> with a zero divisor</td>
+<td>operation and type, e.g. <code>division on int32</code></td>
+</tr>
+<tr>
+<td><code>IndexOutOfBounds</code></td>
+<td>an array index outside <code>[-length, length)</code> (reads and writes; <code>ArrayList</code> <code>get</code>/<code>set</code>/<code>removeLast</code> past its size)</td>
+<td><code>index N, length L</code></td>
+</tr>
+<tr>
+<td><code>InvalidConversion</code></td>
+<td>a float-to-integer cast of NaN, an infinity, or a value outside the target type's range (float32, float64 and float128 sources)</td>
+<td>e.g. <code>float64 to int8: NaN, infinity or out of range</code></td>
+</tr>
+<tr>
+<td><code>InvalidArgument</code></td>
+<td>a negative exponent in integer <code>**</code></td>
+<td>e.g. <code>negative exponent in integer exponentiation</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-firescript">max: int8 = 127i8;
+overflow: int8 = max + 1i8;  // firescript runtime error: IntegerOverflow: addition on int8  (exit status 101)
+</code></pre>
+<p>The checks apply to every integer width (<code>int8</code>..<code>int64</code>, <code>uint8</code>..<code>uint64</code>). Floating-point arithmetic is not trapped: it follows IEEE 754 (<code>Infinity</code>, <code>NaN</code>). Narrowing <code>as</code> casts <strong>between integer types</strong> (e.g. <code>300 as int8</code>) are explicit truncation and do not trap; float-to-integer casts do (see <a href="../type_system/">Type System</a>).</p>
 <p>Overflows that can be detected at compile time (constant expressions) are reported as compile-time errors instead.</p>
+<h4 id="explicit-wrapping-operations-implemented">Explicit wrapping operations [IMPLEMENTED]<a class="headerlink" href="#explicit-wrapping-operations-implemented" title="Permanent link">&para;</a></h4>
+<p>Code that really wants modular arithmetic uses <code>wrapping_add</code>, <code>wrapping_sub</code>, <code>wrapping_mul</code> and <code>wrapping_neg</code> from <code>@firescript/std.math.wrapping</code> (see <a href="../std/math/">Math</a>). Saturating and checked (<code>Option&lt;T&gt;</code>-returning) variants are [PLANNED].</p>
+<h4 id="catchable-exceptions-planned">Catchable exceptions [PLANNED]<a class="headerlink" href="#catchable-exceptions-planned" title="Permanent link">&para;</a></h4>
+<p>In a later release (0.9.0) these traps become catchable exceptions (for example <code>ArithmeticException</code> and <code>IndexOutOfBoundsException</code>, subclasses of a language-level <code>Exception</code>), and debug builds will print stack traces. Because every trap already goes through one entry point and each check is a branch to a cold block, that change replaces only the body of the entry point. Until then, traps always terminate the program as described above.</p>
 <h3 id="result-types-in-the-standard-library">Result Types in the Standard Library<a class="headerlink" href="#result-types-in-the-standard-library" title="Permanent link">&para;</a></h3>
 <p>For recoverable errors — currently file-system operations — the standard library uses result values instead of exceptions. Operations return a result object whose status you check explicitly:</p>
 <pre><code class="language-firescript">import @firescript/std.fs.File;

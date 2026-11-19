@@ -829,10 +829,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#integer-overflow-and-underflow-behavior" class="md-nav__link">
+  <a href="#integer-overflow-and-underflow-behavior-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Integer Overflow and Underflow Behavior
+        Integer Overflow and Underflow Behavior [IMPLEMENTED]
       
     </span>
   </a>
@@ -2130,10 +2130,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#integer-overflow-and-underflow-behavior" class="md-nav__link">
+  <a href="#integer-overflow-and-underflow-behavior-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Integer Overflow and Underflow Behavior
+        Integer Overflow and Underflow Behavior [IMPLEMENTED]
       
     </span>
   </a>
@@ -2909,14 +2909,15 @@ ularge: uint64 = 18446744073709551615u64;
 <pre><code class="language-firescript">hexSmall: int8 = 0x2Ai8;
 binMedium: uint16 = 0b111010100110u16;
 </code></pre>
-<h4 id="integer-overflow-and-underflow-behavior">Integer Overflow and Underflow Behavior<a class="headerlink" href="#integer-overflow-and-underflow-behavior" title="Permanent link">&para;</a></h4>
-<p>For all fixed-size integer types (<code>intN</code> and <code>uintN</code>), arithmetic operations that exceed the representable range will throw an error at runtime. This is to prevent silent overflow/underflow issues.</p>
+<h4 id="integer-overflow-and-underflow-behavior-implemented">Integer Overflow and Underflow Behavior [IMPLEMENTED]<a class="headerlink" href="#integer-overflow-and-underflow-behavior-implemented" title="Permanent link">&para;</a></h4>
+<p>For all fixed-size integer types (<code>intN</code> and <code>uintN</code>), an arithmetic operation (<code>+</code>, <code>-</code>, <code>*</code>, unary <code>-</code>, <code>++</code>, <code>--</code>, compound assignment, <code>**</code>) whose exact result does not fit the type <strong>traps</strong> at runtime: the program prints <code>firescript runtime error: IntegerOverflow: &lt;operation&gt; on &lt;type&gt;</code> to standard error and exits with status 101. Integer division or remainder by zero traps (<code>DivisionByZero</code>), as does signed <code>MIN / -1</code> and <code>MIN % -1</code> (<code>IntegerOverflow</code>). This prevents silent overflow/underflow. See <a href="../error_handling/">Error Handling</a>.</p>
 <pre><code class="language-firescript">max: int8 = 127i8;
-overflow: int8 = max + 1i8;  // Runtime error: Integer overflow
+overflow: int8 = max + 1i8;  // Runtime trap: IntegerOverflow: addition on int8
 </code></pre>
 <p>Overflows that can be detected at compile-time (e.g., constant expressions) will result in a compile-time error.</p>
 <pre><code class="language-firescript">compileTimeOverflow: int8 = 128i8;  // Compile-time error: Integer overflow
 </code></pre>
+<p>When modular arithmetic is intended, use the explicit <code>wrapping_add</code>, <code>wrapping_sub</code>, <code>wrapping_mul</code> and <code>wrapping_neg</code> functions from <code>@firescript/std.math.wrapping</code> ([IMPLEMENTED]). Saturating and checked variants are [PLANNED].</p>
 <h3 id="floating-point-types-floatn">Floating Point Types (<code>floatN</code>)<a class="headerlink" href="#floating-point-types-floatn" title="Permanent link">&para;</a></h3>
 <p>The <code>floatN</code> types represent N-bit floating point numbers.</p>
 <pre><code class="language-firescript">simpleDecimal: float32 = 3.14;
@@ -3069,7 +3070,7 @@ str4: string = letter as string;           // &quot;A&quot;
 </code></pre>
 <p><strong>Casting Rules:</strong></p>
 <ol>
-<li><strong>Numeric to numeric</strong>: Always allowed, may lose precision or truncate</li>
+<li><strong>Numeric to numeric</strong>: Always allowed, may lose precision or truncate. Narrowing between <em>integer</em> types (<code>300 as int8</code>) is explicit truncation to the low bits and never traps. A <em>float-to-integer</em> cast truncates toward zero and traps (<code>InvalidConversion</code>) if the value is NaN, infinite, or outside the target type's range (e.g. <code>300.5 as int8</code>, <code>-1.0 as uint8</code>; <code>-0.5 as uint8</code> is <code>0</code>).</li>
 <li><strong>String to numeric</strong>: Parses the string</li>
 <li><strong>Numeric to string</strong>: Converts to string representation</li>
 <li><strong>Boolean to string</strong>: "true" or "false"</li>

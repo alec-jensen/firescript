@@ -1092,6 +1092,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#wrapping-arithmetic-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wrapping arithmetic [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#not-yet-exported-in-development" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1515,6 +1526,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#wrapping-arithmetic-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wrapping arithmetic [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#not-yet-exported-in-development" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1670,6 +1692,40 @@ println(bounded);   // 10
 <blockquote>
 <p>Note: assign the result of a generic call to a variable before passing it to another generic function (like <code>println</code>). Nesting generic calls directly (e.g., <code>println(max(3, 7))</code>) currently fails to compile — a known limitation.</p>
 </blockquote>
+<h2 id="wrapping-arithmetic-implemented">Wrapping arithmetic [IMPLEMENTED]<a class="headerlink" href="#wrapping-arithmetic-implemented" title="Permanent link">&para;</a></h2>
+<p>Integer <code>+ - * -</code> trap on overflow (<a href="../../error_handling/">Error Handling</a>). <code>@firescript/std.math.wrapping</code> provides the explicit escape hatch: results wrap modulo 2^N (two's complement for the signed types). The functions are generic over <code>Numeric</code> (floating-point arguments behave like the ordinary operators).</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>wrapping_add(a: T, b: T)</code></td>
+<td><code>a + b</code>, wrapping</td>
+</tr>
+<tr>
+<td><code>wrapping_sub(a: T, b: T)</code></td>
+<td><code>a - b</code>, wrapping</td>
+</tr>
+<tr>
+<td><code>wrapping_mul(a: T, b: T)</code></td>
+<td><code>a * b</code>, wrapping</td>
+</tr>
+<tr>
+<td><code>wrapping_neg(a: T)</code></td>
+<td><code>-a</code>, wrapping (<code>wrapping_neg(int8 -128)</code> is <code>-128</code>)</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-firescript">import @firescript/std.math.wrapping.wrapping_add;
+
+big: uint8 = 255u8;
+wrapped: uint8 = wrapping_add(big, 1u8);  // 0 (plain big + 1u8 would trap)
+</code></pre>
+<p>Saturating (<code>saturating_add</code>, ...) and checked (<code>checked_add(...) -&gt; Option&lt;T&gt;</code>) variants are [PLANNED]: they need per-type <code>MIN</code>/<code>MAX</code> and a generic way to return <code>Option&lt;T&gt;</code> for every numeric <code>T</code>, which the language cannot express yet.</p>
 <h2 id="not-yet-exported-in-development">Not Yet Exported [IN DEVELOPMENT]<a class="headerlink" href="#not-yet-exported-in-development" title="Permanent link">&para;</a></h2>
 <p>The following exist in the module sources but are private (not <code>export</code>ed), so they cannot be imported yet:</p>
 <ul>

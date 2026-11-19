@@ -1757,7 +1757,7 @@ scores[1] = 95;                // Array becomes [85, 95, 78, 90, 88]
 lastScore: int8 = scores[-1];    // 88 (last element)
 secondLast: int8 = scores[-2];   // 90 (second to last)
 </code></pre>
-<p>⚠️ <strong>Warning:</strong> Accessing an index outside the array bounds will cause a runtime error. Always ensure your index is valid before access.</p>
+<p>Every index operation (read or write) is bounds-checked at runtime: an index outside <code>[-length, length)</code> traps with <code>firescript runtime error: IndexOutOfBounds: index N, length L</code> and exit status 101 [IMPLEMENTED] (see <a href="../error_handling/">Error Handling</a>). The check is skipped where the index and length are both compile-time constants and in range. The length is known for local arrays and array parameters (passed as a hidden length) and, inside the standard library, for the <code>ArrayList</code>/<code>HashMap</code> buffers (checked against their <code>_len</code>/<code>_cap</code>); any other unsized array reached through a class field has no tracked length and is not checked.</p>
 <h2 id="array-operations">Array Operations<a class="headerlink" href="#array-operations" title="Permanent link">&para;</a></h2>
 <p>firescript provides several built-in methods for manipulating arrays:</p>
 <ul>

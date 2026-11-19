@@ -1442,11 +1442,13 @@ println(v.size());   // 2
 <li><code>size()</code>: Number of elements currently stored.</li>
 <li><code>add(value)</code>: Appends <code>value</code>, growing the backing buffer (capacity doubles, starting
   at 4) if needed.</li>
-<li><code>removeLast()</code>: Removes and returns the last element. Shrinks the tracked length before
-  reading, so it's safe to call on an <code>ArrayList&lt;T&gt;</code> of any <code>T</code>, including an Owned type.</li>
-<li><code>get(i)</code> / <code>set(i, value)</code>: Read or overwrite the element at index <code>i</code>. No bounds
-  checking is performed; an out-of-range index is undefined behavior (matches core
-  array indexing).</li>
+<li><code>removeLast()</code>: Removes and returns the last element; safe to call on an <code>ArrayList&lt;T&gt;</code>
+  of any <code>T</code>, including an Owned type. Traps (<code>IndexOutOfBounds: index -1, length 0</code>) on an
+  empty list.</li>
+<li><code>get(i)</code> / <code>set(i, value)</code>: Read or overwrite the element at index <code>i</code>. <code>i</code> must be in
+  <code>[-size(), size())</code> (a negative index counts from the end, as for core arrays); anything
+  else, including an index inside the spare capacity, traps with
+  <code>firescript runtime error: IndexOutOfBounds: index N, length L</code> [IMPLEMENTED].</li>
 </ul>
 <h3 id="owned-vs-copyable-element-types">Owned vs. Copyable element types<a class="headerlink" href="#owned-vs-copyable-element-types" title="Permanent link">&para;</a></h3>
 <p><code>ArrayList&lt;T&gt;</code> itself is an Owned type. Its destructor always frees its own backing buffer,
