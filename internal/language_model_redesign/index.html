@@ -1648,6 +1648,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#12-absence-optiont-no-null-planned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Absence: Option&lt;T&gt;, no null [PLANNED]
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1896,9 +1907,9 @@ grammar ambiguity with <code>for-in</code>.</p>
   class implements it.</li>
 <li><code>x.isExactly&lt;T&gt;()</code> — true only if the concrete type is exactly <code>T</code>; rejected at compile time
   for an interface or abstract class <code>T</code>. Needed for symmetric <code>equals()</code> implementations.</li>
-<li><code>x.downcast&lt;T&gt;()</code> — returns a nullable reference (<code>&amp;T?</code>) using the <code>isInstance</code> rule.
-  This requires nullable reference types; whether references can be nullable is an open
-  question for the <code>&amp;T</code> work.</li>
+<li><code>x.downcast&lt;T&gt;()</code> — returns <code>Option&lt;&amp;T&gt;</code> using the <code>isInstance</code> rule (there is no nullable
+  reference; see §12). This requires an <code>Option</code> that can hold a reference; whether it can is an
+  open question for the <code>&amp;T</code> work.</li>
 </ul>
 <p>Cost: exact check compares a type ID; the class is-a check is an O(1) range test over a
 depth-first numbering of the single-inheritance hierarchy (the whole program is known);
@@ -2005,9 +2016,33 @@ capture. An uncaught exception prints its traceback to stderr and exits with a n
 <li>Whether <code>&amp;</code> moves into the type position for parameters.</li>
 <li>Default member visibility and the exact meaning of <code>protected</code>.</li>
 <li>How <code>Object</code>'s common methods are declared and overridden.</li>
-<li>Whether references can be nullable (needed by <code>downcast</code>); whether lossless numeric widening is implicit.</li>
+<li>Whether <code>Option</code> can hold a reference (needed by <code>downcast</code>); whether lossless numeric widening is implicit.</li>
 <li>Exact <code>std.fs</code> split between <code>Result</code> and thrown <code>IOException</code>s; whether a lint should warn on blanket <code>catch (Exception e)</code> by default.</li>
 <li>Whether and when <code>Box</code> / <code>Shared</code> land relative to capturing closures.</li>
+</ul>
+<h2 id="12-absence-optiont-no-null-planned">12. Absence: <code>Option&lt;T&gt;</code>, no <code>null</code> [PLANNED]<a class="headerlink" href="#12-absence-optiont-no-null-planned" title="Permanent link">&para;</a></h2>
+<p>Decided 2026-11-19.</p>
+<ul>
+<li><strong>One mechanism.</strong> A value that may be absent is an <code>Option&lt;T&gt;</code>. The <code>null</code> literal and the
+  nullable type marker <code>T?</code> are removed from the language. Keeping both would give users two ways
+  to say the same thing.</li>
+<li><strong>Why <code>Option</code>.</strong> It fits the class and library model, composes (it nests, and it can be a
+  generic argument such as <code>ArrayList&lt;Option&lt;T&gt;&gt;</code>), and is unwrapped with <code>match</code>.</li>
+<li><strong>Explicit, no implicit wrapping.</strong> A function declared <code>-&gt; Option&lt;int32&gt;</code> does not accept
+  <code>return 5;</code> or <code>return null;</code>. It returns <code>Some(5)</code> or <code>None()</code>. An implicit wrap would
+  allocate invisibly, make <code>null</code> mean <code>None</code> only in some contexts, and be ambiguous for
+  <code>Option&lt;Option&lt;T&gt;&gt;</code>.</li>
+<li><strong>Terse through inference.</strong> <code>Some(x)</code> and <code>None()</code> infer their type arguments from the
+  expected type (declared return type, typed variable, parameter). Today <code>None()</code> needs the
+  explicit <code>Option&lt;int32&gt;.None()</code> form because a type parameter absent from the arguments cannot
+  be recovered; expected-type inference removes that need without any implicit conversion.</li>
+<li><strong>Representation.</strong> <code>Option&lt;T&gt;</code> becomes a real <code>enum { Some(T), None }</code>, which needs generic
+  enums and <code>match</code> first. Small enums need inline storage (or another compact form) so a
+  maybe-<code>int32</code> does not allocate.</li>
+<li><strong>Ordering.</strong> Until generic enums land, <code>T?</code>, <code>null</code> and the null-flow rule stay as shipped in
+  0.6.0. Removal is scheduled with the object model in 0.9.0.</li>
+<li><strong>Not decided here.</strong> An optional-chaining operator and <code>?</code>-style propagation are deferred;
+  they are tied to operator overloading and the error design (§9.2).</li>
 </ul>
 
 

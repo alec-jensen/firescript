@@ -2039,6 +2039,7 @@
 </ul>
 <h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
 <ul>
+<li>Reassigning a <code>const</code> binding is now a compile error (<code>PI = 3.2;</code>, <code>PI += 1;</code>, <code>PI++;</code>, <code>PI--;</code>), for both module-level and local constants. Previously these compiled silently.</li>
 <li>firescript now uses <strong>postfix type declarations</strong> everywhere, Rust/TypeScript-style, instead of the previous C-style prefix syntax. This is a whole-language syntax change:</li>
 <li>Variables and constants: <code>int32 a = 5;</code> → <code>a: int32 = 5;</code>; <code>const float64 PI = 3.14;</code> → <code>const PI: float64 = 3.14;</code>.</li>
 <li>Nullable markers move to the type: <code>int32 a? = null;</code> → <code>a: int32? = null;</code>.</li>
