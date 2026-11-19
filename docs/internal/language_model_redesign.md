@@ -273,34 +273,51 @@ out-of-range indexing, invalid float-to-int conversions) print a message and ter
 program (`docs/reference/error_handling.md`). The design below is for 0.9.0, after the object
 model (§5) it depends on.
 
-### 9.1 Model
+### 9.1 The rule: operations throw, function calls return a `Result`
 
-- A Python-style exception hierarchy rooted at the language-level `Exception extends Object`,
-  carrying a message and an optional cause: `Exception` -> `IOException` -> `FileOpenException`,
-  `ArithmeticException` -> `DivisionByZeroException`, `IndexOutOfBoundsException`, and so on.
-- `throw expr;`, `try { } catch (T e) { } finally { }`. A catch clause matches by runtime type
-  (the `isInstance` rule of §8.3), so `catch (IOException e)` catches the whole subtree. Syntax is
-  provisional.
-- **Runtime traps are catchable exceptions.** Integer overflow, division by zero, bounds errors
-  and invalid float-to-int conversions raise subclasses of `ArithmeticException` /
-  `IndexOutOfBoundsException` etc. Catching one is the programmer acknowledging they will handle
-  it; not catching it terminates the program with a stack trace. The safety package that adds these
-  traps (before exceptions exist) routes every trap through one runtime entry point so it can later
-  throw instead of exiting.
-- A blanket `catch (Exception e)` is legal but discouraged; a lint warns on it.
+There is exactly one way to signal each kind of failure:
 
-### 9.2 Exceptions and `Result` coexist
+- **Operations throw.** A language operation that can fail raises an exception: integer
+  overflow (`+ - * / % **`, unary minus, `++`/`--`), division and modulo by zero, array indexing
+  out of bounds, a float-to-int cast of NaN/infinity/out-of-range, and so on. These are the
+  runtime traps of `docs/reference/error_handling.md`, made catchable.
+- **Function calls return a `Result`.** A function that can fail returns `Result<T, E>` (or
+  `Option<T>` when there is no error to report). A function that cannot fail returns a plain
+  value. Fallibility is visible in the signature and never raised behind the caller's back.
+- Exceptions are rooted at `Exception extends Object`, with a message and an optional cause, in a
+  Python-style hierarchy: `Exception` -> `ArithmeticException` -> `OverflowException`,
+  `DivisionByZeroException`; `IndexOutOfBoundsException`; `InvalidConversionException`; and so on.
+  `try { } catch (T e) { } finally { }` matches by runtime type (the `isInstance` rule of §8.3), so
+  `catch (ArithmeticException e)` catches the whole subtree. Syntax is provisional.
+- An exception raised inside a callee propagates through its callers until caught (an overflow
+  deep in a call chain is still an exception), so callers do not need to be `Result`-aware of
+  operations inside callees.
+- Catching a trap is the programmer acknowledging they will handle it; not catching it terminates
+  the program with a stack trace (§9.3). A blanket `catch (Exception e)` is legal but discouraged,
+  and a lint warns on it.
+- The same hierarchy classifies errors carried in a `Result`: `Result<File, FileOpenException>`
+  (`FileOpenException` -> `IOException` -> `Exception`) is an ordinary error value, not something
+  that is thrown. `std.fs` opening a file returns such a `Result`.
+- The runtime-trap work that precedes exceptions routes every trap through one runtime entry point
+  so that it can later throw instead of exiting.
 
-They answer different questions. Exceptions are for **errors**: something went wrong that the
-immediate caller usually cannot handle (a trap, a violated precondition, an I/O failure in the
-middle of an operation). `Result<T,E>` / `Option<T>` are for **expected outcomes the caller
-branches on routinely** (input validation, "does this file open"). Guideline: if the caller is
-expected to check, return a `Result`; if failure means something is broken, throw.
-- `std.fs` opening a file is an expected outcome: `File.open` keeps returning a `Result` whose
-  error is a `FileOpenException`; unexpected failures during a read or write throw `IOException`
-  subclasses. The exact split per function is decided when 0.9.0 lands.
-- The two bridge: a `Result` has `unwrap()` that throws its error (the error type is an
-  `Exception`), and a caller can catch an exception and return a `Result` explicitly.
+### 9.2 Consequences and open questions
+
+- **Ergonomics of `Result` everywhere.** If every fallible call returns a `Result`, propagating an
+  error through several calls needs a short form. A propagation operator (a postfix `?` or a
+  `try`-expression that returns early with the error) is strongly recommended; without it,
+  every call site needs an explicit match. Open.
+- **`unwrap()` and friends.** `Result.unwrap()` cannot return a value when the result is an error.
+  Proposal: it raises an exception (`UnwrapException` carrying the error), as the one explicit,
+  named bridge from a `Result` to an exception. Open.
+- **Collections.** `list.get(i)` is a function, so under the rule it returns an `Option`/`Result`.
+  Indexing with `list[i]` would be an operation and would throw. That points at an indexing
+  interface (`Indexable`) so collections support `[]`; open for 0.9.0.
+- **No user-written `throw` statement in the initial design.** Exceptions come from operations.
+  Whether a `catch` block can rethrow (`throw e;`) is open.
+- **Naming.** Explicit arithmetic functions follow the same rule: `wrapping_*`/`saturating_*`
+  cannot fail and return plain values, and `checked_*` can fail and returns a `Result`. Whether
+  method names are camelCase (the standard library's majority) or snake_case is open.
 
 ### 9.3 Stack traces
 
@@ -314,14 +331,14 @@ capture. An uncaught exception prints its traceback to stderr and exits with a n
 ### 9.4 Implementation sketch
 
 - No stack unwinder is required initially. The compiler infers, over the whole program, which
-  functions can throw. A throwing function returns an extra error value, and each call site checks
-  it and branches. A throw is then an early return, and the compiler already inserts drops on every
+  functions can throw. A throwing function (one containing an operation that can raise, or calling one that can) returns
+  an extra error value, and each call site checks it and branches. A throw is then an early return, and the compiler already inserts drops on every
   early exit, so owned values are released correctly and `finally` is a cleanup block.
 - Callers of functions that cannot throw pay nothing. Because every integer operation can trap,
   almost every function will be inferred as throwing; the per-call check is the cost. A table-based
   unwinder (zero happy-path cost, more runtime machinery) is a later optimization. The semantics
   above do not depend on which implementation is used.
-- A thrown exception is a heap-allocated object owned by the in-flight exception and moved into the
+- A raised exception is a heap-allocated object owned by the in-flight exception and moved into the
   catch variable, so it depends on `Box`/owned polymorphism (§2.4) arriving with the object model.
 
 ## 10. Migration notes
