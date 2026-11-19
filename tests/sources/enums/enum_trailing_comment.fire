@@ -1,0 +1,21 @@
+// Comments after the last variant (no trailing comma) are not mistaken for a
+// missing separator, for tag-only, payload and block-comment forms.
+import @firescript/std.io.println;
+
+enum Color {
+    Red,
+    Green  // last variant, no trailing comma
+}
+
+enum Shape {
+    Dot,
+    Circle(radius: float64)  /* last variant with payload */
+}
+
+c: Color = Color.Green;
+s: Shape = Shape.Circle(1.5);
+println("ok");
+
+/* EXPECT
+ok
+*/

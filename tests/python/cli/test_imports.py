@@ -39,7 +39,7 @@ def test_import_not_found_compile():
         proc = t.run_compiler([src])
         t.require_eq(proc.returncode, 1)
         combined = proc.stdout + proc.stderr
-        t.require("Import resolution failed" in combined, combined)
+        t.require("Module not found: definitely_missing_module" in combined, combined)
 
 
 def test_import_with_syntax_error():

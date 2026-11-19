@@ -713,7 +713,7 @@ class DeclarationsMixin(TypeSystemMixin):
                 self.expected_token_error("identifier in import symbol list", self.current_token)
                 return False
             salias = self._parse_optional_alias()
-            symbols.append({"name": sname_tok.value, "alias": salias})
+            symbols.append({"name": sname_tok.value, "alias": salias, "index": sname_tok.index})
             if self.current_token and self.current_token.type == "COMMA":
                 self.advance()
                 continue
@@ -1434,6 +1434,13 @@ class DeclarationsMixin(TypeSystemMixin):
             variants.append(variant_node)
             variant_payloads[variant_tok.value] = payload_fields
 
+            # A comment after the variant (e.g. before the closing '}') must
+            # not be mistaken for a missing separator.
+            while self.current_token and self.current_token.type in (
+                "SINGLE_LINE_COMMENT",
+                "MULTI_LINE_COMMENT_START",
+            ):
+                self._skip_comment()
             if self.current_token and self.current_token.type == "COMMA":
                 self.advance()
             elif self.current_token and self.current_token.type != "CLOSE_BRACE":

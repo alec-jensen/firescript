@@ -1,0 +1,5 @@
+// Importing a symbol the (existing) module does not define at all is
+// FS-IMP-0003; the valid symbol in the same import is fine.
+import visibility_provider.{addOne, nothere};  //~ ERROR FS-IMP-0003 @37
+
+x: int32 = addOne(1);

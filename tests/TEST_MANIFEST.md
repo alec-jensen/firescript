@@ -155,7 +155,7 @@ Plain `assert` also works. Covers:
   exception branches, `compile_file()`'s per-stage exception
   handling (monkeypatching `CompilerPipeline`/`ASTToFIRConverter`/
   `FIRToFLIRLowering` methods to raise), `lint_text()`'s early-exit
-  branches and its parser/semantic-analysis diagnostics, and `main()`'s CLI-level error branches (invalid path args,
+  branches, its parser/semantic-analysis diagnostics, and its import diagnostics (unresolved/cyclic/unexported imports, parse errors in imported modules), and `main()`'s CLI-level error branches (invalid path args,
   unsupported target, output-move failure), driven by monkeypatched
   `sys.argv` and caught `SystemExit`.
   `test_compiler_pipeline.py` covers `firescript/compiler_pipeline.py`'s
@@ -347,15 +347,10 @@ Plain `assert` also works. Covers:
   is the arbiter of every other test.
 - `tests/python/imports/test_module_resolver.py` -- direct unit tests for
   `firescript/imports.py`'s `ModuleResolver` and `build_merged_ast`:
-  `_stdlib_package_for`'s package derivation, and three cases that pin
-  known, not-yet-fixed bugs: `_load_module`'s cycle-detection branch is
-  effectively unreachable for a genuine A->B->A import cycle (it fires only
-  when called directly with a faked `load_stack`; see
-  `tests/sources/invalid/imports/import_cycle_a.fire`, which is caught by a
-  downstream undefined-symbol error instead of `CyclicImportError`), and
-  `build_merged_ast`'s entry-vs-import conflict handling (including its
-  `ValueError` fallback), which only logs the conflict instead of failing
-  the compile.
+  `_stdlib_package_for`'s package derivation, real A->B->A cycle detection
+  (FS-IMP-0002; a diamond import is not a cycle), and `build_merged_ast`'s
+  entry-vs-import conflict recording (including its `ValueError` fallback),
+  surfaced by the frontend as FS-IMP-0005.
   `test_module_resolver_extra.py` covers the rest of `ModuleResolver`/
   `build_merged_ast` with real temp files or hand-built ASTs: default
   `import_root`, `dotted_to_path`/`path_to_dotted` fallbacks, `parse_file`
@@ -440,6 +435,7 @@ Each heading below is a directory under `tests/sources/`.
 - **generators_advanced.fire** - Early `return` from within a generator body (exhaustion before the loop condition would naturally end it), multiple `yield` points in one generator, and calling the same generator function from two separate for-in sites (exercises the FLIR lowering's "generator already lowered" guard). Note: a third case (a generator's body containing a for-in loop over another generator call) was tried and found to trigger an internal compiler error in `flir/lowering.py`'s generator frame lowering; see the comment in the file. Also a two-parameter generator with three yield sites (multi-way resume dispatch; parameters persist across resumes), merged from the former `generators_multi_yield_sites.fire`.
 
 ### `enums/`
+- **enum_trailing_comment.fire** - Regression: a line or block comment after the last enum variant (no trailing comma; tag-only and payload forms) is not mistaken for a missing separator.
 - **enum_tag_only.fire** - Tag-only (no data payload) enum declarations, variant construction (`EnumName.Variant`), and reassignment (verifies the previously-held owned enum value is dropped without corrupting later allocations).
 - **enum_payload_construct.fire** - Enum variants with named data payloads (e.g. `Circle(radius: float64)`), positional construction with arguments, and reassignment across variants with different payload shapes sharing the same tagged-union storage.
 - **enum_owned_payload_drop.fire** - Owned payload data (a `string` field, and a class field elsewhere) is dropped correctly when the active variant goes out of scope; the destructor is tag-dispatched so only the active variant's owned fields are ever freed (never a different variant's, since payload storage is shared/overlapping). Also covers a class with an owned-enum-typed field, and 5000 construct/match/drop cycles as a leak/double-free sanity check.
@@ -530,9 +526,9 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **scoping_control_flow.fire** - if/else, while, for, for-in loop scope
 - **scoping_function.fire** - Function scope (parameters and locals not visible outside)
 - **scoping_variable_declaration_order.fire** - Declared-before-use, same names in separate sibling scopes
-- **scope_stray_token_recovery.fire** - Parser error-recovery around a stray/unexpected token in statement position, verifying the recovered scope's remaining valid statements still resolve correctly
 
 ### `expressions/`
+- **expression_comment_between_tokens.fire** - Regression: a comment between an operator and its operand is skipped rather than parsed as the operand.
 - **expressions_function_calls.fire** - Function call expressions, nested function calls
 - **operator_precedence.fire** - Operator precedence (each expression commented with the expected value, so a wrong precedence produces an obviously-wrong number)
 
@@ -718,10 +714,10 @@ Tests in `tests/sources/invalid/<category>/` are expected to fail compilation an
 - **control_flow/** - `control_flow_invalid.fire` (`break`/`continue` outside a loop and non-bool `if`/`while` conditions), `if_condition_syntax_errors.fire` (malformed if-condition expression where recovery lands directly on the closing `)`), `for_in_extra_tokens.fire`, `unterminated_if_body.fire`
 - **declarations/** - `const_missing_type.fire` (a `const` declaration missing its type token), `builtin_method_decorator_outside_std_internal.fire` (`@builtin_method` is restricted to `firescript/std/internal/`; a user source file declaring one is rejected at parse time)
 - **enums/** - `enum_generic_unsupported.fire` (generic enums `enum Foo<T>` are rejected with a clear, intentional "not yet supported" error rather than a confusing parse failure), `enum_variant_arity_mismatch.fire` (constructing a payload variant with too many/too few arguments is rejected with a clear arity-mismatch error), `enum_construct_move_errors.fire` (regression: passing an owned identifier as an enum variant's payload argument moves it, so using that identifier afterward is a use-after-move error, same as passing it to a function/constructor/method call), `enum_body_syntax_errors.fire` (malformed enum variant declarations)
-- **expressions/** - `cast_to_non_type_token.fire`, `compound_assignment_missing_rhs.fire`, `expression_at_eof.fire` (missing initializer expression at true EOF; also produces a parse-level "unexpected token" alongside the higher-level "expected expression" diagnostic), `implicit_assign_undefined_receiver.fire`, `implicit_assign_undefined_rhs.fire`, `postfix_cast_after_broken_paren.fire`
+- **expressions/** - `cast_to_non_type_token.fire`, `compound_assignment_missing_rhs.fire`, `expression_at_eof.fire` (missing initializer expression at true EOF), `implicit_assign_undefined_receiver.fire`, `implicit_assign_undefined_rhs.fire`, `postfix_cast_after_broken_paren.fire`
 - **functions/** - `function_errors.fire`, `reserved_name_typeof_arg_count.fire`
 - **generics/** - `generics_errors.fire`, `generic_declaration_errors.fire`, `generic_constraint_violation_errors.fire` (explicit type argument that violates a union-of-types constraint), `generic_class_template_field_errors.fire`/`generic_class_field_access_unknown.fire` (unknown field access inside a generic class template's own method body, before any concrete instantiation), `generic_func_empty_type_args.fire`, `new_constructor_empty_type_args.fire`, `generic_class_type_arg_errors.fire` (malformed or unclosed type-argument lists in a generic class instantiation, including nested ones), `generic_function_inference_errors.fire`
-- **imports/** - `import_errors.fire`, `export_visibility_private.fire` (importing a non-exported symbol), `visibility_provider.fire` (helper, not a standalone test), `deferred_generic_call_empty_type_args.fire`/`deferred_generic_call_errors.fire`, `import_trailing_dot_eof.fire` (dotted import path ending right at EOF after the trailing `.`), `import_inside_function.fire` (import statement nested inside a function body)
+- **imports/** - `import_module_not_found.fire` (FS-IMP-0001), `import_symbol_not_found.fire` (FS-IMP-0003), `export_visibility_private.fire` (importing a non-exported symbol, FS-IMP-0004), `import_cycle_a.fire` + helper `import_cycle_b_provider.fire` (FS-IMP-0002), `import_symbol_conflict_entry.fire` / `import_symbol_conflict_modules.fire` + helper `conflict_provider.fire` (FS-IMP-0005), `visibility_provider.fire` (helper, not a standalone test), `deferred_generic_call_empty_type_args.fire`/`deferred_generic_call_errors.fire`, `import_trailing_dot_eof.fire` (dotted import path ending right at EOF after the trailing `.`), `import_inside_function.fire` (import statement nested inside a function body)
 - **literals/** - `literal_errors.fire`
 - **match/** - `match_non_exhaustive.fire` (missing variant arms and no `_` wildcard), `match_duplicate_variant.fire` (same variant matched twice), `match_wildcard_not_last.fire` (arms after a wildcard `_` are unreachable), `match_unknown_variant.fire` (pattern references a variant that doesn't exist on the enum), `match_unknown_payload_field.fire` (pattern binds a field name the variant doesn't declare), `match_duplicate_field_binding.fire` (the same payload field is bound twice in one pattern), `match_syntax_errors.fire` (malformed match expression syntax), `match_missing_scrutinee.fire`, `match_pattern_bad_binding.fire`, `match_pattern_missing_variant.fire`
 - **nullable/** - `nullable_errors.fire`
@@ -729,7 +725,7 @@ Tests in `tests/sources/invalid/<category>/` are expected to fail compilation an
 - **operators/** - `operator_errors.fire`
 - **scoping/** - `scope_errors.fire` (variable shadowing not allowed, use before declaration, out-of-scope access), `parameter_shadowing_errors.fire` (function and class-constructor parameters that shadow an outer-scope variable), `bare_assignment_without_declaration_errors.fire` (bare `name = expr;` to a never-declared name is always rejected, even when the RHS is a constructor call or an instance method call whose type could plausibly be inferred)
 - **strings/** - `string_implicit_conv_error.fire`, `string_method_errors.fire`
-- **syntax/** - `syntax_errors.fire` (missing semicolons, unclosed parens/brackets, invalid tokens, malformed `if`/`while`, dangling `else`), `export_errors.fire` (invalid uses of `export`), `expression_operand_errors.fire` (missing right-hand operands and malformed primary expressions), `declaration_dispatch_errors.fire`, `statement_dispatch_errors.fire`
+- **syntax/** - `syntax_errors.fire` (missing semicolons, unclosed parens/brackets, invalid tokens, malformed `if`/`while`, dangling `else`), `export_errors.fire` (invalid uses of `export`), `expression_operand_errors.fire` (missing right-hand operands and malformed primary expressions), `declaration_dispatch_errors.fire`, `statement_dispatch_errors.fire`, `stray_closing_bracket_in_scope.fire` / `stray_closing_paren_top_level.fire` (a stray `]` / `)` is reported, not silently skipped)
 - **types/** - `type_mismatches.fire`, `type_errors_comprehensive.fire` (type mismatches in assignments, function calls, operators, conditions, indexing), `semantic_modulo_mismatch.fire`, `binary_operator_type_errors.fire` (one mismatch per operator: `+`, `-`, `%`, `==`, `&&`, `||`), `cast_undefined_operand.fire`, `unary_operator_type_errors.fire`
 
 ### Error Test System

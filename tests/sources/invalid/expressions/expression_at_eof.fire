@@ -2,5 +2,4 @@
 // immediately after '='.
 
 fn expression_at_eof() -> void {  //~ ERROR FS-PARSE-0010 @32
-    x: int32 =  //~ ERROR FS-PARSE-0012 @15
-//~^ ERROR FS-PARSE-0010 @15
+    x: int32 =  //~ ERROR FS-PARSE-0010 @15

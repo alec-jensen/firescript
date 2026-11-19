@@ -147,7 +147,8 @@ import src.utils.utils.{helper, CONSTANT}
 
 - Import statements are only valid at the top level of a source file.
 - The compiler will resolve imports from the project root and report missing files or symbols.
-- Cyclic imports should be detected and reported as errors.
+- Cyclic imports are reported as `FS-IMP-0002`; a missing module is `FS-IMP-0001`; importing a name a module does not define is `FS-IMP-0003`; importing a name it defines but does not `export` is `FS-IMP-0004`.
+- Two imported modules exporting the same top-level name, or the entry file defining a name it also explicitly imports, is `FS-IMP-0005`.
 
 ## Implementation Status
 

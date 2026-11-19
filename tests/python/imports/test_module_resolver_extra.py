@@ -6,15 +6,6 @@ hand, drive the pass directly" pattern used elsewhere in this suite (see
 e.g. tests/python/fir/test_verifier_types.py). Several branches here are
 defensive guards that a real compile through the lexer/parser can't
 reach; each such case says so in its docstring/comment.
-
-Known dead code (documented, not re-litigated per-test): the cycle-detection
-branch in `ModuleResolver._load_module` (imports.py) can only fire for a
-dotted name that is *not yet* in `self.modules` but *is* on the recursion
-`load_stack` -- but a real A->B->A import cycle always populates
-`self.modules[dotted]` before recursing into B, so `dotted in self.modules`
-short-circuits on the way back around and the cycle branch is never reached
-through real recursion. We exercise it here only via a direct, artificial
-`_load_module` call that fakes up that state.
 """
 
 from __future__ import annotations
@@ -187,12 +178,9 @@ def test_load_module_import_not_found_raises_file_not_found():
             t.require("Module not found" in str(e), str(e))
 
 
-def test_cycle_detection_branch_is_unreachable_via_real_recursion_but_direct_call_hits_it():
-    # See module docstring: a genuine A->B->A cycle can't reach the
-    # `dotted in load_stack` check because `self.modules[dotted]` is set
-    # before recursing. We call `_load_module` directly with a load_stack
-    # that already contains `dotted` while `self.modules` does not, to
-    # exercise the branch as documented dead-but-defensive code.
+def test_cycle_detection_branch_direct_call_reports_structured_error():
+    # Direct call with a load_stack already containing `dotted`; the real
+    # recursion path is covered in test_module_resolver.py.
     with t.tmpdir() as root:
         resolver = ModuleResolver(import_root=root)
         _write(os.path.join(root, "a.fire"), "")
@@ -201,6 +189,7 @@ def test_cycle_detection_branch_is_unreachable_via_real_recursion_but_direct_cal
             t.require(False, "expected RuntimeError for cyclic import")
         except RuntimeError as e:
             t.require("Cyclic import detected" in str(e), str(e))
+            t.require_eq(e.error.code, "FS-IMP-0002")
 
 
 def test_stdlib_sibling_relative_import_resolves_within_package():
@@ -275,16 +264,12 @@ def test_append_symbol_with_deps_skips_node_already_emitted():
     entry_ast = _root()
     entry = Module("entry", "/nonexistent/entry.fire", entry_ast, "unused")
 
-    with _capture_logging() as records:
-        root = build_merged_ast(entry, [dep, entry])
+    root = build_merged_ast(entry, [dep, entry])
     names = sorted(getattr(c, "name", None) for c in root.children)
     t.require_eq(names, ["a", "b"])
     # `b` is emitted once as a dependency of `a` and must not then be
-    # re-appended as a direct export (which would be logged as a conflict).
-    t.require(
-        not any("Conflicting top-level symbol" in r.getMessage() for r in records),
-        [r.getMessage() for r in records],
-    )
+    # re-appended as a direct export (which would be recorded as a conflict).
+    t.require_eq(root._import_conflicts, [])
 
 
 def test_append_export_skips_duplicate_symbol_name_across_modules():
@@ -307,6 +292,10 @@ def test_append_export_skips_duplicate_symbol_name_across_modules():
     shared_nodes = [c for c in root.children if getattr(c, "name", None) == "shared"]
     t.require(len(shared_nodes) == 1, shared_nodes)
     t.require(shared_nodes[0] is fn_a)
+    t.require_eq(
+        root._import_conflicts,
+        [{"symbol": "shared", "first": "mod_a", "second": "mod_b", "entry": False}],
+    )
 
 
 def test_append_symbol_with_deps_node_none_when_export_missing_from_top_level():

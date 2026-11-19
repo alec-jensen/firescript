@@ -217,6 +217,13 @@ class ExpressionsMixin(ParserBase):
         return self.parse_primary()
 
     def parse_primary(self):
+        # Comments are ordinary tokens: step over them so a comment between an
+        # operator and its operand (or at EOF) is never parsed as an operand.
+        while self.current_token and self.current_token.type in (
+            "SINGLE_LINE_COMMENT",
+            "MULTI_LINE_COMMENT_START",
+        ):
+            self._skip_comment()
         token = self.current_token
         if token is None:
             return None

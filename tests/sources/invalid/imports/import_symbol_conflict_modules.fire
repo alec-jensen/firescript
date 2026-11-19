@@ -1,0 +1,7 @@
+// Two imported modules export the same top-level name: FS-IMP-0005 at the
+// import of the second module (silently keeping the first would call the
+// wrong function).
+import visibility_provider.addOne;
+import conflict_provider.addOne;  //~ ERROR FS-IMP-0005 @1
+
+x: int32 = addOne(1);

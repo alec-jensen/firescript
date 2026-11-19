@@ -130,5 +130,5 @@ def test_dir_with_unsupported_target_counts_failures():
         _write(tmp, "a.fire")
         proc = t.run_compiler(
             ["--dir", tmp, "--platform", "linux", "--arch", "x86_64"], cwd=tmp)
-        t.require_eq(proc.returncode, 0, proc.stdout + proc.stderr)
+        t.require_eq(proc.returncode, 1, proc.stdout + proc.stderr)
         t.require("0 successful, 1 failed" in proc.stdout + proc.stderr, proc.stdout + proc.stderr)

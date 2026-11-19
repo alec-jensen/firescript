@@ -42,7 +42,8 @@ def test_dir_partial_failure():
         with open(os.path.join(tmp, "bad.fire"), "w", encoding="utf-8") as f:
             f.write("x: int32 = ;\n")
         proc = t.run_compiler(["--dir", tmp], cwd=tmp)
-        t.require_eq(proc.returncode, 0, proc.stderr)
+        # Any failed file makes the batch exit non-zero.
+        t.require_eq(proc.returncode, 1, proc.stderr)
         combined = proc.stdout + proc.stderr
         t.require("1 successful, 1 failed" in combined, combined)
 
