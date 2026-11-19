@@ -392,13 +392,21 @@ labeled commit on a branch; a session may build on it or discard it.
   Changes.
 - **Done when:** merged, CI profile green.
 
-#### T-060-05 · Leftover parser bugs · M · `todo` · Depends on T-060-04
+#### T-060-05 · Leftover parser bugs · M · `done (task/T-060-05)` · Depends on T-060-04
 - **Start from:** WIP commit `fd0a877` on `safety-frontend` (parser base/expressions/statements).
 - **Fix, each with a regression test:** statements that start with a non-identifier token are
   silently dropped or get a misleading "Invalid assignment target" (`arr[0] = ;`); a nested explicit
   generic constructor `Pair<Pair<int32,int32>,int32>(Pair<int32,int32>(1,2), 3)` does not parse;
   `TITLE.length()` on an uppercase `const` string is parsed as a type method call;
   `"é".length()` on a non-ASCII string literal is a parse error (verify first).
+- **Outcome:** fixed statement-start tokens (reported, not dropped), nested explicit generic
+  constructor (`_parse_type_arg_list` accepts nested generics) and the uppercase `const` string
+  method call. Not fixed, verified: `"é".length()` is not a non-ASCII problem; a method call on
+  *any* literal (`"abc".length()`) does not parse, because the literal branch of `parse_primary`
+  has no postfix member-access loop. That is a feature, not a bug fix; left for a separate task.
+  The WIP change that stopped `parse_primary` from consuming a `;` on "Unexpected token" was
+  dropped: it moves the reported column in about ten existing compile-fail tests (`arr[0] = ;`
+  is still reported at the next statement), so it needs its own task with re-blessed expectations.
 - **Done when:** merged, CI profile green.
 
 #### T-060-06 · Remove the legacy conversion builtins · S · `todo`

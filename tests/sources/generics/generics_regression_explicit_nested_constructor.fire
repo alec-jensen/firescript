@@ -1,0 +1,18 @@
+// Regression: an explicit nested generic constructor,
+// `Pair<Pair<int32, int32>, int32>(Pair<int32, int32>(1, 2), 3)`, did not parse.
+import @firescript/std.io.println;
+
+class Pair<T, U> {
+    a: T;
+    b: U;
+    fn Pair(&mut this, a: T, b: U) { this.a = a; this.b = b; }
+}
+
+p: Pair<Pair<int32, int32>, int32> = Pair<Pair<int32, int32>, int32>(Pair<int32, int32>(1, 2), 3);
+println(p.b);
+println(p.a.b);
+
+/* EXPECT
+3
+2
+*/

@@ -384,6 +384,7 @@ class ExpressionsMixin(ParserBase):
                     or (
                         self.defer_undefined_identifiers
                         and token.value[:1].isupper()
+                        and token.value not in self._declared_value_names
                         and self._looks_like_bare_type_method_call()
                     )
                 )
@@ -574,7 +575,19 @@ class ExpressionsMixin(ParserBase):
                                 break
                             targ_tok = self.current_token
                             self.advance()
-                            type_args.append(self._normalize_type_name(targ_tok))
+                            if (
+                                targ_tok.type == "IDENTIFIER"
+                                and self.current_token
+                                and self.current_token.type == "LESS_THAN"
+                            ):
+                                # A nested generic type argument, e.g. the
+                                # `Pair<int32, int32>` in `Pair<Pair<int32, int32>, int32>(...)`.
+                                nested = self._parse_generic_instantiation(targ_tok)
+                                if nested is None:
+                                    return None
+                                type_args.append(nested)
+                            else:
+                                type_args.append(self._normalize_type_name(targ_tok))
                             if self.current_token and self.current_token.type == "COMMA":
                                 self.advance()
                                 continue

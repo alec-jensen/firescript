@@ -152,6 +152,18 @@ class ParserBase:
             self.defer_undefined_identifiers = any(t.type == "IMPORT" for t in tokens)
         else:
             self.defer_undefined_identifiers = defer_undefined_identifiers
+        # Names this file declares as variables/parameters (`NAME :` not
+        # reached through a `.`, or `const NAME`). The deferred-import
+        # "PascalCase means a type" heuristic must not treat these as type
+        # names (an uppercase `const TITLE: string` is a variable).
+        self._declared_value_names: set[str] = set()
+        prev_tok: Optional[Token] = None
+        for i, t in enumerate(tokens):
+            if t.type == "IDENTIFIER" and prev_tok is not None and prev_tok.type != "DOT":
+                nxt = tokens[i + 1] if i + 1 < len(tokens) else None
+                if prev_tok.type == "CONST" or (nxt is not None and nxt.type == "COLON"):
+                    self._declared_value_names.add(t.value)
+            prev_tok = t
         # Track identifier uses we deferred checking (typically because imports are present).
         self.deferred_undefined_identifiers: list[tuple[str, Optional[Token]]] = []
         # Registry for user-defined functions discovered during parsing
@@ -274,7 +286,10 @@ class ParserBase:
             arg_name = self._normalize_type_name(arg_tok)
             if (
                 arg_tok.type == "IDENTIFIER"
-                and arg_tok.value in self.generic_class_templates
+                # In deferred-import mode the nested template may be an imported
+                # class that is not registered yet; inside type arguments a `<`
+                # after a name can only open its own type arguments.
+                and (arg_tok.value in self.generic_class_templates or self.defer_undefined_identifiers)
                 and self.current_token
                 and self.current_token.type == "LESS_THAN"
             ):
@@ -792,7 +807,20 @@ class ParserBase:
                 return None
             targ_tok = self.current_token
             self.advance()
-            type_args.append(self._normalize_type_name(targ_tok))
+            if (
+                targ_tok.type == "IDENTIFIER"
+                and self.current_token
+                and self.current_token.type == "LESS_THAN"
+                and (targ_tok.value in self.generic_class_templates or self.defer_undefined_identifiers)
+            ):
+                # A nested generic type argument, e.g. the `Pair<int32, int32>`
+                # in `Pair<Pair<int32, int32>, int32>(...)`.
+                nested = self._parse_generic_instantiation(targ_tok)
+                if nested is None:
+                    return None
+                type_args.append(nested)
+            else:
+                type_args.append(self._normalize_type_name(targ_tok))
             if self.current_token and self.current_token.type == "COMMA":
                 self.advance()
                 continue

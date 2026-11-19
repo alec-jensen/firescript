@@ -1,0 +1,5 @@
+// Regression: a statement that starts with a token that cannot begin one
+// (a stray `,` here) used to be dropped silently, so the program compiled.
+x: int32 = 1;
+, y: int32 = 2;  //~ ERROR FS-PARSE-0012 @1
+z: int32 = 3;
