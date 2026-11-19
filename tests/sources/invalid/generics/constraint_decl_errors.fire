@@ -10,6 +10,6 @@ constraint NoAssign int32;  //~ ERROR FS-PARSE-0010 @21
 constraint NoType = ;  //~ ERROR FS-PARSE-0010 @21
 
 // Trailing '|' with no following type
-constraint Trailing = int32 | ;  //~ ERROR FS-PARSE-0010 @31
+constraint Trailing = Union<int32, >;  //~ ERROR FS-PARSE-0010 @36
 
 x: int32 = 1;

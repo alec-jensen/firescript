@@ -2,7 +2,7 @@
 
 import @firescript/std.io.println;
 
-fn pick<T: int32 | int64>(x: T, y: T) -> T {
+fn pick<T: Union<int32, int64>>(x: T, y: T) -> T {
     return x;
 }
 

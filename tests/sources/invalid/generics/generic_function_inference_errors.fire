@@ -6,7 +6,7 @@ fn make<T>() -> T {
     return x;
 }
 
-constraint Numeric = int32 | float32;
+constraint Numeric = Union<int32, float32>;
 
 fn addNumeric<T: Numeric>(a: T, b: T) -> T {
     return a + b;

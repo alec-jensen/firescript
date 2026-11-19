@@ -65,7 +65,7 @@ See [Memory Management](memory_management.md) for the full rules.
 Functions can declare type parameters in angle brackets after the function name. The compiler monomorphizes each unique instantiation at compile time. Type parameters can be constrained with type unions or named constraint aliases (see [Type System — Generics](type_system.md#generics)):
 
 ```firescript
-fn max<T: int32 | int64>(a: T, b: T) -> T {
+fn max<T: Union<int32, int64>>(a: T, b: T) -> T {
     if (a > b) {
         return a;
     }

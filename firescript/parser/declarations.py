@@ -59,32 +59,12 @@ class DeclarationsMixin(TypeSystemMixin):
                 return None
             type_params.append(tparam_tok.value)
 
-            # Parse optional constraint: T: Comparable or T: int32 | float64 or T: NumericPrimitive (alias)
+            # Parse optional constraint: T: int32 or T: Union<int32, float64> or T: NumericPrimitive (alias)
             if self.current_token and self.current_token.type == "COLON":
                 self.advance()  # consume :
-                constraint_parts = []
-                while True:
-                    # Constraints can be type names (int32, float64) or interface names (Comparable)
-                    # or constraint aliases (NumericPrimitive)
-                    if not (self.current_token and (self._is_type_token(self.current_token) or self.current_token.type == "IDENTIFIER")):
-                        self.expected_token_error("constraint type or interface", self.current_token)
-                        return None
-                    constraint_tok = self.current_token
-                    self.advance()
-                    if constraint_tok.value in self.constraint_aliases:
-                        constraint_parts.append(self.constraint_aliases[constraint_tok.value])
-                    else:
-                        constraint_parts.append(constraint_tok.value)
-                    # Check for union operator |
-                    if self.current_token and self.current_token.type == "PIPE":
-                        self.advance()  # consume |
-                        continue
-                    # Check for intersection operator &
-                    elif self.current_token and self.current_token.type == "AMPERSAND":
-                        self.advance()  # consume &
-                        constraint_parts.append("&")
-                        continue
-                    break
+                constraint_parts = self._parse_constraint_expr()
+                if constraint_parts is None:
+                    return None
                 type_constraints[tparam_tok.value] = " | ".join(constraint_parts)
 
             if self.current_token and self.current_token.type == "COMMA":
@@ -915,8 +895,81 @@ class DeclarationsMixin(TypeSystemMixin):
 
         return node
 
+    # Built-in constraint names the type checker already understands.
+    _BUILTIN_CONSTRAINT_NAMES = ("Numeric", "Comparable", "SignedInt", "UnsignedInt", "Float", "Integer")
+
+    def _is_known_constraint_name(self, name: str) -> bool:
+        return (
+            name in self._BUILTIN_CONSTRAINT_NAMES
+            or name in self.constraint_aliases
+            or name in self.user_types
+            or name in self.generic_class_templates
+        )
+
+    def _parse_constraint_expr(self) -> Optional[list[str]]:
+        """Parse a constraint expression: a single name, or Union<A, B, ...>.
+
+        A name is a built-in type, a user type, or a constraint alias (expanded
+        in place). Returns the flat list of alternatives, or None on a parse
+        error. `A | B` and `A & B` are rejected (pointing at Union<...>);
+        Intersection<...> is rejected as not supported yet. Those cases keep
+        consuming the expression so they do not cascade.
+        """
+        parts: list[str] = []
+        tok = self.current_token
+        if not (tok and (self._is_type_token(tok) or tok.type == "IDENTIFIER")):
+            self.expected_token_error("constraint type or interface", tok)
+            return None
+        if tok.type == "IDENTIFIER" and tok.value in ("Union", "Intersection") and self.peek(1) and self.peek(1).type == "LESS_THAN":
+            is_union = tok.value == "Union"
+            self.advance()  # name
+            self.advance()  # <
+            if not is_union:
+                self.invalid_expression_error(
+                    "Intersection<...> constraints are not supported yet; use Union<A, B, ...>", tok
+                )
+            while True:
+                inner = self._parse_constraint_expr()
+                if inner is None:
+                    return None
+                parts.extend(inner)
+                if self.current_token and self.current_token.type == "COMMA":
+                    self.advance()
+                    continue
+                break
+            if not (self.current_token and self.current_token.type == "GREATER_THAN"):
+                self.expected_token_error("'>' to close constraint arguments", self.current_token)
+                return None
+            self.advance()  # >
+        else:
+            name = self._normalize_type_name(tok) if self._is_type_token(tok) else tok.value
+            if not self._is_type_token(tok) and not self._is_known_constraint_name(name):
+                self.invalid_expression_error(f"Unknown constraint '{name}'", tok)
+            self.advance()
+            if name in self.constraint_aliases:
+                parts.append(self.constraint_aliases[name])
+            else:
+                parts.append(name)
+        # Rejected operator forms: report once, then consume the operand(s).
+        while self.current_token and self.current_token.type in ("PIPE", "AMPERSAND"):
+            op = self.current_token
+            if op.type == "PIPE":
+                self.invalid_expression_error(
+                    "Use Union<A, B, ...> to combine constraint types; '|' is not valid in a constraint", op
+                )
+            else:
+                self.invalid_expression_error(
+                    "'&' is not valid in a constraint; use Union<A, B, ...> (Intersection<...> is not supported yet)", op
+                )
+            self.advance()
+            extra = self._parse_constraint_expr()
+            if extra is None:
+                return None
+            parts.extend(extra)
+        return parts
+
     def _parse_constraint_declaration(self):
-        """Parse a constraint declaration: constraint Name = type1 | type2 | ...; """
+        """Parse a constraint declaration: constraint Name = Union<type1, type2, ...>; """
         constraint_tok = self.consume("CONSTRAINT")
         if constraint_tok is None:
             return None
@@ -930,40 +983,10 @@ class DeclarationsMixin(TypeSystemMixin):
             self.expected_token_error("'=' after constraint name", self.current_token)
             return None
         
-        # Parse the type union: type1 | type2 | type3 | ...
-        type_parts = []
-        while True:
-            # Accept IDENTIFIER (for interface names or aliases) or type tokens (int32, float64, etc.)
-            if not (self.current_token and (self.current_token.type == "IDENTIFIER" or self._is_type_token(self.current_token))):
-                self.expected_token_error("type name in constraint definition", self.current_token)
-                return None
-            
-            type_tok = self.current_token
-            self.advance()
-            if type_tok is None:
-                return None
-            
-            # Normalize type token names (convert INT32 -> int32, etc.)
-            type_name = self._normalize_type_name(type_tok) if self._is_type_token(type_tok) else type_tok.value
-            
-            # If it's a constraint alias, expand it recursively
-            if type_name in self.constraint_aliases:
-                # Recursively expand the alias
-                type_parts.append(self.constraint_aliases[type_name])
-            else:
-                type_parts.append(type_name)
-            
-            # Check for pipe operator (union)
-            if self.current_token and self.current_token.type == "PIPE":
-                self.advance()  # consume |
-                continue
-            # Check for ampersand (intersection - for combining with interfaces)
-            elif self.current_token and self.current_token.type == "AMPERSAND":
-                self.advance()  # consume &
-                type_parts.append("&")
-                continue
-            break
-        
+        type_parts = self._parse_constraint_expr()
+        if type_parts is None:
+            return None
+
         # Store the constraint alias
         constraint_string = " | ".join(type_parts)
         self.constraint_aliases[name_tok.value] = constraint_string

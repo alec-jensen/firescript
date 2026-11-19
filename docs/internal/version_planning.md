@@ -425,7 +425,7 @@ labeled commit on a branch; a session may build on it or discard it.
   level and local consts. Mark `const` class fields `[PLANNED]` in `docs/reference/classes.md`
   (they do not parse today). Compile-fail tests, a valid-twin run test, changelog.
 
-#### T-060-08 · Constraint syntax: `Union<A, B>` · M · `todo`
+#### T-060-08 · Constraint syntax: `Union<A, B>` · M · `done (task/T-060-08)`
 - **Goal:** `Union<A, B, ...>` replaces `A | B` in constraints; `Intersection<A, B>` gives a clear
   "not supported yet" diagnostic; `&` is a syntax error pointing at it; unknown constraint names
   are errors. Keep `|` working everywhere else it exists.

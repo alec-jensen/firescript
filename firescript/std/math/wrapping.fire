@@ -9,7 +9,7 @@
 
 directive enable_wrapping_arithmetic;
 
-constraint Numeric = int8 | int16 | int32 | int64 | uint8 | uint16 | uint32 | uint64 | float32 | float64 | float128;
+constraint Numeric = Union<int8, int16, int32, int64, uint8, uint16, uint32, uint64, float32, float64, float128>;
 
 export fn wrapping_add<T: Numeric>(a: T, b: T) -> T {
 	return a + b;

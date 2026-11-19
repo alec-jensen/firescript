@@ -2,7 +2,7 @@
 
 import @firescript/std.io.println;
 
-fn clamp<T: int32 | int64 | float32 | float64>(value: T, min: T, max: T) -> T {
+fn clamp<T: Union<int32, int64, float32, float64>>(value: T, min: T, max: T) -> T {
     if (value < min) {
         return min;
     }

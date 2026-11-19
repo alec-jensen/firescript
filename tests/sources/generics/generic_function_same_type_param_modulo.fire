@@ -5,7 +5,7 @@ import @firescript/std.io.println;
 // abstract) type parameter -- exercises the type-parameter-match branch of
 // the '%' operator's type check, distinct from the concrete-integer-type
 // branch already covered by other modulo tests.
-constraint Numeric = int32 | float32;
+constraint Numeric = Union<int32, float32>;
 
 fn modT<T: Numeric>(a: T, b: T) -> T {
     return a % b;
