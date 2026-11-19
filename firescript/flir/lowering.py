@@ -306,6 +306,30 @@ _CHAR_ESCAPES = {
 _CMP_OPS = {"==": "eq", "!=": "ne", "<": "lt", "<=": "le", ">": "gt", ">=": "ge"}
 _ARITH_OPS = {"+": "add", "-": "sub", "*": "mul", "/": "div", "%": "mod"}
 
+# Trap kinds passed to the single runtime trap entry point fs_rt_trap
+# (std/internal/trap.fire); keep in sync with that file and with
+# docs/reference/error_handling.md.
+TRAP_INTEGER_OVERFLOW = 1
+TRAP_DIVISION_BY_ZERO = 2
+TRAP_INDEX_OUT_OF_BOUNDS = 3
+TRAP_INVALID_CONVERSION = 4
+TRAP_INVALID_ARGUMENT = 5
+
+_INT_KIND_NAMES = {
+    "i8": "int8", "i16": "int16", "i32": "int32", "i64": "int64",
+    "u8": "uint8", "u16": "uint16", "u32": "uint32", "u64": "uint64",
+}
+_INT_BOUNDS = {
+    "i8": (-(2**7), 2**7 - 1), "i16": (-(2**15), 2**15 - 1),
+    "i32": (-(2**31), 2**31 - 1), "i64": (-(2**63), 2**63 - 1),
+    "u8": (0, 2**8 - 1), "u16": (0, 2**16 - 1),
+    "u32": (0, 2**32 - 1), "u64": (0, 2**64 - 1),
+}
+_ARITH_NAMES = {
+    "add": "addition", "sub": "subtraction", "mul": "multiplication",
+    "div": "division", "mod": "remainder",
+}
+
 
 def sanitize(name: str) -> str:
     return (
@@ -1100,10 +1124,21 @@ class FIRToFLIRLowering:
         if op == "**":
             int_kinds = ("i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64")
             if operand_type.kind in int_kinds and self.lower_type_str(rhs_type_str, ctx.type_map).kind in int_kinds:
-                lhs64 = self._cvt_to(lhs, operand_type, I64, ctx)
                 rhs64 = self._cvt_to(rhs, self.lower_type_str(rhs_type_str, ctx.type_map), I64, ctx)
-                powed = self.rt_call("fs_rt_pow_i64", [lhs64, rhs64], I64, ctx)
-                self.set_val(inst, self._cvt_to(powed, I64, result_type, ctx), ctx)
+                if result_type.is_unsigned_int():
+                    lhs_wide = self._cvt_to(lhs, operand_type, U64, ctx)
+                    powed = self.rt_call("fs_rt_pow_u64", [lhs_wide, rhs64], U64, ctx)
+                    wide = U64
+                else:
+                    lhs_wide = self._cvt_to(lhs, operand_type, I64, ctx)
+                    powed = self.rt_call("fs_rt_pow_i64", [lhs_wide, rhs64], I64, ctx)
+                    wide = I64
+                if result_type.kind in _INT_KIND_NAMES and result_type != wide and not inst.metadata.get("wrapping"):
+                    self._trap_unless_in_range(
+                        powed, wide, result_type, TRAP_INTEGER_OVERFLOW,
+                        f"exponentiation on {_INT_KIND_NAMES[result_type.kind]}", ctx,
+                    )
+                self.set_val(inst, self._cvt_to(powed, wide, result_type, ctx), ctx)
             else:
                 lhs64 = self._cvt_to(lhs, operand_type, F64, ctx)
                 rhs64 = self._cvt_to(rhs, self.lower_type_str(rhs_type_str, ctx.type_map), F64, ctx)
@@ -1112,7 +1147,14 @@ class FIRToFLIRLowering:
             return
 
         if op in _ARITH_OPS:
-            self.set_val(inst, ctx.emit(BinOp(_ARITH_OPS[op], result_type, lhs, rhs, result_type)), ctx)
+            flir_op = _ARITH_OPS[op]
+            if result_type.kind in _INT_KIND_NAMES and lhs_type_str != "char":
+                if flir_op in ("div", "mod"):
+                    self._trap_unless_divisible(flir_op, result_type, lhs, rhs, ctx)
+                elif not inst.metadata.get("wrapping"):
+                    self.set_val(inst, self._checked_arith(flir_op, result_type, lhs, rhs, ctx), ctx)
+                    return
+            self.set_val(inst, ctx.emit(BinOp(flir_op, result_type, lhs, rhs, result_type)), ctx)
             return
         if op in ("&&", "||"):
             # Should have been lowered to control flow in FIR; keep a
@@ -1122,10 +1164,109 @@ class FIRToFLIRLowering:
             return
         raise LoweringError(f"unsupported binary operator {op}")
 
+    # -- runtime traps ------------------------------------------------------
+    #
+    # Every check branches to a cold block that calls the one trap entry point
+    # (fs_rt_trap, std/internal/trap.fire) and ends in `unreachable`; nothing
+    # aborts inline, so the entry point can later throw instead of exit.
+
+    def _trap_if(
+        self, cond: FValue, kind: int, detail: str, ctx: _FuncCtx,
+        a: Optional[FValue] = None, b: Optional[FValue] = None,
+    ) -> None:
+        """If `cond` is true, trap. Emission continues in a fresh block."""
+        cold = ctx.func.new_block()
+        cont = ctx.func.new_block()
+        ctx.emit(Br(cond, cold.id, cont.id))
+        ctx.block = cold
+        kind_v = ctx.emit(ConstInt(str(kind), I32))
+        detail_v = ctx.emit(ConstStr(detail))
+        a_v = a if a is not None else ctx.emit(ConstInt("0", I64))
+        b_v = b if b is not None else ctx.emit(ConstInt("0", I64))
+        self.rt_call("fs_rt_trap", [kind_v, detail_v, a_v, b_v], VOID, ctx)
+        ctx.emit(Unreachable())
+        ctx.block = cont
+
+    def _trap_unless_in_range(
+        self, value: FValue, vtype: FLIRType, target: FLIRType, kind: int, detail: str, ctx: _FuncCtx
+    ) -> None:
+        """Trap unless integer `value` (of type vtype) is representable in the
+        integer type `target`."""
+        lo, hi = _INT_BOUNDS[target.kind]
+        vlo, vhi = _INT_BOUNDS[vtype.kind]
+        bad: Optional[FValue] = None
+        if lo > vlo:
+            bad = ctx.emit(BinOp("lt", vtype, value, ctx.emit(ConstInt(str(lo), vtype)), BOOL))
+        if hi < vhi:
+            too_big = ctx.emit(BinOp("gt", vtype, value, ctx.emit(ConstInt(str(hi), vtype)), BOOL))
+            bad = too_big if bad is None else ctx.emit(BinOp("or", BOOL, bad, too_big, BOOL))
+        if bad is not None:
+            self._trap_if(bad, kind, detail, ctx)
+
+    def _checked_arith(self, op: str, t: FLIRType, lhs: FValue, rhs: FValue, ctx: _FuncCtx) -> FValue:
+        ovf = ctx.emit(BinOp("ovf_" + op, t, lhs, rhs, BOOL))
+        self._trap_if(ovf, TRAP_INTEGER_OVERFLOW, f"{_ARITH_NAMES[op]} on {_INT_KIND_NAMES[t.kind]}", ctx)
+        return ctx.emit(BinOp(op, t, lhs, rhs, t))
+
+    def _trap_unless_divisible(self, op: str, t: FLIRType, lhs: FValue, rhs: FValue, ctx: _FuncCtx) -> None:
+        """Division/remainder guards: zero divisor, and signed MIN / -1."""
+        name = f"{_ARITH_NAMES[op]} on {_INT_KIND_NAMES[t.kind]}"
+        zero = ctx.emit(ConstInt("0", t))
+        self._trap_if(ctx.emit(BinOp("eq", t, rhs, zero, BOOL)), TRAP_DIVISION_BY_ZERO, name, ctx)
+        if t.is_signed_int():
+            lowest, _hi = _INT_BOUNDS[t.kind]
+            is_min = ctx.emit(BinOp("eq", t, lhs, ctx.emit(ConstInt(str(lowest), t)), BOOL))
+            is_neg1 = ctx.emit(BinOp("eq", t, rhs, ctx.emit(ConstInt("-1", t)), BOOL))
+            self._trap_if(ctx.emit(BinOp("and", BOOL, is_min, is_neg1, BOOL)), TRAP_INTEGER_OVERFLOW, name, ctx)
+
+    def _checked_float_to_int(self, value: FValue, from_type: FLIRType, to_type: FLIRType, ctx: _FuncCtx) -> FValue:
+        """float32/float64 -> integer: truncates toward zero, and traps
+        (InvalidConversion) on NaN, +-infinity or a value whose truncation is
+        outside `to_type`'s range."""
+        x = self._cvt_to(value, from_type, F64, ctx)
+        lo, hi = _INT_BOUNDS[to_type.kind]
+        # Valid iff lo_bound < x < hi_bound, where the bounds are the first
+        # values just outside the range: hi + 1 (a power of two, exact in
+        # float64) and lo - 1 (exact for <= 32 bits). For int64 lo - 1 is not
+        # representable, but -2^63 is the smallest double >= it, so use >=.
+        hi_bound = ctx.emit(ConstFloat(repr(float(hi + 1)), F64))
+        below_hi = ctx.emit(BinOp("lt", F64, x, hi_bound, BOOL))
+        if to_type.kind == "i64":
+            lo_bound = ctx.emit(ConstFloat(repr(float(lo)), F64))
+            above_lo = ctx.emit(BinOp("ge", F64, x, lo_bound, BOOL))
+        else:
+            lo_bound = ctx.emit(ConstFloat(repr(float(lo - 1)), F64))
+            above_lo = ctx.emit(BinOp("gt", F64, x, lo_bound, BOOL))
+        ok = ctx.emit(BinOp("and", BOOL, above_lo, below_hi, BOOL))
+        bad = ctx.emit(Not(ok))  # NaN fails both comparisons, so it traps too
+        src = "float32" if from_type == F32 else "float64"
+        self._trap_if(
+            bad, TRAP_INVALID_CONVERSION,
+            f"{src} to {_INT_KIND_NAMES[to_type.kind]}: NaN, infinity or out of range", ctx,
+        )
+        return ctx.emit(Cvt(x, F64, to_type))
+
     def _cvt_to(self, value: FValue, from_type: FLIRType, to_type: FLIRType, ctx: _FuncCtx) -> FValue:
         if from_type == to_type:
             return value
         return ctx.emit(Cvt(value, from_type, to_type))
+
+    def _negated_int_literal(self, operand: Value, result_type: FLIRType, ctx: _FuncCtx) -> Optional[FValue]:
+        """`-<integer literal>` is a negative literal, not a negation: this is
+        what lets `-128` be an int8 even though `128` alone is not."""
+        if result_type.kind not in _INT_KIND_NAMES or not isinstance(operand, FIRValue):
+            return None
+        literal = operand.instruction
+        if not isinstance(literal, IntLiteralInst):
+            return None
+        try:
+            value = -int(literal.text, 0)
+        except ValueError:
+            return None
+        lo, hi = _INT_BOUNDS[result_type.kind]
+        if not lo <= value <= hi:
+            return None
+        return ctx.emit(ConstInt(str(value), result_type))
 
     def lower_unary(self, inst: UnaryOpInst, ctx: _FuncCtx) -> None:
         operand = self.val(inst.operands[0], ctx)
@@ -1137,6 +1278,17 @@ class FIRToFLIRLowering:
             if result_type == F128:
                 self.set_val(inst, self.rt_call("fs_rt_f128_neg", [operand], F128, ctx), ctx)
                 return
+            folded = self._negated_int_literal(inst.operands[0], result_type, ctx)
+            if folded is not None:
+                self.set_val(inst, folded, ctx)
+                return
+            if result_type.kind in _INT_KIND_NAMES and not inst.metadata.get("wrapping"):
+                lowest, _hi = _INT_BOUNDS[result_type.kind]
+                if result_type.is_signed_int():
+                    bad = ctx.emit(BinOp("eq", result_type, operand, ctx.emit(ConstInt(str(lowest), result_type)), BOOL))
+                else:
+                    bad = ctx.emit(BinOp("ne", result_type, operand, ctx.emit(ConstInt("0", result_type)), BOOL))
+                self._trap_if(bad, TRAP_INTEGER_OVERFLOW, f"negation on {_INT_KIND_NAMES[result_type.kind]}", ctx)
             self.set_val(inst, ctx.emit(Neg(operand, result_type)), ctx)
             return
         if inst.op == "+":
@@ -1198,8 +1350,12 @@ class FIRToFLIRLowering:
                 result = self.rt_call(rt, [value], I64 if target_str == "int64" else U64, ctx)
                 self.set_val(inst, result, ctx)
             else:
-                # Narrow int: go via i64.
+                # Narrow int: go via i64, then range-check.
                 i64v = self.rt_call("fs_rt_f128_to_i64", [value], I64, ctx)
+                self._trap_unless_in_range(
+                    i64v, I64, target_type, TRAP_INVALID_CONVERSION,
+                    f"float128 to {target_str}: out of range", ctx,
+                )
                 self.set_val(inst, self._cvt_to(i64v, I64, target_type, ctx), ctx)
             return
         if source_str == "float128" and target_str == "float64":
@@ -1226,6 +1382,10 @@ class FIRToFLIRLowering:
         if target_str == "float128" and source_str == "float32":
             f64v = self._cvt_to(value, source_type, F64, ctx)
             self.set_val(inst, self.rt_call("fs_rt_f64_to_f128", [f64v], F128, ctx), ctx)
+            return
+
+        if source_type.is_float() and target_str in int_targets:
+            self.set_val(inst, self._checked_float_to_int(value, source_type, target_type, ctx), ctx)
             return
 
         self.set_val(inst, self._cvt_to(value, source_type, target_type, ctx), ctx)
@@ -1464,7 +1624,7 @@ class FIRToFLIRLowering:
         elem_str = self.render_concrete(inst.result_type, ctx.type_map)
         elem_type = self.lower_type_str(elem_str, ctx.type_map)
         elem_size = elem_type.size(self.flir)
-        index = self._normalize_index(inst.operands[0], index, ctx)
+        index = self._normalize_index(inst.operands[0], inst.operands[1], index, ctx)
         addr = ctx.emit(PtrAdd(array, index, elem_size))
         self.set_val(inst, ctx.emit(Load(elem_type, addr, 0)), ctx)
 
@@ -1475,31 +1635,82 @@ class FIRToFLIRLowering:
         elem_str = self.fir_type_str_of(inst.operands[2], ctx)
         elem_type = self.lower_type_str(elem_str, ctx.type_map)
         elem_size = elem_type.size(self.flir)
-        index = self._normalize_index(inst.operands[0], index, ctx)
+        index = self._normalize_index(inst.operands[0], inst.operands[1], index, ctx)
         addr = ctx.emit(PtrAdd(array, index, elem_size))
         ctx.emit(Store(elem_type, addr, 0, value))
 
-    def _normalize_index(self, array_fir: Value, index: FValue, ctx: _FuncCtx) -> FValue:
-        """Negative-index normalization when the array size is known:
-        idx + size * (idx < 0), computed branchlessly."""
+    @staticmethod
+    def _literal_int_value(value: Value) -> Optional[int]:
+        """The compile-time value of an integer literal operand (including a
+        negated one), else None."""
+        if not isinstance(value, FIRValue):
+            return None
+        node = value.instruction
+        if isinstance(node, IntLiteralInst):
+            try:
+                return int(node.text, 0)
+            except ValueError:
+                return None
+        if isinstance(node, UnaryOpInst) and node.op == "-" and node.operands:
+            inner = FIRToFLIRLowering._literal_int_value(node.operands[0])
+            return -inner if inner is not None else None
+        return None
+
+    def _field_array_length(self, array_fir: Value, ctx: _FuncCtx) -> Optional[FValue]:
+        """Length of an array reached through a class field that the class
+        declared with `@owns_elements("<field>", "<length field>", ...)`: the
+        named int32 field of the same object. None for any other array."""
+        if not isinstance(array_fir, FIRValue) or not isinstance(array_fir.instruction, LoadFieldInst):
+            return None
+        load = array_fir.instruction
+        obj_fir = load.operands[0]
+        type_str = self.subst(self.fir_type_str_of(obj_fir, ctx), ctx.type_map)
+        type_def = self.typedefs.get(type_str.split("<")[0])
+        if type_def is None:
+            return None
+        length_field = type_def.array_length_fields.get(load.field)
+        if length_field is None:
+            return None
+        obj_value = self.val(obj_fir, ctx)
+        base, struct_name = self._object_base(obj_fir, obj_value, ctx)
+        _, ftype, offset = self.flir.struct(struct_name).field(length_field)
+        if ftype != I32:
+            return None
+        return ctx.emit(Load(ftype, base, offset))
+
+    def _normalize_index(
+        self, array_fir: Value, index_fir: Value, index: FValue, ctx: _FuncCtx
+    ) -> FValue:
+        """Bounds-check an array index and resolve negative indices.
+
+        When the array's length is known (a const-size array, a local that
+        inherited one, or an array parameter's hidden length) the index must
+        lie in [-length, length); a negative index counts from the end. Any
+        other index traps (IndexOutOfBounds, `index N, length L`). The check
+        is elided when both the index and the length are compile-time
+        constants and in range. When the length is unknown (e.g. an array
+        reached through a class field) the index is used unchecked."""
         _, size = self._array_info(array_fir, ctx)
-        if size is None:
-            slot, _ = self._array_info(array_fir, ctx)
-            meta = ctx.array_lens.get(slot) if slot else None
-            if not meta:
-                return index
-            length = self._array_length_value(array_fir, ctx)
-            zero = ctx.emit(ConstInt("0", I32))
-            is_neg = ctx.emit(BinOp("lt", I32, index, zero, BOOL))
-            neg32 = ctx.emit(Cvt(is_neg, BOOL, I32))
-            adj = ctx.emit(BinOp("mul", I32, neg32, length, I32))
-            return ctx.emit(BinOp("add", I32, index, adj, I32))
-        length = ctx.emit(ConstInt(str(size), I32))
-        zero = ctx.emit(ConstInt("0", I32))
-        is_neg = ctx.emit(BinOp("lt", I32, index, zero, BOOL))
-        neg32 = ctx.emit(Cvt(is_neg, BOOL, I32))
-        adj = ctx.emit(BinOp("mul", I32, neg32, length, I32))
-        return ctx.emit(BinOp("add", I32, index, adj, I32))
+        length = self._array_length_value(array_fir, ctx)
+        if length is None:
+            length = self._field_array_length(array_fir, ctx)
+        if length is None:
+            return index
+        literal = self._literal_int_value(index_fir)
+        if size is not None and literal is not None and -size <= literal < size:
+            return ctx.emit(ConstInt(str(literal % size), I64))
+        idx64 = self._cvt_to(index, index.value_type, I64, ctx)
+        len64 = self._cvt_to(length, I32, I64, ctx)
+        zero = ctx.emit(ConstInt("0", I64))
+        is_neg = ctx.emit(BinOp("lt", I64, idx64, zero, BOOL))
+        neg64 = ctx.emit(Cvt(is_neg, BOOL, I64))
+        adj = ctx.emit(BinOp("mul", I64, neg64, len64, I64))
+        effective = ctx.emit(BinOp("add", I64, idx64, adj, I64))
+        too_low = ctx.emit(BinOp("lt", I64, effective, zero, BOOL))
+        too_high = ctx.emit(BinOp("ge", I64, effective, len64, BOOL))
+        bad = ctx.emit(BinOp("or", BOOL, too_low, too_high, BOOL))
+        self._trap_if(bad, TRAP_INDEX_OUT_OF_BOUNDS, "", ctx, a=idx64, b=len64)
+        return effective
 
     # -- locals ----------------------------------------------------------------
 
@@ -2079,7 +2290,10 @@ class FIRToFLIRLowering:
                 "f32_to_i32": (F32, I32),
             }
             from_t, to_t = mapping[name]
-            self.set_val(inst, self._cvt_to(args[0], from_t, to_t, ctx), ctx)
+            if from_t.is_float():
+                self.set_val(inst, self._checked_float_to_int(args[0], from_t, to_t, ctx), ctx)
+            else:
+                self.set_val(inst, self._cvt_to(args[0], from_t, to_t, ctx), ctx)
             return
 
         if name in ("i32_to_str", "i64_to_str", "f32_to_str", "f64_to_str"):
@@ -2180,6 +2394,8 @@ class FIRToFLIRLowering:
         if name in ("toInt", "int"):
             if source_str == "string":
                 self.set_val(inst, self.rt_call("fs_rt_str_to_i32", [value], I32, ctx), ctx)
+            elif source_type.is_float():
+                self.set_val(inst, self._checked_float_to_int(value, source_type, I32, ctx), ctx)
             else:
                 self.set_val(inst, self._cvt_to(value, source_type, I32, ctx), ctx)
             return

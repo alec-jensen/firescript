@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: DivisionByZero: remainder on int16
+// int16: x % 0 traps.
+import @firescript/std.io.println;
+
+println("before");
+a: int16 = 7i16;
+b: int16 = 0i16;
+c: int16 = a % b;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

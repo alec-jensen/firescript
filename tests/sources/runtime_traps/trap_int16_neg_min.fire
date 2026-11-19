@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: negation on int16
+// int16: -MIN traps.
+import @firescript/std.io.println;
+
+println("before");
+a: int16 = -32768i16;
+c: int16 = -a;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: InvalidArgument: negative exponent
+// int32: 2 ** -1 traps (negative exponent).
+import @firescript/std.io.println;
+
+println("before");
+base: int32 = 2;
+exp: int32 = -1;
+c: int32 = base ** exp;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

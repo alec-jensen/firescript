@@ -168,6 +168,9 @@ The table below reflects the **current implementation status** of major language
 | `&this` / `&mut this` borrow receivers | [IMPLEMENTED] |
 | Logical operators (`&&`, `||`, `!`) | [IMPLEMENTED] |
 | Exponentiation (`**`) | [IMPLEMENTED] |
+| Checked integer arithmetic and division (overflow / divide-by-zero trap, exit 101) | [IMPLEMENTED] |
+| Explicit wrapping integer operations (`std.math.wrapping`) | [IMPLEMENTED] |
+| Saturating / checked (`Option<T>`) integer operations | [PLANNED] |
 | Compound assignment (`+=`, `-=`, `*=`, `/=`, `%=`) | [IMPLEMENTED] |
 | Increment / decrement (`++`, `--`) | [IMPLEMENTED] |
 | Imports and modules | [IMPLEMENTED] |

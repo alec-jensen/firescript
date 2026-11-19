@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: multiplication on int64
+// int64: 3 ** 50 traps.
+import @firescript/std.io.println;
+
+println("before");
+base: int64 = 3i64;
+exp: int64 = 50i64;
+c: int64 = base ** exp;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

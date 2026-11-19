@@ -52,6 +52,8 @@ from ir_analysis import CFG, Violation, build_cfg, compute_dominators, instructi
 
 _ARITH_OPS = frozenset({"add", "sub", "mul", "div", "mod", "pow"})
 _CMP_OPS = frozenset({"eq", "ne", "lt", "le", "gt", "ge"})
+# Overflow predicates: bool = "the exact result of the arithmetic op does not fit".
+_OVF_OPS = frozenset({"ovf_add", "ovf_sub", "ovf_mul"})
 
 
 def verify_flir_module(module: FLIRModule) -> None:
@@ -372,7 +374,7 @@ class _FunctionVerifier:
         if inst.op in _ARITH_OPS or inst.op in ("and", "or"):
             if inst.result_type != inst.operand_type:
                 self.emit("FLIRV-T2", f"binop '{inst.op}' result type '{inst.result_type.render()}' does not match operand_type '{inst.operand_type.render()}'", block, index, inst)
-        elif inst.op in _CMP_OPS:
+        elif inst.op in _CMP_OPS or inst.op in _OVF_OPS:
             if inst.result_type != BOOL:
                 self.emit("FLIRV-T2", f"comparison '{inst.op}' must produce bool", block, index, inst)
         else:

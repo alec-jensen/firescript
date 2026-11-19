@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: InvalidConversion: float128 to int32:
+// float128 out-of-range -> int32 traps.
+import @firescript/std.io.println;
+
+println("before");
+x: float128 = 3.0e10f128;
+y: int32 = x as int32;
+println(y);
+println("not reached");
+
+/* EXPECT
+before
+*/

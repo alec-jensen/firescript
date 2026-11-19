@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: multiplication on int32
+// int32: x *= n past MAX traps.
+import @firescript/std.io.println;
+
+println("before");
+a: int32 = 100000;
+a *= 100000;
+println(a);
+println("not reached");
+
+/* EXPECT
+before
+*/

@@ -1341,6 +1341,13 @@ class ASTToFIRConverter:
             generic_params=self.class_generic_params.get(node.name, []),
             base=self.class_bases.get(node.name),
         )
+        # @owns_elements("<array field>", "<int32 length field>"[, ...]) names
+        # the field holding each unsized array field's element count; FLIR
+        # lowering bounds-checks indexing through that field against it.
+        for dec in getattr(node, "decorators", None) or []:
+            if dec.get("name") == "owns_elements" and len(dec.get("positional", [])) >= 2:
+                positional = dec["positional"]
+                type_def.array_length_fields[positional[0]] = positional[1]
         self.module.add_type(type_def)
 
         for member in node.children:
@@ -2035,6 +2042,7 @@ class ASTToFIRConverter:
         current = self.builder.load_var(local, var_type)
         rhs = self._convert_expression(node.children[0])
         result = self.builder.binary_op(op, current, rhs, var_type)
+        self._mark_wrapping(result, node)
         self.builder.store_var(local, result)
 
     def _convert_increment(self, node: ASTNode) -> None:
@@ -2047,6 +2055,7 @@ class ASTToFIRConverter:
         one = self.builder.int_literal("1", var_type)
         op = "+" if node.name == "++" else "-"
         result = self.builder.binary_op(op, current, one, var_type)
+        self._mark_wrapping(result, node)
         self.builder.store_var(local, result)
 
     def _convert_if(self, node: ASTNode) -> None:
@@ -2731,6 +2740,7 @@ class ASTToFIRConverter:
             result_type = self._fir_type(self._expr_type(node))
             op_inst = self.builder.binary_op(node.name, left, right, result_type)
             op_inst.instruction.metadata["operand_type"] = self._strip_nullable_str(self._expr_type(node.children[0]))
+            self._mark_wrapping(op_inst, node)
             return op_inst
 
         if node_type == NodeTypes.UNARY_EXPRESSION:
@@ -2740,7 +2750,9 @@ class ASTToFIRConverter:
                 return None
             operand = self._convert_expression(node.children[0])
             result_type = self._fir_type(self._expr_type(node))
-            return self.builder.unary_op(node.name, operand, result_type)
+            unary = self.builder.unary_op(node.name, operand, result_type)
+            self._mark_wrapping(unary, node)
+            return unary
 
         if node_type == NodeTypes.FUNCTION_CALL:
             return self._convert_function_call_unwrapped(node, as_statement)
@@ -3028,6 +3040,16 @@ class ASTToFIRConverter:
             return os.path.normcase(os.path.abspath(source))
         except Exception:
             return source
+
+    def _mark_wrapping(self, value: Optional[Value], node: ASTNode) -> None:
+        """Tag an arithmetic instruction as wrapping (no overflow trap) when
+        its source file enables `directive enable_wrapping_arithmetic;`
+        (std/internal and the explicit wrapping_* operations only)."""
+        if value is None or not hasattr(value, "instruction"):
+            return
+        src = self._norm_source(getattr(node, "source_file", None))
+        if "enable_wrapping_arithmetic" in self.file_directives.get(src, set()):
+            value.instruction.metadata["wrapping"] = True
 
     def _check_directive(self, node: ASTNode) -> None:
         """Reject directive-gated intrinsics called without the directive

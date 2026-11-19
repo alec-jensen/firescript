@@ -59,10 +59,7 @@ fn rt_raw_alloc(n: uint64) -> uint64 {
 
 // ---- allocation registry (legacy double-free / literal-free guard) ----
 
-fn rt_reg_hash(p: uint64, cap: uint64) -> uint64 {
-    h: uint64 = (p / 16u64) * 2654435761u64;
-    return h % cap;
-}
+// (rt_reg_hash, the registry's multiplicative hash, lives in wrapping.fire.)
 
 fn rt_reg_grow() -> void {
     state: uint64 = rt_state();

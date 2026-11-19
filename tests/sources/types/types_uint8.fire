@@ -1,4 +1,5 @@
 import @firescript/std.io.println;
+import @firescript/std.math.wrapping.wrapping_add;
 
 u8_min: uint8 = 0u8;
 u8_max: uint8 = 255u8;
@@ -6,7 +7,7 @@ u8_test: uint8 = 128u8;
 println(u8_min);
 println(u8_max);
 println(u8_test);
-println(u8_max + 1u8);  // Overflow
+println(wrapping_add(u8_max, 1u8));  // explicit wrapping overflow (plain + would trap)
 
 /* EXPECT
 0

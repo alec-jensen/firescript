@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: subtraction on int64
+// int64: MIN - 1 traps.
+import @firescript/std.io.println;
+
+println("before");
+a: int64 = -9223372036854775808i64;
+b: int64 = 1i64;
+c: int64 = a - b;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

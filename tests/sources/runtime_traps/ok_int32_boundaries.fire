@@ -1,0 +1,47 @@
+// int32: operations that land exactly on MIN/MAX (or return to it) must NOT trap.
+import @firescript/std.io.println;
+
+max: int32 = 2147483647i32;
+min: int32 = -2147483648i32;
+one: int32 = 1i32;
+two: int32 = 2i32;
+zero: int32 = 0i32;
+println(max);
+println(min);
+println(max - one + one);
+println(min + one - one);
+println(max * one);
+println(max / one);
+println(min / one);
+println(min % two);
+println(max % max);
+println((max - one) / two * two);
+println(zero - zero);
+minus_one: int32 = -1i32;
+min_plus_one: int32 = -2147483647i32;
+println(min_plus_one / minus_one);
+println(max / minus_one);
+println(-max);
+println(minus_one * max);
+println(max + min);
+println(min_plus_one % minus_one);
+
+/* EXPECT
+2147483647
+-2147483648
+2147483647
+-2147483648
+2147483647
+2147483647
+-2147483648
+0
+0
+2147483646
+0
+2147483647
+-2147483647
+-2147483647
+-2147483647
+-1
+0
+*/

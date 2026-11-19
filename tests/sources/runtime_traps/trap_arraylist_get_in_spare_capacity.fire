@@ -1,0 +1,16 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IndexOutOfBounds: index 3, length 2
+// Index 3 is inside the buffer (capacity 4) but past size 2: traps.
+import @firescript/std.io.println;
+import @firescript/std.collections.ArrayList;
+
+println("before");
+l: ArrayList<int32> = ArrayList<int32>();
+l.add(10);
+l.add(20);
+println(l.get(3));
+println("not reached");
+
+/* EXPECT
+before
+*/

@@ -42,6 +42,9 @@ class TypeDef:
         self.base = base  # name of the parent class, if any
         self.kind = kind  # "class" | "enum"
         self.variants = variants or []  # only meaningful when kind == "enum"
+        # unsized array field name -> name of the int32 field holding its
+        # element count (from @owns_elements); used for bounds checks.
+        self.array_length_fields: dict[str, str] = {}
 
 
 class GlobalConstant:

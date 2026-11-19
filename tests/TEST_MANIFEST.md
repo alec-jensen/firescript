@@ -470,7 +470,7 @@ Split by conversion category:
 - **numeric_casts.fire** - Numeric type casting (downcast-focused, distinct scenarios from the `conversions_*` files above)
 - **builtin_conversions.fire** - Free-function conversion builtins (`toInt`, `toFloat`, `toDouble`, `toBool`, `toChar`, `toString`) called directly rather than via `as` casting. Note: `toChar` on a string takes its first character's code point, it does not parse the string as a numeric char code.
 - **builtin_conversions_numeric_source.fire** - Same conversion builtins as `builtin_conversions.fire`, but called with a numeric (non-string) source argument, e.g. `toInt(9.75)`, `toBool(0)`.
-- **int_float_cast_matrix.fire** - `float64`/`float32` -> `uint64` (including large values requiring the sign-bit correction dance) and `float64` -> narrow `int8`/`int16`/`uint8`/`uint16`/`uint32`. Notes two real bugs found and not worked around: `int32 as bool` (and other numeric-to-bool casts) is rejected by the frontend even though `flir/lowering.py`'s `Cvt` lowering and `flir_to_asm.py`'s `_emit_cvt` both have code for an int-to-bool target, and (now fixed, see `conversions_regression_uint64_to_float.fire`) `uint64 as float64`/`float32` used to fail to assemble ("unsupported mnemonic: js") because the backend emits a `js` instruction the self-hosted assembler didn't support.
+- **int_float_cast_matrix.fire** - `float64`/`float32` -> `uint64` (including large values requiring the sign-bit correction dance) and `float64` -> narrow `int8`/`int16`/`uint8`/`uint16`/`uint32` (in-range values only: out-of-range float-to-int casts trap, see `runtime_traps/`). Notes two real bugs found and not worked around: `int32 as bool` (and other numeric-to-bool casts) is rejected by the frontend even though `flir/lowering.py`'s `Cvt` lowering and `flir_to_asm.py`'s `_emit_cvt` both have code for an int-to-bool target, and (now fixed, see `conversions_regression_uint64_to_float.fire`) `uint64 as float64`/`float32` used to fail to assemble ("unsupported mnemonic: js") because the backend emits a `js` instruction the self-hosted assembler didn't support.
 - **conversions_regression_uint64_to_float.fire** - Regression: `uint64 as float64`/`float32` across 0, small values, 2^63 and the maximum, plus round-to-nearest-even tie / just-above-tie cases for both targets (values at 2^63+1024, +1025, +3072, +3073 and the float32 equivalents) that only pass when the sticky bit is kept (verified against a Python oracle and by mutation: dropping the `or rax, rcx` fails it); previously failed to assemble because the self-hosted assembler lacked `js` and `shr r64, 1`
 - **conversions_string_to_numeric_all_types.fire** - `string as T` for every numeric type (int8 through uint32, float64, float128) at range extremes, with `+`, `-` and exponent forms, plus int64/uint64 maxima and float32
 - **conversions_to_string_all_types.fire** - `as string` for every numeric type at its extremes, plus bool and char, positive extremes, zero, float precision, `string as string` identity, and use in concatenation
@@ -620,6 +620,19 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 
 ### `io/`
 - **io_test.fire** - Input/output functions
+
+### `runtime_traps/`
+Runtime safety traps (generated, one trap per file because a trap ends the program): every test asserts `//@ exit-code: 101`, the `firescript runtime error: <Kind>: <detail>` line via `//@ stderr-contains:`, and that output printed before the trap still appears.
+- **trap_<type>_{add_overflow,add_underflow,sub_underflow,mul_overflow}.fire** - Checked `+ - *` at the type's MIN/MAX for each of `int8`..`int64`, `uint8`..`uint64` (the `add_underflow` form is signed only).
+- **trap_<signed type>_{neg_min,div_min_by_minus_one,mod_min_by_minus_one}.fire** - `-MIN`, `MIN / -1`, `MIN % -1`.
+- **trap_<type>_{div_by_zero,mod_by_zero}.fire** - Integer `/` and `%` by zero, every width.
+- **trap_int32_increment_overflow / trap_uint8_decrement_underflow / trap_int16_compound_add_overflow / trap_int32_compound_mul_overflow / trap_int32_compound_div_by_zero.fire** - `++`, `--` and compound assignment.
+- **trap_int32_pow_overflow / trap_int64_pow_overflow / trap_uint64_pow_overflow / trap_int32_pow_negative_exponent.fire** - Integer `**` overflow and negative exponent.
+- **trap_float{32,64,128}_to_<type>_{too_large,too_small,nan,infinity,negative_infinity,out_of_range,negative}.fire** - Float-to-integer cast traps (`InvalidConversion`): out of range above/below for every integer target, NaN and +-infinity (int32, uint64, uint8), float32 and float128 sources.
+- **ok_float_to_int_boundaries.fire** - Float-to-integer casts exactly at or just inside the range (truncation toward zero, `-0.5 as uint8` is 0, `2^63 - 1024` as int64, float128 sources) must NOT trap.
+- **trap_array_*.fire / trap_arraylist_*.fire** - Array bounds traps (`IndexOutOfBounds: index N, length L`): read/write past the end, negative index past the start, constant index (not elided when out of range), int64/uint8 index types, array parameter hidden length, string elements, `ArrayList` `get`/`set`/`removeLast` past size (including inside spare capacity).
+- **ok_array_bounds_valid_indices.fire** - Valid indices must NOT trap: first/last, `-1`..`-length`, reads and writes, several index types, array parameters, `ArrayList` within size.
+- **ok_<type>_boundaries.fire** - Valid boundary cases that must NOT trap (MAX, MIN, MAX - 1 + 1, `MIN / 1`, `MIN + 1` / `-1`, `-MAX`, ...), one per integer type.
 
 ### `performance/`
 - **stress_integer_overflow.fire** - Integer overflow behavior under repeated operations
@@ -834,6 +847,7 @@ Header directives (`//@ key: value` in `.fire` files, `#@ key: value` in `.py` f
 | `//@ stdin: <text>` | `.fire` | One line of stdin (repeatable, joined with `\n`). Mutually exclusive with `stdin-file:`. |
 | `//@ stdin-file: <path>` | `.fire` | stdin from a file, path relative to the test file. |
 | `//@ exit-code: <int>` | `.fire` | Expected binary exit code (default 0). |
+| `//@ stderr-contains: <text>` | `.fire` | The run binary's stderr must contain this text (repeatable, one substring per line, verbatim to end of line). Used to assert runtime trap messages together with `exit-code:`. |
 | `//@ timeout: <seconds>` | `.fire` | Binary run timeout (default: harness config). |
 | `//@ compile-timeout: <seconds>` | `.fire` | Compile timeout (default: harness config). |
 | `//@ compile-flags: <flags>` | `.fire` | Extra flags appended to the compiler invocation. |

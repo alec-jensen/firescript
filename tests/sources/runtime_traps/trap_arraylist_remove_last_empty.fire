@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IndexOutOfBounds: index -1, length 0
+// ArrayList.removeLast() on an empty list traps.
+import @firescript/std.io.println;
+import @firescript/std.collections.ArrayList;
+
+println("before");
+l: ArrayList<int32> = ArrayList<int32>();
+println(l.removeLast());
+println("not reached");
+
+/* EXPECT
+before
+*/

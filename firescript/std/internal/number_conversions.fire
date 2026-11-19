@@ -47,7 +47,7 @@ fn rt_u64_to_str_impl(v: uint64, negative: bool) -> string {
 fn fs_rt_i64_to_str(v: int64) -> string {
     if (v < 0i64) {
         // Negate via u64 to handle INT64_MIN.
-        magnitude: uint64 = 0u64 - (v as uint64);
+        magnitude: uint64 = rt_neg_u64(v as uint64);
         return rt_u64_to_str_impl(magnitude, true);
     }
     return rt_u64_to_str_impl(v as uint64, false);
@@ -82,42 +82,8 @@ fn fs_rt_char_to_str(c: uint8) -> string {
 
 // ---- string -> number parsing (atoi/atoll/atof semantics) ----
 
-fn rt_parse_int(addr: uint64) -> int64 {
-    if (addr == 0u64) {
-        return 0i64;
-    }
-    i: uint64 = 0u64;
-    // Skip leading whitespace (space, tab, newline, CR, FF, VT).
-    while (true) {
-        c: uint8 = mem_load_u8(addr + i);
-        if (c == 32u8 || (c >= 9u8 && c <= 13u8)) {
-            i = i + 1u64;
-        } else {
-            break;
-        }
-    }
-    negative: bool = false;
-    sign: uint8 = mem_load_u8(addr + i);
-    if (sign == 45u8) { // '-'
-        negative = true;
-        i = i + 1u64;
-    } else if (sign == 43u8) { // '+'
-        i = i + 1u64;
-    }
-    value: int64 = 0i64;
-    while (true) {
-        c: uint8 = mem_load_u8(addr + i);
-        if (c < 48u8 || c > 57u8) {
-            break;
-        }
-        value = value * 10i64 + ((c - 48u8) as int64);
-        i = i + 1u64;
-    }
-    if (negative) {
-        return -value;
-    }
-    return value;
-}
+// (rt_parse_int, the decimal parser, lives in wrapping.fire: it accumulates
+// modulo 2^64 so that e.g. "18446744073709551615" as uint64 round-trips.)
 
 fn fs_rt_str_to_i32(&s: string) -> int32 {
     return rt_parse_int(str_to_addr(s)) as int32;

@@ -150,6 +150,17 @@ class RunKind(Kind):
                 details=(proc.stdout or "") + (proc.stderr or ""),
             )
 
+        # `//@ stderr-contains: <text>`: every listed substring must appear in
+        # the binary's stderr (checked in both normal and --update mode).
+        stderr_text = (proc.stderr or "").replace("\r\n", "\n")
+        for needle in directives.values("stderr-contains"):
+            if needle not in stderr_text:
+                return TestResult(
+                    case.id, Status.FAIL,
+                    message=f"stderr does not contain {needle!r}",
+                    details=stderr_text,
+                )
+
         actual_norm = normalize_output(proc.stdout)
 
         if update:

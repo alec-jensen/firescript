@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: multiplication on uint32
+// uint32: MAX * 2 traps.
+import @firescript/std.io.println;
+
+println("before");
+a: uint32 = 4294967295u32;
+b: uint32 = 2u32;
+c: uint32 = a * b;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

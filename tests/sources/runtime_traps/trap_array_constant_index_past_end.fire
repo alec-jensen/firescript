@@ -1,0 +1,13 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IndexOutOfBounds: index 5, length 5
+// A constant out-of-range index is not elided and still traps at runtime.
+import @firescript/std.io.println;
+
+println("before");
+arr: int32[5] = [1, 2, 3, 4, 5];
+println(arr[5]);
+println("not reached");
+
+/* EXPECT
+before
+*/

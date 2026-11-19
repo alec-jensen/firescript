@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IndexOutOfBounds: index -6, length 5
+// arr[-6] on a length-5 array traps.
+import @firescript/std.io.println;
+
+println("before");
+arr: int32[5] = [1, 2, 3, 4, 5];
+i: int32 = -6;
+println(arr[i]);
+println("not reached");
+
+/* EXPECT
+before
+*/
