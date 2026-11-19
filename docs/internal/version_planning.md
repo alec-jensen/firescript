@@ -345,7 +345,7 @@ labeled commit on a branch; a session may build on it or discard it.
   Windows), so `é` became `0xE9`; it now always encodes UTF-8.
 - **Done when:** the Windows run on the pushed commit is green.
 
-#### T-060-02 · Housekeeping: remove merged agent worktrees and branches · S · `todo`
+#### T-060-02 · Housekeeping: remove merged agent worktrees and branches · S · `done`
 - **Goal:** a clean repository to work in.
 - **Steps:** every branch below is already merged into `main`; remove its worktree and branch:
   `cleanup-compile-fail`, `cleanup-run-tests`, `cleanup-run-followup`, `cleanup-python-front`,
