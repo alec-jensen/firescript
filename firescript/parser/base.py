@@ -807,7 +807,20 @@ class ParserBase:
                 return None
             targ_tok = self.current_token
             self.advance()
-            type_args.append(self._normalize_type_name(targ_tok))
+            if (
+                targ_tok.type == "IDENTIFIER"
+                and self.current_token
+                and self.current_token.type == "LESS_THAN"
+                and (targ_tok.value in self.generic_class_templates or self.defer_undefined_identifiers)
+            ):
+                # A nested generic type argument, e.g. the `Pair<int32, int32>`
+                # in `Pair<Pair<int32, int32>, int32>(...)`.
+                nested = self._parse_generic_instantiation(targ_tok)
+                if nested is None:
+                    return None
+                type_args.append(nested)
+            else:
+                type_args.append(self._normalize_type_name(targ_tok))
             if self.current_token and self.current_token.type == "COMMA":
                 self.advance()
                 continue

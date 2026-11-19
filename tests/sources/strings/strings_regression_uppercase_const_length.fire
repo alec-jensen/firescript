@@ -1,0 +1,10 @@
+// Regression: with imports present, `TITLE.length()` on an uppercase `const`
+// string was parsed as a static method call on a type named TITLE.
+import @firescript/std.io.println;
+
+const TITLE: string = "Hello";
+println(TITLE.length());
+
+/* EXPECT
+5
+*/

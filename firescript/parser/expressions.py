@@ -651,11 +651,7 @@ class ExpressionsMixin(ParserBase):
             return self._parse_postfix_cast(node)
         else:
             self.invalid_expression_error(f"Unexpected token {token.value}", token)
-            # A statement terminator or block closer is left in place: it
-            # belongs to the enclosing statement/scope, and swallowing it makes
-            # error recovery run on into the following statements.
-            if token.type not in ("SEMICOLON", "CLOSE_BRACE"):
-                self.advance()
+            self.advance()
             return None
 
     def _parse_match_expression(self):

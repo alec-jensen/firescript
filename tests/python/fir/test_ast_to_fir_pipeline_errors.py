@@ -81,7 +81,7 @@ def test_match_expression_form_rejects_block_bodied_arm():
         enum Shape { Circle, Square }
         fn area(s: Shape) -> float64 {
             return match s {
-                Shape.Circle -> { 1.0 },
+                Shape.Circle -> { return 1.0; },
                 Shape.Square -> 2.0
             };
         }

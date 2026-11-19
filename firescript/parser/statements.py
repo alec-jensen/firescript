@@ -689,9 +689,6 @@ class StatementsMixin(ExpressionsMixin):
                     self.invalid_expression_error(
                         f"Unexpected token {self.current_token.value}", self.current_token
                     )
-                self._recover_to_statement_boundary()
-                if self.current_token and self.current_token.type == "SEMICOLON":
-                    self.consume("SEMICOLON")
             return None
 
     def parse_scope(self):
