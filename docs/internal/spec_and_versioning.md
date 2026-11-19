@@ -57,11 +57,26 @@ exit codes, diagnostics format, output layout). A new fsc major is warranted whe
 change breaks users or when support for an fls major version is dropped. Which fls version an fsc
 release implements is recorded with every release.
 
-### Before 1.0
+### The beta period (before fls 1.0.0)
 
-Until the self-hosted 1.0 release, fls and fsc advance **together**, so the roadmap versions in
-[version_planning.md](version_planning.md) keep one meaning (fsc 0.N implements fls 0.N). The two
-numbers diverge after 1.0, when the independent versioning above takes effect.
+- During 0.N, a **preliminary fls 1.0.0** is defined and maintained as a draft: the target the
+  project works toward. While it is a draft it carries a pre-release version (working name
+  `1.0.0-draft.N`, a semantic-versioning pre-release identifier) and may change freely; the
+  semantic-versioning guarantees above start when fls 1.0.0 is released.
+- **fsc 0.N is not guaranteed to be a full implementation** of the draft. Each fsc 0.N release
+  states which draft revision it tracks and which parts of it are implemented. The existing status
+  markers (`[IMPLEMENTED]` / `[IN DEVELOPMENT]` / `[PLANNED]`) keep exactly this meaning: they are
+  the implementation status of fsc relative to the draft, and are best generated from the feature
+  registry as an implementation-status table.
+- **fls 1.0.0 is released together with fsc 1.0.0**, the first release that implements the whole
+  specification and passes the full conformance suite (the self-hosted release). A specification
+  with no passing implementation is only a draft.
+- From then on the versions are independent, as described above.
+- The draft's **scope** is the feature set the roadmap builds (memory and value model, object model,
+  errors and exceptions, safety rules). Anything the roadmap defers past 1.0 is explicitly out of
+  the draft (for example generic enums, async, macros). Platform targets (Windows, Linux),
+  directives, and the runtime internals are properties of fsc, not of the language, and are not part
+  of the fls.
 
 ## What the specification contains (proposed)
 

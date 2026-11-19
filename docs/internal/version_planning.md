@@ -4,8 +4,9 @@ Planning for future versions toward **1.0.0 — Titan**, the self-hosted release
 
 > **Terminology.** The language is defined by the firescript Language Specification (fls); the
 > compiler is the firescript Compiler (fsc). They are versioned independently — see
-> [spec_and_versioning.md](spec_and_versioning.md). Until the self-hosted 1.0 release they advance
-> together, so the version numbers below are both the fsc version and the fls version it implements.
+> [spec_and_versioning.md](spec_and_versioning.md). During 0.N the roadmap below builds toward a
+> preliminary fls 1.0.0; fsc 0.N tracks that draft without being a full implementation. fls 1.0.0
+> and fsc 1.0.0 are released together when the compiler implements the whole specification.
 
 ## Guiding Vision
 
