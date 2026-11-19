@@ -2109,8 +2109,19 @@ class ASTToFIRConverter:
 
         self.builder.jump(header.id)
         self.builder.position_at(header)
-        cond = self._convert_expression(node.children[0])
-        self.builder.branch(cond, body_block.id, exit_block.id)
+        cond_node = node.children[0]
+        if (
+            cond_node.token is not None
+            and cond_node.token.type == "BOOLEAN_LITERAL"
+            and str(cond_node.token.value) == "true"
+        ):
+            # `while (true)` has no false edge: the loop is left only via
+            # `break`. A dead header->exit edge would otherwise make the
+            # ownership verifier see values moved in the body as unmoved on it.
+            self.builder.jump(body_block.id)
+        else:
+            cond = self._convert_expression(cond_node)
+            self.builder.branch(cond, body_block.id, exit_block.id)
 
         self.builder.position_at(body_block)
         self.loop_stack.append((header.id, exit_block.id, None))

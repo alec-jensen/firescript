@@ -553,6 +553,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **memory_branching.fire** - Scope-exit drops of fixed-size array locals on if/else exit, bare-block exit and early `return` (merged from the former `memory_scopes` and `memory_early_return`); the FIR snapshot pins the drops
 - **memory_loop_moves_that_are_fine.fire** - Moving a for-in loop variable inside the loop body is not a loop-carried move (guards the loop-move check against a false positive)
 - **memory_break_continue_owned.fire** - Owned vars correctly dropped on break/continue
+- **memory_regression_while_true_consume_break.fire** - Owned value moved inside `while (true)` that always exits via `break` compiles (was FIRV-O3)
 - **memory_class_owned_fields.fire** - Classes with owned fields (string) use generated destructors
 - **memory_constructor_move.fire** - Owned objects moved into a constructor not double-freed
 - **memory_early_exit_precision.fire** - Precise drop insertion around early exits (only variables actually in scope at the exit point are dropped)

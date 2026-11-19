@@ -428,62 +428,58 @@ func @rt_reg_add(p: u64) -> void {
     jmp L3
 
   L7:
-    %39 = bconst true
-    br %39, L8, L9
+    jmp L8
 
   L8:
-    %40 = slotload.u64 table
-    %41 = slotload.u64 slot
-    %42 = const.u64 8
-    %43 = mul.u64 %41, %42
-    %44 = add.u64 %40, %43
-    %45 = cvt.u64_to_ptr %44
-    %46 = load.u64 %45, 0
+    %39 = slotload.u64 table
+    %40 = slotload.u64 slot
+    %41 = const.u64 8
+    %42 = mul.u64 %40, %41
+    %43 = add.u64 %39, %42
+    %44 = cvt.u64_to_ptr %43
+    %45 = load.u64 %44, 0
     slot entry: u64
-    slotstore entry, %46
-    %47 = slotload.u64 entry
-    %48 = const.u64 1
-    %49 = le.u64 %47, %48
-    br %49, L11, L10
+    slotstore entry, %45
+    %46 = slotload.u64 entry
+    %47 = const.u64 1
+    %48 = le.u64 %46, %47
+    br %48, L10, L9
 
   L9:
-    ret
+    %49 = slotload.u64 entry
+    %50 = slotload.u64 p
+    %51 = eq.u64 %49, %50
+    br %51, L12, L11
 
   L10:
-    %50 = slotload.u64 entry
-    %51 = slotload.u64 p
-    %52 = eq.u64 %50, %51
-    br %52, L13, L12
-
-  L11:
-    %53 = slotload.u64 table
-    %54 = slotload.u64 slot
-    %55 = const.u64 8
-    %56 = mul.u64 %54, %55
-    %57 = add.u64 %53, %56
-    %58 = slotload.u64 p
-    %59 = cvt.u64_to_ptr %57
-    store.u64 %59, 0, %58
-    %60 = slotload.u64 state
-    %61 = const.u64 24
-    %62 = add.u64 %60, %61
-    %63 = slotload.u64 count
-    %64 = const.u64 1
-    %65 = add.u64 %63, %64
-    %66 = cvt.u64_to_ptr %62
-    store.u64 %66, 0, %65
+    %52 = slotload.u64 table
+    %53 = slotload.u64 slot
+    %54 = const.u64 8
+    %55 = mul.u64 %53, %54
+    %56 = add.u64 %52, %55
+    %57 = slotload.u64 p
+    %58 = cvt.u64_to_ptr %56
+    store.u64 %58, 0, %57
+    %59 = slotload.u64 state
+    %60 = const.u64 24
+    %61 = add.u64 %59, %60
+    %62 = slotload.u64 count
+    %63 = const.u64 1
+    %64 = add.u64 %62, %63
+    %65 = cvt.u64_to_ptr %61
+    store.u64 %65, 0, %64
     ret
 
-  L12:
-    %67 = slotload.u64 slot
-    %68 = const.u64 1
-    %69 = add.u64 %67, %68
-    %70 = slotload.u64 cap
-    %71 = mod.u64 %69, %70
-    slotstore slot, %71
+  L11:
+    %66 = slotload.u64 slot
+    %67 = const.u64 1
+    %68 = add.u64 %66, %67
+    %69 = slotload.u64 cap
+    %70 = mod.u64 %68, %69
+    slotstore slot, %70
     jmp L7
 
-  L13:
+  L12:
     ret
 }
 

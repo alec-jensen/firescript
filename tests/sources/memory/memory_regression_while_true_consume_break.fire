@@ -1,0 +1,24 @@
+import @firescript/std.io.println;
+
+class Box {
+    v: int32;
+}
+
+fn consume(b: Box) -> void {
+    println(b.v);
+}
+
+fn main() -> int32 {
+    x: Box = Box(1i32);
+    while (true) {
+        consume(x);
+        break;
+    }
+    println("done");
+    return 0;
+}
+
+/* EXPECT
+1
+done
+*/
