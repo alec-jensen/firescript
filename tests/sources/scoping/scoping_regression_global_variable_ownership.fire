@@ -1,0 +1,74 @@
+// Regression: owned module-level variables (class instance, string, array)
+// and nullable ones (int32?, string?) used from functions: an owned global
+// reassigned 500 times frees its previous value each time, a global array
+// supports for-in and negative indexing from a function, and a `string?`
+// global initialised with `null` type-checks at the FLIR store.
+import @firescript/std.io.println;
+
+class Box {
+    v: int32;
+    label: string;
+    fn Box(&mut this, v: int32, label: string) { this.v = v; this.label = label; }
+    fn show(&this) -> string { return this.label + ":" + (this.v as string); }
+}
+
+current: Box = new Box(0, "init");
+history: string = "";
+data: int32[] = [5, 6, 7, 8];
+maybe: int32? = null;
+maybeText: string? = null;
+
+fn replace(i: int32) -> void {
+    current = new Box(i, "n" + (i as string));
+}
+
+fn record() -> void {
+    history = history + current.show() + ";";
+}
+
+fn sumData() -> int32 {
+    s: int32 = 0;
+    for (d: int32 in data) {
+        s += d;
+    }
+    return s + data[-1];
+}
+
+fn setMaybe(v: int32) -> void {
+    maybe = v;
+    maybeText = "t" + (v as string);
+}
+
+fn hasMaybe() -> bool {
+    return maybe != null;
+}
+
+println(hasMaybe());
+println(maybeText == null);
+setMaybe(4);
+println(hasMaybe());
+println(maybe);
+println(maybeText);
+println(sumData());
+
+i: int32 = 0;
+while (i < 500) {
+    replace(i);
+    if (i % 100 == 0) {
+        record();
+    }
+    i++;
+}
+println(current.show());
+println(history);
+
+/* EXPECT
+false
+true
+true
+4
+t4
+34
+n499:499
+n0:0;n100:100;n200:200;n300:300;n400:400;
+*/

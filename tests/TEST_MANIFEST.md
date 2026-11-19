@@ -535,6 +535,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **scoping_regression_function_global_variables.fire** - Regression: functions, methods and generators reading and writing top-level variables (scalar, owned string/array/class, nullable scalar), including reassigning an owned global in a loop (previously FIRV-L1)
 - **scoping_regression_global_variables_user_main.fire** - Regression: with a user `main()`, top-level declarations (and `const` bool/char/string) are still initialized in declaration order before `main`, and visible to functions
 - **scoping_regression_global_variable_types.fire** - Regression: module-level variables of by-value struct shapes (copyable class, float128) and float32/char/uint64, written from a function
+- **scoping_regression_global_variable_ownership.fire** - Regression: owned (class/string/array) and nullable (`int32?`, `string?`) module-level variables used from functions, including reassigning an owned global 500 times
 - **scoping_variable_declaration_order.fire** - Declared-before-use, same names in separate sibling scopes
 - **scope_stray_token_recovery.fire** - Parser error-recovery around a stray/unexpected token in statement position, verifying the recovered scope's remaining valid statements still resolve correctly
 

@@ -490,7 +490,7 @@ class _FunctionVerifier:
             return
         declared = self.global_types.get(inst.name)
         value_t = operand_types[0]
-        if declared is not None and value_t is not None and value_t != declared:
+        if declared is not None and value_t is not None and not _ptr_lenient_eq(value_t, declared):
             self.emit("FLIRV-T6", f"gstore('@{inst.name}') value type '{value_t.render()}' does not match declared type '{declared.render()}'", block, index, inst)
 
     def _check_load(self, inst, operand_types, block, index) -> None:
