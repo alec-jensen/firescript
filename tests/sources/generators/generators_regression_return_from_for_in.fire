@@ -1,0 +1,58 @@
+// Regression: `return` out of a for-in loop over a generator (previously
+// FIRV-O3: the loop's hidden generator object was not dropped on that path),
+// and `break` out of a nested for-in inside a generator, in an
+// allocation-free but frame-reusing loop.
+import @firescript/std.io.println;
+
+fn countTo(n: int32) -> generator<int32> {
+    i: int32 = 1;
+    while (i <= n) {
+        yield i;
+        i += 1;
+    }
+}
+
+fn firstOver(limit: int32) -> int32 {
+    for (x: int32 in countTo(1000)) {
+        if (x > limit) {
+            return x;
+        }
+    }
+    return -1;
+}
+
+fn stopEarly() -> generator<int32> {
+    for (x: int32 in countTo(10)) {
+        if (x == 4) {
+            break;
+        }
+        yield x;
+    }
+    yield 99;
+}
+
+println(firstOver(41));
+println(firstOver(5000));
+for (v: int32 in stopEarly()) {
+    println(v);
+}
+
+total: int32 = 0;
+n: int32 = 0;
+while (n < 300) {
+    for (v: int32 in stopEarly()) {
+        total += v;
+    }
+    n++;
+}
+println(total);
+
+/* EXPECT
+42
+-1
+1
+2
+3
+99
+31500
+*/

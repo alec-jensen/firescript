@@ -2,15 +2,6 @@ import @firescript/std.io.println;
 
 // Generator edge cases: early return from within the generator body,
 // and multiple yield points.
-//
-// NOTE: a third case -- a generator's body containing a for-in loop over
-// another generator call (nested generator consumption) -- was tried here
-// and found to trigger an internal compiler error (FLIRV-T5: slotaddr
-// '__gen_x' has no dominating parameter or slot declaration) in
-// firescript/flir/lowering.py's generator lowering. That looks like a
-// real compiler bug in how nested generator frames are wired into the
-// outer generator's frame struct; it was left out of this test and
-// reported separately rather than worked around here.
 
 fn earlyStop(limit: int32) -> generator<int32> {
     i: int32 = 0;

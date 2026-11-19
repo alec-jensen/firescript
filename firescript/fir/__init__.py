@@ -25,7 +25,7 @@ from fir.ir_node import (
     Terminator,
     BasicBlock,
 )
-from fir.ir_module import FIRModule, FIRFunction, TypeDef, GlobalConstant
+from fir.ir_module import FIRModule, FIRFunction, TypeDef, GlobalConstant, GlobalVariable
 from fir.ownership import OwnershipState, OwnershipMap
 from fir.ir_builder import FIRBuilder
 from fir.textual import dump_module

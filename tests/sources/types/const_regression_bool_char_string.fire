@@ -1,0 +1,43 @@
+import @firescript/std.io.println;
+
+// Regression: `const` of type bool, char and string at the top level used to
+// crash the compiler (ValueError in the backend for bool/char; FLIRV-A3 for
+// string). bool/char are literal constants; a string const is initialized
+// before any other top-level code and never dropped.
+
+const ENABLED: bool = true;
+const DISABLED: bool = false;
+const LETTER: char = 'Z';
+const NEWLINE: char = '\n';
+const TITLE: string = "const string";
+const empty: string = "";
+const tagline: string = "tagline";
+const SCALE: float128 = 2.5f128;
+
+fn describe() -> string {
+    if (ENABLED && !DISABLED) {
+        return TITLE + "!";
+    }
+    return "unreachable";
+}
+
+println(ENABLED);
+println(DISABLED);
+println(LETTER);
+println(TITLE);
+println(tagline.length());
+println(empty.length());
+println(describe());
+println(SCALE);
+println(NEWLINE);
+
+/* EXPECT
+true
+false
+Z
+const string
+7
+0
+const string!
+2.500000
+*/

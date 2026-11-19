@@ -432,7 +432,9 @@ Each heading below is a directory under `tests/sources/`.
 - **generators_basic.fire** - Generator functions (`fn` returning `generator<T>`), `yield`, stdlib `range`/`rangeFrom`/`rangeStep`, user-defined generators, for-in over generators
 - **generators_break_continue.fire** - `break`/`continue` inside a for-in loop over a generator, and nested for-in-over-generator loops
 - **generators_frame_zero_init_types.fire** - A generator with `bool`/`float128`/copyable-class local variables, exercising `_zero_value`'s per-`FLIRType`-kind branches used to zero-initialize the generator's frame struct up front. Documents a newly-found bug: a *pointer*-kind generator local (`string`, a non-copyable class, or an array) currently crashes the compiler with an internal `FLIRV-T1` type-mismatch error, so this file intentionally avoids that combination.
-- **generators_advanced.fire** - Early `return` from within a generator body (exhaustion before the loop condition would naturally end it), multiple `yield` points in one generator, and calling the same generator function from two separate for-in sites (exercises the FLIR lowering's "generator already lowered" guard). Note: a third case (a generator's body containing a for-in loop over another generator call) was tried and found to trigger an internal compiler error in `flir/lowering.py`'s generator frame lowering; see the comment in the file. Also a two-parameter generator with three yield sites (multi-way resume dispatch; parameters persist across resumes), merged from the former `generators_multi_yield_sites.fire`.
+- **generators_advanced.fire** - Early `return` from within a generator body (exhaustion before the loop condition would naturally end it), multiple `yield` points in one generator, and calling the same generator function from two separate for-in sites (exercises the FLIR lowering's "generator already lowered" guard). Also a two-parameter generator with three yield sites (multi-way resume dispatch; parameters persist across resumes), merged from the former `generators_multi_yield_sites.fire`.
+- **generators_regression_nested_generator.fire** - Regression: a generator whose body loops over other generators (three levels, sequential inner loops, per-iteration inner generators with parameters, string yields, a std `range`); previously FLIRV-T5
+- **generators_regression_return_from_for_in.fire** - Regression: `return` out of a for-in over a generator (previously FIRV-O3), `break` out of a nested for-in inside a generator, repeated in a loop
 
 ### `enums/`
 - **enum_trailing_comment.fire** - Regression: a line or block comment after the last enum variant (no trailing comma; tag-only and payload forms) is not mistaken for a missing separator.
@@ -456,8 +458,9 @@ Per-type min/max value and overflow/underflow behavior, split by numeric type:
 - **types_float32.fire** / **types_float64.fire**
 - **types_deep.fire** - Deep type testing (arithmetic across all widths with arbitrary values, distinct focus from the `types_<type>.fire` min/max-boundary files above)
 - **char_type.fire** - `char` type: literals (`'A'`, escape chars `'\t'` `'\n'` `'\\'`), copyability, cast to string, and an unrecognized escape sequence (`'\d'`) falling back to the escaped character's own code point
-- **const_declarations.fire** - Top-level `const` declarations (int32/float64/float32) becoming module-level constants; documents that `const string`/`const bool`/`const char` currently each fail to compile end-to-end for three separate, unrelated bugs (see `tests/python/fir/test_ast_to_fir_pipeline_errors.py`)
-- **const_declarations_wide_types.fire** - Top-level `const float32`, and string literal escape edge cases (`\'`, trailing `\\`) that exercise the asm backend's `.asciz` escaping. Also declares (but never reads) a `const float128` to exercise the global-constant rodata emission path; see the in-file note about a real bug where reading a `float128` global back via `GlobalLoad` loses its high qword.
+- **const_declarations.fire** - Top-level `const` declarations (int32/float64/float32) becoming module-level constants
+- **const_regression_bool_char_string.fire** - Regression: top-level `const` bool/char/string/float128 (previously a backend crash for bool/char and FLIRV-A3 for string); string consts are initialized by the entry prologue and never dropped
+- **const_declarations_wide_types.fire** - Top-level `const float32`, and string literal escape edge cases (`\'`, trailing `\\`) that exercise the asm backend's `.asciz` escaping. Also reads back a `const float128` (full 16 bytes) via the global-constant rodata path.
 
 ### `conversions/`
 Split by conversion category:
@@ -498,6 +501,8 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **arrays_function_param.fire** - Array passed to a function and summed
 - **arrays_length_param.fire** - `.length()` / `.size()` called on a borrowed array function parameter (size not statically known at the call site, unlike a local from an array literal)
 - **array_tests.fire** - Basic array operations
+- **arrays_regression_println_array.fire** - Regression: `println`/`print` of an array (int32/string/bool/float64, empty, via an array parameter and a generic function) prints `[a, b, c]`, same as `array as string` (previously the `[...]` placeholder)
+- **arrays_regression_bare_index_statement.fire** - Regression: a bare `arr[0];` statement at top level and inside a function (previously "Unsupported statement node ARRAY_ACCESS")
 - **array_to_string.fire** - `array as string` conversion for int32, float64, string, and empty arrays (`[a, b, c]` formatting)
 - **array_index_count.fire** - `.index()` / `.count()` array methods
 - **array_negative_indexing.fire** - Negative index access
@@ -513,6 +518,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **fibonacci.fire** - Tree-recursive fibonacci over `int64` (relocated from `performance/`); FIR/FLIR snapshots
 - **functions_return_types.fire** - float/bool/string return types; also fallthrough functions (no explicit `return` on every path -- firescript doesn't enforce all-paths-return) with `bool`/`float128` return types, and an if/else where both arms already `return` (dead join block), exercising `ast_to_fir.py`'s implicit-zero-return synthesis and dead-block pruning
 - **functions_array_return.fire** - Array-typed function return value used in further expressions (array access)
+- **functions_regression_array_literal_return.fire** - Regression: a function declared `-> int32[]`/`-> string[]` returning a fixed-size array literal (previously FIRV-T4); only positive indexing is used on the result (array length after a call is untracked).
 - **functions_early_and_multiple_returns.fire** - Early return, multiple return paths
 - **functions_void.fire** - Void functions with side effects
 - **functions_missing_return_fallthrough.fire** - A non-void function (no "missing return" diagnostic exists in firescript) falling off the end without an explicit `return`: ast_to_fir.py's `_synthesize_zero()` emits an implicit zero-valued return for scalar return types (int/float/bool/char). Documents a newly-found bug: the same fallthrough for a *non-scalar* return type (e.g. `string`) crashes the compiler with an internal `FLIRV-T4` verifier error instead of a clean diagnostic or a working implicit return.
@@ -527,6 +533,10 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **scoping_block_nesting.fire** - Global/block scope, deeply nested blocks, complex nesting across block/if/while
 - **scoping_control_flow.fire** - if/else, while, for, for-in loop scope
 - **scoping_function.fire** - Function scope (parameters and locals not visible outside)
+- **scoping_regression_function_global_variables.fire** - Regression: functions, methods and generators reading and writing top-level variables (scalar, owned string/array/class, nullable scalar), including reassigning an owned global in a loop (previously FIRV-L1)
+- **scoping_regression_global_variables_user_main.fire** - Regression: with a user `main()`, top-level declarations (and `const` bool/char/string) are still initialized in declaration order before `main`, and visible to functions
+- **scoping_regression_global_variable_types.fire** - Regression: module-level variables of by-value struct shapes (copyable class, float128) and float32/char/uint64, written from a function
+- **scoping_regression_global_variable_ownership.fire** - Regression: owned (class/string/array) and nullable (`int32?`, `string?`) module-level variables used from functions, including reassigning an owned global 500 times
 - **scoping_variable_declaration_order.fire** - Declared-before-use, same names in separate sibling scopes
 
 ### `expressions/`
@@ -558,6 +568,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 
 ### `classes/`
 - **classes_smoke.fire** - Basic class smoke tests
+- **classes_regression_ctor_borrowed_and_owned_param.fire** - Regression: a constructor with a `&`/`&mut` borrowed regular parameter next to an `owned` one; borrowed arguments stay usable after the call (previously FIRV-O1/O2); includes an allocation-heavy loop
 - **classes_field_access.fire** - Class field access
 - **classes_methods.fire** - Class methods
 - **classes_deep.fire** - Deep class testing
@@ -594,6 +605,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **generic_self_referential_static_factory.fire** - Regression: a generic class's own static factory returning an instance of the enclosing class itself (`Box<T>`), and an instance method calling another method on `this`, both parse and compile correctly; the sharper zero-import edge of this same fix is covered separately by `tests/python/parser/test_generic_self_reference.py` (see below), since this file's own `import @firescript/std.io.println;` for output happens to also exercise a different, unrelated fallback
 - **generics_compound_assignment.fire** - `+= *= -= /=` on a constrained generic `T` with int32, float64 and int64
 - **generics_regression_imported_class_type_arg.fire** - Regression: an imported class used as a generic type argument (`ArrayList<Match>`, `ArrayList<RegexPattern>`), in a type annotation and a constructor call, parses instead of failing with "Expected type argument in generic instantiation"
+- **generics_regression_nested_generic_type_argument.fire** - Regression: `Pair<Pair<int32, int32>, int32>` (owned and copyable, two/three levels, built with nested constructor calls and in a loop); previously FLIRV-T4
 
 ### `identifiers/`
 - **identifiers_keyword_prefix.fire** - Regression: an identifier starting with a keyword-like literal token as a prefix (`false_flag`, `true_flag`, `nullable_count`) lexes as a single `IDENTIFIER`, not the literal token (`true`/`false`/`null`) followed by a stray remainder identifier (see `firescript/lexer.py`'s `BOOLEAN_LITERAL`/`NULL_LITERAL`/`VOID_LITERAL` patterns, which were missing the trailing `\b` word boundary every other keyword pattern has)
@@ -688,6 +700,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 ### `nullable/`
 - **nullable_basic.fire** - Nullable variables, `== null` / `!= null` checks
 - **nullable_advanced.fire** - Nullable class fields
+- **nullable_regression_string_param_and_return.fire** - Regression: `string?` function/method parameters accepting `null`, a `string?` variable and a plain string, and a `-> string?` function returning a string literal (previously FIRV-T4/T5/T6).
 - **nullable_scalar_local.fire** - A nullable *scalar* local variable (`int32?`, not `string?`/a class?/an array?, which are already unambiguously null-able via 0): a nullable int32 holding the value `0` must still compare not-equal to `null`, via the compiler-tracked has-value companion binding. See `ast_to_fir.py`'s "Nullable scalars" section.
 - **nullable_scalar_return.fire** - A plain function declared `-> int32?` (a nullable-scalar return type): the callee is actually compiled to return an internal `__NullableReturn<T>` struct (`ast_to_fir.py`'s "Nullable-scalar return values" section), unwrapped transparently at the call site; also confirms a side-effecting nullable-scalar-returning call is evaluated exactly once even when both its value and has-value flag are needed.
 

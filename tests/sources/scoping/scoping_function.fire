@@ -1,6 +1,8 @@
 import @firescript/std.io.println;
 
-// Functions can't access outer scope variables in the current implementation
+// A function's own parameters and locals are scoped to the function (access to
+// top-level variables from functions is covered by
+// scoping_regression_function_global_variables).
 fn testFunction(param: int32) -> int32 {
     local: int32 = 10;
     println(param);

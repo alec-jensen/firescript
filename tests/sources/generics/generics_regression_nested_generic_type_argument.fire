@@ -1,0 +1,56 @@
+// Regression: a generic class instantiated with another generic-class
+// instance as a type argument (`Pair<Pair<int32, int32>, int32>`), for owned
+// and copyable classes, constructed with nested constructor calls. Previously
+// the inner call lost its type arguments and FLIR verification failed
+// (FLIRV-T4), and type-argument lists were split on every comma, including
+// those of nested arguments.
+import @firescript/std.io.println;
+
+class Pair<T, U> {
+    a: T;
+    b: U;
+    fn Pair(a: T, b: U) { this.a = a; this.b = b; }
+}
+
+copyable class CPair<T, U> {
+    first: T;
+    second: U;
+    fn CPair(first: T, second: U) { this.first = first; this.second = second; }
+}
+
+nested: Pair<Pair<int32, int32>, int32> = Pair(Pair(1, 2), 3);
+println(nested.b);
+println(nested.a.a);
+println(nested.a.b);
+
+deep: Pair<Pair<int32, Pair<string, int32>>, string> = Pair(Pair(7, Pair("in", 8)), "out");
+println(deep.b);
+println(deep.a.a);
+println(deep.a.b.a);
+println(deep.a.b.b);
+
+cp: CPair<CPair<int32, int32>, int32> = CPair(CPair(1, 2), 3);
+println(cp.first.second);
+println(cp.second);
+
+i: int32 = 0;
+sum: int32 = 0;
+while (i < 100) {
+    p: Pair<Pair<int32, int32>, int32> = Pair(Pair(i, i), 1);
+    sum = sum + p.a.a + p.a.b + p.b;
+    i++;
+}
+println(sum);
+
+/* EXPECT
+3
+1
+2
+out
+7
+in
+8
+2
+3
+10000
+*/

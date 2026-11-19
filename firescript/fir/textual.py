@@ -29,7 +29,7 @@ Example output:
 
 from __future__ import annotations
 
-from fir.ir_module import FIRFunction, FIRModule, GlobalConstant, TypeDef
+from fir.ir_module import FIRFunction, FIRModule, GlobalConstant, GlobalVariable, TypeDef
 from fir.ir_node import FIRValue, ParamValue, Value
 
 
@@ -39,6 +39,10 @@ def dump_module(module: FIRModule) -> str:
     for constant in module.constants:
         lines.append("")
         lines.append(_format_constant(constant))
+
+    for global_var in module.global_vars:
+        lines.append("")
+        lines.append(_format_global_var(global_var))
 
     for type_def in module.types:
         lines.append("")
@@ -53,6 +57,10 @@ def dump_module(module: FIRModule) -> str:
 
 def _format_constant(constant: GlobalConstant) -> str:
     return f"const {constant.name}: {constant.const_type.render()} = {constant.literal_text}"
+
+
+def _format_global_var(global_var: GlobalVariable) -> str:
+    return f"global {global_var.name}: {global_var.var_type.render()}"
 
 
 def _format_type(type_def: TypeDef) -> list[str]:

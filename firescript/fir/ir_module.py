@@ -53,6 +53,20 @@ class GlobalConstant:
         self.literal_text = literal_text
 
 
+class GlobalVariable:
+    """A module-level mutable variable (static storage, zero-initialized).
+
+    Written by ordinary StoreVar and read by LoadVar using its own name, from
+    any function (see ast_to_fir.py's module-level variable promotion). The
+    entry function's prologue/top-level code stores its initial value; an
+    owned value held here is never implicitly dropped.
+    """
+
+    def __init__(self, name: str, var_type: FIRType):
+        self.name = name
+        self.var_type = var_type
+
+
 class FIRFunction:
     """A function (or method, or generator) in FIR form."""
 
@@ -111,6 +125,7 @@ class FIRModule:
         self.types: list[TypeDef] = []
         self.functions: list[FIRFunction] = []
         self.constants: list[GlobalConstant] = []
+        self.global_vars: list[GlobalVariable] = []
 
     def add_type(self, type_def: TypeDef) -> TypeDef:
         self.types.append(type_def)
@@ -123,6 +138,10 @@ class FIRModule:
     def add_constant(self, constant: GlobalConstant) -> GlobalConstant:
         self.constants.append(constant)
         return constant
+
+    def add_global_var(self, global_var: GlobalVariable) -> GlobalVariable:
+        self.global_vars.append(global_var)
+        return global_var
 
     def validate(self) -> None:
         """Thin wrapper over the Tier-1 verifier (fir/verifier.py)."""

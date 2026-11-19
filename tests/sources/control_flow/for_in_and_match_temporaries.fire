@@ -6,15 +6,6 @@ enum Status {
     Failed(code: int32),
 }
 
-// Note: functions returning arrays (e.g. `int32[] f() { ... }`) are not
-// exercised here -- returning a fixed-size array literal from a function
-// declared with an unsized array return type (`int32[]`) currently trips
-// an internal compiler error (FIRV-T4: 'int32[3]' vs declared 'int32[]')
-// in the FIR verifier instead of a clean diagnostic or a successful
-// compile. This looks like a real gap (array-returning functions appear
-// untested elsewhere in the suite too) but is out of scope here -- avoided
-// below by not returning arrays from functions.
-
 fn makeString() -> string {
     return "abc";
 }

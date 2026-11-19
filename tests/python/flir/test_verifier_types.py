@@ -346,6 +346,20 @@ def test_t6_gstore_value_type_mismatch():
     _expect_rule(module, "FLIRV-T6")
 
 
+def test_t6_gstore_untyped_ptr_into_typed_pointer_global_is_allowed():
+    # A `string?` module-level variable initialised with `null` stores an
+    # untyped `ptr` into a `ptr<i8>` cell (same leniency as slotstore).
+    module, func = _simple_module()
+    module.mutable_globals.append(("g", ptr_to("i8")))
+    entry = func.new_block()
+    from flir.ir import ConstNull  # noqa: E402
+
+    entry.add(GlobalStore("g", entry.add(ConstNull())))
+    zero = entry.add(ConstInt("0", I32))
+    entry.instructions.append(Ret(zero))
+    module.validate()
+
+
 def test_m2_load_misaligned_offset():
     module = FLIRModule("firescript")
     struct = FLIRStruct("Packed", kind="class")

@@ -262,6 +262,11 @@ class _HeapChecker:
 
     def _check_free_provenance(self, value: FValue, state: _State, block: FLIRBlock, index: int, inst: FInst) -> None:
         origin = self._resolved_origin(value, state)
+        if isinstance(origin, GlobalLoad) and any(n == origin.name for n, _ in self.module.mutable_globals):
+            # A mutable module-level variable holds a real heap pointer
+            # (e.g. an owned string global being reassigned and its old
+            # value freed); only read-only global constants are non-heap.
+            return
         if isinstance(origin, (ConstStr, SlotAddr, GlobalLoad, PtrAdd)):
             self.emit("FLIRV-A3", f"free/destroy argument is not a heap-allocation base pointer ({origin.opcode})", block, index, inst)
 

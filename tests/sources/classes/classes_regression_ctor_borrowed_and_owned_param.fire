@@ -1,0 +1,67 @@
+import @firescript/std.io.println;
+
+// Regression: a constructor with a borrowed regular parameter (`&a`) next to
+// an owned one used to be called with every argument in "own" mode, so the
+// caller looked like it had given `x` away (FIRV-O1/O2: use of 'x', which is
+// moved). A borrowed constructor parameter now only borrows its argument.
+
+class Inner {
+    v: int32;
+
+    fn Inner(&mut this, v: int32) {
+        this.v = v;
+    }
+}
+
+class Outer {
+    total: int32;
+
+    fn Outer(&mut this, &a: Inner, owned b: Inner) {
+        this.total = a.v + b.v;
+    }
+}
+
+class Tally {
+    sum: int32;
+
+    fn Tally(&mut this, &mut a: Inner, &b: Inner) {
+        a.v = a.v + 100;
+        this.sum = a.v + b.v;
+    }
+}
+
+x: Inner = Inner(1);
+y: Inner = Inner(2);
+o: Outer = Outer(x, y);
+println(o.total);
+println(x.v);
+
+p: Inner = Inner(5);
+q: Inner = Inner(6);
+t: Tally = Tally(p, q);
+println(t.sum);
+println(p.v);
+println(q.v);
+
+// Allocation-heavy: every iteration builds and frees owned values; `x` is
+// borrowed each time and stays valid.
+total: int32 = 0;
+i: int32 = 0;
+while (i < 200) {
+    tmp: Inner = Inner(i);
+    out: Outer = Outer(x, tmp);
+    total = total + out.total;
+    i++;
+}
+println(total);
+println(x.v);
+
+/* EXPECT
+3
+1
+111
+105
+6
+20100
+1
+*/

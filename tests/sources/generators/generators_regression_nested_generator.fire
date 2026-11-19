@@ -1,0 +1,111 @@
+// Regression: a generator whose body consumes another generator with a
+// for-in loop (nested generators, up to three levels, sequential inner loops,
+// an inner generator re-created on every outer iteration, string yields, and
+// a std generator). Previously FLIRV-T5 ("slotaddr '__gen_x' has no
+// dominating parameter or slot declaration"): the inner generator's frame
+// was not part of the outer generator's frame.
+import @firescript/std.io.println;
+import @firescript/std.ranges.range;
+
+fn countTo(n: int32) -> generator<int32> {
+    i: int32 = 1;
+    while (i <= n) {
+        yield i;
+        i += 1;
+    }
+}
+
+// two sequential loops over different inner generators
+fn twoLoops() -> generator<int32> {
+    for (a: int32 in countTo(2)) {
+        yield a;
+    }
+    for (b: int32 in countTo(3)) {
+        yield b * 100;
+    }
+}
+
+// three levels deep
+fn level3() -> generator<int32> {
+    for (v: int32 in twoLoops()) {
+        yield v + 1000;
+    }
+}
+
+// inner generator created afresh on every outer iteration, with a parameter
+fn triangle(rows: int32) -> generator<int32> {
+    for (r: int32 in countTo(rows)) {
+        for (c: int32 in countTo(r)) {
+            yield r * 10 + c;
+        }
+    }
+}
+
+// early exit of the inner loop, and a string-yielding pair
+fn words() -> generator<string> {
+    names: string[] = ["a", "b", "c"];
+    for (n: string in names) {
+        yield n + "!";
+    }
+}
+
+fn wrapWords() -> generator<string> {
+    for (w: string in words()) {
+        yield "<" + w + ">";
+    }
+}
+
+fn firstTwo() -> generator<int32> {
+    seen: int32 = 0;
+    for (x: int32 in countTo(100)) {
+        if (seen == 2) {
+            return;
+        }
+        yield x;
+        seen += 1;
+    }
+}
+
+fn viaRange() -> generator<int32> {
+    for (k: int32 in range(3)) {
+        yield k * 7;
+    }
+}
+
+for (v: int32 in level3()) {
+    println(v);
+}
+for (t: int32 in triangle(3)) {
+    println(t);
+}
+for (w: string in wrapWords()) {
+    println(w);
+}
+for (f: int32 in firstTwo()) {
+    println(f);
+}
+for (k: int32 in viaRange()) {
+    println(k);
+}
+
+/* EXPECT
+1001
+1002
+1100
+1200
+1300
+11
+21
+22
+31
+32
+33
+<a!>
+<b!>
+<c!>
+1
+2
+0
+7
+14
+*/

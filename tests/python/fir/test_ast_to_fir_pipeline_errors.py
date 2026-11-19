@@ -105,38 +105,11 @@ def test_increment_as_subexpression_produces_no_value():
 
 
 def test_const_non_numeric_literal_initializers_reach_fir():
-    """`const string`/`const bool`/`const char` all convert to FIR
-    successfully (exercising _normalize_literal_text's STRING_LITERAL/
-    BOOLEAN_LITERAL/CHAR_LITERAL passthrough fallback -- only
-    INTEGER_LITERAL/FLOAT_LITERAL/DOUBLE_LITERAL get suffix-stripping
-    there), but each one is a *separate*, pre-existing, downstream bug
-    away from actually compiling end-to-end -- deliberately not exercised
-    as a tests/sources/*.fire "run"/"snapshot" case for that reason (only
-    the FIR-conversion step, not the full compile, is asserted here):
-
-    - `const string S = "hi";`: preprocessor.py inserts a drop() for the
-      const string as though it were an owned local, but it backs a
-      global constant (not a heap allocation) -- flir/verifier.py's
-      FLIRV-A3 ("free/destroy argument is not a heap-allocation base
-      pointer") then fires as an internal compiler error during FIR->FLIR
-      lowering.
-    - `const bool B = true;`: codegen/x86_64/flir_to_asm.py's
-      _emit_globals() decides whether a global literal needs float
-      parsing via `gtype.is_float() or "." in literal or "e" in
-      literal` -- that "e" in literal" substring check is meant to catch
-      scientific notation (e.g. "1e10") but also matches the literal text
-      "true" (which contains the letter 'e'), so `_emit_globals` crashes
-      with "ValueError: could not convert string to float: 'true'"
-      instead of compiling (`const bool B = false;` is unaffected,
-      coincidentally, since "false" contains no 'e').
-    - `const char C = 'Z';`: _normalize_literal_text() has no
-      CHAR_LITERAL case (only INTEGER_LITERAL/FLOAT_LITERAL/
-      DOUBLE_LITERAL strip anything), so it falls through to `return
-      text`, returning the *raw token text including the surrounding
-      single quotes* ("'Z'") as the GlobalConstant's literal string.
-      _emit_globals() then crashes with "ValueError: invalid literal for
-      int() with base 10: \"'Z'\"" trying to parse it as an integer.
-    """
+    """Regression (B08a/b/c): `const bool`/`const char` become literal
+    GlobalConstants (rendered as 1/0 and the character code so the backend
+    can emit them as integers), and `const string` -- whose value is a
+    pointer that can't be a static initializer -- becomes a module-level
+    variable initialized in the entry prologue (and is never dropped)."""
     mod = _convert(
         """
         import @firescript/std.io.println;
@@ -145,8 +118,10 @@ def test_const_non_numeric_literal_initializers_reach_fir():
         const C: char = 'Z';
         """
     )
-    names = {c.name for c in mod.constants}
-    t.require(names == {"S", "B", "C"}, f"unexpected constants: {names}")
+    consts = {c.name: c.literal_text for c in mod.constants}
+    t.require(consts == {"B": "1", "C": "90"}, f"unexpected constants: {consts}")
+    globals_ = {g.name for g in mod.global_vars}
+    t.require(globals_ == {"S"}, f"unexpected module-level variables: {globals_}")
 
 
 def test_synthesize_zero_for_char_return_type():
@@ -178,18 +153,32 @@ def test_synthesize_zero_for_char_return_type():
     t.require(value.result_type.render() == "char", f"unexpected type: {value.result_type.render()}")
 
 
-def test_bare_array_access_statement_is_unsupported():
-    """`arr[0];` as a standalone statement parses fine (an ARRAY_ACCESS
-    expression statement) and passes semantic analysis, but
-    _convert_statement() has no dispatch case for a bare ARRAY_ACCESS (only
-    call-like expression nodes are permitted as expression-statements), so
-    it falls through to the "Unsupported statement node" catch-all."""
-    _expect_conversion_error(
+def test_bare_array_access_statement_converts():
+    """Regression (B15): `arr[0];` as a standalone statement parses (an
+    ARRAY_ACCESS expression statement) and used to crash AST->FIR with
+    "Unsupported statement node"; a bare in-place read is now evaluated and
+    its value discarded."""
+    module = _convert(
         """
         a: int32[3] = [1, 2, 3];
         a[0];
+        """
+    )
+    t.require(any(f.name == "main" for f in module.functions), "main was not converted")
+
+
+def test_directive_statement_inside_function_is_rejected_cleanly():
+    """Regression (B15): `directive x;` inside a function body parses, then
+    used to crash AST->FIR with a generic "Unsupported statement node"
+    message; it is now rejected with a message saying where directives are
+    allowed."""
+    _expect_conversion_error(
+        """
+        fn f() -> void {
+            directive enable_syscalls;
+        }
         """,
-        "Unsupported statement node",
+        "only allowed at the top level",
     )
 
 
@@ -205,38 +194,28 @@ def test_directive_gated_intrinsic_without_directive_enabled():
     )
 
 
-def test_for_in_over_array_returning_function_call_hits_known_verifier_bug():
-    """Known bug (not fixed here, per project convention -- see
-    tests/TEST_MANIFEST.md's "known issues" pattern): a function declared
-    with an unsized array return type (`int32[] f() { ... }`) that returns
-    a fixed-size array literal produces a FIR Return instruction typed
-    'int32[N]' against the function's declared 'int32[]' return type,
-    which trips FIRV-T4 ("Return value type does not match declared return
-    type") as an internal compiler error (IRVerificationError) instead of
-    either compiling successfully or being rejected with a clean
-    diagnostic at an earlier stage. This is triggered here via a `for-in`
-    over such a call (a non-identifier, non-array-literal for-in
-    collection expression), which also happens to be the only way to
-    reach _array_size_of()'s final `return None` fallthrough (the
-    collection is neither an ARRAY_LITERAL nor an IDENTIFIER) -- array
-    class fields and array-returning class methods are both unsupported
-    by the parser (`class Foo { int32[] x; }` / `int32[] get(&this) {}`
-    both fail to parse: "Expected identifier after type in class body"),
-    so a free function call is the only reachable non-identifier
-    array-typed for-in collection at all."""
-    try:
-        _convert(
-            """
-            fn makeArr() -> int32[] {
-                return [1, 2, 3];
-            }
-            for (v: int32 in makeArr()) {
-            }
-            """
-        )
-        t.require(False, "expected IRVerificationError (FIRV-T4) -- has the underlying bug been fixed?")
-    except IRVerificationError as e:
-        t.require("FIRV-T4" in str(e), f"expected FIRV-T4, got: {e}")
+def test_for_in_over_array_returning_function_call_converts():
+    """Regression (B07): a function declared with an unsized array return
+    type (`-> int32[]`) that returns a fixed-size array literal used to
+    produce a FIR Return typed 'int32[3]' against the declared 'int32[]',
+    tripping FIRV-T4 as an internal compiler error. The verifier now treats
+    a sized array as assignable to an unsized one on return, as it already
+    did for call arguments. The for-in over the call is also the only way to
+    reach _array_size_of()'s final `return None` fallthrough (the collection
+    is neither an ARRAY_LITERAL nor an IDENTIFIER) -- array class fields and
+    array-returning class methods are unsupported by the parser, so a free
+    function call is the only reachable non-identifier array-typed for-in
+    collection."""
+    module = _convert(
+        """
+        fn makeArr() -> int32[] {
+            return [1, 2, 3];
+        }
+        for (v: int32 in makeArr()) {
+        }
+        """
+    )
+    t.require(any(f.name == "makeArr" for f in module.functions), "makeArr was not converted")
 
 
 def test_runtime_module_rejects_top_level_statements():
@@ -269,4 +248,44 @@ def test_bare_return_in_non_void_function_is_rejected_by_the_parser():
     t.require(
         any("'return' without a value" in e.message for e in pipeline.parser_errors),
         f"expected a missing-return-value diagnostic, got: {[e.message for e in pipeline.parser_errors]}",
+    )
+
+
+def test_function_referenced_top_level_variable_becomes_module_variable():
+    """B04: a top-level variable that a function body refers to is promoted
+    to a FIR global variable (static storage); one that no function refers
+    to stays a local of the synthetic main."""
+    mod = _convert(
+        """
+        g: int32 = 10;
+        local_only: int32 = 3;
+        fn f() -> int32 { return g + 1; }
+        """
+    )
+    names = {gv.name for gv in mod.global_vars}
+    t.require(names == {"g"}, f"unexpected module-level variables: {names}")
+
+
+def test_user_main_promotes_every_top_level_declaration():
+    """With a user main(), top-level declarations still run (they become
+    module-level variables initialized in main's prologue)."""
+    mod = _convert(
+        """
+        a: int32 = 1;
+        b: string = "x";
+        fn main() -> void { }
+        """
+    )
+    names = [gv.name for gv in mod.global_vars]
+    t.require(names == ["a", "b"], f"unexpected module-level variables: {names}")
+
+
+def test_moving_an_owned_module_variable_is_rejected():
+    _expect_conversion_error(
+        """
+        name: string = "abc";
+        fn show() -> string { return "x" + name; }
+        other: string = name;
+        """,
+        "owned module-level variable 'name'",
     )

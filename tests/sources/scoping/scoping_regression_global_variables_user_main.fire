@@ -1,0 +1,52 @@
+// Regression: when a program defines its own main(), top-level variable
+// declarations are still initialized -- in declaration order, before main's
+// body runs -- and are visible to every function, including main. Other
+// top-level statements are ignored, as before. Top-level `const` strings,
+// bools and chars are available the same way.
+import @firescript/std.io.println;
+
+const GREETING: string = "hello";
+const LIMIT: int32 = 3;
+const FLAG: bool = true;
+const INITIAL: char = 'Q';
+
+base: int32 = 40;
+doubled: int32 = twice(base);
+log: string = "log:";
+
+fn twice(x: int32) -> int32 {
+    return x * 2;
+}
+
+fn append(s: string) -> void {
+    log = log + s;
+}
+
+fn main() -> void {
+    println(doubled);
+    println(GREETING);
+    println(INITIAL);
+    println(FLAG);
+    i: int32 = 0;
+    while (i < LIMIT * 1000) {
+        append("x");
+        if (i % 1000 == 0) {
+            println(log.length());
+        }
+        i++;
+    }
+    println(log.length());
+    println(base);
+}
+
+/* EXPECT
+80
+hello
+Q
+true
+5
+1005
+2005
+3004
+40
+*/

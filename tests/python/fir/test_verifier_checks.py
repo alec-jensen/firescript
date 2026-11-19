@@ -141,12 +141,28 @@ def test_t5_non_nullable_argument_accepted_for_nullable_parameter():
     t.require("FIRV-T5" not in _rules(module), "FIRV-T5 must not fire")
 
 
-def test_t5_nullable_argument_rejected_for_non_nullable_parameter():
+def test_t5_nullable_pointer_argument_accepted_for_plain_pointer_parameter():
+    # A `string?`/`Class?` parameter keeps a plain FIR type (null is just the
+    # zero pointer), so a nullable-typed pointer argument must be accepted
+    # (B05: `fn f(s: string?)` called with a `string?` variable or `null`).
     module = FIRModule("firescript")
     _, cb = _fn(module, "take", params=[("s", STRING)], ret=None)
     cb.ret()
     _, b = _fn(module, "main")
     n = b.null_literal(STRING_N)
+    b.call("take", [n], ["own"], None)
+    b.ret()
+    t.require("FIRV-T5" not in _rules(module), "FIRV-T5 must not fire")
+
+
+def test_t5_nullable_scalar_argument_rejected_for_non_nullable_parameter():
+    # Nullable scalars carry a has-value companion, so passing `int32?` to a
+    # plain `int32` parameter stays a mismatch.
+    module = FIRModule("firescript")
+    _, cb = _fn(module, "take", params=[("v", INT32)], ret=None)
+    cb.ret()
+    _, b = _fn(module, "main")
+    n = b.null_literal(make_simple("int32", nullable=True))
     b.call("take", [n], ["own"], None)
     b.ret()
     _expect_rule(module, "FIRV-T5")

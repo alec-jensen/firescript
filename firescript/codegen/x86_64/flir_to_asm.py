@@ -214,7 +214,10 @@ class FLIRToAsmBackend:
         self.rodata.append(".section .bss")
         for name, gtype in self.module.mutable_globals:
             self.rodata.append(f"fsg_mut_{name}:")
-            self.rodata.append(f"    .space {max(8, _SIZES.get(gtype.kind, 8))}")
+            if gtype.kind == "struct":
+                self.rodata.append(f"    .space {align_up(self._struct_size(gtype), 8)}")
+            else:
+                self.rodata.append(f"    .space {max(8, _SIZES.get(gtype.kind, 8))}")
 
     # -- primitives ----------------------------------------------------------
 
@@ -493,11 +496,23 @@ class FLIRToAsmBackend:
             off = ctx.value_offsets[id(inst)]
             mutable = any(n == inst.name for n, _ in self.module.mutable_globals)
             label = f"fsg_mut_{inst.name}" if mutable else f"fsg_{inst.name}"
+            if inst.result_type.kind == "struct":
+                out.append(f"    lea r10, [rip + {label}]")
+                out.append(f"    lea r11, [rbp{off:+d}]")
+                self._emit_copy_regs(self._struct_size(inst.result_type))
+                return
             out.append(f"    mov rax, qword ptr [rip + {label}]")
             out.append(f"    mov qword ptr [rbp{off:+d}], rax")
             return
 
         if isinstance(inst, GlobalStore):
+            value = inst.operands[0]
+            if value.value_type is not None and value.value_type.kind == "struct":
+                voff = self._val_off(value, ctx)
+                out.append(f"    lea r10, [rbp{voff:+d}]")
+                out.append(f"    lea r11, [rip + fsg_mut_{inst.name}]")
+                self._emit_copy_regs(self._struct_size(value.value_type))
+                return
             self._load_int(inst.operands[0], _RAX, ctx)
             out.append(f"    mov qword ptr [rip + fsg_mut_{inst.name}], rax")
             return

@@ -1,0 +1,49 @@
+import @firescript/std.io.println;
+import @firescript/std.io.print;
+
+// Regression: `println(array)` / `print(array)` printed the placeholder
+// `[...]` for statically sized arrays (the generic print function had no
+// access to the array's length), while `array as string` printed the
+// elements. Both now print the same `[a, b, c]` text.
+
+fn show(&values: int32[]) -> void {
+    println(values);
+}
+
+fn echo<T>(&value: T) -> void {
+    println(value);
+}
+
+nums: int32[] = [1, 2, 3];
+println(nums);
+println(nums as string);
+show(nums);
+echo(nums);
+
+words: string[] = ["a", "b"];
+println(words);
+
+flags: bool[3] = [true, false, true];
+println(flags);
+
+scores: float64[] = [1.5, 2.25];
+println(scores);
+
+single: int32[] = [9];
+print(single);
+print("\n");
+
+empty: int32[] = [];
+println(empty);
+
+/* EXPECT
+[1, 2, 3]
+[1, 2, 3]
+[1, 2, 3]
+[1, 2, 3]
+[a, b]
+[true, false, true]
+[1.500000, 2.250000]
+[9]
+[]
+*/

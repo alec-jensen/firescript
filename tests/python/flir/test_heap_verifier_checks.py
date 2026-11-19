@@ -518,13 +518,25 @@ def test_a3_free_of_stack_slot_address():
     _expect(module, "FLIRV-A3", "(slotaddr)")
 
 
-def test_a3_free_of_global_value():
+def test_a3_free_of_read_only_global_value():
+    module, func = _func()
+    module.globals.append(("cell", STR, "0"))
+    b = func.new_block()
+    b.add(Call("fs_rt_free", [b.add(GlobalLoad("cell", STR))], VOID))
+    b.add(Ret())
+    _expect(module, "FLIRV-A3", "(gload)")
+
+
+def test_a3_free_of_mutable_global_value_is_allowed():
+    # A module-level variable holds a real heap pointer (an owned string
+    # global being reassigned frees its old value), unlike a read-only
+    # global constant.
     module, func = _func()
     module.mutable_globals.append(("cell", STR))
     b = func.new_block()
     b.add(Call("fs_rt_free", [b.add(GlobalLoad("cell", STR))], VOID))
     b.add(Ret())
-    _expect(module, "FLIRV-A3", "(gload)")
+    _expect_clean(module)
 
 
 def test_a3_free_of_interior_pointer_from_ptradd():

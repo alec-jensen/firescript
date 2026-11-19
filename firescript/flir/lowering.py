@@ -369,6 +369,19 @@ class FIRToFLIRLowering:
         self.global_consts: dict[str, str] = {
             c.name: sanitize(c.name) for c in fir_module.constants
         }
+        # Module-level mutable variables (FIR GlobalVariable): FIR name ->
+        # FLIR mutable-global name. Prefixed so they can never collide with
+        # a constant or the runtime's own `__fs_runtime_state` cell.
+        self.global_vars: dict[str, str] = {
+            g.name: "gv_" + sanitize(g.name) for g in fir_module.global_vars
+        }
+        # FIR name -> declared static array length, for LoadVar-based array
+        # operands (length()/negative indexing/for-in/array-to-string).
+        self.global_array_sizes: dict[str, int] = {
+            g.name: g.var_type.size
+            for g in fir_module.global_vars
+            if isinstance(g.var_type, ArrayType) and g.var_type.size is not None
+        }
         self.fir_funcs: dict[str, FIRFunction] = {f.name: f for f in fir_module.functions}
         if runtime_module is not None:
             # The firescript-implemented runtime: functions become callable
@@ -388,6 +401,28 @@ class FIRToFLIRLowering:
     # ------------------------------------------------------------------
     # Types
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def _split_type_args(text: str) -> list[str]:
+        """Split a generic type-argument list on its top-level commas only,
+        so a nested generic argument (`Pair<int32, int32>, int32`) stays one
+        argument."""
+        args: list[str] = []
+        depth = 0
+        current = ""
+        for ch in text:
+            if ch == "<":
+                depth += 1
+            elif ch == ">":
+                depth -= 1
+            elif ch == "," and depth == 0:
+                args.append(current.strip())
+                current = ""
+                continue
+            current += ch
+        if current.strip():
+            args.append(current.strip())
+        return args
 
     def subst(self, type_str: str, type_map: dict[str, str]) -> str:
         if type_str in type_map:
@@ -412,6 +447,11 @@ class FIRToFLIRLowering:
                 return ptr_to("i8")
             if name == "null":
                 return PTR
+            if "<" in name and name.endswith(">"):
+                # A type parameter substituted by a generic instance
+                # (`T` -> `CPair<int32, int32>`): lower the instance itself
+                # (a copyable one is an inline struct, an owned one a ptr).
+                return self.lower_type_str(name, type_map)
             if name in self.typedefs:
                 td = self.typedefs[name]
                 args = [self.subst(p, type_map) for p in td.generic_params]
@@ -465,7 +505,7 @@ class FIRToFLIRLowering:
             return PTR
         if "<" in type_str and type_str.endswith(">"):
             base, args_text = type_str.split("<", 1)
-            args = [self.subst(a.strip(), type_map) for a in args_text[:-1].split(",")]
+            args = [self.subst(a, type_map) for a in self._split_type_args(args_text[:-1])]
             struct_name = self.ensure_struct(base, args)
             if base in self.typedefs and self.typedefs[base].category == "copyable":
                 return struct_type(struct_name)
@@ -588,7 +628,7 @@ class FIRToFLIRLowering:
         type_map = type_map or {}
         if "<" in type_str and type_str.endswith(">"):
             base, args_text = type_str.split("<", 1)
-            args = [self.subst(a.strip(), type_map) for a in args_text[:-1].split(",")]
+            args = [self.subst(a, type_map) for a in self._split_type_args(args_text[:-1])]
             return self.ensure_struct(base, args)
         td = self.typedefs.get(type_str)
         if td is not None and td.generic_params:
@@ -607,6 +647,10 @@ class FIRToFLIRLowering:
         for constant in self.fir.constants:
             const_type = self.lower_type(constant.const_type, {})
             self.flir.globals.append((sanitize(constant.name), const_type, constant.literal_text))
+        for global_var in self.fir.global_vars:
+            self.flir.mutable_globals.append(
+                (self.global_vars[global_var.name], self.lower_type(global_var.var_type, {}))
+            )
 
         # Roots: every non-generic function (generators lower on demand).
         for func in self.fir.functions:
@@ -668,15 +712,32 @@ class FIRToFLIRLowering:
             lowered_type = self.lower_type(ptype, type_map)
             params.append((pname, lowered_type))
             ctx.slot_types[pname] = lowered_type
-            if isinstance(ptype, ArrayType):
-                concrete = self.render_concrete(ptype.element_type, type_map)
+            generic_array_elem = self._generic_array_param_elem(ptype, type_map)
+            if isinstance(ptype, ArrayType) or generic_array_elem is not None:
+                concrete = (
+                    self.render_concrete(ptype.element_type, type_map)
+                    if isinstance(ptype, ArrayType)
+                    else generic_array_elem
+                )
                 ctx.array_elems[pname] = concrete
-                # Array params get an implicit trailing length parameter.
+                # Array params get an implicit trailing length parameter --
+                # including a generic `T` parameter instantiated with an
+                # array type (e.g. `println(arr)`), so the callee can still
+                # read the array's length.
                 len_name = f"{pname}_len"
                 params.append((len_name, I32))
                 ctx.slot_types[len_name] = I32
                 ctx.array_lens[pname] = ("slot", len_name)
         return params
+
+    def _generic_array_param_elem(self, ptype: FIRType, type_map: dict[str, str]) -> Optional[str]:
+        """Element type of a bare generic type-parameter parameter (`T`)
+        whose instantiation in `type_map` is an array type (`int32[]`)."""
+        if isinstance(ptype, SimpleType) and ptype.name in type_map:
+            concrete = type_map[ptype.name]
+            if concrete.endswith("[]"):
+                return concrete[:-2]
+        return None
 
     def lower_function(self, fir_func: FIRFunction, type_map: dict[str, str], lowered_name: str) -> None:
         ctx = _FuncCtx(None, type_map)
@@ -843,6 +904,9 @@ class FIRToFLIRLowering:
         if isinstance(inst, StoreVarInst):
             value = self.val(inst.operands[0], ctx)
             value = self._dup_if_literal_string(inst.operands[0], value, ctx)
+            if self._is_global_var(inst.name, ctx):
+                ctx.emit(GlobalStore(self.global_vars[inst.name], value))
+                return
             self.var_store(inst.name, value, ctx)
             return
         if isinstance(inst, (MoveInst, BorrowInst, CloneInst)):
@@ -1372,6 +1436,8 @@ class FIRToFLIRLowering:
                 meta = ctx.array_lens.get(slot)
                 if meta and meta[0] == "const":
                     return slot, meta[1]
+                if self._is_global_var(slot, ctx) and slot in self.global_array_sizes:
+                    return slot, self.global_array_sizes[slot]
                 return slot, None
             t = array_fir.result_type
             if isinstance(t, ArrayType) and t.size is not None:
@@ -1495,10 +1561,24 @@ class FIRToFLIRLowering:
             return None
         return ctx.emit(ConstInt("0", lowered_type))
 
+    def _is_global_var(self, name: str, ctx: _FuncCtx) -> bool:
+        """True if `name` refers to a module-level variable rather than a
+        local/param slot or generator-frame field of the current function."""
+        if name not in self.global_vars or name in ctx.slot_types or name in ctx.gen_slots:
+            return False
+        return ctx.frame_struct is None or not self._frame_has(ctx, name)
+
     def lower_load_var(self, inst: LoadVarInst, ctx: _FuncCtx) -> None:
+        if self._is_global_var(inst.name, ctx):
+            result_type = self.lower_type(inst.result_type, ctx.type_map)
+            self.set_val(inst, ctx.emit(GlobalLoad(self.global_vars[inst.name], result_type)), ctx)
+            return
         # Generator frames are accessed by address.
         if inst.name in ctx.gen_slots:
-            self.set_val(inst, ctx.emit(SlotAddr(inst.name)), ctx)
+            if ctx.frame_struct is not None:
+                self.set_val(inst, self._gen_field_addr(inst.name, ctx), ctx)
+            else:
+                self.set_val(inst, ctx.emit(SlotAddr(inst.name)), ctx)
             return
         result_type = self.lower_type(inst.result_type, ctx.type_map)
         if ctx.frame_struct is None and inst.name not in ctx.slot_types:
@@ -2029,7 +2109,9 @@ class FIRToFLIRLowering:
         type_args = [self.subst(t, ctx.type_map) for t in inst.metadata.get("type_args", [])]
         lowered_name = self.request_function(name, type_args)
         callee = self.fir_funcs[name]
-        final_args = self._call_args_with_lengths(callee, inst, args, bool(type_args), ctx)
+        final_args = self._call_args_with_lengths(
+            callee, inst, args, bool(type_args), ctx, dict(zip(callee.generic_params, type_args))
+        )
         ret_type = VOID
         if inst.result_type is not None:
             ret_map = dict(zip(callee.generic_params, type_args))
@@ -2069,6 +2151,7 @@ class FIRToFLIRLowering:
         args: list[FValue],
         is_generic_call: bool,
         ctx: _FuncCtx,
+        callee_type_map: Optional[dict[str, str]] = None,
     ) -> list[FValue]:
         """Insert implicit array-length arguments (legacy ABI). Generator
         frames use a separate calling convention and never take these."""
@@ -2077,7 +2160,7 @@ class FIRToFLIRLowering:
         final: list[FValue] = []
         for (pname, ptype), arg_fir, arg in zip(callee.params, inst.operands, args):
             final.append(arg)
-            if isinstance(ptype, ArrayType):
+            if isinstance(ptype, ArrayType) or self._generic_array_param_elem(ptype, callee_type_map or {}) is not None:
                 length = self._array_length_value(arg_fir, ctx)
                 if length is None:
                     length = ctx.emit(ConstInt("0", I32))
@@ -2135,7 +2218,7 @@ class FIRToFLIRLowering:
         base = receiver_type.split("<")[0]
         type_args: list[str] = []
         if "<" in receiver_type and receiver_type.endswith(">"):
-            type_args = [a.strip() for a in receiver_type.split("<", 1)[1][:-1].split(",")]
+            type_args = self._split_type_args(receiver_type.split("<", 1)[1][:-1])
         elif base in self.typedefs and self.typedefs[base].generic_params:
             # Bare class name, no explicit type args in the receiver's own
             # static type string -- this is `this` inside another method of
@@ -2192,6 +2275,17 @@ class FIRToFLIRLowering:
         for block in fir_func.blocks:
             for inst in block.instructions:
                 if isinstance(inst, DeclareLocalInst):
+                    nested = self._declared_generator(inst)
+                    if nested is not None:
+                        # A generator consumed inside this one (`for x in
+                        # inner()`): its frame and out-value slot live
+                        # embedded in this frame, so they persist across
+                        # resumes. Initialized by its own __init call when
+                        # the DeclareLocal runs, not zero-filled here.
+                        _nested_name, nested_frame, nested_out = self._nested_generator_layout(nested)
+                        frame.add_field(inst.name, struct_type(nested_frame), self.flir)
+                        frame.add_field(f"{inst.name}__out", nested_out, self.flir)
+                        continue
                     lowered = self.lower_type(inst.var_type, type_map)
                     frame.add_field(inst.name, lowered, self.flir)
                     local_decls.append((inst.name, lowered))
@@ -2293,7 +2387,44 @@ class FIRToFLIRLowering:
         # The dispatch block must be first; FLIRFunction blocks are in creation
         # order with dispatch created first, so this holds.
 
+    @staticmethod
+    def _declared_generator(decl: DeclareLocalInst) -> Optional[GenNewInst]:
+        """The GenNew initializing this DeclareLocal, if it binds a
+        generator instance."""
+        if decl.operands and isinstance(decl.operands[0], FIRValue) and isinstance(
+            decl.operands[0].instruction, GenNewInst
+        ):
+            return decl.operands[0].instruction
+        return None
+
+    def _nested_generator_layout(self, gen_new: GenNewInst) -> tuple[str, str, FLIRType]:
+        """(lowered generator name, its frame struct name, its out-value
+        type) for the generator a GenNew instantiates; lowers that generator
+        first so its frame struct exists and is finalized."""
+        gen_func = self.fir_funcs[gen_new.generator_ref]
+        type_args = list(gen_new.metadata.get("type_args", []))
+        lowered_name = self.request_function(gen_new.generator_ref, type_args)
+        gen_type_map = dict(zip(gen_func.generic_params, type_args))
+        yield_type = gen_func.metadata.get("yield_type", "int32")
+        out_type = self.lower_type_str(self.subst(yield_type, gen_type_map), gen_type_map)
+        return lowered_name, self.gen_frame_name(lowered_name), out_type
+
+    def _gen_field_addr(self, name: str, ctx: _FuncCtx) -> FValue:
+        """Address of a nested generator's frame / out-value field inside the
+        enclosing generator's frame (see lower_generator)."""
+        frame_ptr = ctx.emit(SlotLoad(ctx.frame_param, PTR))
+        _, _, offset = ctx.frame_struct.field(name)
+        return ctx.emit(PtrAdd(frame_ptr, ctx.emit(ConstInt(str(offset), I64)), 1))
+
     def lower_gen_new_local(self, decl: DeclareLocalInst, gen_new: GenNewInst, ctx: _FuncCtx) -> None:
+        if ctx.frame_struct is not None:
+            lowered_name, _frame_name, _out_type = self._nested_generator_layout(gen_new)
+            ctx.gen_slots[decl.name] = lowered_name
+            args = [self.val(op, ctx) for op in gen_new.operands]
+            frame_addr = self._gen_field_addr(decl.name, ctx)
+            ctx.emit(Call(f"{lowered_name}__init", [frame_addr] + args, VOID))
+            self.set_val(gen_new, frame_addr, ctx)
+            return
         fir_name = gen_new.generator_ref
         gen_func = self.fir_funcs[fir_name]
         # A generic generator function (e.g. `enumerate<T>`) carries its
@@ -2341,13 +2472,22 @@ class FIRToFLIRLowering:
         slot = self._gen_slot_of(inst.operands[0], ctx)
         lowered_name = ctx.gen_slots[slot]
         frame_name = self.gen_frame_name(lowered_name)
-        frame_addr = ctx.emit(SlotAddr(slot, frame_name))
-        out_addr = ctx.emit(SlotAddr(f"{slot}__out"))
+        if ctx.frame_struct is not None:
+            frame_addr = self._gen_field_addr(slot, ctx)
+            out_addr = self._gen_field_addr(f"{slot}__out", ctx)
+        else:
+            frame_addr = ctx.emit(SlotAddr(slot, frame_name))
+            out_addr = ctx.emit(SlotAddr(f"{slot}__out"))
         self.set_val(inst, ctx.emit(Call(f"{lowered_name}__next", [frame_addr, out_addr], BOOL)), ctx)
 
     def lower_gen_value(self, inst: GenValueInst, ctx: _FuncCtx) -> None:
         slot = self._gen_slot_of(inst.operands[0], ctx)
         out_slot = f"{slot}__out"
+        if ctx.frame_struct is not None:
+            _, out_type, offset = ctx.frame_struct.field(out_slot)
+            frame_ptr = ctx.emit(SlotLoad(ctx.frame_param, PTR))
+            self.set_val(inst, ctx.emit(Load(out_type, frame_ptr, offset)), ctx)
+            return
         out_type = ctx.slot_types[out_slot]
         self.set_val(inst, ctx.emit(SlotLoad(out_slot, out_type)), ctx)
 

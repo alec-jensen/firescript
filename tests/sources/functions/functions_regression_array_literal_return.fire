@@ -1,0 +1,41 @@
+import @firescript/std.io.println;
+
+// Regression: a function declared `-> int32[]` returning a fixed-size array
+// literal used to fail FIR verification (FIRV-T4: 'int32[3]' vs 'int32[]').
+// The length of an array that came out of a call is not tracked statically,
+// so only positive constant/variable indexing is exercised on the results.
+
+fn mk() -> int32[] {
+    return [1, 2, 3];
+}
+
+fn names() -> string[] {
+    return ["ann", "bob"];
+}
+
+fn pickList(wide: bool) -> int32[] {
+    if (wide) {
+        return [10, 20, 30, 40];
+    }
+    return [7];
+}
+
+x: int32[] = mk();
+println(x[0] + x[1] + x[2]);
+
+n: string[] = names();
+println(n[0]);
+println(n[1]);
+
+w: int32[] = pickList(true);
+s: int32[] = pickList(false);
+println(w[3]);
+println(s[0]);
+
+/* EXPECT
+6
+ann
+bob
+40
+7
+*/

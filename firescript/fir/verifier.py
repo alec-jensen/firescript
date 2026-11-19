@@ -108,9 +108,20 @@ def verify_fir_module(module: FIRModule) -> None:
             )
         const_names.add(constant.name)
 
+    for global_var in module.global_vars:
+        if global_var.name in const_names:
+            violations.append(
+                Violation("FIRV-S6", "FIR", global_var.name, f"duplicate global name '{global_var.name}'")
+            )
+        const_names.add(global_var.name)
+
     _verify_type_defs(module, type_index, violations)
 
+    # Constants and mutable global variables are both referenced by a bare
+    # LoadVar/StoreVar with their own name (see _check_var_access).
     const_types: dict[str, FIRType] = {c.name: c.const_type for c in module.constants}
+    for global_var in module.global_vars:
+        const_types[global_var.name] = global_var.var_type
     for function in module.functions:
         before = len(violations)
         fv = _FunctionVerifier(module, function, type_index, func_index, const_types, violations)
@@ -263,6 +274,21 @@ def _type_assignable(actual: Optional[FIRType], expected: Optional[FIRType]) -> 
         and actual.name == expected.name
         and actual.category == expected.category
     ):
+        return True
+    if (
+        isinstance(actual, SimpleType)
+        and isinstance(expected, SimpleType)
+        and actual.nullable != expected.nullable
+        and actual.name == expected.name
+        and actual.category == expected.category
+        and actual.name not in _NUMERIC_TYPES
+        and actual.name not in ("bool", "char")
+    ):
+        # Pointer-shaped nullables (`string?`, `Foo?`): nullable-ness is
+        # purely a semantic-level distinction -- the runtime representation
+        # is the same pointer (null == 0), and a `string?`/`Foo?` parameter
+        # keeps a plain FIR type (see ast_to_fir.py's _function_params), so a
+        # nullable-typed argument must be accepted by it.
         return True
     return actual == expected
 
@@ -558,7 +584,7 @@ class _FunctionVerifier:
             return
         if _is_void(func.return_type):
             self.emit("FIRV-T4", "Return carries a value in a void function", block, index, inst)
-        elif value_t != func.return_type:
+        elif not _type_assignable(value_t, func.return_type):
             self.emit("FIRV-T4", f"Return value type '{value_t.render()}' does not match declared return type '{func.return_type.render()}'", block, index, inst)
 
     def _check_call(self, inst: CallInst, operand_types, block, index) -> None:

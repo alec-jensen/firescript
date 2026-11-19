@@ -56,6 +56,63 @@ def _collect_signatures(ast: ASTNode) -> Tuple[_SigMap, _SigMap, Dict[str, _SigM
     return func_sigs, ctor_sigs, method_sigs, method_return_types
 
 
+def function_free_names(root: ASTNode) -> set:
+    """Names that `root` (a function/method/generator/class definition)
+    reads or assigns without declaring them itself: parameters, local
+    declarations, for-in variables and match-arm bindings are its own."""
+    referenced: set = set()
+    declared: set = set()
+    stack = [root]
+    while stack:
+        node = stack.pop()
+        if node is None:
+            continue
+        nt = node.node_type
+        if nt in (NodeTypes.IDENTIFIER, NodeTypes.VARIABLE_ASSIGNMENT, NodeTypes.COMPOUND_ASSIGNMENT):
+            if node.name:
+                referenced.add(node.name)
+        elif nt in (NodeTypes.VARIABLE_DECLARATION, NodeTypes.PARAMETER):
+            if node.name:
+                declared.add(node.name)
+        elif nt == NodeTypes.MATCH_ARM:
+            for binding in getattr(node, "bindings", None) or []:
+                for part in binding if isinstance(binding, (tuple, list)) else (binding,):
+                    if isinstance(part, str):
+                        declared.add(part)
+        stack.extend(node.children or [])
+    return referenced - declared
+
+
+def promoted_global_decls(ast: ASTNode) -> list:
+    """Top-level non-const variable declarations that become module-level
+    variables (static storage, initialized by the entry function, never
+    implicitly dropped): every one when the program defines its own `main()`,
+    otherwise those some function/method/generator body refers to. The single
+    source of truth shared by the drop-inserting preprocessor and
+    ast_to_fir.py's module-level variable lowering -- they must agree."""
+    has_user_main = any(
+        c.node_type == NodeTypes.FUNCTION_DEFINITION and c.name == "main" for c in ast.children
+    )
+    free_names: set = set()
+    if not has_user_main:
+        for child in ast.children:
+            if child.node_type in (
+                NodeTypes.FUNCTION_DEFINITION,
+                NodeTypes.GENERATOR_DEFINITION,
+                NodeTypes.CLASS_DEFINITION,
+            ):
+                free_names |= function_free_names(child)
+    promoted = []
+    for child in ast.children:
+        if child.node_type != NodeTypes.VARIABLE_DECLARATION or getattr(child, "is_const", False):
+            continue
+        if (child.var_type or "int32").startswith("generator<"):
+            continue
+        if has_user_main or child.name in free_names:
+            promoted.append(child)
+    return promoted
+
+
 def _make_identifier(name: str, var_type: str | None, is_array: bool) -> ASTNode:
     return ASTNode(
         NodeTypes.IDENTIFIER,
@@ -224,6 +281,16 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
             return True if is_array else not _generic_class_copyable[base_name]
         return _is_owned_registered(base_type, is_array)
 
+    # Module-level variables and `const`s live in static storage for the whole
+    # program and are never implicitly dropped (see promoted_global_decls).
+    static_global_names: set = {
+        decl.name for decl in promoted_global_decls(ast)
+    } | {
+        child.name
+        for child in ast.children
+        if child.node_type == NodeTypes.VARIABLE_DECLARATION and getattr(child, "is_const", False)
+    }
+
     # Each scope (for Owned locals): list of (name, var_type, is_array)
     scope_stack: List[List[Tuple[str, Optional[str], bool]]] = [[]]
     # Variable maps for lookup: stack of dicts name -> (var_type, is_array, origin)
@@ -382,7 +449,9 @@ def enable_and_insert_drops(ast: ASTNode) -> ASTNode:
     def process_node(node: ASTNode) -> ASTNode:
         # Variable declaration: track owned locals by name
         if node.node_type == NodeTypes.VARIABLE_DECLARATION:
-            if is_owned(node.var_type, node.is_array):
+            if is_owned(node.var_type, node.is_array) and not (
+                len(var_maps) == 1 and node.name in static_global_names
+            ):
                 scope_stack[-1].append((node.name, node.var_type, node.is_array))
             if var_maps:
                 var_maps[-1][node.name] = (node.var_type, node.is_array, "local")

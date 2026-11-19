@@ -123,11 +123,9 @@ def test_looks_like_generic_constructor_call(case):
 
 def test_constructor_with_borrowed_and_owned_regular_params_parses():
     # Regular (non-receiver) constructor params can carry a leading '&'/'owned'
-    # marker -- this combination isn't exercised by any full-program test
-    # since the semantic analyzer's constructor-arity bookkeeping doesn't yet
-    # handle it end-to-end (see spawned follow-up task), so it's checked here
-    # at the parser-output level only: the parse must succeed and produce all
-    # 3 parameters.
+    # marker; the parse must succeed and produce all 3 parameters. (The
+    # end-to-end behaviour is covered by
+    # tests/sources/classes/classes_regression_ctor_borrowed_and_owned_param.)
     src = (
         "class Outer {\n"
         "    total: int32;\n"
