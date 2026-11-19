@@ -38,11 +38,5 @@ function @main() -> void {
     call @println(%1 borrow)
     %2 = loadvar.string s1
     drop %2
-    %3 = strconst "a\qb"
-    local s2: string = %3
-    %4 = loadvar.string s2
-    call @println(%4 borrow)
-    %5 = loadvar.string s2
-    drop %5
     ret
 }

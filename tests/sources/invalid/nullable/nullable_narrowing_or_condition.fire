@@ -1,0 +1,8 @@
+// `x != null || y != null` proves neither variable non-null.
+fn f(x: int32?, y: int32?) -> int32 {
+    if (x != null || y != null) {
+        a: int32 = x;  //~ ERROR FS-SEM-0018 @20
+        return a;
+    }
+    return 0;
+}

@@ -1,0 +1,8 @@
+// Narrowing from `if (x != null)` covers only that branch.
+fn f(x: int32?) -> int32 {
+    if (x != null) {
+        a: int32 = x;
+    }
+    b: int32 = x;  //~ ERROR FS-SEM-0018 @16
+    return b;
+}

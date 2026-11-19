@@ -53,7 +53,7 @@ export class Option<T?> {
 	// free it (same aliasing hazard as ArrayList<T>.get() on an Owned element,
 	// avoided here the way ArrayList<T>.removeLast() avoids it instead).
 	fn unwrapOr(&mut this, default: T) -> T {
-		if (this.isSome()) {
+		if (this.value != null) {
 			v: T = this.value;
 			this.value = null;
 			return v;
@@ -92,7 +92,7 @@ export copyable class CopyableOption<T?> {
 	// receiver, matching isSome()/isNone() above -- a Copyable class
 	// receiver can't be borrowed (&this), only passed by value.
 	fn unwrapOr(default: T) -> T {
-		if (this.isSome()) {
+		if (this.value != null) {
 			v: T = this.value;
 			return v;
 		}
@@ -133,7 +133,7 @@ export class Result<T?, E?> {
 	// See Option<T>.unwrapOr()'s comment -- same extraction trick, same
 	// Owned-T safety argument.
 	fn unwrapOr(&mut this, default: T) -> T {
-		if (this.isOk()) {
+		if (this.value != null) {
 			v: T = this.value;
 			this.value = null;
 			return v;
@@ -169,7 +169,7 @@ export copyable class CopyableResult<T?, E?> {
 
 	// No explicit receiver -- see CopyableOption.unwrapOr()'s comment.
 	fn unwrapOr(default: T) -> T {
-		if (this.isOk()) {
+		if (this.value != null) {
 			v: T = this.value;
 			return v;
 		}

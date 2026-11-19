@@ -1,0 +1,8 @@
+// A nullable parameter cannot be stored into a non-nullable field.
+class Holder {
+    name: string;
+
+    fn Holder(&mut this, name: string?) {
+        this.name = name;  //~ ERROR FS-SEM-0018 @21
+    }
+}

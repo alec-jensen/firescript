@@ -1,0 +1,5 @@
+// Dividing by a constant zero is a compile-time error, whatever the left side.
+x: int32 = 10;
+a: int32 = 10 / 0;  //~ ERROR FS-SEM-0021 @15
+b: int32 = x % 0;  //~ ERROR FS-SEM-0021 @14
+c: int32 = 7 / (3 - 3);  //~ ERROR FS-SEM-0021 @14

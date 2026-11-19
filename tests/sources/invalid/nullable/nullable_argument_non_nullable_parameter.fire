@@ -1,0 +1,7 @@
+// A `T?` value cannot be passed where the parameter is a non-nullable `T`.
+fn double(n: int32) -> int32 {
+    return n * 2;
+}
+
+maybe: int32? = 5;
+r: int32 = double(maybe);  //~ ERROR FS-SEM-0018 @19

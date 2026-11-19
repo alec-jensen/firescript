@@ -1,0 +1,3 @@
+// A non-void function with an empty body never returns.
+fn nothing() -> int32 {  //~ ERROR FS-SEM-0017 @4
+}

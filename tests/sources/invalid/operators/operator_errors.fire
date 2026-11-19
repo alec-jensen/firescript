@@ -16,8 +16,8 @@ fn arithmetic_mismatches() -> void {
 
 // Division by zero (if statically checked)
 fn division_by_zero() -> void {
-    x: int32 = 10 / 0;  // Division by zero
-    y: int32 = 15 % 0;  // Modulo by zero
+    x: int32 = 10 / 0;  // Division by zero  //~ ERROR FS-SEM-0021 @19
+    y: int32 = 15 % 0;  // Modulo by zero  //~ ERROR FS-SEM-0021 @19
 }
 
 // Comparison type mismatches

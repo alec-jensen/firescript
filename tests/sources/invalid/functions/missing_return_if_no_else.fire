@@ -1,0 +1,18 @@
+import @firescript/std.io.println;
+
+// A non-void function whose only `if` has no `else` can fall off the end
+// when the condition is false: rejected (no implicit zero is returned).
+fn maybeReturnInt(flag: bool) -> int32 {  //~ ERROR FS-SEM-0017 @4
+    if (flag) {
+        return 42;
+    }
+}
+
+fn maybeReturnBool(flag: bool) -> bool {  //~ ERROR FS-SEM-0017 @4
+    if (flag) {
+        return true;
+    }
+}
+
+println(maybeReturnInt(true));
+println(maybeReturnBool(true));

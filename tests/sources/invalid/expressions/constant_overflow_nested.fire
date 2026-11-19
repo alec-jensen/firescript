@@ -1,0 +1,2 @@
+// Only the first overflowing sub-expression is reported.
+a: int8 = (100i8 + 100i8) - 5i8;  //~ ERROR FS-SEM-0019 @18

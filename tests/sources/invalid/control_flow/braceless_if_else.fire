@@ -1,0 +1,10 @@
+// A braceless `if` body and a braceless `else` body are each rejected.
+import @firescript/std.io.println;
+
+a: int32 = 5;
+
+if (a > 3) println("if-braceless");  //~ ERROR FS-PARSE-0015 @12
+
+if (a > 10) {
+    println("then-braced-skipped");
+} else println("else-braceless");  //~ ERROR FS-PARSE-0015 @8

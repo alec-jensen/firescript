@@ -1,0 +1,3 @@
+x: int32 = 10;
+x /= 0;  //~ ERROR FS-SEM-0021 @3
+x %= 0;  //~ ERROR FS-SEM-0021 @3

@@ -1,0 +1,2 @@
+// Unsuffixed literals are int32.
+a: int32 = 2147483647 + 1;  //~ ERROR FS-SEM-0019 @23

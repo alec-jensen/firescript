@@ -1,0 +1,12 @@
+// A match statement covers every path only if every arm returns.
+enum Color {
+    Red,
+    Green
+}
+
+fn code(c: Color) -> int32 {  //~ ERROR FS-SEM-0017 @4
+    match c {
+        Color.Red -> { return 1; }
+        Color.Green -> { }
+    }
+}

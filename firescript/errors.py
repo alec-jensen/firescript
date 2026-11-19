@@ -156,6 +156,18 @@ class InvalidFieldAccessError(CompileTimeError):
     message_template = "{detail}"
 
 
+class MissingBracesError(CompileTimeError):
+    code = "FS-PARSE-0015"
+    category = ErrorCategory.PARSER
+    message_template = "The body of '{construct}' must be a braced block; write '{{ ... }}' around the statement"
+
+
+class InvalidEscapeError(CompileTimeError):
+    code = "FS-PARSE-0016"
+    category = ErrorCategory.PARSER
+    message_template = "Unknown escape sequence '\\{char}' in {literal} literal; valid escapes are \\n \\t \\r \\0 \\\\ \\' \\\""
+
+
 # Type System Errors
 class InvalidTypeError(CompileTimeError):
     code = "FS-SEM-0010"
@@ -195,6 +207,36 @@ class ControlFlowError(CompileTimeError):
 
 class InvalidSuperError(CompileTimeError):
     code = "FS-SEM-0016"
+    category = ErrorCategory.SEMANTIC
+    message_template = "{detail}"
+
+
+class MissingReturnError(CompileTimeError):
+    code = "FS-SEM-0017"
+    category = ErrorCategory.SEMANTIC
+    message_template = "{kind} '{name}' returns {return_type} but not every path through it returns a value"
+
+
+class NullableConversionError(CompileTimeError):
+    code = "FS-SEM-0018"
+    category = ErrorCategory.SEMANTIC
+    message_template = "{detail}"
+
+
+class ConstantOverflowError(CompileTimeError):
+    code = "FS-SEM-0019"
+    category = ErrorCategory.SEMANTIC
+    message_template = "{detail}"
+
+
+class ConstantIndexError(CompileTimeError):
+    code = "FS-SEM-0020"
+    category = ErrorCategory.SEMANTIC
+    message_template = "{detail}"
+
+
+class ConstantDivisionByZeroError(CompileTimeError):
+    code = "FS-SEM-0021"
     category = ErrorCategory.SEMANTIC
     message_template = "{detail}"
 

@@ -1,0 +1,14 @@
+// Methods are checked like functions.
+class Counter {
+    n: int32;
+
+    fn Counter(&mut this, start: int32) {
+        this.n = start;
+    }
+
+    fn next(&this, flag: bool) -> int32 {  //~ ERROR FS-SEM-0017 @8
+        if (flag) {
+            return this.n;
+        }
+    }
+}

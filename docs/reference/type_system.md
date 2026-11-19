@@ -147,10 +147,15 @@ max: int8 = 127i8;
 overflow: int8 = max + 1i8;  // Runtime trap: IntegerOverflow: addition on int8
 ```
 
-Overflows that can be detected at compile-time (e.g., constant expressions) will result in a compile-time error.
+Overflows that can be detected at compile-time (e.g., constant expressions) will result in a compile-time error. [IMPLEMENTED] A literal that does not fit its type is rejected, and so is an integer expression made only of literals whose exact result does not fit the type of its operands (`FS-SEM-0019`); `**` is evaluated exactly. Unsuffixed literals are `int32`.
 
 ```firescript
-compileTimeOverflow: int8 = 128i8;  // Compile-time error: Integer overflow
+compileTimeOverflow: int8 = 128i8;      // Compile-time error: literal out of range
+a: int8 = 127i8 + 1i8;                  // Compile-time error (FS-SEM-0019)
+b: int8 = 3i8 * 100i8;                  // Compile-time error (FS-SEM-0019)
+c: int8 = -(-128i8);                    // Compile-time error (FS-SEM-0019)
+d: int32 = 2147483647 + 1;              // Compile-time error (FS-SEM-0019)
+e: int32 = 2 ** 40;                     // Compile-time error (FS-SEM-0019)
 ```
 
 When modular arithmetic is intended, use the explicit `wrapping_add`, `wrapping_sub`, `wrapping_mul` and `wrapping_neg` functions from `@firescript/std.math.wrapping` ([IMPLEMENTED]). Saturating and checked variants are [PLANNED].
@@ -268,6 +273,10 @@ digit: char = "7";
 newline: char = "\n";  // Special character
 ```
 
+#### Escape Sequences [IMPLEMENTED]
+
+String and char literals accept these escape sequences: `\n`, `\t`, `\r`, `\0`, `\\`, `\'` and `\"`. Any other backslash sequence (for example `"\q"` or `'\d'`) is a compile-time error (`FS-PARSE-0016`); write `\\` for a literal backslash.
+
 ### Arrays
 
 Arrays are fixed-size ordered collections of elements of the same type.
@@ -324,9 +333,35 @@ if (data != null) {
     print(data);
 }
 
-// Could cause a runtime error if not checked
-print(data);  // Might try to print null
 ```
+
+### Nullable to Non-Nullable Conversion [IMPLEMENTED]
+
+A value of type `T?` cannot be assigned to, passed as an argument for, returned as, or used to initialize something that requires a non-nullable `T`, unless the compiler can prove the value is not null at that point. Violations are compile errors (`FS-SEM-0018`):
+
+```firescript
+maybe: int32? = 5;
+plain: int32 = maybe;  // Error: 'maybe' may be null
+```
+
+A null check provides the proof (**narrowing**). A `T?` variable, parameter, global or field path (`this.value`, `obj.field`) counts as non-null:
+
+- in the true branch of `if (x != null)`, in the right operand of `x != null && ...`, and in the body of `while (x != null)`;
+- in the false branch of `if (x == null)` and in the right operand of `x == null || ...`;
+- after an early exit: following `if (x == null) { return ...; }` (the branch always ends in `return`, `break` or `continue`), `x` is non-null for the rest of the enclosing block.
+
+Conditions combine with `&&`, `||` and `!` (for example `if (x == null || y == null) { return; }` proves both afterwards).
+
+```firescript
+fn describe(name: string?) -> string {
+    if (name == null) {
+        return "anonymous";
+    }
+    return name;  // OK: name is non-null here
+}
+```
+
+Narrowing ends at the first assignment to the variable (or field path), at a redeclaration of its name, and - for field paths - at any call that receives the owning object (a method call on it, or passing it as an argument), because the callee may reassign the field. Passing a nullable value for a parameter whose type is a bare generic type parameter (`T`) is not a conversion and is not checked. Assigning a literal `null` to a non-nullable target remains an error as before.
 
 ## Type Compatibility and Conversions
 
@@ -829,8 +864,12 @@ fn abs<T: SignedInteger>(x: T, zero: T) -> T {
 }
 
 fn clamp<T: FloatingPoint>(value: T, min: T, max: T) -> T {
-    if (value < min) return min;
-    if (value > max) return max;
+    if (value < min) {
+        return min;
+    }
+    if (value > max) {
+        return max;
+    }
     return value;
 }
 
@@ -1224,8 +1263,12 @@ fn normalize<T: Float>(value: T, min: T, max: T) -> T {
 
 // Combine interface constraints
 fn clamp<T: Comparable & Numeric>(value: T, min: T, max: T) -> T {
-    if (value < min) return min;
-    if (value > max) return max;
+    if (value < min) {
+        return min;
+    }
+    if (value > max) {
+        return max;
+    }
     return value;
 }
 ```

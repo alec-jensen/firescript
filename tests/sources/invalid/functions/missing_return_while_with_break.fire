@@ -1,0 +1,10 @@
+// `while (true)` is only non-terminating when nothing breaks out of it.
+fn spin(n: int32) -> int32 {  //~ ERROR FS-SEM-0017 @4
+    i: int32 = n;
+    while (true) {
+        if (i > 3) {
+            break;
+        }
+        i += 1;
+    }
+}

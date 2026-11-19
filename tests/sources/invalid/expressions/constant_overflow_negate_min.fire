@@ -1,0 +1,2 @@
+// -(-128) does not fit in int8.
+a: int8 = -(-128i8);  //~ ERROR FS-SEM-0019 @11

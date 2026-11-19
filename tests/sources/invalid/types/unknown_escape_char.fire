@@ -1,0 +1,5 @@
+// An unknown escape sequence in a char literal is a compile-time error.
+import @firescript/std.io.println;
+
+c: char = '\d';  //~ ERROR FS-PARSE-0016 @12
+println(c as string);

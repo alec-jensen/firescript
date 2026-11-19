@@ -1,0 +1,16 @@
+// A nullable field cannot be passed to a non-nullable method parameter.
+class Greeter {
+    title: string?;
+
+    fn Greeter(&mut this, title: string?) {
+        this.title = title;
+    }
+
+    fn show(&this, text: string) -> string {
+        return text;
+    }
+
+    fn run(&this) -> string {
+        return this.show(this.title);  //~ ERROR FS-SEM-0018 @31
+    }
+}

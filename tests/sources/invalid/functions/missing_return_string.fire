@@ -1,0 +1,7 @@
+// A string-returning function that falls off the end (previously an
+// internal compiler error in the FIR verifier).
+fn maybeString(flag: bool) -> string {  //~ ERROR FS-SEM-0017 @4
+    if (flag) {
+        return "x";
+    }
+}
