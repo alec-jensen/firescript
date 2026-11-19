@@ -1,0 +1,4 @@
+// A `T?` value cannot be assigned to a non-nullable `T` variable.
+maybe: string? = "a";
+plain: string = "b";
+plain = maybe;  //~ ERROR FS-SEM-0018 @9

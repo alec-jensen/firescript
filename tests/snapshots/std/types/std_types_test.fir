@@ -139,7 +139,7 @@ function<T> @Option.None() -> Option<T> {
 function<T> @Option.unwrapOr(this: &mut Option, default: T) -> T {
   L0:
     %0 = loadvar.Option this
-    %1 = mcall.bool %0, "isSome"()
+    %1 = loadfield.bool %0, "value__hasval"
     br %1, L2, L1
 
   L1:
@@ -206,7 +206,7 @@ function<T> @CopyableOption.None() -> CopyableOption<T> {
 function<T> @CopyableOption.unwrapOr(this: CopyableOption, default: T) -> T {
   L0:
     %0 = loadvar.CopyableOption this
-    %1 = mcall.bool %0, "isSome"()
+    %1 = loadfield.bool %0, "value__hasval"
     br %1, L2, L1
 
   L1:
@@ -276,7 +276,7 @@ function<T, E> @Result.Err(error: E) -> Result<T, E> {
 function<T, E> @Result.unwrapOr(this: &mut Result, default: T) -> T {
   L0:
     %0 = loadvar.Result this
-    %1 = mcall.bool %0, "isOk"()
+    %1 = loadfield.bool %0, "value__hasval"
     br %1, L2, L1
 
   L1:
@@ -351,7 +351,7 @@ function<T, E> @CopyableResult.Err(error: E) -> CopyableResult<T, E> {
 function<T, E> @CopyableResult.unwrapOr(this: CopyableResult, default: T) -> T {
   L0:
     %0 = loadvar.CopyableResult this
-    %1 = mcall.bool %0, "isOk"()
+    %1 = loadfield.bool %0, "value__hasval"
     br %1, L2, L1
 
   L1:

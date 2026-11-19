@@ -1,0 +1,9 @@
+// Inside the true branch of `x == null` the value is known to be null,
+// not non-null, so it is not narrowed there.
+fn f(x: int32?) -> int32 {
+    if (x == null) {
+        y: int32 = x;  //~ ERROR FS-SEM-0018 @20
+        return y;
+    }
+    return 0;
+}

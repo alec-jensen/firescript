@@ -1,0 +1,4 @@
+// Returning a `T?` value from a function that returns `T`.
+fn pass(n: int32?) -> int32 {
+    return n;  //~ ERROR FS-SEM-0018 @12
+}

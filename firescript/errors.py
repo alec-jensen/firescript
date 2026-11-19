@@ -217,6 +217,12 @@ class MissingReturnError(CompileTimeError):
     message_template = "{kind} '{name}' returns {return_type} but not every path through it returns a value"
 
 
+class NullableConversionError(CompileTimeError):
+    code = "FS-SEM-0018"
+    category = ErrorCategory.SEMANTIC
+    message_template = "{detail}"
+
+
 class IRVerificationError(Exception):
     """Internal compiler error: generated IR violates a validity rule.
 

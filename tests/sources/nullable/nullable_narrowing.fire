@@ -1,0 +1,116 @@
+import @firescript/std.io.println;
+
+// A `T?` value may be used as a `T` where the compiler can prove it is not
+// null: in the true branch of `x != null`, the false branch of `x == null`,
+// after an early exit, across `&&` / `||`, in a `while (x != null)` body,
+// and for field paths such as `this.value`.
+class Box {
+    value: int32?;
+
+    fn Box(&mut this, value: int32?) {
+        this.value = value;
+    }
+
+    fn orZero(&this) -> int32 {
+        if (this.value != null) {
+            v: int32 = this.value;
+            return v;
+        }
+        return 0;
+    }
+}
+
+fn takesInt(n: int32) -> int32 {
+    return n + 1;
+}
+
+fn trueBranch(x: int32?) -> int32 {
+    if (x != null) {
+        return takesInt(x);
+    }
+    return -1;
+}
+
+fn elseBranch(x: int32?) -> int32 {
+    if (x == null) {
+        return -1;
+    } else {
+        y: int32 = x;
+        return y;
+    }
+}
+
+fn earlyReturn(x: int32?) -> int32 {
+    if (x == null) {
+        return -1;
+    }
+    y: int32 = x;
+    return takesInt(y);
+}
+
+fn andChain(x: int32?, y: int32?) -> int32 {
+    if (x != null && y != null) {
+        a: int32 = x;
+        b: int32 = y;
+        return a + b;
+    }
+    return 0;
+}
+
+fn orEarlyExit(x: int32?, y: int32?) -> int32 {
+    if (x == null || y == null) {
+        return -1;
+    }
+    a: int32 = x;
+    b: int32 = y;
+    return a * b;
+}
+
+fn andOperand(x: int32?) -> bool {
+    return x != null && takesInt(x) > 3;
+}
+
+fn nullableThrough(x: int32?) -> int32? {
+    y: int32? = x;
+    return y;
+}
+
+println(trueBranch(4));
+println(trueBranch(null));
+println(elseBranch(7));
+println(elseBranch(null));
+println(earlyReturn(2));
+println(earlyReturn(null));
+println(andChain(1, 2));
+println(andChain(1, null));
+println(orEarlyExit(3, 4));
+println(orEarlyExit(null, 4));
+println(andOperand(5));
+println(andOperand(1));
+println(andOperand(null));
+println(nullableThrough(9) != null);
+println(nullableThrough(null) == null);
+b1: Box = new Box(8);
+b2: Box = new Box(null);
+println(b1.orZero());
+println(b2.orZero());
+
+/* EXPECT
+5
+-1
+7
+-1
+3
+-1
+3
+0
+12
+-1
+true
+false
+false
+true
+true
+8
+0
+*/

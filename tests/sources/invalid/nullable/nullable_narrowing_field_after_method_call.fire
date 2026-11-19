@@ -1,0 +1,22 @@
+// A method call on the owning object ends the narrowing of its fields
+// (the method may reassign them).
+class Box {
+    value: int32?;
+
+    fn Box(&mut this, value: int32?) {
+        this.value = value;
+    }
+
+    fn clear(&mut this) -> void {
+        this.value = null;
+    }
+
+    fn read(&mut this) -> int32 {
+        if (this.value != null) {
+            this.clear();
+            v: int32 = this.value;  //~ ERROR FS-SEM-0018 @29
+            return v;
+        }
+        return 0;
+    }
+}

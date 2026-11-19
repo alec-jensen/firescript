@@ -1,0 +1,3 @@
+// A `T?` value cannot initialize a non-nullable `T` variable.
+maybe: int32? = 5;
+plain: int32 = maybe;  //~ ERROR FS-SEM-0018 @16

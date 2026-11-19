@@ -10,6 +10,7 @@ from enum import Enum, auto
 
 from enums import NodeTypes
 from parser import ASTNode
+from nullability import NullabilityChecker
 from errors import CompileTimeError, SemanticError, InvalidTypeError, InvalidExpressionError, MissingReturnError
 from utils.type_utils import is_owned
 from utils.literal_utils import coerce_literal
@@ -166,6 +167,9 @@ class SemanticAnalyzer:
 
         # Second pass: analyze ownership and borrows
         self._analyze_node(self.ast)
+
+        # Third pass: nullable values may not flow into non-nullable positions
+        NullabilityChecker(self).run(self.ast)
         return len(self.errors) == 0
     
     def _collect_function_signatures(self, node: ASTNode) -> None:

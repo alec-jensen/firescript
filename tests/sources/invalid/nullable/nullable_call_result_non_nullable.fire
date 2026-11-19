@@ -1,0 +1,9 @@
+// The result of a function returning `T?` cannot initialize a `T`.
+fn tryDivide(a: int32, b: int32) -> int32? {
+    if (b == 0) {
+        return null;
+    }
+    return a / b;
+}
+
+q: int32 = tryDivide(10, 2);  //~ ERROR FS-SEM-0018 @12
