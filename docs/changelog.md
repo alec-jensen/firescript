@@ -21,6 +21,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - `@firescript/std.regex` character-class ranges now work over any byte range (`[!-/]`), not only ASCII letters and digits. A reversed range (`[z-a]`) is now a `last_error` (`invalid range in character class`), as is a repeated quantifier such as `a**` or `a+?` (`nested or non-greedy quantifiers are not supported`) and an unsupported group form such as `(?=...)` (`unsupported group syntax`). `{` now always starts a counted quantifier; write `\{` for a literal brace.
 
 ### Breaking Changes
+- Reassigning a `const` binding is now a compile error (`PI = 3.2;`, `PI += 1;`, `PI++;`, `PI--;`), for both module-level and local constants. Previously these compiled silently.
 - firescript now uses **postfix type declarations** everywhere, Rust/TypeScript-style, instead of the previous C-style prefix syntax. This is a whole-language syntax change:
   - Variables and constants: `int32 a = 5;` → `a: int32 = 5;`; `const float64 PI = 3.14;` → `const PI: float64 = 3.14;`.
   - Nullable markers move to the type: `int32 a? = null;` → `a: int32? = null;`.

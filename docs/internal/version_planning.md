@@ -401,7 +401,7 @@ labeled commit on a branch; a session may build on it or discard it.
   them (`conversions/builtin_conversions*`, `performance/stress_type_conversions`) and rewrite
   incidental uses to `as`; one compile-fail test; changelog Breaking Changes.
 
-#### T-060-07 · `const` reassignment is an error · S · `todo`
+#### T-060-07 · `const` reassignment is an error · S · `done (task/T-060-07)`
 - **Goal:** `PI = 3.2;` is a compile error (today it compiles); `PI += 1`, `PI++` too, for module
   level and local consts. Mark `const` class fields `[PLANNED]` in `docs/reference/classes.md`
   (they do not parse today). Compile-fail tests, a valid-twin run test, changelog.
