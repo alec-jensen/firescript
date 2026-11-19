@@ -457,7 +457,7 @@ labeled commit on a branch; a session may build on it or discard it.
   size"). Track or carry the length (hidden length value like array parameters have). Regression
   tests for each use.
 
-#### T-060-14 · `while (true) { consume(x); break; }` internal error · S · `todo`
+#### T-060-14 · `while (true) { consume(x); break; }` internal error · S · `done (e2daf78)`
 - An internal ownership-verifier error (FIRV-O3) on an owned value moved in a loop that always
   exits via `break`. Reproduce, find the drop-insertion/move-state cause, fix, regression test.
 
