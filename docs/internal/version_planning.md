@@ -392,7 +392,7 @@ labeled commit on a branch; a session may build on it or discard it.
   Changes.
 - **Done when:** merged, CI profile green.
 
-#### T-060-05 · Leftover parser bugs · M · `done (task/T-060-05)` · Depends on T-060-04
+#### T-060-05 · Leftover parser bugs · M · `done (7c59c23)` · Depends on T-060-04
 - **Start from:** WIP commit `fd0a877` on `safety-frontend` (parser base/expressions/statements).
 - **Fix, each with a regression test:** statements that start with a non-identifier token are
   silently dropped or get a misleading "Invalid assignment target" (`arr[0] = ;`); a nested explicit
@@ -425,7 +425,7 @@ labeled commit on a branch; a session may build on it or discard it.
   level and local consts. Mark `const` class fields `[PLANNED]` in `docs/reference/classes.md`
   (they do not parse today). Compile-fail tests, a valid-twin run test, changelog.
 
-#### T-060-08 · Constraint syntax: `Union<A, B>` · M · `done (task/T-060-08)`
+#### T-060-08 · Constraint syntax: `Union<A, B>` · M · `done (479ed1d)`
 - **Goal:** `Union<A, B, ...>` replaces `A | B` in constraints; `Intersection<A, B>` gives a clear
   "not supported yet" diagnostic; `&` is a syntax error pointing at it; unknown constraint names
   are errors. Keep `|` working everywhere else it exists.
@@ -435,7 +435,7 @@ labeled commit on a branch; a session may build on it or discard it.
   float64>`; compile-fail for `|`, `Intersection<...>`, `&`, an unknown name), changelog Breaking.
 - **Start from:** parts may exist in WIP `1683fac` (`docs-and-cleanup-060`).
 
-#### T-060-09 · Explicit receivers: the compiler rule · M · `done (task/T-060-09)`
+#### T-060-09 · Explicit receivers: the compiler rule · M · `done (5b79cb5)`
 - **Goal:** the rule in "Decisions" is enforced with coded diagnostics: receiver-less instance
   method; receiver-less constructor; `owned this` in an ordinary method (today the misleading
   "Constructor 'A' expected 0 args"); plain `this` receiver (today "Expected ':' after parameter
@@ -446,24 +446,24 @@ labeled commit on a branch; a session may build on it or discard it.
   suite green again. **Merge this and T-060-10..12 together** (the suite is red between them),
   working on one branch `task/explicit-receivers`.
 
-#### T-060-10 · Explicit receivers: migrate the standard library · M · `done (task/T-060-10)` · Depends on T-060-09
+#### T-060-10 · Explicit receivers: migrate the standard library · M · `done (ee9d542)` · Depends on T-060-09
 - Every class in `firescript/std/**` (Pair/CopyablePair, Option/CopyableOption, Result/
   CopyableResult, ArrayList, HashMap, StringBuilder, fs, regex, fcl, ...): add `&this` to read-only
   methods and `&mut this` to mutating methods and constructors, deciding each by reading the body.
 - **Note:** most std methods already had receivers; the rest (constructors, `isSome`/`isNone`/`isOk`/`isErr`/`unwrapOr` on Option/Result, Pair, FileResult, StringBuilder, fcl results) were migrated. Copyable-class methods needed a small compiler fix (receiver exempt from the Owned-only borrow check). `std_types_test` FIR snapshot regenerated (receiver-only diffs).
 
-#### T-060-11 · Explicit receivers: migrate tests and examples · M · `done (task/T-060-11)` · Depends on T-060-10
+#### T-060-11 · Explicit receivers: migrate tests and examples · M · `done (b9bdf5a)` · Depends on T-060-10
 - `examples/` and the `.fire` sources under `tests/sources/` (run and invalid) and any
   `tests/python/**` that embeds receiver-less source or asserts the old behavior. Regenerate
   FIR/FLIR snapshots only after confirming the only diffs are receiver-related. If it does not fit
   one session, split by directory (classes, generics, memory, invalid, python).
 
-#### T-060-12 · Explicit receivers: docs and changelog · S · `done (task/T-060-12)` · Depends on T-060-09
+#### T-060-12 · Explicit receivers: docs and changelog · S · `done (4f3c327)` · Depends on T-060-09
 - `docs/reference/classes.md` (receiver convention), `memory_management.md` receiver wording,
   `functions.md`, std doc samples; changelog Breaking Changes. Consuming receivers stay
   `[PLANNED]`. Add the compile-fail test list for T-060-09 to the manifest.
 
-#### T-060-13 · Array returned from a call has no tracked length · M · `done (task/T-060-13)`
+#### T-060-13 · Array returned from a call has no tracked length · M · `done (cb77718)`
 - `fn mk() -> int32[] { return [1,2,3]; } x: int32[] = mk();` now compiles, but `.length()`,
   negative indexing and `for-in` over `x` fail in lowering ("array_length on array of unknown
   size"). Track or carry the length (hidden length value like array parameters have). Regression
@@ -473,13 +473,13 @@ labeled commit on a branch; a session may build on it or discard it.
 - An internal ownership-verifier error (FIRV-O3) on an owned value moved in a loop that always
   exits via `break`. Reproduce, find the drop-insertion/move-state cause, fix, regression test.
 
-#### T-060-15 · Scope leak: a variable name clashes across functions · M · `done (task/T-060-15)`
+#### T-060-15 · Scope leak: a variable name clashes across functions · M · `done (aa2ffc5)`
 - Declaring `bexp` in `firescript/std/internal/float128.fire` produced "Expected uint64, got int64",
   apparently from an `int64 bexp` parameter in another runtime function. Reproduce with two
   functions that use the same name with different types, find where scope/type tables leak, fix,
   regression test.
 
-#### T-060-16 · Internal conversion errors print raw Python tracebacks · M · `done (task/T-060-16)`
+#### T-060-16 · Internal conversion errors print raw Python tracebacks · M · `done (4b99981)`
 - AST-to-FIR and FIR-to-FLIR failures surface as a traceback with no error code: moving an owned
   module-level variable, `directive x;` inside a function, `u: string? = "a"; u.length()`. Make
   each a coded diagnostic (or fix the underlying bug), and make `main.py` print any remaining
@@ -491,7 +491,7 @@ labeled commit on a branch; a session may build on it or discard it.
   the changelog, **running every code sample** and fixing the text where the compiler differs; mark
   features `[IMPLEMENTED]`, generic enums `[PLANNED]`; link from the docs index.
 
-#### T-060-18 · Docs: string methods, `fn main`, implicit constructors, `%`, array methods · M · `done (task/T-060-18)`
+#### T-060-18 · Docs: string methods, `fn main`, implicit constructors, `%`, array methods · M · `done (2dc1c1a)`
 - Document `indexOf`, `substring` (clamps out-of-range), `startsWith`, `endsWith`, `trim`,
   `replace`, `upper`, `lower`, `length`, and array `.size()` (same as `.length()`); the behavior of
   `fn main` (top-level statements are ignored with a warning when `main` exists, while module-level
@@ -499,7 +499,7 @@ labeled commit on a branch; a session may build on it or discard it.
   `Pt(1, 2)`, `new Pt(...)` needs a declared constructor); `%` is integer-only. Verify each by
   running it.
 
-#### T-060-19 · Docs: stale and false statements · S · `done (task/T-060-19)`
+#### T-060-19 · Docs: stale and false statements · S · `done (e55a20a)`
 - `docs/reference/std/math.md` says nested generic calls fail (they work); `std/*.md` and
   `type_system.md` still mention `push`/`pop`/`length()` on collections, `Tuple`, a `list<T>`
   section for ArrayList, `char = "A"`, prefix-style signatures in `io.md`, and floats printed as

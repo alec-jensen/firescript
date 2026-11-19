@@ -7,6 +7,8 @@ extern @HeapAlloc(u64, u32, u64) -> u64 from "kernel32.dll"
 extern @HeapFree(u64, u32, u64) -> u32 from "kernel32.dll"
 extern @WriteFile(u64, u64, u32, u64, u64) -> i32 from "kernel32.dll"
 
+global mut __fs_ret_len: i32 = 0
+
 global mut __fs_runtime_state: u64 = 0
 
 struct Buf { size: 8, align: 8, kind: class
@@ -16,6 +18,8 @@ struct Buf { size: 8, align: 8, kind: class
 func @make_data(arr: ptr, arr_len: i32) -> ptr {
   L0:
     %0 = slotload.ptr arr
+    %1 = slotload.i32 arr_len
+    gstore @__fs_ret_len, %1
     ret %0
 }
 
@@ -35,10 +39,11 @@ func @Buf__Buf() -> ptr<Buf> {
     store.i32 %6, 8, %4
     %7 = const.i32 3
     %8 = call.ptr @make_data(%6, %7)
-    %9 = slotload.ptr<Buf> this
-    store.ptr %9, 0, %8
+    %9 = gload.i32 @__fs_ret_len
     %10 = slotload.ptr<Buf> this
-    ret %10
+    store.ptr %10, 0, %8
+    %11 = slotload.ptr<Buf> this
+    ret %11
 }
 
 func @Buf__get(this: ptr<Buf>, i: i32) -> i32 {
