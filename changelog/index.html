@@ -1268,15 +1268,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#060-griffin-currently-in-development" class="md-nav__link">
+  <a href="#060-griffin" class="md-nav__link">
     <span class="md-ellipsis">
       
-        0.6.0 - Griffin (Currently in Development)
+        0.6.0 - Griffin
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="0.6.0 - Griffin (Currently in Development)">
+    <nav class="md-nav" aria-label="0.6.0 - Griffin">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1657,15 +1657,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#060-griffin-currently-in-development" class="md-nav__link">
+  <a href="#060-griffin" class="md-nav__link">
     <span class="md-ellipsis">
       
-        0.6.0 - Griffin (Currently in Development)
+        0.6.0 - Griffin
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="0.6.0 - Griffin (Currently in Development)">
+    <nav class="md-nav" aria-label="0.6.0 - Griffin">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2019,7 +2019,7 @@
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
 <p>firescript follows <a href="https://semver.org/">Semantic Versioning</a>. This makes it easier to understand the impact of changes in each release.</p>
-<h2 id="060-griffin-currently-in-development">0.6.0 - Griffin (Currently in Development)<a class="headerlink" href="#060-griffin-currently-in-development" title="Permanent link">&para;</a></h2>
+<h2 id="060-griffin">0.6.0 - Griffin<a class="headerlink" href="#060-griffin" title="Permanent link">&para;</a></h2>
 <h3 id="new-language-features">New Language Features<a class="headerlink" href="#new-language-features" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Added <code>@firescript/std.collections</code> with <code>ArrayList&lt;T&gt;</code>, a dynamically-growable array (<code>add</code>, <code>removeLast</code>, <code>get</code>, <code>set</code>, <code>size</code>, <code>enumerate&lt;T&gt;</code>, capacity-doubling growth). <code>removeLast()</code>/<code>add()</code>/<code>set()</code> are safe for any element type, including Owned types (<code>string</code>, classes) — <code>ArrayList&lt;T&gt;</code>'s destructor drops each live element before freeing its own backing buffer. <code>get()</code> (and <code>enumerate&lt;T&gt;</code>, which calls it internally) reads an element out by value without shrinking the tracked length, which is only safe for Copyable-ish <code>T</code> (numeric types, <code>bool</code>, <code>char</code>) until <code>Owned</code>/<code>Copyable</code> generic constraints exist to enforce it — see <code>docs/reference/std/collections.md</code>.</li>
