@@ -13,7 +13,7 @@ class Pair<T, U> {
     first: T;
     second: U;
 
-    fn Pair(first: T, second: U);
+    fn Pair(&mut this, first: T, second: U);
 }
 ```
 
@@ -39,7 +39,7 @@ copyable class CopyablePair<T, U> {
     first: T;
     second: U;
 
-    fn CopyablePair(first: T, second: U);
+    fn CopyablePair(&mut this, first: T, second: U);
 }
 ```
 
@@ -60,10 +60,10 @@ An optional value of type `T`. Use this to represent potentially missing values 
 class Option<T?> {
     value: T?;
 
-    fn Option(value: T?);
+    fn Option(&mut this, value: T?);
 
-    fn isSome() -> bool;
-    fn isNone() -> bool;
+    fn isSome(&this) -> bool;
+    fn isNone(&this) -> bool;
 
     static fn Some(value: T) -> Option<T>;
     static fn None() -> Option<T>;
@@ -105,15 +105,15 @@ A copyable variant of `Option` for copyable types.
 copyable class CopyableOption<T?> {
     value: T?;
 
-    fn CopyableOption(value: T?);
+    fn CopyableOption(&mut this, value: T?);
 
-    fn isSome() -> bool;
-    fn isNone() -> bool;
+    fn isSome(&this) -> bool;
+    fn isNone(&this) -> bool;
 
     static fn Some(value: T) -> CopyableOption<T>;
     static fn None() -> CopyableOption<T>;
 
-    fn unwrapOr(default: T) -> T;
+    fn unwrapOr(&this, default: T) -> T;
 }
 ```
 
@@ -138,10 +138,10 @@ class Result<T?, E?> {
     value: T?;
     error: E?;
 
-    fn Result(value: T?, error: E?);
+    fn Result(&mut this, value: T?, error: E?);
 
-    fn isOk() -> bool;
-    fn isErr() -> bool;
+    fn isOk(&this) -> bool;
+    fn isErr(&this) -> bool;
 
     static fn Ok(value: T) -> Result<T, E>;
     static fn Err(error: E) -> Result<T, E>;
@@ -183,15 +183,15 @@ copyable class CopyableResult<T?, E?> {
     value: T?;
     error: E?;
 
-    fn CopyableResult(value: T?, error: E?);
+    fn CopyableResult(&mut this, value: T?, error: E?);
 
-    fn isOk() -> bool;
-    fn isErr() -> bool;
+    fn isOk(&this) -> bool;
+    fn isErr(&this) -> bool;
 
     static fn Ok(value: T) -> CopyableResult<T, E>;
     static fn Err(error: E) -> CopyableResult<T, E>;
 
-    fn unwrapOr(default: T) -> T;
+    fn unwrapOr(&this, default: T) -> T;
 }
 ```
 

@@ -53,7 +53,7 @@ class FileResult {
     status: int32;
     data: string;
 
-    fn FileResult(status: int32, data: string);
+    fn FileResult(&mut this, status: int32, data: string);
 
     fn ok(&this) -> bool;
     fn err_code(&this) -> int32;

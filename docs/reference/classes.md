@@ -19,13 +19,13 @@ Classes are Owned (Non-Trivially Copyable) types unless specified otherwise. The
 - Inheritance does not change ownership: moving a `Student` moves its base `Person` subobject as part of the same operation.
 - Borrowed references cannot escape beyond the lifetime of the owning instance; the compiler enforces non-escaping borrows.
 
-Receiver convention: firescript distinguishes three receiver forms:
+Receiver convention: every instance method must declare its receiver explicitly, and every constructor must declare `&mut this`. Omitting the receiver is a compile error. firescript distinguishes three receiver forms:
 
 - **`&this`** — read-only borrow. The method may read fields but cannot assign to them. Use this for query/observer methods.
 - **`&mut this`** — mutable borrow. The method may read and write fields without consuming the instance. Use this for constructors and any method that modifies state.
-- **`this`** (owning) — the method takes ownership of the instance and consumes it. Use this only when the instance will be destroyed or irreversibly transferred (e.g., a `drop(this)` destructor).
+- **`this`** (owning) [PLANNED] — the method takes ownership of the instance and consumes it. Use this only when the instance will be destroyed or irreversibly transferred (e.g., a `drop(this)` destructor). Consuming receivers are not supported yet: `owned this` or a plain `this` receiver on an ordinary method is a compile error.
 
-The compiler enforces this: assigning to `this.field` inside a `&this` method is a compile error.
+The compiler enforces this: assigning to `this.field` inside a `&this` method is a compile error, and `this` itself can never be assigned (`this = ...` is an error; assign to its fields instead).
 
 Borrowing applies only to Owned (Non-Trivially Copyable) types. Copyable types (`intN`, `floatN`, `bool`, `char`) are always passed and returned by value with implicit bitwise copy; using a borrow marker on copyable values is unnecessary and omitted below. Owned types include `string`, arrays, and user-defined classes. When you see `&Type` it implies the type is Owned.
 
@@ -304,7 +304,7 @@ copyable class Pair<T, U> {
     first: T;
     second: U;
 
-    fn Pair(first: T, second: U) {
+    fn Pair(&mut this, first: T, second: U) {
         this.first = first;
         this.second = second;
     }
@@ -356,7 +356,7 @@ interface Drawable {
 class Circle implements Drawable {
     radius: float32;
 
-    fn Circle(&this, radius: float32) {
+    fn Circle(&mut this, radius: float32) {
         this.radius = radius;
     }
 

@@ -10,7 +10,7 @@ fragments) and `split` (dividing a string on a delimiter).
 
 ```firescript
 class StringBuilder {
-    fn StringBuilder(initial: string);
+    fn StringBuilder(&mut this, initial: string);
 
     fn append(&mut this, s: string) -> void;
     fn length(&this) -> int32;

@@ -767,7 +767,7 @@ Generic classes create data structures that work with any type. Both owned and `
 class Box<T> {
     value: T;
 
-    fn Box(value: T) {
+    fn Box(&mut this, value: T) {
         this.value = value;
     }
 
