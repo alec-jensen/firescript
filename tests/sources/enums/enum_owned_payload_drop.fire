@@ -8,7 +8,7 @@ import @firescript/std.io.println;
 class Box {
     label: string;
 
-    fn Box(label: string) {
+    fn Box(&mut this, label: string) {
         this.label = label;
     }
 }

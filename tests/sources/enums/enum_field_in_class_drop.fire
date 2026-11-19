@@ -5,7 +5,7 @@ import @firescript/std.io.println;
 class Box {
     label: string;
 
-    fn Box(label: string) {
+    fn Box(&mut this, label: string) {
         this.label = label;
     }
 }
@@ -23,7 +23,7 @@ enum Slot {
 class Holder {
     note: Note;
 
-    fn Holder(note: Note) {
+    fn Holder(&mut this, note: Note) {
         this.note = note;
     }
 }
@@ -31,7 +31,7 @@ class Holder {
 class Shelf {
     slot: Slot;
 
-    fn Shelf(slot: Slot) {
+    fn Shelf(&mut this, slot: Slot) {
         this.slot = slot;
     }
 }

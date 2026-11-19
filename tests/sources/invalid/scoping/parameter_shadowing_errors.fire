@@ -12,7 +12,7 @@ fn useOuter(outerValue: int32) -> void {  //~ ERROR FS-SEM-0010 @13
 class Holder {
     v: int32;
 
-    fn Holder(outerValue: int32) {  //~ ERROR FS-SEM-0010 @15
+    fn Holder(&mut this, outerValue: int32) {  //~ ERROR FS-SEM-0010 @26
         this.v = outerValue;
     }
 }

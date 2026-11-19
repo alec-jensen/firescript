@@ -9,7 +9,7 @@ import @firescript/std.io.println;
 class Box {
     value: int32;
 
-    fn Box(value: int32) {
+    fn Box(&mut this, value: int32) {
         this.value = value;
     }
 }

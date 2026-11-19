@@ -4,11 +4,11 @@
 class Foo {
     v: int32;
 
-    fn Foo(v: int32) {
+    fn Foo(&mut this, v: int32) {
         this.v = v;
     }
 
-    fn method(x: int32, x: int32) -> void {  //~ ERROR FS-SEM-0010 @25
+    fn method(&this, x: int32, x: int32) -> void {  //~ ERROR FS-SEM-0010 @32
     }
 }
 

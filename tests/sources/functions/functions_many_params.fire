@@ -10,7 +10,7 @@ copyable class Point {
     x: int32;
     y: int32;
 
-    fn Point(x: int32, y: int32) {
+    fn Point(&mut this, x: int32, y: int32) {
         this.x = x;
         this.y = y;
     }

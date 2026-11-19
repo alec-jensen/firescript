@@ -15,7 +15,7 @@ class Box {
         this.label = label;
     }
 
-    fn describe() -> string {
+    fn describe(&this) -> string {
         return this.label;
     }
 }

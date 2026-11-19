@@ -4,7 +4,7 @@
 class Holder {
     v: int32;
 
-    fn Holder(v: int32) {
+    fn Holder(&mut this, v: int32) {
         this.v = v;
     }
 }

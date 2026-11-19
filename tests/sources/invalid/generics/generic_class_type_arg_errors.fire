@@ -6,7 +6,7 @@ class Pair<T, U> {
     a: T;
     b: U;
 
-    fn Pair(a: T, b: U) {
+    fn Pair(&mut this, a: T, b: U) {
         this.a = a;
         this.b = b;
     }

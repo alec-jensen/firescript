@@ -2,7 +2,7 @@
 class Foo {
     v: int32;
 
-    fn Foo() {
+    fn Foo(&mut this) {
         this.v = 1;
     }
 

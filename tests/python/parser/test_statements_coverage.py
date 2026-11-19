@@ -64,7 +64,7 @@ def test_generic_class_nested_type_argument_parses():
     # is covered by tests/sources/generics/
     # generics_regression_nested_generic_type_argument.fire.
     src = (
-        "class Pair<T, U> { a: T; b: U; fn Pair(a: T, b: U) { this.a = a; this.b = b; } } "
+        "class Pair<T, U> { a: T; b: U; fn Pair(&mut this, a: T, b: U) { this.a = a; this.b = b; } } "
         "nested: Pair<Pair<int32, int32>, int32> = Pair(Pair(1, 2), 3);"
     )
     p = make_parser(src)

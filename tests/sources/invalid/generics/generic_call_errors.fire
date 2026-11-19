@@ -2,7 +2,7 @@
 copyable class Box<T> {
     v: T;
 
-    fn Box(v: T) {
+    fn Box(&mut this, v: T) {
         this.v = v;
     }
 }

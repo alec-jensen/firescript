@@ -6,7 +6,7 @@
 class Widget {
     id: int32;
 
-    fn Widget(id: int32) {
+    fn Widget(&mut this, id: int32) {
         this.id = id;
     }
 }

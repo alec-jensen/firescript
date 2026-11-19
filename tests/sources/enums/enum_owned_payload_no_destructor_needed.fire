@@ -11,7 +11,7 @@ import @firescript/std.io.println;
 class Counter {
     value: int32;
 
-    fn Counter(value: int32) {
+    fn Counter(&mut this, value: int32) {
         this.value = value;
     }
 }

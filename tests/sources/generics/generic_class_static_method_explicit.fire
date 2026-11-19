@@ -14,7 +14,7 @@ import @firescript/std.io.println;
 class Box<T> {
     value: T;
 
-    fn Box(value: T) {
+    fn Box(&mut this, value: T) {
         this.value = value;
     }
 

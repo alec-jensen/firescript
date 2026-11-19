@@ -6,7 +6,7 @@ class M1 {
     v: int32;
     v2: !;  //~ ERROR FS-PARSE-0010 @9
 
-    fn M1() {
+    fn M1(&mut this) {
         this.v = 1;
     }
 }
@@ -15,7 +15,7 @@ class M1 {
 class M2 {
     v: int32;
 
-    fn M2() {
+    fn M2(&mut this) {
         this.v = 1;
     }
 
