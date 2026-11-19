@@ -29,6 +29,8 @@ pow: int32  = a ** b;  // 1000
 
 For floating point operands `**` follows IEEE 754 `pow`: fractional exponents are supported (`2.0 ** 0.5` is `1.414214`), a negative base with a non-integer exponent is NaN, and zero/infinity/NaN operands follow the standard special-value rules. [IMPLEMENTED]
 
+`%` is defined for integer operands only; applying it to floating point operands is a compile-time error (`Operator '%' requires integer operands of the same type`). [IMPLEMENTED]
+
 Integer division truncates toward zero. Modulo returns the remainder with the same sign as the dividend (C-style, not Python-style).
 
 Dividing or taking the modulo by a constant integer zero (`x / 0`, `x % 0`, `x /= 0`, `7 / (3 - 3)`) is a compile-time error (`FS-SEM-0021`) [IMPLEMENTED]. An integer expression made only of literals whose exact result does not fit its type (`127i8 + 1i8`, `2147483647 + 1`, `2 ** 40` as `int32`) is a compile-time error (`FS-SEM-0019`) [IMPLEMENTED].

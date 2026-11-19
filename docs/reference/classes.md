@@ -145,6 +145,21 @@ class Point {
 }
 ```
 
+#### Implicit constructors [IMPLEMENTED]
+
+A class that declares no constructor gets an implicit one that takes every field in declaration order. It is called without `new`:
+
+```firescript
+class Pt {
+    x: int32;
+    y: int32;
+}
+
+p: Pt = Pt(1, 2);   // p.x == 1, p.y == 2
+```
+
+`new Pt(...)` requires a declared constructor; on a class without one it is an error (`No constructor defined for type 'Pt'`).
+
 Default parameter values (e.g., `x: float32 = 0.0`) are [PLANNED] and not yet supported.
 
 ### Instance Methods
