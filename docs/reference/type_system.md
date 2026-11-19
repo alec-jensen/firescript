@@ -23,7 +23,7 @@ These are fixed-size scalars stored on the stack and copied by value:
   * **`float64`**: 64-bit floating point number
   * **`float128`**: 128-bit floating point number. [IMPLEMENTED] — true 16-byte IEEE 754 binary128 (quad-precision), implemented as a self-hosted soft-float runtime. Arithmetic, comparisons, and conversions are correctly rounded (round-to-nearest-even), with full support for subnormals, signed zero, infinity, and NaN.
 * **`bool`**: Represents boolean values, either `true` or `false`. Example: `isActive: bool = true;`
-* **`char`**: Represents a single character, stored on the stack. Initialized with a character literal or a single-character string literal. Examples: `initial: char = 'A';`, `digit: char = "7";`
+* **`char`**: Represents a single character, stored on the stack. Initialized with a character literal. Examples: `initial: char = 'A';`, `digit: char = '7';`
 
 ### Owned Types (Heap-Allocated)
 
@@ -265,12 +265,12 @@ Strings support:
 
 ### Character Type (`char`)
 
-The `char` type represents a single character. Unlike strings, `char` is a copyable type and is stored on the stack. It can be initialized with a single character string literal.
+The `char` type represents a single character. Unlike strings, `char` is a copyable type and is stored on the stack. It is initialized with a character literal (`'A'`); a string literal such as `"A"` is not a `char` and is a type error.
 
 ```firescript
-letter: char = "A";
-digit: char = "7";
-newline: char = "\n";  // Special character
+letter: char = 'A';
+digit: char = '7';
+newline: char = '\n';  // Special character
 ```
 
 #### Escape Sequences [IMPLEMENTED]
@@ -395,7 +395,7 @@ parsedFloat: float64 = "3.14" as float64;  // 3.14
 
 // To string
 str1: string = 42 as string;               // "42"
-str2: string = 3.14f32 as string;          // "3.14"
+str2: string = 3.14f32 as string;          // "3.140000"
 str3: string = true as string;             // "true"
 letter: char = 'A';
 str4: string = letter as string;           // "A"
@@ -463,7 +463,7 @@ String concatenation with `+` requires both operands to be strings. There is no 
 ```firescript
 message: string = "Count: " + (42 as string);              // "Count: 42"
 status: string = "Active: " + (true as string);            // "Active: true"
-pi: string = "Pi is approximately " + (3.14f32 as string); // "Pi is approximately 3.14"
+pi: string = "Pi is approximately " + (3.14f32 as string); // "Pi is approximately 3.140000"
 
 // string bad = "Count: " + 42;  // ❌ Error: cannot concatenate string and int32
 ```
@@ -518,7 +518,6 @@ type5: string = typeof([1, 2, 3]); // "int8[]"
 The following standard library types are planned but not yet implemented:
 * **`BigInt`**: Arbitrary-precision integers for calculations requiring more than 64 bits.
 * **`Decimal`**: Fixed-point, arbitrary-precision decimal type for precise calculations.
-* **`list<T>`**: A dynamic array type that can grow and shrink, unlike fixed-size arrays.
 
 ## Generics
 
@@ -782,22 +781,17 @@ intBox: Box<int32> = Box<int32>(42i32);
 
 The standard library's `Pair<T, U>` and `Option<T>` (`@firescript/std.types`) are generic classes. See [Classes & Inheritance — Generic Classes](classes.md#generic-classes).
 
-#### Generic Arrays and Collections (Planned)
+#### Generic Collections [IMPLEMENTED]
 
-The standard library will provide generic collection types:
+`@firescript/std.collections` provides the generic `ArrayList<T>` (a growable array) and `HashMap<K, V>`. See [Collections](std/collections.md) for the full API.
 
 ```firescript
-// Planned syntax
-list<T> myList = list<int32>();
-myList.push(1);
-myList.push(2);
-myList.push(3);
+import @firescript/std.collections.ArrayList;
 
-map<string, int32> scores = map<string, int32>();
-scores.set("Alice", 100);
-scores.set("Bob", 95);
-
-aliceScore: int32? = scores.get("Alice");  // 100
+v: ArrayList<int32> = ArrayList<int32>();
+v.add(1);
+v.add(2);
+v.add(3);
 ```
 
 #### Implementation Notes

@@ -7,7 +7,7 @@ The `std.io` module provides basic output utilities for printing values to stand
 ### `print`
 
 ```firescript
-void print<T>(&T value)
+fn print<T>(&value: T) -> void
 ```
 
 Print a value to standard output without a trailing newline. The value is implicitly converted to a string.
@@ -22,13 +22,13 @@ import @firescript/std.io.print;
 
 print("Hello");
 print(42);
-print(3.14);
+print(3.14);   // prints 3.140000
 ```
 
 ### `println`
 
 ```firescript
-void println<T>(&T value)
+fn println<T>(&value: T) -> void
 ```
 
 Print a value to standard output followed by a newline.
@@ -56,5 +56,6 @@ Both `print` and `println` are generic and support all built-in types that can b
 
 ## Notes
 
+- Floating-point values print with six digits after the decimal point (`3.14` prints as `3.140000`).
 - Both functions are generic and polymorphic; they infer the type from the argument.
 - Output goes directly to standard output (stdout).

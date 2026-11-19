@@ -78,7 +78,7 @@ if (r.ok()) {
 }
 ```
 
-See [File System (`std.fs`)](std/fs.md) for details. A general-purpose `Result<T, E>` type for the standard library is planned.
+See [File System (`std.fs`)](std/fs.md) for details. A general-purpose `Result<T, E>` type (and `CopyableResult`) is also available in `@firescript/std.types` [IMPLEMENTED]; see [Standard Library — Types](std/types.md).
 
 ## Planned Error Handling Features [PLANNED]
 
