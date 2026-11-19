@@ -1,0 +1,7 @@
+// The legacy free-function conversion builtins (toInt, toFloat, toDouble,
+// toBool, toChar, toString, int, i32_to_f64, f64_to_i32, i32_to_str, ...)
+// were removed; conversions use `as`. Calling one is an ordinary
+// "Function is not defined" error.
+a: int32 = toInt("42");  //~ ERROR FS-PARSE-0012
+b: string = toString(1);  //~ ERROR FS-PARSE-0012
+c: float64 = i32_to_f64(3);  //~ ERROR FS-PARSE-0012

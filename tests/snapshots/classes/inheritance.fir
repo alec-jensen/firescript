@@ -85,7 +85,7 @@ function @Person.describe(this: &Person) -> string {
     %3 = binop "+", %1, %2
     %4 = loadvar.Person this
     %5 = loadfield.int32 %4, "age"
-    %6 = call.string @toString(%5 borrow)
+    %6 = cast.string %5
     %7 = binop "+", %3, %6
     ret %7
 }
@@ -118,7 +118,7 @@ function @Student.describe(this: &Student) -> string {
     %3 = binop "+", %1, %2
     %4 = loadvar.Student this
     %5 = loadfield.int32 %4, "age"
-    %6 = call.string @toString(%5 borrow)
+    %6 = cast.string %5
     %7 = binop "+", %3, %6
     %8 = strconst " at "
     %9 = binop "+", %7, %8

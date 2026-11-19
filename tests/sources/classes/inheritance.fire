@@ -11,7 +11,7 @@ class Person {
     }
 
     fn describe(&this) -> string {
-        return this.name + " is " + toString(this.age);
+        return this.name + " is " + (this.age as string);
     }
 }
 
@@ -25,7 +25,7 @@ class Student from Person {
     }
 
     fn describe(&this) -> string {
-        return this.name + " is " + toString(this.age) + " at " + this.school;
+        return this.name + " is " + (this.age as string) + " at " + this.school;
     }
 }
 

@@ -9,9 +9,9 @@ for (i: int32 = 0; i < 4; i++) {
         if (i == 1) {
             continue;
         }
-        println(toString(i) + "," + toString(j));
+        println((i as string) + "," + (j as string));
     }
-    println("end " + toString(i));
+    println("end " + (i as string));
 }
 
 // Same, with nested while loops and a `continue` before a `break`.
@@ -28,7 +28,7 @@ while (k < 3) {
             break;
         }
     }
-    println(toString(k) + ":" + toString(m));
+    println((k as string) + ":" + (m as string));
 }
 
 /* EXPECT
