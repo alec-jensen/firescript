@@ -4,6 +4,13 @@
 
 The project name is **firescript**, all lowercase. Do not capitalize it.
 
+## Working on Tasks
+
+Work is organized as small, self-contained tasks, one per session, defined in
+[docs/internal/version_planning.md](docs/internal/version_planning.md) (see "Working in tasks" for
+the session protocol and the decisions every task inherits). Read that section and your one task
+block before starting; do not widen a task, and split it if it grows.
+
 ## Running the Compiler
 
 ```bash
