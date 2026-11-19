@@ -11,6 +11,24 @@ from compiler_types import SourceMap, MergedSymbolTable
 from utils.file_utils import safe_relpath
 
 
+class CyclicImportException(RuntimeError):
+    """Raised when module loading finds an import cycle. `error` is the
+    structured CyclicImportError (FS-IMP-0002)."""
+
+    def __init__(self, error: CyclicImportError) -> None:
+        super().__init__(error.to_log_string())
+        self.error = error
+
+
+class ImportNotFoundException(FileNotFoundError):
+    """Raised when an imported module's file does not exist. `error` is the
+    structured ImportNotFoundError (FS-IMP-0001)."""
+
+    def __init__(self, error: ImportNotFoundError) -> None:
+        super().__init__(error.to_log_string())
+        self.error = error
+
+
 @dataclass
 class ImportSpec:
     module_path: str
@@ -171,18 +189,20 @@ class ModuleResolver:
         return parts[0] if len(parts) > 1 else dotted
 
     def _load_module(self, dotted: str, load_stack: List[str]) -> Module:
+        # Cycle detection. A module is registered in self.modules before its
+        # dependencies are loaded, so the in-progress (load_stack) check must
+        # come before the already-loaded shortcut.
+        if dotted in load_stack:
+            cycle = load_stack[load_stack.index(dotted):] + [dotted]
+            err = CyclicImportError(cycle=" -> ".join(cycle))
+            raise CyclicImportException(err)
         if dotted in self.modules:
             return self.modules[dotted]
-        # Cycle detection
-        if dotted in load_stack:
-            cycle = load_stack + [dotted]
-            err = CyclicImportError(cycle=" -> ".join(cycle))
-            raise RuntimeError(err.to_log_string())
 
         path = self.dotted_to_path(dotted)
         if not os.path.isfile(path):
             err = ImportNotFoundError(module=f"{dotted} (looked in {path})")
-            raise FileNotFoundError(err.to_log_string())
+            raise ImportNotFoundException(err)
 
         ast, source_text = self.parse_file(path)
         mod = Module(dotted, path, ast, source_text)
@@ -253,9 +273,14 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
 
     - Import statements are dropped.
     - Exports include functions, classes, and top-level variable declarations.
-    - Conflicting top-level symbol names produce an error.
+    - Conflicting top-level symbol names produce an error: every conflict is
+      recorded as a dict on `root._import_conflicts` (keys: symbol, first,
+      second, entry) and reported by the frontend as FS-IMP-0005.
     - For symbol-vs-symbol conflicts (same name), the first definition wins and
-      later conflicting definitions are ignored with an error logged.
+      later conflicting definitions are ignored.
+    - An entry-module definition replaces an imported symbol of the same name;
+      the frontend reports it as an error only when the entry explicitly
+      imports that name (`entry` is True in the record).
     """
     # Create a new ROOT AST node
     root = ASTNode(NodeTypes.ROOT, None, "root", [], 0)
@@ -280,6 +305,11 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
     logging.debug(f"Merging {len(ordered)} modules: {[m.dotted for m in ordered]}")
     
     seen: Dict[str, ASTNode] = {}
+    seen_module: Dict[str, str] = {}
+    module_by_path: Dict[str, str] = {m.path: m.dotted for m in ordered}
+    module_by_path[entry.path] = entry.dotted
+    conflicts: List[dict] = []
+    setattr(root, "_import_conflicts", conflicts)
 
     def annotate_source_file(node: ASTNode, source_file: str):
         """Recursively annotate all nodes in a tree with their source file"""
@@ -294,7 +324,12 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
             return
         if name in seen:
             logging.debug(f"Skipping duplicate symbol: {name}")
-            logging.error(f"Conflicting top-level symbol '{name}' from imports; already defined.")
+            conflicts.append({
+                "symbol": name,
+                "first": seen_module[name],
+                "second": module_by_path.get(source_file, source_file),
+                "entry": False,
+            })
             return
         logging.debug(f"Appending export: {name} (type: {node.node_type})")
         # Annotate this node and all its children with source file
@@ -302,6 +337,7 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
         node.parent = root
         root.children.append(node)
         seen[name] = node
+        seen_module[name] = module_by_path.get(source_file, source_file)
 
     def collect_called_function_names(node: ASTNode) -> list[str]:
         # First-encounter order (not a set) so the merged AST is deterministic.
@@ -387,7 +423,12 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
         # Prevent duplicate symbol definitions when an import pulled in a symbol with same name
         if c.node_type in (NodeTypes.FUNCTION_DEFINITION, NodeTypes.GENERATOR_DEFINITION, NodeTypes.CLASS_DEFINITION, NodeTypes.VARIABLE_DECLARATION):
             if getattr(c, "name", None) in seen:
-                logging.error(f"Top-level symbol '{c.name}' in entry conflicts with imported symbol.")
+                conflicts.append({
+                    "symbol": c.name,
+                    "first": seen_module.get(c.name, ""),
+                    "second": entry.dotted,
+                    "entry": True,
+                })
                 # Prefer entry's definition: replace the imported one
                 prev = seen[c.name]
                 try:
@@ -395,6 +436,7 @@ def build_merged_ast(entry: Module, ordered: List[Module]) -> ASTNode:
                     root.children[idx] = c
                     c.parent = root
                     seen[c.name] = c
+                    seen_module[c.name] = entry.dotted
                 except ValueError:
                     # If somehow not present, just append
                     append_export(c, entry.path)

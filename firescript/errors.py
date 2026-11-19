@@ -107,6 +107,24 @@ class CyclicImportError(CompileTimeError):
     message_template = "Cyclic import detected: {cycle}"
 
 
+class ImportSymbolNotFoundError(CompileTimeError):
+    code = "FS-IMP-0003"
+    category = ErrorCategory.IMPORT
+    message_template = "Module '{module}' has no symbol '{symbol}'"
+
+
+class ImportSymbolNotExportedError(CompileTimeError):
+    code = "FS-IMP-0004"
+    category = ErrorCategory.IMPORT
+    message_template = "Symbol '{symbol}' is not exported by module '{module}'"
+
+
+class ImportSymbolConflictError(CompileTimeError):
+    code = "FS-IMP-0005"
+    category = ErrorCategory.IMPORT
+    message_template = "Conflicting top-level symbol '{symbol}': defined in both '{first}' and '{second}'"
+
+
 # Additional Parser Errors for specific syntax issues
 class ExpectedTokenError(CompileTimeError):
     code = "FS-PARSE-0010"

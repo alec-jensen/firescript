@@ -1,7 +1,6 @@
 """Direct unit tests for firescript/imports.py's ModuleResolver and
-build_merged_ast: stdlib package derivation, the (artificial) cycle-detection
-branch, and build_merged_ast's entry-vs-import conflict branches. Several of
-these pin known, not-yet-fixed bugs (see each docstring)."""
+build_merged_ast: stdlib package derivation, cycle detection, and
+build_merged_ast's entry-vs-import / import-vs-import conflict recording."""
 from __future__ import annotations
 
 import os
@@ -89,33 +88,36 @@ def _with_fake_modules(fake_asts: dict, fake_imports: dict):
 
 
 def test_load_module_cyclic_import_raises_runtime_error():
-    """_load_module's cycle-detection branch ('if dotted in load_stack:
-    raise') sits *after* the 'if dotted in self.modules: return' early-out,
-    but self.modules[dotted] is populated *before* recursing into that
-    module's own dependencies (see _load_module). That means a real A -> B
-    -> A cycle never reaches the load_stack check: by the time B's DFS
-    revisits "A", self.modules["A"] is already set (from A's own call
-    frame, still mid-DFS), so it returns early instead of detecting the
-    cycle -- confirmed by tests/sources/invalid/imports/import_cycle_a.fire,
-    which expects a downstream FS-PARSE-0003 (undefined symbol) error, not
-    a CyclicImportError. This looks like a real, pre-existing bug: the
-    cycle branch below is effectively dead code for genuine cycles. It is
-    only reachable by calling _load_module directly with a load_stack that
-    already contains `dotted` while self.modules does not yet have it --
-    which is what this test does, to at least cover the branch's own logic
-    in isolation. See CLAUDE.md: this is flagged, not fixed, per
-    instructions to leave firescript/ source untouched."""
-    fake_asts = {"a": _root()}
-    fake_imports = {"a": []}
-    resolver, restore = _with_fake_modules(fake_asts, fake_imports)
-    try:
+    """A real A -> B -> A cycle (not an artificial load_stack) is detected:
+    the in-progress (load_stack) check runs before the already-loaded
+    shortcut, and the reported cycle names the modules involved."""
+    with t.tmpdir() as root:
+        for name, dep in (("a", "b"), ("b", "a")):
+            with open(os.path.join(root, name + ".fire"), "w", encoding="utf-8") as f:
+                f.write(f"import {dep}.x;\nexport fn x() -> int32 {{ return 1; }}\n")
+        resolver = ModuleResolver(import_root=root)
         try:
-            resolver._load_module("a", ["a"])
-            t.require(False, "expected RuntimeError for cyclic import")
+            resolver.resolve_for_entry(os.path.join(root, "a.fire"))
+            t.require(False, "expected a cyclic import error")
         except RuntimeError as e:
-            t.require("Cyclic" in str(e) or "cyclic" in str(e), str(e))
-    finally:
-        restore()
+            t.require("Cyclic import detected: a -> b -> a" in str(e), str(e))
+            t.require_eq(e.error.code, "FS-IMP-0002")
+
+
+def test_load_module_diamond_import_is_not_a_cycle():
+    with t.tmpdir() as root:
+        files = {
+            "a": "import b.x;\nimport c.x;\n",
+            "b": "import d.x;\nexport fn x() -> int32 { return 1; }\n",
+            "c": "import d.x;\nexport fn x() -> int32 { return 1; }\n",
+            "d": "export fn x() -> int32 { return 1; }\n",
+        }
+        for name, text in files.items():
+            with open(os.path.join(root, name + ".fire"), "w", encoding="utf-8") as f:
+                f.write(text)
+        resolver = ModuleResolver(import_root=root)
+        _, ordered = resolver.resolve_for_entry(os.path.join(root, "a.fire"))
+        t.require_eq(sorted(m.dotted for m in ordered), ["a", "b", "c", "d"])
 
 
 # --- build_merged_ast: entry-conflict paths ---
@@ -133,6 +135,9 @@ def test_build_merged_ast_entry_symbol_replaces_imported_one():
     greet_nodes = [c for c in root.children if getattr(c, "name", None) == "greet"]
     t.require_eq(len(greet_nodes), 1)
     t.require(greet_nodes[0] is fn_entry, "entry definition must replace the imported one")
+    # ...and the replacement is recorded so the frontend can report it when
+    # the entry explicitly imported the name.
+    t.require_eq(root._import_conflicts, [{"symbol": "greet", "first": "dep", "second": "entry", "entry": True}])
 
 
 def test_build_merged_ast_entry_conflict_value_error_fallback_is_exercised():

@@ -8,7 +8,7 @@ import time
 
 from log_formatter import LogFormatter
 from compiler_pipeline import CompilerPipeline
-from errors import CompileTimeError
+from errors import CompileTimeError, ParserError, SemanticError
 from utils.file_utils import safe_relpath
 import targets
 
@@ -465,7 +465,10 @@ def lint_text(source_text: str, file_path: str = "<stdin>"):
         if pipeline.has_imports():
             try:
                 ast = pipeline.resolve_imports()
-            except Exception:
+            except Exception as e:
+                # Surface the failure (e.g. a parse error in an imported
+                # module) the way the CLI does, instead of returning nothing.
+                errors.append(ParserError(message=f"Import resolution failed: {e}", source_file=file_path))
                 return errors
 
             errors = list(pipeline.parser_errors)
@@ -474,14 +477,15 @@ def lint_text(source_text: str, file_path: str = "<stdin>"):
 
         try:
             ast = pipeline.preprocess()
-        except Exception:
+        except Exception as e:
+            errors.append(SemanticError(message=f"Preprocessing failed: {e}", source_file=file_path))
             return errors
 
         try:
             analyzer = pipeline.analyze_semantics()
             errors.extend(analyzer.errors)
-        except Exception:
-            pass
+        except Exception as e:
+            errors.append(SemanticError(message=f"Semantic analysis failed: {e}", source_file=file_path))
 
     finally:
         root.setLevel(prev_level)
@@ -634,6 +638,8 @@ def main():
         logging.info(
             f"Directory compilation complete: {successful} successful, {failed} failed"
         )
+        if failed:
+            sys.exit(1)
 
 
 if __name__ == "__main__":

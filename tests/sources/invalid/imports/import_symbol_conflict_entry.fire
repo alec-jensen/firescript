@@ -1,0 +1,7 @@
+// The entry module defines a name it also explicitly imports: FS-IMP-0005,
+// reported at the import statement.
+import visibility_provider.addOne;  //~ ERROR FS-IMP-0005 @1
+
+fn addOne(x: int32) -> int32 {
+    return x + 2;
+}

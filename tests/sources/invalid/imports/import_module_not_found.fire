@@ -1,0 +1,5 @@
+// Importing a module whose file does not exist is a coded diagnostic
+// (FS-IMP-0001), anchored at the import statement.
+import nonexistent_module.thing;  //~ ERROR FS-IMP-0001 @1
+
+x: int32 = 1;

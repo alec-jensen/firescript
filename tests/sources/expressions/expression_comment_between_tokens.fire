@@ -1,0 +1,11 @@
+// A comment between an operator and its operand is skipped, not parsed as
+// the operand.
+import @firescript/std.io.println;
+
+x: int32 = /* c */ 1 +  // trailing
+    2;
+println(x as string);
+
+/* EXPECT
+3
+*/

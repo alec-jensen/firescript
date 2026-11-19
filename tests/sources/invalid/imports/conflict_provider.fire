@@ -1,0 +1,6 @@
+//@ helper
+// Second provider exporting the same name as visibility_provider (not a
+// standalone case).
+export fn addOne(x: int32) -> int32 {
+    return x + 10;
+}

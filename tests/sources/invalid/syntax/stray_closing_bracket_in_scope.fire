@@ -1,0 +1,6 @@
+// A stray ']' inside a function body matches no statement form: it is
+// reported rather than silently skipped.
+fn addOne(x: int32) -> int32 {
+    ]  //~ ERROR FS-PARSE-0012 @5
+    return x + 1;
+}

@@ -381,7 +381,7 @@ def test_lint_text_clean_source_returns_no_errors():
     t.require_eq(errors, [])
 
 
-def test_lint_text_preprocess_exception_returns_errors_so_far():
+def test_lint_text_preprocess_exception_is_reported():
     orig = CompilerPipeline.preprocess
 
     def _raise(self):
@@ -389,14 +389,15 @@ def test_lint_text_preprocess_exception_returns_errors_so_far():
 
     CompilerPipeline.preprocess = _raise
     try:
-        # The injected failure is swallowed and the (empty) errors collected
-        # so far are returned.
-        t.require_eq(lint_text("x: int32 = 1;\n"), [])
+        # The failure is surfaced as a diagnostic, like the CLI reports it.
+        errors = lint_text("x: int32 = 1;\n")
+        t.require_eq(len(errors), 1)
+        t.require("injected lint preprocess failure" in errors[0].message, errors[0].message)
     finally:
         CompilerPipeline.preprocess = orig
 
 
-def test_lint_text_semantic_analysis_exception_is_swallowed():
+def test_lint_text_semantic_analysis_exception_is_reported():
     orig = CompilerPipeline.analyze_semantics
 
     def _raise(self):
@@ -404,10 +405,53 @@ def test_lint_text_semantic_analysis_exception_is_swallowed():
 
     CompilerPipeline.analyze_semantics = _raise
     try:
-        # Must not raise -- the except branch is a bare `pass`.
-        t.require_eq(lint_text("x: int32 = 1;\n"), [])
+        errors = lint_text("x: int32 = 1;\n")
+        t.require_eq(len(errors), 1)
+        t.require("injected lint semantic failure" in errors[0].message, errors[0].message)
     finally:
         CompilerPipeline.analyze_semantics = orig
+
+
+def _write_module(directory, name, text):
+    path = os.path.join(directory, name)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
+    return path
+
+
+def test_lint_text_reports_unresolved_import():
+    with t.tmpdir() as tmp:
+        path = os.path.join(tmp, "entry.fire")
+        errors = lint_text("import no_such_module.thing;\n", path)
+        t.require_eq([e.code for e in errors], ["FS-IMP-0001"])
+        t.require_eq((errors[0].line, errors[0].column), (1, 1))
+
+
+def test_lint_text_reports_missing_and_unexported_symbols():
+    with t.tmpdir() as tmp:
+        _write_module(tmp, "provider.fire", "export fn shown() -> int32 { return 1; }\nfn hidden() -> int32 { return 2; }\n")
+        path = os.path.join(tmp, "entry.fire")
+        errors = lint_text("import provider.{hidden, nothere, shown};\n", path)
+        t.require_eq([e.code for e in errors], ["FS-IMP-0004", "FS-IMP-0003"])
+
+
+def test_lint_text_reports_import_cycle():
+    with t.tmpdir() as tmp:
+        _write_module(tmp, "a.fire", "import b.g;\nexport fn f() -> int32 { return 1; }\n")
+        _write_module(tmp, "b.fire", "import a.f;\nexport fn g() -> int32 { return 2; }\n")
+        path = os.path.join(tmp, "entry.fire")
+        errors = lint_text("import a.f;\n", path)
+        t.require_eq([e.code for e in errors], ["FS-IMP-0002"])
+        t.require("a -> b -> a" in errors[0].message, errors[0].message)
+
+
+def test_lint_text_reports_parse_error_in_imported_module():
+    with t.tmpdir() as tmp:
+        _write_module(tmp, "broken.fire", "export fn f( -> int32 { return 1; }\n")
+        path = os.path.join(tmp, "entry.fire")
+        errors = lint_text("import broken.f;\n", path)
+        t.require_eq(len(errors), 1)
+        t.require("Import resolution failed" in errors[0].message, errors[0].message)
 
 
 def test_lint_text_restores_log_level_in_finally():

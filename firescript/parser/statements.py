@@ -440,6 +440,16 @@ class StatementsMixin(ExpressionsMixin):
             self.advance()
             self.invalid_expression_error(f"Unexpected character '{bad_tok.value}'", bad_tok)
             return None
+        # Stray closing bracket/paren: matches no statement form; report it
+        # instead of silently skipping it. Once any other error has been
+        # reported, a leftover closer is most likely recovery fallout from
+        # that error (panic-mode skipping can strand one), so it is skipped
+        # without a second diagnostic.
+        if self.current_token and self.current_token.type in ("CLOSE_BRACKET", "CLOSE_PAREN"):
+            # The caller's no-progress guard advances past the token.
+            if not self.errors:
+                self.invalid_expression_error(f"Unexpected token {self.current_token.value}", self.current_token)
+            return None
         # Handle yield statements
         if self.current_token and self.current_token.type == "YIELD":
             yield_tok = self.current_token

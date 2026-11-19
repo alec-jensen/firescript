@@ -10,8 +10,27 @@ from typing import Tuple
 from lexer import Lexer, Token
 from parser import Parser, ASTNode
 from enums import NodeTypes
-from errors import UndefinedIdentifierError
-from imports import ModuleResolver, Module, build_merged_ast, apply_symbol_aliases
+from errors import (
+    UndefinedIdentifierError,
+    ImportSymbolNotFoundError,
+    ImportSymbolNotExportedError,
+    ImportSymbolConflictError,
+)
+from imports import (
+    ModuleResolver,
+    Module,
+    build_merged_ast,
+    apply_symbol_aliases,
+    CyclicImportException,
+    ImportNotFoundException,
+)
+
+_DEFINITION_TYPES = (
+    NodeTypes.FUNCTION_DEFINITION,
+    NodeTypes.GENERATOR_DEFINITION,
+    NodeTypes.CLASS_DEFINITION,
+    NodeTypes.VARIABLE_DECLARATION,
+)
 
 
 def _hydrate_parser_symbols_from_merged_ast(parser_instance: Parser, merged_ast: ASTNode) -> None:
@@ -110,12 +129,30 @@ def resolve_imports_and_deferred_identifiers(
     apply_symbol_aliases(entry_mod_obj)
     resolver.modules[dotted] = entry_mod_obj
 
+    # Cycles and missing modules are reported as coded diagnostics anchored
+    # at the entry file's import statement that led to them.
+    # When the entry file already has syntax errors, an unresolvable import is
+    # likely fallout from a malformed import statement, so it is not reported
+    # separately (the merge is still skipped).
+    had_parse_errors = bool(parser_instance.errors)
+    load_failed = False
     for imp in entry_mod_obj.imports:
-        if imp.kind != "external":
+        if imp.kind == "external":
+            continue
+        try:
             resolver._load_module(imp.module_path, [dotted])
+        except (CyclicImportException, ImportNotFoundException) as e:
+            if not had_parse_errors:
+                parser_instance.report_error(
+                    e.error, token=Token("IMPORT", "import", imp.span[0])
+                )
+            load_failed = True
+    if load_failed:
+        return ast
 
     entry_mod, topo = resolver.resolve_for_entry(file_path)
 
+    failed_import_names: set[str] = set()
     for mod in topo:
         for imp in getattr(mod, "imports", []) or []:
             if imp.kind != "symbols":
@@ -124,15 +161,62 @@ def resolve_imports_and_deferred_identifiers(
             if source_mod is None:
                 continue
             source_exports = source_mod.exports or {}
+            defined_names = {
+                getattr(c, "name", None)
+                for c in source_mod.ast.children
+                if c.node_type in _DEFINITION_TYPES
+            }
             for symbol in imp.symbols:
                 symbol_name = symbol.get("name")
                 if symbol_name and symbol_name not in source_exports:
+                    err_cls = (
+                        ImportSymbolNotExportedError
+                        if symbol_name in defined_names
+                        else ImportSymbolNotFoundError
+                    )
+                    if mod is entry_mod:
+                        failed_import_names.add(symbol_name)
                     parser_instance.report_error(
-                        UndefinedIdentifierError(identifier=symbol_name, source_file=mod.path),
+                        err_cls(
+                            symbol=symbol_name,
+                            module=imp.module_path,
+                            source_file=mod.path,
+                        ),
                         token=Token("IDENTIFIER", symbol_name, int(symbol.get("index", 0))),
                     )
 
     merged_ast = build_merged_ast(entry_mod, topo)
+
+    for conflict in getattr(merged_ast, "_import_conflicts", []) or []:
+        name = conflict["symbol"]
+        if conflict["entry"]:
+            # An entry definition silently replaces a transitively imported
+            # symbol; it is only a conflict when the entry explicitly
+            # imports that name.
+            anchor = next(
+                (
+                    imp for imp in entry_mod.imports
+                    if (imp.kind == "symbols" and any(s.get("name") == name for s in imp.symbols))
+                    or (imp.kind == "wildcard" and imp.module_path == conflict["first"])
+                ),
+                None,
+            )
+        else:
+            anchor = next(
+                (imp for imp in entry_mod.imports if imp.module_path == conflict["second"]),
+                entry_mod.imports[0] if entry_mod.imports else None,
+            )
+        if anchor is None:
+            continue
+        parser_instance.report_error(
+            ImportSymbolConflictError(
+                symbol=name,
+                first=conflict["first"],
+                second=conflict["second"],
+                source_file=entry_mod.path,
+            ),
+            token=Token("IMPORT", "import", anchor.span[0]),
+        )
     setattr(merged_ast, "_resolver", resolver)
     _hydrate_parser_symbols_from_merged_ast(parser_instance, merged_ast)
 
@@ -140,7 +224,7 @@ def resolve_imports_and_deferred_identifiers(
     if deferred:
         merged_symbols = getattr(merged_ast, "_merged_symbols", {}) or {}
         for name, tok in deferred:
-            if name in merged_symbols:
+            if name in merged_symbols or name in failed_import_names:
                 continue
             if any(
                 c.node_type == NodeTypes.CLASS_DEFINITION and getattr(c, "name", None) == name

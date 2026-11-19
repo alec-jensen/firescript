@@ -4,8 +4,7 @@
 enum NoBrace
 topLevel: int32 = 1;  //~ ERROR FS-PARSE-0010 @1
 
-// Missing '}' to close the enum body (runs off the end of the file); also
-// missing a ',' or '}' right after the last variant.
+// Missing '}' to close the enum body (runs off the end of the file); a
+// trailing comment after the last variant is not an error of its own.
 enum Unclosed {
     A  //~ ERROR FS-PARSE-0010 @6
-//~^ ERROR FS-PARSE-0010 @6

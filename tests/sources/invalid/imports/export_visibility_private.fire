@@ -1,6 +1,7 @@
-// Private module symbol should not be importable.
+// Private module symbol should not be importable: a dedicated "not exported"
+// diagnostic at the import, with no cascading error at the use site.
 
 import @firescript/std.io.println;
-import visibility_provider.hiddenValue;  //~ ERROR FS-PARSE-0003 @28
+import visibility_provider.hiddenValue;  //~ ERROR FS-IMP-0004 @28
 
-println(hiddenValue);  //~ ERROR FS-PARSE-0003 @9
+println(hiddenValue);

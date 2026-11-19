@@ -38,7 +38,7 @@ fn unary_mismatches() -> void {
 // Assignment to non-lvalue
 fn assign_to_non_lvalue() -> void {
     5 = 10;  // Can't assign to literal
-    (5 + 3) = 10;  // Can't assign to expression
+    (5 + 3) = 10;  // Can't assign to expression  //~ ERROR FS-PARSE-0012 @11
 }
 
 // Compound assignment type mismatch
