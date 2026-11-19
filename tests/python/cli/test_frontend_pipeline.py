@@ -128,6 +128,7 @@ def test_resolve_imports_skips_symbols_import_with_unresolvable_module_path():
     reports: list = []
     parser_stub = types.SimpleNamespace(
         deferred_undefined_identifiers=[],
+        errors=[],
         report_error=lambda *a, **k: reports.append((a, k)),
     )
 
