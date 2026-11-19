@@ -266,6 +266,10 @@ digit: char = "7";
 newline: char = "\n";  // Special character
 ```
 
+#### Escape Sequences [IMPLEMENTED]
+
+String and char literals accept these escape sequences: `\n`, `\t`, `\r`, `\0`, `\\`, `\'` and `\"`. Any other backslash sequence (for example `"\q"` or `'\d'`) is a compile-time error (`FS-PARSE-0016`); write `\\` for a literal backslash.
+
 ### Arrays
 
 Arrays are fixed-size ordered collections of elements of the same type.

@@ -1,11 +1,33 @@
 from typing import Optional
 
 from enums import NodeTypes
+from lexer import Token
 from .ast_node import ASTNode
 from .base import ParserBase
 
 
 class ExpressionsMixin(ParserBase):
+    # Escape characters accepted after a backslash in string/char literals.
+    _VALID_ESCAPES = frozenset("nrt0\\'\"")
+
+    def _check_literal_escapes(self, token) -> None:
+        """Report every unknown escape sequence in a string/char literal
+        token, anchored at the offending backslash."""
+        text = token.value
+        literal = "string" if token.type == "STRING_LITERAL" else "char"
+        i = text.find('"' if literal == "string" else "'") + 1
+        end = len(text) - 1
+        while i < end:
+            if text[i] == "\\" and i + 1 < end + 1:
+                nxt = text[i + 1]
+                if nxt not in self._VALID_ESCAPES:
+                    self.invalid_escape_error(
+                        nxt, literal, Token("ESCAPE", text[i:i + 2], token.index + i)
+                    )
+                i += 2
+                continue
+            i += 1
+
     def parse_expression(self):
         """Parse an expression with full operator precedence."""
         return self.parse_logical_or()
@@ -279,6 +301,8 @@ class ExpressionsMixin(ParserBase):
             "NULL_LITERAL",
         ):
             self.advance()
+            if token.type in ("STRING_LITERAL", "CHAR_LITERAL"):
+                self._check_literal_escapes(token)
             node = ASTNode(NodeTypes.LITERAL, token, token.value, [], token.index)
             # Set precise type for literals where applicable
             if token.type == "BOOLEAN_LITERAL":

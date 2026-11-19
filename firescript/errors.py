@@ -162,6 +162,12 @@ class MissingBracesError(CompileTimeError):
     message_template = "The body of '{construct}' must be a braced block; write '{{ ... }}' around the statement"
 
 
+class InvalidEscapeError(CompileTimeError):
+    code = "FS-PARSE-0016"
+    category = ErrorCategory.PARSER
+    message_template = "Unknown escape sequence '\\{char}' in {literal} literal; valid escapes are \\n \\t \\r \\0 \\\\ \\' \\\""
+
+
 # Type System Errors
 class InvalidTypeError(CompileTimeError):
     code = "FS-SEM-0010"

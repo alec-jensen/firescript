@@ -12,6 +12,7 @@ from errors import (
     UndefinedIdentifierError,
     ExpectedTokenError,
     MissingBracesError,
+    InvalidEscapeError,
     MissingIdentifierError,
     InvalidExpressionError,
     InvalidArrayAccessError,
@@ -630,6 +631,9 @@ class ParserBase:
 
     def missing_braces_error(self, construct: str, token: Optional[Token] = None) -> None:
         self.report_error(MissingBracesError(construct=construct, source_file=self.filename), token=token)
+
+    def invalid_escape_error(self, char: str, literal: str, token: Optional[Token] = None) -> None:
+        self.report_error(InvalidEscapeError(char=char, literal=literal, source_file=self.filename), token=token)
 
     def missing_identifier_error(self, token: Optional[Token] = None) -> None:
         self.report_error(MissingIdentifierError(source_file=self.filename), token=token)

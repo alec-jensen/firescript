@@ -1,0 +1,20 @@
+import @firescript/std.io.println;
+
+// Every valid escape: \n \t \r \0 \\ \' \" (valid twin of the
+// invalid/*/unknown_escape_*.fire tests).
+println("a\tb");
+println("quote:\" apostrophe:\' backslash:\\");
+c1: char = '\'';
+c2: char = '\"';
+c3: char = '\\';
+println(c1 as string);
+println(c2 as string);
+println(c3 as string);
+
+/* EXPECT
+a	b
+quote:" apostrophe:' backslash:\
+'
+"
+\
+*/

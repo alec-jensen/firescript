@@ -1,0 +1,4 @@
+// An unknown escape sequence in a string literal is a compile-time error.
+s: string = "a\qb";  //~ ERROR FS-PARSE-0016 @15
+t: string = "ok\n then \z and \y";  //~ ERROR FS-PARSE-0016 @24
+//~^ ERROR FS-PARSE-0016 @31
