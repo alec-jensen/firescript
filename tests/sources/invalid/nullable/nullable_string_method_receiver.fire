@@ -1,0 +1,6 @@
+// Calling a method on a nullable string is rejected (regression: it used to
+// crash lowering with a raw Python traceback).
+import @firescript/std.io.println;
+
+u: string? = "a";
+println(u.length());  //~ ERROR FS-SEM-0018 @9

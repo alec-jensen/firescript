@@ -506,7 +506,29 @@ class NullabilityChecker:
     _w_constructor_call = _w_function_call
     _w_type_method_call = _w_function_call
 
+    def _check_builtin_receiver(self, node: ASTNode) -> None:
+        """A possibly-null `string?` receiver has no methods to call (a
+        nullable built-in value is not lowered as an object)."""
+        recv = node.children[0] if node.children else None
+        if recv is None:
+            return
+        declared = None
+        if recv.node_type == NodeTypes.IDENTIFIER:
+            info = self._lookup(recv.name)
+            if info is not None and not info[1]:
+                declared = info[0]
+        elif recv.node_type == NodeTypes.FIELD_ACCESS and recv.children:
+            field = self._find_field(self._class_of(recv.children[0]), recv.name)
+            if field is not None and not field.is_array:
+                declared = field.var_type
+        if declared != "string":
+            return
+        desc = self._is_nullable_expr(recv)
+        if desc is not None:
+            self._report(recv, desc, f"call method '{node.name}' on it")
+
     def _w_method_call(self, node: ASTNode) -> None:
+        self._check_builtin_receiver(node)
         self._walk_all(node.children)
         self._check_args(node, node.children[1:], 1)
         self._after_call(node, node.children[1:])

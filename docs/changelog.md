@@ -58,6 +58,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 
 ### Bug Fixes
 - An array returned from a function call (`x: int32[] = mk();`) now keeps its length, so `.length()`, negative indexing (with bounds checking) and `for-in` over it work instead of failing in lowering with "array_length on array of unknown size".
+- Compiler conversion failures (moving an owned module-level variable, a `directive` inside a function) now print a normal diagnostic with code `FS-CGEN-0002` and a source location instead of a raw Python traceback (the traceback is shown only with `-d`). Calling a method on a nullable `string?` value is now rejected with `FS-SEM-0018` instead of crashing during lowering.
 - Cyclic imports are now actually detected: an `A` -> `B` -> `A` cycle reports `FS-IMP-0002` ("Cyclic import detected: a -> b -> a") at the import statement in the entry file, instead of a misleading "Variable ... not defined" error.
 - A missing import module is now a coded `FS-IMP-0001` diagnostic anchored at the import statement. Importing a name a module does not define is `FS-IMP-0003`; importing a name the module defines but does not `export` is `FS-IMP-0004` (previously both were an uncoded "Variable ... not defined", reported twice).
 - Conflicting top-level symbols across imports are now an error (`FS-IMP-0005`) instead of silently keeping the first definition: two imported modules exporting the same name, or the entry file defining a name it also explicitly imports (previously the entry definition silently replaced the import).

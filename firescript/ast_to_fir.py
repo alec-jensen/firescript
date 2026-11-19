@@ -195,6 +195,7 @@ class FIRConversionError(Exception):
                 location = f" (source index {index})"
         super().__init__(f"{message}{location}")
         self.node = node
+        self.detail = message
 
 
 class ASTToFIRConverter:
@@ -1781,7 +1782,7 @@ class ASTToFIRConverter:
                 value = self._convert_expression(return_expr)
                 self._expected_type_str = prev_expected
                 if return_expr.node_type == NodeTypes.IDENTIFIER:
-                    self._reject_move_of_global(return_expr.name)
+                    self._reject_move_of_global(return_expr.name, return_expr)
                 # preprocessor.py's RETURN_STATEMENT handler computes the
                 # names read (not transferred) by this return expression --
                 # e.g. a match/for-in scrutinee, an own-mode `this` read via
@@ -1870,7 +1871,7 @@ class ASTToFIRConverter:
         declared_size = getattr(node, "array_size", None)
         init_node = node.children[0] if node.children else None
         if init_node is not None and init_node.node_type == NodeTypes.IDENTIFIER:
-            self._reject_move_of_global(init_node.name)
+            self._reject_move_of_global(init_node.name, init_node)
 
         if node.is_array:
             size = declared_size
@@ -2254,7 +2255,7 @@ class ASTToFIRConverter:
         gen_final = self.builder.load_var(gen_local, gen_type)
         self.builder.drop(gen_final)
 
-    def _reject_move_of_global(self, name: str) -> None:
+    def _reject_move_of_global(self, name: str, node: Optional[ASTNode] = None) -> None:
         """An owned module-level variable lives for the whole program and is
         never implicitly dropped, so it can't be moved out of (assigned to
         another binding, passed to an `owned` parameter, returned) or
@@ -2266,7 +2267,8 @@ class ASTToFIRConverter:
         if self._fir_type(symbol[0], symbol[1]).is_owned():
             raise FIRConversionError(
                 f"Cannot move out of or drop the owned module-level variable '{name}': it lives for the whole "
-                f"program (borrow it instead, or assign a new value to it)"
+                f"program (borrow it instead, or assign a new value to it)",
+                node,
             )
 
     def _mark_owned_identifier_moved(self, name: str) -> None:

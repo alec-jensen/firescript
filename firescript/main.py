@@ -8,8 +8,8 @@ import time
 
 from log_formatter import LogFormatter
 from compiler_pipeline import CompilerPipeline
-from errors import CompileTimeError, ParserError, SemanticError
-from utils.file_utils import safe_relpath
+from errors import CompileTimeError, ConversionError, ParserError, SemanticError
+from utils.file_utils import get_line, get_line_and_coumn_from_index, safe_relpath
 import targets
 
 FIRESCRIPT_VERSION = "0.5.0"
@@ -48,6 +48,31 @@ def setup_logging(debug_mode=False, message_format="text"):
         formatter = LogFormatter()
     console_handler.setFormatter(formatter)
     root_logger.addHandler(console_handler)
+
+
+def _report_conversion_failure(stage, exc, source_text, source_file):
+    """Report an AST->FIR / FIR->FLIR failure as a normal coded diagnostic.
+
+    No traceback is printed unless debug logging is enabled.
+    """
+    err = ConversionError(message=getattr(exc, "detail", None) or str(exc), source_file=source_file)
+    node = getattr(exc, "node", None)
+    index = getattr(node, "index", None)
+    if index is None:
+        index = getattr(getattr(node, "token", None), "index", None)
+    if index is not None:
+        try:
+            line_num, column_num = get_line_and_coumn_from_index(source_text, index)
+            err.line = line_num
+            err.column = column_num
+            err.snippet = get_line(source_text, line_num)
+        except (IndexError, ValueError):
+            pass
+    logging.error(err)
+    logging.error(f"{stage} failed")
+    if logging.getLogger().isEnabledFor(logging.DEBUG):
+        import traceback
+        traceback.print_exc()
 
 
 def _compile_asm(flir_module, file_path, out_path, start_time, stage_start,
@@ -403,9 +428,7 @@ def compile_file(file_path, target, out_path=None, emit="bin", check=False, emit
         converter = ASTToFIRConverter(ast, module_name=base_name)
         fir_module = converter.convert()
     except Exception as e:
-        logging.error(f"AST->FIR conversion failed: {e}")
-        import traceback
-        traceback.print_exc()
+        _report_conversion_failure("AST->FIR conversion", e, file_content, file_path)
         return False
     stage_start = _log_stage_duration("AST->FIR conversion", stage_start)
 
@@ -421,9 +444,7 @@ def compile_file(file_path, target, out_path=None, emit="bin", check=False, emit
     try:
         flir_module = FIRToFLIRLowering(fir_module, runtime_module=_runtime_fir_module()).lower()
     except Exception as e:
-        logging.error(f"FIR->FLIR lowering failed: {e}")
-        import traceback
-        traceback.print_exc()
+        _report_conversion_failure("FIR->FLIR lowering", e, file_content, file_path)
         return False
     stage_start = _log_stage_duration("FIR->FLIR lowering", stage_start)
 
