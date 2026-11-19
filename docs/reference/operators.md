@@ -27,6 +27,8 @@ rem: int32  = a % b;   // 1
 pow: int32  = a ** b;  // 1000
 ```
 
+For floating point operands `**` follows IEEE 754 `pow`: fractional exponents are supported (`2.0 ** 0.5` is `1.414214`), a negative base with a non-integer exponent is NaN, and zero/infinity/NaN operands follow the standard special-value rules. [IMPLEMENTED]
+
 Integer division truncates toward zero. Modulo returns the remainder with the same sign as the dividend (C-style, not Python-style).
 
 The `+` operator is also used for string concatenation. Both operands must be strings — there is no implicit conversion. Cast non-string values explicitly with `as`:

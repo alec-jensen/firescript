@@ -417,6 +417,7 @@ Each heading below is a directory under `tests/sources/`.
 - **operators_logical.fire** - Logical operators (`&&`, `||`, `!`) including nested and combined conditions
 - **unary_test.fire** - Unary numeric operators (-, +)
 - **operators_regression_float_nan_comparisons.fire** - Regression (B01): `float64`/`float32` comparisons with a NaN operand (`==`, `!=`, `<`, `<=`, `>`, `>=`, both operand orders, NaN vs NaN, in `if` conditions) follow IEEE 754 (unordered compares are false except `!=`); plus ordered, infinity and signed-zero comparisons that must not change
+- **operators_regression_float_pow_fractional.fire** - Regression (B02): float `**` with fractional exponents (`2.0 ** 0.5`, `10.0 ** 2.5`, cube roots), bit-exact and 4-ulp checks against Python `math.pow`, negative bases (integer vs fractional exponent), IEEE special values (+-0, +-inf, NaN, `0 ** 0`, `1 ** NaN`), overflow/underflow, and integer exponents unchanged
 - **operators_regression_power_assign.fire** - Regression: `**=` on int32, float64 and int64, plus right-associative `**`; `**=` was lexed and documented but rejected by the parser ("Expected assignment, function call, or method call")
 - **operators_logical_short_circuit.fire** - `&&`/`||` evaluate the right operand only when needed (observable via println), chained, and guarding a division by zero
 
