@@ -204,6 +204,8 @@ positiveInfinity: float64 = 1.0f64 / 0.0f64;  // Infinity
 negativeInfinity: float64 = -1.0f64 / 0.0f64; // -Infinity
 ```
 
+Comparisons follow IEEE 754: a NaN is unordered, so `==`, `<`, `<=`, `>` and `>=` with a NaN operand are `false` and `!=` is `true` (including `nan == nan`). [IMPLEMENTED]
+
 #### Floating Point Overflow and Underflow Behavior
 
 Floating point operations that exceed the representable range will result in `Infinity` or `-Infinity`, while operations resulting in values too close to zero will result in `0.0`. Operations resulting in undefined values will yield `NaN`.

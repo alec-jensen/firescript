@@ -1,0 +1,54 @@
+import @firescript/std.io.println;
+
+// IEEE 754 comparison semantics for float128 NaN, infinities and signed zero
+// (the soft-float comparison runtime must treat NaN as unordered).
+z: float128 = 0.0f128;
+n: float128 = z / z;
+one: float128 = 1.0f128;
+inf: float128 = one / z;
+
+println(n == n);
+println(n != n);
+println(n == one);
+println(one != n);
+println(n < one);
+println(one < n);
+println(n <= one);
+println(one <= n);
+println(n > one);
+println(one > n);
+println(n >= one);
+println(one >= n);
+println(n <= n);
+println(n >= n);
+println(z == -z);
+println(-z < z);
+println(inf > one);
+println(-inf < -one);
+println(inf == inf);
+println(inf < inf);
+println(inf <= inf);
+
+/* EXPECT
+false
+true
+false
+true
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+true
+false
+true
+true
+true
+false
+true
+*/

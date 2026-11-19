@@ -251,7 +251,7 @@ def _mem_encode(reg_field: int, mem: Mem):
 # Two-byte jcc opcodes (second byte); rel32 form: 0F 8x cd.
 _JCC = {"jnz": 0x85, "jz": 0x84, "jb": 0x82, "jae": 0x83, "je": 0x84, "jne": 0x85, "js": 0x88}
 _SETCC = {
-    "sete": 0x94, "setne": 0x95, "setb": 0x92, "setbe": 0x96,
+    "sete": 0x94, "setne": 0x95, "setp": 0x9A, "setnp": 0x9B, "setb": 0x92, "setbe": 0x96,
     "seta": 0x97, "setae": 0x93, "setl": 0x9C, "setle": 0x9E,
     "setg": 0x9F, "setge": 0x9D,
 }

@@ -193,6 +193,7 @@ Plain `assert` also works. Covers:
   bug: driving the mutable-global path through actual `.fire` source
   (`runtime_state_get`/`runtime_state_set`) compiles but segfaults at
   runtime.
+- `tests/python/backend/test_flir_to_asm_coverage.py::test_float_compare_handles_unordered` pins the NaN-safe float compare sequences (`comisd`/`comiss` operand swap for `<`/`<=`, parity flag for `==`/`!=`); `test_asm_encoding.py` differentially checks the `setp`/`setnp`/`and`/`or` encodings.
 - `tests/python/backend/test_flir_to_asm_coverage.py` -- coverage-focused
   unit tests for `firescript/codegen/x86_64/flir_to_asm.py`, driving
   `FLIRToAsmBackend` directly against hand-built `flir.ir` modules (no
@@ -415,6 +416,7 @@ Each heading below is a directory under `tests/sources/`.
 - **operators_comparison.fire** - Equality (==, !=), relational (<, >, <=, >=) for all numeric types and strings
 - **operators_logical.fire** - Logical operators (`&&`, `||`, `!`) including nested and combined conditions
 - **unary_test.fire** - Unary numeric operators (-, +)
+- **operators_regression_float_nan_comparisons.fire** - Regression (B01): `float64`/`float32` comparisons with a NaN operand (`==`, `!=`, `<`, `<=`, `>`, `>=`, both operand orders, NaN vs NaN, in `if` conditions) follow IEEE 754 (unordered compares are false except `!=`); plus ordered, infinity and signed-zero comparisons that must not change
 - **operators_regression_power_assign.fire** - Regression: `**=` on int32, float64 and int64, plus right-associative `**`; `**=` was lexed and documented but rejected by the parser ("Expected assignment, function call, or method call")
 - **operators_logical_short_circuit.fire** - `&&`/`||` evaluate the right operand only when needed (observable via println), chained, and guarding a division by zero
 
@@ -611,6 +613,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 
 ### `special_types/`
 - **float128_ops.fire** - binary128 soft-float: arithmetic (`+ - * /`, unary `-`), comparisons, and conversions (int, float64, string parse)
+- **float128_regression_nan_comparisons.fire** - float128 NaN is unordered under `== != < <= > >=`; infinity and signed-zero comparisons
 - **float128_narrow_casts.fire** - float128 <-> narrower numeric types not covered by `float128_ops.fire` (which only covers float128 <-> int64/uint64/float64): int8/int16/int32 -> float128 (widened via int64), float128 -> int8/int16/int32 (narrowed via int64), and float128 <-> float32.
 
 ### `std/regex/`

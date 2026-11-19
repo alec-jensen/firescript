@@ -75,6 +75,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - `uint64 as float32` and `uint64 as float64` casts no longer fail to compile with "Assembly failed: unsupported mnemonic: js".
 - `**=` (power compound assignment) is no longer rejected by the parser.
 - Compound assignment with mismatched operand types, a non-numeric target, or an undefined variable now reports a normal type error (`FS-SEM-0010`; `FS-PARSE-0003` for an undefined target) instead of an internal compiler error.
+- Floating-point comparisons involving NaN now follow IEEE 754 for `float32` and `float64`: `==`, `<`, `<=`, `>` and `>=` with a NaN operand are `false` and `!=` is `true` (previously `n == n` was `true` and `n < x` / `n <= x` could be `true`).
 
 ## 0.5.0 - Kirin
 *July 2, 2026*
