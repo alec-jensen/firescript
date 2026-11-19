@@ -1,0 +1,12 @@
+// `this` can never be assigned.
+class A {
+    x: int32;
+
+    fn A(&mut this, x: int32) {
+        this.x = x;
+    }
+
+    fn reset(&mut this) -> void {
+        this = A(0);  //~ ERROR FS-SEM-0001 @9
+    }
+}

@@ -1,0 +1,12 @@
+// Mutation through `&this` is an error.
+class A {
+    x: int32;
+
+    fn A(&mut this, x: int32) {
+        this.x = x;
+    }
+
+    fn bump(&this) -> void {
+        this.x = 2;  //~ ERROR FS-SEM-0001 @16
+    }
+}
