@@ -2,7 +2,7 @@
 
 firescript follows [Semantic Versioning](https://semver.org/). This makes it easier to understand the impact of changes in each release.
 
-## 0.6.0 - Griffin (Currently in Development)
+## 0.6.0 - Griffin
 
 ### New Language Features
 - Added `@firescript/std.collections` with `ArrayList<T>`, a dynamically-growable array (`add`, `removeLast`, `get`, `set`, `size`, `enumerate<T>`, capacity-doubling growth). `removeLast()`/`add()`/`set()` are safe for any element type, including Owned types (`string`, classes) — `ArrayList<T>`'s destructor drops each live element before freeing its own backing buffer. `get()` (and `enumerate<T>`, which calls it internally) reads an element out by value without shrinking the tracked length, which is only safe for Copyable-ish `T` (numeric types, `bool`, `char`) until `Owned`/`Copyable` generic constraints exist to enforce it — see `docs/reference/std/collections.md`.
