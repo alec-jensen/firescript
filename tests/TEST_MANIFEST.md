@@ -538,6 +538,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **scoping_regression_global_variables_user_main.fire** - Regression: with a user `main()`, top-level declarations (and `const` bool/char/string) are still initialized in declaration order before `main`, and visible to functions
 - **scoping_regression_global_variable_types.fire** - Regression: module-level variables of by-value struct shapes (copyable class, float128) and float32/char/uint64, written from a function
 - **scoping_regression_global_variable_ownership.fire** - Regression: owned (class/string/array) and nullable (`int32?`, `string?`) module-level variables used from functions, including reassigning an owned global 500 times
+- **scoping_regression_name_reuse_across_functions.fire** - Regression: a local in one function and a same-named parameter of another function with a different type (assigning to the parameter previously failed with a type mismatch from a stale type-checker table)
 - **scoping_variable_declaration_order.fire** - Declared-before-use, same names in separate sibling scopes
 
 ### `expressions/`

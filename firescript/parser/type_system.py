@@ -852,6 +852,26 @@ class TypeSystemMixin(StatementsMixin):
     def _type_check_node_impl(self, node: ASTNode, symbol_table: dict) -> Optional[str]:
         node_type_str = None  # The type of the expression this node represents
 
+        # Names declared inside a function/method body or a nested block must
+        # not outlive it: give each such node its own copy of the table, and
+        # seed callables with their parameters so an assignment to a parameter
+        # never sees a same-named local of an earlier function.
+        if node.node_type in (
+            NodeTypes.FUNCTION_DEFINITION,
+            NodeTypes.GENERATOR_DEFINITION,
+            NodeTypes.CLASS_METHOD_DEFINITION,
+            NodeTypes.SCOPE,
+        ):
+            symbol_table = dict(symbol_table)
+            for p in node.children:
+                if node.node_type != NodeTypes.SCOPE and p.node_type == NodeTypes.PARAMETER:
+                    symbol_table[p.name] = (
+                        p.var_type,
+                        p.is_array,
+                        p.is_nullable,
+                        getattr(p, "array_size", None),
+                    )
+
         # A class defined twice has an ambiguous field/method registry, so
         # its bodies would only produce misleading cascade errors (the
         # duplicate itself is reported by _check_class_declarations).

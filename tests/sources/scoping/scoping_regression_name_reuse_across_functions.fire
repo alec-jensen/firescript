@@ -1,0 +1,16 @@
+import @firescript/std.io.println;
+fn g(x: uint64) -> uint64 {
+    bexp: uint64 = x + 1u64;
+    return bexp;
+}
+fn f(bexp: int64) -> int64 {
+    bexp = bexp - 1i64;
+    return bexp;
+}
+println(g(2u64));
+println(f(5i64));
+
+/* EXPECT
+3
+4
+*/
