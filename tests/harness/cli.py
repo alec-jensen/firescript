@@ -76,7 +76,20 @@ def config_from_args(args: argparse.Namespace) -> RunConfig:
     return config
 
 
+def _make_streams_unencodable_safe() -> None:
+    """Test output can contain characters the console encoding cannot represent
+    (e.g. the U+FFFD that decoding a program's invalid UTF-8 produces, on a
+    Windows cp1252 console). Printing such a result must never crash the run
+    and hide every other result, so escape instead of raising."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(errors="backslashreplace")
+        except (AttributeError, ValueError):
+            pass
+
+
 def main(argv: list[str] | None = None) -> int:
+    _make_streams_unencodable_safe()
     ap = build_arg_parser()
     args = ap.parse_args(argv)
     config = config_from_args(args)

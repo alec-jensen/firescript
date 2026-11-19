@@ -330,14 +330,11 @@ def test_asciz_unknown_escape_uses_char_code():
     t.require_eq(bytes(obj.text), b"q\x00")
 
 
-def test_asciz_falls_back_to_utf8_when_locale_cannot_encode():
-    # Force a narrow "locale" codec so a non-ASCII character can't be
-    # encoded with it, exercising the UnicodeEncodeError fallback to utf-8
-    # -- deterministic regardless of the host's actual locale.
-    orig = _asm_mod._LOCALE_ENCODING
-    _asm_mod._LOCALE_ENCODING = "ascii"
-    try:
-        out = _asm_mod._decode_gas_string("é")
-    finally:
-        _asm_mod._LOCALE_ENCODING = orig
-    t.require_eq(out, "é".encode("utf-8"))
+def test_asciz_non_ascii_is_utf8_regardless_of_locale():
+    # Regression: the assembler used to encode literal characters with the
+    # locale codec (cp1252 on Windows), turning "\u00e9" into 0xE9 instead of
+    # the UTF-8 bytes the source file holds (strings_unicode failed on
+    # Windows CI). The locale must not matter, so no hook for it exists.
+    t.require(not hasattr(_asm_mod, "_LOCALE_ENCODING"))
+    t.require_eq(_asm_mod._decode_gas_string("\u00e9"), "\u00e9".encode("utf-8"))
+    t.require_eq(_asm_mod._decode_gas_string("\U0001F525"), "\U0001F525".encode("utf-8"))

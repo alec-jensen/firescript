@@ -3,7 +3,9 @@
 --update."""
 from __future__ import annotations
 
+import hashlib
 import os
+import re
 import shutil
 
 from harness.config import RESULTS_DIR, WORK_DIR
@@ -26,7 +28,15 @@ def _category_stem(repo_relative_path: str) -> tuple[str, str]:
 
 
 def _safe_name_segment(name: str) -> str:
-    return name.replace("/", "_").replace("[", "(").replace("]", ")")
+    """Turn a test/param id into a single path segment valid on every OS
+    (Windows forbids `<>:"\\|?*` and control characters). When anything had
+    to be replaced, a short hash of the original id is appended so two
+    different ids can never collapse onto the same directory."""
+    safe = name.replace("/", "_").replace("[", "(").replace("]", ")")
+    cleaned = re.sub(r'[<>:"\\|?*\x00-\x1f]', "_", safe)
+    if cleaned != safe:
+        cleaned = f"{cleaned}_{hashlib.sha1(name.encode('utf-8')).hexdigest()[:8]}"
+    return cleaned
 
 
 def work_dir_for(kind: str, cell: str, repo_relative_path: str, name: str | None = None) -> str:

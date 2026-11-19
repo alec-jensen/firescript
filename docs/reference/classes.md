@@ -119,7 +119,7 @@ class Rectangle {
 }
 ```
 
-Fields can be nullable or const:
+Fields can be nullable or const (`const` class fields are [PLANNED]; they do not parse yet):
 
 ```firescript
 class Configuration {

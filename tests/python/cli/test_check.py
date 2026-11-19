@@ -58,4 +58,6 @@ def test_no_link_rejected():
 def test_input_is_directory():
     proc = t.run_compiler(["--check", SOURCES_DIR])
     t.require_eq(proc.returncode, 1)
-    t.require("Is a directory" in proc.stdout + proc.stderr, proc.stdout + proc.stderr)
+    # The OS wording differs ("Is a directory" on POSIX, "Permission denied" on
+    # Windows), so assert on the compiler's own message.
+    t.require("Error reading file" in proc.stdout + proc.stderr, proc.stdout + proc.stderr)

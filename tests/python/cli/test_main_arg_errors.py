@@ -4,6 +4,8 @@ firescript/main.py, black-box via subprocess on tiny temp sources
 from __future__ import annotations
 
 import os
+import subprocess
+import sys
 
 from harness import pyunit as t
 
@@ -99,6 +101,24 @@ def test_unreadable_source_reports_read_error():
         proc = t.run_compiler(["--check", path], cwd=tmp)
         t.require_eq(proc.returncode, 1)
         t.require("Error reading file" in proc.stdout + proc.stderr, proc.stdout + proc.stderr)
+
+
+def test_source_is_read_as_utf8_regardless_of_the_platform_default_encoding():
+    # open() without an encoding uses the platform default (cp1252 on Windows,
+    # UTF-8 on Linux), so the same source decoded differently per platform.
+    # Force a non-UTF-8 default here and require non-ASCII source to still
+    # compile: a regression would fail on Linux too.
+    env = dict(os.environ, LC_ALL="C", PYTHONUTF8="0", PYTHONCOERCECLOCALE="0")
+    with t.tmpdir() as tmp:
+        path = os.path.join(tmp, "uni.fire")
+        with open(path, "wb") as f:
+            f.write('s: string = "caf\u00e9";\n'.encode("utf-8"))
+        proc = subprocess.run(
+            [sys.executable, t.MAIN_PY, "--check", path], cwd=tmp, env=env,
+            text=True, encoding="utf-8", errors="replace",
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60,
+        )
+        t.require_eq(proc.returncode, 0, proc.stdout + proc.stderr)
 
 
 def test_file_not_found_error_text():

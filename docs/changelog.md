@@ -25,6 +25,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - **Float-to-integer casts now trap** when the value is NaN, infinite, or outside the target type's range (`firescript runtime error: InvalidConversion: float64 to int8: ...`, exit status 101), for float32, float64 and float128 sources and every integer target, including `int(x)`/`toInt(x)`. In-range values still truncate toward zero. Previously they produced an unspecified value (e.g. `200.9 as int8` was `-56`); `int_float_cast_matrix` was adjusted accordingly.
 - **Array indexing is bounds-checked at runtime.** Reading or writing `arr[i]` with `i` outside `[-length, length)` now traps (`firescript runtime error: IndexOutOfBounds: index N, length L`, exit status 101) instead of touching memory outside the array; negative indices down to `-length` remain valid. Applies to fixed-size arrays, array parameters (via their hidden length) and the `ArrayList<T>` (`get`/`set`/`removeLast`, against the live size, not the capacity) and `HashMap<K,V>` internal buffers. The check is elided when index and length are compile-time constants and in range.
 - Added `//@ stderr-contains:` to the test harness (internal) and `directive enable_wrapping_arithmetic;` (standard library only).
+- Reassigning a `const` binding is now a compile error (`PI = 3.2;`, `PI += 1;`, `PI++;`, `PI--;`), for both module-level and local constants. Previously these compiled silently.
 - firescript now uses **postfix type declarations** everywhere, Rust/TypeScript-style, instead of the previous C-style prefix syntax. This is a whole-language syntax change:
   - Variables and constants: `int32 a = 5;` → `a: int32 = 5;`; `const float64 PI = 3.14;` → `const PI: float64 = 3.14;`.
   - Nullable markers move to the type: `int32 a? = null;` → `a: int32? = null;`.
@@ -94,6 +95,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - A call chained off an instance method call's result (`obj.method().other()`) no longer fails to parse with "Expected ')' after argument list".
 - A string or array builtin method called on the result of a method call on an imported class (`sb.build().length() as string`) no longer fails FIR->FLIR lowering with "cannot convert void to string".
 - `firescript --check -o <file>` no longer exits 1 with "rename: src should be string, bytes or os.PathLike, not bool"; it now exits 0 and writes no output.
+- Source files are now always read as UTF-8. Previously the platform default encoding was used, so on Windows (cp1252) a non-ASCII source file was decoded differently from Linux, and an invalid-UTF-8 file produced parse errors instead of a clear "Error reading file" message.
 - `uint64 as float32` and `uint64 as float64` casts no longer fail to compile with "Assembly failed: unsupported mnemonic: js".
 - `**=` (power compound assignment) is no longer rejected by the parser.
 - Compound assignment with mismatched operand types, a non-numeric target, or an undefined variable now reports a normal type error (`FS-SEM-0010`; `FS-PARSE-0003` for an undefined target) instead of an internal compiler error.

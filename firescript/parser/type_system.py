@@ -33,6 +33,7 @@ class TypeSystemMixin(StatementsMixin):
             # even when imports defer ordinary undefined-name checks.
             self._scope_counter = 0
             self._resolve_scope_id = 0
+            self._const_decls = set()
             self._toplevel_var_names = {
                 c.name for c in node.children if c.node_type == NodeTypes.VARIABLE_DECLARATION
             }
@@ -102,6 +103,22 @@ class TypeSystemMixin(StatementsMixin):
             self._resolve_scope_id = prev_scope_id
             return
 
+        # A `const` binding can never be reassigned: plain, compound, ++ and --.
+        if node.node_type in (
+            NodeTypes.VARIABLE_ASSIGNMENT,
+            NodeTypes.COMPOUND_ASSIGNMENT,
+            NodeTypes.UNARY_EXPRESSION,
+        ):
+            if node.node_type == NodeTypes.UNARY_EXPRESSION:
+                target = node.token.value if node.name in ("++", "--") and node.token else None
+            else:
+                target = node.name
+            entry = current_scope.get(target) if target else None
+            if entry is not None and (target, entry[3]) in self._const_decls:
+                self.invalid_type_error(
+                    f"Cannot assign to '{target}': it is declared 'const'", node.token
+                )
+
         # Variable declaration: enforce no shadowing
         if node.node_type == NodeTypes.VARIABLE_DECLARATION:
             if node.name in current_scope:
@@ -124,6 +141,8 @@ class TypeSystemMixin(StatementsMixin):
             current_scope[node.name] = (
                 node.var_type, node.is_array, bool(node.is_nullable), self._resolve_scope_id
             )
+            if getattr(node, "is_const", False):
+                self._const_decls.add((node.name, self._resolve_scope_id))
             self._annotate_value_category(node, node.var_type, node.is_array)
             # Resolve initializer expression
             for child in node.children:
