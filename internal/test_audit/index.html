@@ -1,0 +1,3253 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://firescript.alecj.com/internal/test_audit/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Test suite audit (consolidated) - firescript</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lexend:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Lexend";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#test-suite-audit-consolidated" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            firescript
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Test suite audit (consolidated)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/overview/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../glossary/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Glossary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../benchmarks.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Benchmarks
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    firescript
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types & Variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/control_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions & Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes & Inheritance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/scoping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scoping Rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/type_system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/memory_management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/imports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Standard Library
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Standard Library
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/std/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/std/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/std/fs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/std/math/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Math
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/std/regex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/std/cli_args/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-Line Arguments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/std/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    kiln
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    kiln
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/kiln/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/kiln/manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../benchmarks.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-was-audited" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What was audited
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#headline-conclusions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Headline conclusions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#approximate-verdict-totals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approximate verdict totals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#estimated-removable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estimated removable
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-cross-cutting-themes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Cross-cutting themes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-compiler-bugs-found-deduplicated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Compiler bugs found (deduplicated)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Compiler bugs found (deduplicated)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-high-ice-crash-silent-wrong-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 High: ICE / crash / silent wrong result
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-medium-missing-or-wrong-diagnostics-valid-program-rejected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Medium: missing or wrong diagnostics, valid program rejected
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-low-cosmetic-quality-minor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Low: cosmetic, quality, minor
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-docs-vs-compiler-conflicts-needing-an-owner-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Docs vs compiler conflicts needing an owner decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-cleanup-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Cleanup plan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Cleanup plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#50-cross-shard-conflicts-delete-only-one-side" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.0 Cross-shard conflicts: delete only ONE side
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#51-run-tests-testssourcescategory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Run tests (tests/sources/&lt;category&gt;/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-compile-fail-tests-testssourcesinvalidcategory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Compile-fail tests (tests/sources/invalid/&lt;category&gt;/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-python-tests-testspythondir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Python tests (tests/python/&lt;dir&gt;/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-known-issue-tests-to-add-so-the-bugs-are-tracked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Known-issue tests to add (so the bugs are tracked)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-recommended-order-of-operations-and-risk-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Recommended order of operations and risk notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-decisions-needed-from-the-owner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Decisions needed from the owner
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/test_audit/README.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="test-suite-audit-consolidated">Test suite audit (consolidated)<a class="headerlink" href="#test-suite-audit-consolidated" title="Permanent link">&para;</a></h1>
+<p>Snapshot as of commit <code>cfdae0d</code>, audit date 2026-11-18. This is an audit report, not a feature doc; nothing here has been applied. All verdicts are recommendations. The raw per-test evidence is in the 13 shard reports in this directory (<code>S1</code>..<code>S9</code> = <code>.fire</code> tests, <code>P1</code>..<code>P4</code> = Python tests); section references below point at them.</p>
+<p>Shard map: S1 classes/memory/nullable/special_types | S2 generics/functions/generators/scoping/expressions | S3 types/conversions/operators/edge_cases/identifiers/io | S4 strings/arrays/control_flow/performance | S5 enums/match/imports/integration/std (no regex) | S6 std/regex | S7 invalid/{classes,borrow,generics} | S8 invalid/{arrays,types,imports,match,control_flow} | S9 invalid/{syntax,expressions,enums,strings,functions,scoping,operators,declarations,nullable,literals,generators,known_issues} | P1 python/{parser,lexer,preprocessor,semantic,imports} | P2 python/{fir,errors,utils,log_formatter} | P3 python/flir | P4 python/{backend,cli,harness,float128}.</p>
+<p>Contents: 1 Summary | 2 Cross-cutting themes | 3 Compiler bugs | 4 Docs vs compiler conflicts | 5 Cleanup plan | 6 Order of operations and risks | 7 Owner decisions checklist.</p>
+<hr />
+<h2 id="1-summary">1. Summary<a class="headerlink" href="#1-summary" title="Permanent link">&para;</a></h2>
+<h3 id="what-was-audited">What was audited<a class="headerlink" href="#what-was-audited" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Kind</th>
+<th>Shard(s)</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Run tests (<code>tests/sources/&lt;cat&gt;/*.fire</code>, standalone)</td>
+<td>S1 49, S2 60, S3 53, S4 51, S5 58, S6 42</td>
+<td>313</td>
+</tr>
+<tr>
+<td>Compile-fail tests (<code>tests/sources/invalid/**</code>, incl. 11 <code>known_issues</code>)</td>
+<td>S7 72, S8 61, S9 50</td>
+<td>183</td>
+</tr>
+<tr>
+<td>Python test functions (<code>tests/python/**</code>)</td>
+<td>P1 218, P2 about 415, P3 343, P4 274</td>
+<td>about 1250 (P4's <code>test_encode</code> also expands to 96 param cases)</td>
+</tr>
+</tbody>
+</table>
+<p>Helper <code>.fire</code> files were not judged as tests. Snapshot (<code>.fir</code>/<code>.flir</code>) contents and the determinism kind were not reviewed in depth (S2: existence only). The harness itself was not run for this document.</p>
+<h3 id="how">How<a class="headerlink" href="#how" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Run tests: every file compiled and run under wine in private temp dirs; outputs compared to the EXPECT block, and the expected values independently re-derived (Python oracles, hand arithmetic, Python <code>re</code> for regex, quadmath for float128). All 313 run tests match their EXPECT blocks; no EXPECT block was found numerically wrong. S3 and S5 found no EXPECT that blesses an arithmetic bug, but several pin behavior that contradicts the docs (section 4).</li>
+<li>Compile-fail tests: every file run through <code>--check --message-format json</code>; annotations compared to real diagnostics; un-annotated lines probed in isolation (check and full compile) to separate primary errors from cascades and wrong-reason passes; about 30 scratch programs per shard probed for missed diagnostics.</li>
+<li>Python tests: judged by mutation in private rsync copies (never the shared repo), per-test coverage vs the union of all <code>.fire</code> tests (P1), rule-branch relabel mutation (P2), 343-test mutation runs (P3), differential checks vs host <code>as</code> and libquadmath (P4).</li>
+</ul>
+<h3 id="headline-conclusions">Headline conclusions<a class="headerlink" href="#headline-conclusions" title="Permanent link">&para;</a></h3>
+<ol>
+<li>The run-test suite is correct but padded: about 64 of 313 files are redundant or trivial (deletable), about 25 more can be merged away, and about 55 are WEAK (assertion cannot detect the bug the header claims).</li>
+<li>The compile-fail suite is the weakest area: about 59 of 183 files are duplicates, and about 24 are INCORRECT (they pass for the wrong reason: un-imported <code>print</code>, cascades, comment-token artifacts, obsolete syntax). One is failing right now (<code>invalid/operators/operator_errors.fire</code>, see 5.2).</li>
+<li>About 1/3 of the Python tests are removable (duplicates across files, tests of dead code, tautologies). Roughly 145 of the ~400 deletions are coverage-only tests of unreachable guards that contradict the CLAUDE.md philosophy.</li>
+<li>The audit found 54 distinct compiler bugs / missing diagnostics (section 3), of which 15 are internal compiler errors or crashes and 7 are silent wrong results. Only the 11 <code>invalid/known_issues</code> files exist; there is no run-kind known-issues directory (<code>tests/sources/known_issues/</code> does not exist per S4/P2), so none of the ICEs or wrong-result bugs is tracked by a test.</li>
+<li>At least 8 existing tests pin a compiler bug as expected behavior (section 2, theme 7). Fixing the bug will break them; they must move, not be "fixed to pass".</li>
+<li>24 docs-vs-compiler conflicts need an owner decision (section 4).</li>
+<li>Blind spots no test can see today: heap leaks/double-free (runtime ignores them), float precision (everything printed with <code>%f</code>), float128 end-to-end correctness (only the Python oracle is tested), NaN/inf, out-of-range indexing, integer overflow semantics.</li>
+</ol>
+<h3 id="approximate-verdict-totals">Approximate verdict totals<a class="headerlink" href="#approximate-verdict-totals" title="Permanent link">&para;</a></h3>
+<p>Rough: a test can carry several verdicts, and shards counted differently (P1/P3/P4 give their own tallies; S-shard numbers are my sums of the per-file verdicts). Treat as magnitude, not exact.</p>
+<table>
+<thead>
+<tr>
+<th>Verdict</th>
+<th>Run <code>.fire</code> (313)</th>
+<th>Compile-fail <code>.fire</code> (183)</th>
+<th>Python functions (~1250)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>KEEP (incl. keep-with-note)</td>
+<td>about 190</td>
+<td>about 80 (incl. 11 known_issues)</td>
+<td>about 600</td>
+</tr>
+<tr>
+<td>REDUNDANT</td>
+<td>about 58</td>
+<td>about 60</td>
+<td>about 300</td>
+</tr>
+<tr>
+<td>TRIVIAL</td>
+<td>about 12</td>
+<td>about 2</td>
+<td>about 185 (about 145 are contrived dead-guard tests)</td>
+</tr>
+<tr>
+<td>WEAK</td>
+<td>about 53</td>
+<td>about 30</td>
+<td>about 140</td>
+</tr>
+<tr>
+<td>INCORRECT (incl. "soft")</td>
+<td>about 18</td>
+<td>about 24</td>
+<td>about 26</td>
+</tr>
+</tbody>
+</table>
+<h3 id="estimated-removable">Estimated removable<a class="headerlink" href="#estimated-removable" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Delete outright</th>
+<th>Additional by merging</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Run <code>.fire</code></td>
+<td>about 64 files (about 6 are "soft"/regression-flavoured)</td>
+<td>about 25 files</td>
+<td>about 29% of 313 in total. Mutual-duplicate pairs (table 5.0) must keep one side.</td>
+</tr>
+<tr>
+<td>Compile-fail <code>.fire</code></td>
+<td>about 59 files</td>
+<td>about 8 files</td>
+<td>about 36% of 183.</td>
+</tr>
+<tr>
+<td>Python functions</td>
+<td>about 408</td>
+<td>about 30</td>
+<td>P1 134, P2 about 105 (plus about 20 soft trivial), P3 104 (26 contrived, owner policy call), P4 about 65. About 32% of 1250.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-cross-cutting-themes">2. Cross-cutting themes<a class="headerlink" href="#2-cross-cutting-themes" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>EXPECT blocks are auto-blessed from compiler output.</strong> Corollary: they are only as right as the compiler. Everything checked here was right for arithmetic, but 4 tests bless behavior the docs forbid (wrap on overflow: <code>types/types_int8</code>, <code>types/types_uint8</code>, <code>edge_cases/edge_cases_overflow_underflow</code>, <code>performance/stress_integer_overflow</code>), and <code>arrays/array_tests</code> blesses the <code>[...]</code> placeholder for <code>println(array)</code>. <code>--update</code> (bless) needs a "does this agree with the docs?" review step.</li>
+<li><strong>Compile-fail tests passing for the wrong reason.</strong></li>
+<li>Un-imported <code>print</code>/<code>println</code> yields FS-PARSE-0012 "Function 'print' is not defined" and also masks the missing-semicolon error on the same statement. About 30 annotations in <code>invalid/types/type_mismatches</code>, <code>invalid/arrays/array_edge_invalid</code>, <code>invalid/control_flow/control_flow_invalid</code>, <code>invalid/types/cast_and_generic_type_errors</code> (line 39), <code>invalid/syntax/syntax_errors</code> (9 of 22), <code>invalid/syntax/syntax_comprehensive</code>, <code>invalid/functions/function_errors</code>, <code>invalid/classes/class_errors</code> are this incidental error (S8, S9, S7).</li>
+<li>Parse errors stop the pipeline before semantic analysis, so any file mixing a parse error with semantic mistakes silently hides the semantic ones (<code>class_errors</code>, <code>generics_errors</code>).</li>
+<li>Cascade annotations pin error-recovery noise ("Variable 'this' not defined" after a bad parameter list, "Function 'Pair' is not defined" after a bad generic header, 3-4 diagnostics per enum payload typo). About 20 files; any recovery improvement breaks them (S7 D6, S8 cross-cutting, S9 12).</li>
+<li>"Comprehensive" files carry commented or un-annotated error lines that demand nothing (<code>array_errors</code>, <code>type_errors_comprehensive</code>, <code>statement_form_errors</code> l.30, <code>literal_errors</code>, <code>operator_errors</code> l.19-20 / 53-54, <code>scope_errors</code> l.13).</li>
+<li>Comments are ordinary parser tokens, so the harness <code>//~</code> comment can change compiler behavior: <code>expression_at_eof</code> pins a diagnostic whose text is literally the annotation comment; <code>enum_def_errors</code> / <code>enum_body_syntax_errors</code> pin 4 spurious "Expected ',' or '}'" diagnostics caused by the annotation comment after the last variant (bug B28).</li>
+<li>Obsolete name-first syntax (<code>T x;</code>, <code>Pair&lt;..&gt; p</code>, <code>int beforeDecl</code>) in several old tests makes them test statement dispatch instead of the stated rule (S7 D3, <code>generics_errors</code>, <code>class_errors</code>).</li>
+<li><strong>Contrived tests that exist only to hit unreachable lines</strong>, contradicting CLAUDE.md ("defensive or unreachable lines don't need contrived tests"). About 100 of P1's 218 tests (<code>*_dead_guards*</code>, <code>*_internals</code>, <code>*_coverage</code>), 26 in P3 (<code>test_heap_verifier_defensive</code>, <code>test_lowering_defensive_errors</code>, SyscallResult bootstrap), plus P2 (<code>test_ownership_map</code>, <code>_StateDict</code>, <code>test_ir_types</code>), P4 (<code>call_numeric_target</code>, <code>encode_emits_no_bytes</code>). They freeze dead code: the production helpers <code>expect()</code>, <code>_recover_to_statement_boundary</code>, <code>_resolve_struct_type</code>, most <code>ParserBase</code> error helpers, <code>OwnershipMap.declare/...</code>, <code>_StateDict</code> have no callers.</li>
+<li><strong>Harness strips trailing blank lines</strong> (<code>tests/harness/expectations.py:20</code>, <code>normalize_output</code>). A final <code>println("")</code> is never asserted: <code>strings/strings_index_of_substring</code> (last case <code>substring(10,2)</code>), <code>strings/strings_upper_lower</code>, <code>edge_cases/edge_cases_zero_values</code>, several regex error tests ("valid pattern" cases print empty last lines; partly protected because a regression would add a non-empty line).</li>
+<li><strong>Float printing via <code>%f</code> hides precision.</strong> Every float assertion has 6 decimals; float32 vs float64 storage, float128 binary128 vs binary64, rounding, subnormals are invisible (<code>types_float32</code>, <code>types_float64</code>, <code>float128_ops</code>, <code>conversions_float_precision</code>). inf/nan print as <code>inf</code>/<code>nan</code> and are untested. float128 has no end-to-end validation: <code>tests/python/float128</code> tests the Python oracle against itself (P4), and the docs' "bit-exact fuzz vs oracle" is not committed.</li>
+<li><strong>No runtime leak / double-free detection, so drop tests are blind.</strong> Runtime free is registry-based (<code>std/internal/alloc.fire fs_rt_free</code>): double free and free of string literals are silently ignored; string literals are untracked; fixed-array <code>.length()</code> is constant-folded (S1). Tests such as <code>memory_branching</code>, <code>memory_scopes</code>, <code>memory_early_return</code>, <code>memory_break_continue_owned</code>, <code>memory_reassign</code>, <code>copyable_local_drop</code> claim drop correctness but assert nothing observable; only FIR/FLIR snapshots or heap-payload tests can. Leaks are caught only statically by the heap verifier.</li>
+<li><strong>Tests pinning compiler bugs or PLANNED/undocumented features.</strong></li>
+<li>Pin a bug: <code>invalid/imports/import_cycle_a</code> (B24), <code>invalid/generics/generic_class_field_access_unknown</code> l.18 (B37), <code>invalid/types/semantic_modulo_mismatch</code> l.5 (B44), <code>invalid/enums/enum_def_errors</code> + <code>enum_body_syntax_errors</code> (B28), <code>scoping/scope_stray_token_recovery</code> (B30), <code>control_flow/control_flow_braceless_if_at_eof</code> (B31), <code>functions/functions_*fallthrough*</code> (B10), <code>tests/python/fir/test_ast_to_fir_pipeline_errors::test_for_in_over_array_returning_function_call_hits_known_verifier_bug</code> (B07), <code>tests/python/flir/test_lowering_f128_decimal::test_subnormal_rounding_clamps_at_max_subnormal_significand</code> (B12), <code>.../test_lowering_defensive_errors::test_lower_binary_rejects_unsupported_float128_operator</code> (B11), <code>tests/python/cli/test_dir_batch::test_dir_partial_failure</code> and <code>test_main_arg_errors::test_dir_with_unsupported_target_counts_failures</code> (B26), <code>tests/python/parser/test_statements_coverage</code> (3 tests, B13/B15), <code>tests/python/imports/test_module_resolver</code> (B24/B25).</li>
+<li>Pin PLANNED/undocumented: <code>&amp;</code> constraints (3 files, B32), <code>copyable class Pair&lt;T,U&gt;</code> with <code>string</code> (D07), <code>toInt/toChar/...</code> builtins (D05), receiver-less methods (D06), <code>typeof</code> legacy checks (B50).</li>
+<li><strong>Weak assertions that survive mutation.</strong> Python: P1 M1/M2b/M2c/M3/M5a/M16/M19/M20/M29; P2 25-plus survivors (ArrayCopy dst/src, E1/G4 guards, <code>-128i8</code>, int-bound off-by-one, base-chain method resolve); P3 E2/E3/E4/E5/E5b/E5c; P4 <code>jb</code> opcode, <code>dil</code> REX, u64-&gt;f64 sticky <code>or rax, rcx</code>, <code>lint_text</code> semantic errors, <code>pe_inspect</code> name imports, oracle <code>_rne</code> / <code>_round_digits</code> tie-to-even. <code>_expect_rule</code>-style helpers check <code>rule in rules</code>, never exclusivity. <code>.fire</code>: parse-only checks (<code>owned</code> param keyword, <code>owned a: int32</code>), commutative sums in ABI tests (<code>functions_many_params</code>), zero-valued results indistinguishable from zero-fill (<code>classes_nested_copyable_field</code>), spot checks (<code>arraylist_growth</code>, <code>hashmap_growth</code>, <code>arrays_typed</code>).</li>
+<li><strong>Stale headers/comments</strong> that misdescribe the test (about 25): <code>copyable_local_drop</code>, <code>enum_payload_construct</code>, <code>generators_frame_zero_init_types</code>, <code>functions_return_types</code>, <code>scoping_variable_declaration_order</code>, <code>types/edge_cases</code>, <code>array_dynamic_alloc</code>, tests in P2/P4 claiming runtime_state_get/set segfaults or u64&lt;-&gt;float "fails to assemble" (fixed in 913dd4c), stale <code>// EXPECT:</code> header comments in <code>invalid/enums/*</code> and <code>invalid/nullable/nullable_errors</code>.</li>
+<li><strong>Misnamed / misfiled / not what the directory says</strong>: <code>performance/*</code> are not stress tests (none loops more than 10 times); <code>edge_cases/*</code> are mostly duplicates of feature tests; <code>invalid/classes/constructor_static_with_receiver</code> tests a different rule than its name; <code>test_ast_to_fir_errors.py</code> is two-thirds non-errors; half of P3 <code>test_ir_analysis_edges</code> tests <code>ir.py</code>/<code>textual.py</code>.</li>
+<li><strong>Test-infrastructure hazards</strong>: <code>tests/python/parser/test_type_system_dead_guards_more.py</code> imports <code>_helpers</code> without inserting its dir in <code>sys.path</code> (works only because another module loaded first; three duplicate helper modules exist); CLI tests share <code>REPO_ROOT/build/functions.exe</code> (latent race under <code>--jobs&gt;1</code>, not reproduced); <code>test_default_target_compiles</code> is not default-target when <code>FIRESCRIPT_TEST_TARGET</code> is set; asm differential oracle silently downgrades to <code>len(ours)&gt;0</code> if host <code>as</code> is missing; <code>_asciz</code> host-locale-dependent test; <code>test_cfg_rpo_is_deterministic_across_builds</code> cannot detect the nondeterminism it names (CLAUDE.md determinism section).</li>
+</ol>
+<hr />
+<h2 id="3-compiler-bugs-found-deduplicated">3. Compiler bugs found (deduplicated)<a class="headerlink" href="#3-compiler-bugs-found-deduplicated" title="Permanent link">&para;</a></h2>
+<p>Severity: ICE/crash = high; silent wrong result = high; missing diagnostic = medium; valid program rejected = medium; cosmetic = low (this is my classification of the reports' findings). "Report" gives the shard and the section/line holding the repro. KI = does a known_issues test exist (only <code>invalid/known_issues/</code> has files).</p>
+<h3 id="31-high-ice-crash-silent-wrong-result">3.1 High: ICE / crash / silent wrong result<a class="headerlink" href="#31-high-ice-crash-silent-wrong-result" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Sev</th>
+<th>Bug</th>
+<th>Repro / report pointer</th>
+<th>Tests pinning / related</th>
+<th>KI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B01</td>
+<td>high</td>
+<td>NaN comparisons wrong: <code>n == n</code> true, <code>n == 1.0</code> true, <code>n &lt; 1.0</code> true, <code>n &lt;= 1.0</code> true (should be false). float32 too. Likely <code>ucomisd</code> PF not checked.</td>
+<td><code>z: float64 = 0.0; n: float64 = z / z; println(n == n);</code> S3 bug 1</td>
+<td>none; <code>operators_comparison</code> has no NaN</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B02</td>
+<td>high</td>
+<td>Float <code>**</code> truncates the exponent: <code>2.0 ** 0.5</code> -&gt; 1.000000 (1.414214); <code>10.0 ** 2.5</code> -&gt; 100.</td>
+<td>S3 bug 2</td>
+<td><code>operators_arithmetic</code>, <code>operators_regression_power_assign</code> use integer-valued exponents only</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B03</td>
+<td>high</td>
+<td><code>uint64 -&gt; float64</code> loses the sticky bit: <code>9223372036854776833u64 as float64</code> prints 9223372036854775808.000000 (want ...7856).</td>
+<td>S3 #4</td>
+<td><code>conversions_regression_uint64_to_float</code> claims sticky-bit coverage but its <code>2^63+1</code> case cannot fail; <code>tests/python/backend/test_flir_to_asm_coverage::test_cvt_u64_to_f64</code> weak (mutation removing <code>or rax, rcx</code> survives backend and e2e)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B04</td>
+<td>high</td>
+<td>Function reading a global variable ICE (FIRV-L1), although <code>docs/reference/scoping.md</code> says it works [IMPLEMENTED].</td>
+<td><code>g: int32 = 10; fn f() -&gt; int32 { return g + 1; } println(f());</code> S2 bug 3</td>
+<td><code>scoping/scoping_function</code> header knows the limitation</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B05</td>
+<td>high</td>
+<td><code>string?</code> (any pointer-shaped nullable) parameter rejects <code>null</code> and any <code>string?</code> value: FIRV-T5 (functions/ctors), FIRV-T6 (methods). <code>int32?</code> works.</td>
+<td><code>fn f(s: string?) -&gt; void {..} f(null);</code> S1 Bug 1</td>
+<td><code>classes_method_nullable_param</code>, <code>nullable_advanced</code> avoid it (weak because of it)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B06</td>
+<td>high</td>
+<td>Function <code>-&gt; string?</code> returning a string literal: FIRV-T4 "Return value type 'string' does not match 'string?'".</td>
+<td><code>fn f(b: bool) -&gt; string? { if (b) { return "yes"; } return null; }</code> S1 Bug 2</td>
+<td>none</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B07</td>
+<td>high</td>
+<td>Function returning an array literal from <code>-&gt; int32[]</code>: ICE FIRV-T4 ('int32[3]' vs 'int32[]').</td>
+<td><code>fn mk() -&gt; int32[] { return [1,2,3]; }  x: int32[] = mk();</code> S4 B4, P2 bug 1</td>
+<td><code>tests/python/fir/test_ast_to_fir_pipeline_errors::test_for_in_over_array_returning_function_call_hits_known_verifier_bug</code> PINS it; <code>for_in_and_match_temporaries</code> header; <code>functions_array_return</code> avoids it</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B08a</td>
+<td>high</td>
+<td><code>const B: bool = true;</code> (needs <code>import println</code>) -&gt; "could not convert string to float: 'true'" (<code>flir_to_asm._emit_globals</code>).</td>
+<td>P2 bug 2</td>
+<td><code>tests/python/fir/test_ast_to_fir_pipeline_errors::test_const_non_numeric_literal_initializers_reach_fir</code> (docstring)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B08b</td>
+<td>high</td>
+<td><code>const C: char = 'Z';</code> -&gt; <code>invalid literal for int()</code> (<code>_normalize_literal_text</code> lacks CHAR_LITERAL). Without an import, <code>char</code> fails to parse at all (P2: not judged a bug).</td>
+<td>P2 bug 3</td>
+<td>same test</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B08c</td>
+<td>high</td>
+<td><code>const S: string = "hi";</code> -&gt; ICE FLIRV-A3 (drop of a global const string).</td>
+<td>P2 bug 4</td>
+<td>same test; <code>types/const_declarations_wide_types</code> (header notes float128 const declared-never-read backend bug, S3)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B09</td>
+<td>high</td>
+<td>Nested generator (<code>for x in inner()</code> inside a generator) ICE FLIRV-T5.</td>
+<td>S2 bug 1 (repro g1)</td>
+<td><code>generators_advanced</code> header documents it</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B10</td>
+<td>high</td>
+<td>Fall-off-the-end of a non-void function: scalar types get implicit zero (unspecified), <code>string</code> return ICEs (FIRV-T4); no missing-return diagnostic.</td>
+<td><code>fn s(n: int32) -&gt; string { if (n &gt; 1) { return "x"; } }</code> S2 bug 2 / #8</td>
+<td><code>functions_missing_return_fallthrough</code>, <code>functions_fallthrough_return</code>, <code>functions_return_types</code> PIN the zero; <code>invalid/known_issues/return_missing_value</code> covers only bare <code>return;</code></td>
+<td>partial</td>
+</tr>
+<tr>
+<td>B11</td>
+<td>high</td>
+<td><code>float128 ** float128</code> crashes the compiler with an uncaught Python traceback (<code>LoweringError: unsupported float128 operator **</code>, <code>flir/lowering.py:1023</code>).</td>
+<td>P3 B2 (repro included)</td>
+<td><code>tests/python/flir/test_lowering_defensive_errors::test_lower_binary_rejects_unsupported_float128_operator</code> PINS it</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B12</td>
+<td>high</td>
+<td>float128 literal in the subnormal range whose rounded significand reaches 2^112 clamps to the largest subnormal instead of the smallest normal (1 ulp wrong). Obscure. Fix per P3: <code>if sig &gt;= 1&lt;&lt;112: return (0, sign&lt;&lt;63 | 1&lt;&lt;48)</code>.</td>
+<td>P3 B1 / E6</td>
+<td><code>tests/python/flir/test_lowering_f128_decimal::test_subnormal_rounding_clamps_at_max_subnormal_significand</code> PINS it</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B13</td>
+<td>high</td>
+<td>Nested generic class as type argument: <code>Pair&lt;Pair&lt;int32,int32&gt;,int32&gt; = Pair(Pair(1,2),3)</code> fails FLIRV-T4.</td>
+<td>P1 bug 5</td>
+<td><code>tests/python/parser/test_statements_coverage::test_generic_class_nested_type_argument_parses</code></td>
+<td>no</td>
+</tr>
+<tr>
+<td>B14</td>
+<td>high</td>
+<td>Constructor with a borrowed regular param plus an owned param mis-assigns ownership: FIRV-O2 "use of 'x', which is moved".</td>
+<td>P1 bug 3 (full repro)</td>
+<td><code>tests/python/parser/test_parser_base::test_constructor_with_borrowed_and_owned_regular_params_parses</code></td>
+<td>no</td>
+</tr>
+<tr>
+<td>B15</td>
+<td>high</td>
+<td>Bare <code>arr[0];</code> statement and <code>directive x;</code> inside a function parse, then crash AST-&gt;FIR with a Python traceback (<code>FIRConversionError: Unsupported statement node ARRAY_ACCESS|DIRECTIVE</code>).</td>
+<td>P1 bug 4</td>
+<td><code>tests/python/parser/test_statements_coverage</code> (2 tests pin "parses")</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B16</td>
+<td>high</td>
+<td>Array literal / element type mismatches pass <code>--check</code> and ICE in full compile: <code>[1,"two",3]</code> (FLIRV-T1 / FIRV-T8), <code>n[0] = "string"</code> (FIRV-T8), <code>a5 = a6</code> with different sizes (FIRV-L2).</td>
+<td>S8 bug 3</td>
+<td><code>invalid/types/type_errors_comprehensive</code> l.19/23, <code>invalid/arrays/array_errors</code> l.24/37 carry comments but demand nothing</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B17</td>
+<td>high</td>
+<td><code>match</code> typing holes: value-producing arms of different types -&gt; FIRV-L2 ICE; pattern from a different enum than the scrutinee, and non-enum scrutinee, accepted with no diagnostic.</td>
+<td>S8 bug 5</td>
+<td>none; P1 <code>test_validate_match_arms_enum_mismatch_and_unknown_enum</code> hits the branch only in Python</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B18</td>
+<td>high</td>
+<td>Call to an undefined function used in an expression, or any call when the file has an import, is accepted by <code>--check</code>; full compile dies with an uncoded log "call to unknown function". Statement form without imports gives FS-PARSE-0012.</td>
+<td><code>import @firescript/std.io.println; undefinedFunction(1);</code> S8 bug 2, S9 bug 3</td>
+<td><code>invalid/types/type_errors_comprehensive</code> l.48; <code>invalid/functions/function_errors</code> l.29 relies on the no-import path</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B19</td>
+<td>high</td>
+<td><code>println(array)</code> prints <code>[...]</code> even for statically sized arrays while <code>array as string</code> prints <code>[1, 2, 3]</code> (silent placeholder from <code>_array_to_string</code> fallback).</td>
+<td>S4 B1 / E1</td>
+<td><code>arrays/array_tests</code> PINS <code>[...]</code></td>
+<td>no</td>
+</tr>
+<tr>
+<td>B20</td>
+<td>high</td>
+<td>Integer divide by zero raises a raw hardware exception (wine: "Unhandled division by zero"), not the documented firescript runtime error; <code>2 ** -1</code> (int) prints 1.</td>
+<td>S3 bug 5</td>
+<td>none (see D01/D25)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B21</td>
+<td>high</td>
+<td>Float -&gt; int casts of out-of-range/NaN/inf are silent and inconsistent by width (e.g. <code>1e10 as int32</code> = 1410065408, <code>inf as int64</code> = INT64_MIN, <code>300.5 as uint8</code> = 44). Spec gap more than bug.</td>
+<td>S3 #3</td>
+<td><code>conversions/int_float_cast_matrix</code> pins <code>200.9 as int8 = -56</code></td>
+<td>no</td>
+</tr>
+<tr>
+<td>B22</td>
+<td>high</td>
+<td>Integer overflow wraps silently (<code>2147483647 + 1</code> -&gt; -2147483648; <code>2 ** 31</code>; <code>0u8 - 1</code> -&gt; 255) where docs say runtime trap / compile error for constants. See D01.</td>
+<td>S3 #1, S4 B3</td>
+<td><code>types_int8</code>, <code>types_uint8</code>, <code>edge_cases_overflow_underflow</code>, <code>stress_integer_overflow</code></td>
+<td>no</td>
+</tr>
+<tr>
+<td>B23</td>
+<td>high</td>
+<td>Out-of-range array index is unchecked and reads garbage (docs: runtime error). <code>int32[5] = [1,2,3]</code> and <code>int32[3] = [1,2,3,4,5]</code> accepted (docs: Error). See D02.</td>
+<td><code>a: int32[] = [1,2,3]; i: int32 = 5; println(a[i]);</code> S4 B2; S8 bug 4</td>
+<td>none</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B24</td>
+<td>high</td>
+<td>Cyclic import detection is dead code: A&lt;-&gt;B cycle gives "Variable 'ping' not defined" at a position belonging to the other file; FS-IMP-0002 never emitted. docs <code>imports.md:159</code> marks it [IMPLEMENTED].</td>
+<td>P1 bug 1; S8 bug 6</td>
+<td><code>invalid/imports/import_cycle_a</code> (+helper) PINS the wrong diagnostic; <code>tests/python/imports/test_module_resolver::test_load_module_cyclic_import_raises_runtime_error</code>, <code>test_module_resolver_extra::test_cycle_detection_branch_...</code> pass only via artificial <code>load_stack</code></td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-medium-missing-or-wrong-diagnostics-valid-program-rejected">3.2 Medium: missing or wrong diagnostics, valid program rejected<a class="headerlink" href="#32-medium-missing-or-wrong-diagnostics-valid-program-rejected" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Sev</th>
+<th>Bug</th>
+<th>Repro / report pointer</th>
+<th>Tests pinning / related</th>
+<th>KI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B25</td>
+<td>med</td>
+<td>Duplicate top-level symbols from imports (and entry-vs-import conflicts) are only logged, compile succeeds (first wins); <code>build_merged_ast</code> docstring says "error"; entry-wins comment contradicted by the ValueError fallback.</td>
+<td>P1 bug 2</td>
+<td><code>tests/python/imports/test_module_resolver::test_build_merged_ast_conflicting_import_symbols_first_wins</code>, <code>..._entry_symbol_replaces_imported_one</code>, <code>..._entry_conflict_value_error_fallback_is_exercised</code>; <code>imports/imports_entry_shadow</code> (entry wins)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B26</td>
+<td>med</td>
+<td><code>main.py --dir &lt;dir&gt;</code> exits 0 even when every file failed ("0 successful, N failed"; ~L615-636).</td>
+<td>P4 bug 1</td>
+<td><code>tests/python/cli/test_dir_batch::test_dir_partial_failure</code>, <code>test_main_arg_errors::test_dir_with_unsupported_target_counts_failures</code> PIN rc 0</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B27</td>
+<td>med</td>
+<td><code>lint_text</code> swallows import-resolution exceptions and returns <code>[]</code>: LSP shows nothing for an unresolved import while the CLI reports it. No LSP tests exist; <code>lint_text</code> semantic-error path untested (mutation survives).</td>
+<td>P4 bug 2</td>
+<td><code>tests/python/cli/test_main_internals::test_lint_text_*</code> (isinstance-only)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B28</td>
+<td>med</td>
+<td>Comment token after the last enum variant (no trailing comma) rejected: "Expected ',' or '}' after enum variant" (<code>declarations.py</code> ~1437-1440 doesn't skip comment tokens). Valid program rejected. Also <code>/* c */</code> and payload forms.</td>
+<td><code>enum E { A,\n B  // c\n}</code> S9 bug 1</td>
+<td><code>invalid/enums/enum_def_errors</code> (3 annotations), <code>invalid/enums/enum_body_syntax_errors</code> PIN it</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B29</td>
+<td>med</td>
+<td>Comment text leaks as a token at EOF: <code>x: int32 =  //~ ERROR ...</code> gives <code>Unexpected token //~ ERROR ...</code> (same family as B28).</td>
+<td>S9 bug 2</td>
+<td><code>invalid/expressions/expression_at_eof</code> PINS it</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B30</td>
+<td>med</td>
+<td>Stray <code>]</code> / <code>)</code> inside a scope (or <code>]</code> at top level) silently dropped, exit 0 (<code>parser/statements.py:664-668</code> no-progress guard).</td>
+<td>S2 bug 4</td>
+<td><code>scoping/scope_stray_token_recovery</code> (run test asserting it compiles)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B31</td>
+<td>med</td>
+<td><code>if (b)</code> with no body at EOF compiles; braceless <code>if</code>/<code>while</code> accepted although docs/control_flow.md:7 says use braces (low confidence it is a bug).</td>
+<td>S4 B5/E2, S9 #11</td>
+<td><code>control_flow/control_flow_braceless_if_at_eof</code>; braceless tests; <code>invalid/syntax/syntax_comprehensive</code> "missing block braces"</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B32</td>
+<td>med</td>
+<td><code>&amp;</code> in generic constraints parses into a "</td>
+<td>"-joined union containing a literal "&amp;"; constraint check exempts names like <code>Numeric</code>/<code>Comparable</code>; undefined constraint names accepted and violations not reported (<code>fn add&lt;T: Numeric&gt;</code> + <code>add&lt;string&gt;</code>).</td>
+<td>S2 bugs 5, S7 B4</td>
+<td><code>generics/constraint_intersection</code>, <code>generic_intersection_constraint</code>, <code>generics_constraint_intersection</code></td>
+</tr>
+<tr>
+<td>B33</td>
+<td>med</td>
+<td>Duplicate class definition, duplicate field, class name shadowed by a variable: no diagnostic (second class silently wins).</td>
+<td><code>class A {x:int32;} class A {y:int32;}</code> S7 B1</td>
+<td><code>invalid/classes/class_errors</code> claims it, demands nothing</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B34</td>
+<td>med</td>
+<td>Field assignment / return type mismatch not detected: <code>p.x = "string"</code>, <code>fn get(&amp;this) -&gt; string { return this.x; }</code> with <code>x: int32</code>.</td>
+<td>S7 B2</td>
+<td>none</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B35</td>
+<td>med</td>
+<td>Explicit/inferred generic call argument types not checked: <code>identity&lt;string&gt;(42)</code>, <code>identity&lt;int32&gt;("s")</code> compile clean.</td>
+<td>S7 B3</td>
+<td><code>invalid/generics/generics_errors</code> l.15, <code>generic_call_constraint_violation</code> pass only via the declared-type cascade</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B36</td>
+<td>med</td>
+<td>Wrong number of type args on a generic class accepted (<code>Box&lt;int32,int32&gt;</code>).</td>
+<td>S7 B5</td>
+<td>none</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B37</td>
+<td>med</td>
+<td><code>new Box&lt;int32&gt;(5)</code> rejected "No constructor defined for type 'Box<int32>'" although constructor exists; <code>Box&lt;int32&gt;(5)</code> accepted. Valid program rejected (or undocumented form).</td>
+<td>S7 B6 / D4</td>
+<td><code>invalid/generics/generic_class_field_access_unknown</code> l.18 PINS it</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B38</td>
+<td>med</td>
+<td>Borrow-checker holes: storing a <code>&amp;text</code> param into <code>this.text</code>; assigning/mutating through a <code>&amp;w</code> param (<code>w.text = "z"</code>, <code>s = "x"</code>); calling a <code>&amp;mut this</code> method on a <code>&amp;c</code> param; all accepted, docs say borrows are read-only and non-retainable (<code>memory_management.md</code> l.59/78).</td>
+<td>S7 B7</td>
+<td>none (missing coverage list in S7)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B39</td>
+<td>med</td>
+<td>Move inside a loop body (<code>while(..){ consume(a); }</code>) not diagnosed; only a use after the loop is.</td>
+<td>S7 B8 / D5</td>
+<td><code>invalid/borrow/loop_move_errors</code>, <code>for_in_move_errors</code> (weak: demand only the post-loop use)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B40</td>
+<td>med</td>
+<td>Unknown base class (<code>class C from Missing</code>) and cyclic inheritance accepted (self-inheritance is tested).</td>
+<td>S7 B9</td>
+<td>none</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B41</td>
+<td>med</td>
+<td>Missing function-call / return / yield / call-non-function / for-in-non-iterable checks.</td>
+<td>11 <code>invalid/known_issues/*</code> files (S9)</td>
+<td><code>call_non_function_variable</code>, <code>for_in_non_iterable</code>, <code>function_call_arg_type_mismatch</code>, <code>function_call_too_few_args</code>, <code>function_call_too_many_args</code>, <code>generic_class_method_arg_type_mismatch</code>, <code>return_missing_value</code>, <code>return_type_mismatch</code>, <code>return_value_in_void_function</code>, <code>yield_outside_generator</code>, <code>yield_type_mismatch</code>. Missing siblings: duplicate function definition, missing return in non-void fn</td>
+<td>yes (11); siblings no</td>
+</tr>
+<tr>
+<td>B42</td>
+<td>med</td>
+<td>Unsuffixed literals are not typed from the declared type: <code>b: int64 = 6;</code>, <code>small: int8 = 42;</code>, <code>uint16</code>, <code>float32 = 3.14</code> -&gt; FS-SEM-0002 "Expected X, got int32". docs <code>type_system.md:102-112</code> say they take the declared type. Hidden because all valid tests use suffixes. See D10.</td>
+<td>S8 bug 1</td>
+<td><code>invalid/types/semantic_modulo_mismatch</code> l.5 PINS it</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B43</td>
+<td>med</td>
+<td>Top-level use-before-declaration accepted (<code>println(fv); fv: int32 = 1;</code>); inside a function it is reported.</td>
+<td>S9 bug 4</td>
+<td><code>invalid/scoping/scope_errors</code> l.13 (unannotated)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B44</td>
+<td>med</td>
+<td>Assignment to a non-lvalue accepted: <code>5 = 10;</code>, <code>(5 + 3) = 10;</code>.</td>
+<td>S9 bug 5</td>
+<td><code>invalid/operators/operator_errors</code> l.53-54 (unannotated)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B45</td>
+<td>med</td>
+<td>Literal overflow not diagnosed for int32 (<code>3000000000</code>, <code>99999999999999999999</code>) or <code>128i8</code> (docs: compile-time error); <code>x: int8 = 200</code> is reported but as an unhelpful "got int32". Invalid escape <code>"\q"</code> not diagnosed.</td>
+<td>S9 bug 6</td>
+<td><code>invalid/literals/literal_errors</code> l.5 etc.</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B46</td>
+<td>med</td>
+<td>Nullable -&gt; non-nullable assignment and <code>null</code> passed to a non-nullable param not checked (<code>y: int32 = x</code> with <code>x: int32?</code>). Medium confidence it should error.</td>
+<td>S9 bug 8</td>
+<td><code>invalid/nullable/nullable_errors</code> covers only init/reassign null</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B47</td>
+<td>med</td>
+<td>Top-level <code>break;</code> / <code>continue;</code> produce an extra bogus FS-PARSE-0010 "Expected semicolon" beside the correct SEM-0010.</td>
+<td>S8 bug 7</td>
+<td><code>invalid/control_flow/control_flow_invalid</code> l.5/9</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B48</td>
+<td>med</td>
+<td>Array literal elements of arrays: docs/compiler rule mismatch (see D03); <code>fn all(&amp;this) -&gt; int32[]</code> class method returns array although comments in <code>tests/python/parser/test_type_system_dead_guards*</code> say impossible. Stale comments only.</td>
+<td>P1 INCORRECT #3</td>
+<td><code>tests/python/parser/test_type_system_dead_guards::test_get_node_type_method_call_array_suffix</code></td>
+<td>n/a</td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-low-cosmetic-quality-minor">3.3 Low: cosmetic, quality, minor<a class="headerlink" href="#33-low-cosmetic-quality-minor" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Sev</th>
+<th>Bug</th>
+<th>Repro / report pointer</th>
+<th>Tests</th>
+<th>KI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B49</td>
+<td>low</td>
+<td>Misleading cascade diagnostics: after a failed generic call/decl "Variable 'identity'/'Box'/'Pair' not defined" for defined names; after bad params "Variable 'this' not defined"; unknown declared type reports "Expected type" + "Variable 'Nope' not defined" instead of an undefined-type diagnostic; unknown <code>new</code> type reports PARSE-0012 and SEM-0010 at the same column.</td>
+<td>S7 B10/B14/D6</td>
+<td>~20 invalid tests pin cascades (theme 2)</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B50</td>
+<td>low</td>
+<td><code>typeof(...)</code> accepted via a legacy hard-coded builtin branch (<code>parser/type_system.py:876</code>) with a builtin-style arity check although docs say typeof is not implemented.</td>
+<td>S9 bug 10</td>
+<td><code>invalid/functions/builtin_arg_count_errors</code>, <code>reserved_name_typeof_arg_count</code></td>
+<td>no</td>
+</tr>
+<tr>
+<td>B51</td>
+<td>low</td>
+<td>Same-scope redeclaration and duplicate parameter report "already declared in an outer scope; shadowing not allowed" (wrong wording for same scope).</td>
+<td>S8 #8, S9 #9</td>
+<td><code>invalid/types/type_errors_comprehensive</code> l.73, <code>invalid/scoping/scope_errors</code> l.29-30</td>
+<td>no</td>
+</tr>
+<tr>
+<td>B52</td>
+<td>low</td>
+<td>Non-exported import symbol rejected only as "Variable 'hiddenValue' not defined" (twice); no "not exported" diagnostic. ImportNotFoundError FS-IMP-0001 only a log line, never a coded diagnostic; nonexistent symbol from an existing module has no test.</td>
+<td>S8 #10</td>
+<td><code>invalid/imports/export_visibility_private</code></td>
+<td>no</td>
+</tr>
+<tr>
+<td>B53</td>
+<td>low</td>
+<td>Embedded NUL in a string literal truncates (strings are NUL-terminated): <code>"a\rb\0c".length()</code> = 3. <code>"café".length()</code> = 5 (byte count, undocumented).</td>
+<td>S4 B6 / E5</td>
+<td><code>strings_unicode</code>, <code>string_escape_edge_cases</code> header claims <code>\0</code></td>
+<td>no</td>
+</tr>
+<tr>
+<td>B54</td>
+<td>low</td>
+<td>Smaller items: (a) <code>%</code> accepted on any same-type type parameter even with float constraint (<code>type_system.py:625</code>, S2 #7); (b) <code>implicit constructors</code>: <code>NoCtor()</code> accepted but <code>new NoCtor(5)</code> rejected (S7 B11); (c) re-assigning a moved owned variable reported as use-after-move at the assignment (S7 B13); (d) regex <code>(a*)+</code> captures differ from Python (documented design, S6); (e) <code>firescript/std/fcl/init.fire</code> string branch returns without <code>drop(ch)</code> possible leak, unconfirmed (S5); (f) latent <code>not hasattr(node,'return_type')</code> never true (P1 #6, unverified); (g) asm cannot encode <code>add [mem], reg</code> (closed-grammar limitation, P4); (h) float printing of <code>-0.0</code> as <code>-0.000000</code>.</td>
+<td>as listed</td>
+<td><code>generics_modulo_type_param</code>, <code>generic_function_same_type_param_modulo</code>; <code>tests/python/parser/test_type_system_dead_guards_more::test_function_call_return_type_fallback_assignment_is_dead</code></td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<p>Count: 54 IDs (B08 counts as a/b/c, B54 groups 8 minor items). Of these, high = 24 rows (15 ICE/crash: B04-B09, B08a-c, B10, B11, B13-B16, B17 (ICE half); 7 silent wrong results: B01, B02, B03, B12, B19, B21, B22; 4 other: B18, B20, B23, B24), medium = 24, low = 6.</p>
+<hr />
+<h2 id="4-docs-vs-compiler-conflicts-needing-an-owner-decision">4. Docs vs compiler conflicts needing an owner decision<a class="headerlink" href="#4-docs-vs-compiler-conflicts-needing-an-owner-decision" title="Permanent link">&para;</a></h2>
+<p>For each: what conflicts, then option A (change the compiler/tests) and option B (change the docs/status marker).</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Conflict</th>
+<th>Option A</th>
+<th>Option B</th>
+<th>Tests affected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D01</td>
+<td>Integer overflow: <code>type_system.md</code> L141-153 and <code>error_handling.md</code> L31-38 say overflow traps at runtime (compile error for constants). Compiler wraps silently (S3 #1, S4 B3).</td>
+<td>Implement trap (+ constant-overflow error); move wrap tests to known_issues, add a trap test.</td>
+<td>State wraparound semantics in the docs; keep the wrap tests but label them as defined behavior; keep constant-overflow error (B45).</td>
+<td><code>types_int8</code>, <code>types_uint8</code>, <code>edge_cases_overflow_underflow</code>, <code>stress_integer_overflow</code></td>
+</tr>
+<tr>
+<td>D02</td>
+<td>Out-of-range array index: <code>arrays.md</code> says runtime error; compiler reads garbage. Initializer size mismatch: docs say Error, compiler accepts (B23).</td>
+<td>Add bounds check (runtime) and compile-time size-mismatch error.</td>
+<td>Document unchecked access (UB) and relax size rule.</td>
+<td>none today; <code>invalid/arrays/array_errors</code> comments</td>
+</tr>
+<tr>
+<td>D03</td>
+<td>Nested arrays: <code>arrays.md:118-131</code> ("not fully implemented", old <code>int8[3][3] matrix</code> syntax) has no <code>[PLANNED]</code> marker (CLAUDE.md requires one); compiler rejects "Array literals cannot directly contain arrays" (3 tests pin it).</td>
+<td>Implement nested arrays.</td>
+<td>Add <code>[PLANNED]</code> marker and update syntax in the doc.</td>
+<td><code>invalid/types/type_mismatches</code>, <code>invalid/arrays/array_edge_invalid</code>, <code>invalid/types/cast_and_generic_type_errors</code></td>
+</tr>
+<tr>
+<td>D04</td>
+<td><code>&amp;</code> intersection / interface constraints are <code>[PLANNED]</code> (<code>type_system.md</code>), but parsed as a union (B32).</td>
+<td>Reject <code>&amp;</code> with a diagnostic until implemented; add invalid known-issue test.</td>
+<td>Implement intersection semantics and interfaces.</td>
+<td>3 intersection run tests (delete), manifest line ~634</td>
+</tr>
+<tr>
+<td>D05</td>
+<td>Undocumented builtins: <code>toInt/toFloat/toDouble/toBool/toChar/toString</code> (only a v0.x changelog mention; <code>parser/type_system.py:873</code>), plus <code>i32_to_f64/f64_to_i32/i32_to_str</code> (listed in <code>ast_to_fir.py</code>). <code>toChar("65")</code> -&gt; '6' vs <code>toChar(66)</code> -&gt; 'B' is inconsistent.</td>
+<td>Remove/deprecate; delete their tests.</td>
+<td>Document them; fix <code>toChar</code> inconsistency.</td>
+<td><code>builtin_conversions</code>, <code>builtin_conversions_numeric_source</code>, <code>stress_type_conversions</code>, <code>stress_string_operations</code>, <code>string_cast_test</code></td>
+</tr>
+<tr>
+<td>D06</td>
+<td>Receiver-less methods: instance methods without a receiver that use <code>this</code>, and receiver-less ctors, compile and behave as instance methods; <code>classes.md</code> says receivers required and static needs <code>static fn</code>. Also <code>owned this</code> ctor (vs <code>memory_management.md</code> saying consuming <code>this</code> is <code>[PLANNED]</code>), <code>&amp;this</code> ctor (docs say ctors take <code>&amp;mut this</code>), undocumented <code>Type.Type(args)</code> ctor form.</td>
+<td>Reject with a diagnostic; rewrite the large receiver-less slice of <code>invalid/classes/*</code>.</td>
+<td>Document the forms.</td>
+<td><code>classes_static_methods</code>, <code>memory_implicit_receiver_borrow</code>, <code>classes_owned_this_constructor</code>, <code>classes_constructor_owned_borrowed_param</code>, <code>invalid/classes/{instance_method_*,super_call_*,constructor_call_*,field_access_*}</code>, <code>type_method_call_constructor_form</code> (both dirs)</td>
+</tr>
+<tr>
+<td>D07</td>
+<td>Copyable-class field rule (<code>classes.md</code>: all fields of a copyable class must be Copyable) is unenforced; <code>copyable class Pair&lt;T,U&gt;</code> with <code>string</code> compiles (and the docs' own example uses it). Possible double-free of the string on bit-copy (not observed).</td>
+<td>Enforce; add invalid test; switch <code>generics_class_basic</code> / <code>generics_class_inferred_construct</code> string instantiations to an owned class.</td>
+<td>Relax the rule for generics (T Copyable-only at instantiation) and document.</td>
+<td>the two generic-class run tests</td>
+</tr>
+<tr>
+<td>D08</td>
+<td><code>docs/reference/std/math.md</code> says nested generic calls fail to compile ("known limitation"); <code>math_abs_min_max_clamp</code> nests them and passes (S5).</td>
+<td>Doc fix only.</td>
+<td>n/a</td>
+<td>none</td>
+</tr>
+<tr>
+<td>D09</td>
+<td><code>enum</code>/<code>match</code> have no reference page (only changelog; CLAUDE.md status table says IMPLEMENTED). Statement-position expression-bodied match arms work (<code>enum_body_formatting</code>) but changelog says statement arms use <code>{}</code>.</td>
+<td>Write the reference page and document/forbid expression arms in statements.</td>
+<td>Leave changelog as the spec; move the test to a documented form.</td>
+<td><code>enum_body_formatting</code>, <code>invalid/enums/*</code>, <code>invalid/match/*</code></td>
+</tr>
+<tr>
+<td>D10</td>
+<td>Unsuffixed literals take the declared type (<code>type_system.md:102-112</code>, and <code>x: int8 = 200</code> error at :114); compiler rejects all of them (B42).</td>
+<td>Implement contextual literal typing + range check.</td>
+<td>Require suffixes in docs.</td>
+<td><code>invalid/types/semantic_modulo_mismatch</code></td>
+</tr>
+<tr>
+<td>D11</td>
+<td>Cyclic import detection marked [IMPLEMENTED] (<code>imports.md:159</code>) but dead (B24).</td>
+<td>Fix <code>_load_module</code> ordering; test FS-IMP-0002.</td>
+<td>Change marker to <code>[IN DEVELOPMENT]</code> / remove claim.</td>
+<td><code>import_cycle_a</code> and 2 Python tests</td>
+</tr>
+<tr>
+<td>D12</td>
+<td><code>scoping.md</code> ("functions have access to global variables", section 6 [IMPLEMENTED]) vs ICE (B04); top-level use-before-declaration listed as error (<code>scoping.md:259-262</code>) vs accepted (B43).</td>
+<td>Implement/diagnose.</td>
+<td>Edit docs / status.</td>
+<td><code>scoping_function</code> (delete)</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>Literal overflow compile-time error (<code>type_system.md:117,150-153</code>) vs accepted (B45); <code>\q</code> invalid escape: string keeps the backslash (<code>string_escape_edge_cases</code>, documented as intentional in its header) while char <code>'\d'</code> -&gt; 'd' (<code>char_type</code>); no diagnostic either way.</td>
+<td>Diagnose.</td>
+<td>Document the lenient escapes.</td>
+<td><code>literal_errors</code>, <code>char_type</code>, <code>string_escape_edge_cases</code></td>
+</tr>
+<tr>
+<td>D14</td>
+<td>Brace-less <code>if</code>/<code>while</code>: docs <code>control_flow.md:7</code> say braces; tests exist and compiler accepts (<code>control_flow_braceless*</code>).</td>
+<td>Reject.</td>
+<td>Document braceless bodies (and decide the EOF-dangling <code>if</code>).</td>
+<td><code>control_flow_braceless</code>, <code>_if_at_eof</code>, <code>for_in_braceless_body</code>, <code>unterminated_if_body</code></td>
+</tr>
+<tr>
+<td>D15</td>
+<td>Fall-off-the-end return unspecified (B10).</td>
+<td>Missing-return diagnostic (known_issue exists for bare <code>return;</code>).</td>
+<td>Document implicit-zero (and fix the string ICE).</td>
+<td>3 fallthrough tests</td>
+</tr>
+<tr>
+<td>D16</td>
+<td><code>fn main</code> entry semantics and "top-level statements ignored when <code>main</code> exists, with a WARNING" appear in no reference doc; tests rely on it.</td>
+<td>Document.</td>
+<td>Reconsider the behavior.</td>
+<td><code>function_main_ignores_top_level</code>, <code>imports_alias</code></td>
+</tr>
+<tr>
+<td>D17</td>
+<td>Entry definition vs import conflict: <code>imports_entry_shadow</code> pins entry wins; <code>build_merged_ast</code> docstring says conflict "produces an error"; Python tests pin the opposite fallback (B25).</td>
+<td>Pick: error, or entry-wins; make code, docstring, tests agree.</td>
+<td></td>
+<td><code>imports_entry_shadow</code>, 3 Python tests</td>
+</tr>
+<tr>
+<td>D18</td>
+<td>Float -&gt; int out-of-range/NaN/inf semantics undefined (B21); docs say "may truncate".</td>
+<td>Define (saturate / trap) and test.</td>
+<td>Document as unspecified and drop the out-of-range lines from <code>int_float_cast_matrix</code>.</td>
+<td><code>int_float_cast_matrix</code></td>
+</tr>
+<tr>
+<td>D19</td>
+<td>String/array behaviors pinned but undocumented: <code>.size()</code> on arrays (<code>arrays_length_param</code>), <code>array as string</code> format (<code>array_to_string</code>), <code>println(array)</code> = <code>[...]</code> (B19), <code>substring</code> clamping, string parse leniency (<code>"+7"</code>, <code>"1e3"</code>), byte-based <code>length()</code> on UTF-8, NUL truncation.</td>
+<td>Specify and test or restrict.</td>
+<td>Document as-is.</td>
+<td>those tests, <code>strings_unicode</code>, <code>strings_index_of_substring</code></td>
+</tr>
+<tr>
+<td>D20</td>
+<td>Borrow rules: <code>memory_management.md</code> marks read-only/non-retainable borrows [IMPLEMENTED] but holes exist (B38); moves in loop bodies unspecified (B39); re-initialization after move unspecified.</td>
+<td>Close the holes.</td>
+<td>Narrow the docs.</td>
+<td><code>invalid/borrow/*</code></td>
+</tr>
+<tr>
+<td>D21</td>
+<td>Implicit constructors (<code>Point(x,y)</code> field constructor, <code>NoCtor()</code> allowed, <code>new NoCtor(5)</code> rejected) undocumented in <code>classes.md</code>.</td>
+<td>Document and make <code>new</code> consistent.</td>
+<td>Forbid.</td>
+<td><code>class_static_method_errors</code> l.15 relies on it</td>
+</tr>
+<tr>
+<td>D22</td>
+<td><code>%</code> integer-only is not stated in <code>operators.md</code> (used by <code>compound_assignment_type_errors</code>); type-parameter <code>%</code> accepts floats (B54a).</td>
+<td>Document integer-only.</td>
+<td>Allow floats.</td>
+<td><code>compound_assignment_type_errors</code>, <code>generics_modulo_type_param</code></td>
+</tr>
+<tr>
+<td>D23</td>
+<td>Nullable -&gt; non-nullable: <code>variables.md</code> only says "cannot be assigned null" (B46).</td>
+<td>Check.</td>
+<td>Document.</td>
+<td><code>nullable_errors</code></td>
+</tr>
+<tr>
+<td>D24</td>
+<td>Spec parity: P3 notes FLIR spec M4 (slot-propagated strconst store) and M2 (raw-pointer alignment) are stricter than the verifier; FIR spec S6 says every named type must resolve but a test pins leniency; <code>type_system.md</code> claims correct rounding/subnormals/NaN for float128 and <code>float128.md</code> claims fuzz validation vs the oracle that is not committed; <code>types.md</code> (std types doc) says all std types are tested but <code>CopyablePair</code> has no direct test.</td>
+<td>Tighten verifier/add tests.</td>
+<td>Document the narrowing in spec 8.x / soften claims.</td>
+<td><code>test_heap_verifier_checks::test_m4_store_through_slot_loaded_string_literal_alias_is_not_resolved</code>, <code>test_verifier_checks::test_m1_access_through_raw_pointer_is_not_checked</code>, <code>test_verifier_structural_and_method_call::test_s6_array_element_type_unresolved</code></td>
+</tr>
+</tbody>
+</table>
+<p>Also decide (small): whether <code>typeof</code> legacy checks stay (B50) and the error codes for return/yield mismatches (S9: FS-SEM-0002 may fit better than FS-SEM-0010) before the known_issue checks are written; whether known_issues should pin <code>@col</code>.</p>
+<hr />
+<h2 id="5-cleanup-plan">5. Cleanup plan<a class="headerlink" href="#5-cleanup-plan" title="Permanent link">&para;</a></h2>
+<h3 id="50-cross-shard-conflicts-delete-only-one-side">5.0 Cross-shard conflicts: delete only ONE side<a class="headerlink" href="#50-cross-shard-conflicts-delete-only-one-side" title="Permanent link">&para;</a></h3>
+<p>Reports in different shards each called the other copy the keeper. Deleting both would lose the coverage.</p>
+<table>
+<thead>
+<tr>
+<th>Pair</th>
+<th>Resolution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>arrays/arrays_function_param</code> (S4 delete) vs <code>functions/functions_array_params</code> (S2 delete)</td>
+<td>Keep <code>arrays/arrays_function_param</code>, delete <code>functions/functions_array_params</code> (the <code>getFirst</code> case is covered by <code>functions_array_return</code>/<code>functions_sized_array_param</code>).</td>
+</tr>
+<tr>
+<td><code>arrays/arrays_basics</code> (S4 delete) vs <code>edge_cases/edge_cases_arrays</code> (S3 delete)</td>
+<td>Keep <code>arrays/arrays_basics</code> (index, length, bounds), delete <code>edge_cases_arrays</code>; add <code>"".length()</code>-style empty case if desired.</td>
+</tr>
+<tr>
+<td><code>expressions/expressions_unary_and_incdec</code> (S2) vs <code>operators/unary_test</code> (S3)</td>
+<td>Keep one; the only unique bit of <code>expressions_unary_and_incdec</code> is unary <code>+pos</code>; of <code>unary_test</code> is <code>y: int32 = -x</code>. Merge both into <code>operators/operators_arithmetic</code>.</td>
+</tr>
+<tr>
+<td><code>expressions/expressions_casts</code> (S2) vs <code>conversions/conversions_in_expressions</code> (S3, "redundant-ish")</td>
+<td>Delete <code>expressions_casts</code>; fold the int8+int16 sum into <code>conversions_in_expressions</code>.</td>
+</tr>
+<tr>
+<td><code>invalid/control_flow/assignment_undefined_chain</code> (S8) vs <code>invalid/expressions/implicit_assign_undefined_rhs</code> (S9)</td>
+<td>Keep one (<code>implicit_assign_undefined_rhs</code>), delete the other.</td>
+</tr>
+<tr>
+<td><code>invalid/control_flow/for_c_style_missing_semicolon</code> (S8 delete) vs <code>invalid/syntax/statement_dispatch_errors</code> l.26 (S9 trim)</td>
+<td>Keep <code>for_c_style_missing_semicolon</code> OR the combined line, not neither; both carry a cascade annotation.</td>
+</tr>
+<tr>
+<td><code>invalid/match/{match_missing_scrutinee,match_pattern_bad_binding,match_pattern_missing_variant}</code> vs cases in <code>match_syntax_errors</code> (S8)</td>
+<td>S8 lists the three singles as delete candidates and also says the singles are "the more robust side"; choose one side.</td>
+</tr>
+<tr>
+<td><code>invalid/generics/generic_call_constraint_violation</code> vs <code>generic_constraint_violation_errors</code> (S7)</td>
+<td>Keep one (S7 prefers the latter, cleaner); the delete list is ambiguous.</td>
+</tr>
+<tr>
+<td><code>invalid/functions/builtin_arg_count_errors</code> vs <code>reserved_name_typeof_arg_count</code> (S9)</td>
+<td>Keep at most one, and only if the legacy <code>typeof</code> check stays (B50).</td>
+</tr>
+<tr>
+<td><code>invalid/imports/import_inside_function</code> vs <code>invalid/syntax/statement_dispatch_errors</code> l.11 (S8/S9)</td>
+<td>Keep <code>import_inside_function</code>, trim the line from the combined file.</td>
+</tr>
+<tr>
+<td>Same file name in two dirs: <code>classes/type_method_call_constructor_form</code> (S1, run test, REDUNDANT) and <code>invalid/classes/type_method_call_constructor_form</code> (S7, WEAK/TRIVIAL)</td>
+<td>Different files; judge separately.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="51-run-tests-testssourcescategory">5.1 Run tests (<code>tests/sources/&lt;category&gt;/</code>)<a class="headerlink" href="#51-run-tests-testssourcescategory" title="Permanent link">&para;</a></h3>
+<p>Names are relative to <code>tests/sources/</code>. Evidence: shard S1-S6 per-file lines.</p>
+<table>
+<thead>
+<tr>
+<th>Dir</th>
+<th>DELETE</th>
+<th>MERGE (survivor)</th>
+<th>FIX</th>
+<th>Notes / blocked-by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classes/</code></td>
+<td><code>classes_smoke</code>, <code>type_method_call_constructor_form</code> (dup of <code>classes_explicit_constructor_call</code>), <code>classes_nested</code> (subset of <code>memory_constructor_move</code>; stale LSP TODO), <code>classes_new_constructor_syntax</code> (moderate)</td>
+<td></td>
+<td><code>classes_method_nullable_param</code> (add null path; blocked by B05), <code>classes_constructor_owned_borrowed_param</code> (no header, copyable param; add header or delete as parse-only), <code>classes_nested_copyable_field</code> (use non-zero <code>start</code>, e.g. <code>Point(1,2)</code>; method name misleading)</td>
+<td><code>classes_static_methods</code>, <code>classes_owned_this_constructor</code>: pin D06 forms</td>
+</tr>
+<tr>
+<td><code>memory/</code></td>
+<td><code>copyable_local_drop</code> (INCORRECT header, trivial; or fix header + <code>//@ snapshot: fir</code>), <code>ownership_test</code>, <code>ownership_demo</code></td>
+<td><code>memory_branching</code> + <code>memory_scopes</code> + <code>memory_early_return</code> -&gt; one snapshot-backed file (survivor <code>memory_branching</code>, add <code>//@ snapshot: fir</code>)</td>
+<td><code>memory_break_continue_owned</code> (use heap payload, e.g. <code>"it" + toString(i)</code>, + snapshot), <code>memory_reassign</code> (concatenated strings + snapshot), <code>memory_owned_function_param</code> (parse-only check; survivor of the <code>functions_explicit_owned_param</code> dup; weak)</td>
+<td>theme 6: literals untracked; FIR snapshot shows the drops</td>
+</tr>
+<tr>
+<td><code>nullable/</code></td>
+<td></td>
+<td></td>
+<td><code>nullable_advanced</code> (null-port Config; drop blocks duplicated from <code>nullable_basic</code>; blocked by B05)</td>
+<td>add string?/class? param/return tests as known_issues (B05/B06)</td>
+</tr>
+<tr>
+<td><code>special_types/</code></td>
+<td><code>float128_narrow_conversions</code> (subset of <code>float128_narrow_casts</code>), <code>float128_test</code> (first line of <code>float128_ops</code>)</td>
+<td></td>
+<td><code>float128_ops</code> (S1: add discriminating comparisons <code>1.0f128 + 1.0e-30f128 &gt; 1.0f128</code> true, <code>+1.0e-33f128</code> true, <code>+1.0e-35f128</code> false, <code>(1.0f128+1.0e-34f128)-1.0f128 == 0.0f128</code> false, nan/inf/-0 checks, <code>7.5f128 as int64</code>=7, <code>-7.5f128 as int64</code>=-7; all verified to pass today)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>generics/</code></td>
+<td><code>math_with_constraints</code>, <code>generics_constraint</code>, <code>generics_modulo_type_param</code> (keep <code>generic_function_same_type_param_modulo</code> which has snapshots), <code>constraint_intersection</code>, <code>generic_intersection_constraint</code>, <code>generics_constraint_intersection</code> (D04; also drop the manifest line ~634)</td>
+<td><code>generics_clamp</code> (low; into <code>generics_basic</code>)</td>
+<td><code>generics_class_basic</code>, <code>generics_class_inferred_construct</code> (use owned <code>class Pair</code> for the <code>string</code> instantiations; D07), <code>generics_swap</code> (header says multiple type params; check caller values unchanged)</td>
+<td>add <code>invalid/known_issues</code> for <code>T: int32 &amp; float64</code> / unknown interface</td>
+</tr>
+<tr>
+<td><code>functions/</code></td>
+<td><code>functions_explicit_owned_param</code> (dup of <code>memory_owned_function_param</code>), <code>functions_stray_semicolon</code> (dup of <code>control_flow/empty_statements</code>), <code>functions_array_params</code> (see 5.0), <code>functions</code> (kitchen sink; first move <code>bothTrue</code> bool params into <code>functions_basic_params</code>), <code>functions_missing_return_fallthrough</code>, <code>functions_fallthrough_return</code></td>
+<td>the fallthrough half of <code>functions_return_types</code> -&gt; one labelled "current behavior" test, or move to known_issues (B10/D15)</td>
+<td><code>functions_return_types</code> (header claim "char cannot be a return type" is false), <code>functions_many_params</code> (S2 evidence 6: use positional weights over 7 int / 7 mixed / 2 struct params; verified to pass)</td>
+<td><code>function_main_ignores_top_level</code>, <code>function_user_main</code> KEEP (D16)</td>
+</tr>
+<tr>
+<td><code>generators/</code></td>
+<td></td>
+<td><code>generators_multi_yield_sites</code> -&gt; <code>generators_advanced</code> (low; fold <code>yield a+b</code>)</td>
+<td><code>generators_frame_zero_init_types</code> (retitle; add string/array/class locals which work today; header claim FLIRV-T1 stale), <code>generators_borrow_param</code> (check borrowed box still usable)</td>
+<td>add known-issue for nested generator (B09)</td>
+</tr>
+<tr>
+<td><code>scoping/</code></td>
+<td><code>scope_tests</code>, <code>scoping_function</code> (header contradicts docs, B04)</td>
+<td></td>
+<td><code>scoping_variable_declaration_order</code> (reuse the same name <code>v</code> across sibling scopes)</td>
+<td><code>scope_stray_token_recovery</code>: remove from run tests; replace by an <code>invalid/syntax</code> test expecting FS-PARSE-xxxx on the <code>]</code> (B30)</td>
+</tr>
+<tr>
+<td><code>expressions/</code></td>
+<td><code>expressions_unary_and_incdec</code>, <code>expressions_casts</code> (see 5.0), <code>expressions_array_and_string</code>, <code>expressions_nested_and_conditional</code></td>
+<td></td>
+<td><code>operator_precedence</code> (S2 evidence 7: fix wrong comments on <code>10 % 3 + 1</code> and <code>4 / 2 ** 2</code>; add <code>-2 ** 2</code>, <code>!</code>, <code>as</code> precedence; <code>false &amp;&amp; false || false</code> non-discriminating)</td>
+<td><code>expressions_function_calls</code> KEEP</td>
+</tr>
+<tr>
+<td><code>types/</code></td>
+<td><code>types_bool</code>, <code>types_tests</code></td>
+<td><code>types_int8</code>, <code>types_uint8</code>, <code>types_int16</code>, <code>types_int32</code>, <code>types_int64</code>, <code>types_uint16</code>, <code>types_uint32</code>, <code>types_uint64</code> -&gt; one "integer bounds" file (survivor keeps <code>types_int64</code>'s <code>snapshot</code> directive), after deleting the wrap lines (D01)</td>
+<td><code>types_float32</code> (add <code>16777216.0f + 1.0f == 16777216.0f</code>), <code>types_float64</code> (1e-100 trivial), <code>const_declarations_wide_types</code> (drop dups; float128 const declared-never-read -&gt; known issue), <code>types_deep</code> (drop redundant bool/string/array/compare sections), <code>char_type</code> (<code>\r \0 \' \"</code> listed not exercised), <code>literal_bases_and_separators</code> (no negative/uppercase-prefix/invalid-digit)</td>
+<td><code>types_deep</code>, <code>const_declarations</code>, <code>char_type</code> KEEP</td>
+</tr>
+<tr>
+<td><code>conversions/</code></td>
+<td><code>conversions_to_string</code>, <code>conversions_int_narrowing</code>, <code>conversions_int_widening</code> (keep 3-deep chain), <code>conversions_signed_unsigned</code>, <code>string_cast_test</code> (move unique lines first: signed max, string-&gt;string identity, 0; uses <code>enable_lowlevel_stdout</code> directive in violation of CLAUDE.md)</td>
+<td><code>string_to_numeric_casts</code> -&gt; <code>conversions_string_to_numeric_all_types</code> (int64, uint64 max, float32); <code>conversions_int_float</code> -&gt; <code>int_float_cast_matrix</code>; <code>conversions_in_expressions</code> int8+int16 line</td>
+<td><code>int_float_cast_matrix</code> (drop out-of-range lines, D18), <code>builtin_conversions</code> (drop <code>toChar("65")</code>; D05), <code>builtin_conversions_numeric_source</code>, <code>conversions_regression_uint64_to_float</code> (replace <code>2^63+1</code> case by <code>println(9223372036854776833u64 as float64)</code> expecting <code>9223372036854777856.000000</code>; fails until B03 fixed, so put in known-issues), <code>conversions_float_precision</code> (S3 #5: <code>(precise as float32) as float64 == precise</code> -&gt; false; <code>(0.1f as float64) == 0.1</code> -&gt; false; <code>(16777217.0 as float32) as float64</code> -&gt; 16777216.000000), <code>conversions_string_to_numeric_all_types</code> (no invalid string case)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>operators/</code></td>
+<td><code>unary_test</code> (see 5.0)</td>
+<td></td>
+<td><code>operators_arithmetic</code> (add <code>2.0 ** 0.5</code>=1.414214, <code>9.0 ** 0.5</code>=3.000000; fails until B02), <code>operators_comparison</code> (negatives, high-bit uint32/uint64, NaN: B01; high-bit cases pass today), <code>operators_regression_power_assign</code> (fractional exponent)</td>
+<td><code>operators_boolean</code>, <code>operators_logical_short_circuit</code> KEEP</td>
+</tr>
+<tr>
+<td><code>edge_cases/</code></td>
+<td><code>edge_cases_comparisons</code>, <code>edge_cases_arithmetic</code>, <code>edge_cases_strings</code>, <code>edge_cases_overflow_underflow</code>, <code>edge_cases</code>, <code>edge_cases_nesting_and_functions</code>, <code>edge_cases_arrays</code> (see 5.0), <code>edge_cases_numeric_bounds</code></td>
+<td></td>
+<td><code>edge_cases_zero_values</code> (print a sentinel line after <code>println("")</code>)</td>
+<td><code>edge_cases_loops</code> KEEP (only zero-iteration cases)</td>
+</tr>
+<tr>
+<td><code>identifiers/</code>, <code>io/</code></td>
+<td></td>
+<td></td>
+<td><code>identifiers_keyword_prefix</code> (add a <code>void</code>-prefixed identifier)</td>
+<td><code>io_test</code> KEEP</td>
+</tr>
+<tr>
+<td><code>strings/</code></td>
+<td><code>strings_basics</code></td>
+<td></td>
+<td><code>strings_index_of_substring</code> and <code>strings_upper_lower</code> (wrap in markers: <code>println("[" + s.substring(10,2) + "]")</code>; note clamping semantics, D19), <code>strings_comparison</code> (add "app" vs "apple" false, "abc" vs "abd" false, empty, <code>"ap"+"ple" == "apple"</code> true; verified), <code>strings_unicode</code> (add <code>.length()</code> once D19 decided), <code>string_escape_edge_cases</code> (<code>\0</code> untested, B53)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>arrays/</code></td>
+<td><code>arrays_function_param</code> (see 5.0), <code>arrays_basics</code> conflict (see 5.0), <code>array_tests</code> (INCORRECT: pins <code>[...]</code>, B19), <code>arrays_iteration_c_style</code>, <code>arrays_iteration_while</code>, <code>arrays_iteration_for_in</code> (first move its <code>//@ snapshot: fir, flir</code> onto <code>control_flow/for_in</code>), <code>array_dynamic_alloc</code> (moderate; keep only as intrinsic unit test)</td>
+<td><code>arrays_mutation</code> and <code>arrays_move_assign_from_var</code> -&gt; <code>array_length_propagation</code></td>
+<td><code>arrays_typed</code> (read last element of each; add uint8/16/32/64, int16, char; 1-byte stride)</td>
+<td><code>array_to_string</code>, <code>arrays_length_param</code> pin undocumented features (D19)</td>
+</tr>
+<tr>
+<td><code>control_flow/</code></td>
+<td></td>
+<td></td>
+<td><code>control_flow_braceless_if_at_eof</code> (B31/D14: move to invalid or document as leniency), <code>for_in_and_match_temporaries</code> (misfiled: move match/array parts to <code>match/</code> and <code>arrays/</code>; read all 4 elems of <code>uninitialized: int32[4]</code> after dirtying the stack), <code>for_c_style</code> (drop empty-init case that duplicates <code>for_header_variants</code>; fix comment)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>performance/</code></td>
+<td><code>stress_array_bounds</code>, <code>stress_deep_recursion</code>, <code>stress_string_operations</code> (unique bits: raw newline/tab in a literal)</td>
+<td><code>stress_integer_overflow</code> -&gt; keep only negative div/mod (<code>-100/3=-33</code>, <code>-10%3=-1</code>, <code>10%-3=1</code>) as <code>operators/operators_division_modulo_negative</code>; <code>stress_type_conversions</code> (only coverage of <code>i32_to_f64</code>/<code>f64_to_i32</code>/<code>i32_to_str</code>: keep a tiny test if D05 keeps them, else delete); <code>fibonacci</code> -&gt; relocate to <code>functions/</code> (tree recursion + int64 + snapshot)</td>
+<td></td>
+<td>no real stress tests exist (see 5.1 missing)</td>
+</tr>
+<tr>
+<td><code>enums/</code>, <code>match/</code></td>
+<td></td>
+<td>optional: <code>enum_leading_comma</code> + <code>enum_body_formatting</code></td>
+<td><code>enum_payload_construct</code> (stale header; after reassignment <code>match a</code>/<code>match b</code> and print fields), <code>enum_tag_only</code> (match after reassign), <code>enum_field_in_class_drop</code> (header vs manifest), <code>enum_body_formatting</code> (statement-position expression arms, D09), <code>enum_owned_payload_drop</code> (header "golden file"/leak wording)</td>
+<td><code>match/*</code> KEEP</td>
+</tr>
+<tr>
+<td><code>imports/</code>, <code>integration/</code></td>
+<td><code>imports_single</code>, <code>export_visibility</code> (helper <code>visibility_provider.fire</code> has a stray empty <code>/* EXPECT */</code>), <code>imports_symbol_alias</code> (soft; regression)</td>
+<td></td>
+<td><code>integration/hackathon8_mission1</code> (reword the unprofessional unreachable debug message; cosmetic)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>std/types/</code></td>
+<td><code>option_static_factories</code> (move <code>CopyableOption&lt;bool&gt;.None().isNone()</code> first), <code>result_static_factories</code> (move <code>Result&lt;int32,string&gt;.Ok(10)/Err("bad")</code> first), <code>option_issome_isnone</code> (soft; regression)</td>
+<td></td>
+<td><code>result_copyable</code> (mutate <code>copy.value</code>, assert original unchanged), <code>std_types_test</code> (rename; add a direct <code>CopyablePair</code> test)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>std/cli/</code></td>
+<td></td>
+<td><code>std_cli_args_parser</code> -&gt; <code>std_cli_args_basic</code> (or <code>with_argv</code>)</td>
+<td><code>std_cli_args_edge_with_argv</code> (isolate <code>-de</code> grouped path), add short-option value forms <code>-o value</code>, <code>-o=value</code>, <code>-ovalue</code>, <code>--name value</code> via non-alias <code>option_value</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>std/fs/</code></td>
+<td></td>
+<td><code>std_fs_helpers</code> + <code>std_fs_basic</code> -&gt; one</td>
+<td><code>std_fs_path_ops</code> (old path gone, minor)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>std/text/</code></td>
+<td></td>
+<td><code>stringbuilder_basic</code> + <code>stringbuilder_reuse_after_build</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>std/collections/</code></td>
+<td></td>
+<td></td>
+<td><code>arraylist_add_remove_last</code> (header says growth; only 3 adds), <code>arraylist_growth</code> (check sum = 600), <code>hashmap_growth</code> (sum of <code>get(i)</code> over 0..49 = 12250 and <code>has</code> for all)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>std/fcl/</code>, <code>std/syscalls/</code></td>
+<td></td>
+<td></td>
+<td><code>std_fcl_lexer</code> (add source <code>{ } [ ] -5 - x_1 "abc</code>; S5 ran it, output listed in S5 evidence), <code>syscall_basic</code> (assert write status 13, close 0, open of nonexistent path &lt; 0)</td>
+<td>check <code>fcl/init.fire</code> string branch <code>drop(ch)</code> (B54e)</td>
+</tr>
+<tr>
+<td><code>std/regex/</code></td>
+<td><code>std_regex_anchor_simple</code>, <code>std_regex_validate_anchors</code>, <code>std_regex_find_at</code> (fold the mid-text-miss <code>a</code>/<code>xaxbx</code>/2 and <code>ab</code>/<code>abc</code> cases first)</td>
+<td>find_at family -&gt; one <code>std_regex_find_at</code> (<code>find_at_anchors</code> + three find_at blocks of <code>anchors</code> + lexer-style <code>if\|else\|while</code>); <code>validate_anchors2</code> -&gt; <code>error_misc</code>; <code>counted_exact</code> + <code>counted_open</code> + <code>counted_range</code> -&gt; <code>counted_quantifiers</code>; <code>find_first_invalid_pattern</code> + <code>replace_invalid_pattern</code> -&gt; <code>invalid_pattern</code> (add find_at / find_all / is_match invalid cases, currently untested)</td>
+<td><code>shorthand_classes</code> (comment misplaced; add <code>\r</code>), <code>anchors</code> (add <code>is_match("^abc","abcd")</code> false, <code>is_match("abc$","xabc")</code> false), <code>find_all_basic</code> (small duplicate), <code>regexpattern_search</code> (add <code>matches()</code> alias, <code>find_match</code> free function)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>std/math/</code>, <code>std/ranges/</code></td>
+<td></td>
+<td></td>
+<td>none (docs fix D08); <code>ranges_empty_and_negative</code> KEEP (positives are in <code>generators/generators_basic</code>)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>MISSING coverage worth adding (run tests)</strong>: NaN/inf behavior and IEEE comparisons (B01); float precision (float32 rounding, <code>0.1f as float64 != 0.1</code>); float128 end-to-end (probes in <code>float128_ops</code> fix); fractional float <code>**</code> (B02); signed/unsigned high-bit comparisons; <code>string?</code>/<code>class?</code> params and returns (B05/B06, known issues); nested generator (B09); global read from function (B04); <code>const bool/char/string</code> (B08); <code>int32[]</code> array return (B07); real stress tests (recursion depth about 1e5, 1e6-iteration loop with string concat/drop, 1e5-element array fill/sum); regex items in the S6 weak list (escapes <code>\n \t \r</code>, mid-pattern <code>^</code>/<code>$</code> literals, <code>.</code> matches newline, find_at out-of-range/negative = -1, <code>$10</code> -&gt; <code>a0</code>); CLI short-option forms; <code>CopyablePair</code>; <code>uninitialized: int32[4]</code> all elements; empty-string <code>.length()</code>; heap-payload drop tests with snapshots.</p>
+<h3 id="52-compile-fail-tests-testssourcesinvalidcategory">5.2 Compile-fail tests (<code>tests/sources/invalid/&lt;category&gt;/</code>)<a class="headerlink" href="#52-compile-fail-tests-testssourcesinvalidcategory" title="Permanent link">&para;</a></h3>
+<p>Names relative to <code>tests/sources/invalid/</code>.</p>
+<p><strong>Fix first (currently failing)</strong>: <code>operators/operator_errors.fire</code> line 60 <code>x += "hello";</code> (x: int32): observed diagnostic <code>FS-SEM-0010 @7</code> "Operator '+=' not supported between types int32 and string" appears since commit 2322a7d "Type-check compound assignment instead of failing in the FIR verifier" (13 observed vs 12 annotations). Fix: add <code>//~ ERROR FS-SEM-0010 @7</code> on line 60. This is an intentional, correct behavior change, so editing the annotation is consistent with the CLAUDE.md rule (S9 confirmed by diagnosis; I did not run the harness). Same file also: lines 36 (<code>a and b</code>) and 47 (<code>not x</code>) are INCORRECT (no such operators; cascades), 19-20 and 53-54 demand nothing.</p>
+<table>
+<thead>
+<tr>
+<th>Dir</th>
+<th>DELETE</th>
+<th>MERGE / canonical survivor</th>
+<th>FIX-EXPECTATION</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classes/</code> (S7)</td>
+<td><code>constructor_amp_not_this</code>, <code>constructor_param_array_unsupported</code>, <code>constructor_param_bad_type</code>, <code>class_constructor_syntax_errors</code>, <code>constructor_static_with_receiver</code> (INCORRECT: tests a different rule), <code>super_call_no_base</code>, <code>super_call_base_no_ctor</code>, <code>super_call_arg_count</code>, <code>super_call_arg_type</code>, <code>static_and_type_method_errors</code>, <code>type_method_call_arg_count</code>, <code>type_method_call_arg_type</code>, <code>type_method_call_unknown</code>, <code>constructor_call_arg_count</code>, <code>constructor_call_arg_type</code>, <code>constructor_arg_type_mismatch_errors</code>, <code>constructor_call_no_ctor</code>, <code>field_access_type_errors</code>, <code>field_access_unknown_field</code>, <code>method_duplicate_param_shadow</code>, <code>instance_method_arg_count</code>, <code>instance_method_arg_type</code>, <code>instance_method_unknown</code>, <code>implicit_var_method_call_on_untyped</code>, <code>new_unknown_type</code>, <code>new_missing_paren</code>, <code>class_errors</code> (INCORRECT: demands none of its stated rules; legit rules covered elsewhere)</td>
+<td>canonical: <code>constructor_param_syntax_errors</code>, <code>class_static_method_errors</code>, <code>constructor_and_type_method_call_errors</code>, <code>constructor_call_arg_errors</code>, <code>super_call_errors</code>, <code>field_access_errors</code>, <code>instance_method_arg_errors</code>, <code>unknown_instance_method</code>, <code>class_method_duplicate_param</code>, <code>class_new_constructor_errors</code>; trim <code>class_def_syntax_errors</code> (keep header cases; remove R1,R2,P1,P2,P3 dups and the 8 cascade annotations)</td>
+<td><code>type_member_access_errors</code> (l.24-25 cascade), <code>type_method_call_constructor_form</code> (relies on undocumented <code>Widget.Widget(5)</code>; D06)</td>
+</tr>
+<tr>
+<td><code>borrow/</code> (S7)</td>
+<td><code>memory_errors</code> (move its plain-string return-borrow case into <code>borrow_escape_projection_errors</code>; rest is commented TODO prose and an unannotated <code>small[10]</code>)</td>
+<td></td>
+<td><code>loop_move_errors</code>, <code>for_in_move_errors</code> (demand the in-loop move once B39 decided)</td>
+</tr>
+<tr>
+<td><code>generics/</code> (S7)</td>
+<td><code>generic_class_field_access_unknown</code> (l.18 locks B37), <code>generic_class_unknown_field</code>, one of <code>generic_call_constraint_violation</code> / <code>generic_constraint_violation_errors</code></td>
+<td>merge <code>generic_class_type_arg_errors</code> + <code>generic_class_nested_type_arg_errors</code> + <code>generic_class_unclosed_type_args</code> (+ rewritten <code>generic_class_nested_unclosed_type_args</code>, <code>nested_generic_missing_close_errors</code>); optionally <code>generic_func_empty_type_args</code> + <code>new_constructor_empty_type_args</code></td>
+<td><code>generics_errors</code> (INCORRECT: old syntax, <code>identity&lt;string&gt;(42)</code> passes via cascade; split: keep only <code>identity&lt;int32,string&gt;(5)</code> SEM-0010 type-arg-count case as its own file), <code>generic_class_nested_unclosed_type_args</code>, <code>nested_generic_missing_close_errors</code> (rewrite with <code>name: Type</code> syntax), <code>generic_declaration_errors</code> l.24/28 (same), <code>generic_call_errors</code> (4 cascade annotations), <code>generic_function_inference_errors</code>, <code>generic_def_syntax_errors</code> (case 4 <code>-&gt; Q</code>), <code>generic_call_constraint_violation</code> (cascade)</td>
+</tr>
+<tr>
+<td><code>arrays/</code> (S8)</td>
+<td><code>array_access_and_method_errors</code>, <code>array_access_undefined_index</code>, <code>array_literal_undefined_element</code>, <code>array_literal_unresolvable_element</code> (keep <code>array_access_undefined_index_errors</code>; one of the 3 undefined-element copies), <code>array_length_arg_count</code>, <code>array_edge_invalid</code> (redundant after the <code>print</code> noise is removed)</td>
+<td><code>array_index_count_errors</code> -&gt; move <code>count()</code> and <code>count(true)</code> into <code>array_method_call_errors</code>, then delete</td>
+<td><code>array_errors</code> (6 of ~12 scenarios demanded; l.18/19 size mismatch accepted D02; comments stale), <code>array_slice_errors</code> (cascades l.12-13), <code>array_access_syntax_errors</code>, <code>array_element_assignment_invalid_target</code> (keep one with <code>array_index_assignment_target_errors</code>)</td>
+</tr>
+<tr>
+<td><code>types/</code> (S8)</td>
+<td><code>semantic_unary_not_non_bool</code>, <code>semantic_unary_minus_undefined</code>, <code>semantic_unary_incdec_undefined</code>, <code>semantic_equality_mismatch</code>, <code>semantic_logical_non_bool</code>, <code>cast_array_to_non_string</code>, <code>field_access_on_primitive</code>, <code>type_errors_comprehensive</code> (S8 recommends delete; unchecked scenarios go to known_issues: l.19/23/48 not there yet)</td>
+<td><code>semantic_operator_errors</code> (mixed numeric <code>int32 - float64</code>) -&gt; <code>binary_operator_type_errors</code></td>
+<td><code>semantic_modulo_mismatch</code> (use <code>6i64</code>; B42), <code>type_mismatches</code> (add <code>import ...println</code>; 19 annotations incidental), <code>cast_and_generic_type_errors</code> (l.39 import; l.35 cascade)</td>
+</tr>
+<tr>
+<td><code>imports/</code> (S8)</td>
+<td><code>stdlib_import_path_errors</code>, <code>import_cycle_a</code> + helper <code>import_cycle_b_provider</code> (move to <code>known_issues</code> expecting FS-IMP-0002; B24)</td>
+<td></td>
+<td><code>import_errors</code> (all JS-style imports die with one rule; rewrite for nonexistent module / symbol), <code>export_visibility_private</code> (B52), <code>deferred_generic_call_errors</code>, <code>deferred_generic_call_empty_type_args</code>, <code>import_syntax_errors</code> (dups l.16/19/22 with <code>declaration_dispatch_errors</code>)</td>
+</tr>
+<tr>
+<td><code>match/</code> (S8)</td>
+<td>see 5.0 (the three singles or the 3 cases in <code>match_syntax_errors</code>)</td>
+<td></td>
+<td><code>match_syntax_errors</code> (4 cascade annotations)</td>
+</tr>
+<tr>
+<td><code>control_flow/</code> (S8)</td>
+<td><code>assignment_target_errors</code>, <code>assignment_undefined_chain</code> (5.0), <code>for_c_style_missing_semicolon</code> (5.0), <code>dangling_else_errors</code> (low; dup of <code>syntax/syntax_errors:28</code>)</td>
+<td></td>
+<td><code>control_flow_invalid</code> (import println; move <code>break</code>/<code>continue</code> into a function body to avoid the bogus PARSE-0010, B47), <code>statement_form_errors</code> (l.30 un-annotated), <code>for_in_extra_tokens</code> (recovery noise)</td>
+</tr>
+<tr>
+<td><code>syntax/</code> (S9)</td>
+<td><code>syntax_comprehensive</code> (move the <code>while {</code> idea first)</td>
+<td><code>statement_dispatch_errors</code> (trim l.11/26/32 dups), <code>declaration_dispatch_errors</code> (keep <code>T: Box&lt;int32&gt;</code>, <code>if ()</code>/<code>while ()</code>), <code>expression_operand_errors</code></td>
+<td><code>syntax_errors</code> (import println, add the semicolons not under test; 9 annotations are <code>print</code> noise)</td>
+</tr>
+<tr>
+<td><code>expressions/</code> (S9)</td>
+<td><code>cast_to_class_type</code>, <code>implicit_assign_undefined_rhs</code> (see 5.0)</td>
+<td></td>
+<td><code>expression_at_eof</code> (annotation comment creates its own diagnostic; B29), <code>compound_assignment_missing_rhs</code>, <code>postfix_cast_after_broken_paren</code> (cascades)</td>
+</tr>
+<tr>
+<td><code>enums/</code> (S9)</td>
+<td></td>
+<td></td>
+<td><code>enum_body_syntax_errors</code>, <code>enum_def_errors</code> (INCORRECT until B28 is fixed: move to known_issues or accept; each pins 4-diagnostic noise), stale <code>// EXPECT:</code> comments in <code>enum_generic_unsupported</code>, <code>enum_variant_arity_mismatch</code></td>
+</tr>
+<tr>
+<td><code>strings/</code> (S9)</td>
+<td><code>string_length_arg_count</code>, <code>string_unknown_method</code> (both in <code>string_method_errors</code>)</td>
+<td></td>
+<td>add reverse-order <code>42 + "x"</code> to <code>string_implicit_conv_error</code></td>
+</tr>
+<tr>
+<td><code>functions/</code> (S9)</td>
+<td><code>builtin_arg_count_errors</code> or <code>reserved_name_typeof_arg_count</code> (B50)</td>
+<td></td>
+<td><code>function_errors</code> (INCORRECT: 8 of 9 documented cases emit nothing; rewrite with imported println, keep undefined-function case, move rest to known_issues; add duplicate-function and missing-return siblings), <code>function_def_syntax_errors</code> (comment l.8 wrong)</td>
+</tr>
+<tr>
+<td><code>scoping/</code> (S9)</td>
+<td></td>
+<td></td>
+<td><code>scope_errors</code> (l.13 top-level use-before-declaration B43; l.29-30 duplicate param confounded by global <code>x</code>; add a clean free-function duplicate-param test)</td>
+</tr>
+<tr>
+<td><code>operators/</code> (S9)</td>
+<td></td>
+<td><code>logical_and_increment_errors</code> -&gt; fold into <code>types/</code> (only <code>a || true</code> is new)</td>
+<td><code>operator_errors</code> (see top of this section)</td>
+</tr>
+<tr>
+<td><code>literals/</code>, <code>nullable/</code>, <code>declarations/</code>, <code>generators/</code> (S9)</td>
+<td></td>
+<td></td>
+<td><code>literal_errors</code> (split: keep cases that error; move overflow/<code>\q</code> to known_issues; B45); <code>nullable_errors</code> (stale header comment)</td>
+</tr>
+<tr>
+<td><code>known_issues/</code> (S9)</td>
+<td>none</td>
+<td></td>
+<td>all 11 valid (verified: <code>--check</code> reports no diagnostics; header ICE claims not verified); add <code>@col</code> once checks land; decide FS-SEM-0002 vs FS-SEM-0010 for return/yield</td>
+</tr>
+</tbody>
+</table>
+<p><strong>MISSING coverage (compile-fail)</strong> - most currently fail, i.e. belong in <code>known_issues/</code> first:
+- classes: duplicate class/field, class name as variable, unknown base class, cyclic inheritance (B33/B40); derived ctor not calling <code>this.super</code>; <code>this.super(...)</code> outside ctor; field assignment type mismatch (B34); calling <code>&amp;mut this</code> method via <code>&amp;this</code>; unknown field via <code>this.</code> in non-generic class.
+- borrow: assigning/mutating through <code>&amp;param</code>, storing a borrowed param into a field, <code>fn f(&amp;x: int32)</code> "Cannot borrow Copyable" (only in <code>tests/python/semantic/test_semantic_analyzer_internals.py:179</code>), partial move, double move <code>consume(a); consume(a);</code>, in-loop move (B38/B39).
+- generics: wrong arg count on generic class (B36), wrong arg type on generic call (B35), undefined constraint (B32), constraint violation on generic class arg, duplicate type-param names.
+- arrays/types: initializer-size mismatch (B23), mixed-type literal (B16), element assignment type, <code>int32 + int64</code> mixing, <code>&lt;</code>/<code>&gt;</code> on bool/string/class, <code>-</code> on string/bool, <code>**</code> type errors, class-typed mismatch, unsuffixed-literal range (<code>int8 x = 200</code>).
+- imports: nonexistent module, nonexistent symbol, name collision, alias collision, import not at top, real cycle (FS-IMP-0002), relative import rejection.
+- match: arm type mismatch, non-exhaustive value form, non-enum scrutinee, wrong enum, zero arms, pattern arity; (B17).
+- others: nullable -&gt; non-nullable (B46), literal overflow (B45), <code>5 = 10</code> (B44), duplicate function/missing return, undefined function in expression (B18), duplicate enum name, enum/class name collision, <code>yield</code> wrong type, <code>generator&lt;void&gt;</code>, same-scope redeclaration message (B51), lone <code>}</code>/stray <code>)</code> at top level (B30), unterminated block comment.</p>
+<h3 id="53-python-tests-testspythondir">5.3 Python tests (<code>tests/python/&lt;dir&gt;/</code>)<a class="headerlink" href="#53-python-tests-testspythondir" title="Permanent link">&para;</a></h3>
+<p>Policy decision first (section 7, dead-guard policy item): whether to delete the contrived dead-guard tests and the dead production code (<code>expect()</code>, <code>_recover_to_statement_boundary</code>, <code>_resolve_struct_type</code>, <code>_StateDict</code>, <code>OwnershipMap.declare/...</code>) together. Counts below are P-shard "delete candidates"; full name lists are in the raw sections cited.</p>
+<table>
+<thead>
+<tr>
+<th>Dir / file</th>
+<th>Tests</th>
+<th>Delete</th>
+<th>Merge</th>
+<th>Fix-assertion</th>
+<th>Clusters and pointers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>parser/test_ast_node.py</code></td>
+<td>2</td>
+<td>1</td>
+<td></td>
+<td></td>
+<td><code>test_repr_matches_str</code> (P1 DELETE list)</td>
+</tr>
+<tr>
+<td><code>parser/test_declarations_coverage.py</code></td>
+<td>19</td>
+<td>16</td>
+<td>2</td>
+<td></td>
+<td>dup of <code>invalid/*</code> single-case files; move <code>test_function_definition_rejects_missing_name</code>, <code>..._missing_open_paren</code> into <code>invalid/functions/function_def_syntax_errors.fire</code> as <code>//~</code> lines then delete; <code>test_function_definition_array_param_bad_size_token</code> INCORRECT name; KEEP <code>test_function_definition_owned_array_param</code></td>
+</tr>
+<tr>
+<td><code>parser/test_declarations_dead_guards.py</code>, <code>_more.py</code></td>
+<td>4 + 8</td>
+<td>12</td>
+<td></td>
+<td></td>
+<td>all dead guards; 2 exact duplicates; <code>..._type_param_consume</code> INCORRECT (reaches the wrong guard)</td>
+</tr>
+<tr>
+<td><code>parser/test_expressions_dead_guards.py</code>, <code>test_statements_dead_guards.py</code></td>
+<td>7 + 16</td>
+<td>23</td>
+<td></td>
+<td></td>
+<td>dead guards; some assert only <code>&gt;=1 error</code></td>
+</tr>
+<tr>
+<td><code>parser/test_parser_base.py</code></td>
+<td>51</td>
+<td>27</td>
+<td>13</td>
+<td>1</td>
+<td><code>*_error_records_error</code> helpers with no callers; <code>expect()</code> and <code>_recover_to_statement_boundary</code> dead; merge 6 <code>_infer_literal_type</code> tests into one <code>@t.params</code>, 4 EOF tests into one, 3 <code>_looks_like_generic_constructor_call</code> negatives into one; fix <code>test_report_error_with_no_token_anchors_after_last_real_token</code> (exact line/col); KEEP 10</td>
+</tr>
+<tr>
+<td><code>parser/test_statements_coverage.py</code></td>
+<td>3</td>
+<td></td>
+<td></td>
+<td>3</td>
+<td>PINS-BUG B15/B13: add <code>tests/sources</code> known issue; decide parser reject vs lower</td>
+</tr>
+<tr>
+<td><code>parser/test_type_system*.py</code> (<code>test_type_system</code>, <code>_coverage</code>, <code>_dead_guards</code>, <code>_dead_guards_more</code>)</td>
+<td>3+1+10+18</td>
+<td>29</td>
+<td></td>
+<td>1</td>
+<td>THREE copies of <code>test_annotate_value_category_swallows_exception</code>; stale "class methods can't return arrays"; <code>test_function_call_return_type_fallback_assignment_is_dead</code> pins a latent bug; two tautologies (<code>t.require(True)</code>)</td>
+</tr>
+<tr>
+<td><code>parser/test_generic_self_reference.py</code></td>
+<td>3</td>
+<td>0</td>
+<td></td>
+<td></td>
+<td>KEEP (mutation-verified)</td>
+</tr>
+<tr>
+<td><code>lexer/test_lexer_internals.py</code></td>
+<td>1</td>
+<td>1</td>
+<td></td>
+<td></td>
+<td>no real lexer test exists in the dir (gap)</td>
+</tr>
+<tr>
+<td><code>preprocessor/test_preprocessor_internals.py</code></td>
+<td>14</td>
+<td>4</td>
+<td>1</td>
+<td>6</td>
+<td>fix: assert drops after <code>return consume(str_var)</code>, ctor-call variant, implicit-declaration (<code>drop(v1)</code> inserted); <code>test_break/continue_outside_loop...</code> tautology</td>
+</tr>
+<tr>
+<td><code>semantic/test_semantic_analyzer_internals.py</code></td>
+<td>22</td>
+<td>4</td>
+<td>10</td>
+<td>2</td>
+<td>merge-state truth table misses the (MOVED,VALID)-&gt;MAYBE_MOVED row (mutant M19 survives); add the missing invalid <code>.fire</code> for "Cannot borrow Copyable" and match enum-mismatch</td>
+</tr>
+<tr>
+<td><code>semantic/test_semantic_analyzer_report_error.py</code></td>
+<td>4</td>
+<td>3</td>
+<td>1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>imports/test_module_resolver.py</code></td>
+<td>16</td>
+<td>13</td>
+<td></td>
+<td>1</td>
+<td>dup of <code>_extra</code>; pins B24/B25; <code>..._skips_external_in_topo_visit</code>, <code>..._skips_export_with_no_name</code> INCORRECT</td>
+</tr>
+<tr>
+<td><code>imports/test_module_resolver_extra.py</code></td>
+<td>16</td>
+<td>1</td>
+<td></td>
+<td>3</td>
+<td><code>..._topo_sort_skips_external_kind_modules</code> equivalent mutant (cannot fail); cycle test passes while real cycles undetected</td>
+</tr>
+<tr>
+<td><code>fir/test_verifier_types.py</code></td>
+<td>57</td>
+<td>31</td>
+<td></td>
+<td></td>
+<td>duplicates of <code>test_verifier_more.py</code> (same names/bodies); keep one copy per branch, in one file with <code>@t.params</code>; P2 lists names</td>
+</tr>
+<tr>
+<td><code>fir/test_verifier_more.py</code></td>
+<td>84</td>
+<td>8 (D2-misfiled -&gt; merge into one params test) + 3</td>
+<td>1</td>
+<td>5</td>
+<td>misfiled "FIRV-D2 on a bogus ParamValue" under T7/T11/T2/T4/G1/G3; delete <code>test_var_access_declared_type_none_is_skipped</code>, <code>test_t6_method_call_arg_modes_count_mismatch</code>; fix <code>test_resolve_method_traverses_base_chain</code>, <code>test_type_assignable_skips_check_on_invalid_operand</code></td>
+</tr>
+<tr>
+<td><code>fir/test_verifier_types_extra.py</code></td>
+<td>17</td>
+<td>15</td>
+<td></td>
+<td></td>
+<td>2 misnamed</td>
+</tr>
+<tr>
+<td><code>fir/test_verifier_structural_and_method_call.py</code></td>
+<td>17</td>
+<td>14</td>
+<td></td>
+<td></td>
+<td>keep <code>test_s1_function_with_no_blocks</code>, <code>test_t6_method_call_arg_mode_count_mismatch</code></td>
+</tr>
+<tr>
+<td><code>fir/test_verifier_structure.py</code></td>
+<td>20</td>
+<td>14</td>
+<td></td>
+<td></td>
+<td>keep S2-S5, L1, clean module</td>
+</tr>
+<tr>
+<td><code>fir/test_verifier_checks.py</code></td>
+<td>29</td>
+<td>5</td>
+<td></td>
+<td>2</td>
+<td>fix <code>test_t8_array_copy_non_array_dst_and_src</code> (split dst/src)</td>
+</tr>
+<tr>
+<td><code>fir/test_verifier_ownership.py</code>, <code>_extra.py</code>, <code>test_ownership_verifier_checks.py</code></td>
+<td>15+20+8</td>
+<td>about 8 (exact dup <code>test_o6_clone_non_owned</code>; <code>_StateDict</code>; <code>_ident_text</code> temp; trivial <code>meet_states</code> empty)</td>
+<td></td>
+<td>about 8</td>
+<td>E1/G4 guard tests under-tested: add wrong-tag, non-dominating guard, valid twin; fold enum-guard "skips" tests</td>
+</tr>
+<tr>
+<td><code>fir/test_ast_to_fir_errors.py</code>, <code>_pipeline_errors.py</code></td>
+<td>68 + 9</td>
+<td>about 20 (trivial <code>must not raise</code>) + 2 dups</td>
+<td></td>
+<td>1 INCORRECT</td>
+<td>move <code>test_for_in_over_array_returning_function_call_hits_known_verifier_bug</code> to a failing <code>.fire</code> (B07); stale docstring on <code>x++ + 1</code>; <code>_expect_conversion_error</code> accepts any message</td>
+</tr>
+<tr>
+<td><code>fir/test_builder.py</code>, <code>test_dump.py</code>, <code>test_ir_analysis.py</code>, <code>test_ir_types.py</code>, <code>test_ownership_map.py</code></td>
+<td>5+12+3+7+8</td>
+<td>about 14 (<code>test_ownership_map</code> 8, <code>test_ir_types</code> 5, <code>test_borrow_produces_a_value</code>)</td>
+<td></td>
+<td></td>
+<td>dead API; test_dump KEEP those not in snapshots</td>
+</tr>
+<tr>
+<td><code>errors/</code>, <code>utils/</code>, <code>log_formatter/</code></td>
+<td>2+9+12+7</td>
+<td>about 8</td>
+<td></td>
+<td>2</td>
+<td>fix <code>test_to_log_string_without_snippet_omits_caret_line</code> (line=3,col=2,snippet=None), log_formatter Windows test (mock <code>platform.system</code>)</td>
+</tr>
+<tr>
+<td><code>flir/test_verifier_extra.py</code></td>
+<td>41</td>
+<td>29</td>
+<td></td>
+<td>1-2</td>
+<td>duplicates of <code>structure</code>/<code>types</code>/<code>checks</code>; delete <code>test_resolve_struct_type_is_dead_code...</code> with the dead function; fix <code>test_s1_empty_block</code>, rename <code>test_s2_mutable_global_name_collides_with_immutable</code></td>
+</tr>
+<tr>
+<td><code>flir/test_verifier_structure.py</code>, <code>_types.py</code>, <code>_checks.py</code>, <code>_heap.py</code></td>
+<td>18+34+40+8</td>
+<td>1 + 4</td>
+<td>1+2+4</td>
+<td>2 +</td>
+<td>INCORRECT <code>test_s2_rejects_field_referencing_unresolved_struct</code>; fix <code>types::test_t2_cvt_from_type_not_scalar</code>, <code>test_m2_load_misaligned_offset</code></td>
+</tr>
+<tr>
+<td><code>flir/test_heap_verifier_checks.py</code>, <code>_loops.py</code>, <code>_defensive.py</code></td>
+<td>44+10+4</td>
+<td>4 (defensive, all contrived)</td>
+<td>2+5</td>
+<td>4+1</td>
+<td>fix <code>test_m4_store_through_slot_loaded_string_literal_alias_is_not_resolved</code> (INCORRECT vs spec), E5 tests, <code>test_a2_use_after_free_across_back_edge_is_reported</code></td>
+</tr>
+<tr>
+<td><code>flir/test_ir_analysis_edges.py</code>, <code>test_dump.py</code>, <code>test_textual_dump.py</code>, <code>test_ir_helpers.py</code></td>
+<td>28+3+3+11</td>
+<td>2+3+2+6</td>
+<td>2</td>
+<td>1</td>
+<td><code>test_cfg_rpo_is_deterministic_across_builds</code> cannot detect nondeterminism (use subprocess with different <code>PYTHONHASHSEED</code>)</td>
+</tr>
+<tr>
+<td><code>flir/test_lowering_defensive_errors.py</code>, <code>test_lowering_type_edge_cases.py</code></td>
+<td>25+14</td>
+<td>21 + 4 (contrived; owner policy)</td>
+<td></td>
+<td>1</td>
+<td><code>...float128_operator</code> INCORRECT (B11)</td>
+</tr>
+<tr>
+<td><code>flir/test_lowering_float128.py</code>, <code>_f128_decimal.py</code>, <code>_f128_decimal_more.py</code></td>
+<td>16+21+23</td>
+<td>8 + 3 + 18</td>
+<td></td>
+<td>1</td>
+<td>canonical: <code>float128</code> (oracle-based) + <code>f128_decimal</code>; keep 5 from <code>_more</code> (<code>test_suffix_stripped_other_float_suffixes</code>, <code>test_negative_overflow_to_infinity</code>, <code>test_negative_underflow_to_zero</code>, <code>test_round_half_even_below_half</code>, <code>test_round_half_even_above_half</code>); <code>..._subnormal_rounding_clamps...</code> INCORRECT (B12)</td>
+</tr>
+<tr>
+<td><code>backend/test_assembler_unit.py</code></td>
+<td>39</td>
+<td>33</td>
+<td>3</td>
+<td></td>
+<td>keep <code>test_mem_unknown_base_plus_index_errors</code>, <code>test_call_to_undefined_runtime_symbol_errors</code>, <code>test_asciz_octal_escape</code>; add to <code>test_asm_encoding.CASES</code>: <code>not ax</code>, <code>mov byte ptr [rbp-1], 5</code>, jcc/call/jmp label forms (<code>jb</code> mutant survives)</td>
+</tr>
+<tr>
+<td><code>backend/test_pe_writer_more.py</code></td>
+<td>4</td>
+<td>4</td>
+<td></td>
+<td></td>
+<td>all dup of <code>test_pe_writer.py</code></td>
+</tr>
+<tr>
+<td><code>backend/test_asm_encoding.py</code>, <code>test_pe_writer.py</code>, <code>test_pe_inspect.py</code></td>
+<td>27+5+9</td>
+<td>2 + 0 + 1</td>
+<td></td>
+<td></td>
+<td>differential <code>as</code> test: fail instead of silent downgrade; <code>test_imported_dlls_sorted</code> never tests sorting; add name-import unit test</td>
+</tr>
+<tr>
+<td><code>backend/test_flir_to_asm_errors.py</code>, <code>_coverage.py</code></td>
+<td>6+26</td>
+<td>9</td>
+<td>8 <code>_escape_asciz</code> -&gt; one params table</td>
+<td>about 9</td>
+<td><code>test_cvt_u64_to_f64</code> must assert the sticky-bit sequence (B03); <code>test_struct_param_via_stack</code> assert <code>[rbp + 48]</code>; fix stale docstrings</td>
+</tr>
+<tr>
+<td><code>cli/*</code></td>
+<td>11+4+2+6+6+4+14+1+32+2+2+2+11</td>
+<td>2 (targets) + 3 (check) + 1 + 1 + 8 (main_internals)</td>
+<td>params merges (invalid choice, debug)</td>
+<td>about 16 weak (rc-only); <code>test_dir_partial_failure</code>, <code>test_dir_with_unsupported_target_counts_failures</code> INCORRECT (B26)</td>
+<td>add <code>lint_text</code> semantic-error test (mutation survives) and LSP tests (B27); shared <code>build/functions.exe</code> hazard</td>
+</tr>
+<tr>
+<td><code>harness/*</code></td>
+<td>8+13+8+7+7</td>
+<td>2 (<code>test_matrix</code>)</td>
+<td></td>
+<td>directive error tests assert no message; <code>test_default_registry_has_only_default_cell</code> weak</td>
+<td></td>
+</tr>
+<tr>
+<td><code>float128/*</code></td>
+<td>13+1</td>
+<td>2</td>
+<td></td>
+<td>6 weak</td>
+<td>oracle suite does not catch <code>_rne</code> / <code>_round_digits</code> tie mutants (add tie vectors); oracle itself verified correct vs libquadmath (0 mismatches over 32,000 ops); add a committed runtime-vs-oracle replay (<code>vectors()</code> is never replayed)</td>
+</tr>
+</tbody>
+</table>
+<p>Missing Python-level coverage: P2 mutation survivors (<code>-128i8</code>, int-bound off-by-one, float index, comparison nullable allowance, base-chain method resolution, inherited field resolution, owned-value Return consumption O11, Allocate consumption O12, unary <code>+</code>); P1 <code>_looks_like_generic_constructor_call</code> positive case; a real lexer test.</p>
+<h3 id="54-known-issue-tests-to-add-so-the-bugs-are-tracked">5.4 Known-issue tests to add (so the bugs are tracked)<a class="headerlink" href="#54-known-issue-tests-to-add-so-the-bugs-are-tracked" title="Permanent link">&para;</a></h3>
+<p>CLAUDE.md names <code>tests/sources/known_issues/</code> and <code>tests/sources/invalid/known_issues/</code>; only the latter exists. Whether the harness already discovers a run-kind <code>tests/sources/known_issues/</code> was not verified (S4: the directory does not exist) - confirm before adding.</p>
+<table>
+<thead>
+<tr>
+<th>Bug</th>
+<th>Proposed file</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B01, B02, B03</td>
+<td><code>known_issues/float_nan_comparisons</code>, <code>float_pow_fractional_exponent</code>, <code>conversions_uint64_to_float_sticky_bit</code></td>
+</tr>
+<tr>
+<td>B04</td>
+<td><code>known_issues/function_reads_global</code></td>
+</tr>
+<tr>
+<td>B05, B06</td>
+<td><code>known_issues/nullable_string_param</code>, <code>nullable_string_return</code></td>
+</tr>
+<tr>
+<td>B07, B08a/b/c</td>
+<td><code>known_issues/function_returns_array_literal</code>, <code>const_bool</code>, <code>const_char</code>, <code>const_string</code></td>
+</tr>
+<tr>
+<td>B09, B10</td>
+<td><code>known_issues/generator_nested_for_in</code>, <code>function_missing_return_string</code></td>
+</tr>
+<tr>
+<td>B11, B12</td>
+<td><code>known_issues/float128_pow</code> (crash; compile-fail once diagnosed), float128 subnormal literal (Python-level)</td>
+</tr>
+<tr>
+<td>B13, B14, B15</td>
+<td><code>known_issues/nested_generic_class_type_arg</code>, <code>constructor_borrowed_and_owned_param</code>, bare <code>arr[0];</code> and <code>directive</code> in a function body</td>
+</tr>
+<tr>
+<td>B16, B17, B18</td>
+<td><code>invalid/known_issues/array_literal_mixed_types</code>, <code>array_element_assign_type</code>, <code>match_arm_type_mismatch</code>, <code>match_wrong_enum</code>, <code>undefined_function_in_expression_with_import</code></td>
+</tr>
+<tr>
+<td>B24</td>
+<td><code>invalid/known_issues/import_cycle</code> (expect FS-IMP-0002; replaces <code>import_cycle_a</code>)</td>
+</tr>
+<tr>
+<td>B30, B31</td>
+<td><code>invalid/known_issues/stray_closing_bracket_in_function</code>, <code>braceless_if_at_eof</code></td>
+</tr>
+<tr>
+<td>B33-B40, B43-B47</td>
+<td>one file per bug in <code>invalid/known_issues/</code> (duplicate class/field, field type mismatch, generic arg type, class type-arg count, <code>new Box&lt;int32&gt;(5)</code>, borrow holes x4, loop move, unknown base/cyclic inheritance, top-level use-before-decl, non-lvalue assignment, literal overflow, nullable to non-nullable)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-recommended-order-of-operations-and-risk-notes">6. Recommended order of operations and risk notes<a class="headerlink" href="#6-recommended-order-of-operations-and-risk-notes" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Safe first: duplicate deletions</strong> (5.1/5.2 DELETE columns marked REDUNDANT with a named surviving copy; Python DELETE for exact duplicates). Resolve table 5.0 first so you never delete both sides. Update <code>tests/TEST_MANIFEST.md</code> in the same commit (e.g. line ~634 for the intersection tests; sections for <code>performance/</code> and <code>edge_cases/</code>).</li>
+<li><strong>Fix the currently failing test</strong> (<code>invalid/operators/operator_errors.fire</code> line 60 annotation) in its own commit; it needs no compiler change.</li>
+<li><strong>Fix wrong-reason compile-fail tests</strong> (add <code>import @firescript/std.io.println;</code>, drop cascade annotations, rewrite obsolete syntax, split comprehensive files, move un-annotated scenarios to <code>known_issues</code>). Do not drop cascade annotations if the harness requires every diagnostic to be annotated (S8 asked "if harness allows"): verify first.</li>
+<li><strong>Fix weak run tests</strong> (sentinel lines for the trailing-blank-line harness behavior, <code>%f</code>-hiding comparisons, snapshot directives for drop tests, heap-payload tests). Expected values listed in the reports were verified to pass today unless marked "fails until B0x".</li>
+<li><strong>Add missing coverage and known-issue tests</strong> (5.4). Tests that expose bugs go to <code>known_issues</code>, not to normal directories (CLAUDE.md "Never Skip Tests": they must fail loudly, with a header comment).</li>
+<li><strong>Fix compiler bugs</strong>, then move the corresponding known-issue test (and the tests that pin the buggy behavior, theme 7) to correct expectations in the same commit as the fix (CLAUDE.md: bug fix includes its regression test). Highest value first: ICEs and silent wrong results (B01-B24), then the borrow/diagnostic holes.</li>
+<li><strong>Decide the doc conflicts</strong> (section 4) before touching the tests they affect (D01, D06, D07, D10, D05 gate many deletions). Doc changes update <code>[IMPLEMENTED]/[IN DEVELOPMENT]/[PLANNED]</code> markers in the same commit.</li>
+<li><strong>Python cleanup last</strong>, after the owner's policy call on contrived dead-guard tests; delete production dead code and its tests together; run the full suite between steps.</li>
+</ol>
+<p>Risk notes:
+- Never edit expectations just to pass (CLAUDE.md). The only legitimate expectation edits here are where an intentional, documented behavior change occurred (operator_errors line 60) or where the test pins a bug and the bug is being fixed.
+- One logical change per commit (CLAUDE.md): each cleanup area (or each deleted cluster) its own commit; user-facing changes (diagnostics, new errors, doc markers) update <code>docs/changelog.md</code> under "Currently in Development"; do not bundle test cleanup with compiler fixes.
+- Deleting a test that carries a snapshot (<code>arrays_iteration_for_in</code>, <code>generics_modulo_type_param</code>, <code>types_int64</code>) loses the snapshot: move the <code>//@ snapshot:</code> directive first; snapshot files live in <code>tests/snapshots/&lt;category&gt;/</code>.
+- Deleting "regression" tests (<code>imports_symbol_alias</code>, <code>option_issome_isnone</code>, <code>strings_for_in_regression_*</code>) is a judgment call; the reports mark them "soft".
+- Deleting dead-guard Python tests lowers line coverage; coverage is a diagnostic, not a target (CLAUDE.md), but confirm no coverage gate exists.
+- Some audited claims are not independently verified: "no other test covers X" claims rest on grep, not semantic analysis (S1, S3); snapshot content was not reviewed; native-Windows behavior unverified (wine only, S3); whether the harness picks up a run-kind <code>known_issues/</code> directory; header claims in the 11 <code>known_issues</code> files about FIR/FLIR verifier errors (S9). The P3 report notes a sibling's FIR-mutation script was accidentally run in P3's private copy (no effect on the repo).
+- Wine/Linux runs only; native Windows or other targets not exercised.</p>
+<hr />
+<h2 id="7-decisions-needed-from-the-owner">7. Decisions needed from the owner<a class="headerlink" href="#7-decisions-needed-from-the-owner" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[ ] D01: integer overflow: trap, or document wraparound? (gates 4 tests and B22)</li>
+<li>[ ] D02: array bounds and size mismatch: check, or document as unchecked?</li>
+<li>[ ] D03: nested arrays: add <code>[PLANNED]</code> marker (or implement)?</li>
+<li>[ ] D04: <code>&amp;</code> intersection constraints: reject now, or implement?</li>
+<li>[ ] D05: keep or remove the legacy <code>toInt/toChar/...</code> and <code>i32_to_f64/...</code> builtins?</li>
+<li>[ ] D06: receiver-less methods/ctors, <code>owned this</code> / <code>&amp;this</code> ctors, <code>Type.Type(args)</code>: document or reject? (decides how much of <code>invalid/classes</code> is rewritten)</li>
+<li>[ ] D07: enforce the copyable-class field rule? (and generic <code>copyable class Pair&lt;T,U&gt;</code> with <code>string</code>)</li>
+<li>[ ] D09: write an enums/match reference page; allow expression-bodied arms in statements?</li>
+<li>[ ] D10: contextual typing for unsuffixed literals, or require suffixes?</li>
+<li>[ ] D11/D12: fix or re-mark cyclic-import detection and global reads from functions/top-level use-before-declaration.</li>
+<li>[ ] D14: braceless bodies and the dangling <code>if</code> at EOF: allow or reject?</li>
+<li>[ ] D15: missing-return semantics (diagnostic vs documented implicit zero).</li>
+<li>[ ] D17: entry-vs-import and import-vs-import symbol conflicts: error or entry-wins?</li>
+<li>[ ] D18: float -&gt; int out-of-range/NaN/inf semantics.</li>
+<li>[ ] D19: string/array behaviors pinned but undocumented (<code>.size()</code>, <code>as string</code> on arrays, <code>println(array)</code>, substring clamping, byte-based length).</li>
+<li>[ ] D20: borrow-checker holes and moves in loops: close, or narrow the docs?</li>
+<li>[ ] B26: should <code>--dir</code> exit nonzero when any/all files fail? (fix the two tests that pin 0)</li>
+<li>[ ] Error codes for return/yield type mismatch in the known_issues files (FS-SEM-0002 vs FS-SEM-0010) and whether to pin <code>@col</code>.</li>
+<li>[ ] Policy: delete contrived dead-guard Python tests (about 145) and their dead production code together?</li>
+<li>[ ] Policy: keep soft regression tests that duplicate coverage (about 6 run tests), or apply "one behavior per file" strictly?</li>
+<li>[ ] Confirm the harness discovers a run-kind <code>tests/sources/known_issues/</code> before bugs B01-B24 are added there.</li>
+<li>[ ] Approve the order in section 6 and the "one cleanup area per commit" granularity.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Alec Jensen
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1729,6 +1729,7 @@ quot: int32 = a / b;   // 3  (integer division truncates toward zero)
 rem: int32  = a % b;   // 1
 pow: int32  = a ** b;  // 1000
 </code></pre>
+<p>For floating point operands <code>**</code> follows IEEE 754 <code>pow</code>: fractional exponents are supported (<code>2.0 ** 0.5</code> is <code>1.414214</code>), a negative base with a non-integer exponent is NaN, and zero/infinity/NaN operands follow the standard special-value rules. [IMPLEMENTED]</p>
 <p>Integer division truncates toward zero. Modulo returns the remainder with the same sign as the dividend (C-style, not Python-style).</p>
 <p>The <code>+</code> operator is also used for string concatenation. Both operands must be strings — there is no implicit conversion. Cast non-string values explicitly with <code>as</code>:</p>
 <pre><code class="language-firescript">msg: string = &quot;Value: &quot; + (42 as string);  // &quot;Value: 42&quot;

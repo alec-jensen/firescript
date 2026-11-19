@@ -1,0 +1,1551 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://firescript.alecj.com/internal/test_audit/S3_types_conversions_ops/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>S3 types conversions ops - firescript</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lexend:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Lexend";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#s3-audit-types-conversions-operators-edge_cases-identifiers-io-53-files" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            firescript
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              S3 types conversions ops
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../reference/overview/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../glossary/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Glossary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../benchmarks.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Benchmarks
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    firescript
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types & Variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/control_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions & Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes & Inheritance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/scoping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scoping Rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/type_system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/memory_management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/imports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Standard Library
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Standard Library
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/fs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/math/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Math
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/regex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/cli_args/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-Line Arguments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    kiln
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    kiln
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../benchmarks.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#delete-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DELETE-candidate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merge-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MERGE-candidate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fix-expectation-fix-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FIX-EXPECTATION / FIX-TEST
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KEEP
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#counts-53-files-a-file-can-carry-several" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Counts (53 files; a file can carry several)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/test_audit/S3_types_conversions_ops.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<!-- Audit shard report, 2026-11-18. Raw audit output; see README.md for the consolidated plan. Verdicts are recommendations, not applied changes. -->
+<h1 id="s3-audit-types-conversions-operators-edge_cases-identifiers-io-53-files">S3 audit: types / conversions / operators / edge_cases / identifiers / io  (53 files)<a class="headerlink" href="#s3-audit-types-conversions-operators-edge_cases-identifiers-io-53-files" title="Permanent link">&para;</a></h1>
+<p>Method: every file compiled + run in a private temp dir (wine) with my own runner; all 53 outputs MATCH their EXPECT
+blocks, so no test is stale. Numerics re-derived with a Python oracle (two's-complement wrap, struct float32 rounding,
+printf %f for float64). All EXPECT <em>values</em> are arithmetically right under the compiler's actual semantics; the
+INCORRECT verdicts below are about pinning behavior that contradicts the docs or is undefined/undocumented.
+Docs facts used: type_system.md L141-153 and error_handling.md L31-38 say fixed-width int overflow TRAPS at runtime
+(compile error if constant-detectable). Float printing is printf "%f" (6 digits; stated in special_types/float128_ops.fire).
+Harness normalisation (tests/harness/expectations.py:20) rstrips every line and strips trailing blank lines.</p>
+<h2 id="delete-candidate">DELETE-candidate<a class="headerlink" href="#delete-candidate" title="Permanent link">&para;</a></h2>
+<p>types/types_bool.fire | REDUNDANT, TRIVIAL | prints two bool literals; types_deep.fire (bool section), operators_boolean.fire, io_test.fire all do more
+types/types_tests.fire | REDUNDANT | every section (int ops, float32/64 add, bool, compare, string concat, int/string arrays) repeated in types_deep.fire + operators_arithmetic.fire + operators_comparison.fire
+operators/unary_test.fire | REDUNDANT | expressions/expressions_unary_and_incdec.fire covers -x, -(-x), +x; only extra is <code>y: int32 = -x</code> into a var and top-level <code>return 0;</code>
+conversions/conversions_to_string.fire | REDUNDANT | subset of conversions_to_string_all_types.fire (int32, float32, bool) with weaker values
+conversions/conversions_int_narrowing.fire | REDUNDANT | conversions_integer_wraparound.fire (70000 as int16/int8, uint64/int64 narrowing) covers it with more discriminating values
+conversions/conversions_int_widening.fire | REDUNDANT, WEAK | positive 42/100 cannot detect zero- vs sign-extension; wraparound test covers n8 as int64/uint32, u8 as int32/int64. Only the 3-deep cast chain is unique
+conversions/conversions_signed_unsigned.fire | REDUNDANT | u8-&gt;int8, u32-&gt;int32, neg-&gt;uint32 are all in conversions_integer_wraparound.fire
+edge_cases/edge_cases_comparisons.fire | REDUNDANT, TRIVIAL | literal 0/1 comparisons; operators_comparison.fire + operators_boolean.fire cover all of it
+edge_cases/edge_cases_arithmetic.fire | REDUNDANT, TRIVIAL | 1/1, 1.0f/2.0f, 0%5, 5%5, 1%5; operators_arithmetic.fire covers / and %
+edge_cases/edge_cases_strings.fire | TRIVIAL | length of "a" and "   "; strings/ tests cover length. (Missing the one real edge: "".length())
+edge_cases/edge_cases_overflow_underflow.fire | INCORRECT, REDUNDANT | see detail #1; its 6 lines are fully subsumed by types_int8 + types_uint8 (also INCORRECT)
+edge_cases/edge_cases.fire | REDUNDANT, WEAK | grab-bag: nested scopes (scoping/scoping_block_nesting.fire), compound assign (operators_arithmetic.fire), inc/dec (expressions_unary_and_incdec.fire), while-zero (edge_cases_loops), fn call, array index. Compound-assign chain ends at 0 so most mutations pass; labels are stale ("avoid empty array literals" while empty arrays are used elsewhere)
+edge_cases/edge_cases_nesting_and_functions.fire | REDUNDANT | 5-deep blocks -&gt; scoping/scoping_block_nesting.fire; if/else-if returns -&gt; functions/ + control_flow_if.fire
+edge_cases/edge_cases_arrays.fire | REDUNDANT | empty array length -&gt; arrays/arrays_basics.fire L10; single element / for-in covered in arrays/ and control_flow/for_in.fire</p>
+<h2 id="merge-candidate">MERGE-candidate<a class="headerlink" href="#merge-candidate" title="Permanent link">&para;</a></h2>
+<p>types/types_int8.fire + types_uint8.fire | INCORRECT (overflow lines) | after dropping the wrap lines, merge bounds into one "integer bounds" file (see #1)
+types/types_int16.fire, types_int32.fire, types_int64.fire, types_uint16.fire, types_uint32.fire, types_uint64.fire | KEEP-ish, MERGE | each prints min/max + one op; fine individually but one file ("integer bounds") would do. int64 keeps its snapshot directive. int16/uint16/uint32 min/max not covered elsewhere so keep content
+edge_cases/edge_cases_numeric_bounds.fire | REDUNDANT, TRIVIAL(floats) | i8/i32/u8/i64/u64 bounds duplicate types_int8/int32/int64/uint8/uint64; "small" floats 0.0001f/0.0000001 are printed with %f (0.000100 / 0.000000): the float64 case prints 0.000000 so it cannot distinguish 1e-7 from 0
+conversions/string_to_numeric_casts.fire | KEEP/MERGE | covers int64, uint64 max, float32 which conversions_string_to_numeric_all_types lacks; merge the three lines there
+conversions/conversions_int_float.fire | MERGE | int-&gt;float32/64, float32-&gt;int (42.75), float64-&gt;int64; partially in int_float_cast_matrix + wraparound; fold in
+conversions/conversions_in_expressions.fire | REDUNDANT-ish | expressions/expressions_casts.fire does (int as float32)/float32; int8+int16 widening sum is the only extra
+conversions/string_cast_test.fire | REDUNDANT, directive misuse | uses <code>directive enable_lowlevel_stdout</code> + stdout() (CLAUDE.md: no directives in tests unless testing the directive); covers all types as conversions_to_string_all_types does. Unique: signed max values, string-&gt;string identity, 0. Move those lines into all_types and drop this</p>
+<h2 id="fix-expectation-fix-test">FIX-EXPECTATION / FIX-TEST<a class="headerlink" href="#fix-expectation-fix-test" title="Permanent link">&para;</a></h2>
+<p>types/types_int8.fire | INCORRECT | <code>i8_max + 1i8</code> expects -128, <code>i8_min - 1i8</code> expects 127; docs say runtime trap/compile error (detail #1)
+types/types_uint8.fire | INCORRECT | <code>u8_max + 1u8</code> expects 0; same contradiction
+edge_cases/edge_cases_overflow_underflow.fire | INCORRECT | same; header even says "behavior may vary"
+conversions/builtin_conversions.fire | INCORRECT/WEAK | toInt/toFloat/toDouble/toBool/toChar/toString are NOT in docs/reference (only a v0.x changelog mention); pins toChar("65") -&gt; '6' (first char) while toChar(66) -&gt; 'B' (code point): inconsistent, undocumented (detail #2)
+conversions/builtin_conversions_numeric_source.fire | WEAK | same undocumented builtins; toBool(5)=true, toInt(9.75)=9 are plausible but unspecified. Ask owner whether these builtins are supported/deprecated
+conversions/int_float_cast_matrix.fire | INCORRECT (partly), WEAK | <code>200.9 as int8</code> -&gt; -56 pins out-of-range float-&gt;int result (undefined in C; docs only say "may truncate"). Probe shows the impl goes float-&gt;int64-&gt;truncate (1e10 as int32 = 1410065408, inf as int32 = 0) (detail #3)
+conversions/conversions_regression_uint64_to_float.fire | WEAK | claims to test the sticky bit but cannot (detail #4); real bug found
+conversions/conversions_float_precision.fire | WEAK | detail #5
+types/const_declarations_wide_types.fire | REDUNDANT, WEAK | PI32 float32 const duplicates const_declarations.fire SCALE; <code>it\'s here</code> duplicates strings/string_escape_edge_cases.fire; float128 const is declared-but-never-read so asserts only "compiles" (the underlying backend bug is described in its own header: that belongs in a known_issues test, not a silent drop)
+edge_cases/edge_cases_zero_values.fire | WEAK | <code>println("")</code> expectation is invisible: normaliser strips trailing blank lines, so a missing empty line would still pass. Put another println after it
+operators/operators_arithmetic.fire | WEAK (float pow) | <code>fbase ** fexp</code> only uses integer exponents (2.0<strong>3.0); real compiler bug hidden (detail #6)
+operators/operators_regression_power_assign.fire | KEEP, WEAK(float) | regression for </strong>=; only integer-valued exponents (1.5 **= 2.0)</p>
+<h2 id="keep">KEEP<a class="headerlink" href="#keep" title="Permanent link">&para;</a></h2>
+<p>types/char_type.fire | KEEP | char literals + escapes; note <code>'\d'</code>-&gt;'d' pins an undocumented fallback (commented); \r \0 \' \" not exercised though listed in header
+types/const_declarations.fire | KEEP | module-level consts incl. float32 global path
+types/literal_bases_and_separators.fire | KEEP | hex/bin/oct/<code>_</code>; values verified (0xDEAD_BEEF=3735928559, 0o755=493). Gap: no negative/uppercase-prefix/invalid-digit cases (check invalid/literals)
+types/types_deep.fire | KEEP (partially redundant) | only test doing add/sub across all int widths + float32/64/128 +,-,<em>,/. Bool/string/array/compare sections are redundant. All values verified (f128 1.5679.. etc). Prints at %f so float32-vs-64 differences are invisible
+types/types_float32.fire | KEEP, WEAK | %f hides single precision; values correct (3.14159f</em>2 = 6.283180) but a double-precision implementation gives identical output. Add e.g. 16777216.0f + 1.0f == 16777216.0f (I verified compiler does round in float32)
+types/types_float64.fire | KEEP, WEAK | 1e100 prints exact 101-digit expansion (== python '%f'%1e100, verified): good formatter check, but 1e-100 -&gt; 0.000000 is trivial
+conversions/conversions_integer_wraparound.fire | KEEP | strongest conversion test; all 24 outputs verified with oracle
+conversions/conversions_string_to_numeric_all_types.fire | KEEP | boundaries + "+7" + "1e3" (parse leniency undocumented). Gap: no invalid string ("abc", "300" as int8)
+conversions/conversions_to_string_all_types.fire | KEEP | all types at extremes
+conversions/numeric_casts.fire | KEEP (snapshot) | exists for fir/flir snapshots; casts are in-range so no truncation is checked
+operators/operators_boolean.fire | KEEP | truth tables; all 24 lines verified by hand
+operators/operators_comparison.fire | KEEP, WEAK | only small positive values: no negative/signed-vs-unsigned, high-bit uint32/uint64, NaN cases. (I probed unsigned/signed high-bit comparisons: all correct today, but nothing guards them)
+operators/operators_logical.fire | KEEP (snapshot) | mostly overlaps operators_boolean but carries fir/flir snapshots
+operators/operators_logical_short_circuit.fire | KEEP | good: observable side effects
+identifiers/identifiers_keyword_prefix.fire | KEEP | regression; add a <code>void</code>-prefixed identifier (lexer fix also covered VOID_LITERAL)
+io/io_test.fire | KEEP | only per-type print/println-without-newline test; float128/uint64 included
+edge_cases/edge_cases_loops.fire | KEEP (low value) | zero/one-iteration while/C-for/for-in-empty; control_flow/ has no zero-iteration cases, so keep</p>
+<h2 id="counts-53-files-a-file-can-carry-several">Counts (53 files; a file can carry several)<a class="headerlink" href="#counts-53-files-a-file-can-carry-several" title="Permanent link">&para;</a></h2>
+<p>KEEP-ish 22 | REDUNDANT 17 | TRIVIAL 4 | WEAK 14 | INCORRECT 5 (types_int8, types_uint8, edge_cases_overflow_underflow, builtin_conversions (pins inconsistent undocumented behavior), int_float_cast_matrix (partial))</p>
+<h1 id="detailed-evidence">Detailed evidence<a class="headerlink" href="#detailed-evidence" title="Permanent link">&para;</a></h1>
+<h2 id="1-incorrect-wraparound-pinned-where-docs-mandate-a-trap">#1 INCORRECT: wraparound pinned where docs mandate a trap<a class="headerlink" href="#1-incorrect-wraparound-pinned-where-docs-mandate-a-trap" title="Permanent link">&para;</a></h2>
+<p>types_int8.fire, types_uint8.fire, edge_cases_overflow_underflow.fire expect <code>127i8 + 1i8 = -128</code>, <code>-128i8 - 1i8 = 127</code>,
+<code>255u8 + 1u8 = 0</code>. docs/reference/type_system.md L141-153 and error_handling.md L31-38: "arithmetic ... that exceeds the
+representable range will throw an error at runtime ... constant expressions are compile-time errors". The compiler wraps
+silently (also int32: <code>2147483647 + 1</code> -&gt; -2147483648, <code>2 ** 31</code> -&gt; -2147483648, uint8 0-1 -&gt; 255; verified by probe).
+Either the compiler is wrong (and these must move to tests/sources/known_issues/ or become an expected-trap test), or the
+docs are stale; in both cases blessing wrap silently is wrong. Owner decision needed; stress_integer_overflow.fire
+(performance/, out of my slice) pins the same wrap. Suggested: delete the overflow lines from the three files; add one
+test that states the decided semantics (trap test, or <code>//</code> note + wrap test if docs get changed).</p>
+<h2 id="2-builtin_conversionsfire">#2 builtin_conversions.fire<a class="headerlink" href="#2-builtin_conversionsfire" title="Permanent link">&para;</a></h2>
+<p>toChar("65") expects <code>6</code>; toChar(66) (other file) expects <code>B</code>. TEST_MANIFEST documents "toChar on a string takes its first
+character's code point". No reference doc defines these builtins; parser/type_system.py L873 still special-cases them.
+Not wrong per se but unspecified and self-inconsistent; recommend confirming the builtins are supported, otherwise
+mark known-legacy. If kept, drop the toChar("65") line.</p>
+<h2 id="3-int_float_cast_matrixfire">#3 int_float_cast_matrix.fire<a class="headerlink" href="#3-int_float_cast_matrixfire" title="Permanent link">&para;</a></h2>
+<p><code>f1 as int8</code> (200.9) -&gt; -56, <code>as int16</code> -&gt; 200: out-of-range float-&gt;narrow-int is UB in C, docs only say "may lose
+precision or truncate". Probe results (all pinned nowhere): NaN as int32 = 0, inf as int32 = 0, inf as int64 =
+-9223372036854775808, 300.5 as uint8 = 44, -1.5 as uint8 = 255, -1.0 as uint64 = 18446744073709551615,
+2147483648.0 as int32 = -2147483648, 1e10 as int32 = 1410065408. Keep only in-range cases (the uint64 &gt;2^63 lines are
+good and verified: float32(1.8e19) = 18000000404716257280 exact), or document the semantics first.</p>
+<h2 id="4-conversions_regression_uint64_to_floatfire-weak-real-bug">#4 conversions_regression_uint64_to_float.fire (WEAK + real bug)<a class="headerlink" href="#4-conversions_regression_uint64_to_floatfire-weak-real-bug" title="Permanent link">&para;</a></h2>
+<p>Header says the <code>odd</code> value (2^63+1) checks "the halving step must keep the sticky bit". 2^63+1 rounds to 2^63 with or
+without a sticky bit, so the case cannot fail. A value that does need it: 9223372036854776833u64 (= 2^63+1025).
+Correct float64: 9223372036854777856.000000 (python float(2**63+1025)). Compiler prints 9223372036854775808.000000: WRONG
+(see bugs). Replacement lines:  <code>println(9223372036854776833u64 as float64);</code> expect 9223372036854777856.000000 (will fail
+until fixed =&gt; known_issues convention or fix compiler first).</p>
+<h2 id="5-conversions_float_precisionfire">#5 conversions_float_precision.fire<a class="headerlink" href="#5-conversions_float_precisionfire" title="Permanent link">&para;</a></h2>
+<p>Header: "Float64 to float32 (precision loss)". Output shows no loss: 3.141593 / 3.141593 (6-digit %f). Test cannot detect a
+no-op cast. Replacement: <code>println((precise as float32) as float64 == precise)</code> expect false; <code>println((0.1f as float64) == 0.1)</code> expect false
+(I verified the latter is false today), <code>println((16777217.0 as float32) as float64)</code> expect 16777216.000000.</p>
+<h2 id="6-float-fractional-exponent-see-bugs-operators_arithmeticfire-should-add-println20-05-1414214-90-05-3000000">#6 float ** fractional exponent (see bugs); operators_arithmetic.fire should add <code>println(2.0 ** 0.5)</code> -&gt; 1.414214, <code>9.0 ** 0.5</code> -&gt; 3.000000.<a class="headerlink" href="#6-float-fractional-exponent-see-bugs-operators_arithmeticfire-should-add-println20-05-1414214-90-05-3000000" title="Permanent link">&para;</a></h2>
+<h2 id="weak-summary-of-printing">WEAK summary of printing<a class="headerlink" href="#weak-summary-of-printing" title="Permanent link">&para;</a></h2>
+<p>Every float assertion goes through %f (6 decimals) so float32 vs float64 storage, subnormals, rounding mode and NaN/inf
+formatting (inf/-inf/nan do print as <code>inf</code>, <code>-inf</code>, <code>nan</code>; -0.0 prints <code>-0.000000</code>) are essentially untested in this slice;
+no test in the slice covers NaN, inf, float overflow (3.4e38f32*10 -&gt; inf works), or the documented <code>type_system.md</code>
+NaN/Infinity examples.</p>
+<h1 id="compiler-bugs-discovered-all-reproduced-in-private-dir">Compiler bugs discovered (all reproduced in private dir)<a class="headerlink" href="#compiler-bugs-discovered-all-reproduced-in-private-dir" title="Permanent link">&para;</a></h1>
+<ol>
+<li>NaN comparisons are wrong (IEEE says all false except !=):
+   z: float64 = 0.0; n: float64 = z / z;
+   println(n == n)  -&gt; true   (expected false)
+   println(n == 1.0) -&gt; true   (false);  n &lt; 1.0 -&gt; true (false);  n &lt;= 1.0 -&gt; true (false); n &gt; 1.0, n &gt;= 1.0 false (ok)
+   same for float32. Docs: "Floating point operations follow IEEE 754 semantics". Looks like ucomisd with unordered (ZF=PF=CF=1) not checked for PF.</li>
+<li>Float <code>**</code> ignores fractional exponent: <code>println(2.0 ** 0.5)</code> -&gt; 1.000000 (1.414214); <code>9.0 ** 0.5</code> -&gt; 1.000000 (3);
+   <code>2.0 ** 1.5</code> -&gt; 2.000000 (2.828427); <code>10.0 ** 2.5</code> -&gt; 100.000000 (316.227766). Integer exponents are fine. Exponent is truncated.</li>
+<li>uint64 -&gt; float64 loses the sticky bit: <code>println(9223372036854776833u64 as float64)</code> -&gt; 9223372036854775808.000000,
+   correct 9223372036854777856.000000. (2^63+1025; not rounded up; values &lt; 2^63 and exact halves are fine.)</li>
+<li>Integer overflow wraps instead of trapping (docs contradiction, see #1).</li>
+<li><code>2 ** -1</code> (int) prints 1 (undocumented; should likely be error or 0); int <code>5 / z</code> with z == 0 raises a raw hardware
+   divide-by-zero (wine: "Unhandled division by zero"), not the documented firescript runtime error. Not covered by any test in my slice.</li>
+<li>Float-&gt;int casts of out-of-range/NaN/inf values are silent and inconsistent between widths (see #3 list) - spec gap more than bug.</li>
+</ol>
+<p>Could not verify: native Windows behavior (only wine); the harness's own run of these tests (not run per instructions;
+my private runner reproduced all 53 EXPECT blocks); the redundancy claims for edge_cases_* vs scoping/functions/arrays tests
+rest on grep + reading, not on mutation testing.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Alec Jensen
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

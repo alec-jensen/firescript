@@ -671,10 +671,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#nested-arrays" class="md-nav__link">
+  <a href="#nested-arrays-planned" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Nested Arrays
+        Nested Arrays [PLANNED]
       
     </span>
   </a>
@@ -1569,10 +1569,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#nested-arrays" class="md-nav__link">
+  <a href="#nested-arrays-planned" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Nested Arrays
+        Nested Arrays [PLANNED]
       
     </span>
   </a>
@@ -1807,8 +1807,10 @@ values: int32[] = [1, 2, 3, 4, 5];
 result: int32 = sum(values);  // 15
 </code></pre>
 <p>Arrays are Owned values, so passing one to an owned parameter moves it. Use a borrowed parameter (<code>&amp;int32[] numbers</code>) to keep using the array at the call site afterwards — see <a href="../memory_management/">Memory Management</a>.</p>
-<h3 id="nested-arrays">Nested Arrays<a class="headerlink" href="#nested-arrays" title="Permanent link">&para;</a></h3>
-<p>Arrays can contain other arrays (though this is not fully implemented yet):</p>
+<h3 id="nested-arrays-planned">Nested Arrays [PLANNED]<a class="headerlink" href="#nested-arrays-planned" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>Status: <strong>[PLANNED]</strong>. Nested (multi-dimensional) arrays are designed but not implemented; the compiler currently rejects them. The example below shows the intended syntax and will not compile today.</p>
+</blockquote>
 <pre><code class="language-firescript">// 2D array example
 int8[3][3] matrix = [
     [1, 2, 3],
@@ -1909,7 +1911,7 @@ dotProduct: int8 = a . b;  // Would be 32 (1*4 + 2*5 + 3*6)
 <li>[IMPLEMENTED] <code>for-in</code> loop over arrays (including array function parameters)</li>
 <li>[PLANNED] Array slicing</li>
 <li>[PLANNED] Core fixed-size array <code>sort()</code> method (use standard library)</li>
-<li>[PLANNED] Multi-dimensional array operations</li>
+<li>[PLANNED] Nested (multi-dimensional) arrays and operations on them</li>
 </ul>
 
 

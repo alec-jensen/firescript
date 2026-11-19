@@ -2341,8 +2341,8 @@ self-hosting work is not blocked by missing data structures.</p>
 <li>Golden tests for Result/CopyableResult — <strong>done</strong>: <code>tests/sources/std/types/</code>
   (<code>result_isok_iserr.fire</code>, <code>result_null_vs_zero.fire</code>, <code>result_copyable.fire</code>)</li>
 <li>Golden tests for the <code>Some</code>/<code>None</code>/<code>Ok</code>/<code>Err</code>/<code>unwrapOr</code> static factories/combinator —
-  <strong>done</strong>: <code>tests/sources/std/types/</code> (<code>option_static_factories.fire</code>,
-  <code>result_static_factories.fire</code>, <code>option_unwrap_or.fire</code>, <code>result_unwrap_or.fire</code>), plus
+  <strong>done</strong>: <code>tests/sources/std/types/</code> (<code>option_unwrap_or.fire</code>, <code>result_unwrap_or.fire</code>;
+  the former <code>option_static_factories.fire</code> / <code>result_static_factories.fire</code> were merged into them), plus
   regression coverage for the compiler bugs found along the way:
   <code>tests/sources/generics/generic_self_referential_static_factory.fire</code>,
   <code>tests/python/parser/test_generic_self_reference.py</code> (the no-imports edge specifically),

@@ -1,0 +1,1745 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://firescript.alecj.com/internal/test_audit/S8_invalid_arrays_types_imports/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>S8 invalid arrays types imports - firescript</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lexend:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Lexend";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#s8-audit-testssourcesinvalidarraystypesimportsmatchcontrol_flow" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            firescript
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              S8 invalid arrays types imports
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../reference/overview/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../glossary/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Glossary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../benchmarks.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Benchmarks
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    firescript
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types & Variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/control_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions & Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes & Inheritance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/scoping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scoping Rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/type_system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/memory_management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/imports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Standard Library
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Standard Library
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/fs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/math/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Math
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/regex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/cli_args/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-Line Arguments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    kiln
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    kiln
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../benchmarks.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#delete-candidates-fully-redundant-or-pinning-something-wrong-with-no-unique-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DELETE-candidates (fully redundant, or pinning something wrong with no unique value)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fix-expectation-incorrect-weak-keep-the-file-but-change-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FIX-EXPECTATION (INCORRECT / WEAK: keep the file but change it)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merge-candidates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MERGE-candidates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KEEP
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-evidence-incorrect-weak" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detailed evidence: INCORRECT / WEAK
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Detailed evidence: INCORRECT / WEAK">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#typestype_errors_comprehensivefire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        types/type_errors_comprehensive.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#typestype_mismatchesfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        types/type_mismatches.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#typessemantic_modulo_mismatchfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        types/semantic_modulo_mismatch.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arraysarray_errorsfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        arrays/array_errors.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#control_flowcontrol_flow_invalidfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        control_flow/control_flow_invalid.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arraysarray_edge_invalidfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        arrays/array_edge_invalid.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#typescast_and_generic_type_errorsfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        types/cast_and_generic_type_errors.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#importsimport_errorsfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        imports/import_errors.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#importsimport_cycle_afire-import_cycle_b_providerfire-helper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        imports/import_cycle_a.fire (+ import_cycle_b_provider.fire helper)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arraysarray_slice_errorsfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        arrays/array_slice_errors.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#control_flowfor_c_style_missing_semicolonfire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        control_flow/for_c_style_missing_semicolon.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#importsexport_visibility_privatefire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        imports/export_visibility_private.fire
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#missing-coverage-no-test-anywhere-in-slice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Missing coverage (no test anywhere in slice)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compiler-bugs-discovered-minimal-repros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler bugs discovered (minimal repros)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-cutting-patterns-worth-fixing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-cutting patterns worth fixing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/test_audit/S8_invalid_arrays_types_imports.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<!-- Audit shard report, 2026-11-18. Raw audit output; see README.md for the consolidated plan. Verdicts are recommendations, not applied changes. -->
+<h1 id="s8-audit-testssourcesinvalidarraystypesimportsmatchcontrol_flow">S8 audit: tests/sources/invalid/{arrays,types,imports,match,control_flow}<a class="headerlink" href="#s8-audit-testssourcesinvalidarraystypesimportsmatchcontrol_flow" title="Permanent link">&para;</a></h1>
+<p>Method: every file read, compiled with <code>main.py --platform windows --arch x86_64 --check --message-format json</code>;
+all 174 non-known_issues invalid tests were also compiled and their diagnostics grouped by (code, normalized message)
+to find cross-file duplicates. Un-annotated lines were additionally probed in isolation (check mode AND a full compile
+to a scratch dir) to see which "claimed" errors are really produced. Scratch repros live in
+<code>/tmp/claude-1000/-home-alec-Programming-firescript/2f6fea08-4b29-4fbd-9b67-4bb973797cf6/scratchpad/audit/s8/</code>.
+61 standalone tests + 2 helpers (imports/import_cycle_b_provider.fire, imports/visibility_provider.fire).</p>
+<p>Legend: path | verdict(s) | reason.  "dup-of X" means X emits the same code+message for the same rule.</p>
+<h2 id="delete-candidates-fully-redundant-or-pinning-something-wrong-with-no-unique-value">DELETE-candidates (fully redundant, or pinning something wrong with no unique value)<a class="headerlink" href="#delete-candidates-fully-redundant-or-pinning-something-wrong-with-no-unique-value" title="Permanent link">&para;</a></h2>
+<p>arrays/array_access_and_method_errors.fire | REDUNDANT | all 3 cases dup: line5 (index non-array) = arrays/array_errors.fire:56, types/type_mismatches.fire:33, types/type_errors_comprehensive.fire:38; line11 (undefined index) = arrays/array_access_undefined_index_errors.fire:6; line17 (length(1)) = arrays/array_length_arg_count.fire:5, array_method_call_errors.fire:15
+arrays/array_access_undefined_index.fire | REDUNDANT | identical case to array_access_undefined_index_errors.fire (undefined var as index, exactly one FS-PARSE-0003); only differs by being inside a fn
+arrays/array_literal_undefined_element.fire | REDUNDANT | same as array_literal_undefined_element_errors.fire and array_literal_unresolvable_element.fire (undefined 1st element, exactly one FS-PARSE-0003). Three files, one behavior; keep one
+arrays/array_literal_unresolvable_element.fire | REDUNDANT | see above
+arrays/array_length_arg_count.fire | REDUNDANT | <code>arr.length(1)</code> is array_method_call_errors.fire:15 (also :27 for string)
+control_flow/assignment_target_errors.fire | REDUNDANT | <code>x = ;</code> identical to statement_form_errors.fire:33 (same 2 diagnostics, same columns)
+control_flow/assignment_undefined_chain.fire | REDUNDANT | <code>x = y;</code> with both undefined is the same as expressions/implicit_assign_undefined_rhs.fire (same two FS-PARSE-0003 @9,@5)
+control_flow/for_c_style_missing_semicolon.fire | REDUNDANT + WEAK | "Expected ';' after for loop condition" also at syntax/statement_dispatch_errors.fire:26; second annotation (<code>Variable 'i' not defined</code> @31) is a cascade, see detail
+imports/stdlib_import_path_errors.fire | REDUNDANT | line4 <code>import @firescript/std.</code> = imports/import_trailing_dot_eof.fire:8 (and its comment "very end of file" is false: more lines follow); line8 iteration-guard case = import_syntax_errors.fire:28
+match/match_missing_scrutinee.fire | REDUNDANT | match_syntax_errors.fire:10 produces the same 3 diagnostics (+1 cascade)
+match/match_pattern_bad_binding.fire | REDUNDANT | match_syntax_errors.fire:71 emits the identical 3 FS-PARSE-0010 @ the same token
+match/match_pattern_missing_variant.fire | REDUNDANT | match_syntax_errors.fire:47 (<code>Shape. -&gt; 1</code>)
+   (the three match singles vs match_syntax_errors are mutual duplicates: delete either the 3 singles or those 3 cases from the big file; singles are the more robust side)
+types/semantic_unary_not_non_bool.fire | REDUNDANT | exactly unary_operator_type_errors.fire:4 (also operators/logical_and_increment_errors.fire:5)
+types/semantic_unary_minus_undefined.fire | REDUNDANT | = unary_operator_type_errors.fire:9
+types/semantic_unary_incdec_undefined.fire | REDUNDANT | = unary_operator_type_errors.fire:14
+types/semantic_equality_mismatch.fire | REDUNDANT | <code>int32 == string</code> = binary_operator_type_errors.fire:25 (same message)
+types/semantic_logical_non_bool.fire | REDUNDANT | <code>&amp;&amp;</code> on non-bool = binary_operator_type_errors.fire:12 (same rule, same message shape)
+types/cast_array_to_non_string.fire | REDUNDANT | <code>arr as int32</code> = cast_and_generic_type_errors.fire:16 (<code>arr as float64</code>), same message
+types/field_access_on_primitive.fire | REDUNDANT | = classes/field_access_errors.fire:15, classes/field_access_type_errors.fire:19 (same message)
+imports/import_cycle_a.fire (+ helper import_cycle_b_provider.fire) | INCORRECT | pins a wrong diagnostic; see detail (cycle detection is dead code; the test cannot be "fixed" by relabeling)</p>
+<h2 id="fix-expectation-incorrect-weak-keep-the-file-but-change-it">FIX-EXPECTATION (INCORRECT / WEAK: keep the file but change it)<a class="headerlink" href="#fix-expectation-incorrect-weak-keep-the-file-but-change-it" title="Permanent link">&para;</a></h2>
+<p>types/semantic_modulo_mismatch.fire | INCORRECT | line 5 <code>b: int64 = 6;</code> is VALID per docs/reference/type_system.md:102-111 yet is annotated as FS-SEM-0002; the intended error is only line 6. Use <code>6i64</code>. (Compiler bug, see below)
+types/type_errors_comprehensive.fire | INCORRECT (header) + WEAK + REDUNDANT | header claims function-call, array-literal, array-element, return, call-arity errors; 9 of ~17 error lines are demanded, the rest silently unchecked; see detail
+types/type_mismatches.fire | INCORRECT | 19 of 33 annotations are incidental <code>Function 'print' is not defined</code> (file never imports println); the "use before declaration" and array-method cases do not test what their labels say; see detail
+types/cast_and_generic_type_errors.fire | INCORRECT (line 39) + WEAK (line 35) | <code>print(1, 2);</code> annotated as "Builtin arity error" but the diagnostic is <code>print</code> not defined; <code>pick(1,"two")</code> pins a cascade (<code>Expected int32, got T</code>)
+arrays/array_edge_invalid.fire | INCORRECT | 5 of 9 annotations are <code>print</code> not defined (no import); its own comments ("EXPECT: errors about arrays", "remove not implemented") are stale; line 16 nested-array and line 8 are dups
+arrays/array_errors.fire | INCORRECT (comments) + WEAK | only 6 of the ~12 commented error scenarios are demanded; the other 5 are silently accepted by --check; see detail
+control_flow/control_flow_invalid.fire | INCORRECT | 5 of 11 annotations are <code>print</code> not defined; break/continue cases pin a bogus parse error (<code>Expected semicolon after statement</code> on <code>break;</code> at top level)
+imports/import_errors.fire | INCORRECT | every case is a JS-style / quoted-string import that dies in the parser with "Expected module name"; none tests nonexistent module, nonexistent symbol, wildcard conflict, or import-after-code as its comments claim; lines 14/15 are the same case twice; see detail
+arrays/array_slice_errors.fire | WEAK | lines 12-13 pin cascades (<code>badStart</code>/<code>badEnd</code> not defined because the failed declaration was dropped); both slice cases are the same single rule (FS-PARSE-0013), the comments ("start must be integer") describe checks that never run
+arrays/array_access_syntax_errors.fire | WEAK | pins cascade diagnostics (<code>Expected initializer expression...</code>) in addition to the real one; two valid distinct cases
+arrays/array_element_assignment_invalid_target.fire | WEAK | pins 3 cascading diagnostics for <code>arr[] = 5;</code>, covered in spirit by array_index_assignment_target_errors.fire (<code>arr[!]</code>); keep only one
+imports/export_visibility_private.fire | WEAK | no "symbol not exported" diagnostic exists: the test pins <code>Variable 'hiddenValue' not defined</code> twice (import line + use). Right behavior (rejection), misleading code/message
+control_flow/statement_form_errors.fire | WEAK | line 30 <code>arr[0] = ;</code> is a documented case with NO annotation (swallowed by error recovery of the previous statement); <code>x = ;</code> at :33 dup of assignment_target_errors
+control_flow/for_in_extra_tokens.fire | WEAK | 2nd annotation (@27 <code>Expected assignment, function call, or method call</code>) is recovery noise; first message dup of loop_header_errors.fire:47
+match/match_syntax_errors.fire | WEAK | 4 cascade annotations on lines 13, 17(2nd), 82-85 (<code>};</code> after missing arm body yields 4 diagnostics); cases 10/47/71 dup the single-case files
+imports/deferred_generic_call_errors.fire | WEAK | 3 diagnostics all @10 for one malformed token (<code>Pair&lt;5&gt;(1,2)</code>), two are cascades of the first
+imports/deferred_generic_call_empty_type_args.fire | WEAK | message is the generic "Expected assignment, function call, or method call", not about empty type args; fine as a regression pin but test intent is not verifiable from the code</p>
+<h2 id="merge-candidates">MERGE-candidates<a class="headerlink" href="#merge-candidates" title="Permanent link">&para;</a></h2>
+<p>arrays/array_index_count_errors.fire | REDUNDANT (partial) | index() / index("1") = array_method_call_errors.fire:18-19; only <code>count()</code> (0 args) and <code>count(true)</code> (wrong type) are unique; move those two lines into array_method_call_errors.fire then delete
+types/semantic_operator_errors.fire | KEEP/MERGE | <code>int32 - float64</code> (mixed numeric) is not covered by binary_operator_type_errors (which has <code>+</code> bool); merge as one more function there
+types/binary_operator_type_errors.fire | KEEP | the consolidated place for binary-op cases; absorbs the semantic_* single files
+types/unary_operator_type_errors.fire | KEEP | consolidated unary file
+arrays/array_method_call_errors.fire | KEEP | the main array-method file; its 2 string-method lines (:27,:28) are dup of strings/string_length_arg_count.fire and strings/string_unknown_method.fire (minor)
+control_flow/dangling_else_errors.fire | REDUNDANT (low) | = syntax/syntax_errors.fire:28 (<code>Unexpected 'else' without matching 'if'</code>, same message)</p>
+<h2 id="keep">KEEP<a class="headerlink" href="#keep" title="Permanent link">&para;</a></h2>
+<p>arrays/array_access_undefined_index_errors.fire | KEEP | (the one to retain of the 4-way undefined-index/element family) verifies exactly one diagnostic
+arrays/array_element_assignment_missing_expr.fire | KEEP | <code>arr[0] = ;</code> unique; this is the only place the case is actually demanded
+arrays/array_index_assignment_target_errors.fire | KEEP | <code>arr[!] = 5</code> unique target-parse path
+arrays/array_size_literal_suffix.fire | KEEP | <code>int32[5i8]</code> unique (FS-PARSE-0010)
+control_flow/if_condition_syntax_errors.fire | KEEP | unique path (<code>if (,)</code>)
+control_flow/loop_header_errors.fire | KEEP | 10 distinct header errors, each is a separate rule; all demanded; no cascades
+control_flow/unterminated_if_body.fire | KEEP | unique EOF case
+imports/import_inside_function.fire | KEEP | also syntax/statement_dispatch_errors.fire:11 emits it (dup of the same message) -&gt; consider REDUNDANT; verified identical <code>Imports must appear at top level</code>
+imports/import_syntax_errors.fire | KEEP (minor dups) | lines 19 and 22 dup syntax/declaration_dispatch_errors.fire:47,50; line 16 dup :50. Also relies on module <code>utils</code> not existing (module-not-found is a log, not a diagnostic, so nothing is pinned)
+imports/import_trailing_dot_eof.fire | KEEP | the true EOF case
+imports/deferred_generic_call_* | see WEAK above
+match/match_duplicate_field_binding.fire | KEEP | unique semantic rule, correct
+match/match_duplicate_variant.fire | KEEP | correct
+match/match_non_exhaustive.fire | KEEP | correct (lists missing Point, Rectangle)
+match/match_unknown_payload_field.fire | KEEP | correct
+match/match_unknown_variant.fire | KEEP | correct: the 2nd annotation (non-exhaustive @10) is a real second error (Point is genuinely unmatched), not a cascade
+match/match_wildcard_not_last.fire | KEEP | correct
+types/cast_undefined_operand.fire | KEEP | unique operand-undefined cast path, one diagnostic
+types/semantic_operator_errors.fire | see MERGE
+types/cast_and_generic_type_errors.fire | see FIX; lines 16/12/19 dup other files, lines 23, 29 (<code>expects 2 type arguments</code>), 42 are unique-ish (42 dup of classes/constructor_call_arg_count.fire)</p>
+<h2 id="detailed-evidence-incorrect-weak">Detailed evidence: INCORRECT / WEAK<a class="headerlink" href="#detailed-evidence-incorrect-weak" title="Permanent link">&para;</a></h2>
+<h3 id="typestype_errors_comprehensivefire">types/type_errors_comprehensive.fire<a class="headerlink" href="#typestype_errors_comprehensivefire" title="Permanent link">&para;</a></h3>
+<p>Demanded (9): 7 (SEM-0002), 11 (SEM-0002), 16 (SEM-0010 string+int), 38 (index non-array), 42 (non-int index), 45 (undefined var), 58 (if cond), 63 (while cond), 73 (duplicate decl).
+NOT demanded / silently unchecked (verified by isolated check + full compile, repros s8/r3.fire, a3.fire, r4.fire):
+- l.19 <code>mixed: int32[] = [1,2,"three",4]</code> : check accepts; full compile ICE (FLIRV-T1/FIRV-T8)
+- l.23 <code>numbers[0] = "string"</code> : check accepts; full compile ICE FIRV-T8
+- l.29 <code>takesInt("wrong type")</code>, l.33 <code>return "string"</code>, l.54/55 wrong call arity : accepted by check (known: invalid/known_issues/function_call_arg_type_mismatch, function_call_too_few_args, function_call_too_many_args, return_type_mismatch)
+- l.48 <code>undefinedFunction(1,2,3)</code> : the file has an import, so the undefined-function check is "deferred" and never fires; full compile dies in lowering "call to unknown function" (compiler bug, repro r4.fire; the same call WITHOUT an import gives FS-PARSE-0012, which is what functions/function_errors.fire:29 relies on)
+- l.69 <code>not_func(5)</code> : accepted (known: known_issues/call_non_function_variable)
+So the doc-line "type mismatches in assignments, function calls, operators, conditions, indexing" is wrong for "function calls" and the file's header "These should all produce ... errors" is false for 8 lines. Each demanded line also duplicates type_mismatches.fire (7&lt;-&gt;5, 11&lt;-&gt;59, 16&lt;-&gt;10, 38&lt;-&gt;33, 42&lt;-&gt;37, 58&lt;-&gt;40); only <code>while(42)</code> (but control_flow_invalid.fire:17 covers while) and l.73 are not duplicated there. l.73 is a SAME-scope redeclaration but the compiler says "already declared in an outer scope; shadowing not allowed" (misleading message; scoping/scope_errors.fire:8 covers shadowing).
+Recommendation: delete this file; the unchecked scenarios belong in known_issues (3 are already there; l.19, l.23, l.48 are not).</p>
+<h3 id="typestype_mismatchesfire">types/type_mismatches.fire<a class="headerlink" href="#typestype_mismatchesfire" title="Permanent link">&para;</a></h3>
+<p>No <code>import ...println/print</code>, so <code>print(...)</code> is undefined: 19 annotations (FS-PARSE-0012 @1/@5) are incidental, including the labelled "use before declaration" case (l.51 flagged because <code>print</code> is undefined, l.52 <code>int beforeDecl = 10;</code> is a C-style declaration, a parse error unrelated to use-before-declaration). <code>arr.append("x")</code>, <code>arr.insert(0,"y")</code>, <code>arr.insert("z",3)</code>, <code>arr.pop(1,2)</code>, <code>arr.pop("x")</code> all report only "Arrays are fixed-size; method X is not supported" (not wrong-arg-type/count as commented): five duplicates of array_method_call_errors.fire:9-11. <code>[1,2,"three"]</code> (l.13) is silently accepted (comment "error mixed types" unmet). Lines 5,10,16,33,37,40,47,55,59 are real and are dups of other tests (see grouping above: null -&gt; nullable/nullable_errors.fire:5; nested array -&gt; 2 other files; shadowing -&gt; scoping/scope_errors.fire:8).</p>
+<h3 id="typessemantic_modulo_mismatchfire">types/semantic_modulo_mismatch.fire<a class="headerlink" href="#typessemantic_modulo_mismatchfire" title="Permanent link">&para;</a></h3>
+<p><code>b: int64 = 6;</code> is annotated <code>//~ ERROR FS-SEM-0002 @5</code>. docs/reference/type_system.md:102-111 states "When you assign a literal to a variable with an explicit type, the literal automatically takes on that type" (<code>large: int64 = 9223372036854775807;</code>, <code>small: int8 = 42;</code>). The compiler rejects ALL of these (repro r7.fire: int8, uint16, float32, int64 all <code>Expected X, got int32/float64</code>). Either the docs are wrong or the compiler is; either way this test (and any test in the suite using unsuffixed literals for non-int32 types) encodes the current bug as expected behavior. All valid tests in the suite use suffixes (<code>100i64</code>), hiding the problem. The intended mod-mismatch error (line 6) is correct.</p>
+<h3 id="arraysarray_errorsfire">arrays/array_errors.fire<a class="headerlink" href="#arraysarray_errorsfire" title="Permanent link">&para;</a></h3>
+<p>Comment claims errors that are not produced:
+- l.13 <code>arr[10]</code> on int32[5]: no error (docs arrays.md:51 says out-of-bounds is a RUNTIME error, so the comment "static checking" is stale rather than the compiler wrong).
+- l.18 <code>int32[5] = [1,2,3]</code> (too few) and l.19 <code>int32[3] = [1,2,3,4,5]</code> (too many): accepted; docs/reference/arrays.md:27,30 say initializer size must match declared size -&gt; "Error". Full compile also succeeds silently (repros c2.fire, c3.fire).
+- l.24 <code>[1,"two",3]</code>: accepted by check; full compile ICE FLIRV-T1 (c4.fire).
+- l.37 <code>arr1 = arr2</code> (int32[3] = int32[5]): accepted by check; ICE FIRV-L2 (c5.fire).
+Demanded (6 lines): l.6 (2 diagnostics, 2nd is cascade <code>Expected assignment...</code>), 25, 30, 44, 50, 56. The first is a parse error ("Expected ']' after '[' in array type"), not a "size must be constant" semantic error as labelled. l.30 dup of array_edge_invalid.fire:8; l.50/56 dup of type_mismatches.fire:37,33.</p>
+<h3 id="control_flowcontrol_flow_invalidfire">control_flow/control_flow_invalid.fire<a class="headerlink" href="#control_flowcontrol_flow_invalidfire" title="Permanent link">&para;</a></h3>
+<p><code>print</code> never imported -&gt; l.4,13,16,17,20 incidental FS-PARSE-0012. <code>break;</code> / <code>continue;</code> at top level (l.5,9) produce <code>FS-PARSE-0010 Expected semicolon after statement</code> <em>in addition to</em> the intended <code>FS-SEM-0010 'break' statement not within a loop</code>; inside a function body only the SEM error appears (s8/r5.fire, a2.fire). The pinned PARSE-0010 is a top-level-statement-parsing quirk, not a language rule. Real value: l.5/9/13/17 SEM-0010 for break/continue/if-cond/while-cond (l.13 and l.17 dup type_errors_comprehensive.fire:58,63 and type_mismatches.fire:40). Better: put <code>break</code>/<code>continue</code> outside a loop inside a function (no PARSE error) and import println.</p>
+<h3 id="arraysarray_edge_invalidfire">arrays/array_edge_invalid.fire<a class="headerlink" href="#arraysarray_edge_invalidfire" title="Permanent link">&para;</a></h3>
+<p>Same missing-import problem (l.4,6,10,15,18). Real demanded: l.8 (assign array to int32; dup array_errors.fire:30), l.12/13 (unknown method remove/sort; dup array_method_call_errors.fire:23), l.16 nested arrays (3rd copy of the rule, see docs note below). Entire file is redundant once the <code>print</code> noise is removed.</p>
+<h3 id="typescast_and_generic_type_errorsfire">types/cast_and_generic_type_errors.fire<a class="headerlink" href="#typescast_and_generic_type_errorsfire" title="Permanent link">&para;</a></h3>
+<ul>
+<li>l.39 <code>print(1, 2);</code> annotated FS-PARSE-0012 under the comment "Builtin arity error": the error is <code>Function 'print' is not defined</code> (no import). Not a builtin arity test.</li>
+<li>l.35 <code>e: int32 = pick(1, "two");</code> pins two diagnostics: SEM-0010 <code>Could not infer type arguments</code> (@12, the real one) and SEM-0002 <code>Expected int32, got T</code> (@1) which is a cascade (unresolved type var leaks as <code>T</code>). Same pair appears in generics/generic_function_inference_errors.fire:16.</li>
+<li>l.12 nested arrays: dup (see above). l.16 cast array: dup of cast_array_to_non_string. l.19: dup of expressions/cast_to_class_type.fire:14. l.42: dup of classes/constructor_call_arg_count.fire. Unique: l.23 (cast non-numeric class to int32), l.29 (explicit generic type-arg count).</li>
+</ul>
+<h3 id="importsimport_errorsfire">imports/import_errors.fire<a class="headerlink" href="#importsimport_errorsfire" title="Permanent link">&para;</a></h3>
+<p>Source uses <code>import "nonexistent_module";</code>, <code>import { undefined_symbol } from "std";</code>, <code>import * from "std";</code>, <code>import "io";</code> - none is firescript import syntax (docs/reference/imports.md uses dotted <code>import @firescript/std.io.println;</code> / <code>import mod.sym;</code>), so every case hits the same "Expected module name after 'import'" (:4,:14,:15,:19 identical rule; :7 also a 2nd cascade). Comments say nonexistent file / symbol, wildcard conflict, import-not-at-top: not tested. ImportNotFoundError (FS-IMP-0001) is only ever emitted as a log line (<code>Import resolution failed: Module not found</code>), never a coded diagnostic, so a compile-fail annotation can't currently express it; likewise importing a nonexistent <em>symbol</em> from an existing module has no test at all.</p>
+<h3 id="importsimport_cycle_afire-import_cycle_b_providerfire-helper">imports/import_cycle_a.fire (+ import_cycle_b_provider.fire helper)<a class="headerlink" href="#importsimport_cycle_afire-import_cycle_b_providerfire-helper" title="Permanent link">&para;</a></h3>
+<p>Annotated <code>FS-PARSE-0003 @40</code> on line 2. Actual output: <code>Variable 'ping' not defined</code> positioned at 2:40 (the line is only 36 chars; the position belongs to import_cycle_b_provider.fire:3, mapped through the wrong source). The designed diagnostic, FS-IMP-0002 <code>Cyclic import detected</code>, is never produced: _load_module's cycle branch (imports.py:176-180) is unreachable for a real cycle (documented in tests/python/imports/test_module_resolver.py:162-187). The test therefore passes only because it pins a wrong, confusing diagnostic. This belongs in known_issues (expecting FS-IMP-0002 / a coded diagnostic), not here.</p>
+<h3 id="arraysarray_slice_errorsfire">arrays/array_slice_errors.fire<a class="headerlink" href="#arraysarray_slice_errorsfire" title="Permanent link">&para;</a></h3>
+<p>l.7/9 FS-PARSE-0013 "slicing not supported" is the real rule (docs arrays.md:3,230 PLANNED) - the <code>"1"</code>/<code>true</code> bounds are irrelevant, so two cases = one rule. l.12/13 <code>println(badStart.length())</code> -&gt; <code>Variable 'badStart' not defined</code> is purely a consequence of the declaration being discarded after the parse error. Second FS-PARSE-0010 on each slice line is also a cascade.</p>
+<h3 id="control_flowfor_c_style_missing_semicolonfire">control_flow/for_c_style_missing_semicolon.fire<a class="headerlink" href="#control_flowfor_c_style_missing_semicolonfire" title="Permanent link">&para;</a></h3>
+<p><code>for (i: int32 = 0; i &lt; 10 i++)</code>: real = <code>Expected ';' after for loop condition</code> @31. The second annotation <code>FS-PARSE-0003 Variable 'i' not defined</code> @31 is a recovery artifact (the declaration of <code>i</code> is lost), i.e. wrong-by-construction: a future recovery fix would break the test even though the behavior would be better.</p>
+<h3 id="importsexport_visibility_privatefire">imports/export_visibility_private.fire<a class="headerlink" href="#importsexport_visibility_privatefire" title="Permanent link">&para;</a></h3>
+<p><code>import visibility_provider.hiddenValue;</code> of a non-exported symbol. Rejected (correct per docs/reference/modules.md "private by default") but reported as undefined-variable FS-PARSE-0003 at the import AND at the use site; no diagnostic says "not exported".</p>
+<h2 id="missing-coverage-no-test-anywhere-in-slice">Missing coverage (no test anywhere in slice)<a class="headerlink" href="#missing-coverage-no-test-anywhere-in-slice" title="Permanent link">&para;</a></h2>
+<p>Arrays: initializer-size mismatch (too few/too many) -&gt; doc'd error, compiler accepts; mixed-type literal elements; element assignment with wrong type; assigning arrays of different declared sizes; passing wrong array type to function param; <code>arr.length</code> without parens; negative-index out-of-range; array of class/owned types misuse; index with float/bool; uninitialized non-sized array decl <code>x: int32[];</code>.
+Types: function argument/return type mismatch &amp; arity (only in known_issues); mixing int32+int64 / float32+float64 in arithmetic; comparison <code>&lt;</code>/<code>&gt;</code> on bool/string/class; unary <code>-</code> on string/bool; <code>**</code> type errors; string-to-numeric cast of non-numeric type; cast between incompatible class types; class-typed assignment mismatch (<code>a: A = B()</code>); unsuffixed-literal range errors docs promise (<code>int8 x = 200</code> per type_system.md:114) ; literal inference to non-int32 types (currently wrong, see bugs).
+Imports: nonexistent module; nonexistent symbol from an existing module; importing from a module that exports nothing; duplicate import / name collision between two imports; alias collisions (<code>as</code>); wildcard import conflicts; import not at top of file (only inside-function covered); real cyclic import diagnostic (FS-IMP-0002); relative-import rejection (<code>import .foo</code>; only monkeypatched in tests/python).
+Match: value-producing arms with mismatching types (<code>-&gt; radius</code>, <code>-&gt; "zero"</code>); non-exhaustive value-form match; match on a non-enum scrutinee (<code>n: int32</code>); pattern enum type different from scrutinee's enum (<code>B.P</code> on an <code>A</code>); tag-only variant given payload bindings is covered (verified <code>Shape.Point(x)</code> -&gt; error) but not tested; wildcard-only duplicates (<code>_</code> twice reports "must be last" - fine but untested); match arm count zero (<code>match s { }</code>); pattern arity (binding fewer fields than variant has -- positional vs named); use of a payload binding outside its arm / type of binding misuse; match as statement with value arms.
+Control flow: <code>if</code>/<code>while</code> with a class/array/null condition (only int/string); <code>for-in</code> over non-iterable (known_issues); <code>for</code> init/step type errors; <code>continue</code> outside loop inside a function; nested-loop break semantics; <code>else if</code> malformed; <code>yield</code> outside generator (known_issues); return in void fn (known_issues).</p>
+<h2 id="compiler-bugs-discovered-minimal-repros">Compiler bugs discovered (minimal repros)<a class="headerlink" href="#compiler-bugs-discovered-minimal-repros" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Unsuffixed literals not inferred to the declared type (docs say they are): <code>b: int64 = 6;</code> -&gt; <code>FS-SEM-0002 Expected int64, got int32</code>; also <code>small: int8 = 42;</code>, <code>medium: uint16 = 30000;</code>, <code>pi: float32 = 3.14;</code> (docs/reference/type_system.md:104-112). Pinned as "expected" by types/semantic_modulo_mismatch.fire:5.</li>
+<li>Undefined free-function call in a file that has any import is accepted by --check (check is deferred, never fires): <code>import @firescript/std.io.println; undefinedFunction(1);</code> -&gt; no diagnostic; full compile fails with plain log <code>FIR-&gt;FLIR lowering failed: call to unknown function undefinedFunction</code> (no code/location). Without the import it correctly reports FS-PARSE-0012 (statements.py:195-205). Missing from known_issues.</li>
+<li>Array literal / element type mismatches not diagnosed by check; full compile gives internal compiler errors: <code>a: int32[3] = [1, "two", 3];</code> -&gt; FLIRV-T1; <code>n: int32[] = [1,2,3]; n[0] = "string";</code> -&gt; FIRV-T8; <code>a5: int32[3]=...; a6: int32[5]=...; a5 = a6;</code> -&gt; FIRV-L2.</li>
+<li>Array initializer length vs declared size not diagnosed (docs/reference/arrays.md:27 says "Error"): <code>a: int32[5] = [1,2,3];</code> and <code>b: int32[3] = [1,2,3,4,5];</code> both compile silently.</li>
+<li>match: pattern of a different enum than the scrutinee (<code>s: A; match s { B.P -&gt; {} _ -&gt; {} }</code>) and a non-enum scrutinee (<code>n: int32; match n { _ -&gt; {} }</code>) compile with no diagnostic; value-producing match with arm-type mismatch (<code>Shape.Circle(radius) -&gt; radius, Shape.Point -&gt; "zero"</code> assigned to float64) -&gt; FIR ICE FIRV-L2 instead of a semantic error. (docs have no match-typing rules to cite, but the ICE is a bug regardless.)</li>
+<li>Cyclic import detection is dead code; a cycle produces <code>Variable 'ping' not defined</code> at a position that is outside the reported file (imports.py:176; confirmed by tests/python/imports/test_module_resolver.py:162-187).</li>
+<li>Top-level <code>break;</code> / <code>continue;</code> (outside any function) produce a bogus extra <code>FS-PARSE-0010 Expected semicolon after statement</code> alongside the correct SEM-0010 (repro s8/r6.fire / a2.fire). Inside functions only the SEM error appears.</li>
+<li>Same-scope redeclaration (<code>duplicate: int32 = 1; duplicate: int32 = 2;</code>) is reported as "already declared in an outer scope; shadowing not allowed" - wrong message for same scope (type_errors_comprehensive.fire:73).</li>
+<li>docs/reference/arrays.md:118-131 ("Nested Arrays ... not fully implemented", uses old <code>int8[3][3] matrix = [...]</code> syntax) vs. compiler rule "Array literals cannot directly contain arrays" pinned by 3 tests; the doc has no [PLANNED] marker on that section, which CLAUDE.md requires.</li>
+<li>Non-exported import yields only "Variable not defined" (no export-visibility diagnostic) - minor diagnostics-quality gap.</li>
+</ol>
+<h2 id="cross-cutting-patterns-worth-fixing">Cross-cutting patterns worth fixing<a class="headerlink" href="#cross-cutting-patterns-worth-fixing" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Missing <code>import @firescript/std.io.println;</code> in 4 old-style tests (type_mismatches, array_edge_invalid, control_flow_invalid, cast_and_generic l.39) makes <code>print(...)</code> a source of ~30 incidental annotations that pass for the wrong reason and would mask real regressions.</li>
+<li>Many tests pin cascade diagnostics (3-4 annotations for one defect) - fragile and low-information: match_syntax_errors, match_pattern_bad_binding, array_access_syntax_errors, array_element_assignment_invalid_target, array_slice_errors, for_c_style_missing_semicolon, deferred_generic_call_errors.</li>
+<li>"Comprehensive" files carry commented-out or un-annotated error lines that appear to be tests but demand nothing (array_errors, type_errors_comprehensive, statement_form_errors l.30).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Alec Jensen
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1581 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://firescript.alecj.com/internal/test_audit/S4_strings_arrays_flow/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>S4 strings arrays flow - firescript</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lexend:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Lexend";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#s4-audit-testssourcesstringsarrayscontrol_flowperformance-51-files" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            firescript
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              S4 strings arrays flow
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../reference/overview/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../glossary/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Glossary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../benchmarks.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Benchmarks
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    firescript
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types & Variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/control_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions & Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes & Inheritance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/scoping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scoping Rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/type_system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/memory_management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/imports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Standard Library
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Standard Library
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/fs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/math/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Math
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/regex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/cli_args/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-Line Arguments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    kiln
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    kiln
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../benchmarks.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#delete-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DELETE-candidate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merge-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MERGE-candidate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fix-expectation-fix-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FIX-EXPECTATION / FIX-TEST
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KEEP
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evidence-for-incorrect-weak-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evidence for INCORRECT / WEAK findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compiler-bugs-doc-mismatches-discovered-minimal-repros-all-verified-by-me-under-wine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler bugs / doc mismatches discovered (minimal repros; all verified by me under wine)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#could-not-verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Could not verify
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/test_audit/S4_strings_arrays_flow.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<!-- Audit shard report, 2026-11-18. Raw audit output; see README.md for the consolidated plan. Verdicts are recommendations, not applied changes. -->
+<h1 id="s4-audit-testssourcesstringsarrayscontrol_flowperformance-51-files">S4 audit: tests/sources/{strings,arrays,control_flow,performance}  (51 files)<a class="headerlink" href="#s4-audit-testssourcesstringsarrayscontrol_flowperformance-51-files" title="Permanent link">&para;</a></h1>
+<p>Method: every file compiled+run under wine in private temp dirs; all 51 outputs match their EXPECT blocks
+(so no "stale" EXPECTs). Correctness was judged against language semantics/docs, plus extra probes
+(see "compiler bugs"). Harness note: tests/harness/expectations.py normalize_output() strips TRAILING blank
+lines, so an expected-empty output at the very end of a test is never asserted.</p>
+<h2 id="delete-candidate">DELETE-candidate<a class="headerlink" href="#delete-candidate" title="Permanent link">&para;</a></h2>
+<p>tests/sources/arrays/arrays_function_param.fire | REDUNDANT | exact duplicate of the <code>arraySum</code> case in functions/functions_array_params.fire (same for-in sum over [1..5] = 15); also array_length_propagation.sumOf
+tests/sources/arrays/arrays_basics.fire | REDUNDANT, WEAK | empty array =&gt; edge_cases/edge_cases_arrays.fire; index/len =&gt; array_tests, arrays_typed, array_negative_indexing, array_length_propagation; "large array (20 elems)" and "bounds access" add nothing
+tests/sources/arrays/array_tests.fire | REDUNDANT, INCORRECT | legacy multi-feature suite; every case covered elsewhere (indexing: arrays_typed; length: array_length_propagation; while iteration: arrays_iteration_while; string array: arrays_typed); pins the "[...]" placeholder from println(array) (see evidence)
+tests/sources/performance/stress_array_bounds.fire | REDUNDANT, WEAK | not a stress/bounds test: only valid indices 0..9; subsumed by arrays_iteration_while/arrays_basics/array_negative_indexing; never touches an out-of-range index
+tests/sources/performance/stress_deep_recursion.fire | REDUNDANT, WEAK | max depth 10; factorial(5) == functions/functions_recursion.fire; sum_to_n(10)/is_even(7) trivial depth. Not "deep"
+tests/sources/performance/stress_string_operations.fire | REDUNDANT, WEAK | empty/concat/long string/string array all covered by strings_basics, strings_concatenation, arrays_typed; 3-iteration loop; stale unused s1/s2 + "equality might not be supported" comment (it is, strings_comparison). Only unique bits: raw newline/tab inside a literal, and i32_to_str (undocumented builtin)
+tests/sources/arrays/arrays_iteration_c_style.fire | REDUNDANT | c-style array iteration covered by array_length_propagation.sumOf and arrays_basics-style loops; merge arrays_iteration_* into one file
+tests/sources/arrays/arrays_iteration_while.fire | REDUNDANT | array_tests Test 4 / stress_array_bounds loop / control_flow_while
+tests/sources/arrays/arrays_iteration_for_in.fire | REDUNDANT (except its fir/flir snapshot) | control_flow/for_in.fire "For-in with array variable" and arrays_function_param; keep only if the snapshot is wanted -&gt; move <code>//@ snapshot: fir, flir</code> onto for_in.fire
+tests/sources/arrays/array_dynamic_alloc.fire | REDUNDANT (moderate) | header rationale ("exercised standalone before any ArrayList code exists") is stale: std/collections arraylist_growth / arraylist_of_strings / hashmap_growth exercise fs_rt_array_new/copy<T> incl. string elems far more thoroughly. Keep only as a unit test of the intrinsic
+tests/sources/strings/strings_basics.fire | TRIVIAL | println of string literals/empty/long literal is exercised by every test in the suite</p>
+<h2 id="merge-candidate">MERGE-candidate<a class="headerlink" href="#merge-candidate" title="Permanent link">&para;</a></h2>
+<p>tests/sources/arrays/arrays_mutation.fire | REDUNDANT-ish | positive-index store is the same path as array_negative_indexing (nums[-1]=99), arrays_of_class_instances (boxes[0]=...), array_dynamic_alloc; fold into one arrays test
+tests/sources/arrays/arrays_move_assign_from_var.fire | KEEP-borderline | adjacent to array_length_propagation (<code>copy: int32[] = fixed;</code>, <code>mirror = values</code>) and for_in_and_match_temporaries (<code>fromExpr: int32[3] = src</code>); differs only in source being an unsized literal local. Merge into array_length_propagation
+tests/sources/control_flow/for_c_style.fire | KEEP (one case redundant) | "empty init" case duplicates for_header_variants.fire "No init clause"; comment "variable declaration before loop" is inaccurate (the for declares i in its header)
+tests/sources/performance/stress_integer_overflow.fire | WEAK, misnamed | contains NO overflow (10000*10000=1e8, 2147483640+5, -2147483640-5 all fit). Unique value = negative integer division/modulo semantics (-100/3=-33, -100/-3=33, 100/-3=-33, -10%3=-1, 10%-3=1, -10%-3=-1: all correct, match docs/reference/operators.md "truncates toward zero; sign of dividend") which no other test covers -&gt; move to operators/ as operators_division_modulo_negative; drop the rest (val/2.. powers of two, zero arithmetic: trivial)
+tests/sources/performance/stress_type_conversions.fire | REDUNDANT, WEAK | float-&gt;int truncation / int&lt;-&gt;float covered by conversions/conversions_int_float, conversions_integer_wraparound (fneg=-3.99), int_float_cast_matrix; the ONLY coverage of legacy builtins i32_to_f64/f64_to_i32/i32_to_str (undocumented, listed in ast_to_fir.py) -&gt; if those builtins are supported keep a tiny test in conversions/; else delete. Large run time (1.8 s) comes from nothing special
+tests/sources/performance/fibonacci.fire | KEEP (relocate) | not a perf test (fib(20) ~22k calls, instant). Unique value vs functions_recursion: tree recursion + int64 + fir/flir snapshot. Move to functions/</p>
+<h2 id="fix-expectation-fix-test">FIX-EXPECTATION / FIX-TEST<a class="headerlink" href="#fix-expectation-fix-test" title="Permanent link">&para;</a></h2>
+<p>tests/sources/arrays/array_tests.fire | INCORRECT | see evidence E1 (also delete candidate)
+tests/sources/control_flow/control_flow_braceless_if_at_eof.fire | INCORRECT (pins likely-bug) | see E2
+tests/sources/strings/strings_index_of_substring.fire | WEAK | last case <code>s.substring(10, 2)</code> yields "" which is a trailing blank line =&gt; stripped, never asserted (see E3). Clamping semantics (negative start-&gt;0, end&gt;len-&gt;len, start&gt;end-&gt;"") pinned with no docs/header note
+tests/sources/strings/strings_upper_lower.fire | WEAK | <code>empty.upper()</code> / <code>empty.lower()</code> are the last two printlns -&gt; blank trailing lines stripped, effectively unasserted (E3)
+tests/sources/strings/strings_comparison.fire | WEAK | see E4
+tests/sources/strings/strings_unicode.fire | WEAK | see E5
+tests/sources/arrays/arrays_typed.fire | WEAK | see E6
+tests/sources/control_flow/for_in_and_match_temporaries.fire | WEAK (+ misfiled) | see E7</p>
+<h2 id="keep">KEEP<a class="headerlink" href="#keep" title="Permanent link">&para;</a></h2>
+<p>tests/sources/strings/string_escape_edge_cases.fire | KEEP | snapshot; pins impl-specific <code>\q</code> keeping the backslash, but header documents it as intentional; header also mentions <code>\0</code> which isn't exercised
+tests/sources/strings/strings_concatenation.fire | KEEP | snapshot; all outputs verified
+tests/sources/strings/strings_escapes.fire | KEEP | \n \t \" \ ; (\r untested here, only via strings_trim)
+tests/sources/strings/strings_for_in.fire | KEEP | ident / fresh-expr collection, break/continue; correct (a b c w x z l)
+tests/sources/strings/strings_for_in_regression_conditional_move.fire | KEEP | narrow regression, FIRV-O2 tail case
+tests/sources/strings/strings_for_in_regression_conditional_move_mid_body.fire | KEEP (low-confidence overlap) | harder variant would likely also catch the simple tail-position bug, but cheap and different fix path; note <code>first = first;</code> is a pointless filler statement
+tests/sources/strings/strings_for_in_regression_conditional_move_break.fire | KEEP | distinct _drop_loop_cleanup path (FIRV-O2/O3)
+tests/sources/strings/strings_regression_builtin_method_on_imported_call_result.fire | KEEP | regression, correct
+tests/sources/strings/strings_replace.fire | KEEP | all outputs verified incl. empty-old no-op (documented in changelog)
+tests/sources/strings/strings_starts_ends_with.fire | KEEP | verified
+tests/sources/strings/strings_trim.fire | KEEP | verified; blank lines are mid-output so they ARE asserted
+tests/sources/arrays/array_index_count.fire | KEEP | verified (index first-occurrence, -1, count)
+tests/sources/arrays/array_length_propagation.fire | KEEP | lowering regression coverage; verified (3,1,3,50)
+tests/sources/arrays/array_negative_indexing.fire | KEEP | snapshot; read/store/variable/param negative idx; verified
+tests/sources/arrays/arrays_length_param.fire | KEEP | only test of <code>.size()</code> (note: <code>.size()</code> is not in docs/reference/arrays.md)
+tests/sources/arrays/arrays_of_class_instances.fire | KEEP | owned + copyable class element paths; verified
+tests/sources/arrays/array_to_string.fire | KEEP | <code>as string</code> on arrays ("[1, 2, 3]", float "[1.500000, 2.500000]", "[]"); feature undocumented in docs/reference/arrays.md (pins format w/o spec)
+tests/sources/control_flow/control_flow_braceless.fire | KEEP | if/else/while/for braceless; verified
+tests/sources/control_flow/control_flow_if.fire | KEEP | verified (B, Can drive)
+tests/sources/control_flow/control_flow_mixed_nesting.fire | KEEP | 0,100,101,200 verified
+tests/sources/control_flow/control_flow_nested_break_continue.fire | KEEP | strong; independently traced: output exactly matches (innermost-loop semantics; m ends at 5)
+tests/sources/control_flow/control_flow_regression_conditional_move.fire | KEEP | preprocessor IF-move regression
+tests/sources/control_flow/control_flow_while.fire | KEEP | snapshot; verified
+tests/sources/control_flow/empty_statements.fire | KEEP | parser branch coverage; correct
+tests/sources/control_flow/for_header_variants.fire | KEEP | traced: 0 1 2 | i++ =&gt; 4 | 4 5 | k=2 | m=0 m=1 : correct
+tests/sources/control_flow/for_in_braceless_body.fire | KEEP | braceless for-in
+tests/sources/control_flow/for_in.fire | KEEP | verified
+(performance/fibonacci.fire listed above as KEEP-relocate)</p>
+<h2 id="evidence-for-incorrect-weak-findings">Evidence for INCORRECT / WEAK findings<a class="headerlink" href="#evidence-for-incorrect-weak-findings" title="Permanent link">&para;</a></h2>
+<p>E1 arrays/array_tests.fire INCORRECT. <code>println(numbers)</code> (numbers: int32[] = [10,20,30,40,50]) and <code>println(names)</code> are
+expected to print <code>[...]</code>. That literal comes from flir/lowering.py::_array_to_string fallback
+<code>ConstStr("[...]")</code> used when the array length is unknown. Probe: <code>a: int32[]=[10,20,30]; println(a)</code> -&gt; <code>[...]</code>;
+<code>b: int32[3]=[1,2,3]; println(b)</code> -&gt; <code>[...]</code> (even statically sized!), but <code>println(b as string)</code> -&gt; <code>[1, 2, 3]</code> and
+array_to_string.fire expects <code>[1, 2, 3]</code> for the same data. So println(array) silently degrades to a placeholder
+while <code>as string</code> works: the EXPECT block blessed a compiler inconsistency/placeholder. Suggest: fix compiler or
+delete the println(array) lines; this test is the only place <code>[...]</code> appears in tests/. The rest of the file is redundant.</p>
+<p>E2 control_flow_braceless_if_at_eof.fire INCORRECT (pins likely-bug). The source ends with <code>if (b)</code> and no body and
+compiles successfully (probe: exit 0) and runs. A dangling <code>if</code> with no statement is malformed; the test was written
+to cover a parser fallback branch (<code>_parse_braceless_body</code> returning None at EOF) and blesses it as
+valid. Suggest: make the parser emit a diagnostic and move this to tests/sources/invalid/ (compile-fail with
+//~ ERROR), or at minimum state in the header that it is a pinned leniency. Mark with owner decision.</p>
+<p>E3 Trailing-blank-line blindness. strings_index_of_substring: println(s.substring(10,2)) prints "" as the final line;
+strings_upper_lower: last two printlns print "" . normalize_output() strips them so e.g. a regression that printed
+"x" is caught but one that printed "   " or nothing is not, and an off-by-one that returns the empty string vs
+nothing cannot be distinguished. Fix: wrap in markers (<code>println("[" + s.substring(10,2) + "]")</code> -&gt; <code>[]</code>) or
+reorder so the empty case is not last. Also add a one-line header note that substring clamps out-of-range bounds
+(negative start -&gt; 0, end&gt;len -&gt; len, start&gt;end -&gt; "") since this is pinned but undocumented (only the changelog
+mentions the methods).</p>
+<p>E4 strings_comparison WEAK. Only literal-vs-literal equal ("apple"=="apple", which may be interned/pointer-equal),
+and one unequal same-length-class case. Missing: different lengths with common prefix ("app" vs "apple"),
+equal-length-different-content ("abc" vs "abd"), empty string, and equal strings built at runtime
+("ap"+"ple" vs "apple") which would catch a pointer-compare regression. I probed all of these: they currently
+work (false,true,false,true,true,true,false), so the replacement is just those lines.</p>
+<p>E5 strings_unicode WEAK. Only round-trips bytes through println. Probe: "café".length() == 5 (byte count, not 4
+chars), so length/indexOf/for-in semantics on non-ASCII are byte-based and undocumented; test pins none of it
+(good: not wrongly pinned, but also would not catch a regression in length/slicing on multibyte input). Suggest
+adding <code>.length()</code> expectation only once the owner decides the intended semantics.</p>
+<p>E6 arrays_typed WEAK. int8 array reads only [0] and length; int64 reads only [1]; f64 only [1]; bool [0],[1].
+A wrong element stride for int8/int16/uint8 (1-byte elements) would be invisible at index 0. Read the last
+element of each typed array (and at least 3 elements of the int8 one); other widths (uint8/16/32/64, int16, char) absent.</p>
+<p>E7 for_in_and_match_temporaries WEAK/misfiled. Bundles match-on-call-result and sized-array-declaration paths
+(not control flow). <code>uninitialized: int32[4]</code> reads only [0]: zero-initialization of a sized array is
+only asserted for one element of one array in the whole suite (array_to_string's int32[0] has no elements);
+a fresh stack frame may already be zero there. Suggest reading all 4 elements, and after dirtying the stack
+with a prior function call. Also relocate the match/array-decl parts to match/ and arrays/.</p>
+<p>stress_*: manifest (tests/TEST_MANIFEST.md lines 659-665) describes these as "stress", "heavy", "repeated"
+tests; none loops more than 10 times or allocates more than a few objects. There is NO real performance/stress
+test in the directory. Runtimes are all &lt;2 s including wine start-up, so nothing is slow; nothing stresses either.
+Suggested real stress tests: recursion depth ~1e5 (stack limit behavior), a 1e6-iteration loop with string
+concatenation/drop (leak/allocator), a large (e.g. 1e5-element) array fill/sum.</p>
+<h2 id="compiler-bugs-doc-mismatches-discovered-minimal-repros-all-verified-by-me-under-wine">Compiler bugs / doc mismatches discovered (minimal repros; all verified by me under wine)<a class="headerlink" href="#compiler-bugs-doc-mismatches-discovered-minimal-repros-all-verified-by-me-under-wine" title="Permanent link">&para;</a></h2>
+<p>B1 println(array) prints "[...]" (see E1):
+   a: int32[3] = [1,2,3]; println(a);   // prints [...]   ; println(a as string) prints [1, 2, 3]</p>
+<p>B2 Out-of-range array index is unchecked, reads garbage; docs/reference/arrays.md says it "will cause a runtime error":
+   a: int32[] = [1,2,3]; i: int32 = 5; println(a[i]); println("after");   // prints 6029362 then "after", exit 0
+   No test anywhere pins OOB behavior; stress_array_bounds does not either.</p>
+<p>B3 Signed integer overflow wraps silently; docs/reference/error_handling.md says it "traps at runtime rather than silently wrapping":
+   a: int32 = 2147483647; b: int32 = a + 1; println(b);   // prints -2147483648, exit 0
+   (stress_integer_overflow never overflows, so the doc/impl mismatch is not caught. edge_cases/edge_cases_overflow_underflow.fire
+   is labelled "behavior may vary"; outside my slice.)</p>
+<p>B4 ICE returning an array literal from an <code>int32[]</code> function (also noted in for_in_and_match_temporaries header, but
+   NOT captured by any known-issue test; note tests/sources/known_issues/ does not exist, only invalid/known_issues/):
+   fn mk() -&gt; int32[] { return [1,2,3]; }  x: int32[] = mk(); println(x.length());
+   -&gt; FIR verifier dump (FIRV-T4 'int32[3]' vs declared 'int32[]'), no binary. (functions_array_return.fire only returns a param.)</p>
+<p>B5 <code>if (b)</code> with no body at EOF compiles (see E2).</p>
+<p>B6 String literal with embedded NUL truncates: r: string = "a\rb\0c"; println(r.length()); -&gt; 3 (expected 5): strings are
+   NUL-terminated C-style; string_escape_edge_cases.fire header claims <code>\0</code> is handled but no test exercises it. Likely a
+   known limitation; worth a documented note or a test.</p>
+<h2 id="could-not-verify">Could not verify<a class="headerlink" href="#could-not-verify" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Whether <code>.size()</code> on arrays, <code>as string</code> on arrays and substring clamping are intended/specified (no docs found).</li>
+<li>Whether snapshot files (tests/snapshots/*) are current: I did not run the harness (forbidden); only checked the run output.</li>
+<li>Determinism / compile-fail kinds were not run.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Alec Jensen
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

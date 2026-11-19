@@ -1,0 +1,1730 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://firescript.alecj.com/internal/test_audit/P3_flir/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>P3 flir - firescript</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lexend:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Lexend";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#p3-audit-testspythonflir-17-files-343-tests-baseline-343343-pass-in-a-private-copy" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            firescript
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              P3 flir
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../reference/overview/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../glossary/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Glossary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../benchmarks.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Benchmarks
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    firescript
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types & Variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/control_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions & Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes & Inheritance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/scoping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scoping Rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/type_system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/memory_management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/imports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Standard Library
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Standard Library
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/fs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/math/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Math
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/regex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/cli_args/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-Line Arguments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    kiln
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    kiln
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../benchmarks.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#per-file-counts-tests-keep-merge-fix-delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-file counts (tests: KEEP / MERGE / FIX / DELETE)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#delete-candidates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DELETE candidates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DELETE candidates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test_verifier_structurepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        test_verifier_structure.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test_verifier_typespy-duplicated-by-checksextra-with-stronger-asserts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        test_verifier_types.py (duplicated by checks/extra with stronger asserts)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test_verifier_extrapy-29-of-41-are-duplicates-all-assert-only-the-rule-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        test_verifier_extra.py (29 of 41 are duplicates; all assert only the rule id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test_heap_verifier_defensivepy-44-trivial-contrived" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        test_heap_verifier_defensive.py (4/4): TRIVIAL / contrived
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test_ir_analysis_edgespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        test_ir_analysis_edges.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dump-textual-ir_helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dump / textual / ir_helpers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lowering-contrived-unreachable-guard-tests-policy-call-for-owner-all-correct-but-low-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lowering: contrived unreachable-guard tests (policy call for owner; all CORRECT but low value)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#float128-literal-converter-tests-three-files-exercise-one-pure-function-with-heavy-overlap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        float128 literal-converter tests (three files exercise one pure function with heavy overlap)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merge-candidates-valid-but-duplicate-a-sibling-keep-one" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MERGE candidates (valid but duplicate a sibling; keep one)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fix-assertion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FIX-ASSERTION
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keep-summaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KEEP (summaries)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-evidence-mutations-in-private-copy-each-run-whole-testspythonflir-343-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detailed evidence (mutations in private copy; each run = whole tests/python/flir, 343 tests)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compiler-bugs-discovered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler bugs discovered
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/test_audit/P3_flir.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<!-- Audit shard report, 2026-11-18. Raw audit output; see README.md for the consolidated plan. Verdicts are recommendations, not applied changes. -->
+<h1 id="p3-audit-testspythonflir-17-files-343-tests-baseline-343343-pass-in-a-private-copy">P3 audit: tests/python/flir/ (17 files, 343 tests; baseline 343/343 pass in a private copy)<a class="headerlink" href="#p3-audit-testspythonflir-17-files-343-tests-baseline-343343-pass-in-a-private-copy" title="Permanent link">&para;</a></h1>
+<p>Method: read every test and the code under test (flir/verifier.py, heap_verifier.py, ir.py, textual.py, lowering.py <code>_decimal_to_f128_bits</code>, ir_analysis.py); mutation runs in a private rsync copy (never the shared repo). Mutation script: scratchpad/p3_work/mut.py.
+Path prefix below: <code>tests/python/flir/</code>. "types"=test_verifier_types, "extra"=test_verifier_extra, "checks"=test_verifier_checks, "hchecks"=test_heap_verifier_checks, "loops"=test_heap_verifier_loops.</p>
+<p>Process note: the scratchpad <code>audit/</code> directory is shared with sibling audit agents; a sibling overwrote <code>audit/mut.py</code> and <code>audit/W.txt</code> while I was working, so one of my mutation commands (3 invocations) accidentally ran THEIR FIR-mutation script (in their private copy only, never the shared repo) before I stopped it. If a sibling saw odd/duplicated mutation output around 09:31, that was me. My later work used <code>scratchpad/p3_work/</code> only.</p>
+<h2 id="per-file-counts-tests-keep-merge-fix-delete">Per-file counts (tests: KEEP / MERGE / FIX / DELETE)<a class="headerlink" href="#per-file-counts-tests-keep-merge-fix-delete" title="Permanent link">&para;</a></h2>
+<ul>
+<li>test_verifier_structure.py: 18 : 16 / 1 / 0 / 1</li>
+<li>test_verifier_types.py: 34 : 26 / 2 / 2 / 4</li>
+<li>test_verifier_extra.py: 41 : 11 / 0 / 1 / 29</li>
+<li>test_verifier_checks.py: 40 : 38 / 0 / 2 / 0</li>
+<li>test_verifier_heap.py: 8 : 4 / 4 / 0 / 0</li>
+<li>test_heap_verifier_checks.py: 44 : 38 / 2 / 4 / 0</li>
+<li>test_heap_verifier_loops.py: 10 : 4 / 5 / 1 / 0</li>
+<li>test_heap_verifier_defensive.py: 4 : 0 / 0 / 0 / 4 (contrived)</li>
+<li>test_ir_analysis_edges.py: 28 : 25 / 0 / 1 / 2</li>
+<li>test_dump.py: 3 : 0 / 0 / 0 / 3</li>
+<li>test_textual_dump.py: 3 : 1 / 0 / 0 / 2</li>
+<li>test_ir_helpers.py: 11 : 3 / 2 / 0 / 6</li>
+<li>test_lowering_defensive_errors.py: 25 : 3 / 0 / 1 / 21 (contrived, owner policy call)</li>
+<li>test_lowering_type_edge_cases.py: 14 : 10 / 0 / 0 / 4 (contrived SyscallResult bootstrap; owner call)</li>
+<li>test_lowering_float128.py: 16 : 8 / 0 / 0 / 8</li>
+<li>test_lowering_f128_decimal.py: 21 : 17 / 0 / 1 / 3</li>
+<li>test_lowering_f128_decimal_more.py: 23 : 5 / 0 / 0 / 18
+Totals approx: KEEP 210, MERGE 16, FIX 13, DELETE-candidate 104 (26 of those are "contrived unreachable-guard" tests the owner may choose to keep).</li>
+</ul>
+<p>Verdict tallies (a test can have several): REDUNDANT ~85, TRIVIAL ~17 (+ ~25 contrived-guard), WEAK 11, INCORRECT 5.</p>
+<hr />
+<h2 id="delete-candidates">DELETE candidates<a class="headerlink" href="#delete-candidates" title="Permanent link">&para;</a></h2>
+<h3 id="test_verifier_structurepy">test_verifier_structure.py<a class="headerlink" href="#test_verifier_structurepy" title="Permanent link">&para;</a></h3>
+<ul>
+<li>structure::test_s2_rejects_field_referencing_unresolved_struct | INCORRECT, TRIVIAL | name says "rejects", body asserts <code>validate()</code> does NOT raise (ptr field to missing struct). Contradicts its name and spec S2 text ("ptr<S> pointees naming structs resolve"). The real S2 field check (struct-typed field) is tested by extra::test_s2_field_references_unresolved_struct. Delete (or rename to "ptr pointee is not struct-checked" if that narrowing is intended; note spec 8.1 does not list it).</li>
+</ul>
+<h3 id="test_verifier_typespy-duplicated-by-checksextra-with-stronger-asserts">test_verifier_types.py (duplicated by checks/extra with stronger asserts)<a class="headerlink" href="#test_verifier_typespy-duplicated-by-checksextra-with-stronger-asserts" title="Permanent link">&para;</a></h3>
+<ul>
+<li>types::test_t4_call_argument_count_mismatch | REDUNDANT | checks::test_t4_call_to_module_function_argument_count_mismatch (same input, asserts message).</li>
+<li>types::test_t3_ret_type_mismatch | REDUNDANT | checks::test_t3_ret_pointer_in_scalar_function_is_rejected (same ptr-into-scalar, asserts message).</li>
+<li>types::test_m3_ptradd_nonpositive_scale | REDUNDANT | checks::test_m3_ptradd_with_zero_scale_... (also has valid twin).</li>
+<li>types::test_t2_binop_operand_type_does_not_match_operand_type | REDUNDANT | checks::test_t2_wider_int_operand_into_narrower_binop_is_rejected (identical i64-into-i32, asserts "lhs type 'i64'").</li>
+</ul>
+<h3 id="test_verifier_extrapy-29-of-41-are-duplicates-all-assert-only-the-rule-id">test_verifier_extra.py (29 of 41 are duplicates; all assert only the rule id)<a class="headerlink" href="#test_verifier_extrapy-29-of-41-are-duplicates-all-assert-only-the-rule-id" title="Permanent link">&para;</a></h3>
+<p>Helpers/dead code:
+- extra::test_resolve_struct_type_is_dead_code_but_correct_if_called | TRIVIAL | <code>_resolve_struct_type</code> has no callers (grep: only its definition, verifier.py:131). The test pins dead code and would block its removal. Delete test and function together.
+- extra::test_binop_operand_ok_narrowing | REDUNDANT | checks::test_t2_narrow_int_operand_feeds_wider_binop_without_cvt / ...<em>wider_int_operand</em>..._rejected / float_operand test drive the same helper through validate().
+- extra::test_ptr_lenient_eq_plain_type_equality | REDUNDANT | checks::test_t3_ret_pointer_with_different_pointee_is_accepted, test_t4_call_to_extern_accepts_pointer_with_any_pointee, test_t5_slot_pointer_pointee_difference_is_tolerated.
+Exact duplicates (same inputs, same rule) of other files:
+- extra::test_s2_duplicate_struct_name | REDUNDANT | structure::test_s2_rejects_duplicate_struct_name
+- extra::test_s2_duplicate_global_name | REDUNDANT | structure::test_s2_rejects_duplicate_global_name
+- extra::test_s3_struct_size_not_multiple_of_align | REDUNDANT | structure::test_s3_rejects_size_not_multiple_of_align
+- extra::test_s3_field_exceeds_struct_size | REDUNDANT + WEAK | structure::test_s3_rejects_field_exceeding_struct_size; and it passes for the wrong reason (see evidence E1)
+- extra::test_s3_enum_variant_field_overlaps_tag | REDUNDANT | structure::test_s3_rejects_variant_field_overlapping_tag
+- extra::test_s3_enum_variant_fields_overlap_each_other | REDUNDANT | structure::test_s3_rejects_overlapping_variant_fields
+- extra::test_t1_operand_has_no_value_void | REDUNDANT | checks::test_t3_ret_of_valueless_operand_reports_only_t1 (stronger: asserts only T1 and message)
+- extra::test_t2_binop_lhs_type_mismatch / test_t2_binop_rhs_type_mismatch | REDUNDANT | checks::test_t2_wider_int_operand_into_narrower_binop_is_rejected (lhs); types::test_t2_binop_rhs_operand_type_does_not_match_operand_type (rhs)
+- extra::test_t2_comparison_must_produce_bool | REDUNDANT | types::test_t2_comparison_must_produce_bool (verbatim)
+- extra::test_t2_unknown_binop | REDUNDANT | types::test_t2_unknown_binop
+- extra::test_t2_not_type_mismatch | REDUNDANT | types::test_t2_not_requires_bool
+- extra::test_t2_neg_type_mismatch | REDUNDANT | types::test_t2_neg_result_type_mismatch
+- extra::test_t2_cvt_from_type_not_scalar | REDUNDANT + WEAK | types::test_t2_cvt_from_type_not_scalar (identical; both WEAK, E2)
+- extra::test_t2_cvt_to_type_not_scalar | REDUNDANT | types::test_t2_cvt_to_type_not_scalar
+- extra::test_t3_bare_ret_in_nonvoid_function / test_t3_ret_carries_value_in_void_function | REDUNDANT | types:: same-named tests
+- extra::test_t4_call_argument_type_mismatch | REDUNDANT | checks::test_t4_call_to_module_function_argument_type_mismatch
+- extra::test_t4_call_result_type_mismatch | REDUNDANT | checks::test_t4_call_to_extern_result_type_mismatch (same <code>_check_call_against</code> line; module-function kind only differs in message text)
+- extra::test_t5_slotload_type_mismatch | REDUNDANT | checks::test_t5_parameter_slotload_type_mismatch_is_reported (same line; also says "FIRV-T5" in a message typo)
+- extra::test_t5_slotstore_type_mismatch | REDUNDANT | types::test_t5_slotstore_value_type_mismatch
+- extra::test_t6_gload_undeclared_global / gload_type_mismatch / gstore_undeclared_global / gstore_value_type_mismatch | REDUNDANT | the four same-named tests in types (identical bodies)
+- extra::test_m3_ptradd_base_non_pointer | REDUNDANT | types::test_m3_ptradd_base_non_pointer</p>
+<h3 id="test_heap_verifier_defensivepy-44-trivial-contrived">test_heap_verifier_defensive.py (4/4): TRIVIAL / contrived<a class="headerlink" href="#test_heap_verifier_defensivepy-44-trivial-contrived" title="Permanent link">&para;</a></h3>
+<p>All four drive unreachable guards by hand (<code>_meet_states([])</code>, <code>run()</code> with no blocks, <code>run()</code> with a block outside cfg.reachable, <code>_ident_text(("slot", ..))</code> which the file itself says is dead). Project philosophy (CLAUDE.md "defensive or unreachable lines don't need contrived tests") says delete; they also pin dead branches and block cleanup.
+- heap_defensive::test_meet_states_of_empty_list_returns_default_state | TRIVIAL
+- heap_defensive::test_run_on_function_with_no_blocks_returns_immediately | TRIVIAL
+- heap_defensive::test_run_skips_block_not_in_cfg_reachable | TRIVIAL
+- heap_defensive::test_ident_text_slot_kind_branch | TRIVIAL (tests dead branch)</p>
+<h3 id="test_ir_analysis_edgespy">test_ir_analysis_edges.py<a class="headerlink" href="#test_ir_analysis_edgespy" title="Permanent link">&para;</a></h3>
+<ul>
+<li>edges::test_jmp_null_and_float_constant_formatting_via_dump | TRIVIAL, REDUNDANT | formatting; tests/snapshots/*<em>/</em>.flir contain <code>fconst</code> (2 snapshots), <code>nullconst</code> (6), <code>jmp</code> (all).</li>
+<li>edges::test_struct_field_lookup_returns_entry_and_raises_for_missing | REDUNDANT | ir_helpers::test_flir_struct_field_lookup_unknown_field_raises (same KeyError); lookup half is trivial.</li>
+</ul>
+<h3 id="dump-textual-ir_helpers">Dump / textual / ir_helpers<a class="headerlink" href="#dump-textual-ir_helpers" title="Permanent link">&para;</a></h3>
+<ul>
+<li>test_dump::test_dump_module_with_mutable_global | REDUNDANT | edges::test_dump_includes_entry_externs_and_globals_in_deterministic_order asserts the same line; every snapshot .flir contains <code>global mut</code>.</li>
+<li>test_dump::test_dump_module_with_immutable_global | REDUNDANT | edges (same) + textual_dump::test_global_constant_dump_rendering.</li>
+<li>test_dump::test_foreign_value_rejected_in_flir_dump | REDUNDANT | textual_dump::test_resolve_rejects_foreign_value is a byte-for-byte equivalent.</li>
+<li>test_textual_dump::test_global_constant_dump_rendering | REDUNDANT | edges (same line).</li>
+<li>test_textual_dump::test_function_validate_wraps_self_in_throwaway_module | REDUNDANT, TRIVIAL | ir_helpers::test_flir_function_validate_wraps_single_function is identical; asserts only "no exception".</li>
+<li>ir_helpers::test_flir_type_struct_size_and_align_with_module | TRIVIAL | attribute read; used by every struct lowering/e2e test.</li>
+<li>ir_helpers::test_flir_type_signed_and_unsigned_predicates | TRIVIAL</li>
+<li>ir_helpers::test_flir_type_hash_and_repr | TRIVIAL</li>
+<li>ir_helpers::test_finst_default_format_joins_resolved_operands | TRIVIAL | asserts <code>"," in text</code>; the test's own comment says no concrete instruction uses the base format().</li>
+<li>ir_helpers::test_flir_struct_field_lookup_unknown_field_raises | REDUNDANT | edges version.</li>
+<li>ir_helpers::test_unreachable_format | TRIVIAL</li>
+</ul>
+<h3 id="lowering-contrived-unreachable-guard-tests-policy-call-for-owner-all-correct-but-low-value">Lowering: contrived unreachable-guard tests (policy call for owner; all CORRECT but low value)<a class="headerlink" href="#lowering-contrived-unreachable-guard-tests-policy-call-for-owner-all-correct-but-low-value" title="Permanent link">&para;</a></h3>
+<p>test_lowering_defensive_errors.py error-message tests, each asserting only a substring of an internal LoweringError for FIR the frontend never produces: test_lower_type_rejects_unknown_fir_type, test_ensure_struct_rejects_unknown_class, test_request_function_rejects_unknown_function, test_val_rejects_unsupported_operand_kind, test_val_rejects_fir_value_with_no_lowered_value, test_lower_inst_rejects_unsupported_instruction (also contains dead setup: unused module/x/y and a rambling comment), test_lower_terminator_rejects_unsupported_terminator, test_lower_binary_rejects_unsupported_string_operator, test_lower_binary_rejects_unsupported_operator, test_lower_unary_rejects_unsupported_operator, test_to_string_rejects_unconvertible_source_type, test_lower_load_var_rejects_undeclared_local, test_lower_conversion_call_rejects_unsupported_name, test_lower_method_call_rejects_unknown_method, test_gen_slot_of_rejects_non_generator_operand, test_lower_yield_rejects_yield_outside_generator (FIR verifier FIRV-G1 rejects first), test_array_length_call_rejects_unknown_size; plus pins of unreachable paths: test_val_loads_param_value_from_slot (ParamValue never produced), test_lower_inst_passes_through_move_borrow_clone, test_lower_binary_non_short_circuit_and_or_fallback, test_fir_type_str_of_returns_void_for_none_result_type.
+Note: the substring assertions are weak against a wrong-site raise but fine for what they claim.
+Also contrived: test_lowering_type_edge_cases::test_ensure_struct_bootstraps_syscall_result_without_runtime_module, test_is_copyable_class_str_treats_bootstrap_syscall_result_as_copyable, test_lower_type_bootstraps_syscall_result, test_lower_type_str_bootstraps_syscall_result (real pipeline always supplies the runtime module; the 4 overlap each other on the same fallback).</p>
+<h3 id="float128-literal-converter-tests-three-files-exercise-one-pure-function-with-heavy-overlap">float128 literal-converter tests (three files exercise one pure function with heavy overlap)<a class="headerlink" href="#float128-literal-converter-tests-three-files-exercise-one-pure-function-with-heavy-overlap" title="Permanent link">&para;</a></h3>
+<p>Keep test_lowering_float128.py (oracle-based) + test_lowering_f128_decimal.py as canonical; drop the rest.
+- float128::test_positive_sign_prefix, test_infinity_positive, test_infinity_named_infinity, test_infinity_negative, test_nan, test_malformed_text_falls_back_to_zero, test_zero_division_falls_back_to_zero, test_f128_suffix_is_stripped | REDUNDANT | f128_decimal has the same inputs with exact-bit asserts (test_leading_plus_sign, test_inf_text, test_infinity_alias_text, test_negative_infinity, test_nan_text, test_malformed_text_falls_back_to_zero, test_zero_denominator..., test_f128_suffix_is_stripped). <code>1/0</code> is not a possible literal (TRIVIAL).
+- f128_decimal::test_scientific_notation | WEAK, REDUNDANT | asserts only <code>!= (0,0)</code>; float128::test_scientific_notation compares to the expanded decimal.
+- f128_decimal::test_zero_denominator_value_error_variant_falls_back_to_zero | TRIVIAL | <code>1/0</code> can't be lexed as a float literal.
+- f128_decimal::test_elif_exponent_correction_branch_is_unreachable | TRIVIAL | never calls compiler code; asserts a math inequality over small ints (and is true for ALL num/den, not only coprime, so its stated premise is wrong). Passes under any mutation of lowering.py.
+- f128_decimal_more.py: 18 of 23 REDUNDANT: test_positive_zero, test_negative_zero (dec: test_positive_zero/test_negative_zero_sets_sign_bit_only), test_explicit_plus_sign, test_suffix_stripped_f128, test_nan (weaker than dec), test_negative_nan, test_infinity_forms, test_negative_infinity, test_scientific_notation, test_negative_scientific_notation (asserts sign bit only), test_malformed_text_falls_back_to_zero, test_overflow_to_infinity, test_underflow_to_zero, test_subnormal_nonzero, test_rounding_carry_into_exponent_without_overflow (dec: carry_bumps_exponent, same branch), test_rounding_carry_overflows_to_infinity (same branch as dec: both reach "overflow after rounding"; verified, see E6), test_round_half_even_rounds_up, test_round_half_even_rounds_down_to_even.
+  KEEP from this file (merge elsewhere): test_suffix_stripped_other_float_suffixes (only f64/f32/f16 coverage), test_negative_overflow_to_infinity, test_negative_underflow_to_zero (sign on inf / -0), test_round_half_even_below_half, test_round_half_even_above_half (only &lt;0.5 / &gt;0.5 helper cases).</p>
+<hr />
+<h2 id="merge-candidates-valid-but-duplicate-a-sibling-keep-one">MERGE candidates (valid but duplicate a sibling; keep one)<a class="headerlink" href="#merge-candidates-valid-but-duplicate-a-sibling-keep-one" title="Permanent link">&para;</a></h2>
+<ul>
+<li>structure::test_s1_rejects_unknown_branch_target | REDUNDANT-low | checks::test_s1_jmp_to_missing_block_is_reported + test_s1_br_false_target_missing... (assert message and exclusivity).</li>
+<li>types::test_m1_load_offset_not_a_field, types::test_m1_load_type_mismatch_at_field_offset | REDUNDANT-low | same <code>_check_typed_access</code> lines covered by checks::test_m1_store_at_offset_without_field_is_reported, test_m1_store_field_type_mismatch_is_reported, test_m1_load_at_enum_variant_offset_with_foreign_type_is_rejected (only difference is the Load wrapper; one load case suffices).</li>
+<li>verifier_heap::test_a1_double_free | REDUNDANT | hchecks::test_a1_double_free_message_says_freed_again</li>
+<li>verifier_heap::test_a2_use_after_free | REDUNDANT | hchecks::test_a2_use_after_free_via_load_through_token (only consumer differs: fs_rt_stdout vs fs_rt_str_length, both non-escaping borrows)</li>
+<li>verifier_heap::test_a4_local_leak_at_return | REDUNDANT | hchecks::test_a4_leak_reports_the_allocating_position (stronger)</li>
+<li>verifier_heap::test_verifier_heap_accepts_clean_module | REDUNDANT | hchecks::test_valid_alloc_use_free_is_clean
+  (Note: spec section 9 asks "one negative test per rule id"; if the owner wants a canonical smoke file, keep verifier_heap and delete the hchecks copies instead.)</li>
+<li>hchecks::test_alloc_and_free_within_each_loop_iteration_is_clean | REDUNDANT | loops::test_valid_alloc_and_free_inside_loop_body_is_clean (identical shape)</li>
+<li>hchecks::test_free_after_loop_that_only_uses_token_is_clean | REDUNDANT | loops::test_valid_pre_loop_allocation_freed_after_loop_exit_is_clean
+  (Evidence E7: neither pair member can fail under the loop-header bug; only loops' negative tests detect it.)</li>
+<li>loops::test_valid_alloc_and_free_inside_loop_body_is_clean / test_valid_pre_loop_allocation_freed_after_loop_exit_is_clean (keep one of each pair above), and loops::test_nested_loops_pre_loop_allocation_leak_is_reported, test_nested_loops_free_in_inner_body_is_reported, test_nested_loops_use_in_inner_free_after_exit_is_clean | REDUNDANT-low | forward_dataflow has no nesting-specific logic; the nested tests add nothing over the single-loop ones (M16 broke simple and nested equally).</li>
+<li>ir_helpers::test_flir_type_struct_size_requires_module_context + test_flir_type_struct_align_requires_module_context | MERGE into one test.</li>
+</ul>
+<hr />
+<h2 id="fix-assertion">FIX-ASSERTION<a class="headerlink" href="#fix-assertion" title="Permanent link">&para;</a></h2>
+<ul>
+<li>types::test_t2_cvt_from_type_not_scalar_not_checked (types::test_t2_cvt_from_type_not_scalar) | WEAK | E2: the corrupt Cvt(p: ptr, from_type=struct, to I32) ALSO violates the from_type==operand-type rule, so the not-scalar check can be deleted with zero test failures. Needs an operand whose actual type is the struct (e.g. a Load returning a struct) so only the scalar rule fires.</li>
+<li>types::test_m2_load_misaligned_offset | INCORRECT/WEAK | name says M2, asserts FLIRV-M1 (offset 5 is also "not a field"); E3: deleting the M2 check does not fail it. Use an offset that lands on a field but is misaligned (checks::test_m2_store_misaligned_offset_is_reported is the only real M2 test; add a Load variant or rename).</li>
+<li>extra::test_s1_empty_block | WEAK | E4: the second block is unreachable, which also yields FLIRV-S1, so the empty-block check can be deleted without failure. Make the empty block the only problem (e.g. empty non-entry block that is a jump target).</li>
+<li>extra::test_s2_mutable_global_name_collides_with_immutable | KEEP but MISNAMED | it declares ("g") twice in mutable_globals; no immutable global involved (mutable-vs-immutable is structure::test_s2_rejects_global_and_mutable_global_name_collision). Rename to ..._duplicate_mutable_global.</li>
+<li>hchecks::test_m4_store_through_slot_loaded_string_literal_alias_is_not_resolved | INCORRECT | pins a gap as desired behavior; spec 5.3 M4 says a strconst-derived pointer "directly or via must-alias slot propagation" must never be a store base. Implementation resolves only temp-token aliases (<code>_resolved_origin</code>), so the test would FAIL when the verifier is fixed to spec. Move to a known-issue style (or document in spec 8.2 as a narrowing, then it is correct).</li>
+<li>hchecks::test_token_allocated_on_only_one_branch_is_dropped_at_join and hchecks::test_slot_bound_to_different_tokens_on_each_branch_loses_alias_at_join | WEAK | E5: changing the meet from intersect to keep-union for <code>tokens</code> fails no test in the directory; the alias-dropping half is covered but the token-drop half is not (neither test can show a token that is LIVE and slot-aliased surviving).</li>
+<li>hchecks::test_user_function_returning_scalar_is_not_a_token | WEAK | E5b: treating scalar-returning calls as fresh tokens fails no test (a scalar result is an unnamed temp, which A4 deliberately ignores). To be meaningful it should store the scalar into a slot so A4 would fire.</li>
+<li>hchecks names that contradict content (CORRECT behavior, bad names): test_a2_use_after_free_via_load_through_token (uses call, no load), test_a2_branching_on_nothing_but_using_freed_pointer_in_store_base (no branch), test_escape_by_storing_into_a_field_is_not_a_leak_and_later_free_is_untracked (no later free). Two tests hold two cases each (test_user_function_returned_pointer_freed_once_is_clean_and_twice_is_a1, test_destroy_call_frees_token_and_double_destroy_is_a1; checks::test_m3_ptradd_with_zero_scale_...): first failure hides the second; split.</li>
+<li>loops::test_a2_use_after_free_across_back_edge_is_reported | WEAK | asserts rule in (A1, A2); the input yields both, so removing the A2 check does not fail it (E5c). Assert A2 "possibly freed" specifically.</li>
+<li>edges::test_cfg_rpo_is_deterministic_across_builds | WEAK | builds the CFG 5 times in one process; hash randomization is fixed per process, so it cannot detect the nondeterminism it names. A real test would run subprocesses with different PYTHONHASHSEED (CLAUDE.md determinism section) or assert exact expected RPO order for LOOP.</li>
+<li>checks::test_t4_extern_shadowed_by_module_function_uses_module_signature | QUESTIONABLE | pins an unspecified precedence; spec T4 says the callee resolves to "exactly one of" function/extern/runtime, which arguably makes a name present as both invalid.</li>
+<li>checks::test_m1_access_through_raw_pointer_is_not_checked | QUESTIONABLE | pins that a misaligned <code>store i32 @ offset 3</code> through a raw ptr passes; spec M2 says every load/store is alignment-checked. Code only checks for known-struct pointees. Document the narrowing in spec 8.1 or drop the pin.</li>
+<li>f128_decimal::test_subnormal_rounding_clamps_at_max_subnormal_significand | INCORRECT | pins a compiler bug (E6, bug B1).</li>
+<li>defensive::test_lower_binary_rejects_unsupported_float128_operator | INCORRECT (pins a user-reachable bug) | asserts that <code>float128 ** float128</code> raises LoweringError. That input is reachable from user source and crashes the compiler with a Python traceback (bug B2); the proper form is a tests/sources known-issue case, and this unit test would break when fixed.</li>
+</ul>
+<hr />
+<h2 id="keep-summaries">KEEP (summaries)<a class="headerlink" href="#keep-summaries" title="Permanent link">&para;</a></h2>
+<ul>
+<li>structure (16): S1 missing/duplicate/unreachable/mid-block terminator, S2 duplicate function/entry/global/mutable collision/duplicate struct, S3 size/overlap/misaligned/exceeds/variant tag/variant overlap, clean twin. Each verified exclusive by reading (the corrupt IR violates only the target rule). Mutation: dropping S3 exceed-size fails structure::..field_exceeding (only); dropping tag-overlap fails structure + extra.</li>
+<li>types (26): T1 unreachable/foreign, T2 result mismatch / not / cvt-from-mismatch / rhs / bool-compare / neg / unknown / cvt-to, T3 br / bare ret / ret value in void, T4 unresolved callee / extern arg / runtime ABI count, T5 slot twice / slotstore / slotaddr, T6 five, M1 base none, M3 base, clean twin. (types::test_t1_operand_from_unreachable_or_foreign_block name says "foreign" but only tests unreachable; foreign is extra::test_t1_operand_foreign...)</li>
+<li>extra (11): s1 no blocks, s2 unresolved struct field (mutation-verified), t1 foreign + dump fallback (validated: function_dump == ''), t1 non-dominating, slotaddr accepts, m1 load/store non-pointer base, store value-type T1, load/store "skip when base unresolved" pair.</li>
+<li>checks (38): excellent. Each test corrupts one thing, asserts rule AND message, valid boundary twins exist (narrow-int, null-check, pointee leniency, enum variant union, mutable gstore, diamond CFG, tier gating, ordering). Mutation: removing the Tier-1 gate fails test_tier2_is_skipped (E8), dropping M2 fails test_m2_store_misaligned (E3), off-by-one in <code>instruction_dominates</code> is caught by edges (E9).</li>
+<li>verifier_heap (4): a3 literal free, a5 free struct with owned fields (only positive class case), a5 own-destructor exemption (only), m4 store to literal (only).</li>
+<li>hchecks (38): straight-line, joins (freed both/one/none, possibly-freed wording), escape by return/store/call, borrow-only, rebinding, user-function tokens, impl_ prefix, A3 four shapes + parameter negative, A5 enum/plain/shallow/unknown/untyped/destroy. Mutations: removing A2 fails 4 tests, removing named-only A4 filter fails the anonymous-temporary test, MAYBE-&gt;FREED meet fails the two "possibly freed" tests.</li>
+<li>loops (4): pre-loop leak, pre-loop freed in body, while conditional free, while conditional use then free. Only loops' negative tests detect a broken TOP-sentinel (E7).</li>
+<li>edges (25): CFG, dominators, dominates, instruction_dominates (strict index; E9), forward_dataflow (diamond, loop fixpoint, reachable-only, entry seed, single block), Violation location/format, struct finalize x2, dump of entry/externs (sorted; the only test catching unsorted externs, M15)/globals, no-entry dump. Note: half of this file's tests exercise ir.py/textual.py, not ir_analysis.py (misfiled). test_dominates_is_reflexive_even_for_unknown_blocks pins a quirk (low value).</li>
+<li>textual_dump::test_resolve_rejects_foreign_value (keep one copy), ir_helpers: test_const_f128_format (no f128const in any snapshot), test_block_add_after_terminated_raises, test_flir_function_validate_wraps_single_function (keep one copy).</li>
+<li>defensive: test_ensure_slot_is_idempotent, test_gen_slot_of_finds_slot_from_direct_gen_new, test_lower_driver_skips_runtime_prefixed_and_generic_class_method_functions (reachable behavior).</li>
+<li>type_edge (10): lower_type / lower_type_str shape fallbacks (generic param -&gt; ptr, generator, function type, array suffix, generator prefix, generic instance owned/copyable, unknown bare name). Correct, but note they pin lenient fallbacks (unknown named type silently becomes ptr), which could mask a frontend bug.</li>
+<li>float128 (8): negative sign bit, scientific x2 (relative), oracle cross-checks for overflow, subnormal, underflow, carry-into-exponent, half-even ties (the only independent, bit-exact checks of ordinary values).</li>
+<li>f128_decimal (17): exact-bit nan/-nan/inf/infinity/-infinity, +sign, suffix, malformed fallback, +0/-0, overflow, underflow, subnormal exponent field, ties (lo==4 both sides; verified both are true ties), carry bump, carry overflow, _round_half_even helper.</li>
+</ul>
+<hr />
+<h2 id="detailed-evidence-mutations-in-private-copy-each-run-whole-testspythonflir-343-tests">Detailed evidence (mutations in private copy; each run = whole tests/python/flir, 343 tests)<a class="headerlink" href="#detailed-evidence-mutations-in-private-copy-each-run-whole-testspythonflir-343-tests" title="Permanent link">&para;</a></h2>
+<ul>
+<li>E1 Drop S3 <code>offset + fsize &gt; struct.size</code> check (verifier.py <code>if False:</code>): 1 failure = structure::test_s3_rejects_field_exceeding_struct_size. extra::test_s3_field_exceeds_struct_size still passes because it sets struct.size = 6 with align 4, which trips the separate "size not multiple of align" S3 check (its comment "shrink to isolate" is wrong). WEAK.</li>
+<li>E2 Drop <code>if inst.from_type.kind not in scalar_kinds</code> (cvt from_type not scalar): 0 failures. types and extra "cvt_from_type_not_scalar" both build Cvt(ptr value, from_type=struct Point) which already violates "from_type equals operand's actual type" (T2), so both pass for the wrong reason. The rule is effectively untested.</li>
+<li>E3 Drop M2 alignment emit: only checks::test_m2_store_misaligned_offset_is_reported fails; types::test_m2_load_misaligned_offset passes (it asserts M1; its offset 5 isn't a field).</li>
+<li>E4 Drop the empty-block S1 emit: 0 failures; extra::test_s1_empty_block still passes via the other (unreachable) block.</li>
+<li>E5 Heap meet keeps tokens missing from a predecessor (<code>pass</code> instead of <code>del</code>): 0 failures. E5b Treat any call result as a fresh token (drop <code>kind != "ptr"</code> guard): 0 failures. E5c Rename A2 emit to a bogus id: 5 failures but loops::test_a2_use_after_free_across_back_edge_is_reported is NOT among them (A1 satisfies it).</li>
+<li>E6 Subnormal rounding. Mutation: replace <code>sig = min(sig, (1&lt;&lt;112)-1)</code> by carrying into the min normal (what IEEE and the independent oracle tests/support/float128_oracle.py do): the only failing test is test_subnormal_rounding_clamps_at_max_subnormal_significand. Direct check for that text "3.3621...e-4932": lowering returns (0xffffffffffffffff, 0xffffffffffff) (largest subnormal), oracle returns (0x0, 0x1000000000000) (smallest normal); frac*2^16494 = 2^112 - 0.4 so correct rounding is up to 2^112 = min normal. =&gt; compiler bug B1; the test pins the wrong answer and its comment rationalizes it.
+  Also verified: both "overflow after rounding" tests (f128_decimal ...overflows_to_infinity and _more ...overflows_to_infinity) reach the same branch (inputs are 0.6 ulp and exactly 0.5 ulp above max finite; both match the oracle); f128_decimal's comment calls its input "just below the largest finite" which is wrong (it is above).
+  Mutations show the three float128 files overlap: round-half-even tie -&gt; always-up fails 4 tests across all three files; EXP_BIAS off by one fails 6 tests across 3 files; dropping the NaN sign bit fails 2 (one each in decimal and _more).</li>
+<li>E7 Loop-header TOP sentinel removed (<code>live = states</code>): 6 failures, all in loops file (a4 pre-loop, a1 pre-loop, a2, nested x2, while). None of hchecks' loop tests nor any valid-twin loop test fails.</li>
+<li>E8 Tier-1 gate removed (<code>if function.blocks:</code>): fails checks::test_tier2_is_skipped_for_function_with_tier1_violation only (A4 cascade appears).</li>
+<li>E9 <code>instruction_dominates</code> <code>&lt;</code> -&gt; <code>&lt;=</code>: only edges::test_instruction_dominates_same_block_orders_by_index_strictly fails (no verifier test depends on same-index; fine).</li>
+<li>Verified valid: heap A5 positive/negative cases, test_verifier_checks assertions, M12 (tag overlap) caught by 2 tests, M11 (S2 struct-field) caught by extra only (it errors with KeyError when check removed; structure's pseudo-test cannot).</li>
+</ul>
+<h2 id="compiler-bugs-discovered">Compiler bugs discovered<a class="headerlink" href="#compiler-bugs-discovered" title="Permanent link">&para;</a></h2>
+<ul>
+<li>B1 (lowering.py <code>_decimal_to_f128_bits</code>, subnormal branch, ~line 126): a float128 literal in the subnormal range whose rounded significand reaches 2^112 is clamped to the largest subnormal (0x...ffff) instead of rounding up to the smallest normal (hi=0x0001000000000000, lo=0). 1 ulp error. Repro (no .fire needed):
+  <code>from flir.lowering import _decimal_to_f128_bits as d; d("3.36210314311209350626267781732175234359107456732546680313127e-4932")</code> -&gt; (0xffffffffffffffff, 0xffffffffffff); oracle: (0, 0x1000000000000). Extremely obscure literal; fix is <code>if sig &gt;= 1&lt;&lt;112: return (0, sign&lt;&lt;63 | 1&lt;&lt;48)</code> which makes only the pinning test fail.</li>
+<li>B2 (flir/lowering.py:1023 lower_binary): <code>float128 ** float128</code> crashes the compiler with an uncaught Python traceback <code>flir.lowering.LoweringError: unsupported float128 operator **</code> instead of a user diagnostic. Repro (private copy): file with
+  <code>import @firescript/std.io.println;
+  a: float128 = 2.0f128;
+  b: float128 = 3.0f128;
+  c: float128 = a ** b;
+  println(c);</code>
+  <code>python firescript/main.py x.fire --platform windows --arch x86_64 -o x.exe</code>. No tests/sources known_issues entry exists for it (only this unit test's comment mentions it).</li>
+<li>Observation (not run to ground): spec 5.3 M4 (slot-propagated strconst store) and M2 (raw pointer alignment) are looser in code than in the spec; see FIX list.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Alec Jensen
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

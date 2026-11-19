@@ -1828,7 +1828,8 @@ import @firescript/std.math.sqrt as squareRoot
 <ul>
 <li>Import statements are only valid at the top level of a source file.</li>
 <li>The compiler will resolve imports from the project root and report missing files or symbols.</li>
-<li>Cyclic imports should be detected and reported as errors.</li>
+<li>Cyclic imports are reported as <code>FS-IMP-0002</code>; a missing module is <code>FS-IMP-0001</code>; importing a name a module does not define is <code>FS-IMP-0003</code>; importing a name it defines but does not <code>export</code> is <code>FS-IMP-0004</code>.</li>
+<li>Two imported modules exporting the same top-level name, or the entry file defining a name it also explicitly imports, is <code>FS-IMP-0005</code>.</li>
 </ul>
 <h2 id="implementation-status">Implementation Status<a class="headerlink" href="#implementation-status" title="Permanent link">&para;</a></h2>
 <ul>

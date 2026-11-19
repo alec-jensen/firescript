@@ -2927,6 +2927,7 @@ highPrecision: float64 = 3.141592653589793;
 <li>Arithmetic: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>**</code> (power)</li>
 <li>Comparison: <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></li>
 </ul>
+<p><code>float128 ** float128</code> is [IMPLEMENTED]: integer exponents use binary128 repeated squaring; fractional exponents (and bases outside the binary64 range) are evaluated at binary64 precision.</p>
 <h4 id="floating-point-literals">Floating Point Literals<a class="headerlink" href="#floating-point-literals" title="Permanent link">&para;</a></h4>
 <p>Floating point literals can be specified in decimal or scientific notation.</p>
 <p><strong>Type Inference for Literals:</strong></p>
@@ -2949,6 +2950,7 @@ f128Value: float128 = 3.14f128;
 positiveInfinity: float64 = 1.0f64 / 0.0f64;  // Infinity
 negativeInfinity: float64 = -1.0f64 / 0.0f64; // -Infinity
 </code></pre>
+<p>Comparisons follow IEEE 754: a NaN is unordered, so <code>==</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code> and <code>&gt;=</code> with a NaN operand are <code>false</code> and <code>!=</code> is <code>true</code> (including <code>nan == nan</code>). [IMPLEMENTED]</p>
 <h4 id="floating-point-overflow-and-underflow-behavior">Floating Point Overflow and Underflow Behavior<a class="headerlink" href="#floating-point-overflow-and-underflow-behavior" title="Permanent link">&para;</a></h4>
 <p>Floating point operations that exceed the representable range will result in <code>Infinity</code> or <code>-Infinity</code>, while operations resulting in values too close to zero will result in <code>0.0</code>. Operations resulting in undefined values will yield <code>NaN</code>.</p>
 <pre><code class="language-firescript">large: float32 = 3.4e38f32 * 10.0f32;  // Results in Infinity
@@ -3911,7 +3913,8 @@ interface FileOperations {
 <li>[IMPLEMENTED] Nullable type modifiers</li>
 <li>[IMPLEMENTED] Arrays (as Owned heap-allocated types)</li>
 <li>[IMPLEMENTED] User-defined classes (including generic and <code>copyable</code> classes)</li>
-<li>[IMPLEMENTED] Static type checking for expressions and assignments</li>
+<li>[IMPLEMENTED] Static type checking for expressions and assignments, function call arguments, return values, <code>yield</code>, array literals and <code>match</code> arms</li>
+<li>[IMPLEMENTED] Unsuffixed numeric literals take the type they initialize (declarations, assignments, arguments, return values, array elements), with compile-time range checks</li>
 <li>[IMPLEMENTED] Generics</li>
 <li>Generic functions (with and without constraints)</li>
 <li>Type union constraints (<code>T: int32 | float64</code>)</li>

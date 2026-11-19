@@ -1,0 +1,1965 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://firescript.alecj.com/internal/test_audit/P1_parser_lexer_semantic/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>P1 parser lexer semantic - firescript</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lexend:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Lexend";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#p1-audit-testspythonparserlexerpreprocessorsemanticimports" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            firescript
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              P1 parser lexer semantic
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../reference/overview/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../glossary/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Glossary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../benchmarks.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Benchmarks
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    firescript
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types & Variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/control_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions & Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes & Inheritance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/scoping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scoping Rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/type_system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/memory_management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/imports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Standard Library
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Standard Library
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/fs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/math/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Math
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/regex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/cli_args/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-Line Arguments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    kiln
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    kiln
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../benchmarks.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#per-file-counts-delete-merge-fix-keep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-file counts (DELETE / MERGE / FIX / KEEP)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#policy-note-applies-to-every-dead_guards-_internals-_coverage-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy note (applies to every *dead_guards* / *_internals / *_coverage file)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#per-test-verdicts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-test verdicts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Per-test verdicts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#delete-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DELETE-candidate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MERGE-candidate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-assertion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FIX-ASSERTION
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KEEP
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-evidence-for-incorrect-and-weak-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detailed evidence for INCORRECT and WEAK findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compiler-bugs-discovered-all-reproduced-in-the-private-copy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler bugs discovered (all reproduced in the private copy)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#could-not-verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Could not verify
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/test_audit/P1_parser_lexer_semantic.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<!-- Audit shard report, 2026-11-18. Raw audit output; see README.md for the consolidated plan. Verdicts are recommendations, not applied changes. -->
+<h1 id="p1-audit-testspythonparserlexerpreprocessorsemanticimports">P1 audit: tests/python/{parser,lexer,preprocessor,semantic,imports}<a class="headerlink" href="#p1-audit-testspythonparserlexerpreprocessorsemanticimports" title="Permanent link">&para;</a></h1>
+<p>Method: read every test + code under test; per-test line coverage (coverage.py, private copy) compared against the union of ALL 505 tests/sources/*<em>/</em>.fire compiled with --check (front-end only) and against the other tests in this slice; mutation runs in a private copy (/tmp/p1audit.F5e6/mut). Read-only on the shared repo.</p>
+<p>Test case count discovered: 218 (matches the sum below). Bucket totals: DELETE=134, MERGE=27, FIX=17, KEEP=40
+Verdict tags (a test can carry several): INCORRECT=11, KEEP=58, PINS-BUG=4, REDUNDANT=60, TRIVIAL=83, WEAK=36</p>
+<h2 id="per-file-counts-delete-merge-fix-keep">Per-file counts (DELETE / MERGE / FIX / KEEP)<a class="headerlink" href="#per-file-counts-delete-merge-fix-keep" title="Permanent link">&para;</a></h2>
+<ul>
+<li>tests/python/parser/test_ast_node.py: 2 tests | DELETE 1 | MERGE 0 | FIX-ASSERTION 0 | KEEP 1</li>
+<li>tests/python/parser/test_declarations_coverage.py: 19 tests | DELETE 16 | MERGE 2 | FIX-ASSERTION 0 | KEEP 1</li>
+<li>tests/python/parser/test_declarations_dead_guards.py: 4 tests | DELETE 4 | MERGE 0 | FIX-ASSERTION 0 | KEEP 0</li>
+<li>tests/python/parser/test_declarations_dead_guards_more.py: 8 tests | DELETE 8 | MERGE 0 | FIX-ASSERTION 0 | KEEP 0</li>
+<li>tests/python/parser/test_expressions_dead_guards.py: 7 tests | DELETE 7 | MERGE 0 | FIX-ASSERTION 0 | KEEP 0</li>
+<li>tests/python/parser/test_generic_self_reference.py: 3 tests | DELETE 0 | MERGE 0 | FIX-ASSERTION 0 | KEEP 3</li>
+<li>tests/python/parser/test_parser_base.py: 51 tests | DELETE 27 | MERGE 13 | FIX-ASSERTION 1 | KEEP 10</li>
+<li>tests/python/parser/test_statements_coverage.py: 3 tests | DELETE 0 | MERGE 0 | FIX-ASSERTION 3 | KEEP 0</li>
+<li>tests/python/parser/test_statements_dead_guards.py: 16 tests | DELETE 16 | MERGE 0 | FIX-ASSERTION 0 | KEEP 0</li>
+<li>tests/python/parser/test_type_system.py: 3 tests | DELETE 1 | MERGE 0 | FIX-ASSERTION 0 | KEEP 2</li>
+<li>tests/python/parser/test_type_system_coverage.py: 1 tests | DELETE 0 | MERGE 0 | FIX-ASSERTION 1 | KEEP 0</li>
+<li>tests/python/parser/test_type_system_dead_guards.py: 10 tests | DELETE 10 | MERGE 0 | FIX-ASSERTION 0 | KEEP 0</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py: 18 tests | DELETE 18 | MERGE 0 | FIX-ASSERTION 0 | KEEP 0</li>
+<li>tests/python/lexer/test_lexer_internals.py: 1 tests | DELETE 1 | MERGE 0 | FIX-ASSERTION 0 | KEEP 0</li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py: 14 tests | DELETE 4 | MERGE 1 | FIX-ASSERTION 6 | KEEP 3</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py: 22 tests | DELETE 4 | MERGE 10 | FIX-ASSERTION 2 | KEEP 6</li>
+<li>tests/python/semantic/test_semantic_analyzer_report_error.py: 4 tests | DELETE 3 | MERGE 1 | FIX-ASSERTION 0 | KEEP 0</li>
+<li>tests/python/imports/test_module_resolver.py: 16 tests | DELETE 13 | MERGE 0 | FIX-ASSERTION 1 | KEEP 2</li>
+<li>tests/python/imports/test_module_resolver_extra.py: 16 tests | DELETE 1 | MERGE 0 | FIX-ASSERTION 3 | KEEP 12</li>
+</ul>
+<h2 id="policy-note-applies-to-every-dead_guards-_internals-_coverage-file">Policy note (applies to every <code>*dead_guards*</code> / <code>*_internals</code> / <code>*_coverage</code> file)<a class="headerlink" href="#policy-note-applies-to-every-dead_guards-_internals-_coverage-file" title="Permanent link">&para;</a></h2>
+<p>CLAUDE.md says: 'Line coverage is a diagnostic ... defensive or unreachable lines don't need contrived tests.' Roughly 100 of the 218 tests do exactly that: they monkeypatch <code>consume</code>, hand-build ASTNodes, bypass ASTNode's None-guard, or swap the lexer regex purely to execute a line no source can reach. Their only effect is to freeze dead code in place. Recommended: delete the tests, and (where the maintainer is certain it is dead) the guards. A second systemic problem: tests/python/parser/test_type_system_dead_guards_more.py does <code>from _helpers import ...</code> WITHOUT inserting its own directory in sys.path; it only imports because another module loaded earlier did the insert (running that file alone in a fresh interpreter raises ModuleNotFoundError; I hit this when running tests individually; the harness discovers/imports all modules in one process so it passes there). Also three different helper modules (_helpers, _dead_guard_helpers, _dead_guard_helpers2) duplicate each other.</p>
+<h2 id="per-test-verdicts">Per-test verdicts<a class="headerlink" href="#per-test-verdicts" title="Permanent link">&para;</a></h2>
+<h3 id="delete-candidate">DELETE-candidate<a class="headerlink" href="#delete-candidate" title="Permanent link">&para;</a></h3>
+<ul>
+<li>tests/python/parser/test_ast_node.py::test_repr_matches_str | TRIVIAL | asserts repr(x)==str(x); one-line <strong>repr</strong> delegate, no plausible bug caught</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_function_definition_rejects_non_type_return | REDUNDANT, WEAK | <code>fn foo() -&gt; + {}</code>: lines all hit by invalid/generics/generic_def_syntax_errors.fire (<code>-&gt; Q</code>) and functions/function_def_syntax_errors.fire; asserts only result None + any FS-PARSE-0010</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_function_definition_rejects_malformed_array_return_bracket | REDUNDANT | same shape as <code>fn badRet() -&gt; int32[ {</code> in invalid/functions/function_def_syntax_errors.fire which also pins code+column</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_function_definition_generic_type_param_missing_name | REDUNDANT | <code>fn badParam&lt;(x: T)</code> in invalid/generics/generic_def_syntax_errors.fire</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_function_definition_generic_constraint_missing_type | REDUNDANT | <code>fn badConstraint&lt;T:&gt;</code> in generic_def_syntax_errors.fire</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_function_definition_generic_missing_close_angle | REDUNDANT, WEAK | <code>fn unclosed&lt;T(x: T)</code> in generic_def_syntax_errors.fire; this test asserts only <code>result is None</code> (no code)</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_function_definition_array_param_bad_size_token | INCORRECT, REDUNDANT | name says 'bad size token' but the source is the valid <code>xs: int32[3]</code>; asserts array_size==3, duplicating tests/sources/functions/functions_sized_array_param.fire</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_function_definition_close_paren_missing | REDUNDANT | <code>fn unclosedParams(x: int32 {</code> in function_def_syntax_errors.fire</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_generator_definition_borrowed_param | REDUNDANT | tests/sources/generators/generators_borrow_param.fire (run test) uses a <code>&amp;</code> generator param; same _parse_function_definition path as any fn</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_generator_definition_missing_close_paren | REDUNDANT | identical code path to close_paren_missing (generators are plain fn); invalid/generators/generator_def_errors.fire</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_generator_definition_missing_body_brace | REDUNDANT | <code>fn noBody(x: int32) -&gt; void</code> case in function_def_syntax_errors.fire</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_import_symbol_group_bad_identifier | REDUNDANT | <code>import utils.{5}</code> in invalid/imports/import_syntax_errors.fire</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_import_at_missing_identifier_after_at | REDUNDANT | <code>import @;</code> in import_syntax_errors.fire</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_import_at_missing_identifier_after_slash | REDUNDANT, WEAK | <code>import @firescript/;</code> in import_syntax_errors.fire hits the same lines; the extra 'recovers and returns a node' assertion pins error-recovery shape only</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_import_symbol_missing_after_dot | REDUNDANT | <code>import utils.!;</code> and invalid/imports/import_trailing_dot_eof.fire</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_import_symbol_group_missing_close_brace | REDUNDANT | <code>import utils.{helper</code> in import_syntax_errors.fire</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_import_module_alias | REDUNDANT | tests/sources/imports/imports_alias.fire (<code>utils as U</code>) exercises the same parse; a wrong alias would break the run test</li>
+<li>tests/python/parser/test_declarations_dead_guards.py::test_parse_import_symbol_group_handles_none_from_consume | REDUNDANT, TRIVIAL | dead guard (forced consume None); exact duplicate of _more::test_import_symbol_group_consume_failure_is_dead (same lines declarations.py:713-714)</li>
+<li>tests/python/parser/test_declarations_dead_guards.py::test_parse_class_definition_handles_none_class_consume | REDUNDANT, TRIVIAL | dead guard; duplicate of _more::test_class_definition_missing_class_token_is_dead (both hit declarations.py:981)</li>
+<li>tests/python/parser/test_declarations_dead_guards.py::test_parse_class_definition_handles_none_type_param_consume | INCORRECT, REDUNDANT | claims to force the type-param consume to fail but forces the FIRST consume (the <code>class</code> keyword, cursor is on '&lt;'), so it hits declarations.py:981 exactly like the test above and never reaches the type-param guard (line 1005, covered only by _more::...type_param_consume_failure_is_dead)</li>
+<li>tests/python/parser/test_declarations_dead_guards.py::test_parse_constraint_declaration_handles_none_constraint_consume | TRIVIAL | dead guard (declarations.py:919); asserts only <code>result is None</code></li>
+<li>tests/python/parser/test_declarations_dead_guards_more.py::test_function_definition_type_param_consume_failure_is_dead_but_guarded | TRIVIAL | dead guard declarations.py:59; asserts only None</li>
+<li>tests/python/parser/test_declarations_dead_guards_more.py::test_top_level_skips_blank_placeholder_identifier_token | TRIVIAL | covers a branch for blank IDENTIFIER tokens the real lexer can never emit (lexer.py skips whitespace and IDENTIFIER regex needs &gt;=1 char)</li>
+<li>tests/python/parser/test_declarations_dead_guards_more.py::test_export_pending_flag_before_constraint_dispatch_is_dead | WEAK | hand-sets _pending_export; asserts only len(errors)&gt;=1 so any error passes (does not check the 'Constraint exports are not supported' message/code)</li>
+<li>tests/python/parser/test_declarations_dead_guards_more.py::test_import_symbol_group_consume_failure_is_dead | REDUNDANT, TRIVIAL | dup of declarations_dead_guards::test_parse_import_symbol_group_handles_none_from_consume</li>
+<li>tests/python/parser/test_declarations_dead_guards_more.py::test_import_at_branch_missing_identifier_after_at_is_dead | TRIVIAL | dead guard declarations.py:755-756; asserts None only</li>
+<li>tests/python/parser/test_declarations_dead_guards_more.py::test_import_at_branch_slash_identifier_consume_failure_is_dead | TRIVIAL | dead guard declarations.py:766-767; asserts exact error list (good) but for an impossible state</li>
+<li>tests/python/parser/test_declarations_dead_guards_more.py::test_class_definition_missing_class_token_is_dead | REDUNDANT, TRIVIAL | dup of declarations_dead_guards::test_parse_class_definition_handles_none_class_consume</li>
+<li>tests/python/parser/test_declarations_dead_guards_more.py::test_class_definition_type_param_consume_failure_is_dead | TRIVIAL | only test reaching declarations.py:1005 (dead guard); asserts None only</li>
+<li>tests/python/parser/test_expressions_dead_guards.py::test_parse_array_literal_without_open_bracket_is_defensive_none | TRIVIAL | dead guard expressions.py:743-744 (callers pre-check '[')</li>
+<li>tests/python/parser/test_expressions_dead_guards.py::test_parse_array_access_without_open_bracket_is_defensive_none | TRIVIAL | dead guard expressions.py:772-773</li>
+<li>tests/python/parser/test_expressions_dead_guards.py::test_parse_match_expression_without_match_token_is_defensive_none | TRIVIAL, WEAK | dead guard expressions.py:622; asserts only None</li>
+<li>tests/python/parser/test_expressions_dead_guards.py::test_parse_compound_assignment_without_identifier_is_defensive_none | TRIVIAL | dead guard expressions.py:805-807</li>
+<li>tests/python/parser/test_expressions_dead_guards.py::test_parse_compound_assignment_wrong_operator_reports_error | TRIVIAL | dead branch expressions.py:839-843 (statement dispatcher pre-checks operator)</li>
+<li>tests/python/parser/test_expressions_dead_guards.py::test_parse_increment_or_decrement_without_identifier_is_defensive_none | TRIVIAL | dead guard expressions.py:849-851</li>
+<li>tests/python/parser/test_expressions_dead_guards.py::test_parse_increment_or_decrement_wrong_operator_reports_error | TRIVIAL, REDUNDANT | same shape as compound_assignment_wrong_operator test</li>
+<li>tests/python/parser/test_parser_base.py::test_field_not_found_error_records_error | TRIVIAL, WEAK | helper has NO production callers (grep); asserts len(errors)==1 only; mutant swapping FieldNotFoundError-&gt;MethodNotFoundError SURVIVED</li>
+<li>tests/python/parser/test_parser_base.py::test_method_not_found_error_records_error | TRIVIAL | helper has no production callers; len==1 only</li>
+<li>tests/python/parser/test_parser_base.py::test_constructor_not_found_error_records_error | TRIVIAL | helper has no production callers; len==1 only</li>
+<li>tests/python/parser/test_parser_base.py::test_invalid_operator_error_records_error | TRIVIAL | helper has no production callers; len==1 only</li>
+<li>tests/python/parser/test_parser_base.py::test_control_flow_error_records_error | TRIVIAL | helper has no production callers; len==1 only</li>
+<li>tests/python/parser/test_parser_base.py::test_invalid_super_error_records_error | TRIVIAL | helper has no production callers; len==1 only</li>
+<li>tests/python/parser/test_parser_base.py::test_undefined_identifier_error_records_error | TRIVIAL, REDUNDANT | helper used in 4 places, all hit by invalid/*.fire (FS-PARSE-0003 annotations); len==1 only</li>
+<li>tests/python/parser/test_parser_base.py::test_missing_identifier_error_records_error | TRIVIAL | helper has no production callers; len==1 only</li>
+<li>tests/python/parser/test_parser_base.py::test_invalid_array_access_error_records_error | TRIVIAL, REDUNDANT | one real caller (expressions.py:782) covered by invalid/arrays; len==1 only</li>
+<li>tests/python/parser/test_parser_base.py::test_expect_records_unexpected_token_error | TRIVIAL | ParserBase.expect() has NO callers anywhere (grep); weak assertion (1 error); delete with the method</li>
+<li>tests/python/parser/test_parser_base.py::test_expect_succeeds_and_advances | TRIVIAL | tests dead method expect() (mutation killed, but method is unused)</li>
+<li>tests/python/parser/test_parser_base.py::test_expect_returns_none_at_eof | TRIVIAL | dead method expect()</li>
+<li>tests/python/parser/test_parser_base.py::test_skip_comment_at_eof_is_noop | WEAK | asserts current_token None after _skip_comment at EOF; no plausible bug</li>
+<li>tests/python/parser/test_parser_base.py::test_parser_base_parse_expression_is_not_implemented | TRIVIAL | pins an abstract-method raise; Parser always overrides it</li>
+<li>tests/python/parser/test_parser_base.py::test_invalid_field_access_error_records_error | TRIVIAL | helper has no production callers</li>
+<li>tests/python/parser/test_parser_base.py::test_bare_error_method_records_error | TRIVIAL | ParserBase.error() has no production callers; len==1 only (mutant replacing message SURVIVED)</li>
+<li>tests/python/parser/test_parser_base.py::test_type_error_and_invalid_type_error_record_errors | TRIVIAL, REDUNDANT | invalid_type_error has 61 callers (covered by invalid/types/*.fire); asserts count 2 only</li>
+<li>tests/python/parser/test_parser_base.py::test_advance_skips_whitespace_placeholder_tokens | TRIVIAL | tests branch for blank IDENTIFIER tokens the real lexer never emits</li>
+<li>tests/python/parser/test_parser_base.py::test_peek_skips_whitespace_placeholder_tokens | TRIVIAL | same: unreachable scaffolding</li>
+<li>tests/python/parser/test_parser_base.py::test_skip_ws_from_skips_placeholder_tokens | TRIVIAL | same: unreachable scaffolding</li>
+<li>tests/python/parser/test_parser_base.py::test_parse_statement_dot_dispatch_handles_none_from_parse_primary | REDUNDANT, TRIVIAL | dead guard statements.py:574; exact duplicate of statements_dead_guards::test_parse_statement_dot_lhs_none_is_defensive</li>
+<li>tests/python/parser/test_parser_base.py::test_parse_statement_directive_without_declarations_mixin_errors | REDUNDANT | dup of statements_dead_guards::test_parse_statement_directive_without_declarations_mixin (this one additionally checks message text)</li>
+<li>tests/python/parser/test_parser_base.py::test_parse_scope_without_open_brace_records_error | REDUNDANT | dup of statements_dead_guards::test_parse_scope_missing_open_brace_is_defensive</li>
+<li>tests/python/parser/test_parser_base.py::test_recover_to_statement_boundary_stops_at_semicolon | TRIVIAL | _recover_to_statement_boundary has no callers (grep); tests are correct but guard dead code</li>
+<li>tests/python/parser/test_parser_base.py::test_recover_to_statement_boundary_stops_at_close_brace | TRIVIAL | same: dead method</li>
+<li>tests/python/parser/test_parser_base.py::test_recover_to_statement_boundary_stops_at_strong_starter | TRIVIAL | same: dead method (mutation-killed but irrelevant)</li>
+<li>tests/python/parser/test_parser_base.py::test_recover_to_statement_boundary_runs_to_eof | TRIVIAL | same: dead method</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_parse_if_statement_returns_none_when_not_at_if_token | TRIVIAL | dead guard statements.py:29</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_parse_while_statement_returns_none_when_not_at_while_token | TRIVIAL | dead guard statements.py:228</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_parse_for_statement_returns_none_when_not_at_for_token | TRIVIAL | dead guard statements.py:268</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_if_statement_condition_none_with_close_paren_still_present | TRIVIAL | monkeypatches parse_expression to None; mutation-verified but pins recovery for an impossible state</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_while_statement_condition_none_with_close_paren_still_present | TRIVIAL | same, while version</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_if_statement_then_branch_none_is_defensive | WEAK | monkeypatched parse_scope; asserts len(errors)&gt;=1 (any error)</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_while_statement_body_none_is_defensive | TRIVIAL | dead guard statements.py:247; asserts None only</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_for_in_statement_body_none_is_defensive | TRIVIAL | dead guard statements.py:307</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_for_c_style_statement_body_none_is_defensive | TRIVIAL | dead guard statements.py:391</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_parse_variable_assignment_identifier_none_is_defensive | TRIVIAL | dead guard statements.py:152-154</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_parse_variable_assignment_missing_assign_is_defensive | TRIVIAL | dead guard statements.py:158-160</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_parse_function_call_missing_name_is_defensive | TRIVIAL | dead guard statements.py:184-186</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_parse_function_call_missing_open_paren_is_defensive | TRIVIAL | dead guard statements.py:190-192</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_parse_statement_dot_lhs_none_is_defensive | TRIVIAL | dead guard statements.py:574 (same as parser_base dup)</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_parse_scope_missing_open_brace_is_defensive | TRIVIAL | dead guard statements.py:647-648 (dup of parser_base)</li>
+<li>tests/python/parser/test_statements_dead_guards.py::test_parse_statement_directive_without_declarations_mixin | TRIVIAL | tests a stripped-down StatementsMixin-only parser that is never constructed in production</li>
+<li>tests/python/parser/test_type_system.py::test_annotate_value_category_swallows_exception | REDUNDANT | one of THREE copies of the same test (also dead_guards.py and dead_guards_more.py); keep exactly one. Note it pins a bare <code>except Exception: pass</code> that hides real bugs</li>
+<li>tests/python/parser/test_type_system_dead_guards.py::test_get_node_type_literal_fallback_infers_from_token_type | REDUNDANT | dead fallback; duplicate (subset: 4 of 6 types) of _more::test_get_node_type_literal_fallback_is_dead</li>
+<li>tests/python/parser/test_type_system_dead_guards.py::test_get_node_type_function_call_array_suffix_is_unreachable_via_type_check_node | REDUNDANT, WEAK | dup of _more::..function_call_array_fallback_is_dead; mutant removing the whole array-suffix trim is EQUIVALENT (the [] is re-appended), so the branch is no-op code</li>
+<li>tests/python/parser/test_type_system_dead_guards.py::test_get_node_type_method_call_array_suffix | INCORRECT, REDUNDANT | docstring claims class methods cannot return arrays: FALSE today (verified <code>fn all(&amp;this) -&gt; int32[]</code> compiles). dup of _more::..method_call_array_fallback_is_dead</li>
+<li>tests/python/parser/test_type_system_dead_guards.py::test_get_node_type_super_call_is_unreachable_via_type_check_node | REDUNDANT | dup of _more::..super_call_fallback_is_dead</li>
+<li>tests/python/parser/test_type_system_dead_guards.py::test_annotate_value_category_swallows_exceptions | TRIVIAL | ends with <code>t.require(True)</code> - tautology; also dup of two other tests</li>
+<li>tests/python/parser/test_type_system_dead_guards.py::test_infer_generic_type_args_unknown_function_returns_none | REDUNDANT | dup of _more::..name_not_generic_is_defensive</li>
+<li>tests/python/parser/test_type_system_dead_guards.py::test_infer_generic_type_args_empty_type_params_returns_empty_list | REDUNDANT | dup of _more::..empty_type_params_is_defensive</li>
+<li>tests/python/parser/test_type_system_dead_guards.py::test_infer_generic_type_args_missing_function_def_returns_none | REDUNDANT | dup of _more::..missing_function_definition_is_defensive</li>
+<li>tests/python/parser/test_type_system_dead_guards.py::test_cast_to_array_type_is_rejected | REDUNDANT | dead branch (parser cannot produce <code>as int32[]</code>; verified it is a parse error); dup of _more::test_cast_to_array_type_is_defensive (this one is the stronger copy: asserts FS-SEM-0010)</li>
+<li>tests/python/parser/test_type_system_dead_guards.py::test_function_call_return_type_already_always_set_by_parser | TRIVIAL | constructs an ASTNode and asserts hasattr(node,'return_type'): tests the constructor, not the compiler</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_annotate_value_category_swallows_exceptions | REDUNDANT | 3rd copy</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_get_node_type_literal_fallback_is_dead | TRIVIAL | dead fallback (every real LITERAL has return_type); keep this superset copy only if the fallback is kept</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_get_node_type_array_literal_element_node_none_is_defensive | TRIVIAL | bypasses ASTNode's own None-child guard to reach a dead branch</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_get_node_type_function_call_array_fallback_is_dead | TRIVIAL | dead; equivalent-mutant branch</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_get_node_type_super_call_fallback_is_dead | TRIVIAL | dead</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_get_node_type_method_call_array_fallback_is_dead | INCORRECT | comment 'class methods can't be declared with an array return type' is stale/false (verified)</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_function_call_return_type_fallback_assignment_is_dead | INCORRECT | <code>del node.return_type</code> then asserts the buggy outcome; its own comment admits it pins a latent authoring bug (<code>not hasattr(node,'return_type')</code> is never True because ASTNode always sets return_type=None). It asserts incorrect behavior rather than flagging it</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_get_node_type_array_access_child_none_is_defensive | TRIVIAL | dead guard; bypasses ASTNode None-guard</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_infer_generic_type_args_name_not_generic_is_defensive | TRIVIAL | dead guard type_system.py:297</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_infer_generic_type_args_empty_type_params_is_defensive | TRIVIAL | dead guard type_system.py:301</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_infer_generic_type_args_missing_function_definition_is_defensive | TRIVIAL | dead guard type_system.py:311</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_unary_missing_operand_is_defensive | TRIVIAL | dead guard type_system.py:661-662</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_unary_unsupported_operator_is_defensive | TRIVIAL | dead branch type_system.py:695-696 (parser only builds + - ! ++ --)</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_binary_unsupported_operator_is_defensive | TRIVIAL | dead branch type_system.py:635; no assertion on the error emitted</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_cast_to_array_type_is_defensive | REDUNDANT | weaker dup (asserts None only) of dead_guards::test_cast_to_array_type_is_rejected</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_function_call_expected_arg_types_loop_is_defensive | TRIVIAL | body is <code>t.require(True)</code> - literally a tautology; documents dead code in a test</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_super_call_no_enclosing_class_is_defensive | TRIVIAL | dead guard type_system.py:1037-1038</li>
+<li>tests/python/parser/test_type_system_dead_guards_more.py::test_super_call_not_in_constructor_is_defensive | TRIVIAL | dead guard type_system.py:1044-1045</li>
+<li>tests/python/lexer/test_lexer_internals.py::test_tokenize_handles_successful_match_with_no_named_group | TRIVIAL | swaps the compiled regex for a fake to reach lexer.py:184-186, a branch that cannot occur (every alternative is a named group). Contradicts CLAUDE.md ('defensive or unreachable lines don't need contrived tests'). NOTE: tests/python/lexer has no real lexer test at all</li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py::test_collect_identifier_names_none_returns_empty_set | TRIVIAL, INCORRECT | name says returns empty set; body only runs enable_and_insert_drops on <code>return;</code> and asserts nothing ('must not raise'); never calls _collect_identifier_names</li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py::test_return_transferred_identifiers_walk_none_receiver | TRIVIAL | no assertion; targets an impossible METHOD_CALL-with-no-children</li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py::test_break_outside_loop_drains_innermost_scope_fallback | TRIVIAL | assertion is <code>any(...) or True</code> (tautology). mutant making the fallback drain nothing SURVIVED</li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py::test_continue_outside_loop_drains_innermost_scope_fallback | TRIVIAL | no assertion</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_borrow_info_stores_fields | TRIVIAL | constructs BorrowInfo and checks its constructor assigned fields</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_error_convenience_method | TRIVIAL | error() wrapper; message-in-message only</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_is_direct_borrow_view_false_for_unrelated_node_type | REDUNDANT | no unique line; fallthrough <code>return False</code> hit by every borrow .fire test</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_collect_function_signatures_none_is_noop | TRIVIAL | asserts signatures == {} after passing None</li>
+<li>tests/python/semantic/test_semantic_analyzer_report_error.py::test_report_error_without_node_uses_no_line_info | REDUNDANT | dup of internals::test_report_error_without_node_appends_directly</li>
+<li>tests/python/semantic/test_semantic_analyzer_report_error.py::test_report_error_index_out_of_range_falls_back_gracefully | WEAK, REDUNDANT | name says falls back gracefully; asserts source_file but error() pre-fills it so mutant removing the fallback default SURVIVED (only internals variant catches it). Only the count check kills the 'append' mutant</li>
+<li>tests/python/semantic/test_semantic_analyzer_report_error.py::test_report_error_negative_index_falls_back_gracefully | WEAK, REDUNDANT | asserts len==1 only; same except-branch as previous</li>
+<li>tests/python/imports/test_module_resolver.py::test_default_import_root_is_project_root | REDUNDANT, WEAK | dup of _extra::test_default_import_root_defaults_to_project_root; both recompute the implementation's own formula</li>
+<li>tests/python/imports/test_module_resolver.py::test_dotted_to_path_stdlib_missing_returns_init_path | REDUNDANT | dup of _extra::..fallback_when_neither_form_exists</li>
+<li>tests/python/imports/test_module_resolver.py::test_path_to_dotted_outside_root_uses_basename | REDUNDANT | dup of _extra::..outside_import_root_uses_basename</li>
+<li>tests/python/imports/test_module_resolver.py::test_parse_file_missing_file_raises_file_not_found | REDUNDANT | dup of _extra</li>
+<li>tests/python/imports/test_module_resolver.py::test_parse_file_with_syntax_error_raises_runtime_error | REDUNDANT | dup of _extra</li>
+<li>tests/python/imports/test_module_resolver.py::test_load_module_cyclic_import_raises_runtime_error | INCORRECT, REDUNDANT | tests a branch that real recursion can never reach (docstring says so). Cyclic-import detection is DEAD while docs/reference/imports.md:159 marks it [IMPLEMENTED] (compiler bug #1). Dup of _extra::test_cycle_detection_branch...</li>
+<li>tests/python/imports/test_module_resolver.py::test_load_module_external_import_rejected | REDUNDANT | dup of _extra::..external_import_raises, but uses deep global monkeypatching (os.path.isfile, Module.<strong>post_init</strong>, ModuleResolver.parse_file) - the _extra version injects an AST via an instance attribute only</li>
+<li>tests/python/imports/test_module_resolver.py::test_load_module_relative_import_rejected | REDUNDANT | dup of _extra (same reason)</li>
+<li>tests/python/imports/test_module_resolver.py::test_load_module_not_found_raises_file_not_found | REDUNDANT | dup of _extra::..import_not_found_raises_file_not_found and tests/python/cli/test_imports.py::test_import_not_found_compile</li>
+<li>tests/python/imports/test_module_resolver.py::test_resolve_for_entry_skips_external_in_topo_visit | INCORRECT, TRIVIAL | name/comment claim an external import is skipped in the topo visit but the entry has no imports at all; asserts dotted=='entry' and len(topo)&gt;=1</li>
+<li>tests/python/imports/test_module_resolver.py::test_build_merged_ast_skips_export_with_no_name | INCORRECT, REDUNDANT | claims to test append_export's empty-name guard, but exports[''] is dropped earlier at append_symbol_with_deps <code>node is None</code> (imports.py:352), the same line as <em>extra::test_append_symbol_with_deps_node_none</em>...; _extra's own NOTE says the empty-name guard is unreachable</li>
+<li>tests/python/imports/test_module_resolver.py::test_build_merged_ast_conflicting_import_symbols_first_wins | REDUNDANT | dup of _extra::test_append_export_skips_duplicate_symbol_name_across_modules; both mutation-killed. NOTE: pins behavior where the conflict is only LOGGED and compile succeeds (bug #2)</li>
+<li>tests/python/imports/test_module_resolver.py::test_build_merged_ast_entry_conflict_value_error_fallback_is_exercised | INCORRECT | docstring: 'exercised here purely to cover the ValueError branch, not to assert it is correct' and the asserted outcome (entry def silently dropped, imported one wins) is the OPPOSITE of the 'Prefer entry's definition' comment in imports.py:392. Patches ASTNode.<strong>init</strong> globally. Pins a bug</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_resolve_for_entry_topo_sort_skips_external_kind_modules | WEAK, TRIVIAL | mutation-verified EQUIVALENT: replacing the <code>continue</code> with <code>pass</code> at imports.py:234 passes all 32 tests (the later <code>if dep in self.modules</code> already filters). The guarded branch is no-op code and this test cannot fail</li>
+</ul>
+<h3 id="merge-candidate">MERGE-candidate<a class="headerlink" href="#merge-candidate" title="Permanent link">&para;</a></h3>
+<ul>
+<li>tests/python/parser/test_declarations_coverage.py::test_function_definition_rejects_missing_name | KEEP | lines declarations.py:379-380 reached by NO .fire test (verified <code>fn + () -&gt; int32</code> is reachable via normal parse); move into function_def_syntax_errors.fire as //~ annotation and delete</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_function_definition_missing_open_paren | KEEP | lines declarations.py:388-389 reached by no .fire test (verified reachable: <code>fn foo {}</code>); convert to //~ line in function_def_syntax_errors.fire</li>
+<li>tests/python/parser/test_parser_base.py::test_infer_literal_type_integer_no_suffix_defaults_int32 | KEEP | merge the 6 _infer_literal_type tests into one @t.params table</li>
+<li>tests/python/parser/test_parser_base.py::test_infer_literal_type_float_suffixes | KEEP | merge into one table</li>
+<li>tests/python/parser/test_parser_base.py::test_infer_literal_type_float_no_suffix_defaults_float32 | KEEP | mutation-verified (float32 default flipped -&gt; fails); merge into table</li>
+<li>tests/python/parser/test_parser_base.py::test_infer_literal_type_double_literal_is_float64 | KEEP | merge into table</li>
+<li>tests/python/parser/test_parser_base.py::test_infer_literal_type_unknown_token_type_returns_empty | KEEP | merge into table</li>
+<li>tests/python/parser/test_parser_base.py::test_is_type_token_none_returns_false | KEEP | merge with previous</li>
+<li>tests/python/parser/test_parser_base.py::test_advance_at_eof_is_noop | WEAK | merge the four EOF tests (advance/peek/_current_token_index/consume_name at EOF) into one</li>
+<li>tests/python/parser/test_parser_base.py::test_peek_returns_none_at_eof | WEAK | see above</li>
+<li>tests/python/parser/test_parser_base.py::test_current_token_index_is_minus_one_at_eof | WEAK | see above</li>
+<li>tests/python/parser/test_parser_base.py::test_consume_name_returns_none_at_eof | WEAK | see above</li>
+<li>tests/python/parser/test_parser_base.py::test_looks_like_generic_constructor_call_false_when_not_less_than | KEEP | merge the 3 into one parametrized negative-case test</li>
+<li>tests/python/parser/test_parser_base.py::test_looks_like_generic_constructor_call_false_when_no_open_paren | KEEP | merge; only one with real lookahead; no POSITIVE-case test exists (bug: a '<T>(' true case is untested at unit level)</li>
+<li>tests/python/parser/test_parser_base.py::test_looks_like_generic_constructor_call_false_at_eof | KEEP | merge</li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py::test_collect_directive_true_when_already_present | REDUNDANT | covered by next test (a wrong return would produce a duplicate directive there)</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_report_error_without_node_appends_directly | REDUNDANT | duplicates report_error.py::test_report_error_without_node_uses_no_line_info; keep one (this one checks source_file)</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_expr_is_owned_value_false_for_non_identifier_no_return_type | KEEP | merge with the other False case</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_merge_state_pair_both_movedish_yields_moved | WEAK | merge the 3 into one params truth table; the table omits the (MOVED,VALID)-&gt;MAYBE_MOVED row: mutant returning MOVED instead SURVIVED (22/22 pass)</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_merge_state_pair_borrowed_wins | WEAK | see above</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_merge_state_pair_default_valid | WEAK | see above</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_analyze_node_none_is_noop | WEAK | merge the 'no children -&gt; return' guards (method_call/if/match/while/none) into one params test</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_analyze_node_method_call_no_children_returns_early | KEEP | mutation-verified (guard removal -&gt; IndexError) though only asserts no raise</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_analyze_node_if_statement_no_children_returns_early | WEAK | no assertion; merge</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_analyze_node_match_expression_no_children_returns_early | WEAK | no assertion; merge</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_analyze_node_while_statement_no_children_returns_early | WEAK | no assertion; merge</li>
+<li>tests/python/semantic/test_semantic_analyzer_report_error.py::test_report_error_without_source_code_uses_no_line_info | KEEP | asserts line==0; only distinct case (source_code=None)</li>
+</ul>
+<h3 id="fix-assertion">FIX-ASSERTION<a class="headerlink" href="#fix-assertion" title="Permanent link">&para;</a></h3>
+<ul>
+<li>tests/python/parser/test_parser_base.py::test_report_error_with_no_token_anchors_after_last_real_token | WEAK, REDUNDANT | asserts only line&gt;0; mutant <code>index = 0</code> (anchor at file start) SURVIVED. Line-anchoring at EOF is pinned by .fire //~ annotations (e.g. invalid/imports/import_trailing_dot_eof.fire). If kept, assert the exact line/column</li>
+<li>tests/python/parser/test_statements_coverage.py::test_array_access_as_bare_statement_parses | KEEP, PINS-BUG | asserts the parser accepts <code>arr[0];</code> but the compiler then crashes in AST-&gt;FIR with an internal 'Unsupported statement node ARRAY_ACCESS' + traceback (verified). Either reject at parse time or lower it; add tests/sources known_issue</li>
+<li>tests/python/parser/test_statements_coverage.py::test_nested_directive_inside_function_parses | KEEP, PINS-BUG | asserts a <code>directive x;</code> inside a function body parses; compile then fails 'Unsupported statement node DIRECTIVE' (verified). Same remedy</li>
+<li>tests/python/parser/test_statements_coverage.py::test_generic_class_nested_type_argument_parses | KEEP, PINS-BUG | comment about nested generic FLIR bug is still TRUE (verified FLIRV-T4 on Pair<Pair\<int32,int32>,int32>); the bug has no known_issues test</li>
+<li>tests/python/parser/test_type_system_coverage.py::test_method_call_deferred_lookup_for_composite_generic_type | WEAK, REDUNDANT | assertions (None + no errors) are fine, but deferred composite-generic method calls are exercised end-to-end by every std.types Option/Result import (zero unique lines). Keep only if you want a fast unit probe</li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py::test_mentions_var_false_when_absent | WEAK, REDUNDANT | no line unique (run tests exercise drop insertion); does not cover child recursion, so a mutant dropping the recursion would survive</li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py::test_mentions_var_true_direct_identifier | WEAK, REDUNDANT | same: only the direct-identifier case, not the recursive one</li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py::test_return_function_call_with_borrow_flags_marks_transferred_arg | WEAK | no assertion. Mutant <code>transferred.add(arg.name)</code>-&gt;<code>pass</code> in the FUNCTION_CALL branch SURVIVED (14/14 pass). Should assert str_var is not dropped after <code>return consume(str_var)</code></li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py::test_return_constructor_call_with_borrow_flags_marks_transferred_arg | WEAK | no assertion; both mutants (never record / inverted borrowed flag) in the CONSTRUCTOR_CALL branch SURVIVED</li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py::test_implicit_declaration_from_method_call_on_constructor_receiver | WEAK | no assertion; mutant <code>inferred_class = None</code> SURVIVED. Should assert a drop(v1) was inserted</li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py::test_implicit_declaration_from_method_call_on_identifier_receiver | WEAK | same mutant SURVIVED</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_expr_is_owned_value_array_return_type | WEAK | NO assertion (just <code>analyzer._expr_is_owned_value(node)</code>); mutant replacing the array branch with <code>return False</code> SURVIVED. Assert True for Box[]</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_analyze_node_elif_else_recurse_into_children | WEAK | asserts nothing about recursion ('must not raise'); a mutant skipping recursion passes</li>
+<li>tests/python/imports/test_module_resolver.py::test_build_merged_ast_entry_symbol_replaces_imported_one | KEEP, PINS-BUG | asserts entry def replaces imported one, but production only logs an 'error' and the compile succeeds (bug #2); decide intended semantics, then make it a compile-fail/ warning .fire</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_default_import_root_defaults_to_project_root | WEAK | keep one of the two copies; tautological formula copy</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_cycle_detection_branch_is_unreachable_via_real_recursion_but_direct_call_hits_it | INCORRECT | self-documents that the cycle branch is dead for real cycles; the test passes while real cycles are NOT detected. Replace by a test that a real A&lt;-&gt;B cycle yields FS-IMP-0002 (currently fails: bug #1) in tests/sources/invalid/known_issues</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_append_symbol_with_deps_skips_node_already_emitted | WEAK | mutant disabling the <code>emitted_for_module</code> guard SURVIVED (append_export's <code>seen</code> dedup hides it; only a logging.error differs). Assert no 'Conflicting top-level symbol' log</li>
+</ul>
+<h3 id="keep">KEEP<a class="headerlink" href="#keep" title="Permanent link">&para;</a></h3>
+<ul>
+<li>tests/python/parser/test_ast_node.py::test_constructor_rejects_none_in_children | KEEP | only test of ASTNode's None-children guard (ast_node.py:31-35 unique to it); message check 'None' is weak but the ValueError is the contract</li>
+<li>tests/python/parser/test_declarations_coverage.py::test_function_definition_owned_array_param | KEEP | only test of <code>owned xs: int32[]</code> param parse; asserts is_owned+is_array (no .fire has owned array params)</li>
+<li>tests/python/parser/test_generic_self_reference.py::test_static_factory_returning_enclosing_generic_class_no_imports | KEEP | mutation-verified: neutering _current_generic_class_name assignment (declarations.py:1020) makes it fail</li>
+<li>tests/python/parser/test_generic_self_reference.py::test_self_call_inside_generic_class_no_imports | KEEP | mutation-verified: removing type_system.py:449 assignment makes it fail</li>
+<li>tests/python/parser/test_generic_self_reference.py::test_explicit_type_arg_static_call_on_enclosing_class_no_imports | KEEP | mutation-verified (declarations.py:1020)</li>
+<li>tests/python/parser/test_parser_base.py::test_report_error_skips_trailing_multiline_comment_block | KEEP | mutation-verified (skip of MULTI_LINE_COMMENT_END -&gt; line 4 instead of 1 fails); lines base.py:576-580 reached by no other test</li>
+<li>tests/python/parser/test_parser_base.py::test_consume_name_accepts_as_and_owned_keywords | KEEP | asserts the exact token types for AS/OWNED-as-names</li>
+<li>tests/python/parser/test_parser_base.py::test_infer_literal_type_integer_suffixes | KEEP | table covers all 8 suffixes with exact type; precise and cheap</li>
+<li>tests/python/parser/test_parser_base.py::test_is_type_token_recognizes_registered_user_type | KEEP | small, exact</li>
+<li>tests/python/parser/test_parser_base.py::test_scan_matching_gt_returns_minus_one_at_eof_without_boundary | KEEP | mutation-verified (return 0 at EOF fails)</li>
+<li>tests/python/parser/test_parser_base.py::test_constructor_with_borrowed_and_owned_regular_params_parses | KEEP | parse-level only, but the full program triggers a REAL compiler bug (see bugs section #3); should be paired with a known_issues .fire</li>
+<li>tests/python/parser/test_parser_base.py::test_last_non_comment_token_returns_none_when_all_comments | KEEP | exact None contract on a live helper; unique line base.py:585</li>
+<li>tests/python/parser/test_parser_base.py::test_report_error_comment_token_at_eof_falls_back_to_last_token_index | KEEP | unique lines base.py:603; asserts only line&gt;0 (WEAK assertion, strengthen to exact line)</li>
+<li>tests/python/parser/test_parser_base.py::test_report_error_sets_source_file_when_missing | KEEP | asserts the filename fallback</li>
+<li>tests/python/parser/test_parser_base.py::test_report_error_swallows_position_lookup_exception | KEEP | mutation-verified (narrowing the except fails)</li>
+<li>tests/python/parser/test_type_system.py::test_annotate_value_category_owned | KEEP | exact 'Owned' assertion</li>
+<li>tests/python/parser/test_type_system.py::test_annotate_value_category_copyable | KEEP | exact 'Copyable' assertion</li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py::test_enable_and_insert_drops_does_not_duplicate_existing_directive | KEEP | asserts count==1</li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py::test_is_drop_call_matches_var_name | KEEP | asserts both True and False</li>
+<li>tests/python/preprocessor/test_preprocessor_internals.py::test_for_loop_with_none_clause_preserved | KEEP | mutation-verified (dropping None clause -&gt; 3 != 4 fails)</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_report_error_with_out_of_range_node_falls_back | KEEP | mutation-verified: dropping the source_file default in the except branch fails ONLY this test; the report_error.py variants miss it</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_expr_is_owned_value_false_for_no_binding_no_return_type | KEEP | exact False; only test of semantic_analyzer.py:310 outside .fire</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_definitely_terminates_false_for_unrelated_node | KEEP | mutation-verified (default True fails)</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_validate_match_arms_empty_arms_reports_error | KEEP | asserts 1 error with message; reachability from source unverified (parser may reject empty match first)</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_validate_match_arms_enum_mismatch_and_unknown_enum | KEEP | mutation-verified (inverted != fails). These branches ARE reachable from real source (verified <code>match c { Color.Red -&gt; .. Shape.Circle -&gt; .. Unknown.X -&gt; .. }</code>) yet no .fire compile-fail test covers them: add invalid/match fixture</li>
+<li>tests/python/semantic/test_semantic_analyzer_internals.py::test_validate_borrow_reports_error_for_copyable_type | KEEP | mutation-verified; reachable from source (<code>fn f(&amp;x: int32)</code>, verified) but NO invalid .fire asserts 'Cannot borrow Copyable type' -&gt; add invalid/borrow fixture</li>
+<li>tests/python/imports/test_module_resolver.py::test_stdlib_package_for_regular_file_strips_last_component | KEEP | only direct test of non-init stdlib package stripping</li>
+<li>tests/python/imports/test_module_resolver.py::test_stdlib_package_for_non_stdlib_returns_none | KEEP | only direct test of the None return</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_dotted_to_path_stdlib_fallback_when_neither_form_exists | KEEP | keep this copy</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_path_to_dotted_outside_import_root_uses_basename | KEEP | keep this copy</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_parse_file_missing_file_raises_file_not_found | KEEP | keep this copy</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_parse_file_with_syntax_error_raises_runtime_error | KEEP | keep this copy</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_load_module_external_import_raises | KEEP | keep this copy: good explanation of why the parser pre-empts the guard</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_load_module_relative_import_raises | KEEP | keep this copy</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_load_module_import_not_found_raises_file_not_found | KEEP | keep (real file tree, no patching)</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_stdlib_sibling_relative_import_resolves_within_package | KEEP | only test of sibling-relative stdlib import resolution (imports.py:205-208; no stdlib module or .fire uses it)</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_build_merged_ast_skips_source_read_failure_silently | KEEP | asserts the swallow (no crash) - fine, low value</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_append_export_skips_duplicate_symbol_name_across_modules | KEEP | mutation-verified; the better copy of the dup pair</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_append_symbol_with_deps_node_none_when_export_missing_from_top_level | KEEP | only test of imports.py:352</li>
+<li>tests/python/imports/test_module_resolver_extra.py::test_mutual_recursion_hits_resolving_guard | KEEP | mutation-verified (guard removal -&gt; RecursionError)</li>
+</ul>
+<h2 id="detailed-evidence-for-incorrect-and-weak-findings">Detailed evidence for INCORRECT and WEAK findings<a class="headerlink" href="#detailed-evidence-for-incorrect-and-weak-findings" title="Permanent link">&para;</a></h2>
+<p>Mutation harness: <code>rsync -a --exclude .git --exclude build repo/ $W/mut/</code>; mutate one line; <code>FIRESCRIPT_TEST_TARGET=windows/x86_64 FIRESCRIPT_TEST_RUN_PREFIX=wine WINEDEBUG=-all python tests/run.py &lt;path&gt; --no-coverage</code>. Baseline of every file was green before mutating.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Mutation (file:line)</th>
+<th>Test file run</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M1</td>
+<td>preprocessor.py:473 <code>inferred_class = method_return_types.get(...)</code> -&gt; <code>None</code></td>
+<td>test_preprocessor_internals.py</td>
+<td>14/14 PASS (survived): both implicit-declaration tests WEAK</td>
+</tr>
+<tr>
+<td>M2b</td>
+<td>preprocessor.py:288 <code>transferred.add(arg.name)</code> -&gt; <code>pass</code> (FUNCTION_CALL branch)</td>
+<td>same</td>
+<td>survived: return_function_call... WEAK</td>
+</tr>
+<tr>
+<td>M2c</td>
+<td>preprocessor.py:296 same in CONSTRUCTOR_CALL branch; also inverted <code>borrowed</code> flag (294)</td>
+<td>same</td>
+<td>survived: return_constructor_call... WEAK</td>
+</tr>
+<tr>
+<td>M3</td>
+<td>preprocessor.py:708 fallback drain <code>append(...)</code> -&gt; <code>pass</code></td>
+<td>same</td>
+<td>survived: break/continue fallback tests TRIVIAL (<code>or True</code>)</td>
+</tr>
+<tr>
+<td>M4</td>
+<td>preprocessor.py:723 <code>new_children.append(None)</code> -&gt; <code>pass</code></td>
+<td>same</td>
+<td>killed (3 != 4): for_loop_with_none_clause KEEP</td>
+</tr>
+<tr>
+<td>M5a</td>
+<td>base.py:649 field_not_found_error raises MethodNotFoundError instead</td>
+<td>test_parser_base.py</td>
+<td>51/51 PASS (survived)</td>
+</tr>
+<tr>
+<td>M5c</td>
+<td>base.py:625 error() message blanked</td>
+<td>same</td>
+<td>survived</td>
+</tr>
+<tr>
+<td>M5d/e</td>
+<td>base.py:539/553 expect() mutated</td>
+<td>same</td>
+<td>killed (but expect() has no callers)</td>
+</tr>
+<tr>
+<td>M10b</td>
+<td>base.py:573 block-comment skip disabled</td>
+<td>same</td>
+<td>killed (line 4 != 1): KEEP</td>
+</tr>
+<tr>
+<td>M11</td>
+<td>base.py:617 <code>except Exception</code> -&gt; narrower</td>
+<td>same</td>
+<td>killed: KEEP</td>
+</tr>
+<tr>
+<td>M12</td>
+<td>base.py:446 <code>return -1</code> -&gt; <code>return 0</code></td>
+<td>same</td>
+<td>killed: KEEP</td>
+</tr>
+<tr>
+<td>M13</td>
+<td>base.py:730 strong-starter break disabled</td>
+<td>same</td>
+<td>killed (dead method)</td>
+</tr>
+<tr>
+<td>M14</td>
+<td>base.py:860 float default -&gt; float64</td>
+<td>same</td>
+<td>killed: KEEP</td>
+</tr>
+<tr>
+<td>M16</td>
+<td>base.py:610 no-token anchor <code>index = last.index+len</code> -&gt; <code>0</code></td>
+<td>same</td>
+<td>test_report_error_with_no_token... PASS (survived) -&gt; WEAK; <code>len(self.file)</code> mutant killed</td>
+</tr>
+<tr>
+<td>M19</td>
+<td>semantic_analyzer.py:400 MAYBE_MOVED -&gt; MOVED</td>
+<td>test_semantic_analyzer_internals.py</td>
+<td>22/22 PASS (survived): merge_state tests miss the (MOVED,VALID) row</td>
+</tr>
+<tr>
+<td>M20</td>
+<td>semantic_analyzer.py:307 array branch -&gt; <code>return False</code></td>
+<td>same</td>
+<td>survived: expr_is_owned_value_array_return_type has no assertion</td>
+</tr>
+<tr>
+<td>M22</td>
+<td>semantic_analyzer.py:708 METHOD_CALL guard <code>return</code>-&gt;<code>pass</code></td>
+<td>same</td>
+<td>killed (IndexError): KEEP</td>
+</tr>
+<tr>
+<td>M23</td>
+<td>semantic_analyzer.py:428 default False -&gt; True</td>
+<td>same</td>
+<td>killed</td>
+</tr>
+<tr>
+<td>M24</td>
+<td>semantic_analyzer.py:461 enum-mismatch condition inverted</td>
+<td>same</td>
+<td>killed</td>
+</tr>
+<tr>
+<td>M25</td>
+<td>semantic_analyzer.py:568 <code>not is_owned</code> inverted</td>
+<td>same</td>
+<td>killed</td>
+</tr>
+<tr>
+<td>M6</td>
+<td>semantic_analyzer.py:130 except-branch <code>errors.append</code> -&gt; <code>pass</code></td>
+<td>semantic report_error tests</td>
+<td>killed (2 tests)</td>
+</tr>
+<tr>
+<td>M6b</td>
+<td>semantic_analyzer.py:128 source_file default dropped</td>
+<td>report_error.py + internals</td>
+<td>only internals::...out_of_range killed; report_error.py out_of_range test SURVIVED (error() pre-fills source_file)</td>
+</tr>
+<tr>
+<td>M7a/b</td>
+<td>declarations.py:1020 / type_system.py:449 <code>_current_generic_class_name</code> assignment removed</td>
+<td>test_generic_self_reference.py</td>
+<td>killed (2/3 and 1/3): KEEP</td>
+</tr>
+<tr>
+<td>M8</td>
+<td>statements.py:39 <code>consume("CLOSE_PAREN")</code> removed</td>
+<td>statements_dead_guards</td>
+<td>killed (but impossible state)</td>
+</tr>
+<tr>
+<td>M9</td>
+<td>type_system.py:247 METHOD_CALL <code>is_array = ...endswith</code> -&gt; False</td>
+<td>type_system_dead_guards</td>
+<td>10/10 PASS: EQUIVALENT mutant - result string is identical either way, the array-suffix trimming in _get_node_type FUNCTION_CALL/METHOD_CALL/SUPER_CALL is a no-op</td>
+</tr>
+<tr>
+<td>M17</td>
+<td>imports.py:234 external <code>continue</code> -&gt; <code>pass</code></td>
+<td>tests/python/imports</td>
+<td>32/32 PASS: EQUIVALENT; both topo-sort-external tests can never fail</td>
+</tr>
+<tr>
+<td>M26</td>
+<td>imports.py:298 duplicate-symbol <code>return</code> -&gt; <code>pass</code></td>
+<td>imports</td>
+<td>killed (3 tests) -&gt; dups</td>
+</tr>
+<tr>
+<td>M29</td>
+<td>imports.py:346 <code>emitted_for_module</code> guard disabled</td>
+<td>imports</td>
+<td>survived: skips_node_already_emitted WEAK</td>
+</tr>
+<tr>
+<td>M30</td>
+<td>imports.py:348 <code>resolving_for_module</code> guard disabled</td>
+<td>imports</td>
+<td>killed (RecursionError): mutual_recursion KEEP</td>
+</tr>
+</tbody>
+</table>
+<p>INCORRECT findings (details):
+1. test_declarations_dead_guards.py::test_parse_class_definition_handles_none_type_param_consume - advances 2 tokens then calls <code>_parse_class_definition()</code>, which first does consume("CLASS") on the '&lt;' token; the monkeypatch forces that FIRST consume to fail. Per-test coverage shows it executes only declarations.py:981 (same as the class-token test). It never reaches the type-param guard it names.
+2. test_declarations_coverage.py::test_function_definition_array_param_bad_size_token - name contradicts body (valid <code>int32[3]</code>).
+3. test_type_system_dead_guards(_more).py method_call array tests - docstring/comment 'class methods can't declare array return types' is false: <code>class Foo { fn all(&amp;this) -&gt; int32[] {..} static fn mk() -&gt; int32[] }</code> passes --check.
+4. test_type_system_dead_guards_more.py::test_function_call_return_type_fallback_assignment_is_dead - deliberately <code>del node.return_type</code> and asserts the buggy outcome; admits in a comment it pins a latent bug.
+5. test_module_resolver.py::test_resolve_for_entry_skips_external_in_topo_visit - never has an external import.
+6. test_module_resolver.py::test_build_merged_ast_skips_export_with_no_name - misattributes which guard it hits (see list).
+7. test_module_resolver.py::..entry_conflict_value_error_fallback_is_exercised - pins a bug on purpose (docstring says so).
+8. test_module_resolver(.py/_extra.py) cyclic tests - pass only via artificial load_stack; real cycles undetected (bug #1).
+9. test_preprocessor_internals.py::test_collect_identifier_names_none_returns_empty_set - never calls the function it names; no assertion.</p>
+<h2 id="compiler-bugs-discovered-all-reproduced-in-the-private-copy">Compiler bugs discovered (all reproduced in the private copy)<a class="headerlink" href="#compiler-bugs-discovered-all-reproduced-in-the-private-copy" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Cyclic-import detection is dead code. imports.py <code>_load_module</code> checks <code>dotted in self.modules</code> (and returns) before the <code>dotted in load_stack</code> check, and sets <code>self.modules[dotted]=mod</code> before recursing, so a real A&lt;-&gt;B cycle never raises CyclicImportError (FS-IMP-0002). docs/reference/imports.md:159 says <code>[IMPLEMENTED] Cyclic import detection</code>. Repro: <code>python firescript/main.py --check tests/sources/invalid/imports/import_cycle_a.fire</code> prints "Variable 'ping' not defined" (FS-PARSE-0003) attributed to import_cycle_b_provider.fire:2:40 - a symptom, which tests/sources/invalid/imports/import_cycle_a.fire currently pins as the expected output.</li>
+<li>Duplicate top-level symbol conflicts are only logged, never fail the compile. Repro: a.fire and b.fire each <code>export fn shared() -&gt; int32</code>, main.fire <code>import a.shared; import b.shared; println(shared());</code> compiles and produces an exe (first wins), stderr shows <code>[ERROR] Conflicting top-level symbol 'shared' from imports</code>. Same for an entry-defined <code>fn shared()</code> shadowing an import ("Top-level symbol 'shared' in entry conflicts with imported symbol"): exe produced. build_merged_ast's docstring says conflicts 'produce an error'.</li>
+<li>Constructor with a borrowed regular param plus an owned param mis-assigns ownership. Repro: <code>class Inner{v:int32; fn Inner(&amp;mut this, v:int32){this.v=v;}} class Outer{total:int32; fn Outer(&amp;mut this, &amp;a: Inner, owned b: Inner){this.total=a.v+b.v;}} x:Inner=Inner(1); y:Inner=Inner(2); o:Outer=Outer(x,y); println(o.total);</code> -&gt; <code>FIRV-O2 in main: use of 'x', which is moved</code> (internal compiler error). (test_parser_base.py::test_constructor_with_borrowed_and_owned_regular_params_parses comment hints at this.) Likely receiver/param index misalignment in ctor borrow flags.</li>
+<li>Bare <code>arr[0];</code> statement and a <code>directive x;</code> inside a function body are accepted by the parser but crash AST-&gt;FIR with <code>FIRConversionError: Unsupported statement node ARRAY_ACCESS|DIRECTIVE</code> (Python traceback printed). Pinned as 'works' by test_statements_coverage.py.</li>
+<li>Nested generic class instantiation as a type argument (<code>nested: Pair&lt;Pair&lt;int32,int32&gt;,int32&gt; = Pair(Pair(1,2),3);</code>) fails FLIR verification FLIRV-T4 ("argument 0 has type i32, expected ptr"); still reproducible; not in tests/sources/**/known_issues (only invalid/known_issues exists).</li>
+<li>(Possible, unverified end-to-end) type_system.py:~950 <code>not hasattr(node,'return_type')</code> is never True because ASTNode always defines return_type; if the parser ever leaves return_type None for a user function call the fallback lookup in self.user_functions is skipped. The test that reaches it (<code>..fallback_assignment_is_dead</code>) pins that.</li>
+<li>Missing coverage for reachable behavior (not bugs): 'Cannot borrow Copyable type' (<code>fn f(&amp;x: int32)</code>), match arms mixing enums / unknown enum, <code>fn foo {}</code> and <code>fn + () ...</code> (missing '(' / missing name) have no tests/sources compile-fail fixtures; the only coverage is the Python unit tests above.</li>
+</ol>
+<h2 id="could-not-verify">Could not verify<a class="headerlink" href="#could-not-verify" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Coverage union uses <code>main.py --check</code> (front-end through semantic/FIR verifier, no codegen) over tests/sources; I did not run the real harness (wine) so a few .fire <code>run</code> tests might alter branch coverage only in the back-end, which does not matter for this slice.</li>
+<li>Whether preprocessor return-transfer / implicit-declaration behaviors are pinned end-to-end by any wine-run .fire test (the unit tests there are WEAK either way; I did not run the full run-test suite against the surviving mutants).</li>
+<li>Whether <code>match x {}</code> with zero arms is reachable from source (affects the empty-arms semantic test).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Alec Jensen
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

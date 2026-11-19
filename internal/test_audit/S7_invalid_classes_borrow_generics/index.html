@@ -1,0 +1,1600 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://firescript.alecj.com/internal/test_audit/S7_invalid_classes_borrow_generics/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>S7 invalid classes borrow generics - firescript</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lexend:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Lexend";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#s7-audit-testssourcesinvalidclassesborrowgenerics-72-files-no-helpers" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            firescript
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              S7 invalid classes borrow generics
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../reference/overview/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../glossary/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Glossary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../benchmarks.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Benchmarks
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    firescript
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types & Variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/control_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions & Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes & Inheritance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/scoping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scoping Rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/type_system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/memory_management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/imports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Standard Library
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Standard Library
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/fs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/math/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Math
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/regex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/cli_args/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-Line Arguments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    kiln
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    kiln
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../benchmarks.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#delete-candidate-redundant-incorrect-and-redundant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DELETE-candidate (REDUNDANT / INCORRECT-and-redundant)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merge-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MERGE-candidate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fix-expectation-incorrect-weak" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FIX-EXPECTATION (INCORRECT / WEAK)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KEEP
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-evidence-incorrect-weak" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DETAILED EVIDENCE (INCORRECT / WEAK)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#missing-coverage-no-test-in-slice-most-would-currently-fail-because-of-the-bugs-below" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MISSING COVERAGE (no test in slice; most would currently fail because of the bugs below)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compiler-bugs-oddities-discovered-minimal-repros-scratch-files-in-scratchpadauditt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        COMPILER BUGS / ODDITIES DISCOVERED (minimal repros; scratch files in .../scratchpad/audit/t/)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/test_audit/S7_invalid_classes_borrow_generics.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<!-- Audit shard report, 2026-11-18. Raw audit output; see README.md for the consolidated plan. Verdicts are recommendations, not applied changes. -->
+<h1 id="s7-audit-testssourcesinvalidclassesborrowgenerics-72-files-no-helpers">S7 audit: tests/sources/invalid/{classes,borrow,generics}  (72 files, no helpers)<a class="headerlink" href="#s7-audit-testssourcesinvalidclassesborrowgenerics-72-files-no-helpers" title="Permanent link">&para;</a></h1>
+<p>Method: read every file; ran the real compiler (--check --message-format json) on each; wrote /scratchpad/audit/cmp.py to confirm
+annotations == actual diagnostics (all 72 currently pass, so no stale columns); wrote ~30 scratch programs in
+/tmp/.../scratchpad/audit/t/ (a1..f4) to separate primary errors from cascades and probe for missed diagnostics.
+Parser facts used as redundancy evidence: firescript/parser/declarations.py lines 140/188/194 (receiver/param parsing shared by methods AND
+constructors), 1069 (static ctor), 1086 (')' after params), 1109 ('{' body); expressions.py:247 (single site for "'(' after constructor type").</p>
+<p>IMPORTANT STRUCTURAL FACTS
+* Any parse error stops the pipeline before semantic analysis. So every file that mixes a parse error with semantic mistakes silently
+  hides the semantic ones (see class_errors, generics_errors).
+* Many tests annotate CASCADE diagnostics (e.g. "Variable 'this' not defined", "Function 'Pair' is not defined", "Variable 'identity' not
+  defined" where the name IS defined). These lock incidental error-recovery behaviour into the test; any parser-recovery improvement breaks them.</p>
+<p>====================================================================================================</p>
+<h2 id="delete-candidate-redundant-incorrect-and-redundant">DELETE-candidate (REDUNDANT / INCORRECT-and-redundant)<a class="headerlink" href="#delete-candidate-redundant-incorrect-and-redundant" title="Permanent link">&para;</a></h2>
+<p>classes/constructor_amp_not_this.fire | REDUNDANT | same as class_constructor_syntax_errors CR1 (l.14) and constructor_param_syntax_errors R1 (l.12); one shared parser branch (declarations.py:188)
+classes/constructor_param_array_unsupported.fire | REDUNDANT | same as constructor_param_syntax_errors P2 (l.51), class_constructor_syntax_errors CP2, class_def_syntax_errors P2; one branch (declarations.py:194)
+classes/constructor_param_bad_type.fire | REDUNDANT | same "Expected type" as constructor_param_syntax_errors P1 (l.42), class_constructor_syntax_errors CP1, class_def_syntax_errors P1
+classes/class_constructor_syntax_errors.fire | REDUNDANT | every case (R1,R2,bad type,array,missing name,missing ')',missing '{') is repeated in constructor_param_syntax_errors (same lines 188/194/1086/1109) and class_def_syntax_errors; 13 annotations, 6 are cascade "this not defined"
+classes/constructor_static_with_receiver.fire | INCORRECT + REDUNDANT | header/name say "static constructor with &amp;this -&gt; two parse errors" but file has NON-static <code>fn Foo(&amp;this)</code> and expects FS-SEM-0001 read-only-receiver mutation; that rule is already tested by receiver_readonly_mutation_errors; the real double error is constructor_param_syntax_errors R3 (l.32)
+classes/super_call_no_base.fire | REDUNDANT | super_call_errors.fire l.16
+classes/super_call_base_no_ctor.fire | REDUNDANT | super_call_errors.fire l.30
+classes/super_call_arg_count.fire | REDUNDANT | super_call_errors.fire l.47
+classes/super_call_arg_type.fire | REDUNDANT | super_call_errors.fire l.56
+classes/static_and_type_method_errors.fire | REDUNDANT | all 4 cases covered: static-on-instance=class_static_method_errors l.16; unknown Type.m=constructor_and_type_method_call_errors l.35; static count/type = class_static_method_errors l.20/23 and constructor_and_type_method_call_errors l.41/44
+classes/type_method_call_arg_count.fire | REDUNDANT | class_static_method_errors l.20, constructor_and_type_method_call_errors l.41
+classes/type_method_call_arg_type.fire | REDUNDANT | class_static_method_errors l.23, constructor_and_type_method_call_errors l.44
+classes/type_method_call_unknown.fire | REDUNDANT | constructor_and_type_method_call_errors l.35
+classes/constructor_call_arg_count.fire | REDUNDANT | <code>new</code> count: constructor_call_arg_errors l.27, class_new_constructor_errors l.13, constructor_and_type_method_call_errors l.29
+classes/constructor_call_arg_type.fire | REDUNDANT | <code>new</code> type: constructor_call_arg_errors l.28, class_new_constructor_errors l.16, constructor_and_type_method_call_errors l.32
+classes/constructor_arg_type_mismatch_errors.fire | REDUNDANT | bare-call arg type: constructor_call_arg_errors l.22 (only difference is arg position 2 vs 1)
+classes/constructor_call_no_ctor.fire | REDUNDANT | constructor_call_arg_errors l.29, constructor_and_type_method_call_errors l.26
+classes/field_access_type_errors.fire | REDUNDANT | identical two cases (unknown field, field on int32) as field_access_errors l.12/15
+classes/field_access_unknown_field.fire | REDUNDANT | field_access_errors l.12
+classes/method_duplicate_param_shadow.fire | REDUNDANT | class_method_duplicate_param.fire (same rule, same construct); function form is scoping/scope_errors.fire l.29
+classes/instance_method_arg_count.fire | REDUNDANT | instance_method_arg_errors l.16 (only diff: statement vs initializer context; no separate parser path for that in a semantic error)
+classes/instance_method_arg_type.fire | REDUNDANT | instance_method_arg_errors l.22
+classes/instance_method_unknown.fire | REDUNDANT | unknown_instance_method.fire (same diagnostic "Methods not supported for type X")
+classes/implicit_var_method_call_on_untyped.fire | REDUNDANT + WEAK | all 3 diagnostics are bare-assignment-to-undeclared-name + its cascade; identical to scoping/bare_assignment_without_declaration_errors.fire l.23-25 (<code>n = w.getV();</code>)
+classes/new_unknown_type.fire | REDUNDANT | <code>new Unknown(..)</code> (PARSE-0012 + SEM-0010 same col) = class_new_constructor_errors l.19-20 = new_constructor_syntax_errors l.14-15; extra PARSE-0003 is the bare-assignment cascade
+classes/new_missing_paren.fire | REDUNDANT | same parser site (expressions.py:247) as new_constructor_syntax_errors l.18
+generics/generic_class_field_access_unknown.fire | INCORRECT + REDUNDANT | l.18 <code>new Box&lt;int32&gt;(5)</code> annotated "No constructor defined" but Box DOES define one: this locks in a compiler bug (scratch a2/b2/b3: valid program rejected; <code>Box&lt;int32&gt;(5)</code> form passes, b1). Rule on l.13 is duplicated by generic_class_template_field_errors l.15 and generic_class_unknown_field l.11
+generics/generic_class_unknown_field.fire | REDUNDANT | generic_class_template_field_errors.fire (same rule; that file uses a proper <code>&amp;this</code> receiver, this one has <code>fn bad()</code> with no receiver)
+generics/generic_constraint_violation_errors.fire | REDUNDANT | same rule/same message as generic_call_constraint_violation l.9 (one of the two; the latter adds a cascade, the former is cleaner -&gt; keep this one, drop the other or drop its cascade)
+borrow/memory_errors.fire | REDUNDANT + TRIVIAL | case 1 (use after move l.9) = constructor_move_errors/method_move_errors; case 2 (return borrowed string l.12) is unique only in using a plain string (borrow_escape_projection uses field/array) -&gt; move into borrow_escape_projection_errors; rest of file is 20 lines of commented-out TODO prose and an unannotated <code>small[10]</code> that the comment itself says is not an error</p>
+<h2 id="merge-candidate">MERGE-candidate<a class="headerlink" href="#merge-candidate" title="Permanent link">&para;</a></h2>
+<p>classes/class_def_syntax_errors.fire | WEAK/MERGE | keep header cases (class name, G1&lt;&gt;, G2<T, from-missing, self-inherit, missing '{', bad member, static ctor); cases R1,R2,P1,P2,P3 are duplicates of constructor_param_syntax_errors (shared param parser); 8 of 18 annotations are cascade "Expected '=' in variable declaration" on the field line after a failed class header
+classes/constructor_param_syntax_errors.fire | KEEP (canonical) | the single file that should hold the shared param/ctor-syntax cases; 7 of 16 annotations are cascade "this not defined" -> consider dropping the <code>this.v = 1;</code> bodies or accepting the cascade
+classes/class_static_method_errors.fire | KEEP (canonical) | static/instance call-form errors; only file demanding "static method called on instance" besides the redundant one above
+classes/constructor_and_type_method_call_errors.fire | KEEP (canonical) | superset of ctor/type-call cases
+classes/constructor_call_arg_errors.fire | KEEP (canonical) | only file covering BARE <code>Foo(1,2)</code> count/type, plus <code>new</code>
+classes/super_call_errors.fire | KEEP (canonical)
+classes/field_access_errors.fire | KEEP (canonical)
+generics/generic_class_type_arg_errors.fire, generic_class_nested_type_arg_errors.fire, generic_class_unclosed_type_args.fire | WEAK + MERGE | each is one "Expected type argument"/"Expected '&gt;'" parse error + a misleading cascade PARSE-0012 "Function 'Pair' is not defined" (Pair(1,2) is valid: a5). Same message as generic_declaration_errors l.16/20 (type-arg list in declaration). Merge into one file; drop the cascade annotations if harness allows
+generics/generic_func_empty_type_args.fire + generics/new_constructor_empty_type_args.fire | KEEP-both-ish/MERGE | distinct parse paths (call vs <code>new</code>), but the first demands cascade PARSE-0003 "identity not defined" (identity IS defined) and the second demands a cascade "Expected initializer expression"
+generics/generic_call_errors.fire | WEAK | 4 cases; 4 of 10 annotations are the misleading cascade "Variable 'Box'/'identity' not defined"</p>
+<h2 id="fix-expectation-incorrect-weak">FIX-EXPECTATION (INCORRECT / WEAK)<a class="headerlink" href="#fix-expectation-incorrect-weak" title="Permanent link">&para;</a></h2>
+<p>classes/class_errors.fire | INCORRECT | see detail D1; only 10 annotations, nearly all cascades; never tests the stated rules
+generics/generics_errors.fire | INCORRECT + WEAK | see detail D2
+generics/generic_class_nested_unclosed_type_args.fire | INCORRECT | see D3
+generics/nested_generic_missing_close_errors.fire | INCORRECT | see D3
+generics/generic_declaration_errors.fire | INCORRECT (l.24,28) | see D3 (l.16,20 are fine)
+classes/constructor_static_with_receiver.fire | INCORRECT | see above
+generics/generic_class_field_access_unknown.fire | INCORRECT | l.18 locks a compiler bug (D4)
+generics/generic_call_constraint_violation.fire | WEAK | l.9 second annotation FS-SEM-0002 @5 is only the downstream consequence (declared int32 vs result string); first error is the real one; also <code>identity&lt;string&gt;(5)</code> argument mismatch is NOT reported (compiler bug B3)
+generics/generic_function_inference_errors.fire | WEAK | l.16 SEM-0002 "Expected int32, got T" is a cascade of the inference failure; also function body <code>return x</code> (int32) in <code>make&lt;T&gt;() -&gt; T</code> is a type error that is not reported (return-type check missing, cf. known_issues/return_type_mismatch)
+generics/generic_def_syntax_errors.fire | WEAK | 15 annotations = 4 cases x (1 primary + 2 recovery cascades) + 4x <code>return x</code> "x not defined" cascades; only 4 real rules; case 4 (<code>-&gt; Q</code>, undefined return type) is labelled "not a declared type parameter" but the compiler reports parse errors "Expected type" and cascades, i.e. no semantic undefined-type diagnostic
+classes/type_member_access_errors.fire | WEAK | l.24-25: <code>c: int32 = f.;</code> -&gt; second error SEM-0002 "Expected int32, got Foo" is a pure cascade (f. parsed as f); l.15/19 pair each annotate a cascade "Expected initializer expression"
+classes/type_method_call_constructor_form.fire | WEAK/TRIVIAL | relies on undocumented <code>Widget.Widget(5)</code> call form (docs only show <code>new W(..)</code> and <code>W(..)</code>); asserted error is a plain declared-type mismatch (SEM-0002), not a class rule
+borrow/loop_move_errors.fire, borrow/for_in_move_errors.fire | WEAK | see D5: only the post-loop use is demanded; the actual per-iteration use-after-move (consume(a) inside the body) is not diagnosed and not demanded
+borrow/branch_move_errors.fire | KEEP (message "may have been moved on another control-flow path" is right for if-without-else)</p>
+<h2 id="keep">KEEP<a class="headerlink" href="#keep" title="Permanent link">&para;</a></h2>
+<p>borrow/borrow_alias_escape_errors.fire | KEEP | moving a borrowed field projection into owned local / owned param (memory_management.md "borrow cannot be retained"); distinct from borrow_move_errors (plain param)
+borrow/borrow_escape_projection_errors.fire | KEEP | returning b.name / borrowed array; correct SEM-0001 and columns
+borrow/borrow_move_errors.fire | KEEP | borrowed string -&gt; owned binding / owned param
+borrow/constructor_borrow_move_errors.fire | KEEP | borrowed value into ctor param, bare and <code>new</code> forms
+borrow/constructor_move_errors.fire | KEEP | owned moved into ctor (bare and <code>new</code>), later use
+borrow/method_move_errors.fire | KEEP | owned moved into method param (the &amp;-param negative control on l.24-25 is a good valid-side check)
+classes/receiver_readonly_mutation_errors.fire | KEEP | &amp;this mutation; correct. Missing: calling a &amp;mut method via &amp;this (see missing coverage)
+classes/class_method_duplicate_param.fire | KEEP | canonical method duplicate-param
+classes/class_method_syntax_errors.fire | KEEP | field missing type; <code>static fn get(&amp;this)</code> (only static-METHOD receiver test)
+classes/class_new_constructor_errors.fire | KEEP | new: count/type/unknown type
+classes/field_access_missing_identifier.fire | KEEP | <code>h.;</code> (two annotations on same col are two real separate diagnostics from different layers; mild cascade)
+classes/new_constructor_syntax_errors.fire | KEEP (WEAK) | l.14 case duplicates unknown-type tests; l.18 generic missing '(' and l.22 <code>new Pair&lt;5,int32&gt;</code> are the useful ones; each has a duplicated "Expected initializer expression" cascade
+classes/unknown_instance_method.fire | KEEP | canonical unknown method
+classes/instance_method_arg_errors.fire | KEEP | canonical instance-method count/type
+generics/constraint_decl_errors.fire | KEEP | 4 distinct constraint-declaration parse errors, no cascades, columns right
+generics/generic_class_template_field_errors.fire | KEEP | canonical unknown field in generic template (uses &amp;this); l.19 valid instantiation is a good negative control
+generics/generic_call_constraint_violation.fire or generic_constraint_violation_errors.fire | KEEP ONE | see above
+generics/generic_function_inference_errors.fire | KEEP (WEAK) | cannot-infer + inferred-type-violates-constraint (l.22) are unique</p>
+<p>====================================================================================================</p>
+<h2 id="detailed-evidence-incorrect-weak">DETAILED EVIDENCE (INCORRECT / WEAK)<a class="headerlink" href="#detailed-evidence-incorrect-weak" title="Permanent link">&para;</a></h2>
+<p>D1  classes/class_errors.fire  (INCORRECT)
+ Intended: undefined class, unknown field, field type mismatch, unknown method, duplicate class, duplicate field, class name used as variable,
+ uninitialized instance. Actual annotated diagnostics (10):
+ - l.5 <code>UndefinedClass obj;</code> : old C-style declaration syntax; the two PARSE-0010 "Expected assignment, function call..." are not an undefined-class error.
+ - l.16/22/28/63 <code>p: Point;</code> : declaration without initializer -&gt; PARSE-0010 "Expected '=' in variable declaration" (variables.md: declarations without initializer unsupported). The intended field/method errors are never reached.
+ - l.17/23/29 PARSE-0003 "Variable 'p' not defined": pure cascade of the failed declaration.
+ - l.64 PARSE-0012 "Function 'println' is not defined": println is not imported (incidental), not the intended <code>obj.required</code> problem.
+ - l.38-44 duplicate class, l.47-50 duplicate field, l.54 <code>Point: int32 = 5</code> : NO diagnostic, because parse errors suppress semantic analysis. In isolation (scratch a4) the compiler ALSO reports nothing for them (compiler bug B1).
+ Fix: delete the file (every legitimate rule is covered elsewhere: unknown field = field_access_errors, unknown method = unknown_instance_method) and add real tests for duplicate class/field once B1 is fixed (known_issues).</p>
+<p>D2  generics/generics_errors.fire  (INCORRECT + WEAK; 6 annotations)
+ - l.5 <code>T x;</code>: old syntax; PARSE-0010 x2 are not "undefined type parameter".
+ - l.15 <code>x: int32 = identity&lt;string&gt;(42)</code>: comment says "expects string but got int" (argument mismatch). The compiler does NOT check the argument (scratch c4/c8: <code>identity&lt;string&gt;(42)</code> and <code>identity&lt;int32&gt;("s")</code> compile clean). The annotated SEM-0002 comes only from declared-type int32 vs result string. Test passes for the wrong reason and would keep passing if the arg check were never written.
+ - l.19-24 <code>add&lt;T: Numeric&gt;</code> with undefined constraint <code>Numeric</code>, then <code>add&lt;string&gt;(..)</code>: unannotated, NO diagnostic even in isolation (c5): undefined constraint and violating call both silently accepted (compiler bug B4).
+ - l.29 <code>identity(5);</code> valid program, comment "May require explicit type parameter" is wrong.
+ - l.34 <code>identity&lt;int32,string&gt;(5)</code> SEM-0010 type-arg count: the only correct, unique case (no other file tests generic function type-arg count). Move it to its own file.
+ - l.43-44 <code>box: Box&lt;int32&gt;;</code> no initializer -&gt; PARSE-0010; l.44 PARSE-0003 "box not defined" is a cascade; intended "generic class field type mismatch" untested (and <code>b.value = "s"</code> is undetected anyway, B2).</p>
+<p>D3  Malformed nested/unclosed type-argument tests using obsolete name-first syntax (INCORRECT)
+ generic_class_nested_unclosed_type_args.l.14 <code>Pair&lt;p: Pair&lt;int32,int32 int32&gt; = Pair(...)</code>, nested_generic_missing_close_errors.l.14 <code>Pair&lt;Pair&lt;int32, int32, p: string;</code>, generic_declaration_errors.l.24/28 <code>Pair&lt;c: Pair&lt;...&gt; = good;</code>
+ These are leftovers from an older <code>Pair&lt;..&gt; name</code> declaration order. Under current <code>name: Type</code> syntax the line is parsed as an expression statement starting with <code>Pair &lt;</code>, so the first annotation is PARSE-0010 "Expected assignment, function call, or method call" @col 1/5 (statement dispatch), not "missing '&gt;'". generic_declaration_errors l.24/28 additionally yield FS-SEM-0002 "Expected Pair<int32,int32,int32>, got Pair<int32,int32>" / "Expected int32, got Pair<int32,int32>" which are nonsense type-mismatch cascades.
+ The properly-formed variants work and give a sane primary error (scratch c1: <code>p: Pair&lt;Pair&lt;int32,int32, int32&gt; = Pair(Pair(1,2),3);</code> -&gt; PARSE-0010 "Expected '&gt;' to close generic type arguments" @35 + cascade PARSE-0012; c2 likewise). Rewrite these three files with the current syntax (and then they collapse into generic_class_unclosed_type_args).</p>
+<p>D4  generics/generic_class_field_access_unknown.fire l.18  (INCORRECT: locks compiler bug)
+ <code>b: Box&lt;int32&gt; = new Box&lt;int32&gt;(5);</code> with <code>fn Box(value: T)</code> defined is rejected: "No constructor defined for type 'Box<int32>'" (also for <code>copyable class</code>, and with <code>&amp;mut this</code>: b2,b3). Same program with <code>Box&lt;int32&gt;(5)</code> compiles (b1). <code>new Generic&lt;T&gt;(...)</code> is undocumented/untested anywhere valid (grep docs/examples/tests: no hit), so the rejection is a bug or an unimplemented form, not an intentional rule. The test demands it.</p>
+<p>D5  borrow/loop_move_errors.fire, for_in_move_errors.fire  (WEAK)
+ <code>while(..){ consume(a); }</code> with a declared outside the loop: the second iteration uses the moved value, yet the compiler reports nothing at the call site (scratch a1: while loop, no later use -&gt; zero diagnostics). The tests only demand the use AFTER the loop ("may have been moved on another control-flow path"). Either (a) the in-loop move should be an error and the tests are missing it, or (b) it is intentionally allowed; docs/reference/memory_management.md l.136 only says "Values used across iterations drop after loop", so the intent is unspecified. At minimum a spec decision + test is needed. Same for for-in (for_in_move_errors l.13).</p>
+<p>D6  Cascade-locked annotations (WEAK, systemic)
+ FS-PARSE-0003 "Variable 'this' not defined" after a failed method/ctor parameter list: class_constructor_syntax_errors (6), constructor_param_syntax_errors (7), class_def_syntax_errors (1), constructor_amp_not_this, constructor_param_array_unsupported (2), constructor_param_bad_type (2).
+ FS-PARSE-0012 "Function 'Pair' is not defined" etc. after a failed generic declaration: generic_class_type_arg_errors, generic_class_nested_type_arg_errors, generic_class_unclosed_type_args, generic_class_nested_unclosed_type_args.
+ FS-PARSE-0003 "Variable 'identity'/'Box' not defined" where the name IS defined: generic_call_errors (4), generic_func_empty_type_args (1).
+ FS-PARSE-0003 "Variable 'x' not defined" for params after a failed fn header: generic_def_syntax_errors (4).
+ FS-PARSE-0010 "Expected initializer expression" duplicates: new_missing_paren, new_constructor_syntax_errors, new_constructor_empty_type_args, type_member_access_errors.
+ Duplicate diagnostics for one fault: unknown <code>new</code> type reports PARSE-0012 AND SEM-0010 at the same column (class_new_constructor_errors l.19-20, new_constructor_syntax_errors l.14-15, new_unknown_type l.5-7).</p>
+<p>====================================================================================================</p>
+<h2 id="missing-coverage-no-test-in-slice-most-would-currently-fail-because-of-the-bugs-below">MISSING COVERAGE (no test in slice; most would currently fail because of the bugs below)<a class="headerlink" href="#missing-coverage-no-test-in-slice-most-would-currently-fail-because-of-the-bugs-below" title="Permanent link">&para;</a></h2>
+<p>Classes: duplicate class definition; duplicate field; class name reused as variable; unknown base class (<code>class C from Missing</code>); cyclic inheritance (A from B, B from A; only self-inheritance is tested); constructor of derived class not calling this.super when base needs args; <code>this.super(...)</code> outside a constructor (comment in super_call_errors says it yields "Methods not supported", untested); unknown field via <code>this.</code> in a NON-generic class; field assignment type mismatch (<code>p.x = "s"</code>, <code>this.x = "s"</code>); returning a field of the wrong type; unknown declared type <code>x: Nope = ...</code> produces misleading "Expected type"+"Variable 'Nope' not defined" (untested); calling a <code>&amp;mut this</code> method through a <code>&amp;this</code> receiver; unknown static/field access on a type (<code>Foo.field</code>); instantiating abstract/private? (n/a).
+Borrow/ownership: assigning to / mutating through a borrowed <code>&amp;param</code> (<code>s = "x"</code>, <code>w.text = "z"</code>, <code>c.inc()</code> where inc is &amp;mut this); storing a borrowed param into a field (<code>this.text = text</code> with <code>&amp;text</code>); borrowing a Copyable (<code>fn f(&amp;x: int32)</code> -&gt; SEM-0001 "Cannot borrow Copyable"; only covered by tests/python/semantic/test_semantic_analyzer_internals.py:179, no .fire test); passing a Copyable where &amp;T required; use-after-move inside the same loop iteration chain (D5); move in one branch of if/else then use in other branch (valid) and join; moving a class field out of a borrowed/owned object (partial move); use-after-move via method call receiver; double move <code>consume(a); consume(a);</code> straight-line (only appears incidentally in d5 scratch: works, not tested in this dir -- check tests/sources/invalid elsewhere); re-initialisation after move (<code>x = "again"</code> after move currently errors, spec silent).
+Generics: wrong number of type args on a generic CLASS (<code>Box&lt;int32,int32&gt;</code> -&gt; no error, B5); wrong argument type for explicit/inferred generic call (B3); conflicting inference (<code>same(1,"a")</code> reports odd "Could not infer" + SEM-0002 "got T"); undefined constraint name (B4); constraint violation on a generic CLASS type arg; unknown generic class/type name in type-arg list; type-param shadowing / duplicate type param names (<code>fn f&lt;T,T&gt;</code>).</p>
+<p>====================================================================================================</p>
+<h2 id="compiler-bugs-oddities-discovered-minimal-repros-scratch-files-in-scratchpadauditt">COMPILER BUGS / ODDITIES DISCOVERED (minimal repros; scratch files in .../scratchpad/audit/t/)<a class="headerlink" href="#compiler-bugs-oddities-discovered-minimal-repros-scratch-files-in-scratchpadauditt" title="Permanent link">&para;</a></h2>
+<p>B1  Duplicate class / duplicate field / class name shadowed by variable produce no diagnostic (a4):
+      class A { x: int32; }  class A { y: int32; }   class B { x: int32; x: int32; }   fn f()-&gt;void{ A: int32 = 5; }
+    (the second A silently wins: <code>A()</code> later reports "expected 1 args, got 0" referencing the wrong class)
+B2  Field assignment/return type mismatch not detected (d1/d2):
+      p: Point = Point(1,2); p.x = "string";   // no error     fn get(&amp;this)-&gt;string{ return this.x; } // x:int32, no error
+B3  Explicit/inferred generic call argument type not checked (c4, c8):
+      fn identity<T>(v:T)-&gt;T{return v;}  x: string = identity<string>(42);  a: int32 = identity<int32>("s");   // no error
+B4  Undefined constraint name accepted; violation not reported (c5): fn add<T: Numeric>(a:T,b:T)-&gt;T{return a+b;}  add<string>("a","b");
+B5  Wrong number of type args on generic class accepted (f3): a: Box<int32,int32> = Box<int32,int32>(1);   // no error
+B6  <code>new GenericClass&lt;int32&gt;(5)</code> rejected with "No constructor defined for type 'Box<int32>'" although constructor exists; <code>Box&lt;int32&gt;(5)</code> accepted (b1/b2/b3). Valid program rejected or undocumented form (see D4).
+B7  Borrow checker holes (e1,e4,f1,d4): storing <code>&amp;text</code> param into <code>this.text</code>; assigning/mutating through <code>&amp;w</code> param (<code>w.text = "z"</code>); calling <code>&amp;mut this</code> method (<code>c.inc()</code>) on a <code>&amp;c</code> param; <code>s = "x"</code> on <code>&amp;s: string</code> -- all accepted although memory_management.md l.59/78 say borrows are read-only and non-retainable.
+B8  Move inside loop body not diagnosed (a1/D5).
+B9  Unknown base class <code>class C from Missing</code> and cyclic inheritance accepted (e6).
+B10 Misleading cascade diagnostics: after a failed generic call/decl the compiler says "Variable 'identity'/'Box'/'Pair' not defined" or "Function 'Pair' is not defined" for names that ARE defined; after failed params <code>this</code> "not defined".
+B11 <code>class NoCtor{x:int32;}</code>: <code>NoCtor()</code> is accepted (implicit field constructor, "expected 1 args") but <code>new NoCtor(5)</code> -&gt; "No constructor defined" (a6; class_static_method_errors.l.15 relies on <code>Tool()</code> with no ctor being legal). classes.md documents neither implicit constructors nor this asymmetry.
+B12 Methods without a receiver (<code>fn add(a:int32)</code> using <code>this.value</code>) and receiver-less constructors compile and are treated as instance methods; classes.md says receivers are required and static needs <code>static fn</code>. A large part of the slice (instance_method_<em>, super_call_</em>, constructor_call_<em>, field_access_</em>) is written in this receiver-less style, i.e. relies on undocumented behaviour. (<code>static fn</code> + <code>this</code> does error: b6.)
+B13 Re-assigning a moved owned variable (<code>x = "again"</code> after <code>consume(x)</code>) is reported as use-after-move at the assignment (f4); spec silent.
+B14 Unknown declared type reports PARSE-0010 "Expected type" + PARSE-0003 "Variable 'Undefined' not defined" (c7) rather than an undefined-type diagnostic.</p>
+<p>NOT VERIFIED: whether B7/B8/B13 are intentional design (docs are ambiguous; memory_management.md marks borrow rules IMPLEMENTED); whether instance-method statement vs initializer contexts take different semantic paths (instance_method_arg_count/type/unknown marked redundant on message equality only); error CODE choice (PARSE-0012 for "Array parameters not supported", SEM-0010 for nearly everything) was not judged against a spec because errors.py has no per-code docs.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Alec Jensen
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1667 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://firescript.alecj.com/internal/test_audit/P4_backend_cli_harness/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>P4 backend cli harness - firescript</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lexend:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Lexend";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#p4-audit-testspythonbackendcliharnessfloat128" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="firescript" class="md-header__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            firescript
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              P4 backend cli harness
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../reference/overview/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../glossary/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Glossary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../benchmarks.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Benchmarks
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="firescript" class="md-nav__button md-logo" aria-label="firescript" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    firescript
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alec-jensen/firescript" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alec-jensen/firescript
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types & Variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/control_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions & Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes & Inheritance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/scoping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scoping Rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/type_system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/memory_management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/imports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Imports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Standard Library
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Standard Library
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/fs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/math/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Math
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/regex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/cli_args/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-Line Arguments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/std/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_15" id="__nav_2_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    kiln
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    kiln
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/kiln/manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../benchmarks.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#file-counts-test-functions-params-expand-some" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File counts (test functions; params expand some)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-meta-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key meta-findings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#per-test-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-test list
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Per-test list">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#delete-candidates-redundant-trivial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DELETE-candidates (REDUNDANT / TRIVIAL)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge-candidates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MERGE-candidates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-assertion-weak-incorrect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FIX-ASSERTION (WEAK / INCORRECT)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keep-clusters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KEEP (clusters)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-evidence-mutations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detailed evidence (mutations)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compiler-bugs-questionable-behaviours-discovered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler bugs / questionable behaviours discovered
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/alec-jensen/firescript/edit/master/docs/internal/test_audit/P4_backend_cli_harness.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<!-- Audit shard report, 2026-11-18. Raw audit output; see README.md for the consolidated plan. Verdicts are recommendations, not applied changes. -->
+<h1 id="p4-audit-testspythonbackendcliharnessfloat128">P4 audit: tests/python/{backend,cli,harness,float128}<a class="headerlink" href="#p4-audit-testspythonbackendcliharnessfloat128" title="Permanent link">&para;</a></h1>
+<p>Paths below are relative to /home/alec/Programming/firescript/tests/python/.
+Verdicts: KEEP | REDUNDANT | TRIVIAL | WEAK | INCORRECT. "(dup)" names the test to keep.</p>
+<h2 id="file-counts-test-functions-params-expand-some">File counts (test functions; params expand some)<a class="headerlink" href="#file-counts-test-functions-params-expand-some" title="Permanent link">&para;</a></h2>
+<p>backend/test_asm_encoding.py       27 fn (96 param cases for test_encode)  KEEP 24 (1 = test_encode), REDUNDANT 1, TRIVIAL 1, dup-name 1
+backend/test_assembler_unit.py     39 fn   KEEP 3, REDUNDANT 33, WEAK 10 (overlap), TRIVIAL 2
+backend/test_pe_writer.py           5 fn   KEEP 5 (1 WEAK)
+backend/test_pe_writer_more.py      4 fn   REDUNDANT 4 (all four duplicate test_pe_writer.py, with weaker assertions)
+backend/test_pe_inspect.py          9 fn   KEEP 8, TRIVIAL 1
+backend/test_flir_to_asm_errors.py  6 fn   KEEP 4, WEAK 1, KEEP-with-stale-docstring 1
+backend/test_flir_to_asm_coverage.py 26 fn KEEP 10 (8 are tiny _escape_asciz unit tests), WEAK 8, TRIVIAL 4, REDUNDANT 4
+cli/test_check.py                  11 fn   KEEP 3, WEAK 6, REDUNDANT 3 (overlap)
+cli/test_compiler_pipeline.py       4 fn   KEEP 3, TRIVIAL 1
+cli/test_diagnostics.py             2 fn   KEEP 1, REDUNDANT 1
+cli/test_dir_batch.py               6 fn   KEEP 3, WEAK 2, INCORRECT(pins bug) 1
+cli/test_emit.py                    6 fn   KEEP 6
+cli/test_imports.py                 4 fn   KEEP 3, WEAK 1
+cli/test_main_arg_errors.py        14 fn   KEEP 12, WEAK 1, INCORRECT(pins bug) 1
+cli/test_main_check_output_flag.py  1 fn   KEEP 1
+cli/test_main_internals.py         32 fn   KEEP 20, WEAK 5, TRIVIAL 4, REDUNDANT 3
+cli/test_output.py                  2 fn   KEEP 2
+cli/test_paths.py                   2 fn   KEEP 2
+cli/test_targets.py                 2 fn   REDUNDANT 2
+cli/test_targets_resolution.py     11 fn (14 extra param cases) KEEP 9, TRIVIAL 1, WEAK 1
+harness/test_directives.py          8 fn   KEEP 8 (error cases WEAK: never check which error)
+harness/test_expectations.py       13 fn   KEEP 13
+harness/test_matrix.py              8 fn   KEEP 5, WEAK 1, TRIVIAL 2
+harness/test_seeds.py               7 fn   KEEP 7
+harness/test_selectors.py           7 fn   KEEP 7
+float128/test_oracle_units.py      13 fn   KEEP 6, WEAK 6, REDUNDANT 1
+float128/test_oracle_vectors.py     1 fn   TRIVIAL + REDUNDANT
+Total 274 functions. Rough tally: KEEP ~163, REDUNDANT ~52, WEAK ~33 (overlapping), TRIVIAL ~16, INCORRECT 3 (+2 stale/misleading docstrings/names).</p>
+<h2 id="key-meta-findings">Key meta-findings<a class="headerlink" href="#key-meta-findings" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Differential <code>as</code> oracle in test_asm_encoding.py IS effective today: I ran all 96 CASES through our assembler vs the host GNU as (ELF path): 96 matched, 0 None (as rejected), 0 empty (oracle extraction failed), 0 mismatches. If extraction broke it would mismatch (ours non-empty), not silently pass. Weaknesses: (a) silent downgrade to <code>len(ours)&gt;0</code> when <code>as</code> is absent or rejects a line (violates the project's no-silent-weakening spirit; should fail/ERROR when <code>as</code> missing on a host that claims to run it, and always assert len(ours)&gt;0); (b) CASES omits call, jmp, jb, jae, je, jne, jnz, jz, js, mul, shr (all supported by the assembler) because no label forms are used. Mutation: changing _JCC["jb"] 0x82-&gt;0x83 survived ALL 211 backend python tests AND the e2e conversions tests (jb only used in fs_rt_mem_copy overlap path). Dropping 'dil' from the setcc REX-force set (4,5,6,7)-&gt;(4,5,6) also survived.</li>
+<li>The float128/ tests test the Python ORACLE (tests/support/float128_oracle.py, a test helper), not the compiler's soft-float runtime (std/internal/float128.fire). The runtime is covered only by 4 .fire files (~47 println total). The docs claim bit-exact fuzz validation vs the oracle but nothing like that is committed; oracle.vectors() is never replayed against the runtime.</li>
+<li>The oracle itself is CORRECT: I diffed it against glibc libquadmath (__float128, independent implementation) on 32,000 random add/sub/mul/div/lt/le/eq/to_f64 ops over edge-biased bit patterns (subnormal, inf/nan, near-1 exponents) = 0 mismatches; format_f/format_g on 6,030 values = 0 mismatches vs quadmath_snprintf("%.6Qf"/"%Qg"); parse vs Fraction/Decimal rounding on 11 strings incl. 1e4000/1e-5000/4.9e-4951 = 0 mismatches; test_oracle_units' constants all match. So no INCORRECT float128 test. But the units suite is too weak to protect the oracle: mutating _rne tie-to-even (never round-up on odd lsb) and mutating _round_digits tie-to-even (<code>prev % 2 == 1</code> -&gt; <code>== 0</code>) each survive 14/14.</li>
+<li>CLI tests share REPO_ROOT/build/ with each other (test_check::test_check_valid_file removes then asserts absence of build/functions.exe while test_default_target_compiles and the test_output tests compile functions.fire from the same cwd). Latent flake under --jobs&gt;1; I could not reproduce in 8 parallel runs (private copy).</li>
+<li>Large intra-slice duplication: test_assembler_unit.py duplicates test_asm_encoding.py almost completely (33 of 39), test_pe_writer_more.py duplicates test_pe_writer.py (4 of 4), flir_to_asm_coverage duplicates flir_to_asm_errors (4), cli/test_targets.py duplicates test_targets_resolution.py (2), several test_check/test_main_internals CLI tests duplicate stronger test_main_arg_errors tests.</li>
+</ul>
+<h2 id="per-test-list">Per-test list<a class="headerlink" href="#per-test-list" title="Permanent link">&para;</a></h2>
+<h3 id="delete-candidates-redundant-trivial">DELETE-candidates (REDUNDANT / TRIVIAL)<a class="headerlink" href="#delete-candidates-redundant-trivial" title="Permanent link">&para;</a></h3>
+<p>backend/test_assembler_unit.py (keep the asm_encoding.py twin in each case):
+- test_assembler_unit.py::test_lea_missing_closing_bracket_errors | REDUNDANT WEAK | (dup) test_asm_encoding.py::test_parse_mem_ptr_without_brackets_returns_none; no message needle
+- ::test_mem_base_plus_xmm_index_errors | REDUNDANT | (dup) test_asm_encoding.py::test_parse_mem_bad_base_plus_index
+- ::test_mem_unknown_base_errors | REDUNDANT | (dup) test_parse_mem_bad_base
+- ::test_mem_unsupported_form_errors | REDUNDANT | (dup) test_parse_mem_unsupported_operand
+- ::test_mov_reg16_reg16 | REDUNDANT WEAK | CASES has "mov ax, cx" with real byte compare
+- ::test_alu_reg16_imm | REDUNDANT WEAK | CASES "add ax, 5"
+- ::test_mov_mem_imm16 | REDUNDANT WEAK | CASES "mov word ptr [rbp-2], 5"
+- ::test_mov_r8d_imm_forces_rex | REDUNDANT WEAK | CASES "mov r8d, 5"
+- ::test_setcc_low_byte_reg_forces_rex | REDUNDANT WEAK | CASES "sete spl"
+- ::test_movq_xmm_to_xmm | REDUNDANT WEAK | CASES "movq xmm0, xmm1"
+- ::test_movq_xmm_to_xmm_extended_registers_force_rex | REDUNDANT WEAK | CASES "movq xmm8, xmm9"
+- ::test_nop_alone | REDUNDANT WEAK | (dup) test_asm_encoding.py::test_nop_encodes_single_byte (asserts exact byte)
+- ::test_mov_mem_mem_errors | REDUNDANT | (dup) test_mov_mem_mem_forms_raises
+- ::test_mov_imm_size8_errors | REDUNDANT | (dup) test_mov_imm_to_8bit_reg_raises
+- ::test_alu_mem_mem_errors | REDUNDANT | (dup) test_alu_unsupported_forms_raises (same branch/message)
+- ::test_unsupported_mnemonic_errors | REDUNDANT | (dup) test_unsupported_mnemonic_raises
+- ::test_unknown_section_directive_errors | REDUNDANT | (dup)
+- ::test_unsupported_top_level_directive_errors | REDUNDANT | (dup) test_unsupported_directive_raises
+- ::test_bad_asciz_errors | REDUNDANT WEAK | (dup) test_bad_asciz_raises (has needle)
+- ::test_encode_failure_wraps_assertion | REDUNDANT | (dup) test_generic_python_exception_is_wrapped
+- ::test_rip_reference_to_earlier_text_label | REDUNDANT | identical name+body in test_asm_encoding.py
+- ::test_unresolved_numeric_local_label_errors | REDUNDANT | (dup) test_unresolved_numeric_label_raises
+- ::test_jmp_into_rdata_section_defers_reloc | REDUNDANT | (dup) test_jmp_target_defined_in_rdata_defers_to_reloc
+- ::test_bss_section_directive_plain_form | REDUNDANT WEAK | covered by test_bss_directive_accumulates_size
+- ::test_text_and_data_directive_plain_forms | REDUNDANT | (dup) test_data_directive_switches_to_rdata
+- ::test_space_directive_in_bss_accumulates_bss_size | REDUNDANT | (dup) test_bss_directive_accumulates_size
+- ::test_space_directive_outside_bss_zero_fills | REDUNDANT (partial) | (dup) test_space_directive_in_text_emits_zeros, same buf() path, other section
+- ::test_data_directive_in_bss_section_errors | REDUNDANT | (dup) test_bss_section_rejects_data_emission
+- ::test_asciz_unrecognized_escape_falls_back_to_literal_char | REDUNDANT | (dup) test_asciz_unknown_escape_uses_char_code
+- ::test_asciz_non_locale_char_falls_back_to_utf8 | REDUNDANT WEAK | host-locale dependent: on a UTF-8 Linux locale CJK encodes natively so the fallback branch is not exercised yet test passes; (dup, deterministic) test_asm_encoding.py::test_asciz_falls_back_to_utf8_when_locale_cannot_encode
+- ::test_call_numeric_target_is_defensive_and_unreachable_via_source | REDUNDANT TRIVIAL | exact dup of test_asm_encoding.py::test_call_numeric_target_unsupported; both test an unreachable guard
+- ::test_encode_emits_no_bytes_is_reported | TRIVIAL | monkeypatches _encode to a no-op to hit an unreachable guard (coverage-driven)
+- test_asm_encoding.py::test_call_numeric_target_unsupported | TRIVIAL | unreachable guard, coverage-driven
+backend/test_pe_writer_more.py (all REDUNDANT; test_pe_writer.py has the same four with equal/stronger needles):
+- ::test_missing_entry_symbol_raises, ::test_bss_symbol_without_data_section_raises (needle only "bss"), ::test_unknown_symbol_section_raises, ::test_unsupported_reloc_kind_raises
+backend/test_flir_to_asm_coverage.py:
+- ::test_unhandled_instruction_raises | REDUNDANT | (dup) test_flir_to_asm_errors.py::test_emit_inst_rejects_unknown_instruction_opcode (checks message)
+- ::test_binop_unsupported_float_op_raises | REDUNDANT | (dup) errors::test_emit_binop_rejects_unsupported_float_op
+- ::test_binop_unsupported_int_op_raises | REDUNDANT | (dup) errors::test_emit_binop_rejects_unsupported_int_op
+- ::test_float_param_via_stack | REDUNDANT TRIVIAL | (dup) errors::test_stack_spilled_parameters_beyond_fourth (asserts [rbp + 48]); this one asserts only label "fsf_g:" exists
+- ::test_struct_param_via_stack, ::test_cvt_struct_to_ptr_bitcast_fallback, ::test_load_struct_value, ::test_store_struct_value | TRIVIAL | only assert "fsf_f:" in asm (the function label is always emitted); they only prove no exception
+backend/test_pe_inspect.py:
+- ::test_imported_dlls_sorted | TRIVIAL INCORRECT-NAME | feeds a PE with no imports; asserts [] so it never tests sorting (mutation: <code>sorted(...)</code> -&gt; reversed list survived 211/211)
+cli:
+- cli/test_targets.py::test_host_platform_unknown_raises, ::test_host_arch_unknown_raises | REDUNDANT | (dup) test_targets_resolution.py::test_unknown_host_error_messages_name_the_value and ::test_resolve_target_unknown_host_propagates_only_when_flag_unset (which also check the message)
+- cli/test_check.py::test_no_input_specified | REDUNDANT | (dup) test_main_arg_errors.py::test_no_input_error_message (checks message)
+- cli/test_check.py::test_file_not_found | REDUNDANT WEAK | (dup) test_main_arg_errors.py::test_file_not_found_error_text
+- cli/test_check.py::test_unsupported_target | REDUNDANT WEAK | (dup) test_main_arg_errors.py::test_unsupported_target_error_text_names_supported_targets
+- cli/test_diagnostics.py::test_debug_mode | REDUNDANT | (dup) test_main_arg_errors.py::test_debug_flag_logs_parsed_args (same -d --check on good file, different marker string)
+- cli/test_compiler_pipeline.py::test_full_pipeline_happy_path | TRIVIAL | asserts <code>analyzer is not None</code>; every compile exercises it
+- cli/test_main_internals.py::test_compile_file_default_link_args_none | TRIVIAL | only hits <code>if link_args is None</code>; result True would occur either way
+- ::test_compile_file_emit_ast_success_returns_path | REDUNDANT | test_emit.py::test_emit_ast
+- ::test_compile_asm_emit_obj_unsupported | REDUNDANT | test_main_arg_errors.py::test_emit_obj_unsupported (CLI-level, checks message)
+- ::test_main_dir_with_no_fire_files_warns_but_succeeds | REDUNDANT WEAK | test_dir_batch.py::test_dir_with_no_fire_files_warns (checks the warning text; this one doesn't)
+- ::test_main_output_move_failure_exits_1 | REDUNDANT (partial) | test_emit.py::test_emit_ast_output_rename_failure_exits_nonzero covers the same branch end-to-end
+- ::test_lint_text_import_resolution_exception_returns_parser_errors | TRIVIAL | asserts isinstance(list); see bug 2
+- ::test_lint_text_preprocess_exception_returns_errors_so_far | TRIVIAL | isinstance(list)
+- ::test_lint_text_semantic_analysis_exception_is_swallowed | TRIVIAL/WEAK | asserts no raise + list
+harness:
+- harness/test_matrix.py::test_sample_mode_differs_per_test_key | TRIVIAL | name says "differs", assertion only checks both contain O0 (its own comment admits it)
+- harness/test_matrix.py::test_cell_ids_are_matrix_invariant_expectation_keys | TRIVIAL | <code>not hasattr(run_kind_cls, "expected_for_cell")</code>; documentation test
+float128:
+- float128/test_oracle_vectors.py::test_all_generated_vectors_are_self_consistent | TRIVIAL REDUNDANT | ~half of vectors() compute <code>expected</code> with the same oracle function being replayed (e.g. from_int(2<strong>113), parse('0.1'), div(ONE,THREE), format_f(parse('123456.789'))); the rest are the same constants as test_oracle_units. vectors() is not used anywhere else (not replayed against the runtime)
+- float128/test_oracle_units.py::test_cross_checks_large_int_round_trip | REDUNDANT | test_from_int_to_int already round-trips 0,1,-1,2</strong>52,2<strong>63,10</strong>30 (only adds 2**113)</p>
+<h3 id="merge-candidates">MERGE-candidates<a class="headerlink" href="#merge-candidates" title="Permanent link">&para;</a></h3>
+<ul>
+<li>test_assembler_unit.py::test_unary_reg16 (<code>not ax</code>) and ::test_mov_mem_imm8 (<code>mov byte ptr [rbp-1], 5</code>): forms not in CASES; move into CASES so they get byte-compared, delete the len&gt;0 versions.</li>
+<li>test_assembler_unit.py::test_quad_and_long_directives: asserts only len==12; fold into test_asm_encoding exact-value directive tests.</li>
+<li>test_flir_to_asm_coverage.py 8 test_escape_asciz_* : fold into one @t.params table.</li>
+<li>test_main_internals.py 3 _normalize_cli_path tests -&gt; one params test.</li>
+<li>test_check.py::test_invalid_platform_choice_rejected + test_invalid_arch_choice_rejected + test_main_arg_errors::test_invalid_emit_choice_rejected + test_invalid_message_format_rejected -&gt; one params test checking rc==2 and "invalid choice".</li>
+<li>test_diagnostics.py::test_debug_mode + test_main_arg_errors::test_debug_flag_logs_parsed_args.</li>
+</ul>
+<h3 id="fix-assertion-weak-incorrect">FIX-ASSERTION (WEAK / INCORRECT)<a class="headerlink" href="#fix-assertion-weak-incorrect" title="Permanent link">&para;</a></h3>
+<ul>
+<li>backend/test_flir_to_asm_coverage.py::test_cvt_u64_to_f64 | WEAK | asserts "cvtsi2sd" in asm, which the signed path also emits. Mutation: removed <code>or rax, rcx</code> (sticky-bit fixup) in the u64 branch: all 211 backend tests pass; e2e conversions (20/20) also pass. Should assert the test/js/shr/and/or/add sequence.</li>
+<li>::test_cvt_f64_to_u64 | WEAK | substring "cvttsd2si" only</li>
+<li>::test_cvt_int_to_bool | WEAK | "setne al" substring only</li>
+<li>::test_cvt_float_to_narrow_int_kinds | WEAK | "movsx rax"/"movzx eax"/"mov eax, eax" substrings are emitted by many unrelated paths (loads/frame code); no per-conversion association</li>
+<li>::test_struct_param_via_stack | WEAK | mutation: changed stack offset for 5th+ struct param (<code>16 + arg_index*8</code> -&gt; <code>24 + ...</code>) survived all backend python tests; only e2e functions/functions_many_params.fire caught it (runtime timeout). Assert the [rbp + 48] read.</li>
+<li>::test_call_struct_arg_on_stack | WEAK | <code>lea rax, [rbp</code> substring only</li>
+<li>::test_call_extern_float_arg | WEAK | doesn't check the matching int register copy its comment promises</li>
+<li>::test_emit_globals_f128_and_f32 | WEAK | only checks symbol labels present, not encoded data</li>
+<li>::test_val_off_missing_slot_raises | WEAK | <code>except AsmError: pass</code> with no message check</li>
+<li>test_flir_to_asm_errors.py::test_f32_and_f64_globals_use_distinct_encoding_paths | WEAK | name claims distinct encodings but asserts labels and <code>.quad 42</code> for the I32 only; f32 packing (1.5 -&gt; 0x3FC00000) never asserted</li>
+<li>test_flir_to_asm_errors.py::test_mutable_global_emits_bss_section | KEEP, but docstring is STALE/WRONG: claims driving runtime_state_get/set from .fire "currently segfaults"; std/internal/alloc.fire uses runtime_state_get/set in the allocator and every heap-using test passes. Same file/coverage.py header says u64&lt;-&gt;float "known to fail assembly" (fixed by commit 913dd4c). Docstrings should be corrected.</li>
+<li>test_assembler_unit.py::test_align_directive_is_a_noop | WEAK | len&gt;0 only; padding being emitted would still pass</li>
+<li>test_assembler_unit.py::test_lea_missing_closing_bracket_errors, ::test_bad_asciz_errors | WEAK | AssemblerError with no needle</li>
+<li>test_pe_writer.py::test_write_pe_smoke | WEAK | checks MZ/PE signature only; no section table/entry/import check</li>
+<li>backend/ (gap) pe_inspect name-import path: no unit test builds/reads a name-based import. Mutation: <code>funcs.append(_read_cstr(...))</code> -&gt; <code>funcs.append('x')</code> survived 211/211; the run kind only checks DLL names (and a read_imports returning {} would let a binary importing user32/msvcrt pass).</li>
+<li>cli/test_check.py::test_check_invalid_file, test_no_link_rejected, test_input_is_directory | WEAK | returncode==1 with no message check</li>
+<li>cli/test_check.py::test_invalid_platform_choice_rejected / <em>arch</em> | WEAK | rc 2 only</li>
+<li>cli/test_check.py::test_default_target_compiles | name misleading: pyunit.run_compiler appends --platform/--arch from FIRESCRIPT_TEST_TARGET, so on matrix/wine runs it is NOT testing the default target</li>
+<li>cli/test_dir_batch.py::test_dir_and_output_conflict, test_dir_not_found | WEAK | rc only</li>
+<li>cli/test_imports.py::test_import_with_syntax_error | WEAK | rc==1 only; no message; name suggests post-merge error ordering but nothing asserts it</li>
+<li>cli/test_main_arg_errors.py::test_invalid_message_format_rejected | WEAK | rc 2 only</li>
+<li>cli/test_main_internals.py::test_setup_logging_json_format | WEAK | asserts handler count only; never checks output is JSON</li>
+<li>cli/test_main_internals.py::test_lint_text_parser_errors_no_imports_returns_early | WEAK | <code>len(errors) &gt; 0</code>; no line/col/message</li>
+<li>(gap) lint_text returning semantic errors is untested: mutation <code>errors.extend(analyzer.errors)</code> -&gt; <code>pass</code> survived all 113 cli tests; lint_text has no other test (no LSP tests exist: grep).</li>
+<li>cli/test_targets_resolution.py::test_supported_targets_str_lists_every_supported_target | TRIVIAL | last assertion recomputes the implementation's own formula</li>
+<li>cli/test_targets_resolution.py::test_target_str_and_choices | WEAK | change-detector pinning exact PLATFORM_CHOICES list</li>
+<li>cli/test_dir_batch.py::test_dir_partial_failure | INCORRECT (pins a bug) | asserts returncode==0 while the output says "1 successful, 1 failed"; see bug 1</li>
+<li>cli/test_main_arg_errors.py::test_dir_with_unsupported_target_counts_failures | INCORRECT (pins a bug) | asserts returncode==0 with "0 successful, 1 failed"</li>
+<li>harness/test_matrix.py::test_default_registry_has_only_default_cell | WEAK | calls all_cells(axes=[]) explicitly so it never looks at the real AXES registry its docstring talks about</li>
+<li>harness/test_directives.py error tests (unknown key, misplaced, repeated, double space) | WEAK | catch DirectiveError with no message check; wrong-reason raises pass</li>
+<li>float128/test_oracle_units.py::test_arithmetic_spot_checks | WEAK | ~14 vectors, no rounding-tie case; <code>in (ZERO, o.pack(0,0,0))</code> is a one-element set (pack(0,0,0)==0)</li>
+<li>::test_from_f64_to_f64 | WEAK | exact-representable values only; no subnormal/rounding/NaN payload</li>
+<li>::test_parse | WEAK | exact values only; no rounding/overflow/underflow</li>
+<li>::test_format_f, ::test_format_g | WEAK | mutation of the decimal tie-to-even rule survived (see below); format_g asserts ZERO twice</li>
+<li>::test_cross_checks_add_sub_round_trip | WEAK | 3 vectors, tolerance 2^-112 relative</li>
+<li>::test_cross_checks_parse_format_round_trip | WEAK | tolerance 1e-5 relative on 5 inputs</li>
+<li>Weak/INCORRECT-by-design: test_assembler_unit.py::test_alu_unsupported_forms_raises (in asm_encoding.py) pins that <code>add [rax], rcx</code> is "unsupported" though valid x86 (fine as a closed-grammar limitation; mention in test comment).</li>
+</ul>
+<h3 id="keep-clusters">KEEP (clusters)<a class="headerlink" href="#keep-clusters" title="Permanent link">&para;</a></h3>
+<ul>
+<li>backend/test_asm_encoding.py::test_encode (96 cases; verified effective, see gaps above) and its unique error-path/directive tests (test_parse_mem_<em>, bss/section/directive tests, test_nop_encodes_single_byte, test_unsupported_mnemonic_raises, test_generic_python_exception_is_wrapped, test_mov_</em><em>raises, test_alu_unsupported_forms_raises, test_unresolved_numeric_label_raises, test_rip_reference_to_earlier_text_label, test_jmp</em><em>, test_asciz_</em>, test_long/byte/space directive tests).</li>
+<li>backend/test_assembler_unit.py: test_mem_unknown_base_plus_index_errors, test_call_to_undefined_runtime_symbol_errors, test_asciz_octal_escape.</li>
+<li>backend/test_pe_writer.py (5), backend/test_pe_inspect.py (8: rva/cstr helpers, non-MZ, missing PE sig, non-PE32+, zero import dir, dir RVA outside section, ordinal thunk).</li>
+<li>backend/test_flir_to_asm_errors.py: unknown opcode, unsupported float/int binop, stack-spilled float param.</li>
+<li>backend/test_flir_to_asm_coverage.py: 8 _escape_asciz tests, test_binop_int_and_or, test_cvt_f32_to_u64.</li>
+<li>cli/: test_version, test_check_valid_file (race hazard), test_message_format_json, test_dir_batch_compile, test_file_and_dir_together, test_dir_with_no_fire_files_warns, all of test_emit.py, test_emit_deps*, test_import_not_found_compile, test_main_arg_errors (12 others), test_main_check_output_flag, test_output (2), test_paths (2), test_compiler_pipeline guard tests (3), test_targets_resolution (9), test_main_internals (the compile_file/_compile_asm/_compile_runtime_file exception-branch tests, normalize/log tests, main() branches).</li>
+<li>harness/: test_directives (8), test_expectations (13), test_matrix (5), test_seeds (7), test_selectors (7).</li>
+<li>float128/test_oracle_units.py: test_unpack_hand_verified_constants, test_min_subnormal_value (independent Fraction), test_to_halves, test_comparisons, test_from_int_to_int, (values verified vs quadmath).</li>
+</ul>
+<h2 id="detailed-evidence-mutations">Detailed evidence (mutations)<a class="headerlink" href="#detailed-evidence-mutations" title="Permanent link">&para;</a></h2>
+<p>Private copy at /tmp/tmp.YI1nWilrne/repo (rsync of repo, no .git). Env: FIRESCRIPT_TEST_TARGET=windows/x86_64 FIRESCRIPT_TEST_RUN_PREFIX=wine WINEDEBUG=-all python tests/run.py <path> --no-coverage.
+1. tests/support/float128_oracle.py::_rne: tie branch <code>if lsb:</code> -&gt; <code>if False:</code> (ties never round up). <code>tests/python/float128</code>: 14/14 passed. SURVIVED.
+2. float128_oracle.py::_round_digits: <code>if prev % 2 == 1:</code> -&gt; <code>== 0</code> (decimal tie-to-even inverted). 14/14 passed. SURVIVED.
+3. assembler.py _JCC["jb"]: 0x82 -&gt; 0x83. tests/python/backend 211/211 passed; also e2e conversions uint64/int_float matrix passed. SURVIVED (jb only used in fs_rt_mem_copy overlap).
+4. assembler.py setcc <code>force=r.num in (4,5,6,7)</code> -&gt; <code>(4,5,6)</code>. backend 211/211 passed. SURVIVED.
+5. flir_to_asm.py u64-&gt;float: removed <code>out.append("    or rax, rcx")</code>. backend 211/211, e2e conversions 20/20 passed. SURVIVED both.
+6. flir_to_asm.py struct stack param offset 16 -&gt; 24. backend 211/211 passed (SURVIVED unit), e2e functions_many_params.fire timeout (killed e2e).
+7. main.py lint_text: removed <code>errors.extend(analyzer.errors)</code>. tests/python/cli 113/113 passed. SURVIVED.
+8. pe_inspect.imported_dlls -&gt; reversed unsorted list: backend 211/211 passed. SURVIVED. pe_inspect name-import <code>funcs.append(name)</code> -&gt; <code>funcs.append('x')</code>: 211/211 passed. SURVIVED.
+9. Oracle correctness (not a mutation): scripts in the scratchpad audit/ dir (fz.py, fz2.py, q.c) compare the oracle to libquadmath: 0 diffs.
+Not reproduced: parallel race on build/functions.exe (8 runs of test_check+test_output with --jobs 8 all passed).</p>
+<h2 id="compiler-bugs-questionable-behaviours-discovered">Compiler bugs / questionable behaviours discovered<a class="headerlink" href="#compiler-bugs-questionable-behaviours-discovered" title="Permanent link">&para;</a></h2>
+<ol>
+<li><code>python firescript/main.py --dir &lt;dir&gt;</code> exits 0 even when every file in the dir failed to compile (main.py ~L615-636 only logs "N successful, M failed"; no sys.exit(1)). Repro: dir containing bad.fire with <code>x: int32 = ;</code> -&gt; exit=0. Two tests pin this (test_dir_partial_failure, test_dir_with_unsupported_target_counts_failures). Per project rule do not edit the tests to hide; decide intended behavior and fix both.</li>
+<li><code>lint_text("import definitely_missing_module_xyz.helper;\nx: int32 = helper(1);\n")</code> returns [] (no diagnostic) because resolve_imports exception is swallowed (<code>except Exception: return errors</code>). The LSP therefore shows nothing for an unresolved import while the CLI reports "Import resolution failed". Likely a bug (or at least untested; test only asserts isinstance list).</li>
+<li>Stale docs in test comments: runtime_state_get/set "segfaults" (false), u64&lt;-&gt;float "fails to assemble" (fixed in 913dd4c).</li>
+<li>Assembler cannot encode <code>add qword ptr [mem], reg</code> (valid x86) - closed-grammar limitation pinned as an error; fine if the backend never emits it.</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Alec Jensen
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.path", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.tracking", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
