@@ -3135,10 +3135,6 @@ class ASTToFIRConverter:
         """Construct a class instance: explicit constructor call when one
         exists, positional field initialization otherwise. Handles generic
         instances (e.g. `Pair<int32, string>(...)`)."""
-        for arg_node in node.children:
-            if arg_node.node_type == NodeTypes.IDENTIFIER:
-                self._mark_owned_identifier_moved(arg_node.name)
-
         type_args: list[str] = []
         if "<" in full_name and full_name.endswith(">"):
             type_args = self._split_type_args(full_name.split("<", 1)[1][:-1])
@@ -3196,11 +3192,28 @@ class ASTToFIRConverter:
 
         hasval_extra = self._call_arg_hasvals(ctor_params, node.children, own_generic_params)
 
+        for i, arg_node in enumerate(node.children):
+            param = ctor_params[i] if has_constructor and i < len(ctor_params) else None
+            borrowed = param is not None and getattr(param, "is_borrowed", False)
+            if arg_node.node_type == NodeTypes.IDENTIFIER and not borrowed:
+                self._mark_owned_identifier_moved(arg_node.name)
+
         if has_constructor:
+            # Each positional argument is passed in its parameter's own mode
+            # (a `&x`/`&mut x` constructor parameter only borrows its
+            # argument -- treating it as "own" made the caller look like it
+            # had given the argument away, FIRV-O1/O2 on any later use).
+            arg_modes: list[str] = []
+            for i in range(len(args)):
+                param = ctor_params[i] if i < len(ctor_params) else None
+                if param is not None and getattr(param, "is_borrowed", False):
+                    arg_modes.append("borrow_mut" if getattr(param, "is_mutable_borrow", False) else "borrow")
+                else:
+                    arg_modes.append("own")
             call = self.builder.call(
                 f"{base_name}.{base_name}",
                 args + hasval_extra,
-                ["own"] * (len(args) + len(hasval_extra)),
+                arg_modes + ["own"] * len(hasval_extra),
                 result_type,
             )
             if type_args:

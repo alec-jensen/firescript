@@ -561,6 +561,7 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 
 ### `classes/`
 - **classes_smoke.fire** - Basic class smoke tests
+- **classes_regression_ctor_borrowed_and_owned_param.fire** - Regression: a constructor with a `&`/`&mut` borrowed regular parameter next to an `owned` one; borrowed arguments stay usable after the call (previously FIRV-O1/O2); includes an allocation-heavy loop
 - **classes_field_access.fire** - Class field access
 - **classes_methods.fire** - Class methods
 - **classes_deep.fire** - Deep class testing
