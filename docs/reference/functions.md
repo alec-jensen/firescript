@@ -112,7 +112,7 @@ The standard library's `@firescript/std.ranges` module provides ready-made `rang
 
 ## Methods
 
-Methods are functions that belong to class instances. Methods declare a receiver: `&this` for read-only access, `&mut this` for mutable access. Static methods belong to the class itself and take no receiver:
+Methods are functions that belong to class instances. Methods must declare a receiver: `&this` for read-only access, `&mut this` for mutable access (constructors use `&mut this`); omitting it is a compile error. Consuming receivers (`this`) are [PLANNED]. Static methods belong to the class itself and take no receiver:
 
 ```firescript
 class Person {

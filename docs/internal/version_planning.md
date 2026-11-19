@@ -457,7 +457,7 @@ labeled commit on a branch; a session may build on it or discard it.
   FIR/FLIR snapshots only after confirming the only diffs are receiver-related. If it does not fit
   one session, split by directory (classes, generics, memory, invalid, python).
 
-#### T-060-12 · Explicit receivers: docs and changelog · S · `todo` · Depends on T-060-09
+#### T-060-12 · Explicit receivers: docs and changelog · S · `done (task/T-060-12)` · Depends on T-060-09
 - `docs/reference/classes.md` (receiver convention), `memory_management.md` receiver wording,
   `functions.md`, std doc samples; changelog Breaking Changes. Consuming receivers stay
   `[PLANNED]`. Add the compile-fail test list for T-060-09 to the manifest.
