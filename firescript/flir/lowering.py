@@ -710,15 +710,32 @@ class FIRToFLIRLowering:
             lowered_type = self.lower_type(ptype, type_map)
             params.append((pname, lowered_type))
             ctx.slot_types[pname] = lowered_type
-            if isinstance(ptype, ArrayType):
-                concrete = self.render_concrete(ptype.element_type, type_map)
+            generic_array_elem = self._generic_array_param_elem(ptype, type_map)
+            if isinstance(ptype, ArrayType) or generic_array_elem is not None:
+                concrete = (
+                    self.render_concrete(ptype.element_type, type_map)
+                    if isinstance(ptype, ArrayType)
+                    else generic_array_elem
+                )
                 ctx.array_elems[pname] = concrete
-                # Array params get an implicit trailing length parameter.
+                # Array params get an implicit trailing length parameter --
+                # including a generic `T` parameter instantiated with an
+                # array type (e.g. `println(arr)`), so the callee can still
+                # read the array's length.
                 len_name = f"{pname}_len"
                 params.append((len_name, I32))
                 ctx.slot_types[len_name] = I32
                 ctx.array_lens[pname] = ("slot", len_name)
         return params
+
+    def _generic_array_param_elem(self, ptype: FIRType, type_map: dict[str, str]) -> Optional[str]:
+        """Element type of a bare generic type-parameter parameter (`T`)
+        whose instantiation in `type_map` is an array type (`int32[]`)."""
+        if isinstance(ptype, SimpleType) and ptype.name in type_map:
+            concrete = type_map[ptype.name]
+            if concrete.endswith("[]"):
+                return concrete[:-2]
+        return None
 
     def lower_function(self, fir_func: FIRFunction, type_map: dict[str, str], lowered_name: str) -> None:
         ctx = _FuncCtx(None, type_map)
@@ -2089,7 +2106,9 @@ class FIRToFLIRLowering:
         type_args = [self.subst(t, ctx.type_map) for t in inst.metadata.get("type_args", [])]
         lowered_name = self.request_function(name, type_args)
         callee = self.fir_funcs[name]
-        final_args = self._call_args_with_lengths(callee, inst, args, bool(type_args), ctx)
+        final_args = self._call_args_with_lengths(
+            callee, inst, args, bool(type_args), ctx, dict(zip(callee.generic_params, type_args))
+        )
         ret_type = VOID
         if inst.result_type is not None:
             ret_map = dict(zip(callee.generic_params, type_args))
@@ -2129,6 +2148,7 @@ class FIRToFLIRLowering:
         args: list[FValue],
         is_generic_call: bool,
         ctx: _FuncCtx,
+        callee_type_map: Optional[dict[str, str]] = None,
     ) -> list[FValue]:
         """Insert implicit array-length arguments (legacy ABI). Generator
         frames use a separate calling convention and never take these."""
@@ -2137,7 +2157,7 @@ class FIRToFLIRLowering:
         final: list[FValue] = []
         for (pname, ptype), arg_fir, arg in zip(callee.params, inst.operands, args):
             final.append(arg)
-            if isinstance(ptype, ArrayType):
+            if isinstance(ptype, ArrayType) or self._generic_array_param_elem(ptype, callee_type_map or {}) is not None:
                 length = self._array_length_value(arg_fir, ctx)
                 if length is None:
                     length = ctx.emit(ConstInt("0", I32))
