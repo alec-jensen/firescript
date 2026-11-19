@@ -925,6 +925,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Character Type (char)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#escape-sequences-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Escape Sequences [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -999,6 +1016,17 @@
     <span class="md-ellipsis">
       
         Working with Nullable Values
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nullable-to-non-nullable-conversion-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nullable to Non-Nullable Conversion [IMPLEMENTED]
       
     </span>
   </a>
@@ -2226,6 +2254,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Character Type (char)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#escape-sequences-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Escape Sequences [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -2300,6 +2345,17 @@
     <span class="md-ellipsis">
       
         Working with Nullable Values
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nullable-to-non-nullable-conversion-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nullable to Non-Nullable Conversion [IMPLEMENTED]
       
     </span>
   </a>
@@ -2914,8 +2970,13 @@ binMedium: uint16 = 0b111010100110u16;
 <pre><code class="language-firescript">max: int8 = 127i8;
 overflow: int8 = max + 1i8;  // Runtime trap: IntegerOverflow: addition on int8
 </code></pre>
-<p>Overflows that can be detected at compile-time (e.g., constant expressions) will result in a compile-time error.</p>
-<pre><code class="language-firescript">compileTimeOverflow: int8 = 128i8;  // Compile-time error: Integer overflow
+<p>Overflows that can be detected at compile-time (e.g., constant expressions) will result in a compile-time error. [IMPLEMENTED] A literal that does not fit its type is rejected, and so is an integer expression made only of literals whose exact result does not fit the type of its operands (<code>FS-SEM-0019</code>); <code>**</code> is evaluated exactly. Unsuffixed literals are <code>int32</code>.</p>
+<pre><code class="language-firescript">compileTimeOverflow: int8 = 128i8;      // Compile-time error: literal out of range
+a: int8 = 127i8 + 1i8;                  // Compile-time error (FS-SEM-0019)
+b: int8 = 3i8 * 100i8;                  // Compile-time error (FS-SEM-0019)
+c: int8 = -(-128i8);                    // Compile-time error (FS-SEM-0019)
+d: int32 = 2147483647 + 1;              // Compile-time error (FS-SEM-0019)
+e: int32 = 2 ** 40;                     // Compile-time error (FS-SEM-0019)
 </code></pre>
 <p>When modular arithmetic is intended, use the explicit <code>wrapping_add</code>, <code>wrapping_sub</code>, <code>wrapping_mul</code> and <code>wrapping_neg</code> functions from <code>@firescript/std.math.wrapping</code> ([IMPLEMENTED]). Saturating and checked variants are [PLANNED].</p>
 <h3 id="floating-point-types-floatn">Floating Point Types (<code>floatN</code>)<a class="headerlink" href="#floating-point-types-floatn" title="Permanent link">&para;</a></h3>
@@ -2994,6 +3055,8 @@ string&quot;;
 digit: char = &quot;7&quot;;
 newline: char = &quot;\n&quot;;  // Special character
 </code></pre>
+<h4 id="escape-sequences-implemented">Escape Sequences [IMPLEMENTED]<a class="headerlink" href="#escape-sequences-implemented" title="Permanent link">&para;</a></h4>
+<p>String and char literals accept these escape sequences: <code>\n</code>, <code>\t</code>, <code>\r</code>, <code>\0</code>, <code>\\</code>, <code>\'</code> and <code>\"</code>. Any other backslash sequence (for example <code>"\q"</code> or <code>'\d'</code>) is a compile-time error (<code>FS-PARSE-0016</code>); write <code>\\</code> for a literal backslash.</p>
 <h3 id="arrays">Arrays<a class="headerlink" href="#arrays" title="Permanent link">&para;</a></h3>
 <p>Arrays are fixed-size ordered collections of elements of the same type.</p>
 <h4 id="declaration-and-initialization">Declaration and Initialization<a class="headerlink" href="#declaration-and-initialization" title="Permanent link">&para;</a></h4>
@@ -3034,9 +3097,27 @@ if (data != null) {
     print(data);
 }
 
-// Could cause a runtime error if not checked
-print(data);  // Might try to print null
 </code></pre>
+<h3 id="nullable-to-non-nullable-conversion-implemented">Nullable to Non-Nullable Conversion [IMPLEMENTED]<a class="headerlink" href="#nullable-to-non-nullable-conversion-implemented" title="Permanent link">&para;</a></h3>
+<p>A value of type <code>T?</code> cannot be assigned to, passed as an argument for, returned as, or used to initialize something that requires a non-nullable <code>T</code>, unless the compiler can prove the value is not null at that point. Violations are compile errors (<code>FS-SEM-0018</code>):</p>
+<pre><code class="language-firescript">maybe: int32? = 5;
+plain: int32 = maybe;  // Error: 'maybe' may be null
+</code></pre>
+<p>A null check provides the proof (<strong>narrowing</strong>). A <code>T?</code> variable, parameter, global or field path (<code>this.value</code>, <code>obj.field</code>) counts as non-null:</p>
+<ul>
+<li>in the true branch of <code>if (x != null)</code>, in the right operand of <code>x != null &amp;&amp; ...</code>, and in the body of <code>while (x != null)</code>;</li>
+<li>in the false branch of <code>if (x == null)</code> and in the right operand of <code>x == null || ...</code>;</li>
+<li>after an early exit: following <code>if (x == null) { return ...; }</code> (the branch always ends in <code>return</code>, <code>break</code> or <code>continue</code>), <code>x</code> is non-null for the rest of the enclosing block.</li>
+</ul>
+<p>Conditions combine with <code>&amp;&amp;</code>, <code>||</code> and <code>!</code> (for example <code>if (x == null || y == null) { return; }</code> proves both afterwards).</p>
+<pre><code class="language-firescript">fn describe(name: string?) -&gt; string {
+    if (name == null) {
+        return &quot;anonymous&quot;;
+    }
+    return name;  // OK: name is non-null here
+}
+</code></pre>
+<p>Narrowing ends at the first assignment to the variable (or field path), at a redeclaration of its name, and - for field paths - at any call that receives the owning object (a method call on it, or passing it as an argument), because the callee may reassign the field. Passing a nullable value for a parameter whose type is a bare generic type parameter (<code>T</code>) is not a conversion and is not checked. Assigning a literal <code>null</code> to a non-nullable target remains an error as before.</p>
 <h2 id="type-compatibility-and-conversions">Type Compatibility and Conversions<a class="headerlink" href="#type-compatibility-and-conversions" title="Permanent link">&para;</a></h2>
 <p>firescript has strict typing rules and requires explicit type conversions using casting syntax.</p>
 <h3 id="explicit-type-casting">Explicit Type Casting<a class="headerlink" href="#explicit-type-casting" title="Permanent link">&para;</a></h3>
@@ -3443,8 +3524,12 @@ fn abs&lt;T: SignedInteger&gt;(x: T, zero: T) -&gt; T {
 }
 
 fn clamp&lt;T: FloatingPoint&gt;(value: T, min: T, max: T) -&gt; T {
-    if (value &lt; min) return min;
-    if (value &gt; max) return max;
+    if (value &lt; min) {
+        return min;
+    }
+    if (value &gt; max) {
+        return max;
+    }
     return value;
 }
 
@@ -3779,8 +3864,12 @@ fn normalize&lt;T: Float&gt;(value: T, min: T, max: T) -&gt; T {
 
 // Combine interface constraints
 fn clamp&lt;T: Comparable &amp; Numeric&gt;(value: T, min: T, max: T) -&gt; T {
-    if (value &lt; min) return min;
-    if (value &gt; max) return max;
+    if (value &lt; min) {
+        return min;
+    }
+    if (value &gt; max) {
+        return max;
+    }
     return value;
 }
 </code></pre>

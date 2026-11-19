@@ -1758,6 +1758,7 @@ lastScore: int8 = scores[-1];    // 88 (last element)
 secondLast: int8 = scores[-2];   // 90 (second to last)
 </code></pre>
 <p>Every index operation (read or write) is bounds-checked at runtime: an index outside <code>[-length, length)</code> traps with <code>firescript runtime error: IndexOutOfBounds: index N, length L</code> and exit status 101 [IMPLEMENTED] (see <a href="../error_handling/">Error Handling</a>). The check is skipped where the index and length are both compile-time constants and in range. The length is known for local arrays and array parameters (passed as a hidden length) and, inside the standard library, for the <code>ArrayList</code>/<code>HashMap</code> buffers (checked against their <code>_len</code>/<code>_cap</code>); any other unsized array reached through a class field has no tracked length and is not checked.</p>
+<p>A constant index into an array whose size is declared (<code>int32[5]</code>) is checked at compile time [IMPLEMENTED]: <code>arr[10]</code> and <code>arr[-6]</code> on an <code>int32[5]</code> are errors (<code>FS-SEM-0020</code>). The valid constant indices are <code>-length</code> to <code>length - 1</code>.</p>
 <h2 id="array-operations">Array Operations<a class="headerlink" href="#array-operations" title="Permanent link">&para;</a></h2>
 <p>firescript provides several built-in methods for manipulating arrays:</p>
 <ul>

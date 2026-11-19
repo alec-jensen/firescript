@@ -1731,6 +1731,7 @@ pow: int32  = a ** b;  // 1000
 </code></pre>
 <p>For floating point operands <code>**</code> follows IEEE 754 <code>pow</code>: fractional exponents are supported (<code>2.0 ** 0.5</code> is <code>1.414214</code>), a negative base with a non-integer exponent is NaN, and zero/infinity/NaN operands follow the standard special-value rules. [IMPLEMENTED]</p>
 <p>Integer division truncates toward zero. Modulo returns the remainder with the same sign as the dividend (C-style, not Python-style).</p>
+<p>Dividing or taking the modulo by a constant integer zero (<code>x / 0</code>, <code>x % 0</code>, <code>x /= 0</code>, <code>7 / (3 - 3)</code>) is a compile-time error (<code>FS-SEM-0021</code>) [IMPLEMENTED]. An integer expression made only of literals whose exact result does not fit its type (<code>127i8 + 1i8</code>, <code>2147483647 + 1</code>, <code>2 ** 40</code> as <code>int32</code>) is a compile-time error (<code>FS-SEM-0019</code>) [IMPLEMENTED].</p>
 <p>The <code>+</code> operator is also used for string concatenation. Both operands must be strings — there is no implicit conversion. Cast non-string values explicitly with <code>as</code>:</p>
 <pre><code class="language-firescript">msg: string = &quot;Value: &quot; + (42 as string);  // &quot;Value: 42&quot;
 // string bad = &quot;Value: &quot; + 42;           // ❌ Error: cannot concatenate string and int32
