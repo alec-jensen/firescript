@@ -833,6 +833,7 @@ Header directives (`//@ key: value` in `.fire` files, `#@ key: value` in `.py` f
 | `//@ stdin: <text>` | `.fire` | One line of stdin (repeatable, joined with `\n`). Mutually exclusive with `stdin-file:`. |
 | `//@ stdin-file: <path>` | `.fire` | stdin from a file, path relative to the test file. |
 | `//@ exit-code: <int>` | `.fire` | Expected binary exit code (default 0). |
+| `//@ stderr-contains: <text>` | `.fire` | The run binary's stderr must contain this text (repeatable, one substring per line, verbatim to end of line). Used to assert runtime trap messages together with `exit-code:`. |
 | `//@ timeout: <seconds>` | `.fire` | Binary run timeout (default: harness config). |
 | `//@ compile-timeout: <seconds>` | `.fire` | Compile timeout (default: harness config). |
 | `//@ compile-flags: <flags>` | `.fire` | Extra flags appended to the compiler invocation. |

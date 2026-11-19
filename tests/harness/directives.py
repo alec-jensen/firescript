@@ -32,6 +32,7 @@ FIRE_KEYS = {
     "stdin": (True, True),
     "stdin-file": (False, True),
     "exit-code": (False, True),
+    "stderr-contains": (True, True),
     "timeout": (False, True),
     "compile-timeout": (False, True),
     "compile-flags": (False, True),
