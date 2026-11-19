@@ -1407,10 +1407,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#t-060-01-fix-the-windows-ci-strings_unicode-failure-s-todo" class="md-nav__link">
+  <a href="#t-060-01-fix-the-windows-ci-strings_unicode-failure-s-in-progress-taskt-060-01" class="md-nav__link">
     <span class="md-ellipsis">
       
-        T-060-01 · Fix the Windows CI strings_unicode failure · S · todo
+        T-060-01 · Fix the Windows CI strings_unicode failure · S · in-progress (task/T-060-01)
       
     </span>
   </a>
@@ -2743,7 +2743,7 @@ are thoroughly tested. Enum and match work across the full pipeline (no FIR/FLIR
 <h3 id="close-out-tasks">Close-out tasks<a class="headerlink" href="#close-out-tasks" title="Permanent link">&para;</a></h3>
 <p>Order matters only where <code>Depends on</code> says so. WIP means unfinished, untested work saved as a
 labeled commit on a branch; a session may build on it or discard it.</p>
-<h4 id="t-060-01-fix-the-windows-ci-strings_unicode-failure-s-todo">T-060-01 · Fix the Windows CI <code>strings_unicode</code> failure · S · <code>todo</code><a class="headerlink" href="#t-060-01-fix-the-windows-ci-strings_unicode-failure-s-todo" title="Permanent link">&para;</a></h4>
+<h4 id="t-060-01-fix-the-windows-ci-strings_unicode-failure-s-in-progress-taskt-060-01">T-060-01 · Fix the Windows CI <code>strings_unicode</code> failure · S · <code>in-progress (task/T-060-01)</code><a class="headerlink" href="#t-060-01-fix-the-windows-ci-strings_unicode-failure-s-in-progress-taskt-060-01" title="Permanent link">&para;</a></h4>
 <ul>
 <li><strong>Goal:</strong> Windows CI is fully green.</li>
 <li><strong>Evidence:</strong> CI run 44572498054 (commit <code>6c0bb25</code>) has exactly one failure,
@@ -2755,6 +2755,9 @@ labeled commit on a branch; a session may build on it or discard it.</p>
   (<code>LC_ALL=C PYTHONUTF8=0 PYTHONCOERCECLOCALE=0</code>, as in
   <code>tests/python/cli/test_main_arg_errors.py</code>) and parses a non-ASCII EXPECT block; push and check
   the Windows run.</li>
+<li><strong>Actual cause (found):</strong> not the harness (it already reads UTF-8). The x86-64 assembler's
+  <code>_decode_gas_string</code> encoded string-literal characters with the locale codec (cp1252 on
+  Windows), so <code>é</code> became <code>0xE9</code>; it now always encodes UTF-8.</li>
 <li><strong>Done when:</strong> the Windows run on the pushed commit is green.</li>
 </ul>
 <h4 id="t-060-02-housekeeping-remove-merged-agent-worktrees-and-branches-s-todo">T-060-02 · Housekeeping: remove merged agent worktrees and branches · S · <code>todo</code><a class="headerlink" href="#t-060-02-housekeeping-remove-merged-agent-worktrees-and-branches-s-todo" title="Permanent link">&para;</a></h4>
