@@ -847,15 +847,6 @@ class _Assembler:
                 raise AssemblerError(f"unresolved symbol: {fx.target}")
 
 
-import locale as _locale
-
-# The backend reads source files and writes the .s with the locale codec, so
-# `as` would assemble the original source bytes. The assembler consumes the
-# in-memory .s text, so it must encode literal characters with the same codec
-# to reproduce those exact bytes.
-_LOCALE_ENCODING = _locale.getpreferredencoding(False) or "utf-8"
-
-
 def _decode_gas_string(s: str) -> bytes:
     """Decode a GAS .asciz string body (backslash escapes) to raw bytes."""
     out = bytearray()
@@ -873,9 +864,6 @@ def _decode_gas_string(s: str) -> bytes:
             if n in simple:
                 out.append(simple[n]); i += 2; continue
             out.append(ord(n)); i += 2; continue
-        try:
-            out += c.encode(_LOCALE_ENCODING)
-        except UnicodeEncodeError:
-            out += c.encode("utf-8")
+        out += c.encode("utf-8")
         i += 1
     return bytes(out)

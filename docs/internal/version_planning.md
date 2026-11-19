@@ -329,7 +329,7 @@ are thoroughly tested. Enum and match work across the full pipeline (no FIR/FLIR
 Order matters only where `Depends on` says so. WIP means unfinished, untested work saved as a
 labeled commit on a branch; a session may build on it or discard it.
 
-#### T-060-01 · Fix the Windows CI `strings_unicode` failure · S · `todo`
+#### T-060-01 · Fix the Windows CI `strings_unicode` failure · S · `in-progress (task/T-060-01)`
 - **Goal:** Windows CI is fully green.
 - **Evidence:** CI run 44572498054 (commit `6c0bb25`) has exactly one failure,
   `run:tests/sources/strings/strings_unicode.fire`, an output mismatch. After the compiler started
@@ -340,6 +340,9 @@ labeled commit on a branch; a session may build on it or discard it.
   (`LC_ALL=C PYTHONUTF8=0 PYTHONCOERCECLOCALE=0`, as in
   `tests/python/cli/test_main_arg_errors.py`) and parses a non-ASCII EXPECT block; push and check
   the Windows run.
+- **Actual cause (found):** not the harness (it already reads UTF-8). The x86-64 assembler's
+  `_decode_gas_string` encoded string-literal characters with the locale codec (cp1252 on
+  Windows), so `é` became `0xE9`; it now always encodes UTF-8.
 - **Done when:** the Windows run on the pushed commit is green.
 
 #### T-060-02 · Housekeeping: remove merged agent worktrees and branches · S · `todo`
