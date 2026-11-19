@@ -490,7 +490,7 @@ labeled commit on a branch; a session may build on it or discard it.
   the changelog, **running every code sample** and fixing the text where the compiler differs; mark
   features `[IMPLEMENTED]`, generic enums `[PLANNED]`; link from the docs index.
 
-#### T-060-18 · Docs: string methods, `fn main`, implicit constructors, `%`, array methods · M · `todo`
+#### T-060-18 · Docs: string methods, `fn main`, implicit constructors, `%`, array methods · M · `done (task/T-060-18)`
 - Document `indexOf`, `substring` (clamps out-of-range), `startsWith`, `endsWith`, `trim`,
   `replace`, `upper`, `lower`, `length`, and array `.size()` (same as `.length()`); the behavior of
   `fn main` (top-level statements are ignored with a warning when `main` exists, while module-level

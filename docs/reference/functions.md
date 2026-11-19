@@ -4,6 +4,19 @@
 
 For the purposes of most code, firescript does not provide any built-in functions. Things like io and math are provided by the standard library.
 
+## The `main` Function [IMPLEMENTED]
+
+A program may define `fn main() -> void { ... }` as its entry point. When `main` exists, top-level statements outside functions are ignored and the compiler prints a warning (`Top-level statements outside main() are ignored when main() is defined`). Module-level variable initializers still run before `main` starts, so globals are initialized as usual.
+
+```firescript
+count: int32 = 5 + 1;      // initializer still runs
+println("never printed");  // ignored, with a warning
+
+fn main() -> void {
+    println(count as string);  // 6
+}
+```
+
 ## User-defined Functions
 
 ```firescript

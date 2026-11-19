@@ -56,11 +56,13 @@ A constant index into an array whose size is declared (`int32[5]`) is checked at
 
 firescript provides several built-in methods for manipulating arrays:
 
-- **`length()`** – Method that returns the current size of the array
+- **`length()`** – Method that returns the current size of the array [IMPLEMENTED]
+- **`size()`** – Same as `length()` [IMPLEMENTED]
 
 ```firescript
 data: int8[5] = [5, 10, 15, 20, 25];
 size: int8 = data.length();      // size = 5
+same: int8 = data.size();        // size = 5
 ```
 
 ## Working with Arrays

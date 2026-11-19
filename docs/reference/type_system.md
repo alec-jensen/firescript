@@ -263,6 +263,35 @@ Strings support:
 * Concatenation: `+`
 * Comparison: `==`, `!=`
 
+#### String methods [IMPLEMENTED]
+
+All methods borrow the string and return a new value; the receiver is never changed.
+
+| Method | Returns | Description |
+|---|---|---|
+| `length()` | `int32` | Number of characters |
+| `upper()` / `lower()` | `string` | Upper- or lower-cased copy |
+| `trim()` | `string` | Copy without leading and trailing whitespace |
+| `indexOf(s: string)` | `int32` | Index of the first occurrence of `s`, or `-1` if absent |
+| `substring(start: int32, end: int32)` | `string` | Characters from `start` up to (not including) `end`; out-of-range bounds are clamped, and an empty string is returned when `start >= end` |
+| `startsWith(s: string)` / `endsWith(s: string)` | `bool` | Prefix / suffix test |
+| `replace(from: string, to: string)` | `string` | Copy with every occurrence of `from` replaced by `to` |
+
+```firescript
+t: string = "Hello, World";
+t.length();              // 12
+"  hi  ".trim();         // "hi"
+t.upper();               // "HELLO, WORLD"
+t.indexOf("World");      // 7
+t.indexOf("zzz");        // -1
+t.substring(0, 5);       // "Hello"
+t.substring(7, 100);     // "World"  (end clamped to the length)
+t.substring(5, 2);       // ""       (start >= end)
+t.startsWith("Hello");   // true
+t.endsWith("x");         // false
+t.replace("l", "L");     // "HeLLo, WorLd"
+```
+
 ### Character Type (`char`)
 
 The `char` type represents a single character. Unlike strings, `char` is a copyable type and is stored on the stack. It can be initialized with a single character string literal.
