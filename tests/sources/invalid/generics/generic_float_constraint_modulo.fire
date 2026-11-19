@@ -1,0 +1,5 @@
+// `%` is defined for integers only; a type parameter constrained to floats
+// does not support it.
+fn remainder<T: Float>(a: T, b: T) -> T {
+    return a % b;  //~ ERROR FS-SEM-0010 @14
+}

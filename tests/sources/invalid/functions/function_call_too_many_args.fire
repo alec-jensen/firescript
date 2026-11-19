@@ -1,0 +1,8 @@
+// Calling a free function with too many arguments.
+import @firescript/std.io.println;
+
+fn identity(a: int32) -> int32 {
+    return a;
+}
+
+println(identity(1, 2));  //~ ERROR FS-SEM-0010 @9

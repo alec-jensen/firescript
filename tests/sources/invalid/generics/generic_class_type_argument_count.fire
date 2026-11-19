@@ -1,0 +1,10 @@
+// A generic class takes exactly as many type arguments as it declares.
+class Box<T> {
+    v: T;
+
+    fn Box(&mut this, v: T) {
+        this.v = v;
+    }
+}
+
+too_many: Box<int32, int32> = Box<int32, int32>(1);  //~ ERROR FS-SEM-0010 @11

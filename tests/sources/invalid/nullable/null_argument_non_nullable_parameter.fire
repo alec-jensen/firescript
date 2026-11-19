@@ -1,0 +1,6 @@
+// Passing the null literal to a parameter that is not nullable.
+fn takesInt(a: int32) -> int32 {
+    return a;
+}
+
+x: int32 = takesInt(null);  //~ ERROR FS-SEM-0010 @21

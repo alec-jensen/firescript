@@ -1,0 +1,4 @@
+// `typeof` is documented as planned, not implemented: with no user function of
+// that name, a call to it is a call to an undefined function.
+x: int32 = 1;
+y: string = typeof(x);  //~ ERROR FS-PARSE-0012 @13

@@ -246,7 +246,7 @@ class ExpressionsMixin(ParserBase):
                 type_args = self._parse_type_arg_list()
                 if type_args is None:
                     return None
-                composite_class_name = self._register_generic_class_instance(cls_tok.value, type_args)
+                composite_class_name = self._register_generic_class_instance(cls_tok.value, type_args, cls_tok)
             else:
                 if cls_tok.value not in self.user_types:
                     self.invalid_expression_error(f"Unknown type '{cls_tok.value}' in constructor", cls_tok)
@@ -470,7 +470,7 @@ class ExpressionsMixin(ParserBase):
                         if type_args is None:
                             break
 
-                        composite_name = self._register_generic_class_instance(token.value, type_args)
+                        composite_name = self._register_generic_class_instance(token.value, type_args, token)
 
                         # Explicit-type-argument static method call:
                         # Box<int32>.make(5) -- as opposed to the
@@ -559,7 +559,7 @@ class ExpressionsMixin(ParserBase):
                             self.expected_token_error("'>' to close generic type arguments", self.current_token)
                         else:
                             self.advance()  # consume >
-                        composite_name = self._register_generic_class_instance(token.value, type_args)
+                        composite_name = self._register_generic_class_instance(token.value, type_args, token)
 
                         # Explicit-type-argument static method call:
                         # Option<int32>.None() -- as opposed to the

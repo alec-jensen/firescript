@@ -1,0 +1,7 @@
+// With explicit type arguments, call arguments must have those types.
+fn identity<T>(a: T) -> T {
+    return a;
+}
+
+a: string = identity<string>(42);  //~ ERROR FS-SEM-0010 @30
+b: int32 = identity<int32>("s");  //~ ERROR FS-SEM-0010 @28

@@ -1,0 +1,5 @@
+// An undefined function called inside an expression, in a file with imports.
+import @firescript/std.io.println;
+
+x: int32 = undefinedFunction(1);  //~ ERROR FS-PARSE-0012 @12
+println(x);

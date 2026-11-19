@@ -1,0 +1,10 @@
+// Yielding a value whose type differs from the generator's element type.
+import @firescript/std.io.println;
+
+fn numbers() -> generator<int32> {
+    yield "s";  //~ ERROR FS-SEM-0010 @5
+}
+
+for (n: int32 in numbers()) {
+    println(n);
+}

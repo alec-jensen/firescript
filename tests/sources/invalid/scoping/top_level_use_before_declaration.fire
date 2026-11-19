@@ -1,0 +1,6 @@
+// A top-level variable cannot be used before its declaration, also in a file
+// with imports.
+import @firescript/std.io.println;
+
+println(later);  //~ ERROR FS-PARSE-0003 @9
+later: int32 = 1;

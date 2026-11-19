@@ -1,0 +1,54 @@
+// An unsuffixed numeric literal takes the type it initializes (declaration,
+// assignment, argument, return value, array element), docs/reference/type_system.md.
+import @firescript/std.io.println;
+
+fn widen(a: int64) -> int64 {
+    return a;
+}
+
+fn small() -> int8 {
+    return 42;
+}
+
+fn half() -> float32 {
+    return 0.5;
+}
+
+b: int64 = 6;
+s: int8 = 42;
+u: uint16 = 60000;
+neg: int8 = -128;
+f: float32 = 3.5;
+g: float64 = 2.5;
+println(b);
+println(s);
+println(u);
+println(neg);
+println(f);
+println(g);
+
+b = 9000000000;
+println(b);
+println(widen(7));
+println(small());
+println(half());
+
+arr: int64[] = [1, 2, 3];
+println(arr[2]);
+sized: uint8[3] = [10, 20, 30];
+println(sized[1]);
+
+/* EXPECT
+6
+42
+60000
+-128
+3.500000
+2.500000
+9000000000
+7
+42
+0.500000
+3
+20
+*/

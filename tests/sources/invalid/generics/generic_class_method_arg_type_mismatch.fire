@@ -1,0 +1,7 @@
+// Wrongly typed argument to a method of a generic class instance.
+import @firescript/std.io.println;
+
+import @firescript/std.collections.ArrayList;
+
+list: ArrayList<int32> = ArrayList<int32>();
+list.add("x");  //~ ERROR FS-SEM-0010 @10

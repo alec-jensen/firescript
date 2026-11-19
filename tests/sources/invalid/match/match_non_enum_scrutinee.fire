@@ -1,0 +1,8 @@
+// `match` requires an enum value as its scrutinee.
+enum Mode { A, B }
+
+n: int32 = 3;
+match n {  //~ ERROR FS-SEM-0010 @7
+    Mode.A -> { },
+    Mode.B -> { }
+}

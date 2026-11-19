@@ -33,7 +33,6 @@ fn pick<T>(x: T, y: T) -> T {
     return x;
 }
 e: int32 = pick(1, "two");  //~ ERROR FS-SEM-0010 @12
-//~^ ERROR FS-SEM-0002 @1
 
 // Constructor argument count mismatch
 w2: Widget = Widget(1, 2);  //~ ERROR FS-SEM-0010 @14

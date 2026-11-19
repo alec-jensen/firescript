@@ -1,0 +1,9 @@
+// A field name may be declared only once in a class.
+class A {
+    x: int32;
+    x: int32;  //~ ERROR FS-SEM-0010 @5
+
+    fn A(&mut this, x: int32) {
+        this.x = x;
+    }
+}

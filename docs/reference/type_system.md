@@ -1378,7 +1378,8 @@ The current firescript compiler supports:
 * [IMPLEMENTED] Nullable type modifiers
 * [IMPLEMENTED] Arrays (as Owned heap-allocated types)
 * [IMPLEMENTED] User-defined classes (including generic and `copyable` classes)
-* [IMPLEMENTED] Static type checking for expressions and assignments
+* [IMPLEMENTED] Static type checking for expressions and assignments, function call arguments, return values, `yield`, array literals and `match` arms
+* [IMPLEMENTED] Unsuffixed numeric literals take the type they initialize (declarations, assignments, arguments, return values, array elements), with compile-time range checks
 * [IMPLEMENTED] Generics
   * Generic functions (with and without constraints)
   * Type union constraints (`T: int32 | float64`)

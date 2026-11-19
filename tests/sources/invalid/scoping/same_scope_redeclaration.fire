@@ -1,0 +1,6 @@
+// Redeclaring a name in the same scope, and a duplicate parameter name.
+x: int32 = 1;
+x: int32 = 2;  //~ ERROR FS-SEM-0010 @1
+
+fn f(a: int32, a: int32) -> void {  //~ ERROR FS-SEM-0010 @16
+}

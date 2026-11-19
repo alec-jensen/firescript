@@ -1,0 +1,2 @@
+// An undefined function called inside an expression (not just as a statement).
+x: int32 = undefinedFunction(1);  //~ ERROR FS-PARSE-0012 @12

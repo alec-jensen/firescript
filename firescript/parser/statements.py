@@ -646,6 +646,26 @@ class StatementsMixin(ExpressionsMixin):
                 )
                 self.advance()  # Advance to avoid loops
                 return None
+        else:
+            # A token that cannot start a statement (e.g. the literal in
+            # `5 = 10;`, or a parenthesized expression used as an assignment
+            # target). Such a statement is dropped; but if it is an
+            # assignment, say so instead of discarding it silently.
+            idx = self._token_idx
+            while token_type in (
+                "INTEGER_LITERAL", "FLOAT_LITERAL", "DOUBLE_LITERAL", "STRING_LITERAL",
+                "CHAR_LITERAL", "BOOLEAN_LITERAL", "NULL_LITERAL", "OPEN_PAREN",
+            ) and idx < len(self.tokens) and self.tokens[idx].type not in (
+                "SEMICOLON", "OPEN_BRACE", "CLOSE_BRACE"
+            ):
+                if self.tokens[idx].type == "ASSIGN":
+                    self.invalid_expression_error("Invalid assignment target", self.tokens[idx])
+                    self._recover_to_statement_boundary()
+                    if self.current_token and self.current_token.type == "SEMICOLON":
+                        self.consume("SEMICOLON")
+                    break
+                idx += 1
+            return None
 
     def parse_scope(self):
         """

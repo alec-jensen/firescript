@@ -1,0 +1,5 @@
+// A base class must exist.
+class Child from Missing {  //~ ERROR FS-SEM-0010 @7
+    fn Child(&mut this) {
+    }
+}

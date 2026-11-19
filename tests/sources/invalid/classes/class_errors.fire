@@ -1,65 +1,89 @@
 // Class error tests - comprehensive
 
-// Undefined class
-fn use_undefined_class() -> void {
-    UndefinedClass obj;  //~ ERROR FS-PARSE-0010 @5
-//~^ ERROR FS-PARSE-0010 @20
-}
-
-// Accessing undefined field
 class Point {
     x: int32;
     y: int32;
+
+    fn Point(&mut this, x: int32, y: int32) {
+        this.x = x;
+        this.y = y;
+    }
+
+    fn getX(&this) -> int32 {
+        return this.x;
+    }
 }
 
+// Accessing undefined field
 fn undefined_field() -> void {
-    p: Point;  //~ ERROR FS-PARSE-0010 @13
-    z: int32 = p.z;  // Field 'z' doesn't exist  //~ ERROR FS-PARSE-0003 @16
+    p: Point = Point(1, 2);
+    z: int32 = p.z;  // Field 'z' doesn't exist  //~ ERROR FS-SEM-0010 @18
 }
 
 // Field type mismatch
 fn field_type_mismatch() -> void {
-    p: Point;  //~ ERROR FS-PARSE-0010 @13
-    p.x = "string";  // x is int32, not string  //~ ERROR FS-PARSE-0003 @5
+    p: Point = Point(1, 2);
+    p.x = "string";  // x is int32, not string  //~ ERROR FS-SEM-0002 @9
+}
+
+// Method return type mismatch
+class Labeled {
+    id: int32;
+
+    fn Labeled(&mut this, id: int32) {
+        this.id = id;
+    }
+
+    fn label(&this) -> string {
+        return this.id;  // id is int32, not string  //~ ERROR FS-SEM-0010 @9
+    }
 }
 
 // Calling undefined method
 fn undefined_method() -> void {
-    p: Point;  //~ ERROR FS-PARSE-0010 @13
-    p.move(5, 10);  // Point has no 'move' method  //~ ERROR FS-PARSE-0003 @5
+    p: Point = Point(1, 2);
+    p.move(5, 10);  // Point has no 'move' method  //~ ERROR FS-SEM-0010 @5
 }
 
-// Accessing private field (if privacy is implemented)
-class Private {
-    secret: int32;
+// Wrong argument type for a method
+fn method_argument_type() -> void {
+    p: Point = Point(1, 2);
+    p.getX("x");  // getX takes no arguments  //~ ERROR FS-SEM-0010 @7
 }
 
 // Duplicate class definition
 class DuplicateClass {
     x: int32;
+
+    fn DuplicateClass(&mut this, x: int32) {
+        this.x = x;
+    }
 }
 
-class DuplicateClass {  // Duplicate
+class DuplicateClass {  // Duplicate  //~ ERROR FS-SEM-0010 @7
     y: int32;
+
+    fn DuplicateClass(&mut this, y: int32) {
+        this.y = y;
+    }
 }
 
 // Duplicate field in class
 class DuplicateField {
     x: int32;
-    x: int32;  // Duplicate field name
+    x: int32;  // Duplicate field name  //~ ERROR FS-SEM-0010 @5
+
+    fn DuplicateField(&mut this, x: int32) {
+        this.x = x;
+    }
 }
 
 // Using class name as variable
 fn class_as_var() -> void {
-    Point: int32 = 5;  // Point is already a class name
+    Point: int32 = 5;  // Point is already a class name  //~ ERROR FS-SEM-0010 @5
 }
 
-// Missing required initialization
-class MustInit {
-    required: int32;
-}
-
+// Declaring a class instance without constructing it
 fn missing_init() -> void {
-    obj: MustInit;  // May need initialization  //~ ERROR FS-PARSE-0010 @18
-    println(obj.required);  //~ ERROR FS-PARSE-0012 @5
+    obj: Point;  //~ ERROR FS-PARSE-0010 @15
 }

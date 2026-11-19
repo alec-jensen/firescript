@@ -260,8 +260,13 @@ def test_sized_array_without_initializer_is_zero_initialized():
     t.require("local arr: int32[4] = %0" in dump, dump)
 
 
-def test_bare_return_in_non_void_function_synthesizes_zero():
-    """`return;` in an `int32` function falls back to returning a
-    zero-valued int32 so the Return stays well-typed."""
-    dump = dump_module(_convert("fn f() -> int32 { return; }\nx: int32 = f();\n"))
-    t.require("%0 = const.int32 0\n    ret %0" in dump, dump)
+def test_bare_return_in_non_void_function_is_rejected_by_the_parser():
+    """`return;` in an `int32` function is a compile-time error. (It used to
+    be accepted and lowered to a synthesized zero return; the FIR fallback is
+    now only a defensive branch that source can no longer reach.)"""
+    pipeline = CompilerPipeline("fn f() -> int32 { return; }\nx: int32 = f();\n", "test.fire", "test.fire")
+    pipeline.parse()
+    t.require(
+        any("'return' without a value" in e.message for e in pipeline.parser_errors),
+        f"expected a missing-return-value diagnostic, got: {[e.message for e in pipeline.parser_errors]}",
+    )

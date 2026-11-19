@@ -1,0 +1,9 @@
+// `yield` inside a function that does not return `generator<T>`.
+import @firescript/std.io.println;
+
+fn notAGenerator() -> int32 {
+    yield 1;  //~ ERROR FS-SEM-0010 @5
+    return 0;
+}
+
+println(notAGenerator());

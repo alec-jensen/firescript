@@ -1,0 +1,10 @@
+// Classes cannot inherit from each other in a cycle.
+class A from B {  //~ ERROR FS-SEM-0010 @7
+    fn A(&mut this) {
+    }
+}
+
+class B from A {  //~ ERROR FS-SEM-0010 @7
+    fn B(&mut this) {
+    }
+}

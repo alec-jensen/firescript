@@ -1,0 +1,14 @@
+// Regression: `typeof` is a planned built-in that does not exist yet, so it is
+// an ordinary identifier. A user function with that name is called like any
+// other (a legacy single-argument arity check used to be applied to it).
+import @firescript/std.io.println;
+
+fn typeof(a: int32, b: int32) -> int32 {
+    return a + b;
+}
+
+println(typeof(1, 2));
+
+/* EXPECT
+3
+*/

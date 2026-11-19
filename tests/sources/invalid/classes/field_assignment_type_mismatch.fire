@@ -1,0 +1,10 @@
+class Point {
+    x: int32;
+
+    fn Point(&mut this, x: int32) {
+        this.x = x;
+    }
+}
+
+p: Point = Point(1);
+p.x = "string";  //~ ERROR FS-SEM-0002 @5

@@ -35,8 +35,8 @@ fn unclosed() -> int32 {
 
 // Missing closing '>' for a nested generic type argument.
 fn nestedUnclosed() -> int32 {
-    p: Pair<Pair<int32, int32, int32> = Pair(Pair(1, 2), 3);  //~ ERROR FS-PARSE-0010 @39
-//~^ ERROR FS-PARSE-0012 @41
+    p: Pair<Pair<int32, int32> = Pair(Pair(1, 2), 3);  //~ ERROR FS-PARSE-0010 @32
+//~^ ERROR FS-PARSE-0012 @34
     return 0;
 }
 

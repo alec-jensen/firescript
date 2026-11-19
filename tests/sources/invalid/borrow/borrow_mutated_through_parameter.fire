@@ -1,0 +1,16 @@
+// A `&` borrow is a read-only view: no writes through it, no reassignment.
+class Holder {
+    text: string;
+
+    fn Holder(&mut this, text: string) {
+        this.text = text;
+    }
+}
+
+fn setText(&h: Holder) -> void {
+    h.text = "z";  //~ ERROR FS-SEM-0001 @12
+}
+
+fn setString(&s: string) -> void {
+    s = "x";  //~ ERROR FS-SEM-0001 @5
+}

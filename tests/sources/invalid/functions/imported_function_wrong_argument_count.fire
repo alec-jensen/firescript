@@ -1,0 +1,4 @@
+// A call to an imported function is checked against its signature (here: too many arguments).
+import @firescript/std.io.println;
+
+println(1, 2);  //~ ERROR FS-SEM-0010 @1

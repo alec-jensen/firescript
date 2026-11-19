@@ -14,7 +14,6 @@ fn addNumeric<T: Numeric>(a: T, b: T) -> T {
 
 fn cannotInfer() -> int32 {
     y: int32 = make();  //~ ERROR FS-SEM-0010 @16
-//~^ ERROR FS-SEM-0002 @5
     return y;
 }
 

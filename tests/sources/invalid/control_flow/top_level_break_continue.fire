@@ -1,0 +1,4 @@
+// `break;` / `continue;` outside a loop: one diagnostic each, no extra
+// "expected semicolon" error.
+break;  //~ ERROR FS-SEM-0010 @1
+continue;  //~ ERROR FS-SEM-0010 @1

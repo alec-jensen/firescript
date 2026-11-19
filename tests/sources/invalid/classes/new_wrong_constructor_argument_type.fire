@@ -1,0 +1,9 @@
+class Point {
+    x: int32;
+
+    fn Point(&mut this, x: int32) {
+        this.x = x;
+    }
+}
+
+p: Point = new Point("one");  //~ ERROR FS-SEM-0010 @22

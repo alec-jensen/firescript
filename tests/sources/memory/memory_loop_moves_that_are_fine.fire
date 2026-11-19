@@ -1,0 +1,17 @@
+// Moving inside a loop is fine when the moved value is the for-in loop
+// variable: it is a fresh value on every iteration.
+import @firescript/std.io.println;
+
+fn consume(s: string) -> void {
+    println(s);
+}
+
+names: string[] = ["a", "b"];
+for (n: string in names) {
+    consume(n);
+}
+
+/* EXPECT
+a
+b
+*/
