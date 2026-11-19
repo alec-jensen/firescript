@@ -326,6 +326,12 @@ class ASTToFIRConverter:
         # source name of any active loop variable that statement moved --
         # see _convert_for_in_string_body.
         self._loop_move_observations: set[str] = set()
+        # (unique local name, GeneratorType) of every for-in-over-generator
+        # loop currently being converted, outermost first: its hidden
+        # `__gen_<var>` generator object is owned by the loop alone, so a
+        # `return` out of the loop body must drop it (break/fallthrough reach
+        # the loop's exit block, which does).
+        self._active_generators: list[tuple[str, FIRType]] = []
 
         # Directive gating: file path -> set of enabled directive names.
         # Nodes carry source_file when merged from imports; single-file
@@ -1767,6 +1773,8 @@ class ASTToFIRConverter:
 
         if node_type == NodeTypes.RETURN_STATEMENT:
             func = self.current_function
+            for active_local, active_type in reversed(self._active_generators):
+                self.builder.drop(self.builder.load_var(active_local, active_type))
             # A plain function declared `-> T?` for a nullable-scalar T
             # actually returns __NullableReturn<T> (see
             # _resolve_function_return_type); `return expr;` must build
@@ -2200,10 +2208,12 @@ class ASTToFIRConverter:
         self.builder.declare_local(loop_local, self._fir_type(loop_var_type_str), element)
 
         self.loop_stack.append((header.id, exit_block.id, None))
+        self._active_generators.append((gen_local, gen_type))
         if body.node_type == NodeTypes.SCOPE:
             self._convert_statements(body.children)
         else:
             self._convert_statement(body)
+        self._active_generators.pop()
         self.loop_stack.pop()
         self._pop_scope()
         if not self.builder.current_block.is_terminated():

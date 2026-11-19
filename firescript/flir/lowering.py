@@ -1555,7 +1555,10 @@ class FIRToFLIRLowering:
             return
         # Generator frames are accessed by address.
         if inst.name in ctx.gen_slots:
-            self.set_val(inst, ctx.emit(SlotAddr(inst.name)), ctx)
+            if ctx.frame_struct is not None:
+                self.set_val(inst, self._gen_field_addr(inst.name, ctx), ctx)
+            else:
+                self.set_val(inst, ctx.emit(SlotAddr(inst.name)), ctx)
             return
         result_type = self.lower_type(inst.result_type, ctx.type_map)
         if ctx.frame_struct is None and inst.name not in ctx.slot_types:
@@ -2249,6 +2252,17 @@ class FIRToFLIRLowering:
         for block in fir_func.blocks:
             for inst in block.instructions:
                 if isinstance(inst, DeclareLocalInst):
+                    nested = self._declared_generator(inst)
+                    if nested is not None:
+                        # A generator consumed inside this one (`for x in
+                        # inner()`): its frame and out-value slot live
+                        # embedded in this frame, so they persist across
+                        # resumes. Initialized by its own __init call when
+                        # the DeclareLocal runs, not zero-filled here.
+                        _nested_name, nested_frame, nested_out = self._nested_generator_layout(nested)
+                        frame.add_field(inst.name, struct_type(nested_frame), self.flir)
+                        frame.add_field(f"{inst.name}__out", nested_out, self.flir)
+                        continue
                     lowered = self.lower_type(inst.var_type, type_map)
                     frame.add_field(inst.name, lowered, self.flir)
                     local_decls.append((inst.name, lowered))
@@ -2350,7 +2364,44 @@ class FIRToFLIRLowering:
         # The dispatch block must be first; FLIRFunction blocks are in creation
         # order with dispatch created first, so this holds.
 
+    @staticmethod
+    def _declared_generator(decl: DeclareLocalInst) -> Optional[GenNewInst]:
+        """The GenNew initializing this DeclareLocal, if it binds a
+        generator instance."""
+        if decl.operands and isinstance(decl.operands[0], FIRValue) and isinstance(
+            decl.operands[0].instruction, GenNewInst
+        ):
+            return decl.operands[0].instruction
+        return None
+
+    def _nested_generator_layout(self, gen_new: GenNewInst) -> tuple[str, str, FLIRType]:
+        """(lowered generator name, its frame struct name, its out-value
+        type) for the generator a GenNew instantiates; lowers that generator
+        first so its frame struct exists and is finalized."""
+        gen_func = self.fir_funcs[gen_new.generator_ref]
+        type_args = list(gen_new.metadata.get("type_args", []))
+        lowered_name = self.request_function(gen_new.generator_ref, type_args)
+        gen_type_map = dict(zip(gen_func.generic_params, type_args))
+        yield_type = gen_func.metadata.get("yield_type", "int32")
+        out_type = self.lower_type_str(self.subst(yield_type, gen_type_map), gen_type_map)
+        return lowered_name, self.gen_frame_name(lowered_name), out_type
+
+    def _gen_field_addr(self, name: str, ctx: _FuncCtx) -> FValue:
+        """Address of a nested generator's frame / out-value field inside the
+        enclosing generator's frame (see lower_generator)."""
+        frame_ptr = ctx.emit(SlotLoad(ctx.frame_param, PTR))
+        _, _, offset = ctx.frame_struct.field(name)
+        return ctx.emit(PtrAdd(frame_ptr, ctx.emit(ConstInt(str(offset), I64)), 1))
+
     def lower_gen_new_local(self, decl: DeclareLocalInst, gen_new: GenNewInst, ctx: _FuncCtx) -> None:
+        if ctx.frame_struct is not None:
+            lowered_name, _frame_name, _out_type = self._nested_generator_layout(gen_new)
+            ctx.gen_slots[decl.name] = lowered_name
+            args = [self.val(op, ctx) for op in gen_new.operands]
+            frame_addr = self._gen_field_addr(decl.name, ctx)
+            ctx.emit(Call(f"{lowered_name}__init", [frame_addr] + args, VOID))
+            self.set_val(gen_new, frame_addr, ctx)
+            return
         fir_name = gen_new.generator_ref
         gen_func = self.fir_funcs[fir_name]
         # A generic generator function (e.g. `enumerate<T>`) carries its
@@ -2398,13 +2449,22 @@ class FIRToFLIRLowering:
         slot = self._gen_slot_of(inst.operands[0], ctx)
         lowered_name = ctx.gen_slots[slot]
         frame_name = self.gen_frame_name(lowered_name)
-        frame_addr = ctx.emit(SlotAddr(slot, frame_name))
-        out_addr = ctx.emit(SlotAddr(f"{slot}__out"))
+        if ctx.frame_struct is not None:
+            frame_addr = self._gen_field_addr(slot, ctx)
+            out_addr = self._gen_field_addr(f"{slot}__out", ctx)
+        else:
+            frame_addr = ctx.emit(SlotAddr(slot, frame_name))
+            out_addr = ctx.emit(SlotAddr(f"{slot}__out"))
         self.set_val(inst, ctx.emit(Call(f"{lowered_name}__next", [frame_addr, out_addr], BOOL)), ctx)
 
     def lower_gen_value(self, inst: GenValueInst, ctx: _FuncCtx) -> None:
         slot = self._gen_slot_of(inst.operands[0], ctx)
         out_slot = f"{slot}__out"
+        if ctx.frame_struct is not None:
+            _, out_type, offset = ctx.frame_struct.field(out_slot)
+            frame_ptr = ctx.emit(SlotLoad(ctx.frame_param, PTR))
+            self.set_val(inst, ctx.emit(Load(out_type, frame_ptr, offset)), ctx)
+            return
         out_type = ctx.slot_types[out_slot]
         self.set_val(inst, ctx.emit(SlotLoad(out_slot, out_type)), ctx)
 
