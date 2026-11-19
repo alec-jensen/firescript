@@ -1,0 +1,8 @@
+// A variable declared outside a loop is moved again on the next iteration.
+fn consume(s: string) -> void {
+}
+
+a: string = "x";
+while (true) {
+    consume(a);  //~ ERROR FS-SEM-0001 @5
+}

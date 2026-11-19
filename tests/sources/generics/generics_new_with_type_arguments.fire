@@ -1,0 +1,20 @@
+// `new Box<int32>(5)` is accepted exactly like `Box<int32>(5)`.
+import @firescript/std.io.println;
+
+class Box<T> {
+    v: T;
+
+    fn Box(&mut this, v: T) {
+        this.v = v;
+    }
+}
+
+a: Box<int32> = new Box<int32>(5);
+b: Box<string> = Box<string>("six");
+println(a.v);
+println(b.v);
+
+/* EXPECT
+5
+six
+*/

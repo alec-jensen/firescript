@@ -1,0 +1,9 @@
+// A pattern must name the enum of the scrutinee.
+enum Mode { A, B }
+enum Other { X, Y }
+
+m: Mode = Mode.A;
+match m {
+    Other.X -> { },  //~ ERROR FS-SEM-0001 @5
+    Other.Y -> { }  //~ ERROR FS-SEM-0001 @5
+}

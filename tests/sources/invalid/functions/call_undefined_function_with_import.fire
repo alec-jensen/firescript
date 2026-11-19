@@ -1,0 +1,6 @@
+// A call to a function that exists nowhere is rejected even when the file has
+// imports (undefined callees are then resolved after the import merge).
+import @firescript/std.io.println;
+
+println(1);
+undefinedFunction(1);  //~ ERROR FS-PARSE-0012 @1

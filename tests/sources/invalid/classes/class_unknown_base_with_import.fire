@@ -1,0 +1,9 @@
+// A base class must exist, also in a file with imports (checked after the merge).
+import @firescript/std.io.println;
+
+class Child from Missing {  //~ ERROR FS-SEM-0010 @7
+    fn Child(&mut this) {
+    }
+}
+
+println(1);

@@ -1,0 +1,8 @@
+// Same for a C-style for loop.
+fn consume(s: string) -> void {
+}
+
+a: string = "x";
+for (i: int32 = 0; i < 3; i++) {
+    consume(a);  //~ ERROR FS-SEM-0001 @5
+}

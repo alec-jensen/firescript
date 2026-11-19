@@ -37,14 +37,14 @@ fn unary_mismatches() -> void {
 
 // Assignment to non-lvalue
 fn assign_to_non_lvalue() -> void {
-    5 = 10;  // Can't assign to literal
-    (5 + 3) = 10;  // Can't assign to expression
+    5 = 10;  // Can't assign to literal  //~ ERROR FS-PARSE-0012 @7
+    (5 + 3) = 10;  // Can't assign to expression  //~ ERROR FS-PARSE-0012 @13
 }
 
 // Compound assignment type mismatch
 fn compound_assign_mismatch() -> void {
     x: int32 = 5;
-    x += "hello";  // Type mismatch //~ ERROR FS-SEM-0010 @7
+    x += "hello";  // Type mismatch  //~ ERROR FS-SEM-0010 @7
 }
 
 // Increment/decrement on non-numeric

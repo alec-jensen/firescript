@@ -1,0 +1,6 @@
+// `return null;` in a function whose return type is not nullable.
+fn noNull() -> int32 {
+    return null;  //~ ERROR FS-SEM-0010 @5
+}
+
+x: int32 = noNull();

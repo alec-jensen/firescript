@@ -1,0 +1,5 @@
+// Calling a variable as if it were a function.
+import @firescript/std.io.println;
+
+x: int32 = 5;
+x(10);  //~ ERROR FS-SEM-0010 @1

@@ -2,6 +2,6 @@
 
 fn modulo_mismatch() -> void {
     a: int32 = 5;
-    b: int64 = 6;  //~ ERROR FS-SEM-0002 @5
+    b: int64 = 6;
     c: int32 = a % b;  //~ ERROR FS-SEM-0010 @18
 }

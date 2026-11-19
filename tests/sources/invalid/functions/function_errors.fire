@@ -1,18 +1,13 @@
 // Function error tests - comprehensive
 
-// Missing return statement in non-void function
-fn missing_return(x: int32) -> int32 {
-    println("no return!");  //~ ERROR FS-PARSE-0012 @5
-}
-
 // Function call with wrong number of arguments
 fn takes_two(a: int32, b: int32) -> int32 {
     return a + b;
 }
 
 fn wrong_args() -> void {
-    result: int32 = takes_two(5);  // Missing argument
-    result2: int32 = takes_two(5, 10, 15);  // Too many arguments
+    result: int32 = takes_two(5);  // Missing argument  //~ ERROR FS-SEM-0010 @21
+    result2: int32 = takes_two(5, 10, 15);  // Too many arguments  //~ ERROR FS-SEM-0010 @22
 }
 
 // Function call with wrong argument types
@@ -21,7 +16,7 @@ fn takes_int(x: int32) -> int32 {
 }
 
 fn wrong_types() -> void {
-    result: int32 = takes_int("string");  // Wrong type
+    result: int32 = takes_int("string");  // Wrong type  //~ ERROR FS-SEM-0010 @31
 }
 
 // Calling undefined function
@@ -29,10 +24,15 @@ fn call_undefined() -> void {
     undefined_function(5);  //~ ERROR FS-PARSE-0012 @5
 }
 
+// Calling an undefined function inside an expression
+fn call_undefined_in_expression() -> void {
+    result: int32 = undefined_function(5);  //~ ERROR FS-PARSE-0012 @21
+}
+
 // Trying to call a non-function
 fn call_non_function() -> void {
     x: int32 = 5;
-    result: int32 = x(10);  // x is not a function
+    result: int32 = x(10);  // x is not a function  //~ ERROR FS-SEM-0010 @21
 }
 
 // Duplicate function definition
@@ -40,15 +40,15 @@ fn duplicate_func() -> int32 {
     return 1;
 }
 
-fn duplicate_func() -> int32 {  // Duplicate
+fn duplicate_func() -> int32 {  // Duplicate  //~ ERROR FS-SEM-0010 @4
     return 2;
 }
 
 // Return type mismatch
 fn wrong_return() -> int32 {
-    return "string";  // Wrong return type
+    return "string";  // Wrong return type  //~ ERROR FS-SEM-0010 @5
 }
 
 fn another_wrong_return() -> string {
-    return 42;  // Should return string, not int
+    return 42;  // Should return string, not int  //~ ERROR FS-SEM-0010 @5
 }

@@ -1,0 +1,6 @@
+// `for ... in` requires an array, a string, or a generator.
+import @firescript/std.io.println;
+
+for (x: int32 in 5) {  //~ ERROR FS-SEM-0010 @18
+    println(x);
+}

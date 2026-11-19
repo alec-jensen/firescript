@@ -1,0 +1,8 @@
+// A bare `return;` in a function that returns a value.
+import @firescript/std.io.println;
+
+fn bare() -> int32 {
+    return;  //~ ERROR FS-SEM-0010 @5
+}
+
+println(bare());

@@ -16,21 +16,21 @@ number: int32 = 42;
 bad_add: int32 = text + number;  //~ ERROR FS-SEM-0010 @23
 
 // Incompatible types in array literal
-mixed: int32[] = [1, 2, "three", 4];
+mixed: int32[] = [1, 2, "three", 4];  //~ ERROR FS-SEM-0010 @25
 
 // Array element type mismatch
 numbers: int32[] = [1, 2, 3];
-numbers[0] = "string";
+numbers[0] = "string";  //~ ERROR FS-SEM-0002 @12
 
 // Function argument type mismatch
 fn takesInt(x: int32) -> void {
     println(x);
 }
-takesInt("wrong type");
+takesInt("wrong type");  //~ ERROR FS-SEM-0010 @10
 
 // Function return type mismatch
 fn shouldReturnInt() -> int32 {
-    return "string";
+    return "string";  //~ ERROR FS-SEM-0010 @5
 }
 
 // Cannot index non-array
@@ -44,15 +44,13 @@ elem: int32 = nums["string index"];  //~ ERROR FS-SEM-0010 @20
 // Undefined variable
 println(undefined_var);  //~ ERROR FS-PARSE-0003 @9
 
-// Undefined function
-undefinedFunction(1, 2, 3);
 
 // Wrong number of function arguments
 fn needsTwo(a: int32, b: int32) -> void {
     println(a);
 }
-needsTwo(1);  // Too few
-needsTwo(1, 2, 3);  // Too many
+needsTwo(1);  // Too few  //~ ERROR FS-SEM-0010 @1
+needsTwo(1, 2, 3);  // Too many  //~ ERROR FS-SEM-0010 @1
 
 // Non-boolean condition in if
 if (5) {  //~ ERROR FS-SEM-0010 @5
@@ -64,9 +62,6 @@ while (42) {  //~ ERROR FS-SEM-0010 @8
     println("loop");
 }
 
-// Cannot call non-function
-not_func: int32 = 10;
-not_func(5);
 
 // Duplicate variable declaration
 duplicate: int32 = 1;

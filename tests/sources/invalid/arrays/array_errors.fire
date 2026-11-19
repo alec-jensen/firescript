@@ -7,22 +7,16 @@ fn non_constant_size() -> void {
 //~^ ERROR FS-PARSE-0010 @16
 }
 
-// Array index out of bounds (static checking)
-fn static_bounds() -> void {
-    arr: int32[5] = [1, 2, 3, 4, 5];
-    val: int32 = arr[10];  // Out of bounds
-}
-
 // Wrong initializer size
 fn wrong_init_size() -> void {
-    arr: int32[5] = [1, 2, 3];  // Too few initializers
-    arr2: int32[3] = [1, 2, 3, 4, 5];  // Too many initializers
+    arr: int32[5] = [1, 2, 3];  // Too few initializers  //~ ERROR FS-SEM-0010 @21
+    arr2: int32[3] = [1, 2, 3, 4, 5];  // Too many initializers  //~ ERROR FS-SEM-0010 @22
 }
 
 // Array initializer type mismatch
 fn init_type_mismatch() -> void {
-    arr: int32[3] = [1, "two", 3];  // Mixed types
-    arr2: int32[3] = ["one", "two", "three"];  // All wrong type  //~ ERROR FS-SEM-0002 @5
+    arr: int32[3] = [1, "two", 3];  // Mixed element types  //~ ERROR FS-SEM-0010 @25
+    arr2: int32[3] = ["one", "two", "three"];  // All elements of the wrong type  //~ ERROR FS-SEM-0002 @5
 }
 
 // Can't assign array to non-array
@@ -34,7 +28,7 @@ fn assign_to_non_array() -> void {
 fn different_sizes() -> void {
     arr1: int32[3] = [1, 2, 3];
     arr2: int32[5] = [1, 2, 3, 4, 5];
-    arr1 = arr2;  // Size mismatch
+    arr1 = arr2;  // Size mismatch  //~ ERROR FS-SEM-0002 @5
 }
 
 // Can't assign arrays of different types
@@ -42,6 +36,12 @@ fn different_types() -> void {
     arr1: int32[3] = [1, 2, 3];
     arr2: string[3] = ["a", "b", "c"];
     arr1 = arr2;  // Type mismatch  //~ ERROR FS-SEM-0002 @5
+}
+
+// Can't store a value of the wrong type in an element
+fn element_type() -> void {
+    arr: int32[3] = [1, 2, 3];
+    arr[0] = "string";  // Element type mismatch  //~ ERROR FS-SEM-0002 @12
 }
 
 // Index must be integer

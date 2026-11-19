@@ -1,0 +1,8 @@
+// `return <value>;` in a function declared `-> void`.
+import @firescript/std.io.println;
+
+fn noValue() -> void {
+    return 1;  //~ ERROR FS-SEM-0010 @5
+}
+
+noValue();

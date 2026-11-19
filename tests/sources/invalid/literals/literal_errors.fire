@@ -2,17 +2,20 @@
 
 // Integer overflow
 fn overflow() -> void {
-    too_big: int32 = 99999999999999999999;  // Exceeds int32 range
+    too_big: int32 = 99999999999999999999;  // Exceeds int32 range  //~ ERROR FS-SEM-0010 @22
+    just_over: int32 = 2147483648;  // One past the int32 maximum  //~ ERROR FS-SEM-0010 @24
+    suffixed: int8 = 128i8;  // Compile-time error: exceeds the suffixed type's range  //~ ERROR FS-SEM-0010 @22
+}
+
+// An unsuffixed literal takes the declared type, and must fit it
+fn declared_type_range() -> void {
+    small: int8 = 200;  // Exceeds int8 range (-128 to 127)  //~ ERROR FS-SEM-0010 @19
+    unsigned: uint8 = -1;  // Negative literal for an unsigned type  //~ ERROR FS-SEM-0010 @23
 }
 
 // Invalid hex literals
 fn invalid_hex() -> void {
     bad_hex: int32 = 0xGHIJ;  // Invalid hex digits  //~ ERROR FS-PARSE-0010 @23
-}
-
-// Invalid escape sequences
-fn invalid_escape() -> void {
-    bad: string = "hello\q";  // \q is not a valid escape
 }
 
 // Unclosed string literal

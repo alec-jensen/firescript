@@ -1,0 +1,12 @@
+// A borrowed parameter cannot be retained in a field (docs/reference/memory_management.md).
+class Holder {
+    text: string;
+
+    fn Holder(&mut this, text: string) {
+        this.text = text;
+    }
+
+    fn keep(&mut this, &text: string) -> void {
+        this.text = text;  //~ ERROR FS-SEM-0001 @21
+    }
+}

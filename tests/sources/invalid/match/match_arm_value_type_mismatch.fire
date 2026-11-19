@@ -1,0 +1,9 @@
+// Every value-producing arm of a match must produce the type the match is
+// used as.
+enum Mode { A, B }
+
+m: Mode = Mode.A;
+x: int32 = match m {
+    Mode.A -> 1,
+    Mode.B -> "two"  //~ ERROR FS-SEM-0010 @15
+};

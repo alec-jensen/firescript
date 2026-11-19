@@ -1,0 +1,8 @@
+// Returning a value whose type differs from the declared return type.
+import @firescript/std.io.println;
+
+fn wrong() -> int32 {
+    return "string";  //~ ERROR FS-SEM-0010 @5
+}
+
+println(wrong());

@@ -1,0 +1,8 @@
+// Calling a free function with too few arguments.
+import @firescript/std.io.println;
+
+fn add(a: int32, b: int32) -> int32 {
+    return a + b;
+}
+
+println(add(1));  //~ ERROR FS-SEM-0010 @9

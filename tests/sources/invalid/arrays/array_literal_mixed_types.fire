@@ -1,0 +1,2 @@
+// All elements of an array literal share one type.
+a: int32[] = [1, "two", 3];  //~ ERROR FS-SEM-0010 @18

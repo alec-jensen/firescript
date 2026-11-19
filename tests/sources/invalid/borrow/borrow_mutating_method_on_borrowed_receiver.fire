@@ -1,0 +1,21 @@
+// A `&mut this` method cannot be called through a read-only `&` borrow.
+class Counter {
+    n: int32;
+
+    fn Counter(&mut this, n: int32) {
+        this.n = n;
+    }
+
+    fn bump(&mut this) -> void {
+        this.n = this.n + 1;
+    }
+
+    fn peek(&this) -> int32 {
+        this.bump();  //~ ERROR FS-SEM-0001 @14
+        return this.n;
+    }
+}
+
+fn increment(&c: Counter) -> void {
+    c.bump();  //~ ERROR FS-SEM-0001 @7
+}

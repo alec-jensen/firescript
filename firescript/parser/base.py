@@ -286,7 +286,7 @@ class ParserBase:
             self.expected_token_error("'>' to close generic type arguments", self.current_token)
             return None
         self.advance()  # consume '>'
-        return self._register_generic_class_instance(base_tok.value, type_args)
+        return self._register_generic_class_instance(base_tok.value, type_args, base_tok)
 
     def _parse_type_expression(self) -> Optional["ParsedType"]:
         """Parse a postfix type expression: BaseType [ArraySuffix] ['?']
@@ -783,7 +783,9 @@ class ParserBase:
         self.advance()  # consume '>'
         return type_args
 
-    def _register_generic_class_instance(self, class_name: str, type_args: list[str]) -> str:
+    def _register_generic_class_instance(
+        self, class_name: str, type_args: list[str], token: Optional[Token] = None
+    ) -> str:
         """Register a monomorphized generic class instance for type checking.
 
         Substitutes the template's type parameters with the concrete type arguments
@@ -801,6 +803,11 @@ class ParserBase:
             return composite
 
         type_params = getattr(template, "type_params", [])
+        if len(type_args) != len(type_params):
+            self.invalid_type_error(
+                f"Generic class '{class_name}' expects {len(type_params)} type argument(s), got {len(type_args)}",
+                token,
+            )
         type_map = dict(zip(type_params, type_args))
         is_copyable_class = getattr(template, "is_copyable", False)
 

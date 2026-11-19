@@ -27,7 +27,7 @@ h.v = ;  //~ ERROR FS-PARSE-0012 @7
 
 // Missing expression after array element assignment
 arr: int32[] = [1, 2];
-arr[0] = ;
+arr[0] = ;  //~ ERROR FS-PARSE-0012 @8
 
 // Missing expression after a plain variable assignment
 x = ;  //~ ERROR FS-PARSE-0012 @5

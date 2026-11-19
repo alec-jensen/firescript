@@ -651,6 +651,9 @@ class DeclarationsMixin(TypeSystemMixin):
                         NodeTypes.FUNCTION_DEFINITION,
                         NodeTypes.GENERATOR_DEFINITION,
                         NodeTypes.MATCH_EXPRESSION,
+                        # `break;` / `continue;` consume their own semicolon.
+                        NodeTypes.BREAK_STATEMENT,
+                        NodeTypes.CONTINUE_STATEMENT,
                     )
                 ):
                     if self.current_token and self.current_token.type == "SEMICOLON":

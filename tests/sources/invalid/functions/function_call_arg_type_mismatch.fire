@@ -1,0 +1,8 @@
+// Passing an argument of the wrong type to a free function.
+import @firescript/std.io.println;
+
+fn identity(a: int32) -> int32 {
+    return a;
+}
+
+println(identity("not a number"));  //~ ERROR FS-SEM-0010 @18

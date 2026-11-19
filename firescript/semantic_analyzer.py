@@ -4,13 +4,15 @@ Semantic analyzer for ownership, borrowing, and lifetime checking.
 Implements the memory management model defined in docs/reference/memory_management.md.
 """
 import logging
+import re
 from typing import Optional, Dict, Set, List, Tuple
 from enum import Enum, auto
 
 from enums import NodeTypes
 from parser import ASTNode
-from errors import CompileTimeError, SemanticError
+from errors import CompileTimeError, SemanticError, InvalidTypeError, InvalidExpressionError
 from utils.type_utils import is_owned
+from utils.literal_utils import coerce_literal
 from utils.file_utils import get_line_and_coumn_from_index, get_line
 
 
@@ -68,10 +70,27 @@ class SemanticAnalyzer:
     - Validate parameter passing semantics (owned vs borrowed)
     """
     
-    def __init__(self, ast: ASTNode, source_file: Optional[str] = None, source_code: Optional[str] = None):
+    def __init__(
+        self,
+        ast: ASTNode,
+        source_file: Optional[str] = None,
+        source_code: Optional[str] = None,
+        check_references: bool = False,
+    ):
         self.ast = ast
         self.source_file = source_file
         self.source_code = source_code
+        # When the entry file has imports, the parser could not resolve
+        # callees/base classes/imported members while parsing it (they only
+        # exist after import merging), so those checks happen here instead,
+        # against the merged AST. Off for standalone files (std/internal)
+        # whose cross-file callees are not visible in their own AST.
+        self.check_references = check_references
+
+        # Definitions found in the (merged) AST, for call/inheritance checks.
+        self.function_defs: Dict[str, ASTNode] = {}
+        self.class_defs: Dict[str, ASTNode] = {}
+        self.method_defs: Dict[Tuple[str, str], ASTNode] = {}
         self.errors: List[CompileTimeError] = []
         
         # Stack of scopes; each scope maps variable name -> BindingInfo
@@ -104,6 +123,9 @@ class SemanticAnalyzer:
         # Each frame stores: (return_type, borrowed_parameter_names, receiver_is_mutable).
         # receiver_is_mutable is False for &this (read-only), True for &mut this or no receiver.
         self.callable_stack: List[Tuple[Optional[str], Set[str], bool]] = []
+        # Parallel to callable_stack: the borrowed parameters declared `&mut`
+        # (a plain `&` parameter is a read-only view).
+        self._mutable_borrow_stack: List[Set[str]] = []
 
     def report_error(self, err: CompileTimeError, node: Optional[ASTNode] = None) -> None:
         """Record a semantic error object with source location, mirroring Parser.report_error()."""
@@ -139,7 +161,9 @@ class SemanticAnalyzer:
         """
         # First pass: collect function signatures
         self._collect_function_signatures(self.ast)
-        
+        if self.check_references:
+            self._check_class_hierarchy()
+
         # Second pass: analyze ownership and borrows
         self._analyze_node(self.ast)
         return len(self.errors) == 0
@@ -160,14 +184,17 @@ class SemanticAnalyzer:
                     is_borrowed = getattr(child, "is_borrowed", False)
                     params.append((param_name, param_type, is_array, is_borrowed))
             self.function_signatures[func_name] = params
+            self.function_defs[func_name] = node
             # Don't recurse into function body - we only need signatures
             return
 
         if node.node_type == NodeTypes.CLASS_DEFINITION:
             class_name = node.name
+            self.class_defs[class_name] = node
             for child in node.children:
                 if child.node_type != NodeTypes.CLASS_METHOD_DEFINITION:
                     continue
+                self.method_defs[(class_name, child.name)] = child
                 method_params = []
                 receiver_consumed = False
                 for mchild in child.children:
@@ -200,6 +227,213 @@ class SemanticAnalyzer:
             for child in node.children:
                 self._collect_function_signatures(child)
     
+    # -- type-level checks on the merged AST ----------------------------------
+
+    def _invalid_type(self, message: str, node: Optional[ASTNode]) -> None:
+        self.report_error(InvalidTypeError(detail=message, source_file=self.source_file), node)
+
+    def _type_of(self, node: Optional[ASTNode]) -> Optional[str]:
+        """Best-effort type string of an expression (None when unknown)."""
+        if node is None:
+            return None
+        if node.node_type == NodeTypes.IDENTIFIER:
+            binding = self._lookup_binding(node.name)
+            if binding is not None and binding.var_type:
+                return f"{binding.var_type}[]" if binding.is_array else binding.var_type
+            return None
+        rt = getattr(node, "return_type", None)
+        return rt if isinstance(rt, str) and rt else None
+
+    @staticmethod
+    def _split_type_args(type_str: str) -> Tuple[str, List[str]]:
+        """'Pair<int32, Box<string>>' -> ('Pair', ['int32', 'Box<string>'])."""
+        if "<" not in type_str or not type_str.endswith(">"):
+            return type_str, []
+        base, rest = type_str.split("<", 1)
+        inner = rest[:-1]
+        args: List[str] = []
+        depth = 0
+        cur = ""
+        for ch in inner:
+            if ch == "<":
+                depth += 1
+            elif ch == ">":
+                depth -= 1
+            if ch == "," and depth == 0:
+                args.append(cur.strip())
+                cur = ""
+            else:
+                cur += ch
+        if cur.strip():
+            args.append(cur.strip())
+        return base, args
+
+    def _is_subclass(self, actual: str, expected: str) -> bool:
+        seen: Set[str] = set()
+        cur = actual
+        while cur and cur not in seen:
+            seen.add(cur)
+            cdef = self.class_defs.get(cur)
+            cur = getattr(cdef, "base_class", None) if cdef is not None else None
+            if cur == expected:
+                return True
+        return False
+
+    def _argument_problem(
+        self, expected: str, expected_nullable: bool, arg: ASTNode, actual: Optional[str],
+        null_is_error: bool,
+    ) -> Tuple[str, str]:
+        """("ok"|"mismatch"|"null"|"range", detail) for passing `arg` to a
+        parameter of type `expected`. Unknown types are accepted."""
+        if actual is None:
+            return "ok", ""
+        if actual == "null":
+            return ("null", "") if (null_is_error and not expected_nullable) else ("ok", "")
+        applied, err = coerce_literal(arg, expected)
+        if applied:
+            return ("range", err) if err else ("ok", "")
+        norm = lambda t: t.replace(" ", "")
+        a = norm(actual[:-1] if actual.endswith("?") else actual)
+        e = norm(expected[:-1] if expected.endswith("?") else expected)
+        if a == e or self._is_subclass(a, e):
+            return "ok", ""
+        return "mismatch", ""
+
+    def _check_call_arguments(
+        self,
+        call: ASTNode,
+        args: List[ASTNode],
+        params: List[ASTNode],
+        subst: Dict[str, str],
+        what: str,
+        null_is_error: bool,
+        check_types: bool = True,
+    ) -> None:
+        """Argument count and type checks for a call whose callee was only
+        resolvable after import merging."""
+        if len(args) != len(params):
+            self._invalid_type(
+                f"{what[0].upper()}{what[1:]} expected {len(params)} argument(s), got {len(args)}", call
+            )
+            return
+        if not check_types:
+            return
+        for i, (param, arg) in enumerate(zip(params, args)):
+            base = param.var_type or ""
+            # Substitute type parameters word by word ("Pair<K, V>" -> "Pair<int32, string>").
+            expected = re.sub(r"\w+", lambda m: subst.get(m.group(0), m.group(0)), base)
+            if param.is_array:
+                expected += "[]"
+            actual = self._type_of(arg)
+            if actual is not None and subst and any(
+                tp in re.findall(r"\w+", actual) for tp in subst
+            ):
+                continue
+            kind, detail = self._argument_problem(
+                expected, bool(param.is_nullable), arg, actual, null_is_error
+            )
+            if kind == "mismatch":
+                self._invalid_type(f"Argument {i + 1} for {what} expected type {expected}, got {actual}", arg)
+            elif kind == "null":
+                self._invalid_type(
+                    f"Argument {i + 1} for {what} cannot be null: parameter type {expected} is not nullable", arg
+                )
+            elif kind == "range":
+                self._invalid_type(detail, arg)
+
+    def _is_known_callee(self, name: str) -> bool:
+        from parser.base import ParserBase
+        from ast_to_fir import INTRINSIC_RETURN_TYPES, DIRECTIVE_GATED_INTRINSICS
+
+        return (
+            name in self.class_defs
+            or name in ParserBase.builtin_functions
+            or name in INTRINSIC_RETURN_TYPES
+            or name in DIRECTIVE_GATED_INTRINSICS
+            or "<" in name
+        )
+
+    def _check_function_call(self, node: ASTNode) -> None:
+        """A free-function call in a file whose imports were resolved after
+        parsing: the callee must exist, be a function, and receive
+        arguments matching its signature."""
+        name = node.name
+        fdef = self.function_defs.get(name)
+        if fdef is None:
+            if not self.check_references or self._is_known_callee(name):
+                return
+            if self._lookup_binding(name) is not None:
+                self._invalid_type(f"'{name}' is a variable, not a function; it cannot be called", node)
+            else:
+                self.report_error(
+                    InvalidExpressionError(detail=f"Function '{name}' is not defined", source_file=self.source_file),
+                    node,
+                )
+            return
+        if getattr(node, "_signature_checked", False) or not self.check_references:
+            return
+        params = [c for c in fdef.children if c.node_type == NodeTypes.PARAMETER]
+        subst: Dict[str, str] = {}
+        check_types = True
+        if fdef.type_params:
+            if node.type_args and len(node.type_args) == len(fdef.type_params):
+                subst = dict(zip(fdef.type_params, node.type_args))
+            else:
+                check_types = False  # type arguments are inferred later; count only
+        self._check_call_arguments(
+            node, node.children, params, subst, f"function '{name}'", True, check_types
+        )
+
+    def _check_method_call(self, node: ASTNode, receiver_type: Optional[str]) -> None:
+        """Argument checks for an instance-method call on a class that was
+        only resolvable after import merging (e.g. an imported generic class
+        such as `ArrayList<int32>`)."""
+        if not self.check_references or getattr(node, "_signature_checked", False) or not receiver_type:
+            return
+        base, targs = self._split_type_args(receiver_type[:-1] if receiver_type.endswith("?") else receiver_type)
+        cdef = self.class_defs.get(base)
+        mdef = self.method_defs.get((base, node.name))
+        if cdef is None or mdef is None or bool(getattr(mdef, "is_static", False)):
+            return
+        class_params = list(getattr(cdef, "type_params", []) or [])
+        if class_params and len(targs) != len(class_params):
+            return
+        params = [
+            c for c in mdef.children
+            if c.node_type == NodeTypes.PARAMETER
+            and not (bool(getattr(c, "is_receiver", False)) or c.name == "this")
+        ]
+        if getattr(mdef, "type_params", None):
+            return  # method-level generics are resolved at monomorphization
+        self._check_call_arguments(
+            node, node.children[1:], params, dict(zip(class_params, targs)),
+            f"method '{node.name}'", False,
+        )
+
+    def _check_class_hierarchy(self) -> None:
+        """Unknown base classes and inheritance cycles, across the merged AST."""
+        for name, cdef in self.class_defs.items():
+            base = getattr(cdef, "base_class", None)
+            if not base or base == name:
+                continue
+            base_name = base.split("<", 1)[0]
+            if base_name not in self.class_defs:
+                self._invalid_type(f"Unknown base class '{base}' for class '{name}'", cdef)
+                continue
+            seen = {name}
+            cur: Optional[str] = base_name
+            while cur:
+                if cur in seen:
+                    if cur == name:
+                        self._invalid_type(
+                            f"Cyclic inheritance: class '{name}' (indirectly) inherits from itself", cdef
+                        )
+                    break
+                seen.add(cur)
+                nxt = self.class_defs.get(cur)
+                cur_base = getattr(nxt, "base_class", None) if nxt is not None else None
+                cur = cur_base.split("<", 1)[0] if cur_base else None
+
     def _current_scope(self) -> Dict[str, BindingInfo]:
         """Get the current (innermost) scope."""
         return self.scope_stack[-1]
@@ -269,6 +503,92 @@ class SemanticAnalyzer:
             return self._is_direct_borrow_view(node.children[0], borrowed_params)
 
         return False
+
+    def _is_read_only_borrowed_param(self, name: str) -> bool:
+        """True if `name` is a plain `&` (non-`&mut`) borrowed parameter of
+        the callable being analyzed (docs/reference/memory_management.md,
+        section 4: a borrow is a read-only view)."""
+        if not self.callable_stack or not self._mutable_borrow_stack:
+            return False
+        binding = self._lookup_binding(name)
+        return (
+            name in self._current_borrowed_params()
+            and name not in self._mutable_borrow_stack[-1]
+            and binding is not None
+            and binding.is_borrowed
+        )
+
+    def _check_borrow_write(self, node: ASTNode) -> None:
+        """`lhs = rhs` where lhs is a field/element: it must not write
+        through a read-only borrowed parameter, and the stored value must
+        not be a borrowed view (a borrow cannot be retained in a field)."""
+        if len(node.children) != 2:
+            return
+        lhs, rhs = node.children
+        root = lhs
+        while root is not None and root.node_type in (NodeTypes.FIELD_ACCESS, NodeTypes.ARRAY_ACCESS) and root.children:
+            root = root.children[0]
+        if (
+            root is not None
+            and root is not lhs
+            and root.node_type == NodeTypes.IDENTIFIER
+            and self._is_read_only_borrowed_param(root.name)
+        ):
+            self.report_error(
+                SemanticError(
+                    message=(
+                        f"Cannot mutate through borrowed parameter '{root.name}'; a '&' borrow is "
+                        f"read-only (declare it '&mut' to allow mutation)"
+                    )
+                ),
+                node,
+            )
+        if lhs.node_type == NodeTypes.FIELD_ACCESS and self._expr_is_owned_value(rhs):
+            borrowed_params = self._current_borrowed_params()
+            is_borrow = False
+            if rhs.node_type == NodeTypes.IDENTIFIER:
+                binding = self._lookup_binding(rhs.name)
+                is_borrow = bool(binding and binding.is_borrowed)
+            else:
+                is_borrow = self._is_direct_borrow_view(rhs, borrowed_params)
+            if is_borrow:
+                self.report_error(
+                    SemanticError(
+                        message="Cannot store a borrowed value in a field; borrowed values cannot outlive the borrow"
+                    ),
+                    rhs,
+                )
+
+    def _check_mutating_call_on_borrow(self, node: ASTNode, receiver: ASTNode, receiver_type: Optional[str]) -> None:
+        """Calling a `&mut this` method needs a mutable receiver: reject it on
+        a read-only `&` parameter or from inside a `&this` method."""
+        if receiver.node_type != NodeTypes.IDENTIFIER or not receiver_type or not self.callable_stack:
+            return
+        base = self._split_type_args(receiver_type)[0]
+        mdef = self.method_defs.get((base, node.name))
+        if mdef is None or bool(getattr(mdef, "is_static", False)):
+            return
+        callee_receiver = next(
+            (p for p in mdef.children if p.node_type == NodeTypes.PARAMETER
+             and (bool(getattr(p, "is_receiver", False)) or p.name == "this")),
+            None,
+        )
+        if callee_receiver is None or not bool(getattr(callee_receiver, "is_mutable_borrow", False)):
+            return
+        if receiver.name == "this":
+            read_only = not self.callable_stack[-1][2]
+        else:
+            read_only = self._is_read_only_borrowed_param(receiver.name)
+        if read_only:
+            self.report_error(
+                SemanticError(
+                    message=(
+                        f"Cannot call '&mut this' method '{node.name}' on read-only borrowed "
+                        f"receiver '{receiver.name}'"
+                    )
+                ),
+                node,
+            )
 
     def _current_borrowed_params(self) -> Set[str]:
         """Get borrowed parameter names for the currently analyzed callable."""
@@ -427,6 +747,57 @@ class SemanticAnalyzer:
 
         return False
 
+    # Types a match scrutinee can definitely never have as an enum.
+    _NON_ENUM_TYPES = frozenset(
+        {
+            "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64",
+            "float32", "float64", "float128", "bool", "char", "string", "void",
+        }
+    )
+
+    def _always_exits_loop(self, node: Optional[ASTNode]) -> bool:
+        """True if every path through `node` leaves the enclosing loop for
+        good (`break` or `return`), so nothing moved in it is seen again."""
+        if node is None:
+            return False
+        if node.node_type in (NodeTypes.BREAK_STATEMENT, NodeTypes.RETURN_STATEMENT):
+            return True
+        if node.node_type == NodeTypes.SCOPE:
+            return any(self._always_exits_loop(c) for c in node.children)
+        if node.node_type == NodeTypes.IF_STATEMENT and len(node.children) > 2:
+            return self._always_exits_loop(node.children[1]) and self._always_exits_loop(node.children[2])
+        return False
+
+    def _check_loop_carried_moves(
+        self,
+        before: Dict[BindingInfo, OwnershipState],
+        after: Dict[BindingInfo, OwnershipState],
+        body: Optional[ASTNode],
+        fresh_each_iteration: Optional[ASTNode] = None,
+    ) -> None:
+        """A variable declared outside a loop that the loop body moves is
+        moved again (use-after-move) on the next iteration, unless the body
+        always leaves the loop right after. A for-in loop variable
+        (`fresh_each_iteration`, its declaration) is a new value every
+        iteration and may be moved freely."""
+        if self._always_exits_loop(body):
+            return
+        for binding, state_before in before.items():
+            if state_before != OwnershipState.VALID:
+                continue
+            if fresh_each_iteration is not None and binding.declaration_node is fresh_each_iteration:
+                continue
+            if after.get(binding) in (OwnershipState.MOVED, OwnershipState.MAYBE_MOVED) and binding.move_node is not None:
+                self.report_error(
+                    SemanticError(
+                        message=(
+                            f"Use-after-move error: variable '{binding.name}' is moved inside a loop "
+                            f"and would be used again on the next iteration"
+                        )
+                    ),
+                    binding.move_node,
+                )
+
     def _validate_match_arms(self, match_node: ASTNode, arms: List[ASTNode]) -> None:
         """Check exhaustiveness, duplicate variants, wildcard placement, and
         binding arity for a match expression's arms."""
@@ -439,6 +810,24 @@ class SemanticAnalyzer:
         seen_variants: Set[str] = set()
         wildcard_seen = False
         enum_name: Optional[str] = None
+
+        # The scrutinee must be a value of an enum type, and every pattern
+        # must name that same enum.
+        scrutinee = match_node.children[0] if match_node.children else None
+        scrutinee_type = self._type_of(scrutinee)
+        scrutinee_enum: Optional[str] = None
+        wrong_enum_arm = False
+        if scrutinee_type is not None:
+            base_t = scrutinee_type[:-1] if scrutinee_type.endswith("?") else scrutinee_type
+            if base_t in self.enum_variants:
+                scrutinee_enum = base_t
+                enum_name = base_t
+            elif base_t.endswith("[]") or base_t in self._NON_ENUM_TYPES or base_t in self.class_defs:
+                self._invalid_type(
+                    f"Cannot match on a value of type {scrutinee_type}: 'match' requires an enum value",
+                    scrutinee,
+                )
+                return
 
         for arm in arms:
             is_wildcard = bool(getattr(arm, "is_wildcard", False))
@@ -459,15 +848,18 @@ class SemanticAnalyzer:
             if enum_name is None:
                 enum_name = arm_enum_name
             elif arm_enum_name and arm_enum_name != enum_name:
-                self.report_error(
-                    SemanticError(
-                        message=(
-                            f"Match arm pattern '{arm_enum_name}.{variant_name}' does not match "
-                            f"enum type '{enum_name}' used by earlier arms"
-                        )
-                    ),
-                    arm,
-                )
+                if scrutinee_enum is not None:
+                    message = (
+                        f"Match arm pattern '{arm_enum_name}.{variant_name}' does not match "
+                        f"the scrutinee's enum type '{scrutinee_enum}'"
+                    )
+                else:
+                    message = (
+                        f"Match arm pattern '{arm_enum_name}.{variant_name}' does not match "
+                        f"enum type '{enum_name}' used by earlier arms"
+                    )
+                self.report_error(SemanticError(message=message), arm)
+                wrong_enum_arm = True
 
             if arm_enum_name not in self.enum_variants:
                 self.report_error(
@@ -519,7 +911,12 @@ class SemanticAnalyzer:
                     )
                 seen_fields.add(field_name)
 
-        if enum_name is not None and enum_name in self.enum_variants and not wildcard_seen:
+        if (
+            enum_name is not None
+            and enum_name in self.enum_variants
+            and not wildcard_seen
+            and not wrong_enum_arm
+        ):
             missing = set(self.enum_variants[enum_name].keys()) - seen_variants
             if missing:
                 missing_list = ", ".join(sorted(missing))
@@ -580,6 +977,7 @@ class SemanticAnalyzer:
     def _analyze_callable_definition(self, node: ASTNode) -> None:
         """Analyze a function-like definition with parameters and body scope."""
         borrowed_params: Set[str] = set()
+        mutable_borrowed: Set[str] = set()
         receiver_is_mutable = True  # default: no receiver means no mutation restriction
         for child in node.children:
             if child.node_type == NodeTypes.PARAMETER and getattr(child, "is_borrowed", False):
@@ -588,7 +986,10 @@ class SemanticAnalyzer:
                     receiver_is_mutable = bool(getattr(child, "is_mutable_borrow", False))
                 else:
                     borrowed_params.add(child.name)
+                    if getattr(child, "is_mutable_borrow", False):
+                        mutable_borrowed.add(child.name)
 
+        self._mutable_borrow_stack.append(mutable_borrowed)
         self.callable_stack.append((getattr(node, "return_type", None), borrowed_params, receiver_is_mutable))
         self._enter_scope()
         for child in node.children:
@@ -607,7 +1008,8 @@ class SemanticAnalyzer:
                 self._analyze_node(child)
         self._exit_scope()
         self.callable_stack.pop()
-    
+        self._mutable_borrow_stack.pop()
+
     def _analyze_node(self, node: ASTNode) -> None:
         """Recursively analyze a node and its children."""
         if node is None:
@@ -652,6 +1054,16 @@ class SemanticAnalyzer:
         elif node.node_type == NodeTypes.VARIABLE_ASSIGNMENT:
             # Check if target is valid (not moved)
             self._check_use_after_move(node.name, node)
+            if self._is_read_only_borrowed_param(node.name):
+                self.report_error(
+                    SemanticError(
+                        message=(
+                            f"Cannot assign to borrowed parameter '{node.name}'; "
+                            f"a borrow is a read-only view of the caller's value"
+                        )
+                    ),
+                    node,
+                )
             
             # Analyze RHS first
             for child in node.children:
@@ -693,6 +1105,7 @@ class SemanticAnalyzer:
                 # Skip analysis of drop() arguments to avoid false positives
                 pass
             else:
+                self._check_function_call(node)
                 # Get function signature if available
                 func_sig = self.function_signatures.get(node.name)
 
@@ -736,6 +1149,10 @@ class SemanticAnalyzer:
                         receiver_is_array = True
                     else:
                         receiver_type = expr_type
+
+            if receiver_type is not None and not receiver_is_array:
+                self._check_method_call(node, receiver_type)
+                self._check_mutating_call_on_borrow(node, receiver, receiver_type)
 
             if receiver_type is not None:
                 # Array/string dot-methods are @builtin_method-registered
@@ -933,6 +1350,7 @@ class SemanticAnalyzer:
             if body is not None:
                 self._analyze_node(body)
             iter_snapshot = self._snapshot_binding_states()
+            self._check_loop_carried_moves(base_snapshot, iter_snapshot, body)
 
             # Restore and merge with the skip-loop path (base state).
             self._restore_binding_states(base_snapshot)
@@ -962,6 +1380,7 @@ class SemanticAnalyzer:
             if increment is not None:
                 self._analyze_node(increment)
             iter_snapshot = self._snapshot_binding_states()
+            self._check_loop_carried_moves(base_snapshot, iter_snapshot, body)
 
             self._restore_binding_states(base_snapshot)
             all_bindings = set(base_snapshot.keys()) | set(iter_snapshot.keys())
@@ -987,6 +1406,7 @@ class SemanticAnalyzer:
             if body is not None:
                 self._analyze_node(body)
             iter_snapshot = self._snapshot_binding_states()
+            self._check_loop_carried_moves(base_snapshot, iter_snapshot, body, loop_var_decl)
 
             self._restore_binding_states(base_snapshot)
             all_bindings = set(base_snapshot.keys()) | set(iter_snapshot.keys())
@@ -1003,6 +1423,7 @@ class SemanticAnalyzer:
         # Field assignment: enforce that &this receivers cannot mutate fields
         elif node.node_type == NodeTypes.ASSIGNMENT:
             lhs = node.children[0] if node.children else None
+            self._check_borrow_write(node)
             if lhs and lhs.node_type == NodeTypes.FIELD_ACCESS and lhs.children:
                 root = lhs.children[0]
                 if root.node_type == NodeTypes.IDENTIFIER and root.name == "this":

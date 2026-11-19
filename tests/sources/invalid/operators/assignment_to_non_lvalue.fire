@@ -1,0 +1,3 @@
+// The left side of '=' must be a variable, field or array element.
+5 = 10;  //~ ERROR FS-PARSE-0012 @3
+(5 + 3) = 10;  //~ ERROR FS-PARSE-0012 @9

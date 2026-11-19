@@ -1,0 +1,12 @@
+// A method's returned value must match its declared return type.
+class Holder {
+    n: int32;
+
+    fn Holder(&mut this, n: int32) {
+        this.n = n;
+    }
+
+    fn text(&this) -> string {
+        return this.n;  //~ ERROR FS-SEM-0010 @9
+    }
+}

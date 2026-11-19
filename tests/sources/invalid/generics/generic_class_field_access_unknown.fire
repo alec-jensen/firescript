@@ -5,15 +5,16 @@
 class Box<T> {
     value: T;
 
-    fn Box(value: T) {
+    fn Box(&mut this, value: T) {
         this.value = value;
     }
 
-    fn bogus() -> T {
+    fn bogus(&this) -> T {
         return this.notAField;  //~ ERROR FS-SEM-0010 @21
     }
 }
 
+// `new Box<int32>(5)` is accepted exactly like `Box<int32>(5)`.
 fn generic_class_field_access_unknown() -> void {
-    b: Box<int32> = new Box<int32>(5);  //~ ERROR FS-SEM-0010 @25
+    b: Box<int32> = new Box<int32>(5);
 }

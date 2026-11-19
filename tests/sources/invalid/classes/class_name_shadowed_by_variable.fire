@@ -1,0 +1,10 @@
+class Point {
+    x: int32;
+
+    fn Point(&mut this, x: int32) {
+        this.x = x;
+    }
+}
+
+// A variable cannot reuse a class name.
+Point: int32 = 5;  //~ ERROR FS-SEM-0010 @1

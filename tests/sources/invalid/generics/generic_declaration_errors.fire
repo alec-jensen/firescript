@@ -21,8 +21,8 @@ b: Pair<Pair<5, int32>, int32> = good;  //~ ERROR FS-PARSE-0010 @14
 //~^ ERROR FS-PARSE-0010 @34
 
 // Missing '>' closing a nested generic type-argument list.
-c: Pair<Pair<int32, int32, int32> = good;  //~ ERROR FS-PARSE-0010 @35
-//~^ ERROR FS-PARSE-0010 @37
+c: Pair<Pair<int32, int32> = good;  //~ ERROR FS-PARSE-0010 @28
+//~^ ERROR FS-PARSE-0010 @30
 
 // Missing '>' closing the outer generic type-argument list.
 d: Pair<int32, int32 = good;  //~ ERROR FS-PARSE-0010 @22

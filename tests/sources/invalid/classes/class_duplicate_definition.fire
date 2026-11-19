@@ -1,0 +1,16 @@
+// A class name may be defined only once.
+class A {
+    x: int32;
+
+    fn A(&mut this, x: int32) {
+        this.x = x;
+    }
+}
+
+class A {  //~ ERROR FS-SEM-0010 @7
+    y: int32;
+
+    fn A(&mut this, y: int32) {
+        this.y = y;
+    }
+}

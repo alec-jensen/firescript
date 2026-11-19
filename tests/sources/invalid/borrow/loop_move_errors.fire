@@ -9,13 +9,13 @@ fn consume(s: string) -> void {
 a: string = "while";
 i: int32 = 0i32;
 while (i < 1i32) {
-    consume(a);  // a may move in loop body
+    consume(a);  // a may move in loop body  //~ ERROR FS-SEM-0001 @5
     i = i + 1i32;
 }
 println(a);  // Error: a may have moved on loop path  //~ ERROR FS-SEM-0001 @9
 
 b: string = "for";
 for (j: int32 = 0i32; j < 1i32; j++) {
-    consume(b);  // b may move in loop body
+    consume(b);  // b may move in loop body  //~ ERROR FS-SEM-0001 @5
 }
 println(b);  // Error: b may have moved on loop path  //~ ERROR FS-SEM-0001 @9

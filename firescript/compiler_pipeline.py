@@ -67,6 +67,9 @@ class CompilerPipeline:
             self.ast,
             source_file=self.source_path,
             source_code=self.source_text,
+            check_references=bool(
+                self.parser_instance is not None and self.parser_instance.defer_undefined_identifiers
+            ),
         )
         self.analyzer.analyze()
         return self.analyzer
