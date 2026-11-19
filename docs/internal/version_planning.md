@@ -507,7 +507,7 @@ labeled commit on a branch; a session may build on it or discard it.
   "intended, not yet enforced"); `memory_management.md:216` call-site `&`; `error_handling.md` says
   `Result` is planned (it exists). Fix wording and markers only.
 
-#### T-060-20 · Changelog corrections · S · `todo`
+#### T-060-20 · Changelog corrections · S · `done`
 - Add the missing Breaking Changes entry for `Tuple`/`CopyableTuple` → `Pair`/`CopyablePair`
   (`Tuple` shipped in 0.5.0); fix three stale entries (the never-shipped `int a?` form, the enum
   entry's prefix payload syntax, the match entry saying statement arms must be braces when
