@@ -115,9 +115,9 @@ result: int32 = sum(values);  // 15
 
 Arrays are Owned values, so passing one to an owned parameter moves it. Use a borrowed parameter (`&int32[] numbers`) to keep using the array at the call site afterwards — see [Memory Management](memory_management.md).
 
-### Nested Arrays
+### Nested Arrays [PLANNED]
 
-Arrays can contain other arrays (though this is not fully implemented yet):
+> Status: **[PLANNED]**. Nested (multi-dimensional) arrays are designed but not implemented; the compiler currently rejects them. The example below shows the intended syntax and will not compile today.
 
 ```firescript
 // 2D array example
@@ -229,4 +229,4 @@ Arrays are functional but with limited operations in the current compiler:
 - [IMPLEMENTED] `for-in` loop over arrays (including array function parameters)
 - [PLANNED] Array slicing
 - [PLANNED] Core fixed-size array `sort()` method (use standard library)
-- [PLANNED] Multi-dimensional array operations
+- [PLANNED] Nested (multi-dimensional) arrays and operations on them
