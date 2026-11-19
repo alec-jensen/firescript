@@ -150,6 +150,31 @@ def test_cvt_int_to_bool():
     _require_sequence(_single_function_asm(BOOL, build), ["test rax, rax", "setne al", "movzx eax, al"])
 
 
+@t.params([
+    # IEEE 754: comparisons involving a NaN (unordered: ZF=PF=CF=1) are false
+    # except `!=`. lt/le swap operands so CF-based seta/setae are false when
+    # unordered; eq/ne additionally fold in the parity flag (regression B01).
+    ("eq", "sd", ["comisd xmm0, xmm1", "sete al", "setnp cl", "and eax, ecx", "movzx eax, al"]),
+    ("ne", "sd", ["comisd xmm0, xmm1", "setne al", "setp cl", "or eax, ecx", "movzx eax, al"]),
+    ("lt", "sd", ["comisd xmm1, xmm0", "seta al", "movzx eax, al"]),
+    ("le", "sd", ["comisd xmm1, xmm0", "setae al", "movzx eax, al"]),
+    ("gt", "sd", ["comisd xmm0, xmm1", "seta al", "movzx eax, al"]),
+    ("ge", "sd", ["comisd xmm0, xmm1", "setae al", "movzx eax, al"]),
+    ("eq", "ss", ["comiss xmm0, xmm1", "sete al", "setnp cl", "and eax, ecx", "movzx eax, al"]),
+    ("lt", "ss", ["comiss xmm1, xmm0", "seta al", "movzx eax, al"]),
+])
+def test_float_compare_handles_unordered(case):
+    op, suffix, expected = case
+    ftype = F32 if suffix == "ss" else F64
+
+    def build(b):
+        a = b.add(ConstFloat("1.0", ftype))
+        c = b.add(ConstFloat("2.0", ftype))
+        b.add(Ret(b.add(BinOp(op, ftype, a, c, BOOL))))
+
+    _require_sequence(_single_function_asm(BOOL, build), expected)
+
+
 def test_cvt_u64_to_f64():
     def build(b):
         v = b.add(ConstInt("5", U64))

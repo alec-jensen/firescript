@@ -167,6 +167,8 @@ Floating point numbers support:
 * Arithmetic: `+`, `-`, `*`, `/`, `**` (power)
 * Comparison: `==`, `!=`, `<`, `>`, `<=`, `>=`
 
+`float128 ** float128` is [IMPLEMENTED]: integer exponents use binary128 repeated squaring; fractional exponents (and bases outside the binary64 range) are evaluated at binary64 precision.
+
 #### Floating Point Literals
 
 Floating point literals can be specified in decimal or scientific notation.
@@ -203,6 +205,8 @@ notANumber: float32 = 0.0f32 / 0.0f32;  // NaN
 positiveInfinity: float64 = 1.0f64 / 0.0f64;  // Infinity
 negativeInfinity: float64 = -1.0f64 / 0.0f64; // -Infinity
 ```
+
+Comparisons follow IEEE 754: a NaN is unordered, so `==`, `<`, `<=`, `>` and `>=` with a NaN operand are `false` and `!=` is `true` (including `nan == nan`). [IMPLEMENTED]
 
 #### Floating Point Overflow and Underflow Behavior
 

@@ -102,6 +102,7 @@ RUNTIME_ABI: dict[str, RuntimeSignature] = {
     "fs_rt_f128_neg": _sig(F128, ret=F128),
     "fs_rt_f128_mul": _sig(F128, F128, ret=F128),
     "fs_rt_f128_div": _sig(F128, F128, ret=F128),
+    "fs_rt_f128_pow": _sig(F128, F128, ret=F128),
     "fs_rt_f128_eq": _sig(F128, F128, ret=BOOL),
     "fs_rt_f128_ne": _sig(F128, F128, ret=BOOL),
     "fs_rt_f128_lt": _sig(F128, F128, ret=BOOL),

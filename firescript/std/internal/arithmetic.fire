@@ -1,9 +1,12 @@
-// Integer/float exponentiation (the `**` operator). No lowlevel
-// primitives needed -- ordinary arithmetic only.
+// Integer/float exponentiation (the `**` operator). The float version follows
+// IEEE 754 pow semantics (special values, fractional exponents via
+// exp(y * ln x)). Only the f64_bits lowlevel primitive is used, to detect -0.0.
 //
 // This module is compiled through the normal pipeline and merged into
 // every program built with the FIR backends; see std/internal/alloc.fire
 // for the shared std/internal/ authoring rules.
+
+directive enable_lowlevel_runtime;
 
 fn fs_rt_pow_i64(base: int64, exp: int64) -> int64 {
     result: int64 = 1i64;
@@ -14,21 +17,263 @@ fn fs_rt_pow_i64(base: int64, exp: int64) -> int64 {
     return result;
 }
 
-fn fs_rt_pow_f64(base: float64, exp: float64) -> float64 {
-    result: float64 = 1.0;
-    if (exp < 0.0) {
-        acc: float64 = 1.0;
-        e: int64 = (-exp) as int64;
-        while (e > 0i64) {
-            acc = acc * base;
-            e = e - 1i64;
-        }
-        return 1.0 / acc;
+// ---- float64 exponentiation helpers ----
+
+// ln(2) split so that k * LN2_HI is exact for |k| < 2^11 (fdlibm constants).
+fn rt_pow_ln2_hi() -> float64 { return 0.693147180369123816490; }
+fn rt_pow_ln2_lo() -> float64 { return 0.000000000190821492927058770002; }
+
+fn rt_pow_is_inf(x: float64) -> bool {
+    return x > 1.7976931348623157e308 || x < -1.7976931348623157e308;
+}
+
+// x * 2^k (k within roughly +/-2200), scaling in exact power-of-two steps.
+fn rt_pow_scale2(x: float64, k: int64) -> float64 {
+    r: float64 = x;
+    while (k > 0i64) {
+        r = r * 2.0;
+        k = k - 1i64;
     }
-    e2: int64 = exp as int64;
-    while (e2 > 0i64) {
-        result = result * base;
-        e2 = e2 - 1i64;
+    while (k < 0i64) {
+        r = r * 0.5;
+        k = k + 1i64;
+    }
+    return r;
+}
+
+// Veltkamp split: high half of a (26 significant bits).
+fn rt_pow_split_hi(a: float64) -> float64 {
+    t: float64 = 134217729.0 * a;
+    return t - (t - a);
+}
+
+// Exact rounding error of the product p = a * b (Dekker's two-product).
+fn rt_pow_prod_err(a: float64, b: float64, p: float64) -> float64 {
+    ah: float64 = rt_pow_split_hi(a);
+    al: float64 = a - ah;
+    bh: float64 = rt_pow_split_hi(b);
+    bl: float64 = b - bh;
+    return ((ah * bh - p) + ah * bl + al * bh) + al * bl;
+}
+
+// e^(y * ln(mag)) for a finite positive mag. ln(mag) is carried as a
+// double-double and the product with y and the range reduction keep the
+// extra bits, so the result is accurate to about one ulp.
+fn rt_pow_via_log(mag: float64, y: float64) -> float64 {
+    m: float64 = mag;
+    e: int64 = 0i64;
+    while (m >= 1.4142135623730951) {
+        m = m * 0.5;
+        e = e + 1i64;
+    }
+    while (m < 0.7071067811865476) {
+        m = m * 2.0;
+        e = e - 1i64;
+    }
+    // s = (m - 1) / (m + 1) with a correction term s_lo, so that
+    // ln(m) = 2 * atanh(s) is not limited by the rounding of s.
+    d: float64 = m + 1.0;
+    db: float64 = d - 1.0;
+    dl: float64 = (1.0 - (d - db)) + (m - db);
+    s: float64 = (m - 1.0) / d;
+    sp: float64 = s * d;
+    rem: float64 = (((m - 1.0) - sp) - rt_pow_prod_err(s, d, sp)) - s * dl;
+    s_lo: float64 = rem / d;
+    s2: float64 = s * s;
+    // tail = s^3/3 + s^5/5 + ... summed from the smallest term upward.
+    tail: float64 = 0.0;
+    k: int64 = 31i64;
+    while (k >= 3i64) {
+        tail = (tail + 1.0 / (k as float64)) * s2;
+        k = k - 2i64;
+    }
+    tail = tail * s;
+    ef: float64 = e as float64;
+    // ln = ef*LN2_HI + 2*s + 2*(tail + s_lo) + ef*LN2_LO as a
+    // double-double (lh + ll).
+    a: float64 = ef * rt_pow_ln2_hi();
+    b: float64 = 2.0 * s;
+    th: float64 = a + b;
+    bb: float64 = th - a;
+    tl: float64 = ((a - (th - bb)) + (b - bb)) + (2.0 * (tail + s_lo) + ef * rt_pow_ln2_lo());
+    lh: float64 = th + tl;
+    ll: float64 = tl - (lh - th);
+    // z = y * ln as a double-double (zh + zl).
+    zh: float64 = y * lh;
+    zl: float64 = y * ll;
+    if (zh < 1.0e290 && zh > -1.0e290 && y < 1.0e290 && y > -1.0e290) {
+        zl = zl + rt_pow_prod_err(y, lh, zh);
+    }
+    zero: float64 = 0.0;
+    if (zh > 709.8) {
+        return 1.0 / zero;
+    }
+    if (zh < -745.2) {
+        return 0.0;
+    }
+    kf: float64 = zh / 0.6931471805599453;
+    n: int64 = 0i64;
+    if (kf >= 0.0) {
+        n = (kf + 0.5) as int64;
+    } else {
+        n = (kf - 0.5) as int64;
+    }
+    nf: float64 = n as float64;
+    r: float64 = ((zh - nf * rt_pow_ln2_hi()) - nf * rt_pow_ln2_lo()) + zl;
+    // expm1(r) = r * (1 + r/2 * (1 + r/3 * (1 + ...))) by Horner's rule,
+    // so only the final `1 +` rounds at full scale.
+    q: float64 = 1.0;
+    i: int64 = 27i64;
+    while (i > 1i64) {
+        q = 1.0 + q * r / (i as float64);
+        i = i - 1i64;
+    }
+    return rt_pow_scale2(1.0 + r * q, n);
+}
+
+// base^n for n >= 0 by repeated squaring in double-double arithmetic, so
+// exact results stay exact and large exponents do not accumulate error.
+// Returns the low part of the double-double result when want_lo is set,
+// the high part otherwise.
+fn rt_pow_uint(base: float64, n: int64, want_lo: bool) -> float64 {
+    rh: float64 = 1.0;
+    rl: float64 = 0.0;
+    bh: float64 = base;
+    bl: float64 = 0.0;
+    while (n > 0i64) {
+        if (n % 2i64 == 1i64) {
+            p: float64 = rh * bh;
+            if (p < 1.0e290 && p > -1.0e290 && p != 0.0) {
+                ex: float64 = rt_pow_prod_err(rh, bh, p) + (rh * bl + rl * bh);
+                nh: float64 = p + ex;
+                rl = ex - (nh - p);
+                rh = nh;
+            } else {
+                rh = p;
+                rl = 0.0;
+            }
+        }
+        n = n / 2i64;
+        if (n > 0i64) {
+            q: float64 = bh * bh;
+            if (q < 1.0e290 && q != 0.0) {
+                eq: float64 = rt_pow_prod_err(bh, bh, q) + 2.0 * bh * bl;
+                qh: float64 = q + eq;
+                bl = eq - (qh - q);
+                bh = qh;
+            } else {
+                bh = q;
+                bl = 0.0;
+            }
+        }
+    }
+    if (want_lo) {
+        return rl;
+    }
+    return rh;
+}
+
+fn fs_rt_pow_f64(base: float64, exp: float64) -> float64 {
+    zero: float64 = 0.0;
+    inf: float64 = 1.0 / zero;
+    nan: float64 = zero / zero;
+    if (exp == 0.0) {
+        return 1.0;
+    }
+    if (base == 1.0) {
+        return 1.0;
+    }
+    if (base != base || exp != exp) {
+        return nan;
+    }
+    // Is exp an integer, and if so is it odd? (|exp| >= 2^53 is always even.)
+    exp_int: bool = false;
+    exp_odd: bool = false;
+    if (exp >= 9007199254740992.0 || exp <= -9007199254740992.0) {
+        exp_int = true;
+    } else if (!rt_pow_is_inf(exp)) {
+        ei: int64 = exp as int64;
+        if ((ei as float64) == exp) {
+            exp_int = true;
+            exp_odd = ei % 2i64 != 0i64;
+        }
+    }
+    neg_zero: bool = base == 0.0 && f64_bits(base) != 0u64;
+    if (rt_pow_is_inf(exp)) {
+        ab: float64 = base;
+        if (ab < 0.0) {
+            ab = -ab;
+        }
+        if (ab == 1.0) {
+            return 1.0;
+        }
+        if ((ab < 1.0) == (exp > 0.0)) {
+            return 0.0;
+        }
+        return inf;
+    }
+    if (base == 0.0) {
+        if (exp < 0.0) {
+            if (neg_zero && exp_odd) {
+                return -inf;
+            }
+            return inf;
+        }
+        if (neg_zero && exp_odd) {
+            return -0.0;
+        }
+        return 0.0;
+    }
+    if (rt_pow_is_inf(base)) {
+        if (base > 0.0) {
+            if (exp > 0.0) {
+                return inf;
+            }
+            return 0.0;
+        }
+        if (exp > 0.0) {
+            if (exp_odd) {
+                return -inf;
+            }
+            return inf;
+        }
+        if (exp_odd) {
+            return -0.0;
+        }
+        return 0.0;
+    }
+    // Finite, non-zero base; finite non-zero exponent.
+    negative: bool = false;
+    mag: float64 = base;
+    if (base < 0.0) {
+        if (!exp_int) {
+            return nan;
+        }
+        negative = exp_odd;
+        mag = -base;
+    }
+    result: float64 = 0.0;
+    done: bool = false;
+    if (exp_int && exp > -4503599627370496.0 && exp < 4503599627370496.0) {
+        n: int64 = exp as int64;
+        if (n > 0i64) {
+            result = rt_pow_uint(mag, n, false) + rt_pow_uint(mag, n, true);
+            done = true;
+        } else {
+            acc: float64 = rt_pow_uint(mag, -n, false);
+            // Only trust the reciprocal while acc is a normal finite value.
+            if (acc < 1.0e300 && acc > 1.0e-300) {
+                lo: float64 = rt_pow_uint(mag, -n, true);
+                result = (1.0 / acc) * (1.0 - lo / acc);
+                done = true;
+            }
+        }
+    }
+    if (!done) {
+        result = rt_pow_via_log(mag, exp);
+    }
+    if (negative) {
+        return -result;
     }
     return result;
 }

@@ -679,8 +679,22 @@ class FLIRToAsmBackend:
                 self._store_float_result(inst, "xmm0", ctx)
                 return
             if op in self._CMP_SET_F:
-                out.append(f"    comi{suffix} xmm0, xmm1")
-                out.append(f"    {self._CMP_SET_F[op]} al")
+                # IEEE 754: any comparison with a NaN (unordered: ZF=PF=CF=1)
+                # is false except `!=`. lt/le are evaluated as gt/ge with the
+                # operands swapped so the CF-based `seta`/`setae` are false
+                # on unordered; eq/ne additionally consult the parity flag.
+                if op in ("lt", "le"):
+                    out.append(f"    comi{suffix} xmm1, xmm0")
+                    out.append(f"    {'seta' if op == 'lt' else 'setae'} al")
+                else:
+                    out.append(f"    comi{suffix} xmm0, xmm1")
+                    out.append(f"    {self._CMP_SET_F[op]} al")
+                    if op == "eq":
+                        out.append("    setnp cl")
+                        out.append("    and eax, ecx")
+                    elif op == "ne":
+                        out.append("    setp cl")
+                        out.append("    or eax, ecx")
                 out.append("    movzx eax, al")
                 self._store_result(inst, "rax", ctx)
                 return

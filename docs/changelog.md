@@ -75,6 +75,10 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - `uint64 as float32` and `uint64 as float64` casts no longer fail to compile with "Assembly failed: unsupported mnemonic: js".
 - `**=` (power compound assignment) is no longer rejected by the parser.
 - Compound assignment with mismatched operand types, a non-numeric target, or an undefined variable now reports a normal type error (`FS-SEM-0010`; `FS-PARSE-0003` for an undefined target) instead of an internal compiler error.
+- Floating-point comparisons involving NaN now follow IEEE 754 for `float32` and `float64`: `==`, `<`, `<=`, `>` and `>=` with a NaN operand are `false` and `!=` is `true` (previously `n == n` was `true` and `n < x` / `n <= x` could be `true`).
+- Floating-point `**` now honours fractional exponents with IEEE 754 `pow` semantics (`2.0 ** 0.5` is `1.414214`, `10.0 ** 2.5` is `316.227766`; previously the exponent was truncated to an integer, giving `1.0` and `100.0`). Negative bases with non-integer exponents yield NaN, and zero/infinity/NaN operands follow the IEEE special-value table. Integer exponents use repeated squaring, so large exponents are fast and exact results stay exact. Results with a fractional exponent are accurate to about 1 ulp, not always correctly rounded.
+- A `float128` literal in the subnormal range whose rounded significand reaches 2^112 now becomes the smallest normal number instead of being clamped to the largest subnormal (one ulp too small).
+- `float128 ** float128` no longer crashes the compiler with an uncaught `LoweringError` traceback. Integer exponents (|n| < 2^63) are evaluated with binary128 repeated squaring (exact when the result is exactly representable); fractional and out-of-range exponents, and bases outside the binary64 range, are evaluated at binary64 precision and widened back. Zero/infinity/NaN operands follow IEEE 754 `pow`.
 
 ## 0.5.0 - Kirin
 *July 2, 2026*

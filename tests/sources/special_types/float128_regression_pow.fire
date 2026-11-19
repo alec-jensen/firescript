@@ -1,0 +1,103 @@
+import @firescript/std.io.println;
+
+// Regression (B11): `float128 ** float128` crashed the compiler with an
+// uncaught LoweringError. Integer exponents (|n| < 2^63) use binary128
+// repeated squaring; other exponents are evaluated in binary64 precision.
+// Special values follow IEEE 754 pow. Expected values: Python Fractions /
+// math.pow.
+zero: float128 = 0.0f128;
+inf: float128 = 1.0f128 / zero;
+nan: float128 = zero / zero;
+nzero: float128 = -zero;
+
+println("-- integer exponents (exact) --");
+println(2.0f128 ** 10.0f128);
+println(2.0f128 ** -2.0f128);
+println(3.0f128 ** 5.0f128);
+println(10.0f128 ** -3.0f128);
+println(1.5f128 ** 4.0f128);
+println(-2.0f128 ** 3.0f128);
+println(-2.0f128 ** 4.0f128);
+println(-2.0f128 ** -3.0f128);
+println(7.0f128 ** 0.0f128);
+println(0.5f128 ** 3.0f128);
+println(2.0f128 ** 64.0f128);
+println(2.0f128 ** 100.0f128);
+println(1.0f128 ** 1000000.0f128);
+println("-- fractional exponents (binary64 precision) --");
+println(2.0f128 ** 0.5f128);
+println(9.0f128 ** 0.5f128);
+println(10.0f128 ** 2.5f128);
+println(2.0f128 ** -0.5f128);
+println("-- special values --");
+println(0.0f128 ** 0.0f128);
+println(0.0f128 ** -1.0f128);
+println(0.0f128 ** 2.0f128);
+println(nzero ** 3.0f128);
+println(nzero ** -3.0f128);
+println(inf ** 2.0f128);
+println(inf ** -2.0f128);
+println(-inf ** 3.0f128);
+println(-inf ** -3.0f128);
+println(-inf ** 2.0f128);
+println(2.0f128 ** inf);
+println(0.5f128 ** inf);
+println(0.5f128 ** -inf);
+println(2.0f128 ** -inf);
+println(-1.0f128 ** inf);
+println(nan ** 0.0f128);
+println(1.0f128 ** nan);
+println(nan ** 2.0f128);
+println(2.0f128 ** nan);
+println(-8.0f128 ** 0.5f128);
+println(5.0f128 ** 0.0f128);
+println("-- overflow and underflow --");
+println(2.0f128 ** 20000.0f128);
+println(2.0f128 ** -20000.0f128);
+
+/* EXPECT
+-- integer exponents (exact) --
+1024.000000
+0.250000
+243.000000
+0.001000
+5.062500
+-8.000000
+16.000000
+-0.125000
+1.000000
+0.125000
+18446744073709551616.000000
+1267650600228229401496703205376.000000
+1.000000
+-- fractional exponents (binary64 precision) --
+1.414214
+3.000000
+316.227766
+0.707107
+-- special values --
+1.000000
+inf
+0.000000
+-0.000000
+-inf
+inf
+0.000000
+-inf
+-0.000000
+inf
+inf
+0.000000
+inf
+0.000000
+1.000000
+1.000000
+1.000000
+nan
+nan
+nan
+1.000000
+-- overflow and underflow --
+inf
+0.000000
+*/

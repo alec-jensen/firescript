@@ -1,0 +1,113 @@
+import @firescript/std.io.println;
+
+// Regression (B01): comparisons involving NaN used the CF/ZF flags only, so
+// `n == n`, `n < x` and `n <= x` were true. IEEE 754: every ordered
+// comparison with a NaN is false and only `!=` is true.
+z: float64 = 0.0;
+n: float64 = z / z;
+one: float64 = 1.0;
+
+println("-- float64 NaN --");
+println(n == n);
+println(n != n);
+println(n == one);
+println(one == n);
+println(n != one);
+println(n < one);
+println(one < n);
+println(n <= one);
+println(one <= n);
+println(n > one);
+println(one > n);
+println(n >= one);
+println(one >= n);
+println(n < n);
+println(n <= n);
+
+println("-- float32 NaN --");
+z32: float32 = 0.0f;
+n32: float32 = z32 / z32;
+one32: float32 = 1.0f;
+println(n32 == n32);
+println(n32 != n32);
+println(n32 == one32);
+println(n32 < one32);
+println(one32 <= n32);
+println(n32 > one32);
+println(n32 >= one32);
+
+println("-- ordered values unchanged --");
+inf: float64 = one / z;
+println(one == one);
+println(one != one);
+println(one < 2.0);
+println(2.0 < one);
+println(one <= one);
+println(one >= one);
+println(2.0 > one);
+println(one > 2.0);
+println(-inf < inf);
+println(inf == inf);
+println(inf > one);
+println(z == -z);
+println(-1.0 < 1.0);
+println(0.1f < 0.2f);
+println(0.2f <= 0.1f);
+
+println("-- NaN in branches --");
+if (n == n) {
+    println("bad: NaN equals itself");
+} else {
+    println("NaN is not equal to itself");
+}
+if (n < one || n > one || n == one) {
+    println("bad: ordered compare with NaN");
+} else {
+    println("NaN is unordered");
+}
+
+/* EXPECT
+-- float64 NaN --
+false
+true
+false
+false
+true
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+-- float32 NaN --
+false
+true
+false
+false
+false
+false
+false
+-- ordered values unchanged --
+true
+false
+true
+false
+true
+true
+true
+false
+true
+true
+true
+true
+true
+true
+false
+-- NaN in branches --
+NaN is not equal to itself
+NaN is unordered
+*/

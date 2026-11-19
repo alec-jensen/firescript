@@ -193,6 +193,7 @@ Plain `assert` also works. Covers:
   bug: driving the mutable-global path through actual `.fire` source
   (`runtime_state_get`/`runtime_state_set`) compiles but segfaults at
   runtime.
+- `tests/python/backend/test_flir_to_asm_coverage.py::test_float_compare_handles_unordered` pins the NaN-safe float compare sequences (`comisd`/`comiss` operand swap for `<`/`<=`, parity flag for `==`/`!=`); `test_asm_encoding.py` differentially checks the `setp`/`setnp`/`and`/`or` encodings.
 - `tests/python/backend/test_flir_to_asm_coverage.py` -- coverage-focused
   unit tests for `firescript/codegen/x86_64/flir_to_asm.py`, driving
   `FLIRToAsmBackend` directly against hand-built `flir.ir` modules (no
@@ -321,8 +322,8 @@ Plain `assert` also works. Covers:
   `firescript/flir/lowering.py` (FIRToFLIRLowering), driven directly via
   `fir.FIRBuilder`: `test_lowering_defensive_errors.py` (ensure_slot
   idempotence, generator frame-slot lookup, root-function scan skip rules,
-  and a test that pins the known `float128 ** float128` LoweringError bug
-  -- rewrite it when that is fixed) and `test_lowering_type_edge_cases.py`
+  float128 `**` lowering to `fs_rt_f128_pow`, and the unsupported-operator
+  `LoweringError`) and `test_lowering_type_edge_cases.py`
   (lower_type/lower_type_str/render_concrete branches for unsubstituted
   generic parameters and `GeneratorType`/`FunctionType`/
   `GenericInstanceType` shapes lowered outside their normal call sites).
@@ -331,8 +332,8 @@ Plain `assert` also works. Covers:
   `tests/support/float128_oracle.py`, an independent implementation --
   and `test_lowering_f128_decimal.py` (exact-bit inf/nan aliases, suffix
   stripping, malformed text, signed overflow/underflow, rounding carry and
-  ties, `_round_half_even`; includes a test that pins the known
-  subnormal-rounding bug) are distinct from `tests/python/float128/`'s
+  ties, `_round_half_even`; subnormal rounding that carries into the
+  smallest normal number) are distinct from `tests/python/float128/`'s
   oracle tests.
 - `tests/python/float128/` -- self-tests for the binary128 correctness
   oracle (`tests/support/float128_oracle.py`): hand-verified constants and
@@ -415,6 +416,8 @@ Each heading below is a directory under `tests/sources/`.
 - **operators_comparison.fire** - Equality (==, !=), relational (<, >, <=, >=) for all numeric types and strings
 - **operators_logical.fire** - Logical operators (`&&`, `||`, `!`) including nested and combined conditions
 - **unary_test.fire** - Unary numeric operators (-, +)
+- **operators_regression_float_nan_comparisons.fire** - Regression (B01): `float64`/`float32` comparisons with a NaN operand (`==`, `!=`, `<`, `<=`, `>`, `>=`, both operand orders, NaN vs NaN, in `if` conditions) follow IEEE 754 (unordered compares are false except `!=`); plus ordered, infinity and signed-zero comparisons that must not change
+- **operators_regression_float_pow_fractional.fire** - Regression (B02): float `**` with fractional exponents (`2.0 ** 0.5`, `10.0 ** 2.5`, cube roots), bit-exact and 4-ulp checks against Python `math.pow`, negative bases (integer vs fractional exponent), IEEE special values (+-0, +-inf, NaN, `0 ** 0`, `1 ** NaN`), overflow/underflow, and integer exponents unchanged
 - **operators_regression_power_assign.fire** - Regression: `**=` on int32, float64 and int64, plus right-associative `**`; `**=` was lexed and documented but rejected by the parser ("Expected assignment, function call, or method call")
 - **operators_logical_short_circuit.fire** - `&&`/`||` evaluate the right operand only when needed (observable via println), chained, and guarding a division by zero
 
@@ -468,7 +471,7 @@ Split by conversion category:
 - **builtin_conversions.fire** - Free-function conversion builtins (`toInt`, `toFloat`, `toDouble`, `toBool`, `toChar`, `toString`) called directly rather than via `as` casting. Note: `toChar` on a string takes its first character's code point, it does not parse the string as a numeric char code.
 - **builtin_conversions_numeric_source.fire** - Same conversion builtins as `builtin_conversions.fire`, but called with a numeric (non-string) source argument, e.g. `toInt(9.75)`, `toBool(0)`.
 - **int_float_cast_matrix.fire** - `float64`/`float32` -> `uint64` (including large values requiring the sign-bit correction dance) and `float64` -> narrow `int8`/`int16`/`uint8`/`uint16`/`uint32`. Notes two real bugs found and not worked around: `int32 as bool` (and other numeric-to-bool casts) is rejected by the frontend even though `flir/lowering.py`'s `Cvt` lowering and `flir_to_asm.py`'s `_emit_cvt` both have code for an int-to-bool target, and (now fixed, see `conversions_regression_uint64_to_float.fire`) `uint64 as float64`/`float32` used to fail to assemble ("unsupported mnemonic: js") because the backend emits a `js` instruction the self-hosted assembler didn't support.
-- **conversions_regression_uint64_to_float.fire** - Regression: `uint64 as float64`/`float32` across 0, small values, 2^63, 2^63+1 (sticky bit) and the maximum; previously failed to assemble because the self-hosted assembler lacked `js` and `shr r64, 1`
+- **conversions_regression_uint64_to_float.fire** - Regression: `uint64 as float64`/`float32` across 0, small values, 2^63 and the maximum, plus round-to-nearest-even tie / just-above-tie cases for both targets (values at 2^63+1024, +1025, +3072, +3073 and the float32 equivalents) that only pass when the sticky bit is kept (verified against a Python oracle and by mutation: dropping the `or rax, rcx` fails it); previously failed to assemble because the self-hosted assembler lacked `js` and `shr r64, 1`
 - **conversions_string_to_numeric_all_types.fire** - `string as T` for every numeric type (int8 through uint32, float64, float128) at range extremes, with `+`, `-` and exponent forms, plus int64/uint64 maxima and float32
 - **conversions_to_string_all_types.fire** - `as string` for every numeric type at its extremes, plus bool and char, positive extremes, zero, float precision, `string as string` identity, and use in concatenation
 - **conversions_integer_wraparound.fire** - Narrowing truncation, sign- vs zero-extension, float-to-int truncation toward zero, in-range narrowing, value-preserving (chained) widening, and uint8->int8 wrap
@@ -611,6 +614,9 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 
 ### `special_types/`
 - **float128_ops.fire** - binary128 soft-float: arithmetic (`+ - * /`, unary `-`), comparisons, and conversions (int, float64, string parse)
+- **float128_regression_nan_comparisons.fire** - float128 NaN is unordered under `== != < <= > >=`; infinity and signed-zero comparisons
+- **float128_regression_pow.fire** - Regression (B11): `float128 ** float128` (previously an uncaught compiler `LoweringError`): exact integer exponents incl. negative and large, fractional exponents at binary64 precision, IEEE special values, overflow/underflow
+- **float128_differential_oracle.fire** - Differential test: 24 seeded random `+ - * /` cases and integer-exponent `**` cases whose expected binary128 values come from `tests/support/float128_oracle.py` (exact Fraction arithmetic); each line prints whether the soft-float runtime result is bit-identical (or within 8 ulp for two squaring cases)
 - **float128_narrow_casts.fire** - float128 <-> narrower numeric types not covered by `float128_ops.fire` (which only covers float128 <-> int64/uint64/float64): int8/int16/int32 -> float128 (widened via int64), float128 -> int8/int16/int32 (narrowed via int64), and float128 <-> float32.
 
 ### `std/regex/`
