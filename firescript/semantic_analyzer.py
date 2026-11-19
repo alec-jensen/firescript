@@ -1064,7 +1064,12 @@ class SemanticAnalyzer:
         for child in node.children:
             if child.node_type == NodeTypes.PARAMETER:
                 is_borrowed = getattr(child, "is_borrowed", False)
-                if is_borrowed:
+                # A receiver ('&this' / '&mut this') is the only borrow form a
+                # Copyable class method can use, so it is exempt from the
+                # Owned-only borrow check.
+                if is_borrowed and not (
+                    bool(getattr(child, "is_receiver", False)) or child.name == "this"
+                ):
                     self._validate_borrow(child.var_type, child.is_array, child)
                 self._register_binding(
                     child.name,

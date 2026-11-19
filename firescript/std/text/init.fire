@@ -27,7 +27,7 @@ export class StringBuilder {
     // unconditionally rather than only when non-empty -- an empty
     // fragment is harmless for build()'s later drain, and it keeps the
     // constructor to a single straight-line path.
-    fn StringBuilder(initial: string) {
+    fn StringBuilder(&mut this, initial: string) {
         this.parts = ArrayList<string>();
         this._len = initial.length();
         this.parts.add(initial);

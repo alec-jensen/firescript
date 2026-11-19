@@ -5,7 +5,7 @@ class Pair<T, U> {
     first: T;
     second: U;
 
-    fn Pair(first: T, second: U) {
+    fn Pair(&mut this, first: T, second: U) {
         this.first = first;
         this.second = second;
     }
@@ -15,7 +15,7 @@ copyable class CopyablePair<T, U> {
     first: T;
     second: U;
 
-    fn CopyablePair(first: T, second: U) {
+    fn CopyablePair(&mut this, first: T, second: U) {
         this.first = first;
         this.second = second;
     }

@@ -1,15 +1,15 @@
 class Option<T?> {
     value: T?;
 
-    fn Option(value: T?) {
+    fn Option(&mut this, value: T?) {
         this.value = value;
     }
 
-    fn isSome() -> bool {
+    fn isSome(&this) -> bool {
         return this.value != null;
     }
 
-    fn isNone() -> bool {
+    fn isNone(&this) -> bool {
         return this.value == null;
     }
 }
@@ -17,15 +17,15 @@ class Option<T?> {
 copyable class CopyableOption<T?> {
     value: T?;
 
-    fn CopyableOption(value: T?) {
+    fn CopyableOption(&mut this, value: T?) {
         this.value = value;
     }
 
-    fn isSome() -> bool {
+    fn isSome(&this) -> bool {
         return this.value != null;
     }
 
-    fn isNone() -> bool {
+    fn isNone(&this) -> bool {
         return this.value == null;
     }
 }

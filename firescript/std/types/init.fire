@@ -4,7 +4,7 @@ export class Pair<T, U> {
 	first: T;
 	second: U;
 
-	fn Pair(first: T, second: U) {
+	fn Pair(&mut this, first: T, second: U) {
 		this.first = first;
 		this.second = second;
 	}
@@ -14,7 +14,7 @@ export copyable class CopyablePair<T, U> {
 	first: T;
 	second: U;
 
-	fn CopyablePair(first: T, second: U) {
+	fn CopyablePair(&mut this, first: T, second: U) {
 		this.first = first;
 		this.second = second;
 	}
@@ -23,15 +23,15 @@ export copyable class CopyablePair<T, U> {
 export class Option<T?> {
 	value: T?;
 
-	fn Option(value: T?) {
+	fn Option(&mut this, value: T?) {
 		this.value = value;
 	}
 
-	fn isSome() -> bool {
+	fn isSome(&this) -> bool {
 		return this.value != null;
 	}
 
-	fn isNone() -> bool {
+	fn isNone(&this) -> bool {
 		return this.value == null;
 	}
 
@@ -65,15 +65,15 @@ export class Option<T?> {
 export copyable class CopyableOption<T?> {
 	value: T?;
 
-	fn CopyableOption(value: T?) {
+	fn CopyableOption(&mut this, value: T?) {
 		this.value = value;
 	}
 
-	fn isSome() -> bool {
+	fn isSome(&this) -> bool {
 		return this.value != null;
 	}
 
-	fn isNone() -> bool {
+	fn isNone(&this) -> bool {
 		return this.value == null;
 	}
 
@@ -88,10 +88,9 @@ export copyable class CopyableOption<T?> {
 	// Copyable T needs no extraction trick -- just read the value (via a
 	// local first, not `return this.value;` directly -- the field's
 	// declared type is T?, and a direct return doesn't get the same T?-
-	// to-T narrowing a local variable's initializer does). No explicit
-	// receiver, matching isSome()/isNone() above -- a Copyable class
-	// receiver can't be borrowed (&this), only passed by value.
-	fn unwrapOr(default: T) -> T {
+	// to-T narrowing a local variable's initializer does). Read-only
+	// receiver (&this), matching isSome()/isNone() above.
+	fn unwrapOr(&this, default: T) -> T {
 		if (this.value != null) {
 			v: T = this.value;
 			return v;
@@ -104,16 +103,16 @@ export class Result<T?, E?> {
 	value: T?;
 	error: E?;
 
-	fn Result(value: T?, error: E?) {
+	fn Result(&mut this, value: T?, error: E?) {
 		this.value = value;
 		this.error = error;
 	}
 
-	fn isOk() -> bool {
+	fn isOk(&this) -> bool {
 		return this.value != null;
 	}
 
-	fn isErr() -> bool {
+	fn isErr(&this) -> bool {
 		return this.error != null;
 	}
 
@@ -146,16 +145,16 @@ export copyable class CopyableResult<T?, E?> {
 	value: T?;
 	error: E?;
 
-	fn CopyableResult(value: T?, error: E?) {
+	fn CopyableResult(&mut this, value: T?, error: E?) {
 		this.value = value;
 		this.error = error;
 	}
 
-	fn isOk() -> bool {
+	fn isOk(&this) -> bool {
 		return this.value != null;
 	}
 
-	fn isErr() -> bool {
+	fn isErr(&this) -> bool {
 		return this.error != null;
 	}
 
@@ -167,8 +166,8 @@ export copyable class CopyableResult<T?, E?> {
 		return CopyableResult<T, E>(null, error);
 	}
 
-	// No explicit receiver -- see CopyableOption.unwrapOr()'s comment.
-	fn unwrapOr(default: T) -> T {
+	// Read-only receiver (&this) -- see CopyableOption.unwrapOr()'s comment.
+	fn unwrapOr(&this, default: T) -> T {
 		if (this.value != null) {
 			v: T = this.value;
 			return v;
