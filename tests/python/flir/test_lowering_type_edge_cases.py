@@ -119,3 +119,17 @@ def test_lower_type_handles_generic_instance_type_directly():
     git = GenericInstanceType("Pair", [INT32, STRING])
     flir_type = lowering.lower_type(git, {})
     t.require(flir_type.kind == "ptr", flir_type.kind)
+
+
+def test_split_type_args_keeps_nested_generic_arguments_together():
+    # Regression (B13): type-argument lists were split on every comma, so
+    # `Pair<int32, int32>, int32` became three arguments.
+    from flir.lowering import FIRToFLIRLowering
+
+    split = FIRToFLIRLowering._split_type_args
+    t.require_eq(split("int32, string"), ["int32", "string"])
+    t.require_eq(split("Pair<int32, int32>, int32"), ["Pair<int32, int32>", "int32"])
+    t.require_eq(
+        split("Pair<int32, Pair<string, int32>>, string"),
+        ["Pair<int32, Pair<string, int32>>", "string"],
+    )

@@ -400,6 +400,28 @@ class FIRToFLIRLowering:
     # Types
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _split_type_args(text: str) -> list[str]:
+        """Split a generic type-argument list on its top-level commas only,
+        so a nested generic argument (`Pair<int32, int32>, int32`) stays one
+        argument."""
+        args: list[str] = []
+        depth = 0
+        current = ""
+        for ch in text:
+            if ch == "<":
+                depth += 1
+            elif ch == ">":
+                depth -= 1
+            elif ch == "," and depth == 0:
+                args.append(current.strip())
+                current = ""
+                continue
+            current += ch
+        if current.strip():
+            args.append(current.strip())
+        return args
+
     def subst(self, type_str: str, type_map: dict[str, str]) -> str:
         if type_str in type_map:
             return type_map[type_str]
@@ -423,6 +445,11 @@ class FIRToFLIRLowering:
                 return ptr_to("i8")
             if name == "null":
                 return PTR
+            if "<" in name and name.endswith(">"):
+                # A type parameter substituted by a generic instance
+                # (`T` -> `CPair<int32, int32>`): lower the instance itself
+                # (a copyable one is an inline struct, an owned one a ptr).
+                return self.lower_type_str(name, type_map)
             if name in self.typedefs:
                 td = self.typedefs[name]
                 args = [self.subst(p, type_map) for p in td.generic_params]
@@ -476,7 +503,7 @@ class FIRToFLIRLowering:
             return PTR
         if "<" in type_str and type_str.endswith(">"):
             base, args_text = type_str.split("<", 1)
-            args = [self.subst(a.strip(), type_map) for a in args_text[:-1].split(",")]
+            args = [self.subst(a, type_map) for a in self._split_type_args(args_text[:-1])]
             struct_name = self.ensure_struct(base, args)
             if base in self.typedefs and self.typedefs[base].category == "copyable":
                 return struct_type(struct_name)
@@ -599,7 +626,7 @@ class FIRToFLIRLowering:
         type_map = type_map or {}
         if "<" in type_str and type_str.endswith(">"):
             base, args_text = type_str.split("<", 1)
-            args = [self.subst(a.strip(), type_map) for a in args_text[:-1].split(",")]
+            args = [self.subst(a, type_map) for a in self._split_type_args(args_text[:-1])]
             return self.ensure_struct(base, args)
         td = self.typedefs.get(type_str)
         if td is not None and td.generic_params:
@@ -2165,7 +2192,7 @@ class FIRToFLIRLowering:
         base = receiver_type.split("<")[0]
         type_args: list[str] = []
         if "<" in receiver_type and receiver_type.endswith(">"):
-            type_args = [a.strip() for a in receiver_type.split("<", 1)[1][:-1].split(",")]
+            type_args = self._split_type_args(receiver_type.split("<", 1)[1][:-1])
         elif base in self.typedefs and self.typedefs[base].generic_params:
             # Bare class name, no explicit type args in the receiver's own
             # static type string -- this is `this` inside another method of

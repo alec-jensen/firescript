@@ -60,11 +60,9 @@ def test_generic_class_nested_type_argument_parses():
     # `Pair<Pair<int32, int32>, int32>` -- a generic class instantiated with
     # another generic-class instance as one of its own type arguments --
     # exercises the successful nested-generic-type-argument path in
-    # parse_variable_declaration() (statements.py). Not tested via a full
-    # `.fire` run because using this as a real value currently trips an
-    # unrelated FLIR-lowering bug (nested generic-class-typed fields lower
-    # to a mismatched 'ptr' vs struct-value type, failing FLIRV-T4/T5
-    # verification) -- a separate, pre-existing codegen issue.
+    # parse_variable_declaration() (statements.py). The end-to-end behaviour
+    # is covered by tests/sources/generics/
+    # generics_regression_nested_generic_type_argument.fire.
     src = (
         "class Pair<T, U> { a: T; b: U; fn Pair(a: T, b: U) { this.a = a; this.b = b; } } "
         "nested: Pair<Pair<int32, int32>, int32> = Pair(Pair(1, 2), 3);"

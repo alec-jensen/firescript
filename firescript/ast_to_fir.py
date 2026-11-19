@@ -3187,6 +3187,18 @@ class ASTToFIRConverter:
                 expected = pt
             prev_expected = self._expected_type_str
             self._expected_type_str = self._expected_type_if_null(arg_node, expected)
+            if (
+                expected is not None
+                and "<" in expected
+                and arg_node.node_type in (NodeTypes.FUNCTION_CALL, NodeTypes.CONSTRUCTOR_CALL)
+                and self.class_generic_params.get(arg_node.name.split("<")[0])
+            ):
+                # A nested generic construction used as this constructor's
+                # argument (e.g. `Pair(Pair(1, 2), 3)` initializing a
+                # `Pair<Pair<int32, int32>, int32>`) takes its type
+                # arguments from the parameter's now-concrete type, exactly
+                # as a top-level one does from its binding's declared type.
+                self._expected_type_str = expected
             args.append(self._require_value(arg_node))
             self._expected_type_str = prev_expected
 
