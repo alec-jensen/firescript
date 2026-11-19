@@ -123,8 +123,10 @@ def _decimal_to_f128_bits(text: str) -> tuple[int, int]:
         sig = _round_half_even(scaled)
         if sig == 0:
             return (0, sign << 63)
-        # sig must fit in 112 bits; if it overflowed to 2^112, clamp to max subnormal.
-        sig = min(sig, (1 << SIG_BITS) - 1)
+        # A significand that rounded up to 2^112 carries into the exponent
+        # field: the result is the smallest normal number.
+        if sig >= (1 << SIG_BITS):
+            return (0, (sign << 63) | (1 << 48))
         lo = sig & 0xFFFFFFFFFFFFFFFF
         hi = (sign << 63) | ((sig >> 64) & 0xFFFF_FFFF_FFFF)
         return (lo, hi)

@@ -332,8 +332,8 @@ Plain `assert` also works. Covers:
   `tests/support/float128_oracle.py`, an independent implementation --
   and `test_lowering_f128_decimal.py` (exact-bit inf/nan aliases, suffix
   stripping, malformed text, signed overflow/underflow, rounding carry and
-  ties, `_round_half_even`; includes a test that pins the known
-  subnormal-rounding bug) are distinct from `tests/python/float128/`'s
+  ties, `_round_half_even`; subnormal rounding that carries into the
+  smallest normal number) are distinct from `tests/python/float128/`'s
   oracle tests.
 - `tests/python/float128/` -- self-tests for the binary128 correctness
   oracle (`tests/support/float128_oracle.py`): hand-verified constants and

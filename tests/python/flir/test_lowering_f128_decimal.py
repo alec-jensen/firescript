@@ -98,16 +98,33 @@ def test_subnormal_rounds_to_nonzero_value():
     assert (hi >> 48) & 0x7FFF == 0
 
 
-def test_subnormal_rounding_clamps_at_max_subnormal_significand():
+def test_subnormal_rounding_carries_into_smallest_normal():
     # Derived so that frac*2**shift == 2**112 - 0.4, which round-half-even
     # rounds *up* to exactly 2**112 -- one past the largest representable
-    # subnormal significand. The code clamps rather than carrying into the
-    # smallest normal exponent (see lowering.py's `sig = min(sig, ...)`).
+    # subnormal significand. The carry must land on the smallest normal
+    # number (biased exponent 1, zero significand), not clamp (regression B12).
     text = "3.36210314311209350626267781732175234359107456732546680313127e-4932"
+    lo, hi = _decimal_to_f128_bits(text)
+    assert lo == 0
+    assert hi == 1 << 48
+    # Same value with a minus sign keeps the sign bit.
+    lo_n, hi_n = _decimal_to_f128_bits("-" + text)
+    assert lo_n == 0
+    assert hi_n == (1 << 63) | (1 << 48)
+
+
+def test_subnormal_rounding_just_below_carry_stays_subnormal():
+    # 2**112 - 0.6 rounds down to the largest subnormal significand.
+    from fractions import Fraction
+    frac = (Fraction(2) ** 112 - Fraction(6, 10)) / Fraction(2) ** 16494
+    digits = 80
+    from decimal import Decimal, getcontext
+    getcontext().prec = digits
+    text = format(Decimal(frac.numerator) / Decimal(frac.denominator), ".70e")
     lo, hi = _decimal_to_f128_bits(text)
     sig = (hi & 0xFFFFFFFFFFFF) << 64 | lo
     assert sig == (1 << 112) - 1
-    assert (hi >> 48) & 0x7FFF == 0  # still classified as subnormal
+    assert (hi >> 48) & 0x7FFF == 0
 
 
 def test_round_half_even_ties_to_even_significand():
