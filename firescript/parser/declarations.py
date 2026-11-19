@@ -149,6 +149,31 @@ class DeclarationsMixin(TypeSystemMixin):
                     params.append(recv)
                     seen_receiver = True
                 elif (
+                    allow_receiver and not allow_owned_receiver and not seen_receiver
+                    and self.current_token
+                    and (
+                        (
+                            self.current_token.type == "OWNED"
+                            and self.peek(1) and self.peek(1).type == "IDENTIFIER" and self.peek(1).value == "this"
+                        )
+                        or (
+                            self.current_token.type == "IDENTIFIER" and self.current_token.value == "this"
+                            and self.peek(1) and self.peek(1).type != "COLON"
+                        )
+                    )
+                ):
+                    # Consuming receivers are not supported on ordinary methods yet.
+                    bad_tok = self.current_token
+                    if bad_tok.type == "OWNED":
+                        self.advance()
+                    self.consume("IDENTIFIER")  # 'this'
+                    self.invalid_expression_error(
+                        "Consuming receivers ('owned this' or a plain 'this') are not supported yet; "
+                        "use '&this' or '&mut this'",
+                        bad_tok,
+                    )
+                    return None
+                elif (
                     allow_receiver and allow_owned_receiver and not seen_receiver
                     and self.current_token and self.current_token.type == "OWNED"
                     and self.peek(1) and self.peek(1).type == "IDENTIFIER" and self.peek(1).value == "this"
@@ -1121,8 +1146,22 @@ class DeclarationsMixin(TypeSystemMixin):
                     return None
 
                 param_nodes = params
+                if not local_is_static and not (params and params[0].name == "this"):
+                    if is_constructor:
+                        self.invalid_expression_error(
+                            f"Constructor '{method_name_tok.value}' must declare a receiver: `&mut this`",
+                            method_name_tok,
+                        )
+                    else:
+                        self.invalid_expression_error(
+                            f"Method '{method_name_tok.value}' must declare a receiver: "
+                            "`&this` or `&mut this`, or be `static`",
+                            method_name_tok,
+                        )
                 if not is_constructor and not local_is_static and not (params and params[0].name == "this"):
-                    # Inject synthetic receiver named 'this' if not explicitly provided
+                    # Error recovery only: the missing-receiver error above is
+                    # already reported; inject a synthetic receiver named 'this'
+                    # so later passes see a well-formed method.
                     self_param = ASTNode(
                         NodeTypes.PARAMETER,
                         method_name_tok,

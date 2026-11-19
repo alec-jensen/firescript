@@ -1174,6 +1174,9 @@ class TypeSystemMixin(StatementsMixin):
             # the equivalent binary expression would be. Without this check a
             # mismatch only surfaced later as an internal FIR verifier error.
             var_info = symbol_table.get(node.name)
+            if node.name == "this":
+                self.invalid_expression_error("Cannot assign to 'this'; assign to its fields instead", node.token)
+                return None
             if not var_info:
                 self.undefined_identifier_error(node.name, node.token)
                 return None
@@ -1313,6 +1316,8 @@ class TypeSystemMixin(StatementsMixin):
                             node_type_str = var_type
                         else:
                             self.type_error(f"Operator '{op}' requires an integer variable, got {var_type}", node.token)
+                    elif var_name == "this":
+                        self.invalid_expression_error("Cannot assign to 'this'; assign to its fields instead", node.token)
                     else:
                         self.undefined_identifier_error(var_name, node.token)
                 return node_type_str
