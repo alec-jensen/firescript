@@ -1566,10 +1566,71 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#9-migration-notes" class="md-nav__link">
+  <a href="#9-errors-and-exceptions-planned" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9. Migration notes
+        9. Errors and exceptions [PLANNED]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Errors and exceptions [PLANNED]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-the-rule-operations-throw-function-calls-return-a-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 The rule: operations throw, function calls return a Result
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-consequences-and-open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Consequences and open questions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-stack-traces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Stack traces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94-implementation-sketch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 Implementation sketch
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-migration-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Migration notes
       
     </span>
   </a>
@@ -1577,10 +1638,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#10-open-questions" class="md-nav__link">
+  <a href="#11-open-questions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10. Open questions
+        11. Open questions
       
     </span>
   </a>
@@ -1847,7 +1908,78 @@ counts as dynamically used and gets a vtable pointer (§5.1).</p>
 the one thing a function cannot do; it is added later only if <code>downcast</code> plus a null check proves
 too clumsy in real code. The instanceof-style check is deliberately not a getClass/<code>Class</code>
 object: that would add a reflection concept.</p>
-<h2 id="9-migration-notes">9. Migration notes<a class="headerlink" href="#9-migration-notes" title="Permanent link">&para;</a></h2>
+<h2 id="9-errors-and-exceptions-planned">9. Errors and exceptions [PLANNED]<a class="headerlink" href="#9-errors-and-exceptions-planned" title="Permanent link">&para;</a></h2>
+<p>Today there is no catchable error mechanism. <code>std.fs</code> returns <code>FileResult</code> objects, <code>Result&lt;T,E&gt;</code>
+and <code>Option&lt;T&gt;</code> exist as library types, and runtime traps (integer overflow, division by zero,
+out-of-range indexing, invalid float-to-int conversions) print a message and terminate the
+program (<code>docs/reference/error_handling.md</code>). The design below is for 0.9.0, after the object
+model (§5) it depends on.</p>
+<h3 id="91-the-rule-operations-throw-function-calls-return-a-result">9.1 The rule: operations throw, function calls return a <code>Result</code><a class="headerlink" href="#91-the-rule-operations-throw-function-calls-return-a-result" title="Permanent link">&para;</a></h3>
+<p>There is exactly one way to signal each kind of failure:</p>
+<ul>
+<li><strong>Operations throw.</strong> A language operation that can fail raises an exception: integer
+  overflow (<code>+ - * / % **</code>, unary minus, <code>++</code>/<code>--</code>), division and modulo by zero, array indexing
+  out of bounds, a float-to-int cast of NaN/infinity/out-of-range, and so on. These are the
+  runtime traps of <code>docs/reference/error_handling.md</code>, made catchable.</li>
+<li><strong>Function calls return a <code>Result</code>.</strong> A function that can fail returns <code>Result&lt;T, E&gt;</code> (or
+  <code>Option&lt;T&gt;</code> when there is no error to report). A function that cannot fail returns a plain
+  value. Fallibility is visible in the signature and never raised behind the caller's back.</li>
+<li>Exceptions are rooted at <code>Exception extends Object</code>, with a message and an optional cause, in a
+  Python-style hierarchy: <code>Exception</code> -&gt; <code>ArithmeticException</code> -&gt; <code>OverflowException</code>,
+  <code>DivisionByZeroException</code>; <code>IndexOutOfBoundsException</code>; <code>InvalidConversionException</code>; and so on.
+  <code>try { } catch (T e) { } finally { }</code> matches by runtime type (the <code>isInstance</code> rule of §8.3), so
+  <code>catch (ArithmeticException e)</code> catches the whole subtree. Syntax is provisional.</li>
+<li>An exception raised inside a callee propagates through its callers until caught (an overflow
+  deep in a call chain is still an exception), so callers do not need to be <code>Result</code>-aware of
+  operations inside callees.</li>
+<li>Catching a trap is the programmer acknowledging they will handle it; not catching it terminates
+  the program with a stack trace (§9.3). A blanket <code>catch (Exception e)</code> is legal but discouraged,
+  and a lint warns on it.</li>
+<li>The same hierarchy classifies errors carried in a <code>Result</code>: <code>Result&lt;File, FileOpenException&gt;</code>
+  (<code>FileOpenException</code> -&gt; <code>IOException</code> -&gt; <code>Exception</code>) is an ordinary error value, not something
+  that is thrown. <code>std.fs</code> opening a file returns such a <code>Result</code>.</li>
+<li>The runtime-trap work that precedes exceptions routes every trap through one runtime entry point
+  so that it can later throw instead of exiting.</li>
+</ul>
+<h3 id="92-consequences-and-open-questions">9.2 Consequences and open questions<a class="headerlink" href="#92-consequences-and-open-questions" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Ergonomics of <code>Result</code> everywhere.</strong> If every fallible call returns a <code>Result</code>, propagating an
+  error through several calls needs a short form. A propagation operator (a postfix <code>?</code> or a
+  <code>try</code>-expression that returns early with the error) is strongly recommended; without it,
+  every call site needs an explicit match. Open.</li>
+<li><strong><code>unwrap()</code> and friends.</strong> <code>Result.unwrap()</code> cannot return a value when the result is an error.
+  Proposal: it raises an exception (<code>UnwrapException</code> carrying the error), as the one explicit,
+  named bridge from a <code>Result</code> to an exception. Open.</li>
+<li><strong>Collections.</strong> <code>list.get(i)</code> is a function, so under the rule it returns an <code>Option</code>/<code>Result</code>.
+  Indexing with <code>list[i]</code> would be an operation and would throw. That points at an indexing
+  interface (<code>Indexable</code>) so collections support <code>[]</code>; open for 0.9.0.</li>
+<li><strong>No user-written <code>throw</code> statement in the initial design.</strong> Exceptions come from operations.
+  Whether a <code>catch</code> block can rethrow (<code>throw e;</code>) is open.</li>
+<li><strong>Naming.</strong> Explicit arithmetic functions follow the same rule: <code>wrapping_*</code>/<code>saturating_*</code>
+  cannot fail and return plain values, and <code>checked_*</code> can fail and returns a <code>Result</code>. Whether
+  method names are camelCase (the standard library's majority) or snake_case is open.</li>
+</ul>
+<h3 id="93-stack-traces">9.3 Stack traces<a class="headerlink" href="#93-stack-traces" title="Permanent link">&para;</a></h3>
+<p>Debug builds produce Python-quality tracebacks (<code>Traceback (most recent call last):</code>, file, line,
+function, then <code>ExceptionType: message</code>, plus chained causes). Mechanism: frame pointers in debug
+builds, a deterministic address-to-(function, file, line) table embedded in the binary (sorted by
+address, so builds stay byte-identical), and the chain of return addresses captured when an
+exception is thrown and formatted lazily when printed. Release builds omit the tables and the
+capture. An uncaught exception prints its traceback to stderr and exits with a nonzero status.</p>
+<h3 id="94-implementation-sketch">9.4 Implementation sketch<a class="headerlink" href="#94-implementation-sketch" title="Permanent link">&para;</a></h3>
+<ul>
+<li>No stack unwinder is required initially. The compiler infers, over the whole program, which
+  functions can throw. A throwing function (one containing an operation that can raise, or calling one that can) returns
+  an extra error value, and each call site checks it and branches. A throw is then an early return, and the compiler already inserts drops on every
+  early exit, so owned values are released correctly and <code>finally</code> is a cleanup block.</li>
+<li>Callers of functions that cannot throw pay nothing. Because every integer operation can trap,
+  almost every function will be inferred as throwing; the per-call check is the cost. A table-based
+  unwinder (zero happy-path cost, more runtime machinery) is a later optimization. The semantics
+  above do not depend on which implementation is used.</li>
+<li>A raised exception is a heap-allocated object owned by the in-flight exception and moved into the
+  catch variable, so it depends on <code>Box</code>/owned polymorphism (§2.4) arriving with the object model.</li>
+</ul>
+<h2 id="10-migration-notes">10. Migration notes<a class="headerlink" href="#10-migration-notes" title="Permanent link">&para;</a></h2>
 <p>Work implied by this design, from the November 2026 audit:</p>
 <ul>
 <li><strong>Consolidate move/drop logic.</strong> Move checking lives in <code>semantic_analyzer.py</code>, again in
@@ -1867,13 +1999,14 @@ object: that would add a reflection concept.</p>
 <li><strong>Tests:</strong> the existing memory tests encode the old model and need an intentional, documented
   update (per the project's rules on editing tests), plus new coverage for each rule above.</li>
 </ul>
-<h2 id="10-open-questions">10. Open questions<a class="headerlink" href="#10-open-questions" title="Permanent link">&para;</a></h2>
+<h2 id="11-open-questions">11. Open questions<a class="headerlink" href="#11-open-questions" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Spelling of move (<code>move x</code> vs <code>move(x)</code>) and of the deep-copy hook.</li>
 <li>Whether <code>&amp;</code> moves into the type position for parameters.</li>
 <li>Default member visibility and the exact meaning of <code>protected</code>.</li>
 <li>How <code>Object</code>'s common methods are declared and overridden.</li>
 <li>Whether references can be nullable (needed by <code>downcast</code>); whether lossless numeric widening is implicit.</li>
+<li>Exact <code>std.fs</code> split between <code>Result</code> and thrown <code>IOException</code>s; whether a lint should warn on blanket <code>catch (Exception e)</code> by default.</li>
 <li>Whether and when <code>Box</code> / <code>Shared</code> land relative to capturing closures.</li>
 </ul>
 

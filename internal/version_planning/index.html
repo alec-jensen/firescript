@@ -2104,6 +2104,13 @@
 
 <h1 id="firescript-version-planning">firescript version planning<a class="headerlink" href="#firescript-version-planning" title="Permanent link">&para;</a></h1>
 <p>Planning for future versions toward <strong>1.0.0 — Titan</strong>, the self-hosted release.</p>
+<blockquote>
+<p><strong>Terminology.</strong> The language is defined by the firescript Language Specification (fls); the
+compiler is the firescript Compiler (fsc). They are versioned independently — see
+<a href="../spec_and_versioning/">spec_and_versioning.md</a>. During 0.N the roadmap below builds toward a
+preliminary fls 1.0.0; fsc 0.N tracks that draft without being a full implementation. fls 1.0.0
+and fsc 1.0.0 are released together when the compiler implements the whole specification.</p>
+</blockquote>
 <h2 id="guiding-vision">Guiding Vision<a class="headerlink" href="#guiding-vision" title="Permanent link">&para;</a></h2>
 <p>The goal of firescript 1.0 is a <strong>self-hosted compiler</strong>: a firescript compiler written in
 firescript that can compile itself. Every version from 0.6.0 onward builds explicitly toward
@@ -2481,7 +2488,7 @@ documented in the changelog.</p>
 <h2 id="090-manticore">0.9.0 — Manticore<a class="headerlink" href="#090-manticore" title="Permanent link">&para;</a></h2>
 <p><strong>Theme: Object model and standard library architecture.</strong></p>
 <p>Java-style OOP that compiles to flat, statically dispatched code, and a standard library built
-on it. Full design: <a href="../language_model_redesign/">language_model_redesign.md</a> §5–§8.</p>
+on it. Full design: <a href="../language_model_redesign/">language_model_redesign.md</a> §5–§9.</p>
 <h3 id="language-features_2">Language features<a class="headerlink" href="#language-features_2" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -2522,6 +2529,10 @@ on it. Full design: <a href="../language_model_redesign/">language_model_redesig
 <tr>
 <td>Capturing and escaping closures</td>
 <td>Depend on exclusivity and <code>Box</code>. Lowest priority; may slip.</td>
+</tr>
+<tr>
+<td>Exceptions raised by language operations (overflow, division by zero, bounds, invalid casts) as catchable <code>Exception extends Object</code> subclasses with <code>try</code> / <code>catch</code> / <code>finally</code>; fallible function calls return <code>Result</code>; debug-build stack traces</td>
+<td>Python-style error handling consistent with the safety model. See design doc §9.</td>
 </tr>
 <tr>
 <td>Improved error messages / diagnostic infrastructure</td>
