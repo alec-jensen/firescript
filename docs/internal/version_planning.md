@@ -377,7 +377,7 @@ labeled commit on a branch; a session may build on it or discard it.
 - **Done when:** merged, CI profile green. If the verify list shows large gaps, split into new
   tasks (e.g. "migrate stdlib to wrapping ops") instead of growing this one.
 
-#### T-060-04 · Review and merge `safety-frontend` · M · `todo`
+#### T-060-04 · Review and merge `safety-frontend` · M · `done (085ebe8)`
 - **Goal:** front-end safety rules on `main`.
 - **Start from:** branch `safety-frontend` (5 commits, not merged): required braces; missing
   `return` on a path is an error; unknown escapes are errors; nullable-to-non-nullable rejected
