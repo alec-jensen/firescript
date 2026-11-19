@@ -367,6 +367,19 @@ class FIRToFLIRLowering:
         self.global_consts: dict[str, str] = {
             c.name: sanitize(c.name) for c in fir_module.constants
         }
+        # Module-level mutable variables (FIR GlobalVariable): FIR name ->
+        # FLIR mutable-global name. Prefixed so they can never collide with
+        # a constant or the runtime's own `__fs_runtime_state` cell.
+        self.global_vars: dict[str, str] = {
+            g.name: "gv_" + sanitize(g.name) for g in fir_module.global_vars
+        }
+        # FIR name -> declared static array length, for LoadVar-based array
+        # operands (length()/negative indexing/for-in/array-to-string).
+        self.global_array_sizes: dict[str, int] = {
+            g.name: g.var_type.size
+            for g in fir_module.global_vars
+            if isinstance(g.var_type, ArrayType) and g.var_type.size is not None
+        }
         self.fir_funcs: dict[str, FIRFunction] = {f.name: f for f in fir_module.functions}
         if runtime_module is not None:
             # The firescript-implemented runtime: functions become callable
@@ -605,6 +618,10 @@ class FIRToFLIRLowering:
         for constant in self.fir.constants:
             const_type = self.lower_type(constant.const_type, {})
             self.flir.globals.append((sanitize(constant.name), const_type, constant.literal_text))
+        for global_var in self.fir.global_vars:
+            self.flir.mutable_globals.append(
+                (self.global_vars[global_var.name], self.lower_type(global_var.var_type, {}))
+            )
 
         # Roots: every non-generic function (generators lower on demand).
         for func in self.fir.functions:
@@ -841,6 +858,9 @@ class FIRToFLIRLowering:
         if isinstance(inst, StoreVarInst):
             value = self.val(inst.operands[0], ctx)
             value = self._dup_if_literal_string(inst.operands[0], value, ctx)
+            if self._is_global_var(inst.name, ctx):
+                ctx.emit(GlobalStore(self.global_vars[inst.name], value))
+                return
             self.var_store(inst.name, value, ctx)
             return
         if isinstance(inst, (MoveInst, BorrowInst, CloneInst)):
@@ -1369,6 +1389,8 @@ class FIRToFLIRLowering:
                 meta = ctx.array_lens.get(slot)
                 if meta and meta[0] == "const":
                     return slot, meta[1]
+                if self._is_global_var(slot, ctx) and slot in self.global_array_sizes:
+                    return slot, self.global_array_sizes[slot]
                 return slot, None
             t = array_fir.result_type
             if isinstance(t, ArrayType) and t.size is not None:
@@ -1492,7 +1514,18 @@ class FIRToFLIRLowering:
             return None
         return ctx.emit(ConstInt("0", lowered_type))
 
+    def _is_global_var(self, name: str, ctx: _FuncCtx) -> bool:
+        """True if `name` refers to a module-level variable rather than a
+        local/param slot or generator-frame field of the current function."""
+        if name not in self.global_vars or name in ctx.slot_types or name in ctx.gen_slots:
+            return False
+        return ctx.frame_struct is None or not self._frame_has(ctx, name)
+
     def lower_load_var(self, inst: LoadVarInst, ctx: _FuncCtx) -> None:
+        if self._is_global_var(inst.name, ctx):
+            result_type = self.lower_type(inst.result_type, ctx.type_map)
+            self.set_val(inst, ctx.emit(GlobalLoad(self.global_vars[inst.name], result_type)), ctx)
+            return
         # Generator frames are accessed by address.
         if inst.name in ctx.gen_slots:
             self.set_val(inst, ctx.emit(SlotAddr(inst.name)), ctx)

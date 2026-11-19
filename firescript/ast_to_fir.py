@@ -21,9 +21,10 @@ from typing import Optional
 
 from enums import NodeTypes
 from parser import ASTNode
+from preprocessor import promoted_global_decls
 
 from fir.ir_builder import FIRBuilder
-from fir.ir_module import EnumVariantDef, FIRFunction, FIRModule, GlobalConstant, TypeDef
+from fir.ir_module import EnumVariantDef, FIRFunction, FIRModule, GlobalConstant, GlobalVariable, TypeDef
 from fir.ir_node import Value
 from fir.ir_types import (
     ArrayType,
@@ -254,6 +255,20 @@ class ASTToFIRConverter:
         self.generic_functions: dict[str, list[str]] = {}
         self.generator_defs: dict[str, ASTNode] = {}
 
+        # Module-level variables (see _plan_globals): name -> scope-table
+        # style entry (type_str, is_array, size, name), consulted by _lookup
+        # after every local scope so any function body can read/write them.
+        self.global_symbols: dict[str, tuple[str, bool, Optional[int], str]] = {}
+        # Promoted top-level variable declarations, in declaration order,
+        # and `const` string declarations (initialized in the entry prologue,
+        # since a pointer to heap/rodata data can't be a static initializer in
+        # this PE image -- it has no base relocations).
+        self.promoted_globals: list[ASTNode] = []
+        self.const_string_globals: list[ASTNode] = []
+        # The declaration node currently being converted as a module-level
+        # initializer (None otherwise); see _convert_global_declaration.
+        self._global_decl_node: Optional[ASTNode] = None
+
         # Per-function conversion state
         self.builder: Optional[FIRBuilder] = None
         self.current_function: Optional[FIRFunction] = None
@@ -340,6 +355,8 @@ class ASTToFIRConverter:
         top_level_statements: list[ASTNode] = []
         user_main: Optional[ASTNode] = None
 
+        self._plan_globals()
+
         for child in self.ast.children:
             node_type = child.node_type
             if node_type in (NodeTypes.DIRECTIVE, NodeTypes.IMPORT_STATEMENT):
@@ -367,8 +384,11 @@ class ASTToFIRConverter:
                     "Runtime modules must not contain top-level statements"
                 )
         elif user_main is not None:
-            self._convert_function(user_main)
-            if top_level_statements:
+            # Module-level variable declarations still run (in declaration
+            # order, before main's body) -- see _plan_globals; any other
+            # top-level statement is ignored.
+            self._convert_function(user_main, entry=True)
+            if any(not self._is_promoted_decl(stmt) for stmt in top_level_statements):
                 logging.warning(
                     "Top-level statements outside main() are ignored when main() is defined"
                 )
@@ -377,6 +397,118 @@ class ASTToFIRConverter:
 
         self.module.validate()
         return self.module
+
+    # ------------------------------------------------------------------
+    # Module-level variables
+    #
+    # A top-level (non-const) variable declaration normally becomes a local
+    # of the synthetic main, invisible to functions. A declaration that some
+    # function/method/generator body refers to -- or any declaration at all
+    # when the program defines its own `main()` -- is instead promoted to a
+    # module-level variable: static, zero-initialized storage (FIR
+    # GlobalVariable, FLIR mutable global) readable/writable from every
+    # function through a plain LoadVar/StoreVar of its name. Its initializer
+    # runs as part of the entry function (synthetic main: at the
+    # declaration's own position among the top-level statements; user
+    # `main()`: in declaration order before main's body). Owned values (string/
+    # array/class) held by one are never implicitly dropped -- they live for
+    # the whole program. `const` strings are initialized the same way (a
+    # prologue that runs first); numeric/bool/char consts stay literal
+    # constants in read-only data.
+    # ------------------------------------------------------------------
+
+    def _is_promoted_decl(self, node: ASTNode) -> bool:
+        return node.node_type == NodeTypes.VARIABLE_DECLARATION and any(
+            node is decl for decl in self.promoted_globals
+        )
+
+    @staticmethod
+    def _global_decl_size(node: ASTNode) -> Optional[int]:
+        """Static array length of a promoted array declaration (declared
+        size, or the initializer literal's element count)."""
+        if not node.is_array:
+            return None
+        size = getattr(node, "array_size", None)
+        init = node.children[0] if node.children else None
+        if init is not None and init.node_type == NodeTypes.ARRAY_LITERAL:
+            count = len(init.children or [])
+            if count > 0:
+                return count
+            if size is None:
+                return 0
+        return size
+
+    def _register_global(
+        self, name: str, type_str: str, is_array: bool, size: Optional[int], nullable: bool = False
+    ) -> None:
+        stored_type_str = f"{type_str}?" if nullable else type_str
+        fir_type = self._fir_type(type_str, is_array, size, nullable=nullable) if not is_array else self._fir_type(type_str, True, size)
+        self.module.add_global_var(GlobalVariable(name, fir_type))
+        self.global_symbols[name] = (stored_type_str, is_array, size, name)
+        if nullable and not is_array and self._nullable_scalar_base(stored_type_str) is not None:
+            hv_name = self._hasval_name(name)
+            self.module.add_global_var(GlobalVariable(hv_name, make_simple("bool")))
+            self.global_symbols[hv_name] = ("bool", False, None, hv_name)
+
+    def _plan_globals(self) -> None:
+        """Decide which top-level variable declarations become module-level
+        variables and register them (and `const` strings) up front, so any
+        function converted before or after sees them. The selection itself
+        lives in preprocessor.promoted_global_decls, shared with the
+        drop-inserting preprocessor."""
+        if self.is_runtime_module:
+            return
+        for child in promoted_global_decls(self.ast):
+            self.promoted_globals.append(child)
+            self._register_global(
+                child.name,
+                child.var_type or "int32",
+                bool(child.is_array),
+                self._global_decl_size(child),
+                nullable=bool(child.is_nullable),
+            )
+
+    def _emit_global_prologue(self, include_declarations: bool) -> None:
+        """Entry-function prologue: initialize `const` strings, then (user
+        `main()` only) every promoted declaration in declaration order."""
+        for decl in self.const_string_globals:
+            init = decl.children[0] if decl.children else None
+            if init is None:
+                raise FIRConversionError(f"const '{decl.name}' has no initializer", decl)
+            value = self._require_value(init)
+            self.builder.store_var(decl.name, value)
+        if include_declarations:
+            for decl in self.promoted_globals:
+                self._convert_global_declaration(decl)
+
+    def _convert_global_declaration(self, node: ASTNode) -> None:
+        """Convert a promoted declaration: same as a local declaration, but
+        the initial value is stored to its module-level variable."""
+        previous = self._global_decl_node
+        self._global_decl_node = node
+        try:
+            self._convert_variable_declaration(node)
+        finally:
+            self._global_decl_node = previous
+
+    def _bind_new_variable(
+        self,
+        node: ASTNode,
+        stored_type_str: str,
+        is_array: bool,
+        size: Optional[int],
+        var_type: FIRType,
+        init_value: Optional[Value],
+    ) -> None:
+        """Introduce the variable declared by `node`: a new local, or -- when
+        `node` is a promoted module-level declaration -- a store to its
+        pre-registered module-level variable."""
+        if node is self._global_decl_node:
+            if init_value is not None:
+                self.builder.store_var(node.name, init_value)
+            return
+        unique = self._declare(node.name, stored_type_str, is_array, size)
+        self.builder.declare_local(unique, var_type, init_value)
 
     # ------------------------------------------------------------------
     # Program info collection
@@ -582,7 +714,7 @@ class ASTToFIRConverter:
         for scope in reversed(self.scopes):
             if name in scope:
                 return scope[name]
-        return None
+        return self.global_symbols.get(name)
 
     def _local_name(self, name: str) -> str:
         symbol = self._lookup(name)
@@ -692,7 +824,10 @@ class ASTToFIRConverter:
                     return self.builder.load_field(struct_value, "hasval", bool_type)
         return self.builder.bool_literal(True, bool_type)
 
-    def _declare_hasval_companion(self, source_name: str, has_value: Value) -> None:
+    def _declare_hasval_companion(self, source_name: str, has_value: Value, global_decl: bool = False) -> None:
+        if global_decl:
+            self.builder.store_var(self._hasval_name(source_name), has_value)
+            return
         unique = self._declare(self._hasval_name(source_name), "bool", False, None)
         self.builder.declare_local(unique, make_simple("bool"), has_value)
 
@@ -1142,8 +1277,16 @@ class ASTToFIRConverter:
     # ------------------------------------------------------------------
 
     def _convert_const(self, node: ASTNode) -> None:
-        literal_text = self._render_const_initializer(node.children[0]) if node.children else "0"
         const_type = self._fir_type(node.var_type, node.is_array, getattr(node, "array_size", None))
+        if not node.is_array and node.var_type == "string" and not self.is_runtime_module:
+            # A string constant is a pointer to string data, which can't be a
+            # static initializer here (no base relocations in the PE image),
+            # so it is a module-level variable initialized by the entry
+            # prologue (see _emit_global_prologue), ahead of any other code.
+            self._register_global(node.name, "string", False, None)
+            self.const_string_globals.append(node)
+            return
+        literal_text = self._render_const_initializer(node.children[0]) if node.children else "0"
         self.module.add_constant(GlobalConstant(node.name, const_type, literal_text))
 
     def _render_const_initializer(self, node: ASTNode) -> str:
@@ -1171,6 +1314,14 @@ class ASTToFIRConverter:
                 if cleaned.lower().endswith(suffix):
                     return cleaned[: -len(suffix)]
             return cleaned
+        if token_type == "BOOLEAN_LITERAL":
+            return "1" if text == "true" else "0"
+        if token_type == "CHAR_LITERAL":
+            from flir.lowering import FIRToFLIRLowering
+
+            if text.startswith("'") and text.endswith("'"):
+                text = text[1:-1]
+            return str(FIRToFLIRLowering._char_code(text))
         return text
 
     def _convert_class(self, node: ASTNode) -> None:
@@ -1315,7 +1466,7 @@ class ASTToFIRConverter:
                 if is_nullable_scalar_param:
                     self._declare(self._hasval_name(child.name), "bool", False, None)
 
-    def _convert_function(self, node: ASTNode, fir_name: Optional[str] = None) -> None:
+    def _convert_function(self, node: ASTNode, fir_name: Optional[str] = None, entry: bool = False) -> None:
         prev_generic_params = self._current_generic_params
         self._current_generic_params = set(getattr(node, "type_params", []) or [])
         try:
@@ -1331,7 +1482,7 @@ class ASTToFIRConverter:
             if nullable_scalar_return is not None:
                 function.metadata["nullable_scalar_return"] = nullable_scalar_return
             self.module.add_function(function)
-            self._convert_body(node, function)
+            self._convert_body(node, function, entry)
         finally:
             self._current_generic_params = prev_generic_params
 
@@ -1429,12 +1580,14 @@ class ASTToFIRConverter:
         self.builder = None
         self.current_function = None
 
-    def _convert_body(self, node: ASTNode, function: FIRFunction) -> None:
+    def _convert_body(self, node: ASTNode, function: FIRFunction, entry: bool = False) -> None:
         self.current_function = function
         self.builder = FIRBuilder(function)
         self._used_local_names = set()
         self._push_scope()
         self._register_params_in_scope(node)
+        if entry:
+            self._emit_global_prologue(include_declarations=True)
 
         body = node.children[-1] if node.children else None
         if body is not None and body.node_type == NodeTypes.SCOPE:
@@ -1460,7 +1613,14 @@ class ASTToFIRConverter:
         self.builder = FIRBuilder(function)
         self._used_local_names = set()
         self._push_scope()
-        self._convert_statements(statements)
+        self._emit_global_prologue(include_declarations=False)
+        for statement in statements:
+            if self.builder.current_block.is_terminated():
+                break
+            if self._is_promoted_decl(statement):
+                self._convert_global_declaration(statement)
+            else:
+                self._convert_statement(statement)
         if not self.builder.current_block.is_terminated():
             self.builder.ret()
         self._pop_scope()
@@ -1635,6 +1795,8 @@ class ASTToFIRConverter:
                 )
                 value = self._convert_expression(return_expr)
                 self._expected_type_str = prev_expected
+                if return_expr.node_type == NodeTypes.IDENTIFIER:
+                    self._reject_move_of_global(return_expr.name)
                 # preprocessor.py's RETURN_STATEMENT handler computes the
                 # names read (not transferred) by this return expression --
                 # e.g. a match/for-in scrutinee, an own-mode `this` read via
@@ -1703,6 +1865,8 @@ class ASTToFIRConverter:
         type_str = node.var_type or "int32"
         declared_size = getattr(node, "array_size", None)
         init_node = node.children[0] if node.children else None
+        if init_node is not None and init_node.node_type == NodeTypes.IDENTIFIER:
+            self._reject_move_of_global(init_node.name)
 
         if node.is_array:
             size = declared_size
@@ -1724,8 +1888,7 @@ class ASTToFIRConverter:
             else:
                 # Sized array with no initializer: zero-initialized array literal.
                 init_value = self.builder.array_literal([], var_type)
-            unique = self._declare(node.name, type_str, True, size)
-            self.builder.declare_local(unique, var_type, init_value)
+            self._bind_new_variable(node, type_str, True, size, var_type, init_value)
             return
 
         var_type = self._fir_type(type_str, nullable=node.is_nullable)
@@ -1748,10 +1911,9 @@ class ASTToFIRConverter:
         # _fir_type) so LoadVar/StoreVar sites re-deriving this local's
         # type from its name alone still get it right.
         stored_type_str = f"{type_str}?" if node.is_nullable else type_str
-        unique = self._declare(node.name, stored_type_str, False, None)
-        self.builder.declare_local(unique, var_type, init_value)
+        self._bind_new_variable(node, stored_type_str, False, None, var_type, init_value)
         if is_nullable_scalar and has_value is not None:
-            self._declare_hasval_companion(node.name, has_value)
+            self._declare_hasval_companion(node.name, has_value, global_decl=node is self._global_decl_node)
 
     def _convert_variable_assignment(self, node: ASTNode) -> None:
         rhs = node.children[0] if node.children else None
@@ -2073,6 +2235,21 @@ class ASTToFIRConverter:
         gen_final = self.builder.load_var(gen_local, gen_type)
         self.builder.drop(gen_final)
 
+    def _reject_move_of_global(self, name: str) -> None:
+        """An owned module-level variable lives for the whole program and is
+        never implicitly dropped, so it can't be moved out of (assigned to
+        another binding, passed to an `owned` parameter, returned) or
+        dropped -- the new owner would free it while the module-level
+        variable still points at it."""
+        symbol = self._lookup(name)
+        if symbol is None or symbol is not self.global_symbols.get(name):
+            return
+        if self._fir_type(symbol[0], symbol[1]).is_owned():
+            raise FIRConversionError(
+                f"Cannot move out of or drop the owned module-level variable '{name}': it lives for the whole "
+                f"program (borrow it instead, or assign a new value to it)"
+            )
+
     def _mark_owned_identifier_moved(self, name: str) -> None:
         """If `name` (a bare identifier just used as a move source/target --
         a plain assignment RHS, an explicit drop(), or an own-mode call
@@ -2082,6 +2259,7 @@ class ASTToFIRConverter:
         already been handled here and doesn't also drop it at the end of
         the iteration (FIRV-O2) or, on a sibling path that never moved it,
         skip a drop it still needs (FIRV-O3)."""
+        self._reject_move_of_global(name)
         for _incr_id, _exit_id, cleanup in self.loop_stack:
             if cleanup is not None and cleanup[2] == name:
                 self._loop_move_observations.add(name)

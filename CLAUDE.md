@@ -150,6 +150,7 @@ The table below reflects the **current implementation status** of major language
 | `for-in` loops (arrays and strings) | [IMPLEMENTED] |
 | `break` / `continue` | [IMPLEMENTED] |
 | Functions (params, return values, recursion) | [IMPLEMENTED] |
+| Global (module-level) variables, readable/writable from functions | [IMPLEMENTED] |
 | Generic functions | [IMPLEMENTED] |
 | Fixed-size arrays | [IMPLEMENTED] |
 | Negative array indexing | [IMPLEMENTED] |

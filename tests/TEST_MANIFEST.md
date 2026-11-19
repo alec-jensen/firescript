@@ -456,8 +456,9 @@ Per-type min/max value and overflow/underflow behavior, split by numeric type:
 - **types_float32.fire** / **types_float64.fire**
 - **types_deep.fire** - Deep type testing (arithmetic across all widths with arbitrary values, distinct focus from the `types_<type>.fire` min/max-boundary files above)
 - **char_type.fire** - `char` type: literals (`'A'`, escape chars `'\t'` `'\n'` `'\\'`), copyability, cast to string, and an unrecognized escape sequence (`'\d'`) falling back to the escaped character's own code point
-- **const_declarations.fire** - Top-level `const` declarations (int32/float64/float32) becoming module-level constants; documents that `const string`/`const bool`/`const char` currently each fail to compile end-to-end for three separate, unrelated bugs (see `tests/python/fir/test_ast_to_fir_pipeline_errors.py`)
-- **const_declarations_wide_types.fire** - Top-level `const float32`, and string literal escape edge cases (`\'`, trailing `\\`) that exercise the asm backend's `.asciz` escaping. Also declares (but never reads) a `const float128` to exercise the global-constant rodata emission path; see the in-file note about a real bug where reading a `float128` global back via `GlobalLoad` loses its high qword.
+- **const_declarations.fire** - Top-level `const` declarations (int32/float64/float32) becoming module-level constants
+- **const_regression_bool_char_string.fire** - Regression: top-level `const` bool/char/string/float128 (previously a backend crash for bool/char and FLIRV-A3 for string); string consts are initialized by the entry prologue and never dropped
+- **const_declarations_wide_types.fire** - Top-level `const float32`, and string literal escape edge cases (`\'`, trailing `\\`) that exercise the asm backend's `.asciz` escaping. Also reads back a `const float128` (full 16 bytes) via the global-constant rodata path.
 
 ### `conversions/`
 Split by conversion category:
@@ -527,6 +528,9 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **scoping_block_nesting.fire** - Global/block scope, deeply nested blocks, complex nesting across block/if/while
 - **scoping_control_flow.fire** - if/else, while, for, for-in loop scope
 - **scoping_function.fire** - Function scope (parameters and locals not visible outside)
+- **scoping_regression_function_global_variables.fire** - Regression: functions, methods and generators reading and writing top-level variables (scalar, owned string/array/class, nullable scalar), including reassigning an owned global in a loop (previously FIRV-L1)
+- **scoping_regression_global_variables_user_main.fire** - Regression: with a user `main()`, top-level declarations (and `const` bool/char/string) are still initialized in declaration order before `main`, and visible to functions
+- **scoping_regression_global_variable_types.fire** - Regression: module-level variables of by-value struct shapes (copyable class, float128) and float32/char/uint64, written from a function
 - **scoping_variable_declaration_order.fire** - Declared-before-use, same names in separate sibling scopes
 - **scope_stray_token_recovery.fire** - Parser error-recovery around a stray/unexpected token in statement position, verifying the recovered scope's remaining valid statements still resolve correctly
 

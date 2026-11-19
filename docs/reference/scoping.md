@@ -118,6 +118,28 @@ globalValue: int32 = 100;  // Global variable
 // User-defined functions also have access to global variables
 ```
 
+[IMPLEMENTED] Global variables are static, module-level storage that every function, method and generator in the program can read and write:
+
+```firescript
+counter: int32 = 0;
+name: string = "start";
+
+fn bump() -> void {
+    counter = counter + 1;   // writes the global
+}
+
+bump();
+println(counter);            // 1
+```
+
+How they behave:
+
+- **Initialization.** A global's initializer runs as part of the top-level code, at the declaration's own position (in declaration order). If the program defines its own `main()`, the initializers of *all* top-level variable declarations still run, in declaration order, before `main`'s body; any other top-level statement is ignored when `main()` exists. `const` strings are initialized before any other code.
+- **Lifetime.** Globals live for the whole program. An owned global (string, array, class instance) is never implicitly dropped at the end of the program.
+- **Reassignment.** Assigning to an owned global frees its previous value, like any other owned variable.
+- **No moving out.** Because a global stays alive, an owned global cannot be moved out of: assigning it to another variable, passing it to an `owned` parameter, returning it, or `drop`ping it is a compile error. Borrow it (the default for function arguments) or assign a new value instead. Copyable globals (numbers, `bool`, `char`, `copyable` classes) can be used freely.
+- A top-level variable that no function refers to remains an ordinary local of the top-level code (it is dropped after its last use as before).
+
 ### 4. Loop Scopes
 
 Each iteration of a loop has its own scope:

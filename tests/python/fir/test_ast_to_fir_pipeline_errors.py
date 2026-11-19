@@ -105,38 +105,11 @@ def test_increment_as_subexpression_produces_no_value():
 
 
 def test_const_non_numeric_literal_initializers_reach_fir():
-    """`const string`/`const bool`/`const char` all convert to FIR
-    successfully (exercising _normalize_literal_text's STRING_LITERAL/
-    BOOLEAN_LITERAL/CHAR_LITERAL passthrough fallback -- only
-    INTEGER_LITERAL/FLOAT_LITERAL/DOUBLE_LITERAL get suffix-stripping
-    there), but each one is a *separate*, pre-existing, downstream bug
-    away from actually compiling end-to-end -- deliberately not exercised
-    as a tests/sources/*.fire "run"/"snapshot" case for that reason (only
-    the FIR-conversion step, not the full compile, is asserted here):
-
-    - `const string S = "hi";`: preprocessor.py inserts a drop() for the
-      const string as though it were an owned local, but it backs a
-      global constant (not a heap allocation) -- flir/verifier.py's
-      FLIRV-A3 ("free/destroy argument is not a heap-allocation base
-      pointer") then fires as an internal compiler error during FIR->FLIR
-      lowering.
-    - `const bool B = true;`: codegen/x86_64/flir_to_asm.py's
-      _emit_globals() decides whether a global literal needs float
-      parsing via `gtype.is_float() or "." in literal or "e" in
-      literal` -- that "e" in literal" substring check is meant to catch
-      scientific notation (e.g. "1e10") but also matches the literal text
-      "true" (which contains the letter 'e'), so `_emit_globals` crashes
-      with "ValueError: could not convert string to float: 'true'"
-      instead of compiling (`const bool B = false;` is unaffected,
-      coincidentally, since "false" contains no 'e').
-    - `const char C = 'Z';`: _normalize_literal_text() has no
-      CHAR_LITERAL case (only INTEGER_LITERAL/FLOAT_LITERAL/
-      DOUBLE_LITERAL strip anything), so it falls through to `return
-      text`, returning the *raw token text including the surrounding
-      single quotes* ("'Z'") as the GlobalConstant's literal string.
-      _emit_globals() then crashes with "ValueError: invalid literal for
-      int() with base 10: \"'Z'\"" trying to parse it as an integer.
-    """
+    """Regression (B08a/b/c): `const bool`/`const char` become literal
+    GlobalConstants (rendered as 1/0 and the character code so the backend
+    can emit them as integers), and `const string` -- whose value is a
+    pointer that can't be a static initializer -- becomes a module-level
+    variable initialized in the entry prologue (and is never dropped)."""
     mod = _convert(
         """
         import @firescript/std.io.println;
@@ -145,8 +118,10 @@ def test_const_non_numeric_literal_initializers_reach_fir():
         const C: char = 'Z';
         """
     )
-    names = {c.name for c in mod.constants}
-    t.require(names == {"S", "B", "C"}, f"unexpected constants: {names}")
+    consts = {c.name: c.literal_text for c in mod.constants}
+    t.require(consts == {"B": "1", "C": "90"}, f"unexpected constants: {consts}")
+    globals_ = {g.name for g in mod.global_vars}
+    t.require(globals_ == {"S"}, f"unexpected module-level variables: {globals_}")
 
 
 def test_synthesize_zero_for_char_return_type():
@@ -255,3 +230,43 @@ def test_bare_return_in_non_void_function_synthesizes_zero():
     zero-valued int32 so the Return stays well-typed."""
     dump = dump_module(_convert("fn f() -> int32 { return; }\nx: int32 = f();\n"))
     t.require("%0 = const.int32 0\n    ret %0" in dump, dump)
+
+
+def test_function_referenced_top_level_variable_becomes_module_variable():
+    """B04: a top-level variable that a function body refers to is promoted
+    to a FIR global variable (static storage); one that no function refers
+    to stays a local of the synthetic main."""
+    mod = _convert(
+        """
+        g: int32 = 10;
+        local_only: int32 = 3;
+        fn f() -> int32 { return g + 1; }
+        """
+    )
+    names = {gv.name for gv in mod.global_vars}
+    t.require(names == {"g"}, f"unexpected module-level variables: {names}")
+
+
+def test_user_main_promotes_every_top_level_declaration():
+    """With a user main(), top-level declarations still run (they become
+    module-level variables initialized in main's prologue)."""
+    mod = _convert(
+        """
+        a: int32 = 1;
+        b: string = "x";
+        fn main() -> void { }
+        """
+    )
+    names = [gv.name for gv in mod.global_vars]
+    t.require(names == ["a", "b"], f"unexpected module-level variables: {names}")
+
+
+def test_moving_an_owned_module_variable_is_rejected():
+    _expect_conversion_error(
+        """
+        name: string = "abc";
+        fn show() -> string { return "x" + name; }
+        other: string = name;
+        """,
+        "owned module-level variable 'name'",
+    )

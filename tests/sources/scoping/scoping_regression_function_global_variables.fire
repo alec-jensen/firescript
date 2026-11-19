@@ -1,0 +1,86 @@
+// Regression: functions, methods and generators may read and write
+// top-level (module-level) variables. Previously a function that referenced
+// a top-level variable failed FIR verification (FIRV-L1). Such variables
+// live in static storage for the whole program; their initializers run in
+// declaration order as part of the top-level code. An owned value (string,
+// array, class) held by one is never implicitly dropped.
+import @firescript/std.io.println;
+
+counter: int32 = 0;
+name: string = "start";
+scores: int32[] = [10, 20, 30];
+ratio: float64 = 0.5;
+flag: bool = false;
+opt: int32? = null;
+
+class Box {
+    v: int32;
+    fn Box(&mut this, v: int32) { this.v = v; }
+    fn bump(&this) -> int32 { return this.v + counter; }
+}
+
+box: Box = new Box(7);
+
+fn inc() -> void {
+    counter = counter + 1;
+    counter++;
+}
+
+fn rename(n: string) -> void {
+    name = n;
+}
+
+fn total() -> int32 {
+    t: int32 = 0;
+    i: int32 = 0;
+    while (i < scores.length()) {
+        t += scores[i];
+        i++;
+    }
+    return t;
+}
+
+fn describe() -> string {
+    return name + "!";
+}
+
+fn gen() -> generator<int32> {
+    yield counter;
+    yield scores[0];
+}
+
+println(counter);
+inc();
+inc();
+println(counter);
+rename("second");
+println(name);
+rename("third");
+println(describe());
+println(total());
+scores[1] = 100;
+println(total());
+println(ratio * 4.0);
+flag = true;
+println(flag);
+println(box.bump());
+opt = 5;
+println(opt);
+for (g: int32 in gen()) {
+    println(g);
+}
+
+/* EXPECT
+0
+4
+second
+third!
+60
+140
+2.000000
+true
+11
+5
+4
+10
+*/
