@@ -476,7 +476,7 @@ labeled commit on a branch; a session may build on it or discard it.
   each a coded diagnostic (or fix the underlying bug), and make `main.py` print any remaining
   conversion error as a normal diagnostic without a traceback. Tests for each.
 
-#### T-060-17 · Docs: `enums.md` and `match.md` reference pages · M · `todo`
+#### T-060-17 · Docs: `enums.md` and `match.md` reference pages · M · `done`
 - There are no reference pages for enums and `match`, only changelog entries. Write
   `docs/reference/enums.md` and `match.md` from `tests/sources/enums`, `tests/sources/match` and
   the changelog, **running every code sample** and fixing the text where the compiler differs; mark

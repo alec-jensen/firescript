@@ -18,6 +18,8 @@ firescript is still in active development. Some pages describe planned behavior 
 - [Control Flow](reference/control_flow.md)
 - [Functions and Methods](reference/functions.md)
 - [Classes and Inheritance](reference/classes.md)
+- [Enums](reference/enums.md)
+- [Match](reference/match.md)
 - [Scoping Rules](reference/scoping.md)
 - [Type System](reference/type_system.md)
 - [Memory Management](reference/memory_management.md)
