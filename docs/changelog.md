@@ -57,6 +57,7 @@ firescript follows [Semantic Versioning](https://semver.org/). This makes it eas
 - The undocumented legacy conversion built-ins have been removed: `toInt`, `toFloat`, `toDouble`, `toBool`, `toChar`, `toString`, `int`, `i32_to_f64`, `i32_to_f32`, `f64_to_i32`, `f32_to_i32`, `i32_to_str`, `i64_to_str`, `f64_to_str` and `f32_to_str`. Calling one is now a normal "Function is not defined" error. Use `as` casts instead (`x as int32`, `n as string`, `"42" as int32`).
 
 ### Bug Fixes
+- An array returned from a function call (`x: int32[] = mk();`) now keeps its length, so `.length()`, negative indexing (with bounds checking) and `for-in` over it work instead of failing in lowering with "array_length on array of unknown size".
 - Cyclic imports are now actually detected: an `A` -> `B` -> `A` cycle reports `FS-IMP-0002` ("Cyclic import detected: a -> b -> a") at the import statement in the entry file, instead of a misleading "Variable ... not defined" error.
 - A missing import module is now a coded `FS-IMP-0001` diagnostic anchored at the import statement. Importing a name a module does not define is `FS-IMP-0003`; importing a name the module defines but does not `export` is `FS-IMP-0004` (previously both were an uncoded "Variable ... not defined", reported twice).
 - Conflicting top-level symbols across imports are now an error (`FS-IMP-0005`) instead of silently keeping the first definition: two imported modules exporting the same name, or the entry file defining a name it also explicitly imports (previously the entry definition silently replaced the import).

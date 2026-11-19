@@ -462,7 +462,7 @@ labeled commit on a branch; a session may build on it or discard it.
   `functions.md`, std doc samples; changelog Breaking Changes. Consuming receivers stay
   `[PLANNED]`. Add the compile-fail test list for T-060-09 to the manifest.
 
-#### T-060-13 · Array returned from a call has no tracked length · M · `todo`
+#### T-060-13 · Array returned from a call has no tracked length · M · `done (task/T-060-13)`
 - `fn mk() -> int32[] { return [1,2,3]; } x: int32[] = mk();` now compiles, but `.length()`,
   negative indexing and `for-in` over `x` fail in lowering ("array_length on array of unknown
   size"). Track or carry the length (hidden length value like array parameters have). Regression
