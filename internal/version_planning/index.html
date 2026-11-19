@@ -1638,10 +1638,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#t-060-22-060-release-check-s-todo-depends-on-everything-above" class="md-nav__link">
+  <a href="#t-060-22-060-release-check-s-done-depends-on-everything-above" class="md-nav__link">
     <span class="md-ellipsis">
       
-        T-060-22 · 0.6.0 release check · S · todo · Depends on everything above
+        T-060-22 · 0.6.0 release check · S · done · Depends on everything above
       
     </span>
   </a>
@@ -2955,11 +2955,13 @@ labeled commit on a branch; a session may build on it or discard it.</p>
   tasks above (traps, braces, receivers, constraints, globals are already listed). Add the
   fls/fsc terminology only when the owner starts that work.</li>
 </ul>
-<h4 id="t-060-22-060-release-check-s-todo-depends-on-everything-above">T-060-22 · 0.6.0 release check · S · <code>todo</code> · Depends on everything above<a class="headerlink" href="#t-060-22-060-release-check-s-todo-depends-on-everything-above" title="Permanent link">&para;</a></h4>
+<h4 id="t-060-22-060-release-check-s-done-depends-on-everything-above">T-060-22 · 0.6.0 release check · S · <code>done</code> · Depends on everything above<a class="headerlink" href="#t-060-22-060-release-check-s-done-depends-on-everything-above" title="Permanent link">&para;</a></h4>
 <ul>
 <li><code>python tests/run.py --profile ci</code> passes locally; the Windows CI run is green; the roadmap's
   0.6.0 section statuses are final; the owner moves <code>## Currently in Development</code> into a versioned
   section (the owner's job, not an agent's).</li>
+<li>Result: the local CI profile passed (exit 0) under wine on 2026-11-19; every other 0.6.0 task is
+  <code>done</code>. Still open for the owner: confirm the Windows CI run is green and cut the release.</li>
 </ul>
 <hr />
 <h2 id="070-chimera">0.7.0 — Chimera<a class="headerlink" href="#070-chimera" title="Permanent link">&para;</a></h2>
