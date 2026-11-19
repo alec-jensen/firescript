@@ -1341,6 +1341,13 @@ class ASTToFIRConverter:
             generic_params=self.class_generic_params.get(node.name, []),
             base=self.class_bases.get(node.name),
         )
+        # @owns_elements("<array field>", "<int32 length field>"[, ...]) names
+        # the field holding each unsized array field's element count; FLIR
+        # lowering bounds-checks indexing through that field against it.
+        for dec in getattr(node, "decorators", None) or []:
+            if dec.get("name") == "owns_elements" and len(dec.get("positional", [])) >= 2:
+                positional = dec["positional"]
+                type_def.array_length_fields[positional[0]] = positional[1]
         self.module.add_type(type_def)
 
         for member in node.children:

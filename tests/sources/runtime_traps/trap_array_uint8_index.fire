@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IndexOutOfBounds: index 200, length 5
+// A uint8 index is checked too.
+import @firescript/std.io.println;
+
+println("before");
+arr: int32[5] = [1, 2, 3, 4, 5];
+i: uint8 = 200u8;
+println(arr[i]);
+println("not reached");
+
+/* EXPECT
+before
+*/

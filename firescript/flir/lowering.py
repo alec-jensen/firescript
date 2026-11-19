@@ -1624,7 +1624,7 @@ class FIRToFLIRLowering:
         elem_str = self.render_concrete(inst.result_type, ctx.type_map)
         elem_type = self.lower_type_str(elem_str, ctx.type_map)
         elem_size = elem_type.size(self.flir)
-        index = self._normalize_index(inst.operands[0], index, ctx)
+        index = self._normalize_index(inst.operands[0], inst.operands[1], index, ctx)
         addr = ctx.emit(PtrAdd(array, index, elem_size))
         self.set_val(inst, ctx.emit(Load(elem_type, addr, 0)), ctx)
 
@@ -1635,31 +1635,82 @@ class FIRToFLIRLowering:
         elem_str = self.fir_type_str_of(inst.operands[2], ctx)
         elem_type = self.lower_type_str(elem_str, ctx.type_map)
         elem_size = elem_type.size(self.flir)
-        index = self._normalize_index(inst.operands[0], index, ctx)
+        index = self._normalize_index(inst.operands[0], inst.operands[1], index, ctx)
         addr = ctx.emit(PtrAdd(array, index, elem_size))
         ctx.emit(Store(elem_type, addr, 0, value))
 
-    def _normalize_index(self, array_fir: Value, index: FValue, ctx: _FuncCtx) -> FValue:
-        """Negative-index normalization when the array size is known:
-        idx + size * (idx < 0), computed branchlessly."""
+    @staticmethod
+    def _literal_int_value(value: Value) -> Optional[int]:
+        """The compile-time value of an integer literal operand (including a
+        negated one), else None."""
+        if not isinstance(value, FIRValue):
+            return None
+        node = value.instruction
+        if isinstance(node, IntLiteralInst):
+            try:
+                return int(node.text, 0)
+            except ValueError:
+                return None
+        if isinstance(node, UnaryOpInst) and node.op == "-" and node.operands:
+            inner = FIRToFLIRLowering._literal_int_value(node.operands[0])
+            return -inner if inner is not None else None
+        return None
+
+    def _field_array_length(self, array_fir: Value, ctx: _FuncCtx) -> Optional[FValue]:
+        """Length of an array reached through a class field that the class
+        declared with `@owns_elements("<field>", "<length field>", ...)`: the
+        named int32 field of the same object. None for any other array."""
+        if not isinstance(array_fir, FIRValue) or not isinstance(array_fir.instruction, LoadFieldInst):
+            return None
+        load = array_fir.instruction
+        obj_fir = load.operands[0]
+        type_str = self.subst(self.fir_type_str_of(obj_fir, ctx), ctx.type_map)
+        type_def = self.typedefs.get(type_str.split("<")[0])
+        if type_def is None:
+            return None
+        length_field = type_def.array_length_fields.get(load.field)
+        if length_field is None:
+            return None
+        obj_value = self.val(obj_fir, ctx)
+        base, struct_name = self._object_base(obj_fir, obj_value, ctx)
+        _, ftype, offset = self.flir.struct(struct_name).field(length_field)
+        if ftype != I32:
+            return None
+        return ctx.emit(Load(ftype, base, offset))
+
+    def _normalize_index(
+        self, array_fir: Value, index_fir: Value, index: FValue, ctx: _FuncCtx
+    ) -> FValue:
+        """Bounds-check an array index and resolve negative indices.
+
+        When the array's length is known (a const-size array, a local that
+        inherited one, or an array parameter's hidden length) the index must
+        lie in [-length, length); a negative index counts from the end. Any
+        other index traps (IndexOutOfBounds, `index N, length L`). The check
+        is elided when both the index and the length are compile-time
+        constants and in range. When the length is unknown (e.g. an array
+        reached through a class field) the index is used unchecked."""
         _, size = self._array_info(array_fir, ctx)
-        if size is None:
-            slot, _ = self._array_info(array_fir, ctx)
-            meta = ctx.array_lens.get(slot) if slot else None
-            if not meta:
-                return index
-            length = self._array_length_value(array_fir, ctx)
-            zero = ctx.emit(ConstInt("0", I32))
-            is_neg = ctx.emit(BinOp("lt", I32, index, zero, BOOL))
-            neg32 = ctx.emit(Cvt(is_neg, BOOL, I32))
-            adj = ctx.emit(BinOp("mul", I32, neg32, length, I32))
-            return ctx.emit(BinOp("add", I32, index, adj, I32))
-        length = ctx.emit(ConstInt(str(size), I32))
-        zero = ctx.emit(ConstInt("0", I32))
-        is_neg = ctx.emit(BinOp("lt", I32, index, zero, BOOL))
-        neg32 = ctx.emit(Cvt(is_neg, BOOL, I32))
-        adj = ctx.emit(BinOp("mul", I32, neg32, length, I32))
-        return ctx.emit(BinOp("add", I32, index, adj, I32))
+        length = self._array_length_value(array_fir, ctx)
+        if length is None:
+            length = self._field_array_length(array_fir, ctx)
+        if length is None:
+            return index
+        literal = self._literal_int_value(index_fir)
+        if size is not None and literal is not None and -size <= literal < size:
+            return ctx.emit(ConstInt(str(literal % size), I64))
+        idx64 = self._cvt_to(index, index.value_type, I64, ctx)
+        len64 = self._cvt_to(length, I32, I64, ctx)
+        zero = ctx.emit(ConstInt("0", I64))
+        is_neg = ctx.emit(BinOp("lt", I64, idx64, zero, BOOL))
+        neg64 = ctx.emit(Cvt(is_neg, BOOL, I64))
+        adj = ctx.emit(BinOp("mul", I64, neg64, len64, I64))
+        effective = ctx.emit(BinOp("add", I64, idx64, adj, I64))
+        too_low = ctx.emit(BinOp("lt", I64, effective, zero, BOOL))
+        too_high = ctx.emit(BinOp("ge", I64, effective, len64, BOOL))
+        bad = ctx.emit(BinOp("or", BOOL, too_low, too_high, BOOL))
+        self._trap_if(bad, TRAP_INDEX_OUT_OF_BOUNDS, "", ctx, a=idx64, b=len64)
+        return effective
 
     # -- locals ----------------------------------------------------------------
 

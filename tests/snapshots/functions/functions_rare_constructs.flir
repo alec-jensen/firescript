@@ -31,49 +31,63 @@ func @sumArray(values: ptr, values_len: i32) -> i32 {
     %7 = slotload.ptr values
     %8 = slotload.i32 i
     %9 = slotload.i32 values_len
-    %10 = const.i32 0
-    %11 = lt.i32 %8, %10
-    %12 = cvt.bool_to_i32 %11
-    %13 = mul.i32 %12, %9
-    %14 = add.i32 %8, %13
-    %15 = ptradd %7, %14, 4
-    %16 = load.i32 %15, 0
-    %17 = ovf_add.i32 %6, %16
-    br %17, L4, L5
+    %10 = cvt.i32_to_i64 %8
+    %11 = cvt.i32_to_i64 %9
+    %12 = const.i64 0
+    %13 = lt.i64 %10, %12
+    %14 = cvt.bool_to_i64 %13
+    %15 = mul.i64 %14, %11
+    %16 = add.i64 %10, %15
+    %17 = lt.i64 %16, %12
+    %18 = ge.i64 %16, %11
+    %19 = or.bool %17, %18
+    br %19, L4, L5
 
   L3:
-    %18 = slotload.ptr values
-    call.void @impl_fs_rt_free(%18)
-    %19 = slotload.i32 total
-    ret %19
+    %20 = slotload.ptr values
+    call.void @impl_fs_rt_free(%20)
+    %21 = slotload.i32 total
+    ret %21
 
   L4:
-    %20 = const.i32 1
-    %21 = strconst "addition on int32"
-    %22 = const.i64 0
-    %23 = const.i64 0
-    call.void @impl_fs_rt_trap(%20, %21, %22, %23)
+    %22 = const.i32 3
+    %23 = strconst ""
+    call.void @impl_fs_rt_trap(%22, %23, %10, %11)
     unreachable
 
   L5:
-    %24 = add.i32 %6, %16
-    slotstore total, %24
-    %25 = slotload.i32 i
-    %26 = const.i32 1
-    %27 = ovf_add.i32 %25, %26
-    br %27, L6, L7
+    %24 = ptradd %7, %16, 4
+    %25 = load.i32 %24, 0
+    %26 = ovf_add.i32 %6, %25
+    br %26, L6, L7
 
   L6:
-    %28 = const.i32 1
-    %29 = strconst "addition on int32"
+    %27 = const.i32 1
+    %28 = strconst "addition on int32"
+    %29 = const.i64 0
     %30 = const.i64 0
-    %31 = const.i64 0
-    call.void @impl_fs_rt_trap(%28, %29, %30, %31)
+    call.void @impl_fs_rt_trap(%27, %28, %29, %30)
     unreachable
 
   L7:
-    %32 = add.i32 %25, %26
-    slotstore i, %32
+    %31 = add.i32 %6, %25
+    slotstore total, %31
+    %32 = slotload.i32 i
+    %33 = const.i32 1
+    %34 = ovf_add.i32 %32, %33
+    br %34, L8, L9
+
+  L8:
+    %35 = const.i32 1
+    %36 = strconst "addition on int32"
+    %37 = const.i64 0
+    %38 = const.i64 0
+    call.void @impl_fs_rt_trap(%35, %36, %37, %38)
+    unreachable
+
+  L9:
+    %39 = add.i32 %32, %33
+    slotstore i, %39
     jmp L1
 }
 
@@ -120,18 +134,16 @@ func @fs_main() -> void {
     %18 = slotload.ptr named
     %19 = slotload.i32 __i_v
     %20 = const.i32 3
-    %21 = const.i32 0
-    %22 = lt.i32 %19, %21
-    %23 = cvt.bool_to_i32 %22
-    %24 = mul.i32 %23, %20
-    %25 = add.i32 %19, %24
-    %26 = ptradd %18, %25, 4
-    %27 = load.i32 %26, 0
-    slot v: i32
-    slotstore v, %27
-    %28 = slotload.i32 sum2
-    %29 = slotload.i32 v
-    %30 = ovf_add.i32 %28, %29
+    %21 = cvt.i32_to_i64 %19
+    %22 = cvt.i32_to_i64 %20
+    %23 = const.i64 0
+    %24 = lt.i64 %21, %23
+    %25 = cvt.bool_to_i64 %24
+    %26 = mul.i64 %25, %22
+    %27 = add.i64 %21, %26
+    %28 = lt.i64 %27, %23
+    %29 = ge.i64 %27, %22
+    %30 = or.bool %28, %29
     br %30, L5, L6
 
   L3:
@@ -145,32 +157,48 @@ func @fs_main() -> void {
     %33 = slotload.i32 __i_v
     %34 = const.i32 1
     %35 = ovf_add.i32 %33, %34
-    br %35, L7, L8
+    br %35, L9, L10
 
   L5:
-    %36 = const.i32 1
-    %37 = strconst "addition on int32"
-    %38 = const.i64 0
-    %39 = const.i64 0
-    call.void @impl_fs_rt_trap(%36, %37, %38, %39)
+    %36 = const.i32 3
+    %37 = strconst ""
+    call.void @impl_fs_rt_trap(%36, %37, %21, %22)
     unreachable
 
   L6:
-    %40 = add.i32 %28, %29
-    slotstore sum2, %40
-    jmp L4
+    %38 = ptradd %18, %27, 4
+    %39 = load.i32 %38, 0
+    slot v: i32
+    slotstore v, %39
+    %40 = slotload.i32 sum2
+    %41 = slotload.i32 v
+    %42 = ovf_add.i32 %40, %41
+    br %42, L7, L8
 
   L7:
-    %41 = const.i32 1
-    %42 = strconst "addition on int32"
-    %43 = const.i64 0
-    %44 = const.i64 0
-    call.void @impl_fs_rt_trap(%41, %42, %43, %44)
+    %43 = const.i32 1
+    %44 = strconst "addition on int32"
+    %45 = const.i64 0
+    %46 = const.i64 0
+    call.void @impl_fs_rt_trap(%43, %44, %45, %46)
     unreachable
 
   L8:
-    %45 = add.i32 %33, %34
-    slotstore __i_v, %45
+    %47 = add.i32 %40, %41
+    slotstore sum2, %47
+    jmp L4
+
+  L9:
+    %48 = const.i32 1
+    %49 = strconst "addition on int32"
+    %50 = const.i64 0
+    %51 = const.i64 0
+    call.void @impl_fs_rt_trap(%48, %49, %50, %51)
+    unreachable
+
+  L10:
+    %52 = add.i32 %33, %34
+    slotstore __i_v, %52
     jmp L1
 }
 

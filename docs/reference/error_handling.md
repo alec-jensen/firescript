@@ -40,6 +40,7 @@ Every trap, whatever its cause, goes through a single runtime entry point (`fs_r
 |---|---|---|
 | `IntegerOverflow` | `+`, `-`, `*`, unary `-`, `++`, `--`, compound assignment, and `**` whose exact result does not fit the integer type; signed `MIN / -1` and `MIN % -1` | operation and type, e.g. `addition on int8` |
 | `DivisionByZero` | integer `/` or `%` with a zero divisor | operation and type, e.g. `division on int32` |
+| `IndexOutOfBounds` | an array index outside `[-length, length)` (reads and writes; `ArrayList` `get`/`set`/`removeLast` past its size) | `index N, length L` |
 | `InvalidConversion` | a float-to-integer cast of NaN, an infinity, or a value outside the target type's range (float32, float64 and float128 sources) | e.g. `float64 to int8: NaN, infinity or out of range` |
 | `InvalidArgument` | a negative exponent in integer `**` | e.g. `negative exponent in integer exponentiation` |
 

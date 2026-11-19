@@ -18,6 +18,11 @@
 // level, so it isn't enforced here either -- see docs/reference/std/collections.md.
 // add()/removeLast() properly transfer ownership (removeLast shrinks _len before reading)
 // and are safe for any T.
+//
+// Element accesses through `data` are bounds-checked by the compiler against
+// `_len`, the length field named by @owns_elements (see
+// flir/lowering.py::_field_array_length): reading or writing past the live
+// elements traps with IndexOutOfBounds, even when the buffer has spare capacity.
 
 directive enable_lowlevel_runtime;
 directive enable_drops;
@@ -56,13 +61,15 @@ class ArrayList<T> {
             this.data = new_data;
             this._cap = new_cap;
         }
-        this.data[this._len] = value;
         this._len = this._len + 1;
+        this.data[this._len - 1] = value;
     }
 
     fn removeLast(&mut this) -> T {
-        this._len = this._len - 1;
-        return this.data[this._len];
+        last: int32 = this._len - 1;
+        result: T = this.data[last];
+        this._len = last;
+        return result;
     }
 
     fn get(&this, i: int32) -> T {

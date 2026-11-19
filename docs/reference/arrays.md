@@ -48,7 +48,7 @@ lastScore: int8 = scores[-1];    // 88 (last element)
 secondLast: int8 = scores[-2];   // 90 (second to last)
 ```
 
-⚠️ **Warning:** Accessing an index outside the array bounds will cause a runtime error. Always ensure your index is valid before access.
+Every index operation (read or write) is bounds-checked at runtime: an index outside `[-length, length)` traps with `firescript runtime error: IndexOutOfBounds: index N, length L` and exit status 101 [IMPLEMENTED] (see [Error Handling](error_handling.md)). The check is skipped where the index and length are both compile-time constants and in range. The length is known for local arrays and array parameters (passed as a hidden length) and, inside the standard library, for the `ArrayList`/`HashMap` buffers (checked against their `_len`/`_cap`); any other unsized array reached through a class field has no tracked length and is not checked.
 
 ## Array Operations
 

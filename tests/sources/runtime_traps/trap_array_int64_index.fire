@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IndexOutOfBounds: index 100, length 5
+// An int64 index is checked too.
+import @firescript/std.io.println;
+
+println("before");
+arr: int32[5] = [1, 2, 3, 4, 5];
+i: int64 = 100i64;
+println(arr[i]);
+println("not reached");
+
+/* EXPECT
+before
+*/
