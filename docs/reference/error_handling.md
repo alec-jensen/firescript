@@ -40,6 +40,7 @@ Every trap, whatever its cause, goes through a single runtime entry point (`fs_r
 |---|---|---|
 | `IntegerOverflow` | `+`, `-`, `*`, unary `-`, `++`, `--`, compound assignment, and `**` whose exact result does not fit the integer type; signed `MIN / -1` and `MIN % -1` | operation and type, e.g. `addition on int8` |
 | `DivisionByZero` | integer `/` or `%` with a zero divisor | operation and type, e.g. `division on int32` |
+| `InvalidConversion` | a float-to-integer cast of NaN, an infinity, or a value outside the target type's range (float32, float64 and float128 sources) | e.g. `float64 to int8: NaN, infinity or out of range` |
 | `InvalidArgument` | a negative exponent in integer `**` | e.g. `negative exponent in integer exponentiation` |
 
 ```firescript
@@ -47,7 +48,7 @@ max: int8 = 127i8;
 overflow: int8 = max + 1i8;  // firescript runtime error: IntegerOverflow: addition on int8  (exit status 101)
 ```
 
-The checks apply to every integer width (`int8`..`int64`, `uint8`..`uint64`). Floating-point arithmetic is not trapped: it follows IEEE 754 (`Infinity`, `NaN`). Narrowing `as` casts **between integer types** (e.g. `300 as int8`) are explicit truncation and do not trap (see [Type System](type_system.md)).
+The checks apply to every integer width (`int8`..`int64`, `uint8`..`uint64`). Floating-point arithmetic is not trapped: it follows IEEE 754 (`Infinity`, `NaN`). Narrowing `as` casts **between integer types** (e.g. `300 as int8`) are explicit truncation and do not trap; float-to-integer casts do (see [Type System](type_system.md)).
 
 Overflows that can be detected at compile time (constant expressions) are reported as compile-time errors instead.
 

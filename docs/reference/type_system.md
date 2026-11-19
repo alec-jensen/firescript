@@ -368,7 +368,7 @@ str4: string = letter as string;           // "A"
 
 **Casting Rules:**
 
-1. **Numeric to numeric**: Always allowed, may lose precision or truncate. Narrowing between *integer* types (`300 as int8`) is explicit truncation to the low bits and never traps.
+1. **Numeric to numeric**: Always allowed, may lose precision or truncate. Narrowing between *integer* types (`300 as int8`) is explicit truncation to the low bits and never traps. A *float-to-integer* cast truncates toward zero and traps (`InvalidConversion`) if the value is NaN, infinite, or outside the target type's range (e.g. `300.5 as int8`, `-1.0 as uint8`; `-0.5 as uint8` is `0`).
 2. **String to numeric**: Parses the string
 3. **Numeric to string**: Converts to string representation
 4. **Boolean to string**: "true" or "false"

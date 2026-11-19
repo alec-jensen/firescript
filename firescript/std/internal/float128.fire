@@ -1225,17 +1225,29 @@ fn f128_trunc_mag(exp: uint64, hisig: uint64, lo: uint64) -> uint64 {
     return f128_shr_lo(sig_hi, sig_lo, k);
 }
 
+// float128 -> int64: truncates toward zero; NaN, infinities and values whose
+// truncation does not fit int64 trap (InvalidConversion).
 fn fs_rt_f128_to_i64(x: float128) -> int64 {
     hi: uint64 = f128_hi(x);
     lo: uint64 = f128_lo(x);
-    if (f128_is_nan(hi, lo)) { return 0i64; }
+    if (f128_is_nan(hi, lo)) {
+        fs_rt_trap(4, "float128 to int64: NaN", 0i64, 0i64);
+    }
     exp: uint64 = f128_ext_exp(hi);
     hisig: uint64 = f128_ext_hisig(hi);
     sign: uint64 = f128_ext_sign(hi);
-    // Infinity -> 0.
-    if (exp == 32767u64) { return 0i64; }
+    if (exp == 32767u64) {
+        fs_rt_trap(4, "float128 to int64: infinity", 0i64, 0i64);
+    }
     // |value| < 1 -> 0.
     if (exp < 16383u64) { return 0i64; }
+    // |value| >= 2^63: only exactly -2^63 fits.
+    if (exp >= 16383u64 + 63u64) {
+        if (sign == 1u64 && exp == 16383u64 + 63u64 && hisig == 0u64 && lo == 0u64) {
+            return -9223372036854775807i64 - 1i64;
+        }
+        fs_rt_trap(4, "float128 to int64: out of range", 0i64, 0i64);
+    }
     mag: uint64 = f128_trunc_mag(exp, hisig, lo);
     if (sign == 1u64) {
         return (0u64 - mag) as int64;
@@ -1243,16 +1255,27 @@ fn fs_rt_f128_to_i64(x: float128) -> int64 {
     return mag as int64;
 }
 
+// float128 -> uint64: truncates toward zero; NaN, infinities, values whose
+// truncation is negative, and values >= 2^64 trap (InvalidConversion).
 fn fs_rt_f128_to_u64(x: float128) -> uint64 {
     hi: uint64 = f128_hi(x);
     lo: uint64 = f128_lo(x);
-    if (f128_is_nan(hi, lo)) { return 0u64; }
+    if (f128_is_nan(hi, lo)) {
+        fs_rt_trap(4, "float128 to uint64: NaN", 0i64, 0i64);
+    }
     exp: uint64 = f128_ext_exp(hi);
     hisig: uint64 = f128_ext_hisig(hi);
     sign: uint64 = f128_ext_sign(hi);
-    if (exp == 32767u64) { return 0u64; }   // inf
-    if (sign == 1u64) { return 0u64; }       // negative -> 0
+    if (exp == 32767u64) {
+        fs_rt_trap(4, "float128 to uint64: infinity", 0i64, 0i64);
+    }
     if (exp < 16383u64) { return 0u64; }     // |value| < 1
+    if (sign == 1u64) {
+        fs_rt_trap(4, "float128 to uint64: out of range", 0i64, 0i64);
+    }
+    if (exp >= 16383u64 + 64u64) {
+        fs_rt_trap(4, "float128 to uint64: out of range", 0i64, 0i64);
+    }
     return f128_trunc_mag(exp, hisig, lo);
 }
 

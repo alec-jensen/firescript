@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: InvalidConversion: float64 to int8:
+// float64 -> int8: MAX + 1 traps.
+import @firescript/std.io.println;
+
+println("before");
+x: float64 = 128.0;
+y: int8 = x as int8;
+println(y);
+println("not reached");
+
+/* EXPECT
+before
+*/

@@ -1219,6 +1219,33 @@ class FIRToFLIRLowering:
             is_neg1 = ctx.emit(BinOp("eq", t, rhs, ctx.emit(ConstInt("-1", t)), BOOL))
             self._trap_if(ctx.emit(BinOp("and", BOOL, is_min, is_neg1, BOOL)), TRAP_INTEGER_OVERFLOW, name, ctx)
 
+    def _checked_float_to_int(self, value: FValue, from_type: FLIRType, to_type: FLIRType, ctx: _FuncCtx) -> FValue:
+        """float32/float64 -> integer: truncates toward zero, and traps
+        (InvalidConversion) on NaN, +-infinity or a value whose truncation is
+        outside `to_type`'s range."""
+        x = self._cvt_to(value, from_type, F64, ctx)
+        lo, hi = _INT_BOUNDS[to_type.kind]
+        # Valid iff lo_bound < x < hi_bound, where the bounds are the first
+        # values just outside the range: hi + 1 (a power of two, exact in
+        # float64) and lo - 1 (exact for <= 32 bits). For int64 lo - 1 is not
+        # representable, but -2^63 is the smallest double >= it, so use >=.
+        hi_bound = ctx.emit(ConstFloat(repr(float(hi + 1)), F64))
+        below_hi = ctx.emit(BinOp("lt", F64, x, hi_bound, BOOL))
+        if to_type.kind == "i64":
+            lo_bound = ctx.emit(ConstFloat(repr(float(lo)), F64))
+            above_lo = ctx.emit(BinOp("ge", F64, x, lo_bound, BOOL))
+        else:
+            lo_bound = ctx.emit(ConstFloat(repr(float(lo - 1)), F64))
+            above_lo = ctx.emit(BinOp("gt", F64, x, lo_bound, BOOL))
+        ok = ctx.emit(BinOp("and", BOOL, above_lo, below_hi, BOOL))
+        bad = ctx.emit(Not(ok))  # NaN fails both comparisons, so it traps too
+        src = "float32" if from_type == F32 else "float64"
+        self._trap_if(
+            bad, TRAP_INVALID_CONVERSION,
+            f"{src} to {_INT_KIND_NAMES[to_type.kind]}: NaN, infinity or out of range", ctx,
+        )
+        return ctx.emit(Cvt(x, F64, to_type))
+
     def _cvt_to(self, value: FValue, from_type: FLIRType, to_type: FLIRType, ctx: _FuncCtx) -> FValue:
         if from_type == to_type:
             return value
@@ -1323,8 +1350,12 @@ class FIRToFLIRLowering:
                 result = self.rt_call(rt, [value], I64 if target_str == "int64" else U64, ctx)
                 self.set_val(inst, result, ctx)
             else:
-                # Narrow int: go via i64.
+                # Narrow int: go via i64, then range-check.
                 i64v = self.rt_call("fs_rt_f128_to_i64", [value], I64, ctx)
+                self._trap_unless_in_range(
+                    i64v, I64, target_type, TRAP_INVALID_CONVERSION,
+                    f"float128 to {target_str}: out of range", ctx,
+                )
                 self.set_val(inst, self._cvt_to(i64v, I64, target_type, ctx), ctx)
             return
         if source_str == "float128" and target_str == "float64":
@@ -1351,6 +1382,10 @@ class FIRToFLIRLowering:
         if target_str == "float128" and source_str == "float32":
             f64v = self._cvt_to(value, source_type, F64, ctx)
             self.set_val(inst, self.rt_call("fs_rt_f64_to_f128", [f64v], F128, ctx), ctx)
+            return
+
+        if source_type.is_float() and target_str in int_targets:
+            self.set_val(inst, self._checked_float_to_int(value, source_type, target_type, ctx), ctx)
             return
 
         self.set_val(inst, self._cvt_to(value, source_type, target_type, ctx), ctx)
@@ -2204,7 +2239,10 @@ class FIRToFLIRLowering:
                 "f32_to_i32": (F32, I32),
             }
             from_t, to_t = mapping[name]
-            self.set_val(inst, self._cvt_to(args[0], from_t, to_t, ctx), ctx)
+            if from_t.is_float():
+                self.set_val(inst, self._checked_float_to_int(args[0], from_t, to_t, ctx), ctx)
+            else:
+                self.set_val(inst, self._cvt_to(args[0], from_t, to_t, ctx), ctx)
             return
 
         if name in ("i32_to_str", "i64_to_str", "f32_to_str", "f64_to_str"):
@@ -2305,6 +2343,8 @@ class FIRToFLIRLowering:
         if name in ("toInt", "int"):
             if source_str == "string":
                 self.set_val(inst, self.rt_call("fs_rt_str_to_i32", [value], I32, ctx), ctx)
+            elif source_type.is_float():
+                self.set_val(inst, self._checked_float_to_int(value, source_type, I32, ctx), ctx)
             else:
                 self.set_val(inst, self._cvt_to(value, source_type, I32, ctx), ctx)
             return

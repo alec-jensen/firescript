@@ -2079,9 +2079,9 @@ func @impl_fs_rt_f128_to_str(x: %__f128) -> ptr<i8> {
     %23 = slotload.u64 hisig
     %24 = const.u64 0
     %25 = ne.u64 %23, %24
-    slot __sc_76: bool
-    slotstore __sc_76, %25
-    %26 = slotload.bool __sc_76
+    slot __sc_79: bool
+    slotstore __sc_79, %25
+    %26 = slotload.bool __sc_79
     br %26, L5, L4
 
   L3:
@@ -2092,11 +2092,11 @@ func @impl_fs_rt_f128_to_str(x: %__f128) -> ptr<i8> {
     %28 = slotload.u64 lo
     %29 = const.u64 0
     %30 = ne.u64 %28, %29
-    slotstore __sc_76, %30
+    slotstore __sc_79, %30
     jmp L5
 
   L5:
-    %31 = slotload.bool __sc_76
+    %31 = slotload.bool __sc_79
     br %31, L6, L3
 
   L6:
@@ -3446,9 +3446,9 @@ func @rt_f64_decimal(mant: u64, bexp: i32) -> u64 {
     %21 = slotload.u64 frac_len
     %22 = const.u64 0
     %23 = gt.u64 %21, %22
-    slot __sc_87: bool
-    slotstore __sc_87, %23
-    %24 = slotload.bool __sc_87
+    slot __sc_90: bool
+    slotstore __sc_90, %23
+    %24 = slotload.bool __sc_90
     br %24, L13, L14
 
   L11:
@@ -3470,7 +3470,7 @@ func @rt_f64_decimal(mant: u64, bexp: i32) -> u64 {
     br %31, L67, L68
 
   L14:
-    %32 = slotload.bool __sc_87
+    %32 = slotload.bool __sc_90
     br %32, L11, L12
 
   L15:
@@ -3550,9 +3550,9 @@ func @rt_f64_decimal(mant: u64, bexp: i32) -> u64 {
     %65 = slotload.u64 int_len
     %66 = const.u64 0
     %67 = gt.u64 %65, %66
-    slot __sc_88: bool
-    slotstore __sc_88, %67
-    %68 = slotload.bool __sc_88
+    slot __sc_91: bool
+    slotstore __sc_91, %67
+    %68 = slotload.bool __sc_91
     br %68, L30, L31
 
   L28:
@@ -3574,7 +3574,7 @@ func @rt_f64_decimal(mant: u64, bexp: i32) -> u64 {
     br %75, L113, L114
 
   L31:
-    %76 = slotload.bool __sc_88
+    %76 = slotload.bool __sc_91
     br %76, L28, L29
 
   L32:
@@ -3879,7 +3879,7 @@ func @rt_f64_decimal(mant: u64, bexp: i32) -> u64 {
     %225 = load.u8 %224, 0
     %226 = const.u8 0
     %227 = eq.u8 %225, %226
-    slotstore __sc_87, %227
+    slotstore __sc_90, %227
     jmp L14
 
   L71:
@@ -4232,7 +4232,7 @@ func @rt_f64_decimal(mant: u64, bexp: i32) -> u64 {
     %403 = load.u8 %402, 0
     %404 = const.u8 0
     %405 = eq.u8 %403, %404
-    slotstore __sc_88, %405
+    slotstore __sc_91, %405
     jmp L31
 
   L115:
@@ -4524,9 +4524,9 @@ func @rt_dec_round_frac(buf: u64, keep: u64) -> u64 {
     %51 = slotload.u64 j
     %52 = const.u64 0
     %53 = gt.u64 %51, %52
-    slot __sc_89: bool
-    slotstore __sc_89, %53
-    %54 = slotload.bool __sc_89
+    slot __sc_92: bool
+    slotstore __sc_92, %53
+    %54 = slotload.bool __sc_92
     br %54, L28, L29
 
   L26:
@@ -4543,11 +4543,11 @@ func @rt_dec_round_frac(buf: u64, keep: u64) -> u64 {
 
   L28:
     %59 = slotload.bool carry
-    slotstore __sc_89, %59
+    slotstore __sc_92, %59
     jmp L29
 
   L29:
-    %60 = slotload.bool __sc_89
+    %60 = slotload.bool __sc_92
     br %60, L26, L27
 
   L30:
@@ -4576,9 +4576,9 @@ func @rt_dec_round_frac(buf: u64, keep: u64) -> u64 {
     %71 = slotload.u64 k
     %72 = slotload.u64 int_len
     %73 = lt.u64 %71, %72
-    slot __sc_90: bool
-    slotstore __sc_90, %73
-    %74 = slotload.bool __sc_90
+    slot __sc_93: bool
+    slotstore __sc_93, %73
+    %74 = slotload.bool __sc_93
     br %74, L36, L37
 
   L34:
@@ -4593,11 +4593,11 @@ func @rt_dec_round_frac(buf: u64, keep: u64) -> u64 {
 
   L36:
     %79 = slotload.bool carry
-    slotstore __sc_90, %79
+    slotstore __sc_93, %79
     jmp L37
 
   L37:
-    %80 = slotload.bool __sc_90
+    %80 = slotload.bool __sc_93
     br %80, L34, L35
 
   L38:
@@ -5218,9 +5218,9 @@ func @rt_f128_decimal(mant_hi: u64, mant_lo: u64, bexp: i64) -> u64 {
     %44 = slotload.u64 frac_len
     %45 = const.u64 0
     %46 = gt.u64 %44, %45
-    slot __sc_71: bool
-    slotstore __sc_71, %46
-    %47 = slotload.bool __sc_71
+    slot __sc_74: bool
+    slotstore __sc_74, %46
+    %47 = slotload.bool __sc_74
     br %47, L10, L11
 
   L8:
@@ -5246,11 +5246,11 @@ func @rt_f128_decimal(mant_hi: u64, mant_lo: u64, bexp: i64) -> u64 {
     %58 = load.u8 %57, 0
     %59 = const.u8 0
     %60 = eq.u8 %58, %59
-    slotstore __sc_71, %60
+    slotstore __sc_74, %60
     jmp L11
 
   L11:
-    %61 = slotload.bool __sc_71
+    %61 = slotload.bool __sc_74
     br %61, L8, L9
 
   L12:
@@ -5331,9 +5331,9 @@ func @rt_f128_decimal(mant_hi: u64, mant_lo: u64, bexp: i64) -> u64 {
 
   L20:
     %104 = slotload.bool tail_sticky
-    slot __sc_73: bool
-    slotstore __sc_73, %104
-    %105 = slotload.bool __sc_73
+    slot __sc_76: bool
+    slotstore __sc_76, %104
+    %105 = slotload.bool __sc_76
     br %105, L38, L39
 
   L21:
@@ -5374,9 +5374,9 @@ func @rt_f128_decimal(mant_hi: u64, mant_lo: u64, bexp: i64) -> u64 {
     %127 = slotload.u64 int_len
     %128 = const.u64 0
     %129 = gt.u64 %127, %128
-    slot __sc_72: bool
-    slotstore __sc_72, %129
-    %130 = slotload.bool __sc_72
+    slot __sc_75: bool
+    slotstore __sc_75, %129
+    %130 = slotload.bool __sc_75
     br %130, L27, L28
 
   L25:
@@ -5400,11 +5400,11 @@ func @rt_f128_decimal(mant_hi: u64, mant_lo: u64, bexp: i64) -> u64 {
     %139 = load.u8 %138, 0
     %140 = const.u8 0
     %141 = eq.u8 %139, %140
-    slotstore __sc_72, %141
+    slotstore __sc_75, %141
     jmp L28
 
   L28:
-    %142 = slotload.bool __sc_72
+    %142 = slotload.bool __sc_75
     br %142, L25, L26
 
   L29:
@@ -5494,11 +5494,11 @@ func @rt_f128_decimal(mant_hi: u64, mant_lo: u64, bexp: i64) -> u64 {
     %189 = slotload.u64 frac_len
     %190 = const.u64 0
     %191 = gt.u64 %189, %190
-    slotstore __sc_73, %191
+    slotstore __sc_76, %191
     jmp L39
 
   L39:
-    %192 = slotload.bool __sc_73
+    %192 = slotload.bool __sc_76
     br %192, L40, L37
 
   L40:
@@ -5918,9 +5918,9 @@ func @rt_f128_round_frac(buf: u64, keep: u64) -> u64 {
     %81 = slotload.u64 j
     %82 = const.u64 0
     %83 = gt.u64 %81, %82
-    slot __sc_74: bool
-    slotstore __sc_74, %83
-    %84 = slotload.bool __sc_74
+    slot __sc_77: bool
+    slotstore __sc_77, %83
+    %84 = slotload.bool __sc_77
     br %84, L28, L29
 
   L26:
@@ -5951,11 +5951,11 @@ func @rt_f128_round_frac(buf: u64, keep: u64) -> u64 {
 
   L28:
     %99 = slotload.bool carry
-    slotstore __sc_74, %99
+    slotstore __sc_77, %99
     jmp L29
 
   L29:
-    %100 = slotload.bool __sc_74
+    %100 = slotload.bool __sc_77
     br %100, L26, L27
 
   L30:
@@ -5985,9 +5985,9 @@ func @rt_f128_round_frac(buf: u64, keep: u64) -> u64 {
     %111 = slotload.u64 k
     %112 = slotload.u64 int_len
     %113 = lt.u64 %111, %112
-    slot __sc_75: bool
-    slotstore __sc_75, %113
-    %114 = slotload.bool __sc_75
+    slot __sc_78: bool
+    slotstore __sc_78, %113
+    %114 = slotload.bool __sc_78
     br %114, L36, L37
 
   L34:
@@ -6016,11 +6016,11 @@ func @rt_f128_round_frac(buf: u64, keep: u64) -> u64 {
 
   L36:
     %129 = slotload.bool carry
-    slotstore __sc_75, %129
+    slotstore __sc_78, %129
     jmp L37
 
   L37:
-    %130 = slotload.bool __sc_75
+    %130 = slotload.bool __sc_78
     br %130, L34, L35
 
   L38:
@@ -6495,9 +6495,9 @@ func @rt_u128_decimal_digits(hi: u64, lo: u64, anchor: u64) -> u64 {
     %3 = slotload.u64 h
     %4 = const.u64 0
     %5 = eq.u64 %3, %4
-    slot __sc_69: bool
-    slotstore __sc_69, %5
-    %6 = slotload.bool __sc_69
+    slot __sc_72: bool
+    slotstore __sc_72, %5
+    %6 = slotload.bool __sc_72
     br %6, L2, L3
 
   L1:
@@ -6507,11 +6507,11 @@ func @rt_u128_decimal_digits(hi: u64, lo: u64, anchor: u64) -> u64 {
     %7 = slotload.u64 l
     %8 = const.u64 0
     %9 = eq.u64 %7, %8
-    slotstore __sc_69, %9
+    slotstore __sc_72, %9
     jmp L3
 
   L3:
-    %10 = slotload.bool __sc_69
+    %10 = slotload.bool __sc_72
     br %10, L4, L1
 
   L4:
@@ -6522,9 +6522,9 @@ func @rt_u128_decimal_digits(hi: u64, lo: u64, anchor: u64) -> u64 {
     %12 = slotload.u64 h
     %13 = const.u64 0
     %14 = ne.u64 %12, %13
-    slot __sc_70: bool
-    slotstore __sc_70, %14
-    %15 = slotload.bool __sc_70
+    slot __sc_73: bool
+    slotstore __sc_73, %14
+    %15 = slotload.bool __sc_73
     br %15, L9, L8
 
   L6:
@@ -6545,11 +6545,11 @@ func @rt_u128_decimal_digits(hi: u64, lo: u64, anchor: u64) -> u64 {
     %22 = slotload.u64 l
     %23 = const.u64 0
     %24 = ne.u64 %22, %23
-    slotstore __sc_70, %24
+    slotstore __sc_73, %24
     jmp L9
 
   L9:
-    %25 = slotload.bool __sc_70
+    %25 = slotload.bool __sc_73
     br %25, L6, L7
 
   L10:
