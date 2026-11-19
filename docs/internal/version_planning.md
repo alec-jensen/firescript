@@ -401,7 +401,7 @@ labeled commit on a branch; a session may build on it or discard it.
   `"é".length()` on a non-ASCII string literal is a parse error (verify first).
 - **Done when:** merged, CI profile green.
 
-#### T-060-06 · Remove the legacy conversion builtins · S · `todo`
+#### T-060-06 · Remove the legacy conversion builtins · S · `done (task/T-060-06 7858298)`
 - **Goal:** the names listed under "Decisions" are gone.
 - **Start from:** WIP commit `1683fac` on `docs-and-cleanup-060` (12 files; likely this task plus
   `const`/constraint work; read the diff first, take only what belongs to this task).
