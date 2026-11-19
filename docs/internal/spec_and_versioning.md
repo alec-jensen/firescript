@@ -97,9 +97,10 @@ A normative document, using RFC 2119 wording (MUST, SHOULD, MAY), with each feat
 11. The **core library contract**: the types the language itself depends on (`Object`, the
     primitive bindings, `Exception`, `Result`/`Option`, the standard interfaces)
 
-Open: whether the whole standard library is part of the fls or only the core library the language
-depends on (Java separates the language specification from the platform API; the standard library
-could carry its own version, or follow the fls version).
+**Decided:** the fls contains the **core library contract** above (the types the language itself
+depends on). The rest of the standard library is versioned separately from the fls (it may follow
+its own version or be pinned by kiln), as Java separates the language specification from the
+platform API.
 
 ## Preparing now, without the architecture change
 
@@ -120,12 +121,21 @@ could carry its own version, or follow the fls version).
    should be allocated by the spec (a stable code per specified rule) and stay stable across fsc
    releases.
 
+## Decisions
+
+- The specification lives in `docs/spec/`, built up from the existing `docs/reference` pages.
+- Only the core library contract is part of the fls; the rest of the standard library is
+  versioned separately.
+- Writing the specification itself is **deferred**: not started until the owner says so. The
+  design decisions it depends on (safety package, exceptions, object model) settle first.
+- The terminology (fls, fsc) is added to `CLAUDE.md` and used across the docs once the project
+  starts changing the terminology everywhere, not before.
+
 ## Open questions
 
-- Whether the whole standard library, or only the core library, is part of the fls.
-- Where the specification lives in the repository (a top-level `spec/` directory, or
-  `docs/spec/`), and how it relates to the existing `docs/reference` pages (which are the natural
-  starting material).
 - How an fsc that implements several fls major versions (a compatibility mode) is expressed, if
   that is ever wanted.
-- How the target version interacts with standard-library versions pulled by kiln.
+- How the target version interacts with the versions of the separately versioned standard library
+  that kiln pulls.
+- How the existing `docs/reference` pages are split into normative specification text and the
+  implementation-status table.
