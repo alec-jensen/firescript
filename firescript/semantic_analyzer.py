@@ -10,7 +10,7 @@ from enum import Enum, auto
 
 from enums import NodeTypes
 from parser import ASTNode
-from errors import CompileTimeError, SemanticError, InvalidTypeError, InvalidExpressionError
+from errors import CompileTimeError, SemanticError, InvalidTypeError, InvalidExpressionError, MissingReturnError
 from utils.type_utils import is_owned
 from utils.literal_utils import coerce_literal
 from utils.file_utils import get_line_and_coumn_from_index, get_line
@@ -747,6 +747,71 @@ class SemanticAnalyzer:
 
         return False
 
+    def _contains_loop_break(self, node: Optional[ASTNode]) -> bool:
+        """True if a `break` that targets the loop whose body is `node`
+        appears in it (breaks inside nested loops belong to those loops)."""
+        if node is None:
+            return False
+        if node.node_type == NodeTypes.BREAK_STATEMENT:
+            return True
+        if node.node_type in (NodeTypes.WHILE_STATEMENT, NodeTypes.FOR_STATEMENT, NodeTypes.FOR_IN_STATEMENT):
+            return False
+        return any(self._contains_loop_break(c) for c in node.children if c is not None)
+
+    @staticmethod
+    def _is_true_literal(node: Optional[ASTNode]) -> bool:
+        return (
+            node is not None
+            and node.node_type == NodeTypes.LITERAL
+            and getattr(node, "return_type", None) == "bool"
+            and node.name == "true"
+        )
+
+    def _always_returns(self, node: Optional[ASTNode]) -> bool:
+        """Conservative all-paths-return analysis: True only if control can
+        never fall off the end of `node` (every path returns, or the end is
+        unreachable because of an infinite loop)."""
+        if node is None:
+            return False
+        nt = node.node_type
+        if nt == NodeTypes.RETURN_STATEMENT:
+            return True
+        if nt == NodeTypes.SCOPE:
+            return any(self._always_returns(c) for c in node.children)
+        if nt == NodeTypes.IF_STATEMENT:
+            if len(node.children) < 3:
+                return False
+            return self._always_returns(node.children[1]) and self._always_returns(node.children[2])
+        if nt == NodeTypes.WHILE_STATEMENT and len(node.children) >= 2:
+            return self._is_true_literal(node.children[0]) and not self._contains_loop_break(node.children[1])
+        if nt == NodeTypes.FOR_STATEMENT and len(node.children) >= 4:
+            cond = node.children[1]
+            no_cond = cond is None or (cond.node_type == NodeTypes.LITERAL and cond.name == "empty")
+            return (no_cond or self._is_true_literal(cond)) and not self._contains_loop_break(node.children[3])
+        if nt == NodeTypes.MATCH_EXPRESSION:
+            arms = node.children[1:]
+            return bool(arms) and all(
+                a.children and self._always_returns(a.children[0]) for a in arms
+            )
+        return False
+
+    def _check_missing_return(self, node: ASTNode) -> None:
+        """A non-void function/method must return on every control-flow path
+        (constructors and generators are exempt)."""
+        if node.node_type == NodeTypes.GENERATOR_DEFINITION or getattr(node, "is_constructor", False):
+            return
+        ret = getattr(node, "return_type", None)
+        if ret is None or ret == "void" or ret.startswith("generator<"):
+            return
+        body = next((c for c in node.children if c.node_type == NodeTypes.SCOPE), None)
+        if body is None or self._always_returns(body):
+            return
+        kind = "Method" if node.node_type == NodeTypes.CLASS_METHOD_DEFINITION else "Function"
+        self.report_error(
+            MissingReturnError(kind=kind, name=node.name, return_type=ret),
+            node,
+        )
+
     # Types a match scrutinee can definitely never have as an enum.
     _NON_ENUM_TYPES = frozenset(
         {
@@ -1009,6 +1074,7 @@ class SemanticAnalyzer:
         self._exit_scope()
         self.callable_stack.pop()
         self._mutable_borrow_stack.pop()
+        self._check_missing_return(node)
 
     def _analyze_node(self, node: ASTNode) -> None:
         """Recursively analyze a node and its children."""

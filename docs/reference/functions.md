@@ -35,6 +35,21 @@ fn calculateAverage(&numbers: int32[]) -> float32 {
 
 Functions support parameters, return values, and recursion.
 
+### Returning on Every Path [IMPLEMENTED]
+
+A function or method with a non-`void` return type must return a value on every control-flow path; otherwise the compiler reports `FS-SEM-0017` at the function. The analysis is conservative. These count as returning: a trailing `return`; an `if`/`else if`/`else` chain in which every branch returns; `while (true)` or `for (;;)` with no `break`; and a `match` whose arms all return. Constructors and generators are exempt.
+
+```firescript
+fn sign(n: int32) -> int32 {
+    if (n > 0) {
+        return 1;
+    } else if (n < 0) {
+        return -1;
+    }
+    // error: falls off the end when n == 0
+}
+```
+
 ### Ownership Notes
 
 - Parameters of Owned types (strings, arrays, user-defined objects) move into the function. After a call, an argument of an owned type is no longer valid unless the function returns it.

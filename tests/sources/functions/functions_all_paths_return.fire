@@ -1,0 +1,76 @@
+import @firescript/std.io.println;
+
+// Every shape of "all paths return" the compiler recognises: a trailing
+// return, an if/else-if/else chain whose branches all return, a
+// `while (true)` / `for (;;)` with no `break`, and a match whose arms all
+// return.
+enum Color {
+    Red,
+    Green
+}
+
+fn trailing(flag: bool) -> int32 {
+    if (flag) {
+        return 1;
+    }
+    return 2;
+}
+
+fn chain(n: int32) -> int32 {
+    if (n > 0) {
+        return 1;
+    } else if (n < 0) {
+        return -1;
+    } else {
+        return 0;
+    }
+}
+
+fn spin(n: int32) -> int32 {
+    i: int32 = n;
+    while (true) {
+        if (i > 3) {
+            return i;
+        }
+        i += 1;
+    }
+}
+
+fn spinFor(n: int32) -> int32 {
+    i: int32 = n;
+    for (;;) {
+        i += 1;
+        if (i > 5) {
+            return i;
+        }
+    }
+}
+
+fn code(c: Color) -> int32 {
+    match c {
+        Color.Red -> { return 10; }
+        Color.Green -> { return 20; }
+    }
+}
+
+println(trailing(true));
+println(trailing(false));
+println(chain(5));
+println(chain(-5));
+println(chain(0));
+println(spin(0));
+println(spinFor(0));
+println(code(Color.Red));
+println(code(Color.Green));
+
+/* EXPECT
+1
+2
+1
+-1
+0
+4
+6
+10
+20
+*/

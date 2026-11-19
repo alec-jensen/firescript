@@ -1,0 +1,7 @@
+// A loop with an ordinary condition may run zero times, so a return inside
+// it does not cover the fall-through path.
+fn firstPositive(n: int32) -> int32 {  //~ ERROR FS-SEM-0017 @4
+    while (n > 0) {
+        return n;
+    }
+}

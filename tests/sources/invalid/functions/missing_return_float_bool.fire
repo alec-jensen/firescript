@@ -1,0 +1,17 @@
+import @firescript/std.io.println;
+
+// Same rule for float64 and float128 return types.
+fn maybeHalf(flag: bool, x: float64) -> float64 {  //~ ERROR FS-SEM-0017 @4
+    if (flag) {
+        return x / 2.0;
+    }
+}
+
+fn wideFallsThrough(n: int32) -> float128 {  //~ ERROR FS-SEM-0017 @4
+    if (n > 1000000) {
+        return 1.5f128;
+    }
+}
+
+println(maybeHalf(true, 10.0) as string);
+println(wideFallsThrough(5) as string);

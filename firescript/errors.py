@@ -205,6 +205,12 @@ class InvalidSuperError(CompileTimeError):
     message_template = "{detail}"
 
 
+class MissingReturnError(CompileTimeError):
+    code = "FS-SEM-0017"
+    category = ErrorCategory.SEMANTIC
+    message_template = "{kind} '{name}' returns {return_type} but not every path through it returns a value"
+
+
 class IRVerificationError(Exception):
     """Internal compiler error: generated IR violates a validity rule.
 
