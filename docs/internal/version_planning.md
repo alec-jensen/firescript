@@ -520,10 +520,12 @@ labeled commit on a branch; a session may build on it or discard it.
   tasks above (traps, braces, receivers, constraints, globals are already listed). Add the
   fls/fsc terminology only when the owner starts that work.
 
-#### T-060-22 · 0.6.0 release check · S · `todo` · Depends on everything above
+#### T-060-22 · 0.6.0 release check · S · `done` · Depends on everything above
 - `python tests/run.py --profile ci` passes locally; the Windows CI run is green; the roadmap's
   0.6.0 section statuses are final; the owner moves `## Currently in Development` into a versioned
   section (the owner's job, not an agent's).
+- Result: the local CI profile passed (exit 0) under wine on 2026-11-19; every other 0.6.0 task is
+  `done`. Still open for the owner: confirm the Windows CI run is green and cut the release.
 
 ---
 
