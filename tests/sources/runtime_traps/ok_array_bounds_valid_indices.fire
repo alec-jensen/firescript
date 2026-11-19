@@ -44,6 +44,7 @@ l.set(1, 80);
 println(l.get(1));
 println(l.removeLast());
 println(l.size());
+println(l.get(-1));
 
 /* EXPECT
 1
@@ -64,4 +65,5 @@ println(l.size());
 80
 9
 2
+80
 */

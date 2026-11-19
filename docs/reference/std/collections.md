@@ -48,11 +48,13 @@ println(v.size());   // 2
 - `size()`: Number of elements currently stored.
 - `add(value)`: Appends `value`, growing the backing buffer (capacity doubles, starting
   at 4) if needed.
-- `removeLast()`: Removes and returns the last element. Shrinks the tracked length before
-  reading, so it's safe to call on an `ArrayList<T>` of any `T`, including an Owned type.
-- `get(i)` / `set(i, value)`: Read or overwrite the element at index `i`. No bounds
-  checking is performed; an out-of-range index is undefined behavior (matches core
-  array indexing).
+- `removeLast()`: Removes and returns the last element; safe to call on an `ArrayList<T>`
+  of any `T`, including an Owned type. Traps (`IndexOutOfBounds: index -1, length 0`) on an
+  empty list.
+- `get(i)` / `set(i, value)`: Read or overwrite the element at index `i`. `i` must be in
+  `[-size(), size())` (a negative index counts from the end, as for core arrays); anything
+  else, including an index inside the spare capacity, traps with
+  `firescript runtime error: IndexOutOfBounds: index N, length L` [IMPLEMENTED].
 
 ### Owned vs. Copyable element types
 
