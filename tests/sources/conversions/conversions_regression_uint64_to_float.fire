@@ -3,31 +3,95 @@ import @firescript/std.io.println;
 // Regression: `uint64 as float64` / `as float32` failed to assemble
 // ("unsupported mnemonic: js" / "shr") because the self-hosted assembler
 // lacked the `js` jump and `shr r64, 1` used by the unsigned 64-bit -> float
-// conversion sequence. Covers values below and at/above 2^63.
+// conversion sequence. Values at or above 2^63 are halved with the low bit
+// OR-ed back in (the sticky bit); the cases below are chosen so that
+// round-to-nearest-even, truncation, and a lost sticky bit all give
+// different answers. Expected values are computed with Python's exact
+// integer arithmetic (float64: float(v); float32: manual round-half-even to
+// 24 bits).
 zero: uint64 = 0u64;
 println(zero as float64);
 
 small: uint64 = 42u64;
 println(small as float64);
 
-half: uint64 = 9223372036854775808u64;
-println(half as float64);
-
-// High bit set and low bit set: the halving step must keep the sticky bit.
-odd: uint64 = 9223372036854775809u64;
-println(odd as float64);
-
-big: uint64 = 18446744073709551615u64;
-println(big as float64);
-
 f32small: uint64 = 1000u64;
 println(f32small as float32);
+
+v0: uint64 = 9223372036854775808u64;
+println(v0 as float64);
+println(v0 as float32);
+
+v1: uint64 = 9223372036854775809u64;
+println(v1 as float64);
+println(v1 as float32);
+
+v2: uint64 = 9223372036854776832u64;
+println(v2 as float64);
+println(v2 as float32);
+
+v3: uint64 = 9223372036854776833u64;
+println(v3 as float64);
+println(v3 as float32);
+
+v4: uint64 = 9223372036854778880u64;
+println(v4 as float64);
+println(v4 as float32);
+
+v5: uint64 = 9223372036854778881u64;
+println(v5 as float64);
+println(v5 as float32);
+
+v6: uint64 = 18446744073709551615u64;
+println(v6 as float64);
+println(v6 as float32);
+
+v7: uint64 = 18446744073709550592u64;
+println(v7 as float64);
+println(v7 as float32);
+
+v8: uint64 = 9223372586610589696u64;
+println(v8 as float64);
+println(v8 as float32);
+
+v9: uint64 = 9223372586610589697u64;
+println(v9 as float64);
+println(v9 as float32);
+
+v10: uint64 = 9223373686122217472u64;
+println(v10 as float64);
+println(v10 as float32);
+
+v11: uint64 = 12345678901234567891u64;
+println(v11 as float64);
+println(v11 as float32);
 
 /* EXPECT
 0.000000
 42.000000
+1000.000000
 9223372036854775808.000000
+9223372036854775808.000000
+9223372036854775808.000000
+9223372036854775808.000000
+9223372036854775808.000000
+9223372036854775808.000000
+9223372036854777856.000000
+9223372036854775808.000000
+9223372036854779904.000000
+9223372036854775808.000000
+9223372036854779904.000000
 9223372036854775808.000000
 18446744073709551616.000000
-1000.000000
+18446744073709551616.000000
+18446744073709551616.000000
+18446744073709551616.000000
+9223372586610589696.000000
+9223372036854775808.000000
+9223372586610589696.000000
+9223373136366403584.000000
+9223373686122217472.000000
+9223374235878031360.000000
+12345678901234567168.000000
+12345679395506094080.000000
 */
