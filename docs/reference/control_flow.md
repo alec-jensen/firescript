@@ -4,7 +4,7 @@ firescript supports several control flow structures: conditional statements (`if
 
 ## Introduction to Control Flow
 
-Control flow structures determine the order in which statements are executed in a program. They allow for conditional execution (if/else) and repeated execution (loops) of code blocks. In firescript, control flow constructs use curly braces `{}` to define code blocks.
+Control flow structures determine the order in which statements are executed in a program. They allow for conditional execution (if/else) and repeated execution (loops) of code blocks. In firescript, control flow constructs use curly braces `{}` to define code blocks. Braces are mandatory: the body of `if`, `else`, `while`, `for` and `for-in` must be a braced block, and a braceless body is a compile error (`FS-PARSE-0015`) [IMPLEMENTED]. `else if` is the only form allowed after `else` without its own brace.
 
 ## Conditional Statements
 

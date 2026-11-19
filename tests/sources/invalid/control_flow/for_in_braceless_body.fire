@@ -1,0 +1,6 @@
+// A for-in loop with a braceless (single-statement) body is rejected.
+import @firescript/std.io.println;
+
+arr: int32[] = [1, 2, 3];
+for (i: int32 in arr)
+    println(i);  //~ ERROR FS-PARSE-0015 @5

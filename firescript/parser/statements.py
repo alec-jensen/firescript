@@ -22,6 +22,30 @@ class StatementsMixin(ExpressionsMixin):
             stmt.parent = body
         return body
 
+    def _parse_body(self, construct: str, fallback_tok: Optional[Token], scope_name="scope",
+                    allow_else_if: bool = False) -> Optional[ASTNode]:
+        """Parse a control-flow body, which must be a braced block.
+
+        `else if` is the one non-brace form accepted (allow_else_if). A
+        braceless body is reported as FS-PARSE-0015; the statement is still
+        parsed so that recovery does not cascade into further errors.
+        """
+        tok = self.current_token
+        if tok and tok.type == "OPEN_BRACE":
+            return self.parse_scope()
+        if allow_else_if and tok and tok.type == "IF":
+            return self._parse_braceless_body(fallback_tok, scope_name=scope_name)
+        # At EOF (or in front of a comment) anchor to the construct itself so
+        # the position does not depend on trailing comment text.
+        at_eof = tok is None or tok.type in self._COMMENT_TOKEN_TYPES
+        self.missing_braces_error(construct, fallback_tok if at_eof else tok)
+        body = self._parse_braceless_body(fallback_tok, scope_name=scope_name)
+        # Consume the statement's terminator so a following `else` still pairs
+        # with this `if` and does not cascade into a second diagnostic.
+        if self.current_token and self.current_token.type == "SEMICOLON":
+            self.consume("SEMICOLON")
+        return body
+
     def parse_if_statement(self):
         """Parse an if (...) { ... } statement, including optional else or elif."""
         if_token = self.consume("IF")
@@ -47,27 +71,24 @@ class StatementsMixin(ExpressionsMixin):
 
         then_branch_node: Optional[ASTNode] = None
         expected_then_body_token = self.current_token or condition.token
+        if expected_then_body_token.type in self._COMMENT_TOKEN_TYPES:
+            expected_then_body_token = condition.token
 
-        if self.current_token and self.current_token.type == "OPEN_BRACE":
-            then_branch_node = self.parse_scope()
-            if then_branch_node is None:
-                self.invalid_expression_error("Invalid 'then' block (scope) for if statement", expected_then_body_token)
-                return None
-        else:
-            then_branch_node = self._parse_braceless_body(
-                expected_then_body_token, scope_name="scope_then"
-            )
+        then_branch_node = self._parse_body(
+            "if", expected_then_body_token, scope_name="scope_then"
+        )
+        if then_branch_node is None:
+            self.invalid_expression_error("Invalid 'then' block (scope) for if statement", expected_then_body_token)
+            return None
 
         # Optional else branch (single level)
         else_branch_node: Optional[ASTNode] = None
         if self.current_token and self.current_token.type == "ELSE":
             self.consume("ELSE")
-            if self.current_token and self.current_token.type == "OPEN_BRACE":
-                else_branch_node = self.parse_scope()
-            else:
-                else_branch_node = self._parse_braceless_body(
-                    expected_then_body_token, scope_name="scope_else"
-                )
+            else_branch_node = self._parse_body(
+                "else", expected_then_body_token, scope_name="scope_else",
+                allow_else_if=True,
+            )
 
         children = [condition, then_branch_node]
         if else_branch_node:
@@ -241,12 +262,9 @@ class StatementsMixin(ExpressionsMixin):
             )
             return None
         # Parse body
-        if self.current_token and self.current_token.type == "OPEN_BRACE":
-            body = self.parse_scope()
-            if body is None:
-                return None
-        else:
-            body = self._parse_braceless_body(while_token)
+        body = self._parse_body("while", while_token)
+        if body is None:
+            return None
         while_node = ASTNode(
             NodeTypes.WHILE_STATEMENT,
             while_token,
@@ -301,12 +319,9 @@ class StatementsMixin(ExpressionsMixin):
                 return None
 
             # Parse body
-            if self.current_token and self.current_token.type == "OPEN_BRACE":
-                body = self.parse_scope()
-                if body is None:
-                    return None
-            else:
-                body = self._parse_braceless_body(for_token)
+            body = self._parse_body("for", for_token)
+            if body is None:
+                return None
 
             # Create a variable declaration node for the loop variable
             # Store type info as attributes, not as child nodes (following parse_variable_declaration pattern)
@@ -385,12 +400,9 @@ class StatementsMixin(ExpressionsMixin):
                 return None
             
             # Parse body
-            if self.current_token and self.current_token.type == "OPEN_BRACE":
-                body = self.parse_scope()
-                if body is None:
-                    return None
-            else:
-                body = self._parse_braceless_body(for_token)
+            body = self._parse_body("for", for_token)
+            if body is None:
+                return None
             
             # Build children list, using empty LITERAL nodes as placeholders for omitted parts
             empty = lambda: ASTNode(NodeTypes.LITERAL, None, "empty", [], for_token.index)

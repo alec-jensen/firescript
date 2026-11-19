@@ -1,0 +1,3 @@
+// A braceless `while` body is rejected.
+i: int32 = 0;
+while (i < 3) i++;  //~ ERROR FS-PARSE-0015 @15

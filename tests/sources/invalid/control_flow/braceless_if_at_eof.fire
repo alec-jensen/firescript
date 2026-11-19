@@ -1,0 +1,7 @@
+// A braceless `if` whose body statement is absent (the file ends right
+// after the condition) is rejected: the body must be a braced block.
+import @firescript/std.io.println;
+
+b: bool = true;
+println(1);
+if (b)  //~ ERROR FS-PARSE-0015 @5

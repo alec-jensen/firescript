@@ -156,6 +156,12 @@ class InvalidFieldAccessError(CompileTimeError):
     message_template = "{detail}"
 
 
+class MissingBracesError(CompileTimeError):
+    code = "FS-PARSE-0015"
+    category = ErrorCategory.PARSER
+    message_template = "The body of '{construct}' must be a braced block; write '{{ ... }}' around the statement"
+
+
 # Type System Errors
 class InvalidTypeError(CompileTimeError):
     code = "FS-SEM-0010"

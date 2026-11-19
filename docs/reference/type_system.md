@@ -827,8 +827,12 @@ fn abs<T: SignedInteger>(x: T, zero: T) -> T {
 }
 
 fn clamp<T: FloatingPoint>(value: T, min: T, max: T) -> T {
-    if (value < min) return min;
-    if (value > max) return max;
+    if (value < min) {
+        return min;
+    }
+    if (value > max) {
+        return max;
+    }
     return value;
 }
 
@@ -1222,8 +1226,12 @@ fn normalize<T: Float>(value: T, min: T, max: T) -> T {
 
 // Combine interface constraints
 fn clamp<T: Comparable & Numeric>(value: T, min: T, max: T) -> T {
-    if (value < min) return min;
-    if (value > max) return max;
+    if (value < min) {
+        return min;
+    }
+    if (value > max) {
+        return max;
+    }
     return value;
 }
 ```

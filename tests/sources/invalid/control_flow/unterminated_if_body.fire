@@ -1,4 +1,4 @@
 // An `if` with a braceless body that has no statement at all before EOF.
 fn main() -> int32 {  //~ ERROR FS-PARSE-0010 @20
     cond: bool = true;
-    if (cond)
+    if (cond)  //~ ERROR FS-PARSE-0015 @9
