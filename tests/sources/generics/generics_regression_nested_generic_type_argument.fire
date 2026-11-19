@@ -9,13 +9,13 @@ import @firescript/std.io.println;
 class Pair<T, U> {
     a: T;
     b: U;
-    fn Pair(a: T, b: U) { this.a = a; this.b = b; }
+    fn Pair(&mut this, a: T, b: U) { this.a = a; this.b = b; }
 }
 
 copyable class CPair<T, U> {
     first: T;
     second: U;
-    fn CPair(first: T, second: U) { this.first = first; this.second = second; }
+    fn CPair(&mut this, first: T, second: U) { this.first = first; this.second = second; }
 }
 
 nested: Pair<Pair<int32, int32>, int32> = Pair(Pair(1, 2), 3);

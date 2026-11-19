@@ -3,7 +3,7 @@ import @firescript/std.io.println;
 class Greeter {
     prefix: string;
 
-    fn Greeter(prefix: string) {
+    fn Greeter(&mut this, prefix: string) {
         this.prefix = prefix;
     }
 

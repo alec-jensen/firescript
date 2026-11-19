@@ -7,7 +7,7 @@ class Tool {
         return x;
     }
 
-    fn twice(x: int32) -> int32 {
+    fn twice(&this, x: int32) -> int32 {
         return x * 2i32;
     }
 }

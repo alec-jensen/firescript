@@ -452,7 +452,7 @@ labeled commit on a branch; a session may build on it or discard it.
   methods and `&mut this` to mutating methods and constructors, deciding each by reading the body.
 - **Note:** most std methods already had receivers; the rest (constructors, `isSome`/`isNone`/`isOk`/`isErr`/`unwrapOr` on Option/Result, Pair, FileResult, StringBuilder, fcl results) were migrated. Copyable-class methods needed a small compiler fix (receiver exempt from the Owned-only borrow check). `std_types_test` FIR snapshot regenerated (receiver-only diffs).
 
-#### T-060-11 · Explicit receivers: migrate tests and examples · M · `todo` · Depends on T-060-10
+#### T-060-11 · Explicit receivers: migrate tests and examples · M · `done (task/T-060-11)` · Depends on T-060-10
 - `examples/` and the `.fire` sources under `tests/sources/` (run and invalid) and any
   `tests/python/**` that embeds receiver-less source or asserts the old behavior. Regenerate
   FIR/FLIR snapshots only after confirming the only diffs are receiver-related. If it does not fit

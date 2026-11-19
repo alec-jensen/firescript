@@ -5,7 +5,7 @@
 export class Widget {
     val: int32;
 
-    fn Widget(v: int32) {
+    fn Widget(&mut this, v: int32) {
         this.val = v;
     }
 }

@@ -5,7 +5,7 @@
 export class Counter {
     val: int32;
 
-    fn Counter(v: int32) {
+    fn Counter(&mut this, v: int32) {
         this.val = v;
     }
 

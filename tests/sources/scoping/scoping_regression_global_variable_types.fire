@@ -6,7 +6,7 @@ import @firescript/std.io.println;
 copyable class Point {
     x: int32;
     y: int32;
-    fn Point(x: int32, y: int32) { this.x = x; this.y = y; }
+    fn Point(&mut this, x: int32, y: int32) { this.x = x; this.y = y; }
 }
 
 origin: Point = Point(1, 2);

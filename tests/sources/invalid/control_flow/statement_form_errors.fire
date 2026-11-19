@@ -14,7 +14,7 @@ x;  //~ ERROR FS-PARSE-0010 @1
 class Holder {
     v: int32;
 
-    fn Holder() {
+    fn Holder(&mut this) {
         this.v = 3;
     }
 }

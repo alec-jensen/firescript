@@ -27,7 +27,7 @@ import @firescript/std.collections.ArrayList;
 class Sink {
     last: string;
 
-    fn Sink() {
+    fn Sink(&mut this) {
         this.last = "";
     }
 
@@ -39,7 +39,7 @@ class Sink {
 class Wrapper {
     sink: Sink;
 
-    fn Wrapper() {
+    fn Wrapper(&mut this) {
         this.sink = new Sink();
     }
 
@@ -52,7 +52,7 @@ class Wrapper {
 class Collector {
     items: ArrayList<string>;
 
-    fn Collector() {
+    fn Collector(&mut this) {
         this.items = ArrayList<string>();
     }
 

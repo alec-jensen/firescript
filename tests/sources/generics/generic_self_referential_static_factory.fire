@@ -16,11 +16,11 @@ import @firescript/std.io.println;
 class Box<T?> {
     value: T?;
 
-    fn Box(value: T?) {
+    fn Box(&mut this, value: T?) {
         this.value = value;
     }
 
-    fn isEmpty() -> bool {
+    fn isEmpty(&this) -> bool {
         return this.value == null;
     }
 
@@ -32,7 +32,7 @@ class Box<T?> {
         return Box<T>(null);
     }
 
-    fn describe() -> bool {
+    fn describe(&this) -> bool {
         return this.isEmpty();
     }
 }

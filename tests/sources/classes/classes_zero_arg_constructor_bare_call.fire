@@ -14,7 +14,7 @@ import @firescript/std.io.println;
 class Foo {
     val: int32;
 
-    fn Foo() {
+    fn Foo(&mut this) {
         this.val = 42;
     }
 }

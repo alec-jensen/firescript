@@ -2,11 +2,11 @@
 class Foo {
     v: int32;
 
-    fn Foo(v: int32) {
+    fn Foo(&mut this, v: int32) {
         this.v = v;
     }
 
-    fn add(a: int32) -> int32 {
+    fn add(&this, a: int32) -> int32 {
         return this.v + a;
     }
 }

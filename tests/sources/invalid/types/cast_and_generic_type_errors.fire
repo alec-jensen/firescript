@@ -3,7 +3,7 @@
 class Widget {
     v: int32;
 
-    fn Widget() {
+    fn Widget(&mut this) {
         this.v = 1;
     }
 }

@@ -8,7 +8,7 @@ import @firescript/std.io.println;
 class Widget {
     v: int32;
 
-    fn Widget(v: int32) {
+    fn Widget(&mut this, v: int32) {
         this.v = v;
     }
 

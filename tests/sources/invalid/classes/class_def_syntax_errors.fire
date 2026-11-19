@@ -24,7 +24,7 @@ class D1 from {  //~ ERROR FS-PARSE-0010 @15
 class S1 from S1 {  //~ ERROR FS-PARSE-0012 @15
     v: int32;
 
-    fn S1() {
+    fn S1(&mut this) {
         this.v = 1;
     }
 }
@@ -38,7 +38,7 @@ class M1 {
     ! bogus;  //~ ERROR FS-PARSE-0010 @5
     v: int32;
 
-    fn M1() {
+    fn M1(&mut this) {
         this.v = 1;
     }
 }

@@ -9,7 +9,7 @@ class Plain {
 class Foo {
     v: int32;
 
-    fn Foo(v: int32) {
+    fn Foo(&mut this, v: int32) {
         this.v = v;
     }
 
