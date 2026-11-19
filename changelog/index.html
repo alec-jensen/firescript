@@ -2112,6 +2112,7 @@
 <li>A call chained off an instance method call's result (<code>obj.method().other()</code>) no longer fails to parse with "Expected ')' after argument list".</li>
 <li>A string or array builtin method called on the result of a method call on an imported class (<code>sb.build().length() as string</code>) no longer fails FIR-&gt;FLIR lowering with "cannot convert void to string".</li>
 <li><code>firescript --check -o &lt;file&gt;</code> no longer exits 1 with "rename: src should be string, bytes or os.PathLike, not bool"; it now exits 0 and writes no output.</li>
+<li>Source files are now always read as UTF-8. Previously the platform default encoding was used, so on Windows (cp1252) a non-ASCII source file was decoded differently from Linux, and an invalid-UTF-8 file produced parse errors instead of a clear "Error reading file" message.</li>
 <li><code>uint64 as float32</code> and <code>uint64 as float64</code> casts no longer fail to compile with "Assembly failed: unsupported mnemonic: js".</li>
 <li><code>**=</code> (power compound assignment) is no longer rejected by the parser.</li>
 <li>Compound assignment with mismatched operand types, a non-numeric target, or an undefined variable now reports a normal type error (<code>FS-SEM-0010</code>; <code>FS-PARSE-0003</code> for an undefined target) instead of an internal compiler error.</li>
