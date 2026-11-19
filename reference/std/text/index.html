@@ -1369,7 +1369,7 @@ and tested.</p>
 </blockquote>
 <h2 id="stringbuilder"><code>StringBuilder</code><a class="headerlink" href="#stringbuilder" title="Permanent link">&para;</a></h2>
 <pre><code class="language-firescript">class StringBuilder {
-    fn StringBuilder(initial: string);
+    fn StringBuilder(&amp;mut this, initial: string);
 
     fn append(&amp;mut this, s: string) -&gt; void;
     fn length(&amp;this) -&gt; int32;

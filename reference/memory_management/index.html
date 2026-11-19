@@ -2072,7 +2072,7 @@
 <li>Borrowing is only defined for Owned types.</li>
 <li>A borrowed <code>&amp;OwnedType</code> is a non-owning, read-only view.</li>
 <li>A borrow cannot be stored in any owned field or global location that outlives the borrow expression/call.</li>
-<li>Mutability of Owned values occurs via methods with a <code>&amp;mut this</code> receiver (mutable borrow) or a consuming <code>this</code> receiver.</li>
+<li>Mutability of Owned values occurs via methods with a <code>&amp;mut this</code> receiver (mutable borrow) or a consuming <code>this</code> receiver ([PLANNED]).</li>
 <li>If a function must retain or store a value, it must take ownership (<code>owned T</code>) or clone inside the borrow’s scope.</li>
 </ul>
 <p>TL;DR: Borrowing passes a read-only pointer.</p>
@@ -2099,11 +2099,11 @@ f.writeAll(&quot;hello&quot;);
 // f dropped here even on early return; a future File.drop could close a held descriptor.
 </code></pre>
 <h3 id="7-method-receivers">7. Method Receivers<a class="headerlink" href="#7-method-receivers" title="Permanent link">&para;</a></h3>
-<p>Method receiver kinds apply only to Owned types (Copyable methods implicitly copy the receiver):</p>
+<p>Every instance method must declare its receiver explicitly (<code>&amp;this</code> or <code>&amp;mut this</code>); constructors declare <code>&amp;mut this</code>. Omitting it is a compile error, and <code>this</code> cannot be assigned. Method receiver kinds apply only to Owned types (Copyable methods implicitly copy the receiver):</p>
 <ul>
 <li><strong>Read-only borrow</strong> <code>&amp;this</code> — non-consuming, non-mutating. The method may read fields but the compiler rejects any assignment to <code>this.field</code>.</li>
 <li><strong>Mutable borrow</strong> <code>&amp;mut this</code> — non-consuming, mutating. The method may read and write fields. Use for constructors and state-modifying methods.</li>
-<li><strong>Consuming receiver</strong> <code>this</code> — takes ownership; caller's binding is invalid unless the method returns it.</li>
+<li><strong>Consuming receiver</strong> <code>this</code> [PLANNED] — takes ownership; caller's binding is invalid unless the method returns it.</li>
 </ul>
 <p>For Copyable types:
 - Methods always receive the value by copy; “consuming” semantics do not apply.</p>
@@ -2179,10 +2179,13 @@ name: string = &quot;firescript&quot;;
 n: int32 = length(name); // borrow; name still valid
 </code></pre>
 <h3 id="example-invalid-borrow-of-copyable-compile-error">Example: Invalid Borrow of Copyable (Compile Error)<a class="headerlink" href="#example-invalid-borrow-of-copyable-compile-error" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">id: int8 = 10;
-printId(&amp;id);   // ERROR: cannot borrow Copyable type 'int8'; remove '&amp;'
+<pre><code class="language-firescript">// ERROR: Cannot borrow Copyable type 'int8'; pass by value instead.
+fn printIdBad(&amp;v: int8) -&gt; void {
+    print(v);
+}
 
 // Correct version:
+id: int8 = 10;
 fn printId(v: int8) -&gt; void {
     print(v);
 }

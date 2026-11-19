@@ -1919,7 +1919,7 @@ myFile: File = File(&quot;hello.txt&quot;);
     status: int32;
     data: string;
 
-    fn FileResult(status: int32, data: string);
+    fn FileResult(&amp;mut this, status: int32, data: string);
 
     fn ok(&amp;this) -&gt; bool;
     fn err_code(&amp;this) -&gt; int32;

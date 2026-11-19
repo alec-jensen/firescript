@@ -1686,12 +1686,9 @@ smallest: float64 = min(2.5, 1.5);
 bounded: int32 = clamp(15, 0, 10);
 
 println(biggest);   // 7
-println(smallest);  // 1.5
+println(smallest);  // 1.500000
 println(bounded);   // 10
 </code></pre>
-<blockquote>
-<p>Note: assign the result of a generic call to a variable before passing it to another generic function (like <code>println</code>). Nesting generic calls directly (e.g., <code>println(max(3, 7))</code>) currently fails to compile — a known limitation.</p>
-</blockquote>
 <h2 id="wrapping-arithmetic-implemented">Wrapping arithmetic [IMPLEMENTED]<a class="headerlink" href="#wrapping-arithmetic-implemented" title="Permanent link">&para;</a></h2>
 <p>Integer <code>+ - * -</code> trap on overflow (<a href="../../error_handling/">Error Handling</a>). <code>@firescript/std.math.wrapping</code> provides the explicit escape hatch: results wrap modulo 2^N (two's complement for the signed types). The functions are generic over <code>Numeric</code> (floating-point arguments behave like the ordinary operators).</p>
 <table>

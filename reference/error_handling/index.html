@@ -1714,7 +1714,7 @@ if (r.ok()) {
     println(&quot;read failed with error code &quot; + (r.err_code() as string));
 }
 </code></pre>
-<p>See <a href="../std/fs/">File System (<code>std.fs</code>)</a> for details. A general-purpose <code>Result&lt;T, E&gt;</code> type for the standard library is planned.</p>
+<p>See <a href="../std/fs/">File System (<code>std.fs</code>)</a> for details. A general-purpose <code>Result&lt;T, E&gt;</code> type (and <code>CopyableResult</code>) is also available in <code>@firescript/std.types</code> [IMPLEMENTED]; see <a href="../std/types/">Standard Library — Types</a>.</p>
 <h2 id="planned-error-handling-features-planned">Planned Error Handling Features [PLANNED]<a class="headerlink" href="#planned-error-handling-features-planned" title="Permanent link">&para;</a></h2>
 <p>The following mechanisms are designed but <strong>not yet implemented</strong> — this code will not compile today:</p>
 <ul>

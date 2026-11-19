@@ -1762,10 +1762,12 @@ secondLast: int8 = scores[-2];   // 90 (second to last)
 <h2 id="array-operations">Array Operations<a class="headerlink" href="#array-operations" title="Permanent link">&para;</a></h2>
 <p>firescript provides several built-in methods for manipulating arrays:</p>
 <ul>
-<li><strong><code>length()</code></strong> – Method that returns the current size of the array</li>
+<li><strong><code>length()</code></strong> – Method that returns the current size of the array [IMPLEMENTED]</li>
+<li><strong><code>size()</code></strong> – Same as <code>length()</code> [IMPLEMENTED]</li>
 </ul>
 <pre><code class="language-firescript">data: int8[5] = [5, 10, 15, 20, 25];
 size: int8 = data.length();      // size = 5
+same: int8 = data.size();        // size = 5
 </code></pre>
 <h2 id="working-with-arrays">Working with Arrays<a class="headerlink" href="#working-with-arrays" title="Permanent link">&para;</a></h2>
 <h3 id="iterating-over-arrays">Iterating Over Arrays<a class="headerlink" href="#iterating-over-arrays" title="Permanent link">&para;</a></h3>

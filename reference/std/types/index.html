@@ -1615,7 +1615,7 @@
     first: T;
     second: U;
 
-    fn Pair(first: T, second: U);
+    fn Pair(&amp;mut this, first: T, second: U);
 }
 </code></pre>
 <p><strong>Example:</strong></p>
@@ -1633,7 +1633,7 @@ println(pair.second);  // answer
     first: T;
     second: U;
 
-    fn CopyablePair(first: T, second: U);
+    fn CopyablePair(&amp;mut this, first: T, second: U);
 }
 </code></pre>
 <p><strong>Example:</strong></p>
@@ -1647,10 +1647,10 @@ copy: CopyablePair&lt;float64, float64&gt; = coord;  // copies
 <pre><code class="language-firescript">class Option&lt;T?&gt; {
     value: T?;
 
-    fn Option(value: T?);
+    fn Option(&amp;mut this, value: T?);
 
-    fn isSome() -&gt; bool;
-    fn isNone() -&gt; bool;
+    fn isSome(&amp;this) -&gt; bool;
+    fn isNone(&amp;this) -&gt; bool;
 
     static fn Some(value: T) -&gt; Option&lt;T&gt;;
     static fn None() -&gt; Option&lt;T&gt;;
@@ -1684,15 +1684,15 @@ println(nothing.unwrapOr(&quot;fallback&quot;));  // fallback
 <pre><code class="language-firescript">copyable class CopyableOption&lt;T?&gt; {
     value: T?;
 
-    fn CopyableOption(value: T?);
+    fn CopyableOption(&amp;mut this, value: T?);
 
-    fn isSome() -&gt; bool;
-    fn isNone() -&gt; bool;
+    fn isSome(&amp;this) -&gt; bool;
+    fn isNone(&amp;this) -&gt; bool;
 
     static fn Some(value: T) -&gt; CopyableOption&lt;T&gt;;
     static fn None() -&gt; CopyableOption&lt;T&gt;;
 
-    fn unwrapOr(default: T) -&gt; T;
+    fn unwrapOr(&amp;this, default: T) -&gt; T;
 }
 </code></pre>
 <p><code>unwrapOr</code> here doesn't drain anything — Copyable values are just read, not extracted, so the option is left intact and can be read again.</p>
@@ -1709,10 +1709,10 @@ println(maybe_count.unwrapOr(0));
     value: T?;
     error: E?;
 
-    fn Result(value: T?, error: E?);
+    fn Result(&amp;mut this, value: T?, error: E?);
 
-    fn isOk() -&gt; bool;
-    fn isErr() -&gt; bool;
+    fn isOk(&amp;this) -&gt; bool;
+    fn isErr(&amp;this) -&gt; bool;
 
     static fn Ok(value: T) -&gt; Result&lt;T, E&gt;;
     static fn Err(error: E) -&gt; Result&lt;T, E&gt;;
@@ -1747,15 +1747,15 @@ println(outcome.unwrapOr(-1));  // -1
     value: T?;
     error: E?;
 
-    fn CopyableResult(value: T?, error: E?);
+    fn CopyableResult(&amp;mut this, value: T?, error: E?);
 
-    fn isOk() -&gt; bool;
-    fn isErr() -&gt; bool;
+    fn isOk(&amp;this) -&gt; bool;
+    fn isErr(&amp;this) -&gt; bool;
 
     static fn Ok(value: T) -&gt; CopyableResult&lt;T, E&gt;;
     static fn Err(error: E) -&gt; CopyableResult&lt;T, E&gt;;
 
-    fn unwrapOr(default: T) -&gt; T;
+    fn unwrapOr(&amp;this, default: T) -&gt; T;
 }
 </code></pre>
 <p><strong>Example:</strong></p>

@@ -914,6 +914,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="String Type (string)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#string-methods-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        String methods [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1250,10 +1267,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#generic-arrays-and-collections-planned" class="md-nav__link">
+  <a href="#generic-collections-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Generic Arrays and Collections (Planned)
+        Generic Collections [IMPLEMENTED]
       
     </span>
   </a>
@@ -2243,6 +2260,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="String Type (string)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#string-methods-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        String methods [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -2579,10 +2613,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#generic-arrays-and-collections-planned" class="md-nav__link">
+  <a href="#generic-collections-implemented" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Generic Arrays and Collections (Planned)
+        Generic Collections [IMPLEMENTED]
       
     </span>
   </a>
@@ -2882,7 +2916,7 @@
 <li><strong><code>float64</code></strong>: 64-bit floating point number</li>
 <li><strong><code>float128</code></strong>: 128-bit floating point number. [IMPLEMENTED] — true 16-byte IEEE 754 binary128 (quad-precision), implemented as a self-hosted soft-float runtime. Arithmetic, comparisons, and conversions are correctly rounded (round-to-nearest-even), with full support for subnormals, signed zero, infinity, and NaN.</li>
 <li><strong><code>bool</code></strong>: Represents boolean values, either <code>true</code> or <code>false</code>. Example: <code>isActive: bool = true;</code></li>
-<li><strong><code>char</code></strong>: Represents a single character, stored on the stack. Initialized with a character literal or a single-character string literal. Examples: <code>initial: char = 'A';</code>, <code>digit: char = "7";</code></li>
+<li><strong><code>char</code></strong>: Represents a single character, stored on the stack. Initialized with a character literal. Examples: <code>initial: char = 'A';</code>, <code>digit: char = '7';</code></li>
 </ul>
 <h3 id="owned-types-heap-allocated">Owned Types (Heap-Allocated)<a class="headerlink" href="#owned-types-heap-allocated" title="Permanent link">&para;</a></h3>
 <p>These values are stored on the heap with pointers on the stack and use move semantics:</p>
@@ -3049,11 +3083,72 @@ string&quot;;
 <li>Concatenation: <code>+</code></li>
 <li>Comparison: <code>==</code>, <code>!=</code></li>
 </ul>
+<h4 id="string-methods-implemented">String methods [IMPLEMENTED]<a class="headerlink" href="#string-methods-implemented" title="Permanent link">&para;</a></h4>
+<p>All methods borrow the string and return a new value; the receiver is never changed.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Returns</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>length()</code></td>
+<td><code>int32</code></td>
+<td>Number of characters</td>
+</tr>
+<tr>
+<td><code>upper()</code> / <code>lower()</code></td>
+<td><code>string</code></td>
+<td>Upper- or lower-cased copy</td>
+</tr>
+<tr>
+<td><code>trim()</code></td>
+<td><code>string</code></td>
+<td>Copy without leading and trailing whitespace</td>
+</tr>
+<tr>
+<td><code>indexOf(s: string)</code></td>
+<td><code>int32</code></td>
+<td>Index of the first occurrence of <code>s</code>, or <code>-1</code> if absent</td>
+</tr>
+<tr>
+<td><code>substring(start: int32, end: int32)</code></td>
+<td><code>string</code></td>
+<td>Characters from <code>start</code> up to (not including) <code>end</code>; out-of-range bounds are clamped, and an empty string is returned when <code>start &gt;= end</code></td>
+</tr>
+<tr>
+<td><code>startsWith(s: string)</code> / <code>endsWith(s: string)</code></td>
+<td><code>bool</code></td>
+<td>Prefix / suffix test</td>
+</tr>
+<tr>
+<td><code>replace(from: string, to: string)</code></td>
+<td><code>string</code></td>
+<td>Copy with every occurrence of <code>from</code> replaced by <code>to</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-firescript">t: string = &quot;Hello, World&quot;;
+t.length();              // 12
+&quot;  hi  &quot;.trim();         // &quot;hi&quot;
+t.upper();               // &quot;HELLO, WORLD&quot;
+t.indexOf(&quot;World&quot;);      // 7
+t.indexOf(&quot;zzz&quot;);        // -1
+t.substring(0, 5);       // &quot;Hello&quot;
+t.substring(7, 100);     // &quot;World&quot;  (end clamped to the length)
+t.substring(5, 2);       // &quot;&quot;       (start &gt;= end)
+t.startsWith(&quot;Hello&quot;);   // true
+t.endsWith(&quot;x&quot;);         // false
+t.replace(&quot;l&quot;, &quot;L&quot;);     // &quot;HeLLo, WorLd&quot;
+</code></pre>
 <h3 id="character-type-char">Character Type (<code>char</code>)<a class="headerlink" href="#character-type-char" title="Permanent link">&para;</a></h3>
-<p>The <code>char</code> type represents a single character. Unlike strings, <code>char</code> is a copyable type and is stored on the stack. It can be initialized with a single character string literal.</p>
-<pre><code class="language-firescript">letter: char = &quot;A&quot;;
-digit: char = &quot;7&quot;;
-newline: char = &quot;\n&quot;;  // Special character
+<p>The <code>char</code> type represents a single character. Unlike strings, <code>char</code> is a copyable type and is stored on the stack. It is initialized with a character literal (<code>'A'</code>); a string literal such as <code>"A"</code> is not a <code>char</code> and is a type error.</p>
+<pre><code class="language-firescript">letter: char = 'A';
+digit: char = '7';
+newline: char = '\n';  // Special character
 </code></pre>
 <h4 id="escape-sequences-implemented">Escape Sequences [IMPLEMENTED]<a class="headerlink" href="#escape-sequences-implemented" title="Permanent link">&para;</a></h4>
 <p>String and char literals accept these escape sequences: <code>\n</code>, <code>\t</code>, <code>\r</code>, <code>\0</code>, <code>\\</code>, <code>\'</code> and <code>\"</code>. Any other backslash sequence (for example <code>"\q"</code> or <code>'\d'</code>) is a compile-time error (<code>FS-PARSE-0016</code>); write <code>\\</code> for a literal backslash.</p>
@@ -3144,7 +3239,7 @@ parsedFloat: float64 = &quot;3.14&quot; as float64;  // 3.14
 
 // To string
 str1: string = 42 as string;               // &quot;42&quot;
-str2: string = 3.14f32 as string;          // &quot;3.14&quot;
+str2: string = 3.14f32 as string;          // &quot;3.140000&quot;
 str3: string = true as string;             // &quot;true&quot;
 letter: char = 'A';
 str4: string = letter as string;           // &quot;A&quot;
@@ -3198,7 +3293,7 @@ result6: float32 = f32 + (f64 as float32);  // Cast to float32
 <p>String concatenation with <code>+</code> requires both operands to be strings. There is no implicit conversion — cast non-string values explicitly:</p>
 <pre><code class="language-firescript">message: string = &quot;Count: &quot; + (42 as string);              // &quot;Count: 42&quot;
 status: string = &quot;Active: &quot; + (true as string);            // &quot;Active: true&quot;
-pi: string = &quot;Pi is approximately &quot; + (3.14f32 as string); // &quot;Pi is approximately 3.14&quot;
+pi: string = &quot;Pi is approximately &quot; + (3.14f32 as string); // &quot;Pi is approximately 3.140000&quot;
 
 // string bad = &quot;Count: &quot; + 42;  // ❌ Error: cannot concatenate string and int32
 </code></pre>
@@ -3247,8 +3342,7 @@ type5: string = typeof([1, 2, 3]); // &quot;int8[]&quot;
 <h2 id="standard-library-types-planned">Standard Library Types (Planned)<a class="headerlink" href="#standard-library-types-planned" title="Permanent link">&para;</a></h2>
 <p>The following standard library types are planned but not yet implemented:
 * <strong><code>BigInt</code></strong>: Arbitrary-precision integers for calculations requiring more than 64 bits.
-* <strong><code>Decimal</code></strong>: Fixed-point, arbitrary-precision decimal type for precise calculations.
-* <strong><code>list&lt;T&gt;</code></strong>: A dynamic array type that can grow and shrink, unlike fixed-size arrays.</p>
+* <strong><code>Decimal</code></strong>: Fixed-point, arbitrary-precision decimal type for precise calculations.</p>
 <h2 id="generics">Generics<a class="headerlink" href="#generics" title="Permanent link">&para;</a></h2>
 <blockquote>
 <p>Status: Generic functions and generic classes are [IMPLEMENTED], including type-union constraints and named constraint aliases. Interface-based constraints are [PLANNED] and are marked as such below.</p>
@@ -3282,10 +3376,10 @@ fn max&lt;T: Comparable&gt;(a: T, b: T) -&gt; T {
     return b;
 }
 </code></pre>
-<p><strong>Type Union Constraints:</strong></p>
-<p>For simpler cases, you can use type unions to explicitly list which types are allowed:</p>
+<p><strong>Type Union Constraints [IMPLEMENTED]:</strong></p>
+<p>For simpler cases, you can use <code>Union&lt;A, B, ...&gt;</code> to explicitly list which types are allowed (the old <code>A | B</code> form is removed; <code>|</code> in a constraint is a compile error):</p>
 <pre><code class="language-firescript">// T can be int32, int64, or float64
-fn add&lt;T: int32 | int64 | float64&gt;(a: T, b: T) -&gt; T {
+fn add&lt;T: Union&lt;int32, int64, float64&gt;&gt;(a: T, b: T) -&gt; T {
     return a + b;
 }
 
@@ -3298,16 +3392,16 @@ result2: float64 = add(3.14f64, 2.71f64); // ✅ Works
 class Point { /* ... */ }
 class Circle { /* ... */ }
 
-fn process&lt;T: Point | Circle&gt;(shape: T) -&gt; T {
+fn process&lt;T: Union&lt;Point, Circle&gt;&gt;(shape: T) -&gt; T {
     // Can work with Point or Circle
     return shape;
 }
 </code></pre>
 <p><strong>Multiple Constraints [PLANNED]:</strong></p>
-<p>Combining interface constraints with type unions is planned for when interfaces land:</p>
+<p>Combining interface constraints with type unions is planned for when interfaces land. <code>Intersection&lt;A, B&gt;</code> is reserved for this and currently reports a "not supported yet" error; <code>&amp;</code> is not valid in a constraint:</p>
 <pre><code class="language-firescript">// Future syntax
 // T must satisfy Comparable AND be in the union
-fn clamp&lt;T: Comparable &amp; (int32 | float64)&gt;(value: T, min: T, max: T) -&gt; T {
+fn clamp&lt;T: Intersection&lt;Comparable, Union&lt;int32, float64&gt;&gt;&gt;(value: T, min: T, max: T) -&gt; T {
     if (value &lt; min) { return min; }
     if (value &gt; max) { return max; }
     return value;
@@ -3315,7 +3409,7 @@ fn clamp&lt;T: Comparable &amp; (int32 | float64)&gt;(value: T, min: T, max: T) 
 </code></pre>
 <p><strong>When to Use Each:</strong></p>
 <ul>
-<li><strong>Type unions</strong> (<code>T: int32 | float64</code>): When you want to explicitly list allowed types, simple and explicit — available today</li>
+<li><strong>Type unions</strong> (<code>T: Union&lt;int32, float64&gt;</code>): When you want to explicitly list allowed types, simple and explicit — available today</li>
 <li><strong>Constraint aliases</strong> (<code>T: Numeric</code>): Named, reusable type unions — available today (see <a href="#custom-type-constraints">Custom Type Constraints</a>)</li>
 <li><strong>Interface constraints</strong> (<code>T: Comparable</code>) [PLANNED]: When you need types with specific capabilities, works with any type that implements the interface</li>
 </ul>
@@ -3323,12 +3417,12 @@ fn clamp&lt;T: Comparable &amp; (int32 | float64)&gt;(value: T, min: T, max: T) 
 <p>Type unions provide a simple, explicit way to define generic constraints by listing the exact types allowed. This is inspired by Python's <code>Union</code> but with firescript's explicit syntax.</p>
 <p><strong>Basic Type Unions:</strong></p>
 <pre><code class="language-firescript">// Simple union - T can be int32 or float64
-fn convert&lt;T: int32 | float64&gt;(value: T) -&gt; T {
+fn convert&lt;T: Union&lt;int32, float64&gt;&gt;(value: T) -&gt; T {
     return value;
 }
 
 // Multiple types in union
-fn process&lt;T: int8 | int16 | int32 | int64&gt;(value: T) -&gt; T {
+fn process&lt;T: Union&lt;int8, int16, int32, int64&gt;&gt;(value: T) -&gt; T {
     return value * 2;
 }
 
@@ -3336,7 +3430,7 @@ fn process&lt;T: int8 | int16 | int32 | int64&gt;(value: T) -&gt; T {
 class Dog { /* ... */ }
 class Cat { /* ... */ }
 
-fn feed&lt;T: Dog | Cat&gt;(animal: T) -&gt; T {
+fn feed&lt;T: Union&lt;Dog, Cat&gt;&gt;(animal: T) -&gt; T {
     // Feed the animal
     return animal;
 }
@@ -3345,14 +3439,14 @@ fn feed&lt;T: Dog | Cat&gt;(animal: T) -&gt; T {
 <p>Once interfaces are implemented, you will be able to require that types satisfy both an interface AND be in a specific union:</p>
 <pre><code class="language-firescript">// Future syntax
 // T must be Comparable AND one of these specific types
-fn max&lt;T: Comparable &amp; (int32 | int64 | float64)&gt;(a: T, b: T) -&gt; T {
+fn max&lt;T: Intersection&lt;Comparable, Union&lt;int32, int64, float64&gt;&gt;&gt;(a: T, b: T) -&gt; T {
     if (a &gt; b) { return a; }
     return b;
 }
 </code></pre>
 <p><strong>Practical Example:</strong></p>
 <pre><code class="language-firescript">// Define a function that only works with specific numeric types
-fn safeDivide&lt;T: float32 | float64&gt;(a: T, b: T) -&gt; T {
+fn safeDivide&lt;T: Union&lt;float32, float64&gt;&gt;(a: T, b: T) -&gt; T {
     if (b == 0.0) {
         return a - a;  // Safe zero default for floats
     }
@@ -3428,7 +3522,7 @@ y: float64 = identity&lt;float64&gt;(42.0); // T is float64
 <li>If neither works, require explicit type parameters</li>
 <li>All type parameters must be consistently inferred</li>
 </ol>
-<pre><code class="language-firescript">constraint NumericPrimitive = int32 | int64 | float32 | float64;
+<pre><code class="language-firescript">constraint NumericPrimitive = Union&lt;int32, int64, float32, float64&gt;;
 
 fn add&lt;T: NumericPrimitive&gt;(a: T, b: T) -&gt; T {
     return a + b;
@@ -3444,7 +3538,7 @@ result2: float32 = add(1.5f32, 2.5f32);  // ✅ T inferred as float32
 <pre><code class="language-firescript">class Box&lt;T&gt; {
     value: T;
 
-    fn Box(value: T) {
+    fn Box(&amp;mut this, value: T) {
         this.value = value;
     }
 
@@ -3457,19 +3551,14 @@ result2: float32 = add(1.5f32, 2.5f32);  // ✅ T inferred as float32
 intBox: Box&lt;int32&gt; = Box&lt;int32&gt;(42i32);
 </code></pre>
 <p>The standard library's <code>Pair&lt;T, U&gt;</code> and <code>Option&lt;T&gt;</code> (<code>@firescript/std.types</code>) are generic classes. See <a href="../classes/#generic-classes">Classes &amp; Inheritance — Generic Classes</a>.</p>
-<h4 id="generic-arrays-and-collections-planned">Generic Arrays and Collections (Planned)<a class="headerlink" href="#generic-arrays-and-collections-planned" title="Permanent link">&para;</a></h4>
-<p>The standard library will provide generic collection types:</p>
-<pre><code class="language-firescript">// Planned syntax
-list&lt;T&gt; myList = list&lt;int32&gt;();
-myList.push(1);
-myList.push(2);
-myList.push(3);
+<h4 id="generic-collections-implemented">Generic Collections [IMPLEMENTED]<a class="headerlink" href="#generic-collections-implemented" title="Permanent link">&para;</a></h4>
+<p><code>@firescript/std.collections</code> provides the generic <code>ArrayList&lt;T&gt;</code> (a growable array) and <code>HashMap&lt;K, V&gt;</code>. See <a href="../std/collections/">Collections</a> for the full API.</p>
+<pre><code class="language-firescript">import @firescript/std.collections.ArrayList;
 
-map&lt;string, int32&gt; scores = map&lt;string, int32&gt;();
-scores.set(&quot;Alice&quot;, 100);
-scores.set(&quot;Bob&quot;, 95);
-
-aliceScore: int32? = scores.get(&quot;Alice&quot;);  // 100
+v: ArrayList&lt;int32&gt; = ArrayList&lt;int32&gt;();
+v.add(1);
+v.add(2);
+v.add(3);
 </code></pre>
 <h4 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h4>
 <p>Generics in firescript use <strong>monomorphization</strong> at compile time:</p>
@@ -3480,7 +3569,7 @@ aliceScore: int32? = scores.get(&quot;Alice&quot;);  // 100
 <li>The tradeoff is slightly larger binary size (one copy of the function per type combination used)</li>
 </ol>
 <pre><code class="language-firescript">// You write this once:
-fn max&lt;T: int32 | float32&gt;(a: T, b: T) -&gt; T {
+fn max&lt;T: Union&lt;int32, float32&gt;&gt;(a: T, b: T) -&gt; T {
     if (a &gt; b) { return a; }
     return b;
 }
@@ -3500,17 +3589,17 @@ y: float32 = max(3.14f32, 2.71f32);
 <p>This approach is similar to C++ templates and Rust generics, ensuring that generic code has no performance penalty.</p>
 <h4 id="custom-type-constraints">Custom Type Constraints<a class="headerlink" href="#custom-type-constraints" title="Permanent link">&para;</a></h4>
 <p>For frequently used type union constraints, you can define named constraint aliases to avoid repetition and improve code readability.</p>
-<p><strong>Defining Constraint Aliases:</strong></p>
+<p><strong>Defining Constraint Aliases [IMPLEMENTED]:</strong></p>
 <pre><code class="language-firescript">// Define a constraint alias using the 'constraint' keyword
-constraint NumericPrimitive = int32 | int64 | float32 | float64;
+constraint NumericPrimitive = Union&lt;int32, int64, float32, float64&gt;;
 
-constraint SignedInteger = int8 | int16 | int32 | int64;
+constraint SignedInteger = Union&lt;int8, int16, int32, int64&gt;;
 
-constraint UnsignedInteger = uint8 | uint16 | uint32 | uint64;
+constraint UnsignedInteger = Union&lt;uint8, uint16, uint32, uint64&gt;;
 
-constraint FloatingPoint = float32 | float64 | float128;
+constraint FloatingPoint = Union&lt;float32, float64, float128&gt;;
 </code></pre>
-<p><strong>Using Constraint Aliases:</strong></p>
+<p><strong>Using Constraint Aliases [IMPLEMENTED]:</strong></p>
 <pre><code class="language-firescript">// Use the constraint alias just like a built-in constraint
 fn add&lt;T: NumericPrimitive&gt;(a: T, b: T) -&gt; T {
     return a + b;
@@ -3537,31 +3626,25 @@ fn clamp&lt;T: FloatingPoint&gt;(value: T, min: T, max: T) -&gt; T {
 sum: int32 = add(10i32, 20i32);          // ✅ Works with NumericPrimitive
 clamped: float64 = clamp(5.5, 0.0, 10.0); // ✅ Works with FloatingPoint
 </code></pre>
-<p><strong>Combining Constraint Aliases:</strong></p>
-<p>You can combine constraint aliases with other constraints:</p>
-<pre><code class="language-firescript">constraint IntegerType = SignedInteger | UnsignedInteger;
-
-// Combine with interface constraints
-fn process&lt;T: Comparable &amp; IntegerType&gt;(value: T) -&gt; T {
-    // T must be comparable AND one of the integer types
-    return value;
-}
+<p><strong>Combining Constraint Aliases [IMPLEMENTED]:</strong></p>
+<p>A <code>Union&lt;...&gt;</code> may contain other aliases:</p>
+<pre><code class="language-firescript">constraint IntegerType = Union&lt;SignedInteger, UnsignedInteger&gt;;
 
 // Combine multiple constraint aliases with unions
-constraint AllNumeric = SignedInteger | UnsignedInteger | FloatingPoint;
+constraint AllNumeric = Union&lt;SignedInteger, UnsignedInteger, FloatingPoint&gt;;
 
 fn compute&lt;T: AllNumeric&gt;(value: T) -&gt; T {
     return value * value;
 }
 </code></pre>
-<p><strong>Constraint Aliases for Custom Types:</strong></p>
+<p><strong>Constraint Aliases for Custom Types [IMPLEMENTED]:</strong></p>
 <p>Constraint aliases also work with custom classes:</p>
 <pre><code class="language-firescript">class Circle { /* ... */ }
 class Square { /* ... */ }
 class Triangle { /* ... */ }
 
 // Define a constraint for shape types
-constraint Shape2D = Circle | Square | Triangle;
+constraint Shape2D = Union&lt;Circle, Square, Triangle&gt;;
 
 // Use in generic functions
 fn area&lt;T: Shape2D&gt;(shape: T) -&gt; T {
@@ -3569,12 +3652,12 @@ fn area&lt;T: Shape2D&gt;(shape: T) -&gt; T {
     return shape.calculateArea();
 }
 
-// Can be combined with interfaces
+// [PLANNED] Combining with interfaces (interfaces do not exist yet)
 interface Drawable {
     fn draw(&amp;this) -&gt; void;
 }
 
-fn render&lt;T: Drawable &amp; Shape2D&gt;(shape: T) -&gt; T {
+fn render&lt;T: Intersection&lt;Drawable, Shape2D&gt;&gt;(shape: T) -&gt; T {
     shape.draw();
     return shape;
 }
@@ -3582,15 +3665,15 @@ fn render&lt;T: Drawable &amp; Shape2D&gt;(shape: T) -&gt; T {
 <p><strong>Benefits:</strong></p>
 <ol>
 <li><strong>DRY (Don't Repeat Yourself)</strong>: Define the constraint once, use it many times</li>
-<li><strong>Readability</strong>: <code>T: NumericPrimitive</code> is clearer than <code>T: int32 | int64 | float32 | float64</code></li>
+<li><strong>Readability</strong>: <code>T: NumericPrimitive</code> is clearer than <code>T: Union&lt;int32, int64, float32, float64&gt;</code></li>
 <li><strong>Maintainability</strong>: Change the constraint in one place instead of updating every function</li>
 <li><strong>Semantic clarity</strong>: Names like <code>SignedInteger</code> convey intent better than type lists</li>
 </ol>
 <p><strong>Constraint Aliases vs. Interfaces:</strong></p>
 <pre><code class="language-firescript">// Constraint alias - just a shorthand for a type union (implemented)
-constraint FastInt = int32 | int64;
+constraint FastInt = Union&lt;int32, int64&gt;;
 fn add&lt;T: FastInt&gt;(a: T, b: T) -&gt; T { return a + b; }
-// Expands to: T add&lt;T: int32 | int64&gt;(T a, T b)
+// Expands to: T add&lt;T: Union&lt;int32, int64&gt;&gt;(T a, T b)
 
 // Interface - defines required capabilities (PLANNED, future syntax)
 interface Printable {
@@ -3608,10 +3691,10 @@ fn print&lt;T: Printable&gt;(value: T) -&gt; T { /* ... */ }
 <p>At module scope, symbols are private by default and must be explicitly exported to be imported from another file. That keeps a file's implementation details local while making its public API obvious.</p>
 <p>Constraint aliases follow the same scoping rules as other declarations:</p>
 <pre><code class="language-firescript">// Module-level constraint (usable throughout the file)
-constraint ModuleNumeric = int32 | float32;
+constraint ModuleNumeric = Union&lt;int32, float32&gt;;
 
 // Exported module API
-export constraint PublicNumeric = int32 | float64;
+export constraint PublicNumeric = Union&lt;int32, float64&gt;;
 export fn compute&lt;T: PublicNumeric&gt;(value: T) -&gt; T {
     return value;
 }
@@ -3765,7 +3848,7 @@ class PrintableInt implements Printable {
 printValue(PrintableInt(42));  // ✅ Works!
 </code></pre>
 <p><strong>Summary:</strong>
-- <strong>Type unions</strong> (<code>T: int32 | float64</code>): Simplest way to constrain primitives - <strong>use this first!</strong>
+- <strong>Type unions</strong> (<code>T: Union&lt;int32, float64&gt;</code>): Simplest way to constrain primitives - <strong>use this first!</strong>
 - <strong>Built-in interfaces</strong> (<code>SignedInt</code>, <code>Float</code>, <code>Comparable</code>, etc.): Work with primitives directly for broader type families
 - <strong>Custom interfaces with wrappers</strong>: Only when you need custom methods on primitives</p>
 <h4 id="using-interfaces-as-generic-constraints">Using Interfaces as Generic Constraints<a class="headerlink" href="#using-interfaces-as-generic-constraints" title="Permanent link">&para;</a></h4>
@@ -3785,7 +3868,7 @@ fn renderAll&lt;T: Drawable&gt;(items: T[]) -&gt; void {
 }
 
 // Multiple interface constraints
-fn processItem&lt;T: Printable &amp; Drawable&gt;(item: T) -&gt; void {
+fn processItem&lt;T: Intersection&lt;Printable, Drawable&gt;&gt;(item: T) -&gt; void {
     print(&quot;Processing: &quot; + item.toString());
     item.draw();
 }
@@ -3863,7 +3946,7 @@ fn normalize&lt;T: Float&gt;(value: T, min: T, max: T) -&gt; T {
 }
 
 // Combine interface constraints
-fn clamp&lt;T: Comparable &amp; Numeric&gt;(value: T, min: T, max: T) -&gt; T {
+fn clamp&lt;T: Intersection&lt;Comparable, Numeric&gt;&gt;(value: T, min: T, max: T) -&gt; T {
     if (value &lt; min) {
         return min;
     }
@@ -4007,7 +4090,7 @@ interface FileOperations {
 <li>[IMPLEMENTED] Unsuffixed numeric literals take the type they initialize (declarations, assignments, arguments, return values, array elements), with compile-time range checks</li>
 <li>[IMPLEMENTED] Generics</li>
 <li>Generic functions (with and without constraints)</li>
-<li>Type union constraints (<code>T: int32 | float64</code>)</li>
+<li>Type union constraints (<code>T: Union&lt;int32, float64&gt;</code>)</li>
 <li>Named constraint aliases (<code>constraint Name = ...</code>)</li>
 <li>Generic classes</li>
 <li>Type inference for generic calls, plus explicit type arguments</li>

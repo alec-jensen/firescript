@@ -1554,7 +1554,7 @@
 <p>The <code>std.io</code> module provides basic output utilities for printing values to standard output.</p>
 <h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
 <h3 id="print"><code>print</code><a class="headerlink" href="#print" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">void print&lt;T&gt;(&amp;T value)
+<pre><code class="language-firescript">fn print&lt;T&gt;(&amp;value: T) -&gt; void
 </code></pre>
 <p>Print a value to standard output without a trailing newline. The value is implicitly converted to a string.</p>
 <p><strong>Parameters:</strong>
@@ -1564,10 +1564,10 @@
 
 print(&quot;Hello&quot;);
 print(42);
-print(3.14);
+print(3.14);   // prints 3.140000
 </code></pre>
 <h3 id="println"><code>println</code><a class="headerlink" href="#println" title="Permanent link">&para;</a></h3>
-<pre><code class="language-firescript">void println&lt;T&gt;(&amp;T value)
+<pre><code class="language-firescript">fn println&lt;T&gt;(&amp;value: T) -&gt; void
 </code></pre>
 <p>Print a value to standard output followed by a newline.</p>
 <p><strong>Parameters:</strong>
@@ -1588,6 +1588,7 @@ println(100);
 </ul>
 <h2 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h2>
 <ul>
+<li>Floating-point values print with six digits after the decimal point (<code>3.14</code> prints as <code>3.140000</code>).</li>
 <li>Both functions are generic and polymorphic; they infer the type from the argument.</li>
 <li>Output goes directly to standard output (stdout).</li>
 </ul>

@@ -769,6 +769,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Constructors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#implicit-constructors-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implicit constructors [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1694,6 +1711,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Constructors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#implicit-constructors-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implicit constructors [IMPLEMENTED]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1958,13 +1992,13 @@
 <li>Inheritance does not change ownership: moving a <code>Student</code> moves its base <code>Person</code> subobject as part of the same operation.</li>
 <li>Borrowed references cannot escape beyond the lifetime of the owning instance; the compiler enforces non-escaping borrows.</li>
 </ul>
-<p>Receiver convention: firescript distinguishes three receiver forms:</p>
+<p>Receiver convention: every instance method must declare its receiver explicitly, and every constructor must declare <code>&amp;mut this</code>. Omitting the receiver is a compile error. firescript distinguishes three receiver forms:</p>
 <ul>
 <li><strong><code>&amp;this</code></strong> — read-only borrow. The method may read fields but cannot assign to them. Use this for query/observer methods.</li>
 <li><strong><code>&amp;mut this</code></strong> — mutable borrow. The method may read and write fields without consuming the instance. Use this for constructors and any method that modifies state.</li>
-<li><strong><code>this</code></strong> (owning) — the method takes ownership of the instance and consumes it. Use this only when the instance will be destroyed or irreversibly transferred (e.g., a <code>drop(this)</code> destructor).</li>
+<li><strong><code>this</code></strong> (owning) [PLANNED] — the method takes ownership of the instance and consumes it. Use this only when the instance will be destroyed or irreversibly transferred (e.g., a <code>drop(this)</code> destructor). Consuming receivers are not supported yet: <code>owned this</code> or a plain <code>this</code> receiver on an ordinary method is a compile error.</li>
 </ul>
-<p>The compiler enforces this: assigning to <code>this.field</code> inside a <code>&amp;this</code> method is a compile error.</p>
+<p>The compiler enforces this: assigning to <code>this.field</code> inside a <code>&amp;this</code> method is a compile error, and <code>this</code> itself can never be assigned (<code>this = ...</code> is an error; assign to its fields instead).</p>
 <p>Borrowing applies only to Owned (Non-Trivially Copyable) types. Copyable types (<code>intN</code>, <code>floatN</code>, <code>bool</code>, <code>char</code>) are always passed and returned by value with implicit bitwise copy; using a borrow marker on copyable values is unnecessary and omitted below. Owned types include <code>string</code>, arrays, and user-defined classes. When you see <code>&amp;Type</code> it implies the type is Owned.</p>
 <h3 id="example-deterministic-drop-ordering">Example: Deterministic Drop Ordering<a class="headerlink" href="#example-deterministic-drop-ordering" title="Permanent link">&para;</a></h3>
 <pre><code class="language-firescript">class HandleBundle {
@@ -1983,7 +2017,7 @@
 }
 
 hb: HandleBundle = makeHandles(); // this would be invalid since you need to provide owned File and Socket
-process(&amp;hb);  // borrow
+process(hb);  // borrows, if process declares `&amp;hb: HandleBundle` (borrows are declared on the parameter; the call site has no `&amp;`)
 // last use of hb here -&gt; compiler may drop immediately after
 </code></pre>
 <h3 id="takeaways">Takeaways<a class="headerlink" href="#takeaways" title="Permanent link">&para;</a></h3>
@@ -2060,6 +2094,16 @@ class Person {
     }
 }
 </code></pre>
+<h4 id="implicit-constructors-implemented">Implicit constructors [IMPLEMENTED]<a class="headerlink" href="#implicit-constructors-implemented" title="Permanent link">&para;</a></h4>
+<p>A class that declares no constructor gets an implicit one that takes every field in declaration order. It is called without <code>new</code>:</p>
+<pre><code class="language-firescript">class Pt {
+    x: int32;
+    y: int32;
+}
+
+p: Pt = Pt(1, 2);   // p.x == 1, p.y == 2
+</code></pre>
+<p><code>new Pt(...)</code> requires a declared constructor; on a class without one it is an error (<code>No constructor defined for type 'Pt'</code>).</p>
 <p>Default parameter values (e.g., <code>x: float32 = 0.0</code>) are [PLANNED] and not yet supported.</p>
 <h3 id="instance-methods">Instance Methods<a class="headerlink" href="#instance-methods" title="Permanent link">&para;</a></h3>
 <p>Instance methods are functions that belong to an instance of a class. They always take a receiver (<code>&amp;this</code> or <code>&amp;mut this</code>) as their first parameter:</p>
@@ -2188,7 +2232,7 @@ while (i &lt; people.length()) {
     first: T;
     second: U;
 
-    fn Pair(first: T, second: U) {
+    fn Pair(&amp;mut this, first: T, second: U) {
         this.first = first;
         this.second = second;
     }
@@ -2201,7 +2245,7 @@ println(p.second);  // hello
 </code></pre>
 <p>Both <code>copyable</code> and owned (heap-allocated) generic classes are supported. <code>@firescript/std.types</code> provides ready-made <code>Pair&lt;T, U&gt;</code> and <code>Option&lt;T&gt;</code> types (see <a href="../std/types/">Standard Library — Types</a>).</p>
 <h2 id="copyable-classes">Copyable Classes<a class="headerlink" href="#copyable-classes" title="Permanent link">&para;</a></h2>
-<p>A class may be annotated <code>copyable</code> to become Copyable if it satisfies:
+<p>A class may be annotated <code>copyable</code> to become Copyable. The intended requirements are listed below; they are not all enforced by the compiler yet (for example, the all-fields-Copyable check is [PLANNED], and the generic <code>copyable class Pair&lt;T, U&gt;</code> above is accepted with arbitrary type arguments):
 1. All fields are Copyable.
 2. No <code>drop</code> defined.
 3. Fixed-size representation.
@@ -2229,7 +2273,7 @@ interface Drawable {
 class Circle implements Drawable {
     radius: float32;
 
-    fn Circle(&amp;this, radius: float32) {
+    fn Circle(&amp;mut this, radius: float32) {
         this.radius = radius;
     }
 
