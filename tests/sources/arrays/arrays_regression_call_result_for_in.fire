@@ -1,0 +1,20 @@
+// Regression: for-in over an array bound from a call result.
+
+import @firescript/std.io.println;
+
+fn mk() -> int32[] {
+    return [4, 5, 6];
+}
+
+x: int32[] = mk();
+for (v: int32 in x) {
+    println(v);
+}
+
+return 0;
+
+/* EXPECT
+4
+5
+6
+*/

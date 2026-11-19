@@ -373,6 +373,11 @@ class _FuncCtx:
         self.frame_param: Optional[str] = None
         self.out_param: Optional[str] = None
         self.yield_counter = 0
+        # FIR return type of the function being lowered (array returns
+        # publish their length through __fs_ret_len)
+        self.fir_return_type = None
+        # id(fir CallInst) -> FValue: length published by an array-returning call
+        self.call_lens: dict[int, FValue] = {}
         self.resume_blocks: list[FLIRBlock] = []
         self.temp_counter = 0
 
@@ -771,6 +776,7 @@ class FIRToFLIRLowering:
         )
         flir_func = FLIRFunction(lowered_name, params, return_type)
         ctx.func = flir_func
+        ctx.fir_return_type = fir_func.return_type
         self.flir.add_function(flir_func)
 
         # Pre-create blocks
@@ -971,6 +977,15 @@ class FIRToFLIRLowering:
                 # was already evaluated; the wrapper main supplies exit 0.
                 ctx.emit(Ret())
             elif term.operands:
+                if isinstance(ctx.fir_return_type, ArrayType):
+                    # Publish the returned array's length for the caller.
+                    length = self._array_length_value(term.operands[0], ctx)
+                    if length is None:
+                        length = self._field_array_length(term.operands[0], ctx)
+                    if length is None:
+                        length = ctx.emit(ConstInt("0", I32))
+                    self._ensure_ret_len_cell()
+                    ctx.emit(GlobalStore("__fs_ret_len", length))
                 ctx.emit(Ret(self.val(term.operands[0], ctx)))
             elif ctx.func.return_type.kind != "void":
                 # Control may fall off the end of a non-void function in
@@ -1610,6 +1625,8 @@ class FIRToFLIRLowering:
         slot, size = self._array_info(array_fir, ctx)
         if size is not None:
             return ctx.emit(ConstInt(str(size), I32))
+        if isinstance(array_fir, FIRValue) and id(array_fir.instruction) in ctx.call_lens:
+            return ctx.call_lens[id(array_fir.instruction)]
         if slot is not None:
             meta = ctx.array_lens.get(slot)
             if meta:
@@ -1738,6 +1755,15 @@ class FIRToFLIRLowering:
                     ctx.array_lens[inst.name] = ("const", size)
                 elif slot and slot in ctx.array_lens:
                     ctx.array_lens[inst.name] = ctx.array_lens[slot]
+                elif (
+                    isinstance(init, FIRValue)
+                    and id(init.instruction) in ctx.call_lens
+                    and ctx.frame_struct is None
+                ):
+                    len_name = f"{inst.name}_len"
+                    self.ensure_slot(len_name, I32, ctx)
+                    self.var_store(len_name, ctx.call_lens[id(init.instruction)], ctx)
+                    ctx.array_lens[inst.name] = ("slot", len_name)
 
         if inst.operands:
             value = self.val(inst.operands[0], ctx)
@@ -2222,6 +2248,10 @@ class FIRToFLIRLowering:
             return True
         return False
 
+    def _ensure_ret_len_cell(self) -> None:
+        if not any(n == "__fs_ret_len" for n, _ in self.flir.mutable_globals):
+            self.flir.mutable_globals.append(("__fs_ret_len", I32))
+
     def _ensure_state_cell(self) -> None:
         if not any(n == "__fs_runtime_state" for n, _ in self.flir.mutable_globals):
             self.flir.mutable_globals.append(("__fs_runtime_state", U64))
@@ -2333,6 +2363,10 @@ class FIRToFLIRLowering:
         result = ctx.emit(Call(lowered_name, final_args, ret_type))
         if result is not None:
             self.set_val(inst, result, ctx)
+            if isinstance(callee.return_type, ArrayType) and not callee.is_generator:
+                # The callee published the array's length just before returning.
+                self._ensure_ret_len_cell()
+                ctx.call_lens[id(inst)] = ctx.emit(GlobalLoad("__fs_ret_len", I32))
 
     _HASHABLE_TYPES = frozenset(
         {

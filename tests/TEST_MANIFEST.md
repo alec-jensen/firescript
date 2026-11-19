@@ -502,6 +502,9 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 - **arrays_length_param.fire** - `.length()` / `.size()` called on a borrowed array function parameter (size not statically known at the call site, unlike a local from an array literal)
 - **array_tests.fire** - Basic array operations
 - **arrays_regression_println_array.fire** - Regression: `println`/`print` of an array (int32/string/bool/float64, empty, via an array parameter and a generic function) prints `[a, b, c]`, same as `array as string` (previously the `[...]` placeholder)
+- **arrays_regression_call_result_length.fire** - Regression: an array returned from a call keeps its length (`.length()` on the bound variable and on the call result)
+- **arrays_regression_call_result_negative_index.fire** - Regression: negative indexing on an array bound from a call result
+- **arrays_regression_call_result_for_in.fire** - Regression: `for-in` over an array bound from a call result
 - **arrays_regression_bare_index_statement.fire** - Regression: a bare `arr[0];` statement at top level and inside a function (previously "Unsupported statement node ARRAY_ACCESS")
 - **array_to_string.fire** - `array as string` conversion for int32, float64, string, and empty arrays (`[a, b, c]` formatting)
 - **array_index_count.fire** - `.index()` / `.count()` array methods

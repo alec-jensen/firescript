@@ -1,0 +1,19 @@
+// Regression: an array returned from a call carries its length, so
+// .length() works on the bound variable and directly on the call result.
+
+import @firescript/std.io.println;
+
+fn mk() -> int32[] {
+    return [1, 2, 3];
+}
+
+x: int32[] = mk();
+println(x.length());
+println(mk().length());
+
+return 0;
+
+/* EXPECT
+3
+3
+*/
