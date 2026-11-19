@@ -2278,34 +2278,6 @@ class FIRToFLIRLowering:
                 self.set_val(inst, result, ctx)
             return
 
-        if name in ("toInt", "int", "toFloat", "toDouble", "toString", "toChar", "toBool"):
-            self.lower_conversion_call(inst, name, args, ctx)
-            return
-
-        if name in ("i32_to_f64", "i32_to_f32", "f64_to_i32", "f32_to_i32"):
-            mapping = {
-                "i32_to_f64": (I32, F64),
-                "i32_to_f32": (I32, F32),
-                "f64_to_i32": (F64, I32),
-                "f32_to_i32": (F32, I32),
-            }
-            from_t, to_t = mapping[name]
-            if from_t.is_float():
-                self.set_val(inst, self._checked_float_to_int(args[0], from_t, to_t, ctx), ctx)
-            else:
-                self.set_val(inst, self._cvt_to(args[0], from_t, to_t, ctx), ctx)
-            return
-
-        if name in ("i32_to_str", "i64_to_str", "f32_to_str", "f64_to_str"):
-            rt = {
-                "i32_to_str": "fs_rt_i32_to_str",
-                "i64_to_str": "fs_rt_i64_to_str",
-                "f32_to_str": "fs_rt_f32_to_repr",
-                "f64_to_str": "fs_rt_f64_to_repr",
-            }[name]
-            self.set_val(inst, self.rt_call(rt, args, ptr_to("i8"), ctx), ctx)
-            return
-
         if name == "array_length":
             length = self._array_length_value(inst.operands[0], ctx)
             if length is None:
@@ -2383,50 +2355,6 @@ class FIRToFLIRLowering:
         if len(args) > len(callee.params):
             final.extend(args[len(callee.params):])
         return final
-
-    def lower_conversion_call(self, inst: CallInst, name: str, args: list[FValue], ctx: _FuncCtx) -> None:
-        source_str = self.subst(self.fir_type_str_of(inst.operands[0], ctx), ctx.type_map)
-        value = args[0]
-        if name == "toString":
-            self.set_val(inst, self._to_string(value, source_str, inst.operands[0], ctx), ctx)
-            return
-        source_type = self.lower_type_str(source_str, ctx.type_map)
-        if name in ("toInt", "int"):
-            if source_str == "string":
-                self.set_val(inst, self.rt_call("fs_rt_str_to_i32", [value], I32, ctx), ctx)
-            elif source_type.is_float():
-                self.set_val(inst, self._checked_float_to_int(value, source_type, I32, ctx), ctx)
-            else:
-                self.set_val(inst, self._cvt_to(value, source_type, I32, ctx), ctx)
-            return
-        if name == "toFloat":
-            if source_str == "string":
-                parsed = self.rt_call("fs_rt_str_to_f64", [value], F64, ctx)
-                self.set_val(inst, self._cvt_to(parsed, F64, F32, ctx), ctx)
-            else:
-                self.set_val(inst, self._cvt_to(value, source_type, F32, ctx), ctx)
-            return
-        if name == "toDouble":
-            if source_str == "string":
-                self.set_val(inst, self.rt_call("fs_rt_str_to_f64", [value], F64, ctx), ctx)
-            else:
-                self.set_val(inst, self._cvt_to(value, source_type, F64, ctx), ctx)
-            return
-        if name == "toBool":
-            if source_str == "string":
-                self.set_val(inst, self.rt_call("fs_rt_str_to_bool", [value], BOOL, ctx), ctx)
-            else:
-                zero = self._zero_value(source_type, ctx)
-                self.set_val(inst, ctx.emit(BinOp("ne", source_type, value, zero, BOOL)), ctx)
-            return
-        if name == "toChar":
-            if source_str == "string":
-                code = self.rt_call("fs_rt_str_char_code", [value], U8, ctx)
-                self.set_val(inst, self._cvt_to(code, U8, I8, ctx), ctx)
-            else:
-                self.set_val(inst, self._cvt_to(value, source_type, I8, ctx), ctx)
-            return
-        raise LoweringError(f"unsupported conversion {name}")
 
     def lower_method_call(self, inst: MethodCallInst, ctx: _FuncCtx) -> None:
         receiver_fir = inst.operands[0]
