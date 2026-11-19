@@ -55,3 +55,4 @@ class CompilerDirective(Enum):
     ENABLE_PROCESS_ARGS = "enable_process_args"
     ENABLE_LOWLEVEL_RUNTIME = "enable_lowlevel_runtime"
     ENABLE_BUILTIN_METHODS = "enable_builtin_methods"
+    ENABLE_WRAPPING_ARITHMETIC = "enable_wrapping_arithmetic"

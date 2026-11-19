@@ -620,6 +620,15 @@ Split from a single `array_operations_comprehensive.fire` into per-behavior file
 ### `io/`
 - **io_test.fire** - Input/output functions
 
+### `runtime_traps/`
+Runtime safety traps (generated, one trap per file because a trap ends the program): every test asserts `//@ exit-code: 101`, the `firescript runtime error: <Kind>: <detail>` line via `//@ stderr-contains:`, and that output printed before the trap still appears.
+- **trap_<type>_{add_overflow,add_underflow,sub_underflow,mul_overflow}.fire** - Checked `+ - *` at the type's MIN/MAX for each of `int8`..`int64`, `uint8`..`uint64` (the `add_underflow` form is signed only).
+- **trap_<signed type>_{neg_min,div_min_by_minus_one,mod_min_by_minus_one}.fire** - `-MIN`, `MIN / -1`, `MIN % -1`.
+- **trap_<type>_{div_by_zero,mod_by_zero}.fire** - Integer `/` and `%` by zero, every width.
+- **trap_int32_increment_overflow / trap_uint8_decrement_underflow / trap_int16_compound_add_overflow / trap_int32_compound_mul_overflow / trap_int32_compound_div_by_zero.fire** - `++`, `--` and compound assignment.
+- **trap_int32_pow_overflow / trap_int64_pow_overflow / trap_uint64_pow_overflow / trap_int32_pow_negative_exponent.fire** - Integer `**` overflow and negative exponent.
+- **ok_<type>_boundaries.fire** - Valid boundary cases that must NOT trap (MAX, MIN, MAX - 1 + 1, `MIN / 1`, `MIN + 1` / `-1`, `-MAX`, ...), one per integer type.
+
 ### `performance/`
 - **stress_integer_overflow.fire** - Integer overflow behavior under repeated operations
 - **stress_type_conversions.fire** - Repeated type conversion stress test

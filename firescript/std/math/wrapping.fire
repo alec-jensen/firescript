@@ -1,0 +1,28 @@
+// firescript std.math wrapping arithmetic
+//
+// Integer arithmetic in firescript traps on overflow. These functions are the
+// explicit escape hatch: the result wraps modulo 2^N (two's complement for the
+// signed types). The whole file is compiled with
+// `directive enable_wrapping_arithmetic;`, which makes every + - * and unary -
+// below wrap instead of trapping; that directive is for the standard library
+// only. Floating-point arguments behave exactly like the ordinary operators.
+
+directive enable_wrapping_arithmetic;
+
+constraint Numeric = int8 | int16 | int32 | int64 | uint8 | uint16 | uint32 | uint64 | float32 | float64 | float128;
+
+export fn wrapping_add<T: Numeric>(a: T, b: T) -> T {
+	return a + b;
+}
+
+export fn wrapping_sub<T: Numeric>(a: T, b: T) -> T {
+	return a - b;
+}
+
+export fn wrapping_mul<T: Numeric>(a: T, b: T) -> T {
+	return a * b;
+}
+
+export fn wrapping_neg<T: Numeric>(a: T) -> T {
+	return -a;
+}

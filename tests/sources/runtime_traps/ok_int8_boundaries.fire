@@ -1,0 +1,47 @@
+// int8: operations that land exactly on MIN/MAX (or return to it) must NOT trap.
+import @firescript/std.io.println;
+
+max: int8 = 127i8;
+min: int8 = -128i8;
+one: int8 = 1i8;
+two: int8 = 2i8;
+zero: int8 = 0i8;
+println(max);
+println(min);
+println(max - one + one);
+println(min + one - one);
+println(max * one);
+println(max / one);
+println(min / one);
+println(min % two);
+println(max % max);
+println((max - one) / two * two);
+println(zero - zero);
+minus_one: int8 = -1i8;
+min_plus_one: int8 = -127i8;
+println(min_plus_one / minus_one);
+println(max / minus_one);
+println(-max);
+println(minus_one * max);
+println(max + min);
+println(min_plus_one % minus_one);
+
+/* EXPECT
+127
+-128
+127
+-128
+127
+127
+-128
+0
+0
+126
+0
+127
+-127
+-127
+-127
+-1
+0
+*/

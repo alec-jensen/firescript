@@ -8,8 +8,37 @@
 
 directive enable_lowlevel_runtime;
 
+// Integer exponentiation. A negative exponent traps (InvalidArgument); the
+// multiplications are checked, so overflow traps like any other arithmetic.
 fn fs_rt_pow_i64(base: int64, exp: int64) -> int64 {
+    if (exp < 0i64) {
+        fs_rt_trap(5, "negative exponent in integer exponentiation", 0i64, 0i64);
+    }
+    if (base == 0i64 || base == 1i64) {
+        if (exp == 0i64) {
+            return 1i64;
+        }
+        return base;
+    }
     result: int64 = 1i64;
+    while (exp > 0i64) {
+        result = result * base;
+        exp = exp - 1i64;
+    }
+    return result;
+}
+
+fn fs_rt_pow_u64(base: uint64, exp: int64) -> uint64 {
+    if (exp < 0i64) {
+        fs_rt_trap(5, "negative exponent in integer exponentiation", 0i64, 0i64);
+    }
+    if (base == 0u64 || base == 1u64) {
+        if (exp == 0i64) {
+            return 1u64;
+        }
+        return base;
+    }
+    result: uint64 = 1u64;
     while (exp > 0i64) {
         result = result * base;
         exp = exp - 1i64;

@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: addition on int8
+// int8: MAX + 1 traps.
+import @firescript/std.io.println;
+
+println("before");
+a: int8 = 127i8;
+b: int8 = 1i8;
+c: int8 = a + b;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

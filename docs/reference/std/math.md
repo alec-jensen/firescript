@@ -80,6 +80,26 @@ println(bounded);   // 10
 
 > Note: assign the result of a generic call to a variable before passing it to another generic function (like `println`). Nesting generic calls directly (e.g., `println(max(3, 7))`) currently fails to compile — a known limitation.
 
+## Wrapping arithmetic [IMPLEMENTED]
+
+Integer `+ - * -` trap on overflow ([Error Handling](../error_handling.md)). `@firescript/std.math.wrapping` provides the explicit escape hatch: results wrap modulo 2^N (two's complement for the signed types). The functions are generic over `Numeric` (floating-point arguments behave like the ordinary operators).
+
+| Function | Meaning |
+|---|---|
+| `wrapping_add(a: T, b: T)` | `a + b`, wrapping |
+| `wrapping_sub(a: T, b: T)` | `a - b`, wrapping |
+| `wrapping_mul(a: T, b: T)` | `a * b`, wrapping |
+| `wrapping_neg(a: T)` | `-a`, wrapping (`wrapping_neg(int8 -128)` is `-128`) |
+
+```firescript
+import @firescript/std.math.wrapping.wrapping_add;
+
+big: uint8 = 255u8;
+wrapped: uint8 = wrapping_add(big, 1u8);  // 0 (plain big + 1u8 would trap)
+```
+
+Saturating (`saturating_add`, ...) and checked (`checked_add(...) -> Option<T>`) variants are [PLANNED]: they need per-type `MIN`/`MAX` and a generic way to return `Option<T>` for every numeric `T`, which the language cannot express yet.
+
 ## Not Yet Exported [IN DEVELOPMENT]
 
 The following exist in the module sources but are private (not `export`ed), so they cannot be imported yet:

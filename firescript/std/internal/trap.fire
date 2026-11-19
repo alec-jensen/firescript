@@ -1,0 +1,84 @@
+// Runtime traps: the single mechanism by which a running firescript program
+// reports a safety violation (checked integer overflow, division by zero,
+// out-of-range float-to-int conversion, array index out of bounds, ...).
+//
+// EVERY trap goes through the one entry point fs_rt_trap(kind, detail, a, b).
+// Generated code never aborts inline: each check branches to a cold block
+// that calls fs_rt_trap and ends in `unreachable`. Today fs_rt_trap writes
+//
+//     firescript runtime error: <Kind>: <detail>
+//
+// to standard error and terminates the process with exit status 101. A later
+// release replaces the body of fs_rt_trap with "construct and throw the
+// exception for <kind>" without touching any check site.
+//
+// Trap kinds (the `kind` argument; keep in sync with flir/lowering.py's
+// TRAP_* constants and docs/reference/error_handling.md):
+//   1 IntegerOverflow      detail: "<operation> on <type>"
+//   2 DivisionByZero       detail: "<operation> on <type>"
+//   3 IndexOutOfBounds     a = index, b = length; detail is generated
+//   4 InvalidConversion    detail: "<source type> to <target type>: ..."
+//   5 InvalidArgument      detail: free text
+//
+// Only rt_trap_write_stderr / rt_trap_exit touch the operating system; a
+// port to another target only has to reimplement those two functions.
+//
+// This module is compiled through the normal pipeline and merged into
+// every program built with the FIR backends; see std/internal/alloc.fire
+// for the shared std/internal/ authoring rules.
+
+directive enable_lowlevel_runtime;
+
+fn rt_trap_exit_code() -> uint32 {
+    return 101u32;
+}
+
+fn rt_trap_write_stderr(addr: uint64) -> void {
+    len: uint64 = rt_str_len_addr(addr);
+    if (len == 0u64) {
+        return;
+    }
+    handle: uint64 = win_get_std_handle(-12); // STD_ERROR_HANDLE
+    state: uint64 = rt_state();
+    win_write_file(handle, addr, len as uint32, state + 32u64, 0u64);
+}
+
+fn rt_trap_exit() -> void {
+    win_exit_process(rt_trap_exit_code());
+}
+
+fn rt_trap_write_i64(v: int64) -> void {
+    s: string = fs_rt_i64_to_str(v);
+    rt_trap_write_stderr(str_to_addr(s));
+}
+
+fn rt_trap_write_kind(kind: int32) -> void {
+    if (kind == 1) {
+        rt_trap_write_stderr(str_to_addr("IntegerOverflow"));
+    } else if (kind == 2) {
+        rt_trap_write_stderr(str_to_addr("DivisionByZero"));
+    } else if (kind == 3) {
+        rt_trap_write_stderr(str_to_addr("IndexOutOfBounds"));
+    } else if (kind == 4) {
+        rt_trap_write_stderr(str_to_addr("InvalidConversion"));
+    } else {
+        rt_trap_write_stderr(str_to_addr("InvalidArgument"));
+    }
+}
+
+// The one trap entry point. Never returns.
+fn fs_rt_trap(kind: int32, &detail: string, a: int64, b: int64) -> void {
+    rt_trap_write_stderr(str_to_addr("firescript runtime error: "));
+    rt_trap_write_kind(kind);
+    rt_trap_write_stderr(str_to_addr(": "));
+    if (kind == 3) {
+        rt_trap_write_stderr(str_to_addr("index "));
+        rt_trap_write_i64(a);
+        rt_trap_write_stderr(str_to_addr(", length "));
+        rt_trap_write_i64(b);
+    } else {
+        rt_trap_write_stderr(str_to_addr(detail));
+    }
+    rt_trap_write_stderr(str_to_addr("\n"));
+    rt_trap_exit();
+}

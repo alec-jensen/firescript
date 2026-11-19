@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: subtraction on int16
+// int16: MIN - 1 traps.
+import @firescript/std.io.println;
+
+println("before");
+a: int16 = -32768i16;
+b: int16 = 1i16;
+c: int16 = a - b;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

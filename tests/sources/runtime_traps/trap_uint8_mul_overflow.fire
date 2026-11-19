@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: multiplication on uint8
+// uint8: MAX * 2 traps.
+import @firescript/std.io.println;
+
+println("before");
+a: uint8 = 255u8;
+b: uint8 = 2u8;
+c: uint8 = a * b;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

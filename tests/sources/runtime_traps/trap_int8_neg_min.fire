@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: negation on int8
+// int8: -MIN traps.
+import @firescript/std.io.println;
+
+println("before");
+a: int8 = -128i8;
+c: int8 = -a;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

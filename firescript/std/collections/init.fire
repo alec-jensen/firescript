@@ -25,6 +25,8 @@ directive enable_process_args;
 
 import @firescript/std.types.Pair;
 import @firescript/std.types.CopyablePair;
+import @firescript/std.math.wrapping.wrapping_add;
+import @firescript/std.math.wrapping.wrapping_mul;
 
 export @owns_elements("data", "_len")
 class ArrayList<T> {
@@ -125,7 +127,7 @@ export fn fs_rt_hash_string(&s: string) -> uint64 {
     i: int32 = 0;
     while (i < len) {
         b: uint8 = mem_load_u8(addr + (i as uint64));
-        h = (h * 1099511628211u64) + (b as uint64);
+        h = wrapping_add(wrapping_mul(h, 1099511628211u64), b as uint64);
         i = i + 1;
     }
     return h;

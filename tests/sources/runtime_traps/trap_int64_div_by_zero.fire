@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: DivisionByZero: division on int64
+// int64: x / 0 traps.
+import @firescript/std.io.println;
+
+println("before");
+a: int64 = 7i64;
+b: int64 = 0i64;
+c: int64 = a / b;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

@@ -138,13 +138,13 @@ hexSmall: int8 = 0x2Ai8;
 binMedium: uint16 = 0b111010100110u16;
 ```
 
-#### Integer Overflow and Underflow Behavior
+#### Integer Overflow and Underflow Behavior [IMPLEMENTED]
 
-For all fixed-size integer types (`intN` and `uintN`), arithmetic operations that exceed the representable range will throw an error at runtime. This is to prevent silent overflow/underflow issues.
+For all fixed-size integer types (`intN` and `uintN`), an arithmetic operation (`+`, `-`, `*`, unary `-`, `++`, `--`, compound assignment, `**`) whose exact result does not fit the type **traps** at runtime: the program prints `firescript runtime error: IntegerOverflow: <operation> on <type>` to standard error and exits with status 101. Integer division or remainder by zero traps (`DivisionByZero`), as does signed `MIN / -1` and `MIN % -1` (`IntegerOverflow`). This prevents silent overflow/underflow. See [Error Handling](error_handling.md).
 
 ```firescript
 max: int8 = 127i8;
-overflow: int8 = max + 1i8;  // Runtime error: Integer overflow
+overflow: int8 = max + 1i8;  // Runtime trap: IntegerOverflow: addition on int8
 ```
 
 Overflows that can be detected at compile-time (e.g., constant expressions) will result in a compile-time error.
@@ -152,6 +152,8 @@ Overflows that can be detected at compile-time (e.g., constant expressions) will
 ```firescript
 compileTimeOverflow: int8 = 128i8;  // Compile-time error: Integer overflow
 ```
+
+When modular arithmetic is intended, use the explicit `wrapping_add`, `wrapping_sub`, `wrapping_mul` and `wrapping_neg` functions from `@firescript/std.math.wrapping` ([IMPLEMENTED]). Saturating and checked variants are [PLANNED].
 
 ### Floating Point Types (`floatN`)
 
@@ -366,7 +368,7 @@ str4: string = letter as string;           // "A"
 
 **Casting Rules:**
 
-1. **Numeric to numeric**: Always allowed, may lose precision or truncate
+1. **Numeric to numeric**: Always allowed, may lose precision or truncate. Narrowing between *integer* types (`300 as int8`) is explicit truncation to the low bits and never traps.
 2. **String to numeric**: Parses the string
 3. **Numeric to string**: Converts to string representation
 4. **Boolean to string**: "true" or "false"

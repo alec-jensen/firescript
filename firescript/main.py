@@ -213,6 +213,17 @@ def _compile_runtime_file(path: str, seed: dict = None) -> "ASTNode":
         raise RuntimeError(
             f"{rel} failed semantic analysis: {len(analyzer.errors)} errors"
         )
+    # Tag every node with the file it came from (as imports.py does for
+    # imported modules): the per-file directive bookkeeping in ast_to_fir
+    # (directive gating, enable_wrapping_arithmetic) keys off this, and the
+    # files are combined into one root before FIR conversion.
+    def _annotate(node):
+        setattr(node, "source_file", rel)
+        for child in node.children or []:
+            if child is not None:
+                _annotate(child)
+
+    _annotate(ast)
     return ast
 
 

@@ -306,6 +306,30 @@ _CHAR_ESCAPES = {
 _CMP_OPS = {"==": "eq", "!=": "ne", "<": "lt", "<=": "le", ">": "gt", ">=": "ge"}
 _ARITH_OPS = {"+": "add", "-": "sub", "*": "mul", "/": "div", "%": "mod"}
 
+# Trap kinds passed to the single runtime trap entry point fs_rt_trap
+# (std/internal/trap.fire); keep in sync with that file and with
+# docs/reference/error_handling.md.
+TRAP_INTEGER_OVERFLOW = 1
+TRAP_DIVISION_BY_ZERO = 2
+TRAP_INDEX_OUT_OF_BOUNDS = 3
+TRAP_INVALID_CONVERSION = 4
+TRAP_INVALID_ARGUMENT = 5
+
+_INT_KIND_NAMES = {
+    "i8": "int8", "i16": "int16", "i32": "int32", "i64": "int64",
+    "u8": "uint8", "u16": "uint16", "u32": "uint32", "u64": "uint64",
+}
+_INT_BOUNDS = {
+    "i8": (-(2**7), 2**7 - 1), "i16": (-(2**15), 2**15 - 1),
+    "i32": (-(2**31), 2**31 - 1), "i64": (-(2**63), 2**63 - 1),
+    "u8": (0, 2**8 - 1), "u16": (0, 2**16 - 1),
+    "u32": (0, 2**32 - 1), "u64": (0, 2**64 - 1),
+}
+_ARITH_NAMES = {
+    "add": "addition", "sub": "subtraction", "mul": "multiplication",
+    "div": "division", "mod": "remainder",
+}
+
 
 def sanitize(name: str) -> str:
     return (
@@ -1100,10 +1124,21 @@ class FIRToFLIRLowering:
         if op == "**":
             int_kinds = ("i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64")
             if operand_type.kind in int_kinds and self.lower_type_str(rhs_type_str, ctx.type_map).kind in int_kinds:
-                lhs64 = self._cvt_to(lhs, operand_type, I64, ctx)
                 rhs64 = self._cvt_to(rhs, self.lower_type_str(rhs_type_str, ctx.type_map), I64, ctx)
-                powed = self.rt_call("fs_rt_pow_i64", [lhs64, rhs64], I64, ctx)
-                self.set_val(inst, self._cvt_to(powed, I64, result_type, ctx), ctx)
+                if result_type.is_unsigned_int():
+                    lhs_wide = self._cvt_to(lhs, operand_type, U64, ctx)
+                    powed = self.rt_call("fs_rt_pow_u64", [lhs_wide, rhs64], U64, ctx)
+                    wide = U64
+                else:
+                    lhs_wide = self._cvt_to(lhs, operand_type, I64, ctx)
+                    powed = self.rt_call("fs_rt_pow_i64", [lhs_wide, rhs64], I64, ctx)
+                    wide = I64
+                if result_type.kind in _INT_KIND_NAMES and result_type != wide and not inst.metadata.get("wrapping"):
+                    self._trap_unless_in_range(
+                        powed, wide, result_type, TRAP_INTEGER_OVERFLOW,
+                        f"exponentiation on {_INT_KIND_NAMES[result_type.kind]}", ctx,
+                    )
+                self.set_val(inst, self._cvt_to(powed, wide, result_type, ctx), ctx)
             else:
                 lhs64 = self._cvt_to(lhs, operand_type, F64, ctx)
                 rhs64 = self._cvt_to(rhs, self.lower_type_str(rhs_type_str, ctx.type_map), F64, ctx)
@@ -1112,7 +1147,14 @@ class FIRToFLIRLowering:
             return
 
         if op in _ARITH_OPS:
-            self.set_val(inst, ctx.emit(BinOp(_ARITH_OPS[op], result_type, lhs, rhs, result_type)), ctx)
+            flir_op = _ARITH_OPS[op]
+            if result_type.kind in _INT_KIND_NAMES and lhs_type_str != "char":
+                if flir_op in ("div", "mod"):
+                    self._trap_unless_divisible(flir_op, result_type, lhs, rhs, ctx)
+                elif not inst.metadata.get("wrapping"):
+                    self.set_val(inst, self._checked_arith(flir_op, result_type, lhs, rhs, ctx), ctx)
+                    return
+            self.set_val(inst, ctx.emit(BinOp(flir_op, result_type, lhs, rhs, result_type)), ctx)
             return
         if op in ("&&", "||"):
             # Should have been lowered to control flow in FIR; keep a
@@ -1122,10 +1164,82 @@ class FIRToFLIRLowering:
             return
         raise LoweringError(f"unsupported binary operator {op}")
 
+    # -- runtime traps ------------------------------------------------------
+    #
+    # Every check branches to a cold block that calls the one trap entry point
+    # (fs_rt_trap, std/internal/trap.fire) and ends in `unreachable`; nothing
+    # aborts inline, so the entry point can later throw instead of exit.
+
+    def _trap_if(
+        self, cond: FValue, kind: int, detail: str, ctx: _FuncCtx,
+        a: Optional[FValue] = None, b: Optional[FValue] = None,
+    ) -> None:
+        """If `cond` is true, trap. Emission continues in a fresh block."""
+        cold = ctx.func.new_block()
+        cont = ctx.func.new_block()
+        ctx.emit(Br(cond, cold.id, cont.id))
+        ctx.block = cold
+        kind_v = ctx.emit(ConstInt(str(kind), I32))
+        detail_v = ctx.emit(ConstStr(detail))
+        a_v = a if a is not None else ctx.emit(ConstInt("0", I64))
+        b_v = b if b is not None else ctx.emit(ConstInt("0", I64))
+        self.rt_call("fs_rt_trap", [kind_v, detail_v, a_v, b_v], VOID, ctx)
+        ctx.emit(Unreachable())
+        ctx.block = cont
+
+    def _trap_unless_in_range(
+        self, value: FValue, vtype: FLIRType, target: FLIRType, kind: int, detail: str, ctx: _FuncCtx
+    ) -> None:
+        """Trap unless integer `value` (of type vtype) is representable in the
+        integer type `target`."""
+        lo, hi = _INT_BOUNDS[target.kind]
+        vlo, vhi = _INT_BOUNDS[vtype.kind]
+        bad: Optional[FValue] = None
+        if lo > vlo:
+            bad = ctx.emit(BinOp("lt", vtype, value, ctx.emit(ConstInt(str(lo), vtype)), BOOL))
+        if hi < vhi:
+            too_big = ctx.emit(BinOp("gt", vtype, value, ctx.emit(ConstInt(str(hi), vtype)), BOOL))
+            bad = too_big if bad is None else ctx.emit(BinOp("or", BOOL, bad, too_big, BOOL))
+        if bad is not None:
+            self._trap_if(bad, kind, detail, ctx)
+
+    def _checked_arith(self, op: str, t: FLIRType, lhs: FValue, rhs: FValue, ctx: _FuncCtx) -> FValue:
+        ovf = ctx.emit(BinOp("ovf_" + op, t, lhs, rhs, BOOL))
+        self._trap_if(ovf, TRAP_INTEGER_OVERFLOW, f"{_ARITH_NAMES[op]} on {_INT_KIND_NAMES[t.kind]}", ctx)
+        return ctx.emit(BinOp(op, t, lhs, rhs, t))
+
+    def _trap_unless_divisible(self, op: str, t: FLIRType, lhs: FValue, rhs: FValue, ctx: _FuncCtx) -> None:
+        """Division/remainder guards: zero divisor, and signed MIN / -1."""
+        name = f"{_ARITH_NAMES[op]} on {_INT_KIND_NAMES[t.kind]}"
+        zero = ctx.emit(ConstInt("0", t))
+        self._trap_if(ctx.emit(BinOp("eq", t, rhs, zero, BOOL)), TRAP_DIVISION_BY_ZERO, name, ctx)
+        if t.is_signed_int():
+            lowest, _hi = _INT_BOUNDS[t.kind]
+            is_min = ctx.emit(BinOp("eq", t, lhs, ctx.emit(ConstInt(str(lowest), t)), BOOL))
+            is_neg1 = ctx.emit(BinOp("eq", t, rhs, ctx.emit(ConstInt("-1", t)), BOOL))
+            self._trap_if(ctx.emit(BinOp("and", BOOL, is_min, is_neg1, BOOL)), TRAP_INTEGER_OVERFLOW, name, ctx)
+
     def _cvt_to(self, value: FValue, from_type: FLIRType, to_type: FLIRType, ctx: _FuncCtx) -> FValue:
         if from_type == to_type:
             return value
         return ctx.emit(Cvt(value, from_type, to_type))
+
+    def _negated_int_literal(self, operand: Value, result_type: FLIRType, ctx: _FuncCtx) -> Optional[FValue]:
+        """`-<integer literal>` is a negative literal, not a negation: this is
+        what lets `-128` be an int8 even though `128` alone is not."""
+        if result_type.kind not in _INT_KIND_NAMES or not isinstance(operand, FIRValue):
+            return None
+        literal = operand.instruction
+        if not isinstance(literal, IntLiteralInst):
+            return None
+        try:
+            value = -int(literal.text, 0)
+        except ValueError:
+            return None
+        lo, hi = _INT_BOUNDS[result_type.kind]
+        if not lo <= value <= hi:
+            return None
+        return ctx.emit(ConstInt(str(value), result_type))
 
     def lower_unary(self, inst: UnaryOpInst, ctx: _FuncCtx) -> None:
         operand = self.val(inst.operands[0], ctx)
@@ -1137,6 +1251,17 @@ class FIRToFLIRLowering:
             if result_type == F128:
                 self.set_val(inst, self.rt_call("fs_rt_f128_neg", [operand], F128, ctx), ctx)
                 return
+            folded = self._negated_int_literal(inst.operands[0], result_type, ctx)
+            if folded is not None:
+                self.set_val(inst, folded, ctx)
+                return
+            if result_type.kind in _INT_KIND_NAMES and not inst.metadata.get("wrapping"):
+                lowest, _hi = _INT_BOUNDS[result_type.kind]
+                if result_type.is_signed_int():
+                    bad = ctx.emit(BinOp("eq", result_type, operand, ctx.emit(ConstInt(str(lowest), result_type)), BOOL))
+                else:
+                    bad = ctx.emit(BinOp("ne", result_type, operand, ctx.emit(ConstInt("0", result_type)), BOOL))
+                self._trap_if(bad, TRAP_INTEGER_OVERFLOW, f"negation on {_INT_KIND_NAMES[result_type.kind]}", ctx)
             self.set_val(inst, ctx.emit(Neg(operand, result_type)), ctx)
             return
         if inst.op == "+":

@@ -117,6 +117,9 @@ RUNTIME_ABI: dict[str, RuntimeSignature] = {
     "fs_rt_f128_to_f64": _sig(F128, ret=F64),
     "fs_rt_f128_to_str": _sig(F128, ret=STRING, effect=MemoryEffect.RETURNS_FRESH),
     "fs_rt_str_to_f128": _sig(STRING, ret=F128),
+    # -- runtime traps (std/internal/trap.fire): the single trap entry point; never returns --
+    "fs_rt_trap": _sig(I32, STRING, I64, I64, ret=VOID),
+    "fs_rt_pow_u64": _sig(U64, U64, ret=U64),
     # -- backend-only primitives (no firescript source; assembler builtins) --
     "fs_rt_mem_copy": _sig(PTR, PTR, U64, ret=VOID),
     "fs_rt_f64_bits": _sig(F64, ret=U64),

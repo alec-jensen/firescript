@@ -1,0 +1,66 @@
+// Runtime helpers whose arithmetic deliberately wraps modulo 2^N.
+//
+// firescript's integer arithmetic traps on overflow by default (see
+// std/internal/trap.fire). This file opts out for the whole file with
+// `directive enable_wrapping_arithmetic;`, so every + - * and unary - below
+// wraps. Keep it small: only code whose correctness depends on modular
+// arithmetic belongs here (hashing, two's-complement negation of unsigned
+// values). Everything else in std/internal/ uses ordinary, checked operators.
+//
+// This module is compiled through the normal pipeline and merged into
+// every program built with the FIR backends; see std/internal/alloc.fire
+// for the shared std/internal/ authoring rules.
+
+directive enable_lowlevel_runtime;
+directive enable_wrapping_arithmetic;
+
+// Multiplicative hash of an allocation address (alloc.fire's registry).
+fn rt_reg_hash(p: uint64, cap: uint64) -> uint64 {
+    h: uint64 = (p / 16u64) * 2654435761u64;
+    return h % cap;
+}
+
+// Two's-complement negation of an unsigned value (0 - x modulo 2^64).
+fn rt_neg_u64(x: uint64) -> uint64 {
+    return 0u64 - x;
+}
+
+// Decimal string parser (atoi/atoll semantics): digits accumulate modulo
+// 2^64 and are reinterpreted by the caller's cast, so out-of-range input
+// wraps rather than traps.
+fn rt_parse_int(addr: uint64) -> int64 {
+    if (addr == 0u64) {
+        return 0i64;
+    }
+    i: uint64 = 0u64;
+    // Skip leading whitespace (space, tab, newline, CR, FF, VT).
+    while (true) {
+        c: uint8 = mem_load_u8(addr + i);
+        if (c == 32u8 || (c >= 9u8 && c <= 13u8)) {
+            i = i + 1u64;
+        } else {
+            break;
+        }
+    }
+    negative: bool = false;
+    sign: uint8 = mem_load_u8(addr + i);
+    if (sign == 45u8) { // '-'
+        negative = true;
+        i = i + 1u64;
+    } else if (sign == 43u8) { // '+'
+        i = i + 1u64;
+    }
+    value: int64 = 0i64;
+    while (true) {
+        c: uint8 = mem_load_u8(addr + i);
+        if (c < 48u8 || c > 57u8) {
+            break;
+        }
+        value = value * 10i64 + ((c - 48u8) as int64);
+        i = i + 1u64;
+    }
+    if (negative) {
+        return -value;
+    }
+    return value;
+}

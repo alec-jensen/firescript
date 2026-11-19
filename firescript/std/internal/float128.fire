@@ -19,6 +19,9 @@
 //   bias = 16383u64
 
 directive enable_lowlevel_runtime;
+// The soft-float is built on modular uint64 arithmetic (carry/borrow
+// detection, 128-bit limb products), so the whole file wraps by design.
+directive enable_wrapping_arithmetic;
 
 // ---- Decode helpers ----
 

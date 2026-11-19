@@ -1,0 +1,15 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: multiplication on uint16
+// uint16: MAX * 2 traps.
+import @firescript/std.io.println;
+
+println("before");
+a: uint16 = 65535u16;
+b: uint16 = 2u16;
+c: uint16 = a * b;
+println(c);
+println("not reached");
+
+/* EXPECT
+before
+*/

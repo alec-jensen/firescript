@@ -1,0 +1,14 @@
+//@ exit-code: 101
+//@ stderr-contains: firescript runtime error: IntegerOverflow: addition on int16
+// int16: x += n past MAX traps.
+import @firescript/std.io.println;
+
+println("before");
+a: int16 = 32000i16;
+a += 1000i16;
+println(a);
+println("not reached");
+
+/* EXPECT
+before
+*/
