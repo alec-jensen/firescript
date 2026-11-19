@@ -14,7 +14,7 @@ fn wrong_explicit_type_argument_int() -> void {
 }
 
 // Constraint violation
-constraint Numeric = int32 | float32;
+constraint Numeric = Union<int32, float32>;
 
 fn add<T: Numeric>(a: T, b: T) -> T {
     return a + b;

@@ -2,9 +2,9 @@
 
 import @firescript/std.io.println;
 
-constraint SmallInt = int8 | int16;
-constraint MediumInt = int32 | int64;
-constraint AllInt = SmallInt | MediumInt;  // Nested alias
+constraint SmallInt = Union<int8, int16>;
+constraint MediumInt = Union<int32, int64>;
+constraint AllInt = Union<SmallInt, MediumInt>;  // Nested alias
 
 fn triple<T: AllInt>(value: T) -> T {
     return value + value + value;

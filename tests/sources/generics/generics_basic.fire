@@ -4,7 +4,7 @@
 import @firescript/std.io.println;
 
 // Generic max function with type union constraint
-fn max<T: int32 | int64 | float32 | float64>(a: T, b: T) -> T {
+fn max<T: Union<int32, int64, float32, float64>>(a: T, b: T) -> T {
     if (a > b) {
         return a;
     }
@@ -12,7 +12,7 @@ fn max<T: int32 | int64 | float32 | float64>(a: T, b: T) -> T {
 }
 
 // Generic min function
-fn min<T: int32 | int64 | float32 | float64>(a: T, b: T) -> T {
+fn min<T: Union<int32, int64, float32, float64>>(a: T, b: T) -> T {
     if (a < b) {
         return a;
     }
@@ -20,7 +20,7 @@ fn min<T: int32 | int64 | float32 | float64>(a: T, b: T) -> T {
 }
 
 // Generic abs function for signed integers
-fn abs<T: int8 | int16 | int32 | int64>(x: T, zero: T) -> T {
+fn abs<T: Union<int8, int16, int32, int64>>(x: T, zero: T) -> T {
     if (x < zero) {
         return -x;
     }

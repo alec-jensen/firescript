@@ -1,7 +1,7 @@
 // firescript std.math library
 // Simple math utilities and basic trig
 
-constraint Numeric = int8 | int16 | int32 | int64 | uint8 | uint16 | uint32 | uint64 | float32 | float64 | float128;
+constraint Numeric = Union<int8, int16, int32, int64, uint8, uint16, uint32, uint64, float32, float64, float128>;
 
 const PI64: float64 = 3.141592653589793f64;
 const PI_2_64: float64 = 1.5707963267948966f64;

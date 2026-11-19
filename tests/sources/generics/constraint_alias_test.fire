@@ -3,8 +3,8 @@
 import @firescript/std.io.println;
 
 // Define some constraint aliases
-constraint NumericPrimitive = int32 | int64 | float32 | float64;
-constraint SignedInteger = int8 | int16 | int32 | int64;
+constraint NumericPrimitive = Union<int32, int64, float32, float64>;
+constraint SignedInteger = Union<int8, int16, int32, int64>;
 
 // Use the constraint alias in a generic function
 fn add<T: NumericPrimitive>(a: T, b: T) -> T {

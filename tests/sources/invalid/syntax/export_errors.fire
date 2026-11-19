@@ -7,7 +7,7 @@ export import utils.helper  //~ ERROR FS-PARSE-0012 @8
 export directive enable_drops;  //~ ERROR FS-PARSE-0012 @8
 
 // export of a constraint declaration
-export constraint Nums = int32 | int64;  //~ ERROR FS-PARSE-0012 @8
+export constraint Nums = Union<int32, int64>;  //~ ERROR FS-PARSE-0012 @8
 
 // export applied to a non-declaration statement
 export println("hi");  //~ ERROR FS-PARSE-0012 @8

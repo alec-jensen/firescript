@@ -564,13 +564,13 @@ fn max<T: Comparable>(a: T, b: T) -> T {
 }
 ```
 
-**Type Union Constraints:**
+**Type Union Constraints [IMPLEMENTED]:**
 
-For simpler cases, you can use type unions to explicitly list which types are allowed:
+For simpler cases, you can use `Union<A, B, ...>` to explicitly list which types are allowed (the old `A | B` form is removed; `|` in a constraint is a compile error):
 
 ```firescript
 // T can be int32, int64, or float64
-fn add<T: int32 | int64 | float64>(a: T, b: T) -> T {
+fn add<T: Union<int32, int64, float64>>(a: T, b: T) -> T {
     return a + b;
 }
 
@@ -583,7 +583,7 @@ result2: float64 = add(3.14f64, 2.71f64); // ✅ Works
 class Point { /* ... */ }
 class Circle { /* ... */ }
 
-fn process<T: Point | Circle>(shape: T) -> T {
+fn process<T: Union<Point, Circle>>(shape: T) -> T {
     // Can work with Point or Circle
     return shape;
 }
@@ -591,12 +591,12 @@ fn process<T: Point | Circle>(shape: T) -> T {
 
 **Multiple Constraints [PLANNED]:**
 
-Combining interface constraints with type unions is planned for when interfaces land:
+Combining interface constraints with type unions is planned for when interfaces land. `Intersection<A, B>` is reserved for this and currently reports a "not supported yet" error; `&` is not valid in a constraint:
 
 ```firescript
 // Future syntax
 // T must satisfy Comparable AND be in the union
-fn clamp<T: Comparable & (int32 | float64)>(value: T, min: T, max: T) -> T {
+fn clamp<T: Intersection<Comparable, Union<int32, float64>>>(value: T, min: T, max: T) -> T {
     if (value < min) { return min; }
     if (value > max) { return max; }
     return value;
@@ -605,7 +605,7 @@ fn clamp<T: Comparable & (int32 | float64)>(value: T, min: T, max: T) -> T {
 
 **When to Use Each:**
 
-- **Type unions** (`T: int32 | float64`): When you want to explicitly list allowed types, simple and explicit — available today
+- **Type unions** (`T: Union<int32, float64>`): When you want to explicitly list allowed types, simple and explicit — available today
 - **Constraint aliases** (`T: Numeric`): Named, reusable type unions — available today (see [Custom Type Constraints](#custom-type-constraints))
 - **Interface constraints** (`T: Comparable`) [PLANNED]: When you need types with specific capabilities, works with any type that implements the interface
 
@@ -617,12 +617,12 @@ Type unions provide a simple, explicit way to define generic constraints by list
 
 ```firescript
 // Simple union - T can be int32 or float64
-fn convert<T: int32 | float64>(value: T) -> T {
+fn convert<T: Union<int32, float64>>(value: T) -> T {
     return value;
 }
 
 // Multiple types in union
-fn process<T: int8 | int16 | int32 | int64>(value: T) -> T {
+fn process<T: Union<int8, int16, int32, int64>>(value: T) -> T {
     return value * 2;
 }
 
@@ -630,7 +630,7 @@ fn process<T: int8 | int16 | int32 | int64>(value: T) -> T {
 class Dog { /* ... */ }
 class Cat { /* ... */ }
 
-fn feed<T: Dog | Cat>(animal: T) -> T {
+fn feed<T: Union<Dog, Cat>>(animal: T) -> T {
     // Feed the animal
     return animal;
 }
@@ -643,7 +643,7 @@ Once interfaces are implemented, you will be able to require that types satisfy 
 ```firescript
 // Future syntax
 // T must be Comparable AND one of these specific types
-fn max<T: Comparable & (int32 | int64 | float64)>(a: T, b: T) -> T {
+fn max<T: Intersection<Comparable, Union<int32, int64, float64>>>(a: T, b: T) -> T {
     if (a > b) { return a; }
     return b;
 }
@@ -653,7 +653,7 @@ fn max<T: Comparable & (int32 | int64 | float64)>(a: T, b: T) -> T {
 
 ```firescript
 // Define a function that only works with specific numeric types
-fn safeDivide<T: float32 | float64>(a: T, b: T) -> T {
+fn safeDivide<T: Union<float32, float64>>(a: T, b: T) -> T {
     if (b == 0.0) {
         return a - a;  // Safe zero default for floats
     }
@@ -747,7 +747,7 @@ Type inference follows these rules:
 4. All type parameters must be consistently inferred
 
 ```firescript
-constraint NumericPrimitive = int32 | int64 | float32 | float64;
+constraint NumericPrimitive = Union<int32, int64, float32, float64>;
 
 fn add<T: NumericPrimitive>(a: T, b: T) -> T {
     return a + b;
@@ -811,7 +811,7 @@ Generics in firescript use **monomorphization** at compile time:
 
 ```firescript
 // You write this once:
-fn max<T: int32 | float32>(a: T, b: T) -> T {
+fn max<T: Union<int32, float32>>(a: T, b: T) -> T {
     if (a > b) { return a; }
     return b;
 }
@@ -835,20 +835,20 @@ This approach is similar to C++ templates and Rust generics, ensuring that gener
 
 For frequently used type union constraints, you can define named constraint aliases to avoid repetition and improve code readability.
 
-**Defining Constraint Aliases:**
+**Defining Constraint Aliases [IMPLEMENTED]:**
 
 ```firescript
 // Define a constraint alias using the 'constraint' keyword
-constraint NumericPrimitive = int32 | int64 | float32 | float64;
+constraint NumericPrimitive = Union<int32, int64, float32, float64>;
 
-constraint SignedInteger = int8 | int16 | int32 | int64;
+constraint SignedInteger = Union<int8, int16, int32, int64>;
 
-constraint UnsignedInteger = uint8 | uint16 | uint32 | uint64;
+constraint UnsignedInteger = Union<uint8, uint16, uint32, uint64>;
 
-constraint FloatingPoint = float32 | float64 | float128;
+constraint FloatingPoint = Union<float32, float64, float128>;
 ```
 
-**Using Constraint Aliases:**
+**Using Constraint Aliases [IMPLEMENTED]:**
 
 ```firescript
 // Use the constraint alias just like a built-in constraint
@@ -878,28 +878,22 @@ sum: int32 = add(10i32, 20i32);          // ✅ Works with NumericPrimitive
 clamped: float64 = clamp(5.5, 0.0, 10.0); // ✅ Works with FloatingPoint
 ```
 
-**Combining Constraint Aliases:**
+**Combining Constraint Aliases [IMPLEMENTED]:**
 
-You can combine constraint aliases with other constraints:
+A `Union<...>` may contain other aliases:
 
 ```firescript
-constraint IntegerType = SignedInteger | UnsignedInteger;
-
-// Combine with interface constraints
-fn process<T: Comparable & IntegerType>(value: T) -> T {
-    // T must be comparable AND one of the integer types
-    return value;
-}
+constraint IntegerType = Union<SignedInteger, UnsignedInteger>;
 
 // Combine multiple constraint aliases with unions
-constraint AllNumeric = SignedInteger | UnsignedInteger | FloatingPoint;
+constraint AllNumeric = Union<SignedInteger, UnsignedInteger, FloatingPoint>;
 
 fn compute<T: AllNumeric>(value: T) -> T {
     return value * value;
 }
 ```
 
-**Constraint Aliases for Custom Types:**
+**Constraint Aliases for Custom Types [IMPLEMENTED]:**
 
 Constraint aliases also work with custom classes:
 
@@ -909,7 +903,7 @@ class Square { /* ... */ }
 class Triangle { /* ... */ }
 
 // Define a constraint for shape types
-constraint Shape2D = Circle | Square | Triangle;
+constraint Shape2D = Union<Circle, Square, Triangle>;
 
 // Use in generic functions
 fn area<T: Shape2D>(shape: T) -> T {
@@ -917,12 +911,12 @@ fn area<T: Shape2D>(shape: T) -> T {
     return shape.calculateArea();
 }
 
-// Can be combined with interfaces
+// [PLANNED] Combining with interfaces (interfaces do not exist yet)
 interface Drawable {
     fn draw(&this) -> void;
 }
 
-fn render<T: Drawable & Shape2D>(shape: T) -> T {
+fn render<T: Intersection<Drawable, Shape2D>>(shape: T) -> T {
     shape.draw();
     return shape;
 }
@@ -931,7 +925,7 @@ fn render<T: Drawable & Shape2D>(shape: T) -> T {
 **Benefits:**
 
 1. **DRY (Don't Repeat Yourself)**: Define the constraint once, use it many times
-2. **Readability**: `T: NumericPrimitive` is clearer than `T: int32 | int64 | float32 | float64`
+2. **Readability**: `T: NumericPrimitive` is clearer than `T: Union<int32, int64, float32, float64>`
 3. **Maintainability**: Change the constraint in one place instead of updating every function
 4. **Semantic clarity**: Names like `SignedInteger` convey intent better than type lists
 
@@ -939,9 +933,9 @@ fn render<T: Drawable & Shape2D>(shape: T) -> T {
 
 ```firescript
 // Constraint alias - just a shorthand for a type union (implemented)
-constraint FastInt = int32 | int64;
+constraint FastInt = Union<int32, int64>;
 fn add<T: FastInt>(a: T, b: T) -> T { return a + b; }
-// Expands to: T add<T: int32 | int64>(T a, T b)
+// Expands to: T add<T: Union<int32, int64>>(T a, T b)
 
 // Interface - defines required capabilities (PLANNED, future syntax)
 interface Printable {
@@ -964,10 +958,10 @@ Constraint aliases follow the same scoping rules as other declarations:
 
 ```firescript
 // Module-level constraint (usable throughout the file)
-constraint ModuleNumeric = int32 | float32;
+constraint ModuleNumeric = Union<int32, float32>;
 
 // Exported module API
-export constraint PublicNumeric = int32 | float64;
+export constraint PublicNumeric = Union<int32, float64>;
 export fn compute<T: PublicNumeric>(value: T) -> T {
     return value;
 }
@@ -1144,7 +1138,7 @@ printValue(PrintableInt(42));  // ✅ Works!
 ```
 
 **Summary:**
-- **Type unions** (`T: int32 | float64`): Simplest way to constrain primitives - **use this first!**
+- **Type unions** (`T: Union<int32, float64>`): Simplest way to constrain primitives - **use this first!**
 - **Built-in interfaces** (`SignedInt`, `Float`, `Comparable`, etc.): Work with primitives directly for broader type families
 - **Custom interfaces with wrappers**: Only when you need custom methods on primitives
 
@@ -1168,7 +1162,7 @@ fn renderAll<T: Drawable>(items: T[]) -> void {
 }
 
 // Multiple interface constraints
-fn processItem<T: Printable & Drawable>(item: T) -> void {
+fn processItem<T: Intersection<Printable, Drawable>>(item: T) -> void {
     print("Processing: " + item.toString());
     item.draw();
 }
@@ -1262,7 +1256,7 @@ fn normalize<T: Float>(value: T, min: T, max: T) -> T {
 }
 
 // Combine interface constraints
-fn clamp<T: Comparable & Numeric>(value: T, min: T, max: T) -> T {
+fn clamp<T: Intersection<Comparable, Numeric>>(value: T, min: T, max: T) -> T {
     if (value < min) {
         return min;
     }
@@ -1427,7 +1421,7 @@ The current firescript compiler supports:
 * [IMPLEMENTED] Unsuffixed numeric literals take the type they initialize (declarations, assignments, arguments, return values, array elements), with compile-time range checks
 * [IMPLEMENTED] Generics
   * Generic functions (with and without constraints)
-  * Type union constraints (`T: int32 | float64`)
+  * Type union constraints (`T: Union<int32, float64>`)
   * Named constraint aliases (`constraint Name = ...`)
   * Generic classes
   * Type inference for generic calls, plus explicit type arguments

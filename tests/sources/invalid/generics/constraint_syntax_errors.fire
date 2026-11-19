@@ -1,0 +1,22 @@
+// Constraint syntax: '|' and '&' are not constraint operators, Intersection
+// is not supported yet, and constraint names must be known.
+
+constraint PipeAlias = int32 | int64;  //~ ERROR FS-PARSE-0012 @30
+
+constraint InterAlias = Intersection<int32, int64>;  //~ ERROR FS-PARSE-0012 @25
+
+fn pipeBound<T: int32 | float64>(a: T) -> T {  //~ ERROR FS-PARSE-0012 @23
+    return a;
+}
+
+fn ampBound<T: int32 & float64>(a: T) -> T {  //~ ERROR FS-PARSE-0012 @22
+    return a;
+}
+
+fn interBound<T: Intersection<int32, float64>>(a: T) -> T {  //~ ERROR FS-PARSE-0012 @18
+    return a;
+}
+
+fn unknownBound<T: Union<int32, Nonsense>>(a: T) -> T {  //~ ERROR FS-PARSE-0012 @33
+    return a;
+}

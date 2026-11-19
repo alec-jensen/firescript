@@ -1,0 +1,25 @@
+// Constraints are written Union<A, B, ...>, in an inline bound, in a
+// constraint alias, and nested.
+import @firescript/std.io.println;
+
+constraint Small = Union<int8, int16>;
+
+fn pick<T: Union<int32, float64>>(a: T, b: T) -> T {
+    return b;
+}
+
+fn widen<T: Union<Small, int32>>(a: T) -> T {
+    return a;
+}
+
+fn main() -> void {
+    println(pick(1i32, 2i32));
+    println(pick(1.5, 2.5));
+    println(widen(7i16));
+}
+
+/* EXPECT
+2
+2.500000
+7
+*/
