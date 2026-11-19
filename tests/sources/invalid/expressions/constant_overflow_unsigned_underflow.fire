@@ -1,0 +1,2 @@
+// Unsigned subtraction below zero.
+a: uint8 = 0u8 - 1u8;  //~ ERROR FS-SEM-0019 @16

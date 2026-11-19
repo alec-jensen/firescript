@@ -3,7 +3,9 @@ import re
 from typing import Optional
 
 from utils.type_utils import is_owned, is_copyable
-from utils.literal_utils import unsuffixed_literal_of, literal_range_error, coerce_literal
+from utils.literal_utils import (
+    unsuffixed_literal_of, literal_range_error, coerce_literal, int_literal_value, INT_RANGES,
+)
 from enums import NodeTypes
 from .ast_node import ASTNode
 from .statements import StatementsMixin
@@ -310,6 +312,87 @@ class TypeSystemMixin(StatementsMixin):
         """Type an unsuffixed numeric literal from the type it initializes
         (docs/reference/type_system.md, "Type Inference for Literals")."""
         return coerce_literal(node, expected)
+
+    # -- compile-time constant integer expressions ----------------------------
+
+    def _const_int(self, node: Optional[ASTNode]) -> Optional[int]:
+        """The exact value of an all-literal integer expression, or None."""
+        if node is None:
+            return None
+        cached = getattr(node, "_const_value", None)
+        if cached is not None:
+            return cached
+        if (
+            node.node_type == NodeTypes.LITERAL
+            and node.token is not None
+            and node.token.type == "INTEGER_LITERAL"
+        ):
+            return int_literal_value(node)
+        return None
+
+    def _fold_binary_constant(self, node: ASTNode, left: ASTNode, right: ASTNode, op: str, type_str: str) -> None:
+        """Evaluate `left op right` when both are constant integers of
+        `type_str`; report an overflow, or a division by a constant zero."""
+        if type_str not in INT_RANGES:
+            return
+        rv = self._const_int(right)
+        if op in ("/", "%") and rv == 0:
+            self.constant_division_by_zero_error(
+                f"Division by zero: the right operand of '{op}' is the constant 0", node.token
+            )
+            return
+        lv = self._const_int(left)
+        if lv is None or rv is None:
+            return
+        if op == "+":
+            result = lv + rv
+        elif op == "-":
+            result = lv - rv
+        elif op == "*":
+            result = lv * rv
+        elif op == "/":
+            result = abs(lv) // abs(rv) * (1 if (lv < 0) == (rv < 0) else -1)
+        elif op == "%":
+            result = abs(lv) % abs(rv) * (1 if lv >= 0 else -1)
+        elif op == "**":
+            if rv < 0:
+                return
+            if rv > 128 and abs(lv) > 1:
+                result = INT_RANGES[type_str][1] + 1  # certainly out of range
+            else:
+                result = lv ** rv
+        else:
+            return
+        self._check_constant_range(node, result, type_str)
+
+    def _check_constant_range(self, node: ASTNode, result: int, type_str: str) -> None:
+        lo, hi = INT_RANGES[type_str]
+        if lo <= result <= hi:
+            node._const_value = result
+            return
+        shown = str(result) if abs(result) < 10 ** 30 else "a value too large to display"
+        self.constant_overflow_error(
+            f"Constant expression overflows type {type_str}: the result {shown} is outside {lo} to {hi}",
+            node.token,
+        )
+
+    def _check_constant_index(self, node: ASTNode, symbol_table: dict) -> None:
+        """A constant index into an array with a declared size must be in
+        range (negative indices count from the end: -len..-1)."""
+        arr, idx = node.children[0], node.children[1]
+        if arr.node_type != NodeTypes.IDENTIFIER:
+            return
+        info = symbol_table.get(arr.name)
+        size = info[3] if info is not None and len(info) > 3 else None
+        value = self._const_int(idx)
+        if size is None or value is None:
+            return
+        if value >= size or value < -size:
+            self.constant_index_error(
+                f"Array index {value} is out of range for '{arr.name}' of size {size} "
+                f"(valid indices are {-size} to {size - 1})",
+                idx.token or node.token,
+            )
 
     def _is_subclass_of(self, actual: str, expected: str) -> bool:
         cur = self.user_class_bases.get(actual)
@@ -1106,6 +1189,10 @@ class TypeSystemMixin(StatementsMixin):
                     f"Operator '{op_symbol}=' not supported between types {left_type} and {right_type}",
                     node.token,
                 )
+            elif op_symbol in ("/", "%") and left_type in INT_RANGES and self._const_int(node.children[0]) == 0:
+                self.constant_division_by_zero_error(
+                    f"Division by zero: the right operand of '{op_symbol}=' is the constant 0", node.token
+                )
 
         elif node.node_type == NodeTypes.BINARY_EXPRESSION:
             left_type = child_types[0]
@@ -1188,6 +1275,8 @@ class TypeSystemMixin(StatementsMixin):
                 self.invalid_type_error(f"Unsupported binary operator '{op}'", node.token)
 
             node.return_type = node_type_str
+            if node_type_str is not None and len(node.children) == 2:
+                self._fold_binary_constant(node, node.children[0], node.children[1], op, node_type_str)
 
         elif node.node_type == NodeTypes.UNARY_EXPRESSION:
             op = node.name
@@ -1249,6 +1338,10 @@ class TypeSystemMixin(StatementsMixin):
                 node_type_str = None
 
             node.return_type = node_type_str
+            if op in ("+", "-") and node_type_str in INT_RANGES and len(node.children) == 1:
+                cv = self._const_int(node.children[0])
+                if cv is not None:
+                    self._check_constant_range(node, -cv if op == "-" else cv, node_type_str)
 
         elif node.node_type == NodeTypes.EQUALITY_EXPRESSION:  # ==, !=
             left_type = child_types[0]
@@ -1850,6 +1943,7 @@ class TypeSystemMixin(StatementsMixin):
                 )
             else:
                 node_type_str = array_type[:-2]  # The element type
+                self._check_constant_index(node, symbol_table)
 
             node.return_type = node_type_str
 

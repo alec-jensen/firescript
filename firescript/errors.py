@@ -223,6 +223,24 @@ class NullableConversionError(CompileTimeError):
     message_template = "{detail}"
 
 
+class ConstantOverflowError(CompileTimeError):
+    code = "FS-SEM-0019"
+    category = ErrorCategory.SEMANTIC
+    message_template = "{detail}"
+
+
+class ConstantIndexError(CompileTimeError):
+    code = "FS-SEM-0020"
+    category = ErrorCategory.SEMANTIC
+    message_template = "{detail}"
+
+
+class ConstantDivisionByZeroError(CompileTimeError):
+    code = "FS-SEM-0021"
+    category = ErrorCategory.SEMANTIC
+    message_template = "{detail}"
+
+
 class IRVerificationError(Exception):
     """Internal compiler error: generated IR violates a validity rule.
 

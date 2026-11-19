@@ -1,0 +1,2 @@
+// An all-literal integer expression whose exact result does not fit its type.
+a: int8 = 127i8 + 1i8;  //~ ERROR FS-SEM-0019 @17

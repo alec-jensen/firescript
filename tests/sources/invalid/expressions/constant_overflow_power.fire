@@ -1,0 +1,2 @@
+// `**` is evaluated exactly: 2 ** 40 does not fit in int32.
+a: int32 = 2 ** 40;  //~ ERROR FS-SEM-0019 @14

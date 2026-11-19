@@ -1,0 +1,5 @@
+// Negative indices count from the end: valid range is -len..-1.
+import @firescript/std.io.println;
+
+arr: int32[5] = [1, 2, 3, 4, 5];
+println(arr[-6]);  //~ ERROR FS-SEM-0020 @13

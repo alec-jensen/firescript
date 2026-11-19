@@ -50,6 +50,8 @@ secondLast: int8 = scores[-2];   // 90 (second to last)
 
 ⚠️ **Warning:** Accessing an index outside the array bounds will cause a runtime error. Always ensure your index is valid before access.
 
+A constant index into an array whose size is declared (`int32[5]`) is checked at compile time [IMPLEMENTED]: `arr[10]` and `arr[-6]` on an `int32[5]` are errors (`FS-SEM-0020`). The valid constant indices are `-length` to `length - 1`.
+
 ## Array Operations
 
 firescript provides several built-in methods for manipulating arrays:

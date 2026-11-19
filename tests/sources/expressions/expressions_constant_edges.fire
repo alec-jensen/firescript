@@ -1,0 +1,46 @@
+import @firescript/std.io.println;
+
+// Valid twins of the constant-expression errors: results exactly at the
+// type limits are fine, as are in-range and negative constant indices.
+a: int8 = 127i8 + 0i8;
+b: int8 = -128i8;
+c: int32 = 2147483647;
+d: int32 = 2 ** 30;
+e: uint8 = 255u8 - 0u8;
+f: int8 = 100i8 + 27i8;
+g: int8 = -(-127i8);
+x: int32 = 10;
+h: int32 = x / 3;
+println(a);
+println(b);
+println(c);
+println(d);
+println(e);
+println(f);
+println(g);
+println(h);
+println(7 / 2);
+println(-7 % 3);
+
+arr: int32[5] = [10, 20, 30, 40, 50];
+println(arr[0]);
+println(arr[4]);
+println(arr[-1]);
+println(arr[-5]);
+
+/* EXPECT
+127
+-128
+2147483647
+1073741824
+255
+127
+127
+3
+3
+-1
+10
+50
+50
+10
+*/

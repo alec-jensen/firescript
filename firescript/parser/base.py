@@ -13,6 +13,9 @@ from errors import (
     ExpectedTokenError,
     MissingBracesError,
     InvalidEscapeError,
+    ConstantOverflowError,
+    ConstantIndexError,
+    ConstantDivisionByZeroError,
     MissingIdentifierError,
     InvalidExpressionError,
     InvalidArrayAccessError,
@@ -634,6 +637,15 @@ class ParserBase:
 
     def invalid_escape_error(self, char: str, literal: str, token: Optional[Token] = None) -> None:
         self.report_error(InvalidEscapeError(char=char, literal=literal, source_file=self.filename), token=token)
+
+    def constant_overflow_error(self, detail: str, token: Optional[Token] = None) -> None:
+        self.report_error(ConstantOverflowError(detail=detail, source_file=self.filename), token=token)
+
+    def constant_index_error(self, detail: str, token: Optional[Token] = None) -> None:
+        self.report_error(ConstantIndexError(detail=detail, source_file=self.filename), token=token)
+
+    def constant_division_by_zero_error(self, detail: str, token: Optional[Token] = None) -> None:
+        self.report_error(ConstantDivisionByZeroError(detail=detail, source_file=self.filename), token=token)
 
     def missing_identifier_error(self, token: Optional[Token] = None) -> None:
         self.report_error(MissingIdentifierError(source_file=self.filename), token=token)

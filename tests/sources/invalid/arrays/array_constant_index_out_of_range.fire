@@ -1,0 +1,6 @@
+// A constant index into an array of known size must be in range.
+import @firescript/std.io.println;
+
+arr: int32[5] = [1, 2, 3, 4, 5];
+println(arr[10]);  //~ ERROR FS-SEM-0020 @13
+println(arr[5]);  //~ ERROR FS-SEM-0020 @13

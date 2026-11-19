@@ -147,10 +147,15 @@ max: int8 = 127i8;
 overflow: int8 = max + 1i8;  // Runtime error: Integer overflow
 ```
 
-Overflows that can be detected at compile-time (e.g., constant expressions) will result in a compile-time error.
+Overflows that can be detected at compile-time (e.g., constant expressions) will result in a compile-time error. [IMPLEMENTED] A literal that does not fit its type is rejected, and so is an integer expression made only of literals whose exact result does not fit the type of its operands (`FS-SEM-0019`); `**` is evaluated exactly. Unsuffixed literals are `int32`.
 
 ```firescript
-compileTimeOverflow: int8 = 128i8;  // Compile-time error: Integer overflow
+compileTimeOverflow: int8 = 128i8;      // Compile-time error: literal out of range
+a: int8 = 127i8 + 1i8;                  // Compile-time error (FS-SEM-0019)
+b: int8 = 3i8 * 100i8;                  // Compile-time error (FS-SEM-0019)
+c: int8 = -(-128i8);                    // Compile-time error (FS-SEM-0019)
+d: int32 = 2147483647 + 1;              // Compile-time error (FS-SEM-0019)
+e: int32 = 2 ** 40;                     // Compile-time error (FS-SEM-0019)
 ```
 
 ### Floating Point Types (`floatN`)
