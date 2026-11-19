@@ -435,7 +435,7 @@ labeled commit on a branch; a session may build on it or discard it.
   float64>`; compile-fail for `|`, `Intersection<...>`, `&`, an unknown name), changelog Breaking.
 - **Start from:** parts may exist in WIP `1683fac` (`docs-and-cleanup-060`).
 
-#### T-060-09 · Explicit receivers: the compiler rule · M · `todo`
+#### T-060-09 · Explicit receivers: the compiler rule · M · `done (task/T-060-09)`
 - **Goal:** the rule in "Decisions" is enforced with coded diagnostics: receiver-less instance
   method; receiver-less constructor; `owned this` in an ordinary method (today the misleading
   "Constructor 'A' expected 0 args"); plain `this` receiver (today "Expected ':' after parameter

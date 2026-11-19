@@ -1124,7 +1124,14 @@ class SemanticAnalyzer:
         elif node.node_type == NodeTypes.VARIABLE_ASSIGNMENT:
             # Check if target is valid (not moved)
             self._check_use_after_move(node.name, node)
-            if self._is_read_only_borrowed_param(node.name):
+            if node.name == "this":
+                self.report_error(
+                    SemanticError(
+                        message="Cannot assign to 'this'; assign to its fields instead"
+                    ),
+                    node,
+                )
+            elif self._is_read_only_borrowed_param(node.name):
                 self.report_error(
                     SemanticError(
                         message=(

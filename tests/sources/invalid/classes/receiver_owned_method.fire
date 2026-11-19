@@ -1,0 +1,12 @@
+// Consuming receivers are not supported on ordinary methods.
+class A {
+    x: int32;
+
+    fn A(&mut this, x: int32) {
+        this.x = x;
+    }
+
+    fn take(owned this) -> int32 {  //~ ERROR FS-PARSE-0012 @13
+        return 1;
+    }
+}
