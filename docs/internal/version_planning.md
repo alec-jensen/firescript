@@ -82,6 +82,13 @@ Confirmed by the owner. Design detail is in
 - **The legacy conversion builtins are removed** (`toInt`, `toFloat`, `toDouble`, `toBool`,
   `toChar`, `toString`, `int`, `i32_to_f64`, `i32_to_f32`, `f64_to_i32`, `f32_to_i32`, `i32_to_str`,
   `i64_to_str`, `f64_to_str`, `f32_to_str`). `as` casts stay until the 0.9.0 bindings.
+- **Absence is `Option<T>`; `null` and `T?` go away (decided 2026-11-19).** One mechanism, not two.
+  `Option<T>` stays explicit: no implicit wrapping of a value or `null` into an `Option` on
+  return or assignment. `Some(5)` / `None()` infer their type arguments from the expected type
+  (a declared return type, a typed variable, a parameter), so `Option<int32>.None()` need not be
+  spelled out there. `T?`, the `null` literal and the null-flow rule are removed once generic
+  enums and `match` exist (0.9.0); until then they stay as shipped in 0.6.0, and the narrowing rule
+  under T-060-04 is interim. Design: [language_model_redesign.md](language_model_redesign.md) §12.
 - **Errors (0.9.0):** operations throw catchable exceptions (`Exception extends Object`);
   fallible function calls return `Result`. Until then traps print a message and exit through one
   runtime entry point.
@@ -376,7 +383,8 @@ labeled commit on a branch; a session may build on it or discard it.
   and may be left out of this merge.
 - **Steps:** branch from it, merge `main`; run the CI profile; fix fallout. Confirm firescript/std,
   `examples/` and every test were migrated for the new rules; review the nullable narrowing design
-  with the owner (it is a judgment call: report exactly what it accepts); docs
+  with the owner (it is a judgment call: report exactly what it accepts; the whole nullable
+  feature is interim, see "Absence is `Option<T>`" above); docs
   (`control_flow.md`, `functions.md`, `type_system.md`, the nullable docs); changelog Breaking
   Changes.
 - **Done when:** merged, CI profile green.
@@ -633,6 +641,7 @@ on it. Full design: [language_model_redesign.md](language_model_redesign.md) §5
 | `Box<T>` and `Shared<T>` | Recursive types, owned polymorphism and dynamic lifetime. Lowest priority in this release; may slip. |
 | Capturing and escaping closures | Depend on exclusivity and `Box`. Lowest priority; may slip. |
 | Exceptions raised by language operations (overflow, division by zero, bounds, invalid casts) as catchable `Exception extends Object` subclasses with `try` / `catch` / `finally`; fallible function calls return `Result`; debug-build stack traces | Python-style error handling consistent with the safety model. See design doc §9. |
+| Generic enums and `Option<T>` as `enum { Some(T), None }`, matched with `match`; `Some`/`None` infer type arguments from the expected type; `null` and `T?` removed | One way to express absence, explicit and composable (nests, usable as a generic argument). Needs inline storage or a compact representation for small enums so `Option<int32>` does not allocate. See design doc §12. |
 | Improved error messages / diagnostic infrastructure | The firescript compiler should produce rich, helpful diagnostics; implementing this in firescript requires the same. |
 
 ### Compiler improvements

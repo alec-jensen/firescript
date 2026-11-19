@@ -251,9 +251,9 @@ Library methods on `Object`, not keywords:
   class implements it.
 - `x.isExactly<T>()` — true only if the concrete type is exactly `T`; rejected at compile time
   for an interface or abstract class `T`. Needed for symmetric `equals()` implementations.
-- `x.downcast<T>()` — returns a nullable reference (`&T?`) using the `isInstance` rule.
-  This requires nullable reference types; whether references can be nullable is an open
-  question for the `&T` work.
+- `x.downcast<T>()` — returns `Option<&T>` using the `isInstance` rule (there is no nullable
+  reference; see §12). This requires an `Option` that can hold a reference; whether it can is an
+  open question for the `&T` work.
 
 Cost: exact check compares a type ID; the class is-a check is an O(1) range test over a
 depth-first numbering of the single-inheritance hierarchy (the whole program is known);
@@ -368,6 +368,31 @@ Work implied by this design, from the November 2026 audit:
 - Whether `&` moves into the type position for parameters.
 - Default member visibility and the exact meaning of `protected`.
 - How `Object`'s common methods are declared and overridden.
-- Whether references can be nullable (needed by `downcast`); whether lossless numeric widening is implicit.
+- Whether `Option` can hold a reference (needed by `downcast`); whether lossless numeric widening is implicit.
 - Exact `std.fs` split between `Result` and thrown `IOException`s; whether a lint should warn on blanket `catch (Exception e)` by default.
 - Whether and when `Box` / `Shared` land relative to capturing closures.
+
+## 12. Absence: `Option<T>`, no `null` [PLANNED]
+
+Decided 2026-11-19.
+
+- **One mechanism.** A value that may be absent is an `Option<T>`. The `null` literal and the
+  nullable type marker `T?` are removed from the language. Keeping both would give users two ways
+  to say the same thing.
+- **Why `Option`.** It fits the class and library model, composes (it nests, and it can be a
+  generic argument such as `ArrayList<Option<T>>`), and is unwrapped with `match`.
+- **Explicit, no implicit wrapping.** A function declared `-> Option<int32>` does not accept
+  `return 5;` or `return null;`. It returns `Some(5)` or `None()`. An implicit wrap would
+  allocate invisibly, make `null` mean `None` only in some contexts, and be ambiguous for
+  `Option<Option<T>>`.
+- **Terse through inference.** `Some(x)` and `None()` infer their type arguments from the
+  expected type (declared return type, typed variable, parameter). Today `None()` needs the
+  explicit `Option<int32>.None()` form because a type parameter absent from the arguments cannot
+  be recovered; expected-type inference removes that need without any implicit conversion.
+- **Representation.** `Option<T>` becomes a real `enum { Some(T), None }`, which needs generic
+  enums and `match` first. Small enums need inline storage (or another compact form) so a
+  maybe-`int32` does not allocate.
+- **Ordering.** Until generic enums land, `T?`, `null` and the null-flow rule stay as shipped in
+  0.6.0. Removal is scheduled with the object model in 0.9.0.
+- **Not decided here.** An optional-chaining operator and `?`-style propagation are deferred;
+  they are tied to operator overloading and the error design (§9.2).
